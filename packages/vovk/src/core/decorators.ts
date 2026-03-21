@@ -1,17 +1,12 @@
 import { vovkApp } from './vovkApp.js';
 import { trimPath } from '../utils/trimPath.js';
 import { toKebabCase } from '../utils/toKebabCase.js';
+import { applyDecoratorAdapter } from './applyDecoratorAdapter.js';
 import { HttpMethod } from '../types/enums.js';
 import type { RouteHandler, VovkController, DecoratorOptions, VovkHandlerSchema } from '../types/core.js';
 import type { KnownAny } from '../types/utils.js';
 
 const isClass = (func: unknown) => typeof func === 'function' && /class/.test(func.toString());
-
-/** Minimal shape shared by all TC39 Stage 3 decorator context objects. */
-type _Stage3Context = { kind: string; name: string | symbol; addInitializer: (fn: () => void) => void };
-
-/** Detects whether the second decorator argument is a TC39 Stage 3 context object. */
-const _isStage3 = (arg: unknown): arg is _Stage3Context => typeof arg === 'object' && arg !== null && 'kind' in arg;
 
 const assignSchema = ({
   controller,
@@ -102,50 +97,25 @@ function createHTTPDecorator<T extends HttpMethod>(httpMethod: T) {
   ) {
     const path = trimPath(givenPath);
 
-    function decorator(givenTarget: unknown, propertyKeyOrContext: string | _Stage3Context) {
-      if (_isStage3(propertyKeyOrContext)) {
-        const propertyKey = String(propertyKeyOrContext.name);
-        propertyKeyOrContext.addInitializer(function (this: KnownAny) {
-          assignSchema({ controller: this as VovkController, propertyKey, path, options, httpMethod });
-        });
-        return;
-      }
-
-      const controller = givenTarget as VovkController;
-      assignSchema({ controller, propertyKey: propertyKeyOrContext, path, options, httpMethod });
+    function decorator(givenTarget: unknown, propertyKeyOrContext?: unknown): KnownAny {
+      return applyDecoratorAdapter(givenTarget, propertyKeyOrContext, (controller, propertyKey) => {
+        assignSchema({ controller, propertyKey, path, options, httpMethod });
+      });
     }
 
     return decorator;
   }
 
   const auto = (options?: DecoratorOptions) => {
-    function decorator(givenTarget: unknown, propertyKeyOrContext: string | _Stage3Context) {
-      if (_isStage3(propertyKeyOrContext)) {
-        const propertyKey = String(propertyKeyOrContext.name);
-        propertyKeyOrContext.addInitializer(function (this: KnownAny) {
-          const controller = this as VovkController;
-          // validation is already assigned at procedure function
-          const properties = Object.keys(controller._handlers?.[propertyKey]?.validation?.params?.properties ?? {});
-          const kebabCasePath = toKebabCase(propertyKey);
-          const path = properties.length
-            ? `${kebabCasePath}/${properties.map((prop) => `{${prop}}`).join('/')}`
-            : kebabCasePath;
-          assignSchema({ controller, propertyKey, path, options, httpMethod });
-        });
-        return;
-      }
-
-      const controller = givenTarget as VovkController;
-      // validation is already assigned at procedure function
-      const properties = Object.keys(
-        controller._handlers?.[propertyKeyOrContext]?.validation?.params?.properties ?? {}
-      );
-      const kebabCasePath = toKebabCase(propertyKeyOrContext);
-      const path = properties.length
-        ? `${kebabCasePath}/${properties.map((prop) => `{${prop}}`).join('/')}`
-        : kebabCasePath;
-
-      assignSchema({ controller, propertyKey: propertyKeyOrContext, path, options, httpMethod });
+    function decorator(givenTarget: unknown, propertyKeyOrContext?: unknown): KnownAny {
+      return applyDecoratorAdapter(givenTarget, propertyKeyOrContext, (controller, propertyKey) => {
+        const properties = Object.keys(controller._handlers?.[propertyKey]?.validation?.params?.properties ?? {});
+        const kebabCasePath = toKebabCase(propertyKey);
+        const path = properties.length
+          ? `${kebabCasePath}/${properties.map((prop) => `{${prop}}`).join('/')}`
+          : kebabCasePath;
+        assignSchema({ controller, propertyKey, path, options, httpMethod });
+      });
     }
 
     return decorator;

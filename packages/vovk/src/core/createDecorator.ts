@@ -1,11 +1,9 @@
+import { applyDecoratorAdapter } from './applyDecoratorAdapter.js';
 import type { VovkHandlerSchema, VovkController } from '../types/core.js';
 import type { VovkRequest } from '../types/request.js';
 import type { KnownAny } from '../types/utils.js';
 
 type Next = () => Promise<unknown>;
-
-/** Minimal shape shared by all TC39 Stage 3 decorator context objects. */
-type _Stage3Context = { kind: string; name: string | symbol; addInitializer: (fn: () => void) => void };
 
 /**
  * Creates a custom decorator for Vovk controllers.
@@ -26,18 +24,8 @@ export function createDecorator<TArgs extends unknown[], TRequest = VovkRequest>
     | undefined
 ) {
   return function decoratorCreator(...args: TArgs) {
-    return function decorator(target: KnownAny, propertyKeyOrContext: string | _Stage3Context) {
-      if (typeof propertyKeyOrContext === 'object' && propertyKeyOrContext !== null && 'kind' in propertyKeyOrContext) {
-        // TC39 Stage 3 decorator — defer to addInitializer where `this` is the class
-        const propertyKey = String(propertyKeyOrContext.name);
-        propertyKeyOrContext.addInitializer(function (this: KnownAny) {
-          applyDecorator(this as VovkController, propertyKey);
-        });
-        return;
-      }
-
-      // Experimental decorator — target is the class for static members
-      applyDecorator(target as VovkController, propertyKeyOrContext);
+    return function decorator(target: KnownAny, propertyKeyOrContext?: unknown): KnownAny {
+      return applyDecoratorAdapter(target, propertyKeyOrContext, applyDecorator);
 
       function applyDecorator(controller: VovkController, propertyKey: string) {
         const originalMethod = controller[propertyKey] as ((...args: unknown[]) => unknown) & {

@@ -70,6 +70,7 @@ export interface InitOptions {
   usePnpm?: boolean;
   useBun?: boolean;
   skipInstall?: boolean;
+  updateTsConfig?: boolean;
   updateScripts?: 'implicit' | 'explicit';
   bundle?: boolean;
   validationLibrary?: 'zod' | 'valibot' | 'arktype' | null;
