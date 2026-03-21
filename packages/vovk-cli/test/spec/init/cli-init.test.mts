@@ -13,7 +13,6 @@ const combos = {
   /*
     Answers sequence for prompts:
     - validationLibrary
-    - updateTsConfig
     - bundle
     - updateScripts
     - langs
@@ -22,8 +21,6 @@ const combos = {
     // Validation library: None
     'N',
     ENTER,
-    // Update tsconfig.json: Yes
-    ENTER,
     // Bundle setup: Yes
     ENTER,
     // Update scripts: Yes
@@ -31,25 +28,10 @@ const combos = {
     // Languages: None
     ENTER,
   ],
-  NO_TS_CONFIG_UPDATE: [
-    // Validation library: Zod
-    ENTER,
-    // Update tsconfig.json: No
-    'N',
-    ENTER,
-    // Bundle setup: Yes
-    ENTER,
-    // Update scripts: Yes
-    ENTER,
-    // Languages: None
-    ENTER,
-  ],
-  ONE_FLAG_PASSED: [ENTER, ENTER, ENTER, ENTER],
-  YES: [ENTER, ENTER, ENTER, ENTER, ENTER],
+  ONE_FLAG_PASSED: [ENTER, ENTER, ENTER],
+  YES: [ENTER, ENTER, ENTER, ENTER],
   RUST: [
     // Validation library: Zod
-    ENTER,
-    // Update tsconfig.json: Yes
     ENTER,
     // Bundle setup: Yes
     ENTER,
@@ -63,8 +45,6 @@ const combos = {
   PYTHON_AND_RUST: [
     // Validation library: Zod
     ENTER,
-    // Update tsconfig.json: Yes
-    ENTER,
     // Bundle setup: Yes
     ENTER,
     // Update scripts: Yes
@@ -77,8 +57,6 @@ const combos = {
   ],
   NO_BUNDLE: [
     // Validation library: Zod
-    ENTER,
-    // Update tsconfig.json: Yes
     ENTER,
     // Bundle setup: No
     'N',
@@ -94,8 +72,6 @@ const combos = {
     DOWN,
     SPACE,
     ENTER,
-    // Update tsconfig.json: Yes
-    ENTER,
     // Bundle setup: Yes
     ENTER,
     // Update scripts: Yes
@@ -107,8 +83,6 @@ const combos = {
     // Validation library: Arktype
     DOWN,
     SPACE,
-    ENTER,
-    // Update tsconfig.json: Yes
     ENTER,
     // Bundle setup: Yes
     ENTER,
@@ -171,8 +145,6 @@ await describe('CLI init', async () => {
       bundle: 'vovk bundle',
     });
 
-    await assertTsConfig();
-
     // check if packages are NOT installed because of --skip-install
     await assertNotExists('./node_modules/vovk');
     await assertNotExists('./node_modules/vovk-cli');
@@ -196,8 +168,6 @@ await describe('CLI init', async () => {
       dev: 'next dev',
     });
 
-    await assertTsConfig(true);
-
     // check if packages are OK
     await assertNotExists('./node_modules/vovk');
     await assertNotExists('./node_modules/vovk-cli');
@@ -217,8 +187,6 @@ await describe('CLI init', async () => {
     await assertScripts({
       dev: 'vovk dev --next-dev',
     });
-
-    await assertTsConfig();
   });
 
   await it('Works with --yes and --update-scripts=explicit', async () => {
@@ -236,8 +204,6 @@ await describe('CLI init', async () => {
       build: 'next build',
       prebuild: 'vovk generate',
     });
-
-    await assertTsConfig();
   });
 
   await it('Preserves next dev flags with --update-scripts=implicit', async () => {
@@ -272,8 +238,6 @@ await describe('CLI init', async () => {
       dev: 'vovk dev --next-dev',
     });
 
-    await assertTsConfig();
-
     await assertDirExists('./node_modules/vovk');
     await assertDirExists('./node_modules/vovk-cli');
   });
@@ -291,8 +255,6 @@ await describe('CLI init', async () => {
     await assertScripts({
       dev: 'vovk dev --next-dev',
     });
-
-    await assertTsConfig();
   });
 
   await it('Works with --yes and --validation-library=zod', async () => {
@@ -308,8 +270,6 @@ await describe('CLI init', async () => {
     await assertScripts({
       dev: 'vovk dev --next-dev',
     });
-
-    await assertTsConfig();
   });
 
   await it('Utilizes .config folder', async () => {
@@ -326,8 +286,6 @@ await describe('CLI init', async () => {
     await assertScripts({
       dev: 'vovk dev --next-dev',
     });
-
-    await assertTsConfig();
   });
 
   await it('Works with prompting', async () => {
@@ -345,46 +303,6 @@ await describe('CLI init', async () => {
       build: 'next build',
       prebuild: 'vovk generate',
     });
-
-    await assertTsConfig();
-  });
-
-  await it('Works with prompting and no TSConfig update', async () => {
-    await createNextApp();
-    await vovkInit('--skip-install', { combo: combos.NO_TS_CONFIG_UPDATE });
-    await assertConfig(['vovk.config.mjs'], assertConfig.makeConfig('zod'));
-
-    await assertDeps({
-      dependencies: ['vovk', 'vovk-ajv', 'zod', 'vovk-client'],
-      devDependencies: ['vovk-cli', 'tsdown'],
-    });
-
-    await assertScripts({
-      dev: 'vovk dev --next-dev',
-      build: 'next build',
-      prebuild: 'vovk generate',
-    });
-
-    await assertTsConfig(true);
-  });
-
-  await it('Works with prompting and --update-ts-config', async () => {
-    await createNextApp();
-    await vovkInit('--update-ts-config --skip-install', { combo: combos.ONE_FLAG_PASSED });
-    await assertConfig(['vovk.config.mjs'], assertConfig.makeConfig('zod'));
-
-    await assertDeps({
-      dependencies: ['vovk', 'vovk-ajv', 'zod', 'vovk-client'],
-      devDependencies: ['vovk-cli', 'tsdown'],
-    });
-
-    await assertScripts({
-      dev: 'vovk dev --next-dev',
-      build: 'next build',
-      prebuild: 'vovk generate',
-    });
-
-    await assertTsConfig();
   });
 
   await it('Works with prompting and --validation-library=none', async () => {
@@ -407,8 +325,6 @@ await describe('CLI init', async () => {
       build: 'next build',
       prebuild: 'vovk generate',
     });
-
-    await assertTsConfig();
   });
 
   await it('Works with prompting and no validation', async () => {
@@ -431,8 +347,6 @@ await describe('CLI init', async () => {
       build: 'next build',
       prebuild: 'vovk generate',
     });
-
-    await assertTsConfig();
   });
 
   await it('Works with prompting and down arrow selection for Zod', async () => {
@@ -450,8 +364,6 @@ await describe('CLI init', async () => {
       build: 'next build',
       prebuild: 'vovk generate',
     });
-
-    await assertTsConfig();
   });
 
   await it('Works with prompting and down arrow selection for Arktype', async () => {
@@ -469,8 +381,6 @@ await describe('CLI init', async () => {
       build: 'next build',
       prebuild: 'vovk generate',
     });
-
-    await assertTsConfig();
   });
 
   await it('Works with prompting and down arrow selection for Valibot', async () => {
@@ -488,8 +398,6 @@ await describe('CLI init', async () => {
       build: 'next build',
       prebuild: 'vovk generate',
     });
-
-    await assertTsConfig();
   });
 
   await it('Uses Rust template', async () => {
@@ -522,8 +430,6 @@ await describe('CLI init', async () => {
       dependencies: ['vovk-python'],
       opposite: true,
     });
-
-    await assertTsConfig();
   });
 
   await it('Uses Python and Rust template', async () => {
@@ -556,7 +462,30 @@ await describe('CLI init', async () => {
       dependencies: ['vovk-python'],
       opposite: true,
     });
+  });
 
+  await it('Does not modify tsconfig.json', async () => {
+    await createNextApp();
+    await vovkInit('--yes --skip-install');
+    // vovk init should no longer add experimentalDecorators to tsconfig
+    await assertTsConfig(true);
+  });
+
+  await it('Works when experimentalDecorators is already present in tsconfig', async () => {
+    await createNextApp();
+
+    // Manually add experimentalDecorators to tsconfig.json
+    const tsconfigPath = path.join(projectDir, 'tsconfig.json');
+    const tsconfigContent = await fs.readFile(tsconfigPath, 'utf-8');
+    const tsconfig = JSON.parse(tsconfigContent);
+    tsconfig.compilerOptions = tsconfig.compilerOptions ?? {};
+    tsconfig.compilerOptions.experimentalDecorators = true;
+    await fs.writeFile(tsconfigPath, JSON.stringify(tsconfig, null, 2));
+
+    await vovkInit('--yes --skip-install');
+    await assertConfig(['vovk.config.mjs'], assertConfig.makeConfig('zod'));
+
+    // experimentalDecorators should still be present (not removed by init)
     await assertTsConfig();
   });
 
@@ -582,8 +511,6 @@ await describe('CLI init', async () => {
         build: 'next build',
         prebuild: 'vovk generate',
       });
-
-      await assertTsConfig();
 
       await assertDirExists('./node_modules/vovk');
       await assertDirExists('./node_modules/vovk-cli');
@@ -613,8 +540,6 @@ await describe('CLI init', async () => {
         build: 'next build',
         prebuild: 'vovk generate',
       });
-
-      await assertTsConfig();
 
       // check if packages are installed
       await assertDirExists('./node_modules/vovk');
@@ -649,8 +574,6 @@ await describe('CLI init', async () => {
         prebuild: 'vovk generate',
       });
 
-      await assertTsConfig();
-
       await assertDirExists('./node_modules/vovk');
       await assertDirExists('./node_modules/vovk-cli');
 
@@ -679,8 +602,6 @@ await describe('CLI init', async () => {
         build: 'next build',
         prebuild: 'vovk generate',
       });
-
-      await assertTsConfig();
 
       // check if packages are installed
       await assertDirExists('./node_modules/vovk');
@@ -715,8 +636,6 @@ await describe('CLI init', async () => {
         prebuild: 'vovk generate',
       });
 
-      await assertTsConfig();
-
       await assertDirExists('./node_modules/vovk');
       await assertDirExists('./node_modules/vovk-cli');
 
@@ -745,8 +664,6 @@ await describe('CLI init', async () => {
         build: 'next build',
         prebuild: 'vovk generate',
       });
-
-      await assertTsConfig();
 
       // check if packages are installed
       await assertDirExists('./node_modules/vovk');
