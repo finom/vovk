@@ -113,7 +113,7 @@ const { tools } = deriveTools({ modules: { UserRPC, TaskController, PetstoreAPI 
 console.log(tools); // [{ name, description, parameters, execute }, ...]
 ```
 
-Procedures can be executed locally for SSR/PPR:
+Procedures can be executed locally for SSR/PPR and server actions:
 
 ```ts
 await UserController.getUser.fn({ params: { id: '123' } });

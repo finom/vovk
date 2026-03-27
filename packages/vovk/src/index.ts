@@ -31,6 +31,7 @@ export type {
   VovkBody,
   VovkQuery,
   VovkParams,
+  VovkInput,
   VovkReturnType,
   VovkYieldType,
   VovkOutput,

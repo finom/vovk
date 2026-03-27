@@ -1,7 +1,7 @@
 import { CommonControllerRPC, CommonControllerDifferentFetcherRPC } from 'vovk-client';
 import { CommonControllerRPC as SegmentClientCommonControllerRPC } from '../../other-compiled-test-sources/segmented-client/foo/client/index.ts';
 import { CommonControllerRPC as BundleClientCommonControllerRPC } from '../../other-compiled-test-sources/bundle/index.mjs';
-import { HttpStatus, type VovkBody, type VovkQuery, type VovkReturnType, type VovkParams } from 'vovk';
+import { HttpStatus, type VovkBody, type VovkQuery, type VovkReturnType, type VovkParams, type VovkInput } from 'vovk';
 import type { VovkHandlerSchema, VovkErrorResponse } from 'vovk/internal';
 import { it, describe } from 'node:test';
 import { deepStrictEqual, ok, strictEqual } from 'node:assert';
@@ -212,6 +212,19 @@ describe('Client with vovk-client', () => {
     // @ts-expect-error Expect error
     null as unknown as VovkParams<typeof CommonController.getWithParams> satisfies { hello: 'foo' };
 
+    // VovkInput should only contain params (no body or query)
+    null as unknown as VovkInput<typeof CommonControllerRPC.getWithParams> satisfies { params: { hello: 'world' } };
+    // @ts-expect-error body should not exist on VovkInput when not defined
+    null as unknown as VovkInput<typeof CommonControllerRPC.getWithParams> satisfies { body: unknown };
+    // @ts-expect-error query should not exist on VovkInput when not defined
+    null as unknown as VovkInput<typeof CommonControllerRPC.getWithParams> satisfies { query: unknown };
+
+    null as unknown as VovkInput<typeof CommonController.getWithParams> satisfies { params: { hello: 'world' } };
+    // @ts-expect-error body should not exist on VovkInput when not defined
+    null as unknown as VovkInput<typeof CommonController.getWithParams> satisfies { body: unknown };
+    // @ts-expect-error query should not exist on VovkInput when not defined
+    null as unknown as VovkInput<typeof CommonController.getWithParams> satisfies { query: unknown };
+
     deepStrictEqual(result satisfies { hello: 'world' }, { hello: 'world' });
   });
 
@@ -230,6 +243,13 @@ describe('Client with vovk-client', () => {
 
     // @ts-expect-error Expect error
     null as unknown as VovkBody<typeof CommonControllerRPC.postWithAll> satisfies { hello: 'baz' };
+
+    // VovkInput should contain all three when all are defined
+    null as unknown as VovkInput<typeof CommonControllerRPC.postWithAll> satisfies {
+      params: { hello: 'world' };
+      body: { isBody: true };
+      query: { simpleQueryParam: 'queryValue' };
+    };
 
     deepStrictEqual(result satisfies VovkReturnType<typeof CommonControllerRPC.postWithAll>, {
       params: { hello: 'world' },

@@ -133,6 +133,29 @@ export type VovkYieldType<T extends (...args: KnownAny[]) => unknown> = T extend
   ? VovkClientYieldType<T>
   : VovkControllerYieldType<T>;
 
+type _VovkInputRaw<T extends (...args: KnownAny[]) => unknown> = {
+  params: VovkParams<T>;
+  query: VovkQuery<T>;
+  body: VovkBody<T>;
+};
+
+type _OmitUndefinedOrUnknown<T> = {
+  [K in keyof T as unknown extends T[K] ? never : [T[K]] extends [undefined] ? never : K]: T[K];
+};
+
+/**
+ * Utility type to extract the full input (params, query, body) from both controller and client methods.
+ * Only includes properties that are actually defined — omits keys whose types resolve to `undefined` or `unknown`.
+ * Useful for Next.js server actions and other cases where you need all input types at once.
+ * @see https://vovk.dev/inference
+ * @example
+ * ```ts
+ * type Input = VovkInput<typeof MyController.myMethod>;
+ * // { params: { id: string }; query: { search: string }; body: { name: string } }
+ * ```
+ */
+export type VovkInput<T extends (...args: KnownAny[]) => unknown> = _OmitUndefinedOrUnknown<_VovkInputRaw<T>>;
+
 /**
  * Utility type to extract return type from both controller and client methods
  * @see https://vovk.dev/inference
