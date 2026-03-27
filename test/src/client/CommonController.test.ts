@@ -7,6 +7,7 @@ import { it, describe } from 'node:test';
 import { deepStrictEqual, ok, strictEqual } from 'node:assert';
 import type CommonController from './CommonController.ts';
 import { NESTED_QUERY_EXAMPLE } from '../lib.ts';
+import { fetcher } from '../lib/fetcher.ts';
 import omit from 'lodash/omit.js';
 import noop from 'lodash/noop.js';
 
@@ -353,5 +354,54 @@ describe('Client with vovk-client', () => {
   it('Should extract URL using getURL method without parameters and without apiRoot parameter', async () => {
     const url = CommonControllerRPC.getHelloWorldObjectLiteral.getURL();
     deepStrictEqual(url, `${apiRoot}/foo/client/common/get-hello-world-object-literal`);
+  });
+
+  it(`Should call multiple onSuccess and onError callbacks registered via fetcher.onSuccess/onError methods`, async () => {
+    const onSuccessCalls: { source: string; successMessage?: string }[] = [];
+    const onErrorCalls: { source: string; message: string; successMessage?: string }[] = [];
+
+    fetcher.onSuccess((_respData, { successMessage }) => {
+      onSuccessCalls.push({ source: 'callback1', successMessage });
+    });
+
+    fetcher.onSuccess((_respData, { successMessage }) => {
+      onSuccessCalls.push({ source: 'callback2', successMessage });
+    });
+
+    fetcher.onError((error, { successMessage }) => {
+      onErrorCalls.push({ source: 'callback1', message: error.message, successMessage });
+    });
+
+    fetcher.onError((error, { successMessage }) => {
+      onErrorCalls.push({ source: 'callback2', message: error.message, successMessage });
+    });
+
+    await CommonControllerDifferentFetcherRPC.getHelloWorldHeaders({
+      apiRoot,
+      init: { headers: { 'x-vovk-test': 'world' } },
+      successMessage: 'SuccessTest',
+    });
+
+    deepStrictEqual(
+      onSuccessCalls.map((c) => c.source),
+      ['callback1', 'callback2']
+    );
+    ok(onSuccessCalls.every((c) => c.successMessage === 'SuccessTest'));
+
+    try {
+      await CommonControllerDifferentFetcherRPC.getErrorResponse({
+        apiRoot,
+        successMessage: 'ErrorTest',
+      });
+    } catch {
+      // expected
+    }
+
+    deepStrictEqual(
+      onErrorCalls.map((c) => c.source),
+      ['callback1', 'callback2']
+    );
+    ok(onErrorCalls.every((c) => c.message === 'This is an error'));
+    ok(onErrorCalls.every((c) => c.successMessage === 'ErrorTest'));
   });
 });
