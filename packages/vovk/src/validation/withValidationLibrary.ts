@@ -5,11 +5,12 @@ import { JSONLinesResponder } from '../core/JSONLinesResponder.js';
 import { HttpStatus } from '../types/enums.js';
 import type { VovkHandlerSchema, VovkValidationType } from '../types/core.js';
 import type { VovkRequest } from '../types/request.js';
-import type { ContentType, VovkTypedProcedure } from '../types/validation.js';
+import type { BodyTypeFromContentType, ContentType, VovkTypedProcedure } from '../types/validation.js';
 import type { VovkOperationObject } from '../types/operation.js';
 import type { KnownAny } from '../types/utils.js';
 import { validateContentType } from '../req/validateContentType.js';
 import { bufferBody } from '../req/bufferBody.js';
+import { parseForm } from '../req/parseForm.js';
 
 const validationTypes: VovkValidationType[] = ['body', 'query', 'params', 'output', 'iteration'] as const;
 
@@ -187,10 +188,12 @@ export function withValidationLibrary<
     wrapper?: (req: VovkRequestAny, params: Parameters<THandle>[1]) => ReturnType<THandle>;
   };
 
+  type FnBody = BodyTypeFromContentType<TContentType, THandle['__types']['body']>;
+
   type FnInput = {
     disableClientValidation?: boolean;
     transform?: undefined;
-  } & (undefined extends typeof body ? { body?: THandle['__types']['body'] } : { body: THandle['__types']['body'] }) &
+  } & (undefined extends typeof body ? { body?: FnBody } : { body: FnBody }) &
     (undefined extends typeof query
       ? { query?: THandle['__types']['query'] }
       : { query: THandle['__types']['query'] }) &
@@ -220,14 +223,24 @@ export function withValidationLibrary<
   function fn<TReturnType = ReturnType<THandle>, TTransformed = never>(
     input?: FnInput | FnInputWithTransform<TTransformed>
   ): TReturnType | Promise<TTransformed> {
+    let bodyCache: unknown;
+
     const fakeReq: Pick<
       VovkRequest<THandle['__types']['body'], THandle['__types']['query'], THandle['__types']['params']>,
       'vovk'
     > = {
       vovk: {
-        body: () => Promise.resolve((input?.body ?? {}) as THandle['__types']['body']),
-        query: () => (input?.query ?? {}) as THandle['__types']['query'],
-        params: () => (input?.params ?? {}) as THandle['__types']['params'],
+        body: () => {
+          if (input && input.body instanceof FormData) {
+            bodyCache ??= parseForm(input.body);
+          } else {
+            bodyCache = input?.body;
+          }
+
+          return Promise.resolve(bodyCache ?? null);
+        },
+        query: () => input?.query ?? {},
+        params: () => input?.params ?? {},
         meta: <T = KnownAny>(meta?: T | null) => reqMeta<T>(fakeReq, meta),
       },
     };

@@ -134,6 +134,22 @@ describe('procedure features', async () => {
     result satisfies { message: string };
   });
 
+  it('Should convert FormData to an object when passed as a body', async () => {
+    const formData = new FormData();
+    formData.append('foo', 'bar');
+
+    const handler = procedure({
+      contentType: ['multipart/form-data'],
+      body: z.object({
+        foo: z.literal('bar'),
+      }),
+    }).handle(({ vovk }) => {
+      return vovk.body();
+    });
+
+    assert.deepEqual(await handler.fn({ body: formData }), { foo: 'bar' });
+  });
+
   it('Should assign schema', async () => {
     assert.equal(handler.schema.validation?.body?.$schema, 'https://json-schema.org/draft/2020-12/schema');
     assert.equal(handler.schema.validation?.query?.$schema, 'https://json-schema.org/draft/2020-12/schema');
