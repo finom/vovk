@@ -9,6 +9,7 @@ import {
   type VovkOutput,
   type VovkIteration,
   type VovkBody,
+  type VovkInput,
 } from 'vovk';
 import type WithValidationController from './WithValidationController.ts';
 import { expectPromise, getConstrainingObject, NESTED_QUERY_EXAMPLE } from '../lib.ts';
@@ -100,6 +101,18 @@ describe('Validation with with zod and validateOnClient defined at settings', ()
     // @ts-expect-error Expect error
     null as unknown as VovkOutput<typeof WithValidationController.handleAll> satisfies null;
 
+    // VovkInput should contain all three when all are defined
+    null as unknown as VovkInput<typeof WithValidationRPC.handleAll> satisfies {
+      body: { hello: string };
+      query: { search: string };
+      params: { foo: string; bar: string };
+    };
+    null as unknown as VovkInput<typeof WithValidationController.handleAll> satisfies {
+      body: { hello: string };
+      query: { search: string };
+      params: { foo: string; bar: string };
+    };
+
     deepStrictEqual(result satisfies typeof expected, expected);
   });
 
@@ -111,6 +124,14 @@ describe('Validation with with zod and validateOnClient defined at settings', ()
       body: { no: 'body' },
     });
     deepStrictEqual(result satisfies { nothing: 'here' }, { nothing: 'here' });
+
+    // VovkInput should be empty when no inputs are defined
+    // @ts-expect-error body should not exist on VovkInput when not defined
+    null as unknown as VovkInput<typeof WithValidationRPC.handleNothitng> satisfies { body: unknown };
+    // @ts-expect-error query should not exist on VovkInput when not defined
+    null as unknown as VovkInput<typeof WithValidationRPC.handleNothitng> satisfies { query: unknown };
+    // @ts-expect-error params should not exist on VovkInput when not defined
+    null as unknown as VovkInput<typeof WithValidationRPC.handleNothitng> satisfies { params: unknown };
   });
 
   it('Should handle body validation and client', async () => {
@@ -142,6 +163,13 @@ describe('Validation with with zod and validateOnClient defined at settings', ()
 
     await rejects.toThrow(/Client-side validation failed. Invalid body: data\/hello.*/);
     await rejects.toThrowError(HttpException);
+
+    // VovkInput should only contain body (no query or params)
+    null as unknown as VovkInput<typeof WithValidationRPC.handleBody> satisfies { body: { hello: string } };
+    // @ts-expect-error query should not exist on VovkInput when not defined
+    null as unknown as VovkInput<typeof WithValidationRPC.handleBody> satisfies { query: unknown };
+    // @ts-expect-error params should not exist on VovkInput when not defined
+    null as unknown as VovkInput<typeof WithValidationRPC.handleBody> satisfies { params: unknown };
   });
 
   it('Should handle params validation and client', async () => {
@@ -175,6 +203,15 @@ describe('Validation with with zod and validateOnClient defined at settings', ()
 
     await rejects.toThrow(/Client-side validation failed. Invalid params: data\/foo.*/);
     await rejects.toThrowError(HttpException);
+
+    // VovkInput should only contain params (no body or query)
+    null as unknown as VovkInput<typeof WithValidationRPC.handleParams> satisfies {
+      params: { foo: string; bar: string };
+    };
+    // @ts-expect-error body should not exist on VovkInput when not defined
+    null as unknown as VovkInput<typeof WithValidationRPC.handleParams> satisfies { body: unknown };
+    // @ts-expect-error query should not exist on VovkInput when not defined
+    null as unknown as VovkInput<typeof WithValidationRPC.handleParams> satisfies { query: unknown };
   });
 
   it('Should handle query validation and client', async () => {
@@ -206,6 +243,13 @@ describe('Validation with with zod and validateOnClient defined at settings', ()
 
     await rejects.toThrow(/Client-side validation failed. Invalid query: data\/search.*/);
     await rejects.toThrowError(HttpException);
+
+    // VovkInput should only contain query (no body or params)
+    null as unknown as VovkInput<typeof WithValidationRPC.handleQuery> satisfies { query: { search: string } };
+    // @ts-expect-error body should not exist on VovkInput when not defined
+    null as unknown as VovkInput<typeof WithValidationRPC.handleQuery> satisfies { body: unknown };
+    // @ts-expect-error params should not exist on VovkInput when not defined
+    null as unknown as VovkInput<typeof WithValidationRPC.handleQuery> satisfies { params: unknown };
   });
 
   it('Should handle nested queries and client', async () => {

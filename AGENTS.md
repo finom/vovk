@@ -377,6 +377,7 @@ import {
   type VovkBody,
   type VovkQuery,
   type VovkParams,
+  type VovkInput, // combined { params, query, body }
   type VovkOutput,
   type VovkClientBody,
   type VovkClientQuery,
