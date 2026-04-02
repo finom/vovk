@@ -3,7 +3,7 @@ import { HttpException } from '../core/HttpException.js';
 import { createToolFactory } from '../tools/createToolFactory.js';
 import { HttpStatus } from './createValidateOnClient.js';
 import type { VovkRequest } from '../types/request.js';
-import type { CombinedSpec, ContentType, NormalizeContentType } from '../types/validation.js';
+import type { BodyTypeFromContentType, CombinedSpec, ContentType, NormalizeContentType } from '../types/validation.js';
 import type { VovkValidationType } from '../types/core.js';
 import type { VovkOperationObject } from '../types/operation.js';
 import type { KnownAny } from '../types/utils.js';
@@ -119,7 +119,9 @@ export function createStandardValidation({
     isRPC?: boolean;
     fn: {
       <TTransformed>(input: {
-        body?: TBody extends CombinedSpec ? CombinedSpec.InferOutput<TBody> : undefined;
+        body?: TBody extends CombinedSpec
+          ? BodyTypeFromContentType<NormalizeContentType<TContentType>, CombinedSpec.InferOutput<TBody>>
+          : undefined;
         query?: TQuery extends CombinedSpec ? CombinedSpec.InferOutput<TQuery> : undefined;
         params?: TParams extends CombinedSpec ? CombinedSpec.InferOutput<TParams> : undefined;
         meta?: Record<string, KnownAny>;
@@ -127,14 +129,18 @@ export function createStandardValidation({
         transform: (data: Awaited<ReturnType<THandleFn>>, fakeReq: Pick<TReq, 'vovk'>) => TTransformed;
       }): Promise<TTransformed>;
       <TReturnType = ReturnType<THandleFn>>(input?: {
-        body?: TBody extends CombinedSpec ? CombinedSpec.InferOutput<TBody> : undefined;
+        body?: TBody extends CombinedSpec
+          ? BodyTypeFromContentType<NormalizeContentType<TContentType>, CombinedSpec.InferOutput<TBody>>
+          : undefined;
         query?: TQuery extends CombinedSpec ? CombinedSpec.InferOutput<TQuery> : undefined;
         params?: TParams extends CombinedSpec ? CombinedSpec.InferOutput<TParams> : undefined;
         meta?: Record<string, KnownAny>;
         disableClientValidation?: boolean;
       }): TReturnType;
       (input?: {
-        body?: TBody extends CombinedSpec ? CombinedSpec.InferOutput<TBody> : undefined;
+        body?: TBody extends CombinedSpec
+          ? BodyTypeFromContentType<NormalizeContentType<TContentType>, CombinedSpec.InferOutput<TBody>>
+          : undefined;
         query?: TQuery extends CombinedSpec ? CombinedSpec.InferOutput<TQuery> : undefined;
         params?: TParams extends CombinedSpec ? CombinedSpec.InferOutput<TParams> : undefined;
         meta?: Record<string, KnownAny>;
