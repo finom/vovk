@@ -7,6 +7,23 @@ export const DEFAULT_ERROR_MESSAGE = 'Unknown error at default fetcher';
 
 export type { VovkFetcher };
 
+export type CreateFetcherOnSuccess<T> = (
+  respData: unknown,
+  options: VovkFetcherOptions<T>,
+  info: { response: Response; init: RequestInit; schema: VovkHandlerSchema }
+) => void | Promise<void>;
+
+export type CreateFetcherOnError<T> = (
+  error: HttpException,
+  options: VovkFetcherOptions<T>,
+  info: {
+    response: Response | null;
+    init: RequestInit | null;
+    respData: unknown | null;
+    schema: VovkHandlerSchema;
+  }
+) => void | Promise<void>;
+
 /**
  * Creates a customizable fetcher function for client requests.
  * @see https://vovk.dev/imports
@@ -14,8 +31,8 @@ export type { VovkFetcher };
 export function createFetcher<T>({
   prepareRequestInit,
   transformResponse,
-  onSuccess,
-  onError,
+  onSuccess: onSuccessInit,
+  onError: onErrorInit,
 }: {
   prepareRequestInit?: (init: RequestInit, options: VovkFetcherOptions<T>) => RequestInit | Promise<RequestInit>;
   transformResponse?: (
@@ -23,22 +40,11 @@ export function createFetcher<T>({
     options: VovkFetcherOptions<T>,
     info: { response: Response; init: RequestInit; schema: VovkHandlerSchema }
   ) => unknown | Promise<unknown>;
-  onSuccess?: (
-    respData: unknown,
-    options: VovkFetcherOptions<T>,
-    info: { response: Response; init: RequestInit; schema: VovkHandlerSchema }
-  ) => void | Promise<void>;
-  onError?: (
-    error: HttpException,
-    options: VovkFetcherOptions<T>,
-    info: {
-      response: Response | null;
-      init: RequestInit | null;
-      respData: unknown | null;
-      schema: VovkHandlerSchema;
-    }
-  ) => void | Promise<void>;
+  onSuccess?: CreateFetcherOnSuccess<T>;
+  onError?: CreateFetcherOnError<T>;
 } = {}) {
+  const onSuccessCallbacks: CreateFetcherOnSuccess<T>[] = onSuccessInit ? [onSuccessInit] : [];
+  const onErrorCallbacks: CreateFetcherOnError<T>[] = onErrorInit ? [onErrorInit] : [];
   // fetcher uses HttpException class to throw errors of fake HTTP status 0 if client-side error occurs
   // For normal HTTP errors, it uses message and status code from the response of VovkErrorResponse type
   const newFetcher: VovkFetcher<VovkFetcherOptions<T>> = async (
@@ -157,17 +163,28 @@ export function createFetcher<T>({
         ? await transformResponse(respData, inputOptions, { response, init: requestInit, schema })
         : respData;
 
-      await onSuccess?.(respData, inputOptions, { response, init: requestInit, schema });
+      for (const cb of onSuccessCallbacks) {
+        await cb(respData, inputOptions, { response, init: requestInit, schema });
+      }
 
       return [respData, response];
     } catch (error) {
-      await onError?.(error as HttpException, inputOptions, { response, init: requestInit, respData, schema });
+      for (const cb of onErrorCallbacks) {
+        await cb(error as HttpException, inputOptions, { response, init: requestInit, respData, schema });
+      }
 
       throw error;
     }
   };
 
-  return newFetcher;
+  return Object.assign(newFetcher, {
+    onSuccess(cb: CreateFetcherOnSuccess<T>) {
+      onSuccessCallbacks.push(cb);
+    },
+    onError(cb: CreateFetcherOnError<T>) {
+      onErrorCallbacks.push(cb);
+    },
+  });
 }
 
 /**
