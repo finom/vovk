@@ -7,7 +7,7 @@
   ],
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
-  "version": "3.1.3",
+  "version": "3.2.1",
   "bin": {
     "vovk-cli-npx": "./bin/index.mjs"
   },
