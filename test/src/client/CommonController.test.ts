@@ -380,19 +380,19 @@ describe('Client with vovk-client', () => {
     const onSuccessCalls: { source: string; successMessage?: string }[] = [];
     const onErrorCalls: { source: string; message: string; successMessage?: string }[] = [];
 
-    fetcher.onSuccess((_respData, { successMessage }) => {
+    const unsubSuccess1 = fetcher.onSuccess((_respData, { successMessage }) => {
       onSuccessCalls.push({ source: 'callback1', successMessage });
     });
 
-    fetcher.onSuccess((_respData, { successMessage }) => {
+    const unsubSuccess2 = fetcher.onSuccess((_respData, { successMessage }) => {
       onSuccessCalls.push({ source: 'callback2', successMessage });
     });
 
-    fetcher.onError((error, { successMessage }) => {
+    const unsubError1 = fetcher.onError((error, { successMessage }) => {
       onErrorCalls.push({ source: 'callback1', message: error.message, successMessage });
     });
 
-    fetcher.onError((error, { successMessage }) => {
+    const unsubError2 = fetcher.onError((error, { successMessage }) => {
       onErrorCalls.push({ source: 'callback2', message: error.message, successMessage });
     });
 
@@ -423,5 +423,41 @@ describe('Client with vovk-client', () => {
     );
     ok(onErrorCalls.every((c) => c.message === 'This is an error'));
     ok(onErrorCalls.every((c) => c.successMessage === 'ErrorTest'));
+
+    // Test unsubscribe: remove callback1 for both success and error
+    unsubSuccess1();
+    unsubError1();
+
+    onSuccessCalls.length = 0;
+    onErrorCalls.length = 0;
+
+    await CommonControllerDifferentFetcherRPC.getHelloWorldHeaders({
+      apiRoot,
+      init: { headers: { 'x-vovk-test': 'world' } },
+      successMessage: 'AfterUnsub',
+    });
+
+    deepStrictEqual(
+      onSuccessCalls.map((c) => c.source),
+      ['callback2']
+    );
+
+    try {
+      await CommonControllerDifferentFetcherRPC.getErrorResponse({
+        apiRoot,
+        successMessage: 'AfterUnsub',
+      });
+    } catch {
+      // expected
+    }
+
+    deepStrictEqual(
+      onErrorCalls.map((c) => c.source),
+      ['callback2']
+    );
+
+    // Clean up remaining callbacks
+    unsubSuccess2();
+    unsubError2();
   });
 });
