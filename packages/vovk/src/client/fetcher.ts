@@ -180,9 +180,17 @@ export function createFetcher<T>({
   return Object.assign(newFetcher, {
     onSuccess(cb: CreateFetcherOnSuccess<T>) {
       onSuccessCallbacks.push(cb);
+      return () => {
+        const index = onSuccessCallbacks.indexOf(cb);
+        if (index !== -1) onSuccessCallbacks.splice(index, 1);
+      };
     },
     onError(cb: CreateFetcherOnError<T>) {
       onErrorCallbacks.push(cb);
+      return () => {
+        const index = onErrorCallbacks.indexOf(cb);
+        if (index !== -1) onErrorCallbacks.splice(index, 1);
+      };
     },
   });
 }
