@@ -114,7 +114,7 @@ const makeTool = <TOutput, TFormattedOutput>({
     (['body', 'query', 'params'] as const).map((key) => [key, definition?.[key]]).filter(([, value]) => Boolean(value))
   );
 
-  if (!schema || !schema.operationObject) {
+  if (!schema?.operationObject) {
     throw new Error(`Handler "${handlerName}" in module "${moduleName}" does not have a valid schema.`);
   }
 
