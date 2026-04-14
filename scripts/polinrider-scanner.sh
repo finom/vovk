@@ -130,7 +130,7 @@ scan_repo() {
                 fi
             fi
         done <<JSEOF
-$(find "$repo_dir" -name "*.js" -type f -not -path "*/node_modules/*" -not -path "*/.git/*" 2>/dev/null)
+$(find "$repo_dir" \( -name "*.js" -o -name "*.mjs" -o -name "*.cjs" \) -type f -not -path "*/node_modules/*" -not -path "*/.git/*" 2>/dev/null)
 JSEOF
     fi
 
