@@ -1,0 +1,20 @@
+name: PolinRider Malware Scan
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Run PolinRider Scanner
+        run: |
+          chmod +x ./scripts/polinrider-scanner.sh
+          ./scripts/polinrider-scanner.sh --js-all .
