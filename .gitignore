@@ -11,3 +11,4 @@ tmp_*
 .mypy_cache
 .venv
 venv
+.claude
