@@ -6,6 +6,7 @@ Claude Code plugin for [Vovk.ts](https://vovk.dev). Wraps `vovk-cli` with two sk
 
 - **`vovk:init`** — initialize Vovk.ts in a Next.js App Router project, or scaffold a fresh Next.js app and run `vovk init` on top.
 - **`vovk:new`** — create segments and modules (controller + service) in an existing Vovk project.
+- **`vovk:test`** — write and run unit tests (via `.fn()`), service tests, and integration tests (via the generated `vovk-client`) for a Vovk project.
 
 ## Install
 
