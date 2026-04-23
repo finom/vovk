@@ -1,0 +1,11 @@
+{
+  "name": "vovk",
+  "owner": { "name": "Andrey Gubanov" },
+  "plugins": [
+    {
+      "name": "vovk",
+      "source": "./packages/claude-plugin",
+      "description": "Claude Code plugin for Vovk.ts projects"
+    }
+  ]
+}

@@ -1,0 +1,7 @@
+{
+  "name": "vovk",
+  "description": "Claude Code plugin for Vovk.ts — skills for initializing projects and generating segments/modules via vovk-cli.",
+  "version": "0.0.0",
+  "author": { "name": "Andrey Gubanov" },
+  "keywords": ["vovk", "nextjs", "typescript", "rpc", "api"]
+}
