@@ -11,3 +11,7 @@ Claude Code plugin for [Vovk.ts](https://vovk.dev). Wraps `vovk-cli` with two sk
 ## Install
 
 Add this repository as a Claude Code plugin marketplace, then install the `vovk` plugin from it.
+
+## Roadmap
+
+See [ROADMAP.md](./ROADMAP.md) for shipped and planned skills.
