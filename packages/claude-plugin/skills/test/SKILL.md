@@ -1,81 +1,108 @@
 ---
 name: test
-description: Write and run tests for controllers, services, and procedures in a Vovk.ts project. Use whenever the user asks to test, add test coverage, write a spec, verify behavior, or unit-test/integration-test a Vovk controller, service, module, procedure, endpoint, or RPC handler — phrases like "test this controller", "add tests for the user module", "write a spec for getUser", or "cover this with integration tests" all apply. Handles two complementary styles: fast unit tests that call `.fn()` on a procedure directly (no HTTP, no running server) and integration tests that hit a running dev server through the generated `vovk-client` RPC client. Defaults to `node --test` with `--experimental-strip-types` and `node:assert` — that's what the Vovk repo itself uses and it needs zero extra dependencies — but honors Vitest/Jest/etc. when the project already has one wired up. There is no `vovk new test` command; test files are hand-written, colocated next to the code they cover.
+description: Knowledge base for testing Vovk.ts code — procedures (via `.fn()`), services (plain classes), and HTTP integration (via the generated `vovk-client` RPC client). Use whenever the user asks to test, add test coverage, write a spec, verify behavior, or unit-test / integration-test a procedure, controller, service, endpoint, or RPC call — phrases like "test this procedure", "add tests for the user module", "write a spec for getUser", "cover this with integration tests", "test validation", "test the error path". Covers three test styles keyed to the Vovk architecture: `.fn()` for procedures (works regardless of HTTP decorator), plain-class tests for services, HTTP-over-`vovk-client` for end-to-end. Defaults to `node --test` + `node:assert` (no extra deps, matches what the Vovk repo itself uses) but honors an existing Vitest/Jest setup. Does NOT write procedures or services — hand off to `procedure` skill. Does NOT wire up the RPC client — hand off to `rpc` skill. Does NOT cover JSON Lines stream testing beyond mentioning the seam — hand off to `jsonlines` skill when depth is needed.
 ---
 
 # Vovk.ts testing
 
-Vovk gives you two natural testing surfaces, and they answer different questions:
+Vovk's architecture gives you three natural test seams. Each answers a different question, and a healthy project uses them together:
 
-- **`.fn()` unit tests** call a procedure's handler directly — no HTTP, no server, no serialization. They verify that the handler's logic, validation, and service interactions behave correctly given a structured input. Fast, isolated, parallelizable.
-- **Integration tests via the `vovk-client` RPC client** hit a running dev server over real HTTP. They verify that routing, decorators, middleware, status codes, content negotiation, and the generated client all agree. Slower, but catch a class of bugs `.fn()` never will.
+| Seam | Tests via | What it verifies |
+|---|---|---|
+| **Procedure** | `.fn({ params, body, query, meta })` | Handler logic + validation, without HTTP. Works for every procedure — HTTP decorator or not. |
+| **Service** | plain class/function calls | Business logic. No Vovk machinery involved. |
+| **HTTP integration** | `UserRPC.method({ apiRoot, params, body, query })` via `vovk-client` | Routing, decorators, middleware, status codes, content negotiation, the generated client — the whole chain. Only works for procedures with an HTTP decorator. |
 
-A healthy Vovk project uses both. Prefer `.fn()` for logic coverage and integration for a thin smoke layer on the HTTP surface.
+**Rule of thumb:** push logic into services and test them as plain classes (fastest, cheapest). Use `.fn()` tests for procedure-level concerns: validation boundaries, error translation, meta handling. Keep HTTP integration tests thin — smoke coverage on the wire, not a replacement for unit tests.
 
-Services are plain TypeScript classes with no Vovk-specific machinery, so they're tested as plain classes — no framework, no `.fn()`, just instantiate and call. This is often the cheapest coverage per line and should be the default for anything non-trivial in a service.
+## Scope of this skill
 
-## Prereq: is this a Vovk project?
+Covers:
 
-Same check as the `new` skill:
+- Test-runner choice (`node --test` default, honor existing Vitest/Jest).
+- File layout + naming conventions.
+- `.fn()` unit tests — input shape, validation assertions, error-path assertions.
+- Plain-class service tests.
+- HTTP integration tests via `vovk-client`.
+- Running the tests, integrating with a dev server.
 
-- `vovk.config.mjs` exists at the project root.
-- `package.json` has `vovk` + `vovk-client` in `dependencies` and `vovk-cli` in `devDependencies`.
+Out of scope:
 
-If these are missing, stop and point the user at the `init` skill — generating tests against a non-Vovk project wastes everyone's time.
+- Writing the procedures / services under test → **`procedure` skill**.
+- Generating / configuring `vovk-client` → **`rpc` skill**.
+- Testing JSON Lines streams / iteration assertions → mentioned below; depth in **`jsonlines` skill**.
+- Mocking databases / external services — project-specific; follow whatever pattern the repo uses.
 
 ## Decide the style
 
-Interpret the user's phrasing:
+**When the user says...**
 
-- "unit test", "test the handler", "test the procedure", "test validation", "test without the server" → **`.fn()` style**
-- "test the service", "test the business logic", "unit-test `UserService`" → **service style**
-- "integration test", "end-to-end", "hit the API", "test the RPC client", "test over HTTP" → **integration style**
-- Ambiguous ("add tests for the user module") → propose a mix: a service test for business logic, one integration test for the happy path. Ask before writing more than ~3 test files at once.
+| Intent | Style |
+|---|---|
+| "test this procedure", "test the handler", "test validation", "test without the server" | **Procedure (`.fn()`)** |
+| "test the service", "test the business logic", "unit-test `UserService`" | **Service (plain class)** |
+| "integration test", "end-to-end", "hit the API", "test the RPC client", "test over HTTP" | **HTTP integration (`vovk-client`)** |
+| "test the whole user module" / ambiguous | Propose a mix — one service test for logic, one `.fn()` test for the procedure contract, optionally one HTTP test for the happy path. Ask before writing more than ~3 files at once. |
+| "test a procedure without any HTTP decorator" | **`.fn()` only** — there's no HTTP surface to integration-test. |
 
 ## Pick a test runner
 
-Scan `package.json` before writing anything:
+Scan `package.json` **before writing anything**:
 
-1. If `scripts.test` already runs something (vitest, jest, mocha, ava, node --test) → **use that**. Match the existing project's assertion library and file conventions too.
-2. If no test setup exists → propose `node --test` with `--experimental-strip-types` and `node:assert`. That's what Vovk itself uses, needs no install, and runs `.ts` files natively on Node 22+. Add a `test` script and confirm with the user before assuming.
+1. If `scripts.test` runs Vitest / Jest / Mocha / Ava / `node --test` → **use that**. Match existing assertion library and file-naming conventions.
+2. If no test setup exists → propose **`node --test`** with `--experimental-strip-types` + `node:assert`. Zero dependencies, runs `.ts` natively on Node 22+, matches what the Vovk repo uses.
 
-Don't silently introduce Vitest/Jest into a project that has neither.
+Do not silently pull in Vitest/Jest when the project has neither. Ask first.
 
-### Default (`node --test`) boilerplate
+### `node --test` boilerplate
 
-Test file naming: `**/*.test.ts`, colocated next to the file under test.
+Colocate tests next to the file under test, suffix `.test.ts`:
 
 ```ts
 import { describe, it } from 'node:test';
-import { strictEqual, deepStrictEqual } from 'node:assert';
+import { strictEqual, deepStrictEqual, rejects } from 'node:assert';
 ```
 
 Add to `package.json` `scripts` if absent:
 
 ```json
-"test": "node --experimental-strip-types --test --test-concurrency=1 './src/**/*.test.ts'"
+{
+  "scripts": {
+    "test": "node --experimental-strip-types --test --test-concurrency=1 './src/**/*.test.ts'"
+  }
+}
 ```
 
-`--test-concurrency=1` matters for integration tests that share a dev server — drop it for pure unit tests if the user wants parallel runs.
+`--test-concurrency=1` matters when integration tests share a dev server. Drop it for a pure unit-test script.
 
-## Style A — `.fn()` unit test (procedure)
+If the project already has the `vovk dev` / `prebuild` setup from `vovk init`, just add the `test` script — don't touch the others.
 
-Call the procedure directly. Validation runs, services execute for real (unless you inject a stub), but nothing goes over HTTP.
+## Style A — procedure test via `.fn()`
+
+Works for **any procedure**, whether or not it has an HTTP decorator. That's the point: a procedure is the atom of logic, and `.fn()` is its direct call path.
 
 Given a procedure:
 
 ```ts
 // src/modules/user/UserController.ts
-class UserController {
+import { procedure, get, prefix } from 'vovk';
+import { z } from 'zod';
+import UserService from './UserService';
+
+@prefix('users')
+export default class UserController {
+  @get('{id}')
   static getUser = procedure({
     params: z.object({ id: z.string() }),
+    output: z.object({ id: z.string(), name: z.string() }),
   }).handle(async ({ vovk }) => {
-    return UserService.getUser(vovk.params.id);
+    const { id } = vovk.params();
+    return UserService.getUser(id);
   });
 }
 ```
 
-A unit test:
+Test:
 
 ```ts
 // src/modules/user/UserController.test.ts
@@ -84,147 +111,217 @@ import { deepStrictEqual, rejects } from 'node:assert';
 import UserController from './UserController.ts';
 
 describe('UserController.getUser', () => {
-  it('returns the user by id', async () => {
+  it('returns the user', async () => {
     const user = await UserController.getUser.fn({
       params: { id: '42' },
     });
     deepStrictEqual(user, { id: '42', name: 'Ada' });
   });
 
-  it('rejects when validation fails', async () => {
+  it('rejects invalid params (validation runs by default)', async () => {
     await rejects(
-      () => UserController.getUser.fn({ params: { id: 42 as unknown as string } }),
+      () => UserController.getUser.fn({
+        params: { id: 42 as unknown as string },
+      }),
       /params/i,
     );
   });
 });
 ```
 
-`.fn()` accepts `{ body, query, params, meta }` — only pass what the procedure defines. The input is validated against the procedure's schemas exactly as it would be over HTTP, so this is a real test of the validation layer, not a bypass.
+### `.fn()` input shape
 
-If the handler pulls in a service that does network/DB I/O, either:
+Pass only what the procedure declares plus optionally `meta`:
 
-- Keep the test as an integration-ish unit test (real service, real I/O) — fine for small projects or thin services.
-- Inject a stub through the service module (e.g., import-time patch, or have the controller accept a service instance). Don't add a DI framework for this unless the project already has one.
+```ts
+await Controller.method.fn({
+  params?: { ... },
+  body?: { ... } | FormData | string | File | ...,  // matches contentType
+  query?: { ... },
+  meta?: { ... },
+  disableClientValidation?: boolean,  // default false — skips validation
+});
+```
 
-## Style B — Service test (plain class)
+### Validation in `.fn()`
 
-Services have no decorators, no Vovk dependency, no `.fn()`. Test them as regular TypeScript:
+- **Runs by default** — the same schemas as the HTTP path. This is what makes `.fn()` tests meaningful for validation coverage.
+- Pass `disableClientValidation: true` to skip it. Use for testing the handler logic in isolation, not for routine test data.
+- Output validation (`output` schema) also runs — a handler returning the wrong shape throws in the test.
+
+### Procedures without an HTTP decorator
+
+No change. `.fn()` works identically:
+
+```ts
+class UserController {
+  // no @get/@post — this procedure is only called via .fn()
+  static listInternal = procedure({
+    output: z.array(z.object({ id: z.string() })),
+  }).handle(async () => UserService.listAll());
+}
+
+// Test it the same way:
+const users = await UserController.listInternal.fn({});
+```
+
+### Stubbing services
+
+If the handler calls a service that does real I/O, either:
+
+- **Leave it real** for small projects / thin services. Often simpler than mocking.
+- **Inject a stub** — import-time patch the service module, or have the controller accept a service reference. Don't add a DI framework just for tests.
+
+Match what the project already does.
+
+## Style B — service test (plain class)
+
+Services have no decorators, no `.fn()`, no framework tie-in. Test them as regular TypeScript:
 
 ```ts
 // src/modules/user/UserService.test.ts
 import { describe, it } from 'node:test';
-import { deepStrictEqual } from 'node:assert';
+import { strictEqual } from 'node:assert';
 import UserService from './UserService.ts';
 
 describe('UserService', () => {
   it('formats the display name', () => {
-    deepStrictEqual(UserService.displayName({ first: 'Ada', last: 'Lovelace' }), 'Ada Lovelace');
+    strictEqual(
+      UserService.displayName({ first: 'Ada', last: 'Lovelace' }),
+      'Ada Lovelace',
+    );
   });
 });
 ```
 
-This is where most logic coverage should live. If the service talks to a DB, the usual options apply: in-memory driver, testcontainers, or a test-scoped repository stub. Those choices are project-specific — follow what the project already does, don't invent one.
+Services are the cheapest coverage per line. Push logic here and let `.fn()` tests focus on the procedure contract.
 
-## Style C — Integration test via `vovk-client`
+Database/external-service interaction is project-specific — use the repo's existing approach (in-memory driver, testcontainers, repository stubs). Don't invent one.
 
-Tests the whole chain: HTTP, routing, decorators, validation, handler, generated client. Requires the dev server running.
+## Style C — HTTP integration test via `vovk-client`
 
-### 1. Make sure the generated client is up to date
+Tests the whole chain over real HTTP. **Only works for procedures with an HTTP decorator** — there's nothing on the wire otherwise.
 
-The `vovk-client` package is generated from the controllers. Before running integration tests, ensure it's current:
+### 1. Ensure the generated client is current
 
 ```bash
 npx vovk generate
 ```
 
-If the project has a `prebuild` script with `vovk generate` (standard after `vovk init`), that already runs before `next build`. For tests, run it explicitly.
+After `vovk init`, `prebuild` runs this automatically before `next build`. For tests, run it explicitly — skipping it will surface as `vovk-client` imports missing methods that were recently added.
 
 ### 2. Start the dev server
 
-Two options — pick based on the project's setup:
+Two shapes:
 
-**Manual (simplest)**: the user already runs `npm run dev` in another terminal. Tests just connect.
+**Manual** — user runs `npm run dev` in another terminal; tests connect.
 
-**Scripted (CI-friendly)**: use `concurrently` to launch the server and tests together, killing both when the tests finish. The Vovk repo itself uses this shape:
+**Scripted (CI-friendly)** — `concurrently` launches both, kills both when tests finish:
 
 ```json
-"test:integration": "PORT=3210 concurrently \"npm run dev\" \"sleep 10 && npm run test:run\" --kill-others --success first"
+{
+  "scripts": {
+    "test:integration": "PORT=3210 concurrently \"npm run dev\" \"sleep 10 && npm run test:run\" --kill-others --success first"
+  }
+}
 ```
 
-Tune the `sleep` to however long `next dev` needs on the target machine. Prefer polling the server (e.g., `curl -fsS http://localhost:3210/api 2>/dev/null`) over a fixed sleep if the user cares about CI flakiness.
+Tune `sleep` to however long `next dev` needs on the target machine. For CI, prefer polling the server over a fixed sleep:
 
-### 3. Write the test against the generated client
+```bash
+until curl -fsS "http://localhost:3210/api" >/dev/null 2>&1; do sleep 1; done
+```
+
+### 3. Write the test
 
 ```ts
 // src/modules/user/UserController.integration.test.ts
 import { describe, it } from 'node:test';
-import { deepStrictEqual } from 'node:assert';
-import { UserControllerRPC } from 'vovk-client';
+import { deepStrictEqual, rejects } from 'node:assert';
+import { UserRPC } from 'vovk-client';
 
 const apiRoot = `http://localhost:${process.env.PORT ?? 3000}/api`;
 
 describe('UserController (HTTP)', () => {
-  it('GET /user/:id returns the user', async () => {
-    const user = await UserControllerRPC.getUser({
+  it('GET /users/{id} returns the user', async () => {
+    const user = await UserRPC.getUser({
       apiRoot,
       params: { id: '42' },
     });
     deepStrictEqual(user, { id: '42', name: 'Ada' });
   });
+
+  it('rejects invalid params with a validation error', async () => {
+    await rejects(
+      () => UserRPC.getUser({ apiRoot, params: { id: '' } }),
+      (err: Error) => /validation|422|400/i.test(err.message),
+    );
+  });
 });
 ```
 
-The RPC client name is `<ControllerClassName>RPC`, exported from `vovk-client`. `apiRoot` points at the running server's `/api` mount. Every RPC method accepts `{ apiRoot, params, query, body, ... }`, the same shape the server procedure declared.
+**RPC client naming**: the client module name is the **key** you used in `initSegment`'s `controllers` map — `UserRPC: UserController` → `import { UserRPC } from 'vovk-client'`. Not `UserControllerRPC`. See `segment` skill for segment registration details.
 
-Use `.integration.test.ts` (or similar) as the filename when you want to separate unit and integration runs — then the integration script globs that suffix while the unit script excludes it. Not required, just a common split.
+**Call shape**: `RPC.method({ apiRoot, params, query, body, meta, disableClientValidation })` — same as `.fn()` plus `apiRoot`.
+
+**Filename convention**: `.integration.test.ts` (or similar) lets a test script glob only integration tests separately from unit tests. Optional.
 
 ### 4. Error-path assertions
 
-The RPC client throws `HttpException` on non-2xx. Test it like any other thrown error:
+The RPC client rethrows server `HttpException`s with the original status and message — so error tests read like normal `rejects`:
 
 ```ts
-import { rejects } from 'node:assert';
-
 await rejects(
-  () => UserControllerRPC.getUser({ apiRoot, params: { id: '' } }),
-  (err: Error) => err.message.includes('422') || /validation/i.test(err.message),
+  () => UserRPC.getUser({ apiRoot, params: { id: 'nonexistent' } }),
+  (err: Error) => err.message.includes('not found') || err.message.includes('404'),
 );
 ```
 
-The exact error surface depends on the validation library — check what the project uses (zod/valibot/arktype) and match the message shape rather than guessing.
+Exact error shape depends on the validation library (Zod / Valibot / ArkType) and any custom decorators. Assert on the status/message rather than exact text — easier to maintain.
 
-## Running the tests
+## Streams — brief
 
-After writing, run them and report the result verbatim — don't paraphrase a failure.
+Procedures that yield (`function*` / `async function*`) return an async iterable from `.fn()` and from the RPC client. Assert by iterating and collecting.
 
-- Unit-only: `npm run test` (or the specific script).
-- Integration: start the server first (or use the `concurrently` script), then run the test script.
+```ts
+const results = [];
+for await (const item of MyRPC.stream({ apiRoot })) results.push(item);
+deepStrictEqual(results, [...expected]);
+```
 
-If the test runner complains about TypeScript syntax, the project is likely missing `--experimental-strip-types` on Node 22 (or using a Node < 22 that predates strip-types entirely). Surface the exact error — don't swap runners silently.
+Depth (iteration validation, early-close semantics, `JSONLinesResponder`) lives in the **`jsonlines` skill**.
 
-## No `vovk new test` command
+## File layout
 
-`vovk-cli` generates controllers and services, not tests. Test files are written by hand. That also means `vovk.config.mjs` `moduleTemplates` has no `test` key — there's nothing to configure. If the user asks you to "add a template for tests", explain this and offer to write a small helper script or a documented convention instead.
-
-## Where tests live
-
-Colocate next to the code under test:
+Colocate:
 
 ```
 src/modules/user/
-├── UserController.ts
-├── UserController.test.ts          # .fn() unit tests
-├── UserController.integration.test.ts  # HTTP via vovk-client
-├── UserService.ts
-└── UserService.test.ts             # plain class tests
+  UserController.ts
+  UserController.test.ts              ← .fn() tests
+  UserController.integration.test.ts  ← HTTP tests
+  UserService.ts
+  UserService.test.ts                 ← plain-class tests
 ```
 
-This keeps the blast radius of a module visible in one directory, which matches how `vovk new` already organizes modules. A central `test/` directory also works — follow whatever the project has already chosen.
+Central `test/` directory works too — match the repo's existing layout.
 
-## When things go wrong
+## Running
 
-- **`vovk-client` exports are stale or missing**: re-run `npx vovk generate`. The client is generated from controllers; if a controller was just added, the client doesn't know about it until generation runs.
-- **Integration test hangs**: the dev server probably isn't up on the expected port. Check `PORT` env, check the server logs, extend the readiness wait.
-- **`--experimental-strip-types` warnings in Node 23+**: harmless; the flag is still accepted and behaves the same. Don't chase the warning into a toolchain change unless the user asks.
-- **Decorator-related test failures**: confirm `tsconfig.json` has `experimentalDecorators: true` — `vovk init` sets this, but a custom `tsconfig` for tests might miss it.
+- Unit: `npm run test` (or whatever the script is).
+- Integration: start the dev server first (or use the scripted `test:integration`), then run.
+- Report failures verbatim — don't paraphrase a test runner's output.
+
+## No `vovk new test` command
+
+`vovk-cli` scaffolds controllers and services, not tests. Test files are hand-written. `vovk.config.mjs` `moduleTemplates` has no `test` key — nothing to configure there. If the user asks for a test template, offer a documented convention (filename, imports) rather than inventing a CLI flag.
+
+## Gotchas
+
+- **`.fn()` validation is on by default.** Tests that pass malformed inputs without `disableClientValidation: true` are asserting the validation layer, not just the handler body. That's usually what you want — be explicit when it isn't.
+- **RPC import name = the `controllers` key**, not the controller class name. `UserRPC` not `UserControllerRPC`. Most common "why can't I import it" cause.
+- **Stale `vovk-client`**: if a method is missing from the client, run `npx vovk generate`. The client is code-generated from controllers; it doesn't auto-sync.
+- **Integration test hangs**: dev server not up on the expected port. Verify `PORT`, check server logs, prefer polling over `sleep`.
+- **`--experimental-strip-types` on Node 23+**: flag accepted, warning harmless — don't chase it into a toolchain change.
+- **`experimentalDecorators` in a test-specific `tsconfig.json`**: if tests use their own tsconfig, confirm the flag is set there too. `vovk init` sets it in the main tsconfig; a test config can easily miss it.
+- **Mixing unit + integration in one script**: the integration tests need a running server; the unit tests don't. Split scripts (`test`, `test:integration`) or gate with an env var. Running a pure unit suite shouldn't require booting Next.

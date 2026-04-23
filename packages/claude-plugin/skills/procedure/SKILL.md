@@ -268,7 +268,7 @@ async function createUser(body: FormData) {
 
    Accessing `req.url`, `req.headers`, etc. from within a handler called via `.fn()` gives `undefined`.
 
-2. **Validation is skipped by default** — `.fn()` is trusted server code. If you need validation, pass `disableClientValidation: false`.
+2. **Validation runs by default** (same schemas as the HTTP path). Pass `disableClientValidation: true` to skip it — use sparingly; trusted server input is still input.
 
 3. **Detect local context** in custom decorators by checking `typeof req.url === 'undefined'`.
 
@@ -517,7 +517,7 @@ See "File download" — `toDownloadResponse(...)`.
 ## Gotchas
 
 - **HTTP decorator ≠ procedure validity.** A procedure without a decorator is still a valid, typed, callable unit — just not exposed via HTTP/RPC.
-- **`.fn()` skips validation by default.** Don't assume user input reaching `.fn()` was validated. Revalidate at the boundary (form → server action) if the input came from the client.
+- **`.fn()` validates by default** — same schemas as HTTP. `disableClientValidation: true` opts out, but only do that for trusted internal calls where the input was already checked.
 - **`req.vovk.body()` is async; `.query()` and `.params()` are sync.** Easy to mix up.
 - **`req.url` is `undefined` in `.fn()` context.** Any decorator checking the URL must guard.
 - **Zod default is `vovk init`'s choice** — if the user chose Valibot/ArkType, match their choice when adding schemas.
