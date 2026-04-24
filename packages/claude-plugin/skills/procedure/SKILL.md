@@ -161,11 +161,56 @@ procedure({
 }).handle(async (req, params) => { ... });
 ```
 
-Any Standard Schema library works: Zod (`z.object(...)`), Valibot (`v.object(...)`), ArkType (`type({...})`). Mix freely.
+Works with any library that emits **Standard JSON Schema** — Zod v4+ and ArkType pass through directly; Valibot needs `toStandardJsonSchema()` from `@valibot/to-json-schema`. See the "Validation — Standard Schema" section below for the exact patterns.
+
+## The `req` argument
+
+The first argument to `.handle((req, params) => …)` is a **`VovkRequest`** — a Next.js `NextRequest` extended with a `vovk` property. All the usual Next.js request APIs are available: `req.json()`, `req.formData()`, `req.headers`, `req.cookies`, `req.nextUrl`, etc. At the segment boundary (`route.ts` → `export const GET = …`) the same object is typed as `NextRequest`; Vovk just patches `vovk` onto it.
+
+Two conventions to follow.
+
+### Prefer `next/headers` over `req.headers` / `req.cookies`
+
+Use Next.js's `headers()` and `cookies()` helpers for reading request headers and cookies. They give one API that works identically from procedures, server components, server actions, and middleware — whereas `req.headers` / `req.cookies` only work in the HTTP path.
+
+```ts
+import { headers, cookies } from 'next/headers';
+
+static whoami = procedure().handle(async () => {
+  const auth = (await headers()).get('authorization');
+  const session = (await cookies()).get('session');
+  // ...
+});
+```
+
+### Prefer `req.vovk` over `req.json()` / `req.nextUrl.searchParams` for body/query/params
+
+`req.json()`, `req.formData()`, and `req.nextUrl.searchParams` work, but any handler that reads through them loses the ability to be called via `.fn()` (no HTTP request, nothing to `.json()`). Reading through `req.vovk` works in both contexts — same procedure stays callable from server components, server actions, AI tools, and over the network.
+
+Destructure `{ vovk }` to signal that the handler is LPC-safe at a glance:
+
+```ts
+// ✅ Works over HTTP AND under .fn() — default to this
+.handle(async ({ vovk }, params) => {
+  const body = await vovk.body();
+  const query = vovk.query();
+  // params also available from the 2nd arg
+});
+
+// ⚠️ Typed correctly, but runtime breaks under .fn()
+.handle(async (req) => {
+  const body = await req.json();              // typed as TBody, but undefined in .fn()
+  const q = req.nextUrl.searchParams.get(…);  // typed from TQuery, but undefined in .fn()
+});
+```
+
+Reach for raw `req.*` only when you need something `vovk` doesn't expose — and if you do, either guard the handler so it can't be called via `.fn()`, or branch on `typeof req.url === 'undefined'`.
+
+> **Note:** `async (req) => req.vovk.body()` and `async ({ vovk }) => vovk.body()` are equivalent — destructuring is a stylistic cue that the handler is LPC-safe, not a different API. Both forms appear throughout this skill and in real Vovk code; pick one per handler and stay consistent.
 
 ## `req.vovk` — the typed request interface
 
-Inside a handler, `req.vovk` gives typed access to the validated request:
+Inside a handler, `req.vovk` gives typed access to the validated request. `req.json()` and `req.nextUrl.searchParams` are typed too — `VovkRequest` infers them from the procedure's `body` / `query` schemas — but only `req.vovk` survives `.fn()` (see "The `req` argument" above), so prefer it as the default reader.
 
 ```ts
 static createUser = procedure({
@@ -269,20 +314,91 @@ async function createUser(body: FormData) {
 }
 ```
 
+### Server actions with `useActionState`
+
+Production pattern for a form-driven server action — three files: action, client component, controller.
+
+**`actions.ts`** — wrap `.fn()` in try/catch and return a discriminated union so the client can narrow on success vs. failure:
+
+```ts
+// src/app/users/actions.ts
+'use server';
+
+import UserController from '@/modules/user/UserController';
+
+export async function submitUserAction(_prevState: unknown, formData: FormData) {
+  try {
+    return {
+      data: await UserController.createUser.fn({
+        body: formData,                     // auto-parsed — see note below
+        params: { id: '5a279068-35d6-4d67-94e0-c21ef4052eea' },
+      }),
+    };
+  } catch (e) {
+    return { error: String(e) };
+  }
+}
+```
+
+**Client component** — wire the form to `useActionState`:
+
+```tsx
+// src/app/users/UserForm.tsx
+'use client';
+
+import { useActionState } from 'react';
+import { submitUserAction } from './actions';
+
+export default function UserForm() {
+  const [result, formAction, isPending] = useActionState(submitUserAction, null);
+
+  return (
+    <form action={formAction}>
+      <input type="text" name="email" placeholder="Email" />
+      <input type="file" name="resume" />
+      <button type="submit" disabled={isPending}>
+        {isPending ? 'Submitting…' : 'Submit'}
+      </button>
+
+      {result && 'data' in result && <pre>{JSON.stringify(result.data, null, 2)}</pre>}
+      {result && 'error' in result && <div>❌ {result.error}</div>}
+    </form>
+  );
+}
+```
+
+**Controller** — the same procedure the RPC client would hit over HTTP:
+
+```ts
+// src/modules/user/UserController.ts
+@prefix('users')
+export default class UserController {
+  @post('{id}')
+  static createUser = procedure({
+    contentType: 'multipart/form-data',
+    body: z.object({
+      email: z.email(),
+      resume: z.file().min(1),
+    }),
+    params: z.object({ id: z.uuid() }),
+  }).handle(async ({ vovk }) => {
+    const { email, resume } = await vovk.body();
+    return { email, resume: { name: resume.name, size: resume.size } };
+  });
+}
+```
+
+Things to know:
+
+- **`contentType: 'multipart/form-data'` → `.fn()` auto-parses `FormData`.** Pass the `formData` from `useActionState`'s second argument straight through as `body`; no manual `Object.fromEntries(...)`. Same holds for `'application/x-www-form-urlencoded'`.
+- **`useActionState` signature is `(prevState, formData) => nextState`.** The server action takes `_prevState` as its first argument — usually ignored.
+- **Discriminated union return** (`{ data } | { error }`) lets the client type-narrow with `'data' in result` / `'error' in result`. `try/catch` translates a thrown `HttpException` (or any error) into the `error` branch.
+- **`isPending` is free** — use it to disable the submit button or show a spinner without extra state.
+- **Validation still runs.** The procedure's `body` / `params` schemas validate the form submission — a bad email throws, which lands in `catch (e)` and surfaces in the `error` branch.
+
 ### `.fn()` rules
 
-1. **No full `Request` object.** Destructure to use `vovk` only:
-
-   ```ts
-   .handle(async ({ vovk }) => {
-     const body = await vovk.body();
-     const query = vovk.query();
-     const params = vovk.params();
-     const meta = vovk.meta<{ /* ... */ }>();
-   });
-   ```
-
-   Accessing `req.url`, `req.headers`, etc. from within a handler called via `.fn()` gives `undefined`.
+1. **No full `Request` object under `.fn()`.** `req.url`, `req.headers`, `req.json()`, `req.nextUrl`, `req.cookies`, etc. are all `undefined` — `.fn()` synthesizes only the `vovk` facet. This is why the rule in "The `req` argument" above matters: handlers that destructure `{ vovk }` and read data through `req.vovk` (plus `next/headers` for headers/cookies) are portable between HTTP and `.fn()`; handlers that call `req.json()` or touch `req.nextUrl` are not.
 
 2. **Validation runs by default** (same schemas as the HTTP path). Pass `disableClientValidation: true` to skip it — use sparingly; trusted server input is still input.
 
@@ -298,20 +414,29 @@ async function createUser(body: FormData) {
 
 ## Validation — Standard Schema
 
-Works with any Standard-Schema-compliant lib. Zod is the default after `vovk init` with default flags.
+Works with any lib that emits **Standard JSON Schema** (Vovk needs JSON Schema — not just Standard Schema — for OpenAPI, codegen, and client-side validation). Zod (v4+) and ArkType produce it natively. Valibot needs one conversion step. Zod is the default after `vovk init` with default flags.
 
 ```ts
-// Zod
+// Zod — passes through directly
 body: z.object({ email: z.email(), age: z.number().int().min(0) })
 
-// Valibot
+// Valibot — wrap with toStandardJsonSchema() from @valibot/to-json-schema
 import * as v from 'valibot';
-body: v.object({ email: v.pipe(v.string(), v.email()), age: v.pipe(v.number(), v.integer()) })
+import { toStandardJsonSchema } from '@valibot/to-json-schema';
 
-// ArkType
+body: toStandardJsonSchema(
+  v.object({
+    email: v.pipe(v.string(), v.email()),
+    age: v.pipe(v.number(), v.integer()),
+  }),
+)
+
+// ArkType — passes through directly
 import { type } from 'arktype';
 body: type({ email: 'string.email', age: 'number.integer>=0' })
 ```
+
+**Valibot gotcha**: every Valibot schema passed to `procedure({ ... })` (body, query, params, output, iteration) must be wrapped with `toStandardJsonSchema(...)`. Unwrapped Valibot schemas pass Standard Schema runtime checks but fail at codegen / OpenAPI time because they don't expose JSON Schema. If you picked Valibot via `vovk init`, the generated module templates already import and use the helper — follow that pattern.
 
 **Client-side validation** — install `vovk-ajv` (or `vovk-zod`, etc.) and wire it up via `vovk.config.mjs`:
 
@@ -517,6 +642,8 @@ Add `@get()` to the same procedure. The RPC client now has `UserRPC.list()`. The
      await UserController.create.fn({ body });
    }
    ```
+
+For a production-grade version with `useActionState`, loading state, and error surfacing, see **"Server actions with `useActionState`"** under the `.fn()` section above.
 
 ### "Protect `/api/admin/users` with auth"
 
