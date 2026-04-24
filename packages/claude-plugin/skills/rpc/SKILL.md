@@ -80,7 +80,7 @@ await ModuleRPC.methodName({
   // data
   params?: { ... },                 // path params — typed
   query?: { ... },                  // query string — typed
-  body?: { ... } | FormData | ...,  // body shape depends on contentType
+  body?: { ... } | FormData | ...,  // narrows by contentType — see "Body by content type"
   meta?: { [key: string]: any },    // serialized as x-meta header — see meta-isolation gotcha
 
   // transport
@@ -104,6 +104,18 @@ The return type is a `Promise` of whatever the procedure's `output` schema resol
 ```ts
 const user = await UserRPC.updateUser<SomeType>({ /* ... */ });
 ```
+
+### Body by content type
+
+`body`'s accepted type narrows to the procedure's `contentType`: `FormData` for `multipart/form-data`, `URLSearchParams` or `FormData` for `application/x-www-form-urlencoded`, `File` / `Blob` / `ArrayBuffer` / `Uint8Array` for binary (`image/*`, `video/*`, `*/*`). Schema-typed objects are always accepted. Full matrix in the **`procedure`** skill.
+
+```ts
+const form = new FormData();
+form.append('file', file);
+await UserRPC.uploadAvatar({ body: form }); // multipart/form-data procedure
+```
+
+Never hand-set `Content-Type` — the fetcher derives it (multipart boundary included). Manual headers are the usual HTTP 415 trigger.
 
 ### `apiRoot`
 
@@ -438,8 +450,6 @@ useMutation({ mutationFn: UserRPC.updateUser });
 
 ## `openapi` and `schema` payloads from the client
 
-The generated client also ships the computed OpenAPI spec and the raw Vovk schema as separate importable modules.
-
 Composed (default JS setup — via `vovk-client` barrel):
 
 ```ts
@@ -477,12 +487,7 @@ useEffect(() => { UserRPC.list().then(setUsers); }, []);
 
 **"Call the API from another Node process"** — pass a full URL: `UserRPC.list({ apiRoot: 'https://api.example.com/api' })`, or bake it via `UserRPC.withDefaults({ apiRoot })`.
 
-**"Consume a JSON Lines stream"** — full coverage in **`jsonlines` skill**. Shape:
-```ts
-using stream = await StreamRPC.streamTokens({ body: { prompt: 'hello' } });
-for await (const chunk of stream) { /* ... */ }
-// `using` closes on scope exit; stream.abortController.abort() cancels mid-flight.
-```
+**"Consume a JSON Lines stream"** — `using stream = await StreamRPC.xxx(...); for await (const chunk of stream) { /* ... */ }`. Full coverage in **`jsonlines` skill**.
 
 ## Gotchas
 
@@ -493,5 +498,3 @@ for await (const chunk of stream) { /* ... */ }
 - **Fetcher path changes need regeneration**. Editing the fetcher file is fine; changing its path in `outputConfig.imports.fetcher` requires `vovk generate` (or a dev-watcher restart).
 - **`disableClientValidation` only skips the *client* validation pass**. Server-side validation still runs (unless the procedure disables it, which should be rare).
 - **Client `meta` ≠ server `req.vovk.meta()`**. The `meta` option is serialized as an `x-meta` header and lands on the server under the `xMetaHeader` key — isolated from server-set trusted state (what `authGuard` writes via `req.vovk.meta<AuthMeta>({ user })` is untouched by the client). Treat client `meta` as advisory only; never use it for auth or authorization decisions.
-- **HTTP 415 on content-type mismatch**. If the procedure declares a `contentType`, the server rejects requests without the matching header. Common when forwarding raw bodies or uploading files with hand-rolled headers — let the generated client set headers unless you have a reason not to.
-- **`vovk-zod` no longer exists as a client-side validator**. It was dropped in the v1 major release. Use `vovk-ajv` (default) or a custom validator built with `createValidateOnClient`.
