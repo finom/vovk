@@ -260,7 +260,3 @@ Vovk doesn't manage DB isolation — that's application-level. Resolve the tenan
 3. Flip to segmented client in `vovk.config.mjs`, add `segmentNameOverride: ''` for the NEW tenants — the root tenant keeps its default.
 4. Add `proxy.ts` with the new tenants' overrides; don't override anything for the root.
 5. Re-run `vovk dev` / `vovk generate`.
-
-## Full tutorial
-
-See the [Multitenancy Tutorial](https://vovk.dev/multitenant) for the end-to-end worked example (DNS setup, worked frontend pages, routing walkthrough).
