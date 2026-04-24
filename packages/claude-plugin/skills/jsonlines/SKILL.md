@@ -83,20 +83,25 @@ Use sparingly — every-item validation adds per-yield cost.
 
 ## `JSONLinesResponder` — manual control
 
-For cases the generator shape can't express: fan-in from multiple concurrent sources, conditional close, error signaling outside the generator protocol.
+For cases the generator shape can't express: fan-in from multiple concurrent sources, conditional close, error signaling outside the generator protocol. Still a `procedure` — the handler is a plain `async` function that builds a responder, kicks off the producer, and returns the responder. When `iteration` is defined, Vovk wires `responder.onBeforeSend` automatically so every `send()` runs through the same schema (and same `validateEachIteration` rules) as a generator handler.
 
 ```ts
-import { JSONLinesResponder, get } from 'vovk';
+import { JSONLinesResponder, procedure, get } from 'vovk';
+import { z } from 'zod';
 
 class StreamController {
   @get('tokens')
-  static streamTokens(req: Request) {
-    const responder = new JSONLinesResponder<Token>(req);
+  static streamTokens = procedure({
+    iteration: z.object({ message: z.string() }),
+  }).handle(async (req) => {
+    const responder = new JSONLinesResponder<{ message: string }>(req);
     void StreamService.streamTokens(responder);
     return responder;
-  }
+  });
 }
 ```
+
+The handler returns synchronously; the service runs as a floating promise (`void ...`) and feeds the responder over time. Don't `await` the service — that would block the response.
 
 **Constructor**:
 
@@ -149,21 +154,25 @@ for await (const { message } of stream) {
 }
 ```
 
-`using` triggers `Symbol.asyncDispose` → calls `abortSilently()` if the loop exits early (error, break, function return). Safer than plain `const`.
+`using` triggers `Symbol.asyncDispose` → calls `abortSilently('Stream async disposed')` on scope exit (error, break, function return). Safer than plain `const`.
 
 ### Stream object API
 
+The returned value is a `VovkStreamAsyncIterable<T>` (from `vovk`) — an async iterable plus:
+
 ```ts
-type RPCStream<T> = AsyncIterable<T> & {
-  status: number;                                // HTTP status
-  asPromise(): Promise<T[]>;                     // collect all items
-  onIterate(cb: (item: T) => void): void;        // per-item side effect
-  abortController: AbortController;              // programmatic abort
-  abortSilently(reason?: string): void;          // close without throwing
+type VovkStreamAsyncIterable<T> = AsyncIterable<T> & {
+  status: number;                                       // HTTP status
+  asPromise(): Promise<T[]>;                            // collect all items
+  onIterate(cb: (item: T, i: number) => void): () => void; // returns unsubscribe
+  abortController: AbortController;                     // programmatic abort — throws AbortError on the reader
+  abortSilently(reason?: unknown): void;                // close without throwing
   [Symbol.dispose](): void;
   [Symbol.asyncDispose](): Promise<void>;
 };
 ```
+
+`abortController.abort()` throws an `AbortError` on the consumer (catchable via `error.cause`); `abortSilently()` tears the stream down without throwing. Pick deliberately.
 
 ### Common patterns
 
@@ -192,12 +201,12 @@ for await (const item of stream) {
 
 ## Progressive responses
 
-Multi-shape stream where different lines populate different promises. Use when a single request produces several distinct payloads (users, tasks, summary) in parallel.
+Multi-shape stream where different lines populate different promises. Use when a single request produces several distinct payloads (users, tasks, summary) in parallel. **Experimental** — API may change.
 
 **Client:**
 
 ```ts
-import { progressive } from 'vovk-client'; // or wherever the helper is exported
+import { progressive } from 'vovk';
 
 const { users, tasks } = progressive(
   ProgressiveRPC.streamProgressiveResponse,
@@ -210,31 +219,32 @@ tasks.then(console.log);
 
 `progressive()` returns a proxy — each property access creates a promise that resolves when a matching JSON line arrives.
 
-**Server:**
+**Server** — controller declares the iteration union and builds the responder; service orchestrates fan-in. Every line has its own shape, so turn on `validateEachIteration`:
 
 ```ts
-static streamProgressiveResponse(responder: JSONLinesResponder<Iter>) {
-  return Promise.all([
-    ProgressiveService.getUsers()
-      .then((users) => responder.send({ users })),
-    ProgressiveService.getTasks()
-      .then((tasks) => responder.send({ tasks })),
-  ])
-    .then(() => responder.close())
-    .catch((e) => responder.throw(e));
-}
-```
-
-Define the `iteration` schema as a union of the possible shapes:
-
-```ts
-procedure({
+// ProgressiveController.ts
+@get('/')
+static streamProgressiveResponse = procedure({
   iteration: z.union([
     z.strictObject({ users: z.array(UserSchema) }),
     z.strictObject({ tasks: z.array(TaskSchema) }),
   ]),
   validateEachIteration: true,
-})
+}).handle(async (req) => {
+  const responder = new JSONLinesResponder<Iter>(req);
+  void ProgressiveService.streamProgressiveResponse(responder);
+  return responder;
+});
+
+// ProgressiveService.ts — no req, just the sink
+static streamProgressiveResponse(responder: JSONLinesResponder<Iter>) {
+  return Promise.all([
+    ProgressiveService.getUsers().then((users) => responder.send({ users })),
+    ProgressiveService.getTasks().then((tasks) => responder.send({ tasks })),
+  ])
+    .then(() => responder.close())
+    .catch((e) => responder.throw(e));
+}
 ```
 
 ## Type inference
@@ -260,29 +270,33 @@ JSON Lines responses **bypass compression** (Gzip/Brotli) — size is unknown, s
 
 ## Real-world example: OpenAI chat completion
 
+Controller does thin pre-calc (validated body → plain values), the service owns the OpenAI call and `yield*`s its stream:
+
 ```ts
+// ChatController.ts
 @post('chat')
-static createChatCompletion(req: VovkRequest<{ messages: any[] }>) {
-  return async function* () {
-    const { messages } = await req.json();
+static createChatCompletion = procedure({
+  body: z.object({ messages: z.array(MessageSchema) }),
+  iteration: ChatChunkSchema,
+}).handle(async function* ({ vovk }) {
+  const { messages } = await vovk.body();
+  yield* ChatService.streamCompletion({ messages });
+});
+
+// ChatService.ts — no req, no VovkRequest
+export default class ChatService {
+  static async *streamCompletion({ messages }: { messages: Message[] }) {
     const openai = new OpenAI();
-    yield* await openai.chat.completions.create({
-      messages,
-      model: 'gpt-4',
-      stream: true,
-    });
-  }();
+    yield* await openai.chat.completions.create({ messages, model: 'gpt-5.5', stream: true });
+  }
 }
 ```
 
 ```ts
 // Client
-using completion = await ChatRPC.createChatCompletion({
-  body: { messages },
-});
-
+using completion = await ChatRPC.createChatCompletion({ body: { messages } });
 for await (const part of completion) {
-  console.log(part.choices[0]?.delta?.content);
+  process.stdout.write(part.choices[0]?.delta?.content ?? '');
 }
 ```
 
@@ -292,28 +306,58 @@ for await (const part of completion) {
 
 Generator handler yielding OpenAI chunks → client `for await`. See example above.
 
-### "Progress bar for a long-running job"
+### "Long-running job with progress + final result"
+
+Server yields progress shapes then a terminal `done` shape carrying the result; client iterates until it sees the terminal one. This is what people usually mean by "poll until done" — the server pushes, the client just reads until the terminal line:
 
 ```ts
+// Server
 @post('import')
 static runImport = procedure({
-  iteration: z.object({ progress: z.number(), message: z.string() }),
+  iteration: z.discriminatedUnion('status', [
+    z.object({ status: z.literal('progress'), percent: z.number() }),
+    z.object({ status: z.literal('done'), result: z.string() }),
+  ]),
+  validateEachIteration: true,
 }).handle(async function* () {
-  for (let i = 0; i <= 100; i += 10) {
+  for (let i = 10; i < 100; i += 10) {
     await importStep(i);
-    yield { progress: i, message: `Imported ${i}%` };
+    yield { status: 'progress', percent: i } as const;
   }
+  yield { status: 'done', result: await finalize() } as const;
 });
-```
 
-### "Poll until done"
-
-Client side, either `asPromise()` (collect) or loop until a terminal shape arrives:
-
-```ts
-using stream = await JobRPC.waitForResult({ params: { id } });
+// Client
+using stream = await ImportRPC.runImport();
 for await (const update of stream) {
   if (update.status === 'done') return update.result;
+  renderBar(update.percent);
+}
+```
+
+### "Infinite polling / reconnect ticker"
+
+For connections that outlast what proxies or load-balancers tolerate, or when you want bounded per-connection cost: server streams a short run, then closes at a natural boundary; client wraps the call in `while(true)` and resumes with the last cursor. JSON Lines is the primitive, `while` on both sides does the work.
+
+```ts
+// Server — yield until a break point, then let the stream end
+static streamPoll = procedure({
+  query: z.object({ i: z.string() }),
+  iteration: z.object({ i: z.number() }),
+}).handle(async function* (req) {
+  let i = parseInt(req.vovk.query().i, 10);
+  while (true) {
+    yield { i: ++i };
+    await new Promise((r) => setTimeout(r, 1000));
+    if (!(i % 10)) break; // natural reconnect point
+  }
+});
+
+// Client — reconnect forever, passing the last cursor back in
+let i = 0;
+while (true) {
+  using iterable = await PollRPC.streamPoll({ query: { i: i.toString() } });
+  for await ({ i } of iterable) render(i);
 }
 ```
 
