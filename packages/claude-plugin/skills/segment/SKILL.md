@@ -1,6 +1,6 @@
 ---
 name: segment
-description: Knowledge base for Vovk.ts segments — the unit of backend slicing in a Vovk project. Use whenever the user talks about splitting a backend into parts, API paths, catch-all routes, `route.ts`, `initSegment`, multi-tenant routing, subdomains, per-segment runtime/maxDuration, static APIs (OpenAPI specs, historical datasets), static export (`output: 'export'`), `generateStaticParams`, or the `vovk new segment` CLI. Triggers on phrasings like "split my backend", "add an API slice", "make a static OpenAPI endpoint", "separate admin API", "host per subdomain", "pre-render API at build time", "I need a `/api/foo` namespace", "add a root/named/static segment". Does NOT cover procedures/handlers themselves — hand off to the `procedure` skill for anything inside a controller. Does NOT cover OpenAPI authoring beyond wiring per-segment `openAPIObject` — hand off to the `openapi` skill.
+description: Knowledge base for Vovk.ts segments — the unit of backend slicing in a Vovk project. Use whenever the user talks about splitting a backend into parts, API paths, catch-all routes, `route.ts`, `initSegment`, per-segment runtime/maxDuration, static APIs (OpenAPI specs, historical datasets), static export (`output: 'export'`), `generateStaticParams`, or the `vovk new segment` CLI. Triggers on phrasings like "split my backend", "add an API slice", "make a static OpenAPI endpoint", "separate admin API", "pre-render API at build time", "I need a `/api/foo` namespace", "add a root/named/static segment". Does NOT cover procedures/handlers themselves — hand off to the `procedure` skill for anything inside a controller. Does NOT cover OpenAPI authoring beyond wiring per-segment `openAPIObject` — hand off to the `openapi` skill. Does NOT cover multi-tenant routing mechanics (subdomains, `multitenant()` proxy, per-tenant frontend pages) — hand off to the `multitenant` skill.
 ---
 
 # Vovk.ts segments
@@ -17,7 +17,6 @@ Covers:
 - The `vovk new segment` CLI.
 - `initSegment()` call shape and parameters.
 - Segment priority (deepest path wins).
-- Multi-tenant routing via segments.
 - Static segments: `generateStaticParams`, `controllersToStaticParams`, `staticParams` option on decorators, `output: 'export'`, `.json` endpoints.
 - Per-segment config in `vovk.config.mjs` (`outputConfig.segments.<name>`).
 - The `_schema_` dev endpoint (mention only — see `common` skill for details).
@@ -28,6 +27,7 @@ Out of scope (do not duplicate):
 - RPC client generation, composed vs. segmented clients → **`rpc` skill**.
 - OpenAPI metadata (`@operation`, Scalar) beyond segment-level `openAPIObject` → **`openapi` skill**.
 - Type inference helpers and `vovk.config.mjs` global options → **`common` skill**.
+- Multi-tenant routing (subdomains, `multitenant()` proxy, per-tenant frontend pages, `segmentNameOverride`) → **`multitenant` skill**. This skill only mentions the segment side in passing.
 
 ## Core concepts
 
@@ -103,6 +103,7 @@ When adding a new named segment, any existing root-handled paths under that pref
 - "pre-render OpenAPI", "static API docs", "build-time JSON endpoint" → **static segment**.
 - "new Vovk project, first route" → **root segment**.
 - "different Node runtime for X" or "longer timeout for X" → **named segment** + `export const maxDuration` / `export const runtime` in its `route.ts`.
+- "multi-tenant", "multitenancy", "per-tenant API", "host per subdomain", "`admin.example.com` and `customer.example.com`" → **hand off to the `multitenant` skill**. (Segments are one part of that setup; this skill only covers creating them.)
 
 ## Creating a segment (CLI)
 
@@ -234,13 +235,9 @@ const resp = await StaticParamsRPC.getStaticParams({
 
 ## Multi-tenant routing
 
-Pattern: one named segment per tenant, gated by subdomain (handled in Next.js middleware or per-segment logic). Each tenant segment gets its own serverless function, its own runtime settings, and its own controllers.
+One named segment per tenant, plus a Next.js proxy (`proxy.ts`) that maps subdomains to tenant segments via the `multitenant()` helper from `vovk`, lets one app serve `admin.example.com`, `customer.example.com`, `*.customer.example.com`, etc.
 
-When the user asks for multi-tenancy:
-
-1. Create a named segment per tenant boundary (e.g., `tenantA`, `tenantB`, or a catch-all `tenant` segment that reads the subdomain from the request).
-2. If tenants share controllers, import the same controller classes into each segment's `controllers` map.
-3. Point the user at Next.js middleware for subdomain → segment routing; that layer is outside Vovk's scope.
+This skill covers only the **segment side** (use `vovk new segment <tenant>` as usual). For the proxy wiring, `overrides` shape, `segmentNameOverride` in `vovk.config.mjs`, per-tenant frontend pages, and DNS, **hand off to the `multitenant` skill**.
 
 ## Per-segment configuration
 
@@ -300,6 +297,10 @@ Commit `.vovk-schema/` to version control — it's the source of truth for codeg
 ### "Split `/api/public` and `/api/internal`"
 
 Two named segments (`public`, `internal`). Flag segment priority: any pre-existing root-handled paths under those prefixes will shift.
+
+### "Host `admin.example.com` and `customer.example.com` from one app"
+
+Multi-tenant flow. Hand off to the **`multitenant` skill**. The segment side is `npx vovk new segment admin` + `npx vovk new segment customer`; everything else (proxy, `vovk.config.mjs` changes, frontend pages, DNS) belongs to that skill.
 
 ### "Change the API root from `/api` to `/rpc`"
 

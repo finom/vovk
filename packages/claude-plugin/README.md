@@ -6,7 +6,8 @@ Claude Code plugin for [Vovk.ts](https://vovk.dev). Topic-based skills that teac
 
 - **`vovk:init`** — initialize Vovk.ts in a Next.js App Router project, or scaffold a fresh Next.js app and run `vovk init` on top.
 - **`vovk:common`** — framework fundamentals: packages, `vovk.config.mjs`, type inference helpers (`VovkBody`, `VovkOutput`, …), short API reference, `experimentalDecorators`.
-- **`vovk:segment`** — segments (root, named, static), `initSegment`, segment priority, multi-tenant routing, `generateStaticParams`.
+- **`vovk:segment`** — segments (root, named, static), `initSegment`, segment priority, `generateStaticParams`.
+- **`vovk:multitenant`** — multi-tenant routing via subdomains: `multitenant()` proxy, `overrides` shape (static / dynamic / nested patterns), per-tenant segments + frontend pages, `segmentNameOverride`, wildcard DNS.
 - **`vovk:procedure`** — procedures, validation (Zod / Valibot / ArkType), controllers, HTTP decorators, `req.vovk`, error handling, content types, `.fn()` for SSR / server components / server actions.
 - **`vovk:decorators`** — built-in + custom decorators (`createDecorator`), auth/authorization patterns, `req.vovk.meta()`, stacking order, `decorate()` for projects without `experimentalDecorators`.
 - **`vovk:rpc`** — generated `vovk-client`, composed vs segmented clients, call shape, `customFetcher`, error rethrow, type inference from client methods.
