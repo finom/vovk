@@ -101,7 +101,23 @@ The fastest way to start is the CLI, which scaffolds a controller + service pair
 
 ```bash
 npx vovk new controller service <name>
+# shortcut:
+npx vovk n c s <name>
 ```
+
+The `<name>` argument is `[segmentPath/]moduleName` — two naming conventions collide in one argument:
+
+- **`moduleName`** (after the last `/`, or the entire string if no slash) **must be camelCase**. Normalize whatever the user types — lowercase the first token, TitleCase subsequent tokens, strip non-alphanumeric separators. Examples: `USER` → `user`, `User` → `user`, `user-profile` → `userProfile`, `my_cool_product` → `myCoolProduct`, `MyUser` → `myUser`, `myUser` → `myUser` (unchanged).
+- **`segmentPath`** (anything before the last `/`) is the path of an **existing** segment — URL-safe slug, slash-separated for nested segments (`admin`, `user-portal`, `foo/bar`). Follow the segment naming rules (see `segment` skill), **not** camelCase. Leave it as-is if the user typed a valid path; otherwise convert to lowercase/kebab-case.
+
+Example: user says "create a User-Profile module in the Admin segment" → call `npx vovk new controller service admin/userProfile`. `admin` stays as-is (segment slug), `User-Profile` → `userProfile` (module camelCase).
+
+Useful flags:
+
+- `--empty` — skip the CRUD boilerplate, generate empty stubs.
+- `--overwrite` — replace existing module files if present.
+- `--no-segment-update` — don't touch `route.ts` (register the controller manually; rare).
+- `--dry-run` — preview what the CLI would create without writing.
 
 This creates:
 

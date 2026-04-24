@@ -119,6 +119,8 @@ npx vovk new segment <name>
 npx vovk new segment <name> --static
 ```
 
+**`<name>` is a URL path segment**, not a JS identifier — lowercase or kebab-case for multi-word (`admin`, `user-portal`), slash-separated for nested paths (`foo/bar`, `admin/settings`). **Not camelCase.** If the user asks for a segment like `MyAdmin` or `user_portal`, convert to URL-safe form (`my-admin`, `user-portal`) before calling the CLI — the name becomes part of the URL (`/api/my-admin/...`) and the `segmentName` inside `initSegment({ segmentName: '...' })`. This is the opposite rule from `vovk new controller service` (module names there are camelCase — see `procedure` skill).
+
 After the CLI runs, verify the expected `route.ts` landed at the expected path. If it didn't, surface the CLI output — don't hand-write it.
 
 ## Named segment example

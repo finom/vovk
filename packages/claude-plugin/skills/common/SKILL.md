@@ -212,8 +212,8 @@ Minimal reference for cross-skill vocabulary. Details live in the owning skill.
 ### Module: `vovk-cli` (CLI only)
 
 - `vovk init` — project setup. **init skill.**
-- `vovk new segment [name] [--static]` — scaffold a segment. **segment skill.**
-- `vovk new controller service <name>` — scaffold a module. **procedure skill.**
+- `vovk new segment [name] [--static]` — scaffold a segment. `[name]` is a URL path segment (lowercase or kebab-case, slashes for nesting like `foo/bar`), **not** camelCase. **segment skill.**
+- `vovk new controller service <name>` — scaffold a module. `<name>` is `[segmentPath/]moduleName`: the `moduleName` part **must be camelCase** (`user`, `userProfile`), the optional `segmentPath` prefix uses URL-slug rules (`admin/userProfile`, `foo/bar/user`). Shortcut: `vovk n c s <name>`. **procedure skill.**
 - `vovk dev` — run Next + Vovk watcher in parallel.
 - `vovk generate` — emit schema, regenerate client. **rpc skill.**
 - `vovk bundle` — package client for TS/Python/Rust publishing. **bundle / python / rust skills.**
