@@ -1,6 +1,6 @@
 ---
 name: python
-description: Knowledge base for the Vovk.ts Python client — generating a typed Python package from a Vovk API with `vovk-python`, the `py` / `pySrc` templates, `TypedDict` shapes, JSON + JSON Lines consumption, client-side validation, and PyPI publishing. Use whenever the user asks to "call my Vovk API from Python", "generate a Python SDK", "ship a Python package for my API", "use vovk-python", "pySrc template", "python client streaming", "publish to PyPI", or any variation. Experimental package — shape may shift. Does NOT cover controller / procedure authoring → hand off to `procedure` skill. Does NOT cover `vovk bundle` in general → hand off to `bundle` skill. Does NOT cover JSON Lines server-side → hand off to `jsonlines` skill.
+description: The Vovk.ts Python client — generating a typed Python package from a Vovk API with `vovk-python`, the `py` / `pySrc` templates, `TypedDict` shapes, JSON + JSON Lines consumption, client-side validation, and PyPI publishing. Use whenever the user asks to "call my Vovk API from Python", "generate a Python SDK", "ship a Python package for my API", "use vovk-python", "pySrc template", "python client streaming", "publish to PyPI", or any variation. Experimental package — shape may shift. Does NOT cover controller / procedure authoring → hand off to `procedure` skill. Does NOT cover `vovk bundle` in general → hand off to `bundle` skill. Does NOT cover JSON Lines server-side → hand off to `jsonlines` skill.
 ---
 
 # Vovk.ts Python client

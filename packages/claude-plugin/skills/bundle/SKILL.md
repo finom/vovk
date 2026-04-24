@@ -1,6 +1,6 @@
 ---
 name: bundle
-description: Knowledge base for the Vovk.ts `vovk bundle` CLI — packaging client libraries for publishing in TypeScript, Python, or Rust. Use whenever the user asks to "publish my API client", "ship an SDK", "build a client package", "release a Python/Rust client for my Vovk API", "bundle the client for npm/PyPI/crates.io", "generate a distributable SDK", or any variation. Does NOT cover `vovk generate` (in-project client codegen) → hand off to `rpc` skill. Does NOT cover Python-specific client details → hand off to `python` skill. Does NOT cover Rust-specific client details → hand off to `rust` skill.
+description: The Vovk.ts `vovk bundle` CLI — packaging client libraries for publishing in TypeScript, Python, or Rust. Use whenever the user asks to "publish my API client", "ship an SDK", "build a client package", "release a Python/Rust client for my Vovk API", "bundle the client for npm/PyPI/crates.io", "generate a distributable SDK", or any variation. Does NOT cover `vovk generate` (in-project client codegen) → hand off to `rpc` skill. Does NOT cover Python-specific client details → hand off to `python` skill. Does NOT cover Rust-specific client details → hand off to `rust` skill.
 ---
 
 # Vovk.ts `vovk bundle`

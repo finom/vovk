@@ -1,6 +1,6 @@
 ---
 name: procedure
-description: Knowledge base for Vovk.ts procedures — the atomic unit of server-side logic in a Vovk project. Use whenever the user asks to build ANYTHING that produces or consumes data on the server — a page that loads data ("users page", "dashboard", "product list"), an endpoint, an API handler, a server action, a form submission, a controller, validation with Zod / Valibot / ArkType, request/response shape, file upload, file download, error handling (`HttpException`, status codes), content types (JSON, multipart, text, binary), or calling server code from a React Server Component / SSR / SSG / PPR / server action. Triggers on phrasings like "build a users page", "add an endpoint", "create a form handler", "fetch X from the server", "handle file upload", "validate input", "throw a 404", "server action for Y", "controller for Z", "add `req.body` parsing", ".fn()", "CORS". Does NOT cover segments / `route.ts` / `initSegment` → hand off to `segment` skill. Does NOT cover RPC client generation, fetcher, `vovk-client` imports → hand off to `rpc` skill. Does NOT cover custom decorators, `createDecorator`, authorization / auth guards → hand off to `decorators` skill. Does NOT cover `deriveTools` / `createTools` / MCP / AI tool wiring → hand off to `tools` skill. Does NOT cover JSON Lines streaming / generators / `JSONLinesResponder` → hand off to `jsonlines` skill. Does NOT cover `@operation` metadata / Scalar docs → hand off to `openapi` skill.
+description: Vovk.ts procedures — the atomic unit of server-side logic in a Vovk project. Use whenever the user asks to build ANYTHING that produces or consumes data on the server — a page that loads data ("users page", "dashboard", "product list"), an endpoint, an API handler, a server action, a form submission, a controller, validation with Zod / Valibot / ArkType, request/response shape, file upload, file download, error handling (`HttpException`, status codes), content types (JSON, multipart, text, binary), or calling server code from a React Server Component / SSR / SSG / PPR / server action. Triggers on phrasings like "build a users page", "add an endpoint", "create a form handler", "fetch X from the server", "handle file upload", "validate input", "throw a 404", "server action for Y", "controller for Z", "add `req.body` parsing", ".fn()", "CORS". Does NOT cover segments / `route.ts` / `initSegment` → hand off to `segment` skill. Does NOT cover RPC client generation, fetcher, `vovk-client` imports → hand off to `rpc` skill. Does NOT cover custom decorators, `createDecorator`, authorization / auth guards → hand off to `decorators` skill. Does NOT cover `deriveTools` / `createTools` / MCP / AI tool wiring → hand off to `tools` skill. Does NOT cover JSON Lines streaming / generators / `JSONLinesResponder` → hand off to `jsonlines` skill. Does NOT cover `@operation` metadata / Scalar docs → hand off to `openapi` skill.
 ---
 
 # Vovk.ts procedures
@@ -225,15 +225,17 @@ static createUser = procedure({
 });
 ```
 
-**Meta** — per-request key-value storage, used by decorators and handlers:
+**Meta** — per-request key-value storage, used by decorators and handlers. Always pass the generic on both set and read, and share one type alias across every site that touches the same slot so TypeScript keeps the two sides aligned:
 
 ```ts
-req.vovk.meta({ userId: '123' });                  // set
-const meta = req.vovk.meta<{ userId: string }>();  // get (typed)
-req.vovk.meta(null);                               // clear
+type SessionMeta = { userId: string };
+
+req.vovk.meta<SessionMeta>({ userId: '123' });   // set
+const { userId } = req.vovk.meta<SessionMeta>(); // read — same alias
+req.vovk.meta(null);                             // clear (no generic)
 ```
 
-Clients can send meta via the `x-meta` header.
+Multiple `meta()` calls merge — consecutive decorators can each contribute their own slice under their own alias. Clients can send meta via the `x-meta` header; that data lands under `xMetaHeader` so it can't overwrite server-set keys. See the `decorators` skill for the full auth / cross-decorator pattern.
 
 ## `VovkRequest` — explicit request typing
 
