@@ -26,7 +26,7 @@ Out of scope (do not duplicate):
 - Writing handlers / `procedure()` / validation / `.fn()` / `req.vovk` / decorators → **`procedure` skill**.
 - RPC client generation, composed vs. segmented clients → **`rpc` skill**.
 - OpenAPI metadata (`@operation`, Scalar) beyond segment-level `openAPIObject` → **`openapi` skill**.
-- Type inference helpers and `vovk.config.mjs` global options → **`common` skill**.
+- `vovk.config.mjs` global options / package ecosystem → **`common` skill**. Type inference helpers (`VovkBody`, `VovkOutput`, etc.) → **`procedure` skill** (controller-side) or **`rpc` skill** (client-side).
 - Multi-tenant routing (subdomains, `multitenant()` proxy, per-tenant frontend pages, `segmentNameOverride`) → **`multitenant` skill**. This skill only mentions the segment side in passing.
 
 ## Core concepts

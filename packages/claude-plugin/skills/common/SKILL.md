@@ -1,11 +1,11 @@
 ---
 name: common
-description: Vovk.ts fundamentals that don't fit other skills — package ecosystem, `vovk.config.mjs`, `experimentalDecorators` setup, type inference helpers (`VovkBody`, `VovkQuery`, `VovkParams`, `VovkInput`, `VovkOutput`, `VovkIteration`, `VovkReturnType`, `VovkYieldType`), the `/_schema_` dev endpoint, how controllers/services/RPC modules relate, and a short API reference. Use whenever the user asks "how does Vovk work", "what packages do I need", "what's in vovk.config.mjs", "what Node / Next version", "how do I type a service from a procedure", "VovkBody / VovkOutput / VovkInput", "where are types exported from", "what's `_schema_`", "decorate without decorators", "tsconfig settings for Vovk", or anything that doesn't clearly belong to segment / procedure / rpc / tools / jsonlines / openapi / bundle / decorators / mixins / python / rust. Fallback skill for framework-wide context.
+description: Vovk.ts fundamentals that don't fit other skills — package ecosystem, `vovk.config.mjs`, `experimentalDecorators` setup, the `/_schema_` dev endpoint, how controllers/services/RPC modules relate, and a short API reference. Use whenever the user asks "how does Vovk work", "what packages do I need", "what's in vovk.config.mjs", "what Node / Next version", "where are types exported from", "what's `_schema_`", "decorate without decorators", "tsconfig settings for Vovk", or anything that doesn't clearly belong to segment / procedure / rpc / tools / jsonlines / openapi / bundle / decorators / mixins / python / rust. Fallback skill for framework-wide context. Type inference helpers (`VovkBody`, `VovkOutput`, `VovkInput`, `VovkParams`, `VovkQuery`, `VovkIteration`, `VovkYieldType`, `VovkReturnType`) are covered in the **`procedure`** skill (controller-side) and **`rpc`** skill (RPC-module / client-side).
 ---
 
 # Vovk.ts — fundamentals
 
-This is the catch-all skill for things that cross skill boundaries or don't fit elsewhere: the package lineup, configuration, type inference helpers, architectural vocabulary, and a brief API reference.
+This is the catch-all skill for things that cross skill boundaries or don't fit elsewhere: the package lineup, configuration, architectural vocabulary, and a brief API reference. Type-inference helpers (`VovkBody` / `VovkOutput` / etc.) live in the **`procedure`** skill (controller-side usage) and the **`rpc`** skill (client/RPC-module usage).
 
 If the user's question clearly belongs to a specialized skill (segment / procedure / rpc / tools / jsonlines / openapi / bundle / decorators / mixins / python / rust), go there first. Come here for cross-cutting fundamentals or when unsure.
 
@@ -23,9 +23,8 @@ If the user's project doesn't meet these, stop and route them to the `init` skil
 |---|---|---|
 | `vovk` | Runtime — decorators (`@get`, `@post`, …), `procedure()`, `initSegment()`, `createDecorator()`, `HttpException`, types, tool derivation. | `dependencies` |
 | `vovk-cli` | CLI — `init`, `new`, `dev`, `generate`, `bundle`. Code generation + project tooling. | `devDependencies` |
-| `vovk-client` | Composed RPC client — re-exports generated modules. Optional; projects can import directly from `node_modules/.vovk-client`. | `dependencies` |
-| `vovk-ajv` | AJV-based client-side validator plug-in. | `dependencies` (optional) |
-| `vovk-zod` | Zod-based client-side validator plug-in. | `dependencies` (optional) |
+| `vovk-client` | Barrel package for the default composed + JS-template client — re-exports `.vovk-client/index.js`. Only used in that specific combo; TS template / segmented client / source-tree `outDir` bypass it and import via a local alias (see `rpc` skill). | `dependencies` (default setup only) |
+| `vovk-ajv` | AJV-based client-side validator plug-in (the only shipped option since v1; for other validators use `createValidateOnClient` — see `rpc` skill). | `dependencies` (optional) |
 | `vovk-python` | Python client generator target (experimental). | used via `vovk bundle` |
 | `vovk-rust` | Rust client generator target (experimental). | used via `vovk bundle` |
 
@@ -130,51 +129,6 @@ src/modules/user/
 
 `vovk new controller service user` scaffolds this layout.
 
-## Type inference helpers
-
-All exported from `vovk`. Work identically against a controller method or a generated RPC module.
-
-| Helper | Extracts | Use for |
-|---|---|---|
-| `VovkBody<T>` | Request body type | Typing service params, form data. |
-| `VovkQuery<T>` | Query parameters type | Typing URL-driven filters. |
-| `VovkParams<T>` | Route parameters type | Typing `{ id }` etc. |
-| `VovkInput<T>` | `{ params, query, body }` | Full typed input to a procedure. |
-| `VovkOutput<T>` | Declared `output` schema type | Typing service return values, client expectations. |
-| `VovkIteration<T>` | Declared `iteration` schema type | Typing JSON Lines stream items (see `jsonlines` skill). |
-| `VovkReturnType<T>` | Actual inferred return type (no `output` schema) | When the handler has no declared output schema. |
-| `VovkYieldType<T>` | Actual inferred yield type (no `iteration` schema) | Generator handlers without schema. |
-
-### Usage
-
-```ts
-import type {
-  VovkBody, VovkOutput, VovkInput, VovkParams,
-} from 'vovk';
-import type UserController from './UserController';
-
-// Type a service against a controller
-export default class UserService {
-  static async updateUser(
-    body: VovkBody<typeof UserController.updateUser>,
-    params: VovkParams<typeof UserController.updateUser>,
-  ): Promise<VovkOutput<typeof UserController.updateUser>> {
-    return { success: true };
-  }
-}
-```
-
-Client side, against the generated RPC module — same helpers:
-
-```ts
-import type { VovkOutput } from 'vovk';
-import { UserRPC } from 'vovk-client';
-
-type User = VovkOutput<typeof UserRPC.getUser>;
-```
-
-**Rule of thumb**: if an API boundary exists, derive its types from the procedure. That keeps the schema as the single source of truth across server, client, and services.
-
 ## The `/_schema_` dev endpoint
 
 When Next runs in dev (`NODE_ENV=development`), each segment exposes a `/_schema_` endpoint returning the segment's schema JSON. The Vovk dev CLI (`vovk dev`) polls these endpoints to rebuild the `.vovk-schema/` artifacts and regenerate the client.
@@ -203,7 +157,7 @@ Minimal reference for cross-skill vocabulary. Details live in the owning skill.
 - `controllersToStaticParams(controllers, slug?)` — for static segments. **segment skill.**
 - `deriveTools(...)`, `createTools(...)` — AI tool derivation. **tools skill.**
 - `JSONLinesResponder` — streaming responses. **jsonlines skill.**
-- Types: `VovkRequest`, `VovkConfig`, `VovkBody`, `VovkQuery`, `VovkParams`, `VovkInput`, `VovkOutput`, `VovkIteration`, `VovkReturnType`, `VovkYieldType`.
+- Types: `VovkRequest`, `VovkConfig`. Inference helpers — `VovkBody`, `VovkQuery`, `VovkParams`, `VovkInput`, `VovkOutput`, `VovkIteration`, `VovkReturnType`, `VovkYieldType` — covered in **`procedure`** (controller-side) and **`rpc`** (client-side) skills.
 
 ### Module: `vovk-client`
 
@@ -231,7 +185,7 @@ Yes — use `decorate()` (see `procedure` skill). Don't enable `experimentalDeco
 
 ### "How do I keep types in sync between server and client?"
 
-Procedures declare the schema. Services type their params with `VovkBody<typeof Controller.method>`. The client imports RPC modules from `vovk-client` and the types flow through automatically. The schema is the single source of truth.
+Procedures declare the schema. Services type their params with inference helpers (`VovkBody<typeof Controller.method>` etc. — **`procedure` skill**). The generated RPC modules re-use the same helpers on the client side (**`rpc` skill**). The schema is the single source of truth.
 
 ### "Where does my controller need to be registered?"
 
@@ -247,7 +201,7 @@ Per-segment JSON schema artifacts. Regenerated by `vovk dev` or `vovk generate`.
 
 ### "Do I need `vovk-client` as a dependency?"
 
-It's a re-export convenience. You can import from `node_modules/.vovk-client` directly if you'd rather not add the package — but most projects just install it. See `rpc` skill for specifics.
+Only for the default composed + JS-template setup, where it's the barrel you import from. If you switch to the TS template with a source-tree `outDir`, or enable the segmented client, you import from a local path alias and `vovk-client` isn't used — drop it. See `rpc` skill for the full import-path matrix.
 
 ## Gotchas
 
