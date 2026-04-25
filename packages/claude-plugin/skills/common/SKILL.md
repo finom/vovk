@@ -21,6 +21,12 @@ The plugin ships every API surface, config key, and runtime shape this framework
 
 If the user's project doesn't meet these, stop and route them to the `init` skill.
 
+## Vovk endpoints are plain REST
+
+Every procedure mounts as a regular HTTP endpoint at a deterministic URL. **Any HTTP client works** — `curl`, `httpx`, Python `requests`, Go's `net/http`, browser `fetch`, Postman, whatever. The typed RPC clients (`vovk-client` for JS/TS, `vovk-python`, `vovk-rust`) wrap those endpoints with inferred types, client-side validation, and helpers — they're conveniences, not the only access path.
+
+Practical implication: if the user says *"call my API from a CLI / from Go / from a shell script / one-off curl test"*, the right answer is usually a plain HTTP request, not "generate a typed client." Reach for the **`python`** / **`rust`** skills only when the user actually wants typed client codegen, ongoing integration, or PyPI / crates.io publishing. The URL formula is in the **`procedure`** skill ("URL shape — composition rule"). For a wire-level contract, the generated OpenAPI 3.x spec lives in `vovk-client/openapi` (or under the segmented client's `outDir`) and can be mounted as an HTTP endpoint via a small controller — see the **`openapi`** skill.
+
 ## Packages
 
 | Package | Role | Install as |

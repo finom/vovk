@@ -212,9 +212,31 @@ export default class UserController {
 |---|---|
 | `headers` | Static response headers. |
 | `cors: true` | Enable CORS preflight. |
-| `staticParams` | For static segments — enumerate URL params. See `segment` skill. |
+| `staticParams` | For static segments — enumerate URL params (`@get` only). See `segment` skill. |
 
 Path template uses `{name}` for segments: `'{id}'`, `'{org}/members/{userId}'`.
+
+### URL shape — composition rule
+
+The route string the framework builds is:
+
+```
+/{rootEntry}/{segmentName}/{controllerPrefix}/{methodPath}
+```
+
+Empty parts are dropped, then joined with `/` (verified in `packages/vovk/src/openapi/vovkSchemaToOpenAPI.ts:162`). So:
+
+| `rootEntry` | segment | `@prefix` | method | URL |
+|---|---|---|---|---|
+| `'api'` *(default)* | `''` (root) | `'users'` | `@get('{id}')` | `GET /api/users/{id}` |
+| `'api'` | `'admin'` | `'users'` | `@get('{id}')` | `GET /api/admin/users/{id}` |
+| `'api'` | `'foo/bar'` | — | `@get('ping')` | `GET /api/foo/bar/ping` |
+| `'api'` | `'admin'` | — | `@put.auto()` (method `archive`) | `PUT /api/admin/archive` |
+| `''` (root-mounted API) | `'admin'` | `'users'` | `@get()` | `GET /admin/users` |
+
+`@prefix` is per-controller, `methodPath` is per-handler, both optional. `.auto()` derives the method-name segment kebab-cased. Nested segment names (`foo/bar`) collapse straight into the URL.
+
+These URLs are plain HTTP — `curl`, `httpx`, `fetch`, any client works. The typed RPC clients (`vovk-client`, `vovk-python`, `vovk-rust`) wrap the same endpoints with validation and inferred types; they're conveniences, not the only access path. If the user just wants to hit `/api/users/123` from a CLI, `curl` is the right answer.
 
 ## `.fn()` — local procedure calls (SSR / server components / server actions)
 
