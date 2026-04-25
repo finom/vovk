@@ -1,103 +1,180 @@
 ---
 name: tools
-description: Building AI / LLM tools with Vovk.ts — `deriveTools()` (procedures → tools), `createTool()` (standalone tools from scratch, no controller/procedure needed), `ToModelOutput.DEFAULT` vs `ToModelOutput.MCP` output formatting, the `@operation` decorator's role (summary/description), `x-tool` metadata, and how controllers, RPC modules, third-party OpenAPI schemas, and hand-written tools all merge into one tool array. Use whenever the user asks to expose an API to an LLM, wire up tool calling, build an MCP server / client, "let Claude / GPT call this", "turn my controllers into tools", "write a tool from scratch", "standalone tool", "createTool", "a tool that wraps a third-party SDK", "add OpenAI function calling", "MCP server from my API", or any variation. Does NOT cover procedure authoring → hand off to `procedure` skill. Does NOT cover the OpenAPI spec itself beyond the `@operation` fields tools read → hand off to `openapi` skill. Does NOT cover third-party OpenAPI mixin setup → hand off to `mixins` skill.
+description: Building LLM tools with Vovk.ts — `deriveTools()` (procedures → tools), `createTool()` (standalone tools, no controller/procedure needed), `@operation.tool({ name, title, description, hidden })` decorator, `x-tool` metadata, `ToModelOutput.DEFAULT` vs `ToModelOutput.MCP` formatters, the `tools` + `toolsByName` return shape, the `meta` option for passing context to procedures, `withDefaults` for baking auth into third-party API tools, and the `pick` / `omit` pattern for selecting specific procedures. Use whenever the user asks to expose an API to an LLM, wire up tool calling, build an MCP server, "let Claude / GPT call this", "turn my controllers into tools", "function calling with Vercel AI SDK", "createTool", "standalone tool", "hide a procedure from the LLM", "tool that wraps a third-party SDK", or any variation. Does NOT cover procedure authoring → `procedure` skill. Does NOT cover the OpenAPI spec beyond `@operation`/`x-tool` → `openapi` skill. Does NOT cover third-party OpenAPI mixin setup → `mixins` skill.
 ---
 
-# Vovk.ts AI tools
+# Vovk.ts LLM tools
 
-Vovk produces LLM-consumable tool definitions — `{ name, description, parameters (JSON Schema), execute }` — via two entry points:
+Vovk produces LLM-consumable tool definitions — `{ name, description, parameters, execute, … }` — via two entry points:
 
 - **`deriveTools({ modules })`** — turn existing procedures (controllers, RPC modules, OpenAPI mixins) into tools automatically.
-- **`createTool({ name, description, inputSchema, execute })`** — hand-build a standalone tool that isn't tied to any procedure. Use this when the tool logic has nothing to do with your HTTP API (wrapping an SDK, a database query, a local file operation, etc.).
+- **`createTool({ name, description, inputSchema?, outputSchema?, execute, … })`** — hand-build a standalone tool that isn't tied to any procedure. Use when the body is plain code (SDK wrappers, calculators, file ops).
 
-Output from both shares one shape, so you can mix derived and standalone tools in the same array.
+Both shapes are interoperable — mix them in one array and feed to OpenAI / Anthropic / Vercel AI SDK / MCP servers.
 
-## Scope
+**Out of scope:** procedure authoring (**`procedure`**), `@operation` for OpenAPI docs (**`openapi`**), third-party OpenAPI mixin setup (**`mixins`**). MCP server transport / hosting is outside Vovk; **for Next.js, the recommended runtime is [`mcp-handler`](https://www.npmjs.com/package/mcp-handler)** — example below.
 
-Covers:
-
-- `deriveTools({ modules })` — input types, output shape.
-- `createTool(options)` — standalone tool factory.
-- `ToModelOutput.DEFAULT` vs `ToModelOutput.MCP` output formatting.
-- `@operation` metadata consumed by tool derivation (`summary`, `description`, `x-tool`).
-- Three derive sources: controllers (local execution via `.fn`), RPC modules (HTTP execution), third-party OpenAPI mixins.
-- `onExecute` / `onError` hooks.
-- Combining derived + standalone tools in a single chat loop.
-
-Out of scope:
-
-- Writing procedures → **`procedure` skill**.
-- `@operation` for general OpenAPI docs → **`openapi` skill**.
-- Importing third-party OpenAPI schemas → **`mixins` skill**.
-- MCP server hosting / transports → outside Vovk's scope; see user's MCP runtime of choice.
+> **Import path note.** Code samples import from `'vovk-client'` — the **composed client + `js` template** default, re-exported from `node_modules/.vovk-client`. With the `ts` template, import from `composedClient.outDir` (e.g. `@/client`). With the segmented client, import from `@/client/<segment>`. Call shape is identical. See the **`rpc`** skill.
 
 ## `deriveTools` — core shape
 
 ```ts
 import { deriveTools } from 'vovk';
 import { TaskRPC, PetstoreAPI } from 'vovk-client';
+import UserController from '@/modules/user/UserController';
 
-const { tools } = deriveTools({
-  modules: { TaskRPC, PetstoreAPI },
+const { tools, toolsByName } = deriveTools({
+  modules: { UserController, TaskRPC, PetstoreAPI },
 });
-
-// tools: Array<{
-//   name:        string,
-//   description: string,
-//   parameters:  JSONSchema,        // { params, body, query } flattened
-//   execute:     (args) => Promise<unknown>,
-// }>
 ```
 
-One tool per procedure across all supplied modules. `execute` invokes the procedure.
+`modules` accepts a record of:
 
-## Input sources
+- **Controllers** — execute via `.fn()` in-process, no HTTP.
+- **RPC modules** (from `vovk-client` or `@/client[/segment]` per layout) — execute via HTTP using the standard fetcher.
+- **OpenAPI mixins** (same client surface) — execute via HTTP against the third-party API. See **`mixins`** skill.
 
-### 1. Controllers — local execution
+Each module contributes one tool per procedure that has an `@operation` schema and isn't `hidden`.
 
-Pass a controller class. `execute` calls the procedure via `.fn()` in-process. No HTTP.
+### Return shape
 
 ```ts
-import TaskController from '@/modules/task/TaskController';
+const { tools, toolsByName } = deriveTools({ modules: { TaskRPC } });
 
-const { tools } = deriveTools({
-  modules: { TaskController },
-});
+// Array — feed to LLM SDKs
+llm.chat({ tools: tools.map(t => ({ name: t.name, description: t.description, input_schema: t.parameters })) });
+
+// Map — dispatch tool calls without scanning
+const result = await toolsByName[call.name].execute(call.arguments);
 ```
 
-Best for: same-process LLM agents, server-side tool loops, avoiding network overhead.
-
-### 2. RPC modules — HTTP execution
-
-Pass a generated RPC module. `execute` calls over HTTP using the standard RPC fetcher.
+### Each tool's fields
 
 ```ts
-import { TaskRPC } from 'vovk-client';
-
-const { tools } = deriveTools({
-  modules: { TaskRPC },
-});
+type VovkTool = {
+  type: 'function';                     // always
+  name: string;                         // default: `${moduleName}_${handlerName}` — e.g. UserController_getUser
+  title?: string;                       // from x-tool.title or operation.summary
+  description: string;                  // x-tool.description, OR `${summary}\n${description}`, OR handlerName fallback
+  parameters: JSONSchema;               // see below
+  execute: (input) => Promise<unknown>; // calls the procedure (HTTP for RPC/mixins, .fn() for controllers)
+  inputSchemas?: { body?, query?, params? };  // per-key Standard Schemas (Zod/Valibot/ArkType)
+  outputSchema?: StandardSchema;        // procedure's output schema if declared
+};
 ```
 
-Best for: LLM running in a different process than the API, cross-service tool calling, when you want the full HTTP path (auth headers, rate limits, observability).
-
-### 3. Third-party OpenAPI — via mixins
-
-Mixins turn an external OpenAPI 3.x schema into a Vovk-compatible module. Once imported, they go through `deriveTools` identically:
+**`parameters` is nested, not flattened.** Each procedure schema sits under its own key:
 
 ```ts
-import { PetstoreAPI } from 'vovk-client';
+parameters: {
+  type: 'object',
+  properties: { body?: <body schema>, query?: <query schema>, params?: <params schema> },
+  required: ['body', 'query', ...], // keys that exist in properties
+  additionalProperties: false,
+}
+```
+
+So `execute` is called as `tool.execute({ body, query, params })`, not `tool.execute({ ...flat })`.
+
+## Customizing tool name + description
+
+Default `name = ${ModuleName}_${handlerName}`, default `description = ${summary}\n${description}` from `@operation`. Override via `@operation.tool({ … })` (the recommended cleaner form):
+
+```ts
+import { prefix, get, operation, procedure } from 'vovk';
+
+@prefix('user')
+export default class UserController {
+  @operation.tool({
+    name: 'get_user_by_id',                // overrides UserController_getUser
+    title: 'Get user by ID',               // shown in MCP clients
+    description: 'Retrieves a user by their unique ID, including name and email.',
+  })
+  @operation({ summary: 'Get user by ID', description: 'Retrieves a user by their unique ID.' })
+  @get('{id}')
+  static getUser = procedure({ /* ... */ });
+}
+```
+
+Equivalent long form: `@operation({ ..., 'x-tool': { name, title, description, hidden } })`. Keys (all optional):
+
+| Key | Effect |
+|---|---|
+| `hidden: true` | Procedure is excluded from `deriveTools` output. |
+| `name` | Overrides default `ModuleName_handlerName`. |
+| `title` | Optional title — used by MCP clients in tool-list UI. |
+| `description` | Overrides the `summary\ndescription` concatenation. |
+
+## Hiding procedures
+
+Canonical: `hidden: true`.
+
+```ts
+@operation.tool({ hidden: true })
+@operation({ summary: 'Internal helper' })
+@get()
+static internalDebug = procedure({ /* ... */ });
+```
+
+For coarser selection — when the same controller serves both REST and tool-exposed callers and you don't want to annotate every method — use `pick`/`omit` from lodash:
+
+```ts
+import { pick, omit } from 'lodash';
 
 const { tools } = deriveTools({
-  modules: { PetstoreAPI },
+  modules: {
+    PostRPC: pick(PostRPC, ['createPost', 'getPost']),
+    UserController: omit(UserController, ['deleteUser']),
+  },
 });
 ```
 
-See `mixins` skill for mixin setup.
+## `meta` — passing context into procedures
+
+`deriveTools({ meta })` flows into every tool execution. Controllers read it via `req.vovk.meta()`; RPC modules send it as the `xMetaHeader` request header.
+
+```ts
+const { tools } = deriveTools({
+  modules: { UserController },
+  meta: { tenantId: 'acme', actorRole: 'admin' },
+});
+
+@get()
+static getUser = procedure({ /* ... */ }).handle(async (req) => {
+  const { tenantId, actorRole } = req.vovk.meta<{ tenantId: string; actorRole: string }>();
+  // ...
+});
+```
+
+Use for ambient context (tenant, actor, request ID) that should apply to every LLM-triggered call without surfacing to the LLM as a tool argument.
+
+## Authorizing third-party API tools
+
+Mixin modules carry a `withDefaults({ init?, apiRoot? })` method that returns a pre-configured copy. Wrap before passing to `deriveTools` to bake in auth headers without leaking secrets to the LLM:
+
+```ts
+import { deriveTools } from 'vovk';
+import { GithubIssuesAPI } from 'vovk-client';
+
+const { tools } = deriveTools({
+  modules: {
+    AuthorizedGithubIssuesAPI: GithubIssuesAPI.withDefaults({
+      init: {
+        headers: {
+          Authorization: `Bearer ${process.env.GITHUB_TOKEN}`,
+          'X-GitHub-Api-Version': '2022-11-28',
+        },
+      },
+    }),
+  },
+});
+```
+
+The LLM sees `AuthorizedGithubIssuesAPI_listForOrg` etc. with the operation parameters — never the token. See **`mixins`** for `withDefaults` setup details.
 
 ## `createTool` — standalone tools
 
-For tools that don't map to a procedure — local logic, SDK wrappers, calculator functions, file operations, anything where the tool's body is just plain code.
+For tools with no procedure backing — SDK wrappers, calculators, file operations, plain code:
 
 ```ts
 import { createTool } from 'vovk';
@@ -119,268 +196,262 @@ const getWeather = createTool({
 
 | Field | Purpose |
 |---|---|
-| `name` | Tool name (required). |
-| `description` | Shown to the LLM (required). |
-| `title` | Optional human-readable label. |
-| `inputSchema` | Standard Schema (Zod / Valibot / ArkType). Becomes the tool's JSON Schema. Omit for no-arg tools. |
-| `outputSchema` | Standard Schema validating `execute`'s return. Optional but recommended. |
-| `execute(input, meta?)` | The tool body. `input` is validated against `inputSchema` before this runs. |
-| `toModelOutput` | Formatter. Default: `ToModelOutput.DEFAULT` (raw output or `{ error }`). `ToModelOutput.MCP` for MCP-spec shape. |
-| `onExecute(result, tool)` | Called after successful execution. |
-| `onError(err, tool)` | Called when `execute` throws or validation fails. |
+| `name` *(required)* | Tool name. |
+| `description` *(required)* | Shown to the LLM. Action-oriented language works best. |
+| `title` | Optional human-readable label, used by MCP clients. |
+| `inputSchema` | Standard Schema (Zod / Valibot / ArkType). Validated before `execute`. Becomes the JSON Schema. Omit for no-arg tools. |
+| `outputSchema` | Validates `execute`'s return value. Optional, recommended. |
+| `execute(input, processingMeta?)` | Tool body. `input` is post-validation. |
+| `toModelOutput` | Output formatter. Default `ToModelOutput.DEFAULT`; use `ToModelOutput.MCP` for MCP servers. |
+| `onExecute(result, tool)` / `onError(err, tool)` | Success / failure callbacks. |
 | `target` | Validation target override (rarely needed). |
 
-### Return shape
-
-Same `VovkTool` shape as derived tools — `name`, `description`, `parameters` (JSON Schema from `inputSchema`), `execute`. **Derived and standalone tools combine into one array**:
-
-```ts
-import { deriveTools, createTool } from 'vovk';
-import { TaskRPC } from 'vovk-client';
-
-const { tools: derivedTools } = deriveTools({ modules: { TaskRPC } });
-const getWeather = createTool({ /* ... */ });
-const calculator = createTool({ /* ... */ });
-
-const allTools = [...derivedTools, getWeather, calculator];
-// feed `allTools` to the LLM
-```
-
-### Error behavior
-
-`execute` throws → captured, returned as `{ error: message }` (not re-thrown). Tools never crash the chat loop. Validation failures (input or output) behave the same way — the LLM receives the error and can retry.
-
-```ts
-const result = await tool.execute({ city: 'unknown' });
-// { tempC, conditions }  OR  { error: "..." }
-```
-
-`onError` fires whenever the error path is hit.
-
-### No-input tools
-
-Omit `inputSchema`. `execute` receives `null`:
+**No-input tools.** Omit `inputSchema`. `execute` receives `null` (not `undefined` — don't destructure):
 
 ```ts
 createTool({
   name: 'current_time',
-  description: 'Returns current server time.',
+  description: 'Returns current server time as ISO 8601.',
   execute: () => ({ now: new Date().toISOString() }),
 });
 ```
 
-### `ToModelOutput` — output formatting
+**Error handling.** Errors from `execute`, input validation, or output validation are caught (never re-thrown), monkey-patched with `toJSON() = { isError, message }`, then handed to `toModelOutput`:
 
-Controls the shape of what `execute` returns to the caller:
+- `ToModelOutput.DEFAULT` → `{ error: string }`
+- `ToModelOutput.MCP` → `{ content: [{ type: 'text', text: message }], isError: true }`
 
-- **`ToModelOutput.DEFAULT`** (default) — returns the raw output, or `{ error: string }` on failure. Good for OpenAI / Anthropic function calling.
-- **`ToModelOutput.MCP`** — wraps output in MCP content shape: `{ content: [{ type: 'text' | 'image' | ..., ... }], structuredContent?, isError? }`. Required for MCP servers.
+`onError` fires on the error path. The tool never crashes the chat loop — the LLM can retry.
+
+**Combining derived + standalone.** Same shape, same chat loop:
 
 ```ts
-import { createTool, ToModelOutput } from 'vovk';
-
-createTool({
-  name: 'hello',
-  description: '...',
-  toModelOutput: ToModelOutput.MCP,
-  execute: () => ({ message: 'hi' }),
-});
-// returns: { content: [{ type: 'text', text: '{"message":"hi"}' }], structuredContent: { message: 'hi' } }
+const { tools: derived, toolsByName: derivedByName } = deriveTools({ modules: { TaskRPC } });
+const allTools = [...derived, getWeather, sendEmail];
+const allByName = { ...derivedByName, [getWeather.name]: getWeather, [sendEmail.name]: sendEmail };
 ```
 
-`ToModelOutput.MCP` also detects `Response` objects with binary content types (images, PDFs) and emits the correct MCP content block. Custom formatters: write a function matching `ToModelOutputFn`.
+## `ToModelOutput` — formatting the result
 
-The same `toModelOutput` option works on `deriveTools({ ..., toModelOutput: ToModelOutput.MCP })` — use it consistently across all tools in a given session.
+`toModelOutput` controls what `execute` returns. Set on `deriveTools` and/or `createTool`; pick consistently across tools in one chat loop.
 
-## `@operation` — what tools read
+| Formatter | Output shape | Use for |
+|---|---|---|
+| `ToModelOutput.DEFAULT` | Raw result, or `{ error: string }` on failure. | OpenAI / Anthropic function calling, Vercel AI SDK. |
+| `ToModelOutput.MCP` | `{ content: [{ type: 'text' \| 'image' \| 'audio', … }], structuredContent?, isError? }`. Detects `Response` objects with binary content types and emits the correct MCP block. | MCP servers. |
 
-Tool derivation reads `@operation` metadata on each procedure:
+Custom formatters: write a function matching `ToModelOutputFn<TInput, TOutput, TFormattedOutput>`.
 
-| Field | Used for |
+### Returning binary / file content via `Response` (MCP)
+
+When `ToModelOutput.MCP` is active, returning a `Response` from a procedure auto-converts based on the `Content-Type` header:
+
+| `Content-Type` | MCP block |
 |---|---|
-| `summary` | Tool `name` / short label. |
-| `description` | Tool `description` shown to the LLM. |
-| `tags` | Optional grouping. |
-| `x-tool` | Vovk-specific per-procedure tool config (e.g., exclusion, custom execution). |
+| `image/*` | `{ type: 'image', mimeType, data: <base64> }` |
+| `audio/*` | `{ type: 'audio', mimeType, data: <base64> }` |
+| `application/json` | `{ type: 'text', text: <stringified> }` + `structuredContent` from parsed JSON |
+| `text/*`, `application/xml`, `application/javascript`, `application/yaml` | `{ type: 'text', text }` |
+| anything else | `isError: true` with an "Unsupported response content type" message |
 
 ```ts
-import { operation, post, procedure } from 'vovk';
-import { z } from 'zod';
+import { procedure, get, operation, prefix, toDownloadResponse } from 'vovk';
 
-export default class TaskController {
-  @operation({
-    summary: 'Create task',
-    description: 'Creates a new task with the given title.',
-    tags: ['tasks'],
-  })
-  @post()
-  static createTask = procedure({
-    body: z.object({ title: z.string() }),
-    output: z.object({ id: z.string(), title: z.string() }),
-  }).handle(async (req) => {
-    const { title } = await req.vovk.body();
-    return TaskService.create(title);
+@prefix('files')
+export default class FilesController {
+  @operation.tool({ name: 'render_chart' })
+  @get('chart')
+  static renderChart = procedure({}).handle(async () => {
+    const png = await renderChartPng(/* ... */);
+    return toDownloadResponse(png, { type: 'image/png', filename: 'chart.png' });
   });
+
+  // fetch() works too — same MCP image block, no manual base64 wiring.
+  @operation.tool({ name: 'avatar' })
+  @get('avatar')
+  static avatar = procedure().handle(() => fetch('https://example.com/avatar.png'));
 }
 ```
 
-Without `@operation`, a tool is still derived (from method name + schemas) but the description will be minimal. Always add `@operation` on procedures you want LLMs to use well.
+JSON `Response`s yield both `content[0].text` (stringified) and `structuredContent` (parsed). Plain object returns also produce `structuredContent` from the object directly — return whichever is more natural.
 
-### `x-tool`
+### Per-call MCP overrides — divergent HTTP and MCP responses
 
-Per-procedure tool-specific configuration. Use it to:
-
-- Exclude a procedure from tool derivation (when a controller is broadly exposed but some methods shouldn't be tools).
-- Customize the derived tool's surface (name, description, parameter shape) beyond what `summary`/`description` give you.
+The MCP formatter shallow-merges anything you set under `vovk.meta({ mcpOutput })` *over* the auto-generated output (`mcpOutputMeta` spreads last, so its keys win). Whatever the procedure returns still becomes the HTTP response unchanged — the override only affects the MCP-formatted payload. **One procedure can serve HTTP callers and MCP/LLM callers with completely different shapes**, sharing only the operation logic.
 
 ```ts
-@operation({
-  summary: 'Internal helper',
-  'x-tool': { /* ... per-procedure config ... */ },
-})
+@operation.tool({ name: 'list_tasks' })
+@get()
+static listTasks = procedure({
+  query: z.object({ status: z.enum(['open', 'done']).optional() }),
+  output: z.array(z.object({ id: z.string(), title: z.string(), status: z.string() })),
+}).handle(async ({ vovk }) => {
+  const tasks = await TaskService.list();
+
+  // MCP caller gets a markdown digest + annotations; HTTP caller gets the typed array.
+  vovk.meta({
+    mcpOutput: {
+      content: [{
+        type: 'text',
+        text: `You have ${tasks.length} tasks. Open: ${tasks.filter(t => t.status === 'open').length}.\n\n` +
+              tasks.map(t => `- **${t.title}** (${t.status})`).join('\n'),
+      }],
+      structuredContent: { count: tasks.length, tasks }, // optional machine-readable companion
+      annotations: { audience: ['user'], priority: 5, lastModified: new Date().toISOString() },
+    },
+  });
+
+  return tasks; // HTTP response
+});
 ```
 
-Exact shape varies by Vovk version. Default to `summary` + `description` until you have a reason to reach for `x-tool`.
+Useful patterns built on this seam:
 
-## Output shape (MCP-compatible)
+- **JSON for HTTP, prose for the LLM** — REST/UI clients get structured data; the model gets a digest it can reason about without drowning in JSON.
+- **Render server-side and ship the image** — return JSON to HTTP, override `content` with an MCP `image` block so the LLM sees a chart instead of numbers.
+- **Soft-fail surfacing** — return a normal payload (200 OK) but set `isError: true` in `mcpOutput` so the MCP client treats it as an error.
+- **Audience routing** — `annotations.audience: ['user']` exposes the result in the MCP client UI; `['assistant']` keeps it model-only.
+
+Override keys (all optional, all merged shallowly):
+
+| Key | Effect |
+|---|---|
+| `content: [...]` | Wholesale-replaces the auto-generated content array. |
+| `structuredContent` | Wholesale-replaces the parsed structured payload. |
+| `isError: true` | Marks the result as an error to the MCP client. |
+| `annotations.audience` | `('user' \| 'assistant')[]` — who should see the result. |
+| `annotations.priority` | Number, relative importance hint. |
+| `annotations.lastModified` | ISO timestamp. |
+
+## Wiring into LLM SDKs
+
+### Vercel AI SDK (canonical pattern)
 
 ```ts
-type DerivedTool = {
-  name: string;               // e.g. 'createTask'
-  description: string;        // from @operation.description
-  parameters: JSONSchema;     // { type: 'object', properties: { params, body, query }, ... }
-  execute: (args: unknown) => Promise<unknown>;
-};
+import { deriveTools, post, prefix, type VovkRequest } from 'vovk';
+import { jsonSchema, streamText, tool, convertToModelMessages, type UIMessage } from 'ai';
+import { openai } from '@ai-sdk/openai';
+import UserController from '@/modules/user/UserController';
+
+@prefix('ai-sdk')
+export default class AiSdkController {
+  @post('tools')
+  static async functionCalling(req: VovkRequest<{ messages: UIMessage[] }>) {
+    const { messages } = await req.json();
+    const { tools: llmTools } = deriveTools({ modules: { UserController } });
+
+    const tools = Object.fromEntries(
+      llmTools.map(({ name, execute, description, parameters }) => [
+        name,
+        tool({ execute: (input) => execute(input), description, inputSchema: jsonSchema(parameters) }),
+      ])
+    );
+
+    return streamText({
+      model: openai('gpt-5-nano'),
+      system: 'You are a helpful assistant',
+      messages: await convertToModelMessages(messages),
+      tools,
+    }).toUIMessageStreamResponse();
+  }
+}
 ```
 
-Plugs directly into:
+The key adapter is `jsonSchema(parameters)` — Vercel's `tool()` wants its own typed schema, and our `parameters` is already JSON Schema, so wrap it.
 
-- **OpenAI function calling**: map `{ name, description, parameters }` to the `tools` array.
-- **Anthropic tool use**: same shape, `input_schema` = `parameters`.
-- **MCP server**: surface `tools` via the MCP `ListTools` / `CallTool` protocol.
+### OpenAI / Anthropic function calling
 
-## Wiring into an LLM chat loop
-
-Shape (vendor-specific details elided):
+`parameters` is already JSON Schema, so pass it directly:
 
 ```ts
-const { tools } = deriveTools({ modules: { TaskController } });
+const { tools, toolsByName } = deriveTools({ modules: { TaskController } });
 
-// 1. Send tool defs to the LLM
-const resp = await llm.chat({
+const resp = await client.chat.completions.create({
+  model: 'gpt-5',
   messages,
   tools: tools.map(t => ({
-    name: t.name,
-    description: t.description,
-    input_schema: t.parameters,
+    type: 'function',
+    function: { name: t.name, description: t.description, parameters: t.parameters },
   })),
 });
 
-// 2. When the LLM requests a tool call, find and execute
-for (const call of resp.tool_calls ?? []) {
-  const tool = tools.find(t => t.name === call.name);
-  if (!tool) throw new Error(`Unknown tool: ${call.name}`);
-  const result = await tool.execute(call.arguments);
-  // 3. Send result back as tool_result message
+for (const call of resp.choices[0].message.tool_calls ?? []) {
+  const tool = toolsByName[call.function.name];
+  if (!tool) throw new Error(`Unknown tool: ${call.function.name}`);
+  const result = await tool.execute(JSON.parse(call.function.arguments));
+  // append result as a tool_result message and continue the loop
 }
 ```
 
-`execute` returns whatever the procedure returns (JSON-serializable). Pass it straight back to the LLM.
+For Anthropic: `input_schema = t.parameters`, otherwise identical.
 
-## Flows
+### MCP servers via `mcp-handler` (recommended for Next.js)
 
-### "Expose my TaskController to Claude"
+Each Vovk tool's `inputSchemas` field (per-key Standard Schemas for `body` / `query` / `params`) plugs directly into `server.registerTool`'s `inputSchema` argument:
 
-1. Add `@operation({ summary, description })` to each procedure.
-2. Derive:
-   ```ts
-   const { tools } = deriveTools({ modules: { TaskController } });
-   ```
-3. Feed into the chat loop.
+```ts filename="src/app/api/mcp/route.ts"
+import { createMcpHandler } from 'mcp-handler';
+import { deriveTools, ToModelOutput } from 'vovk';
+import type z from 'zod';
+import TaskController from '@/modules/task/TaskController';
+import UserController from '@/modules/user/UserController';
 
-### "Use my API as tools from a separate agent process"
-
-Use the RPC module instead of the controller:
-
-```ts
-import { TaskRPC } from 'vovk-client';
-const { tools } = deriveTools({ modules: { TaskRPC } });
-// execute() makes HTTP calls
-```
-
-Combine with `customFetcher` (see `rpc` skill) for auth.
-
-### "Build an MCP server from my Vovk API"
-
-1. `deriveTools` for the controllers/RPC modules you want to expose.
-2. Adapt the output to MCP's `ListTools` / `CallTool` handlers.
-3. MCP runtime (server transport, stdio, SSE) is not part of Vovk — pick your MCP SDK.
-
-### "Mix my API with a third-party OpenAPI service"
-
-Import both via `mixins` skill, then combine in one `deriveTools` call:
-
-```ts
 const { tools } = deriveTools({
-  modules: { TaskRPC, StripeAPI, GitHubAPI },
+  modules: { UserController, TaskController },
+  toModelOutput: ToModelOutput.MCP,
+  onExecute: (result, { name }) => console.log(`${name} executed`, result),
+  onError: (e, { name }) => console.error(`Error in ${name}`, e),
 });
-```
 
-### "Skip a procedure from being exposed as a tool"
-
-Use `x-tool` to exclude, or don't include that controller/module in the `modules` arg. Excluding per-module is usually simpler: split the controller into tool-exposed and internal halves.
-
-### "Write a standalone tool (no controller, no HTTP)"
-
-Use `createTool` directly:
-
-```ts
-import { createTool } from 'vovk';
-import { z } from 'zod';
-
-const sendEmail = createTool({
-  name: 'send_email',
-  description: 'Sends a transactional email via Resend.',
-  inputSchema: z.object({
-    to: z.string().email(),
-    subject: z.string(),
-    body: z.string(),
-  }),
-  execute: async ({ to, subject, body }) => {
-    await resend.emails.send({ from: 'hi@app.com', to, subject, html: body });
-    return { sent: true };
+const handler = createMcpHandler(
+  (server) => {
+    tools.forEach(({ title, name, execute, description, inputSchemas }) => {
+      server.registerTool(
+        name,
+        {
+          title,
+          description,
+          inputSchema: inputSchemas as Partial<Record<'body' | 'query' | 'params', z.ZodTypeAny>>,
+        },
+        execute,
+      );
+    });
   },
-});
+  {},
+  { basePath: '/api' }, // server lives at /api/mcp
+);
+
+export { handler as GET, handler as POST };
 ```
 
-No procedure, no controller, no OpenAPI. Good for SDK wrappers, calculators, local file operations, internal queries.
-
-### "Combine derived + standalone tools in one chat loop"
+**Demo-grade gating with a query-string key.** MCP clients like Claude Desktop can connect to a remote MCP server by URL but don't run a full OAuth flow out of the box. For getting a Vovk-backed MCP server in front of a real client *quickly* — local testing, throwaway demos, sharing a personal endpoint with one collaborator — wrap with a shared-secret check:
 
 ```ts
-const { tools: derived } = deriveTools({ modules: { TaskRPC } });
-const allTools = [...derived, getWeather, sendEmail];
+const authorizedHandler = (req: Request) => {
+  const { MCP_ACCESS_KEY } = process.env;
+  const accessKey = new URL(req.url).searchParams.get('mcp_access_key');
+  if (MCP_ACCESS_KEY && accessKey !== MCP_ACCESS_KEY) {
+    return new Response('Invalid mcp_access_key', { status: 401 });
+  }
+  return handler(req);
+};
+export { authorizedHandler as GET, authorizedHandler as POST };
 ```
 
-Same shape, same chat-loop code.
+> **This is not production auth.** A query-string secret leaks into browser history, server logs, proxy logs, and bookmarks; it's identical for every caller. For anything user-facing or multi-tenant, use real OAuth / session cookies / header-based middleware in front of the MCP route. The pattern above exists because it's the shortest path to "Claude can talk to my server right now."
 
-### "Build an MCP server with hand-written + derived tools"
-
-1. `deriveTools({ modules, toModelOutput: ToModelOutput.MCP })` for the API half.
-2. `createTool({ ..., toModelOutput: ToModelOutput.MCP })` for each standalone tool.
-3. Merge into one array, surface via your MCP SDK's `ListTools` / `CallTool`.
-
-Pick `ToModelOutput.MCP` consistently — don't mix formatters in the same tool list.
+Test locally with the official MCP Inspector: `npx @modelcontextprotocol/inspector`. To mix derived + standalone MCP tools, set `toModelOutput: ToModelOutput.MCP` on `createTool` too and register inside the same `createMcpHandler` callback. For non-Next.js MCP runtimes, the same `tools` + `toolsByName` pair drops into any SDK that accepts `ListTools` / `CallTool` handlers.
 
 ## Gotchas
 
-- **No `@operation` → weak tool description**. LLMs call derived tools poorly without good descriptions. Add `summary` + `description` to every tool-exposed procedure. For `createTool`, the `description` field is the equivalent — keep it action-oriented.
-- **Controller vs RPC module**: same `deriveTools` call; different execution path (`.fn()` vs HTTP). Pick deliberately.
-- **Output must be JSON-serializable**. Tools can't return `File`, streams, or `FormData` — except `ToModelOutput.MCP` understands a `Response` with an `image/*` content type and emits the correct MCP block.
-- **`createTool` errors don't throw**. They land as `{ error: string }` in the result — by design, so the LLM can recover. Use `onError` if you want a side-channel log.
-- **`createTool` input is `null` when `inputSchema` is omitted**, not `undefined`. Don't destructure.
-- **Schema quality matters**. Descriptive Zod/Valibot schemas with `.describe()` produce better LLM arguments. Tight enums beat free-form strings. Applies equally to `createTool.inputSchema` and procedure schemas.
-- **Tool name collisions**: two tools with the same `name` (derived or standalone) will collide. `summary` / `x-tool.name` overrides for derived; pick a unique `name` for `createTool`.
-- **Schemas flow from `procedure()`** for derived tools. If you want a derived tool to accept only `body` and ignore `params`, declare only `body` in `procedure({ body: ... })`.
-- **Local (`.fn`) derived tools skip HTTP**: auth decorators that read HTTP headers won't fire. Use a shared service layer for auth logic you want to apply both ways.
-- **Mix `toModelOutput` settings at your peril**. All tools in a single LLM turn should use the same formatter — otherwise the call site has to branch.
+- **No `@operation` → no tool.** `deriveTools` filters on `handler.schema.operationObject`. Procedures without `@operation` are skipped silently. Always annotate.
+- **Default tool name is `ModuleName_handlerName`.** Verbose but unique. Use `@operation.tool({ name: 'get_user_by_id' })` for a cleaner LLM-facing name.
+- **`parameters` is nested, not flat.** `tool.execute({ body, query, params })`, not `tool.execute({ ...flat })`. The LLM sees the nested JSON Schema and constructs arguments accordingly.
+- **`createTool` errors don't throw**; they land as `{ error }` (DEFAULT) or `{ content, isError: true }` (MCP). By design — the LLM can recover. Use `onError` for side-channel logs.
+- **`createTool` with no `inputSchema` calls `execute(null)`**, not `execute(undefined)`. Don't destructure.
+- **Output must be JSON-serializable** — except `ToModelOutput.MCP` understands a `Response` with binary `Content-Type` (image/audio) and emits the correct MCP block.
+- **Schema quality drives tool quality.** Use `.describe()` on every Zod field. Tight enums beat free-form strings. Applies equally to `procedure()` schemas and `createTool.inputSchema`.
+- **Tool name collisions clobber `toolsByName`.** Two tools with the same `name` produce a map with only the last one. Override with `@operation.tool({ name })` if module-prefixed defaults collide.
+- **Local (`.fn()`) tools skip HTTP.** Auth decorators that read HTTP headers won't fire — use a shared service layer for auth logic that needs to run both via HTTP and via local tool calls.
+- **Mixing `toModelOutput` settings is rarely useful.** All tools in one LLM turn should use the same formatter, otherwise the call site has to branch on tool identity.
+- **`hidden: true` is the canonical exclusion knob** — filtered at derive time. `pick`/`omit` is for coarser per-call selection, not a substitute.
