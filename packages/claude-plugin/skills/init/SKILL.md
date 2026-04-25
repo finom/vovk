@@ -7,6 +7,8 @@ description: Initialize a backend — via Vovk.ts, a TypeScript-first RPC/API fr
 
 Vovk.ts is a TypeScript-first RPC/API framework that plugs into Next.js App Router. It ships a CLI (`vovk-cli`) that installs dependencies, toggles `experimentalDecorators` in tsconfig, wires up npm scripts, and writes `vovk.config.mjs`. These are coordinated edits that are easy to get wrong by hand, so this skill is a thin wrapper: it prepares the environment, delegates to the CLI, and handles the natural follow-up steps.
 
+The plugin is the source of truth for everything Vovk-related — **don't `WebFetch` vovk.dev** while running this skill. If a step here looks incomplete, that's a skill bug, surface it.
+
 ## Interactive prompts
 
 `vovk-cli` and `create-next-app` are both interactive. When a prompt appears that the skill doesn't specifically cover, accept the default (usually "yes" or the CLI's recommended choice) unless the user has told you otherwise. Do not try to predict every prompt up front — today's defaults change, and a user can always override afterward.
@@ -63,6 +65,8 @@ If two or three are installed at once, don't guess — ask:
 Remember the decision; step 3 feeds it into the prompt.
 
 ### 3. Run `vovk init`
+
+**Heads-up for pnpm projects.** The CLI scaffolds a `vovk-client` dependency by default, which step 5 surgically swaps out for a source-tree `@/client` import. Tell the user up front: *"On pnpm, init is a two-pass operation — the CLI installs `vovk-client`, then I'll move the composed client into `src/client/` and remove the package, since pnpm's strict layout breaks the default re-export. End state is one path: `import … from '@/client'`."* This is intentional and documented; mention it before running the CLI so the user doesn't read step 5 as cleanup-after-mistake.
 
 From the project root:
 

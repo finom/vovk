@@ -276,7 +276,30 @@ Wire it into your release flow alongside the npm bundle and Rust crate (the hell
 }
 ```
 
-Version / package name flow from the project root `package.json` (the bundling step copies fields into the generated `pyproject.toml`). Set `version` in the root `package.json` and `npm version patch` propagates to all three targets.
+Version / package name flow from the project root `package.json` (the generator copies whitelisted fields — `name`, `version`, `description`, `license`, `author`, `contributors`, `repository`, `homepage`, `bugs`, `keywords` — into the generated `pyproject.toml`). Set `version` in the root `package.json` and `npm version patch` propagates to all three targets.
+
+**Name transform — pin this before publishing.** The Python package name is the root `name` with hyphens replaced by underscores (`my-api` → `my_api`). The same name is used for the filesystem path (`src/<name>/`), the `pyproject.toml` `name`, and the `pip install` command in the README. Two cases need an explicit override:
+
+- **Scoped packages** (`@org/foo`) — `@` and `/` aren't transformed, so the default produces an invalid Python name. Set the override below.
+- **You want a different distribution name** than the npm one (e.g., npm is `my-api`, PyPI is `acme-client`).
+
+Override via `clientTemplateDefs.py.outputConfig.package.name` (same field shape the bundle skill documents):
+
+```js
+// vovk.config.mjs
+const config = {
+  composedClient: { fromTemplates: ['js', 'py'] },
+  clientTemplateDefs: {
+    py: {
+      extends: 'py',
+      outputConfig: {
+        origin: 'https://api.example.com',
+        package: { name: 'acme_client' }, // PyPI name + filesystem path
+      },
+    },
+  },
+};
+```
 
 ## Flows
 

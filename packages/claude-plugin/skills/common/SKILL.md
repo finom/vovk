@@ -9,6 +9,10 @@ This is the catch-all skill for things that cross skill boundaries or don't fit 
 
 If the user's question clearly belongs to a specialized skill (segment / procedure / rpc / tools / jsonlines / openapi / bundle / decorators / mixins / python / rust), go there first. Come here for cross-cutting fundamentals or when unsure.
 
+## Source of truth
+
+The plugin ships every API surface, config key, and runtime shape this framework exposes. **Don't `WebFetch` vovk.dev or grep external docs** — if a skill is missing or wrong about something you need, that's a plugin bug, surface it instead of compensating with a network fetch. The skills cite source paths (`packages/vovk/src/...`, `packages/vovk-cli/src/...`) when the docs and source disagree; trust source.
+
 ## Environment requirements
 
 - **Node.js ≥ 22**
