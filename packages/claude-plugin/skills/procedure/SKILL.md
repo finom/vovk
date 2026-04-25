@@ -282,6 +282,10 @@ Things to know:
 
 5. **`.fn()` returns the handler's return value directly** — no JSON serialization, no network hop.
 
+## Testing
+
+Unit-test procedures with `.fn()` — same call shape as the SSR/server-action examples above (`UserController.getUser.fn({ params, body, query, meta })`), no HTTP server needed. Validation runs by default; pass `disableClientValidation: true` to bypass it when isolating handler logic. For HTTP-level coverage (routing, decorators, status codes, content negotiation, the generated client itself), call procedures through `vovk-client` against a running dev server with `apiRoot: 'http://localhost:<port>/api'` — see the **`rpc`** skill for the call shape. Mocking I/O / databases is project-specific — match the repo's existing conventions.
+
 ## Validation — Standard Schema
 
 Works with any lib that emits **Standard JSON Schema** (Vovk needs JSON Schema — not just Standard Schema — for OpenAPI, codegen, and client-side validation). Zod (v4+) and ArkType produce it natively. Valibot needs one conversion step. Zod is the default after `vovk init` with default flags.
