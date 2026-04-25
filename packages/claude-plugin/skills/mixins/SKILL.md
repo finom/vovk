@@ -121,10 +121,10 @@ openAPIMixin: { source: { object: spec }, ... }
 
 | Value | Effect |
 |---|---|
-| `'camel-case-operation-id'` | `operationId: 'get_pets'` → `getPets`. |
-| `'auto'` *(default when operation ID is camelCase or missing)* | Use `operationId` as-is if it's already camelCase; if it's snake_case, camelCase it; otherwise synthesize from `METHOD + path`. |
+| `'camel-case-operation-id'` | Always camelCase the `operationId`. Throws if `operationId` is missing. Use only when every operation has one. |
+| `'auto'` *(default)* | One mode that handles all cases: pass `operationId` through if it's already camelCase, camelCase it if it's snake_case, otherwise synthesize from `METHOD + path`. Safe for messy specs. |
 
-The default behavior: Vovk auto-detects between `'camel-case-operation-id'` (snake_case operation IDs) and `'auto'` (everything else). Use a function for anything more structured — see below.
+`'auto'` is itself the auto-detecting mode — there's no separate layer that picks between the two presets. Reach for `'camel-case-operation-id'` only when you want the throw-on-missing behavior; otherwise leave the default. For anything more structured (splitting operations across multiple modules, custom prefixes), use a function — see below.
 
 **Function form** — receives `{ operationObject, method, path, openAPIObject }` and returns the string. Use this when operation IDs are structured and you want to split them into multiple modules. The GitHub REST API is the canonical example for illustrating the technique (`issues/list-for-org` → `GithubIssuesAPI.listForOrg`) — though for actual GitHub work, prefer `@octokit/rest` over a mixin:
 

@@ -48,7 +48,7 @@ dist_rust/
   src/http_request.rs       # HTTP handling
   src/lib.rs                # RPC functions + types
   src/read_full_schema.rs   # Schema utilities
-  schema.json               # OpenAPI schema (crate root, not src/)
+  src/schema.json           # OpenAPI schema (read at runtime via CARGO_MANIFEST_DIR/src/schema.json)
   Cargo.toml                # edition = "2021"
   README.md
 ```

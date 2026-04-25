@@ -54,7 +54,7 @@ export default config;
 | `schemaOutDir` | `'.vovk-schema'` | Where the dev watcher writes per-segment JSON artifacts. **Commit this directory.** |
 | `logLevel` | `'info'` | CLI verbosity: `'debug' \| 'info' \| 'warn' \| 'error'`. |
 | `devHttps` | `false` | Enable HTTPS in `vovk dev`. |
-| `exposeConfigKeys` | – | Whitelist of config keys exposed in `.vovk-schema/_meta.json`. |
+| `exposeConfigKeys` | `['libs', 'rootEntry']` | Whitelist of config keys exposed in `.vovk-schema/_meta.json`. Pass `true` to expose everything, `false` for nothing, or a custom array. |
 | `moduleTemplates` | set by `vovk init` | Templates `vovk new controller service` uses. |
 | `clientTemplateDefs` | – | Custom client templates / per-template overrides (see `python` / `rust` skills for examples). |
 | `composedClient` | – | Composed-client config: `fromTemplates`, `outDir`, `prettifyClient`, `outputConfig`. (See `rpc` skill.) |

@@ -77,7 +77,7 @@ The **keys** of `controllers` (`UserRPC`, `PostRPC`) are the client-side module 
 | `segmentName` | no | `""` (root) | Identifier; must mirror the folder path for named segments (e.g., `"foo/bar"`). |
 | `emitSchema` | no | `true` | Emit schema for codegen. Leave on unless you know why. |
 | `exposeValidation` | no | `true` | Expose validation data to the client. Leave on for client-side validation. |
-| `onError` | no | — | `(error: HttpError, request: NextRequest) => void` for logging/metrics. |
+| `onError` | no | — | `(err: Error, req: VovkRequest) => void \| Promise<void>` — for logging/metrics. `VovkRequest` extends `NextRequest`; `err` is whatever the handler threw (often an `HttpException`). |
 
 ### Segment priority
 

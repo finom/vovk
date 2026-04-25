@@ -175,7 +175,7 @@ multitenant({
   targetHost: string,    // your root domain, e.g. 'example.com' or 'localhost:3000'
   overrides: Record<string, Array<{ from: string; to: string }>>,
 }): {
-  action: 'rewrite' | 'redirect' | 'notfound' | null;
+  action: 'rewrite' | 'redirect' | null;
   destination: string | null;
   subdomains: Record<string, string> | null; // captured [placeholder] values, if any
   message: string;                            // human-readable summary for logs
@@ -209,8 +209,9 @@ If a request arrives on the **root host** with a path starting with a reserved t
 |---|---|---|
 | `'rewrite'` | `NextResponse.rewrite(destination)` | Normal tenant routing — host matches an override and path matches a `from`. |
 | `'redirect'` | `NextResponse.redirect(destination)` | Root-host access to a reserved tenant path (guard above). |
-| `'notfound'` | Return `new NextResponse('Not Found', { status: 404 })` | Reserved for future use — current helper returns it in edge cases. |
 | `null` | `NextResponse.next()` | Pass-through — not a tenant request (schema endpoint, unmatched host, etc.). |
+
+Some docs examples branch on `action === 'notfound'` and return a 404. The current `multitenant()` helper never produces that value (only `'rewrite'`, `'redirect'`, or `null`), so a `'notfound'` branch is dead code. Drop it unless you're handling a 404 yourself for some other reason.
 
 `subdomains` carries the captured dynamic values (e.g. `{ customer_name: 'acme' }`) — useful for structured logging, analytics, or feeding into request context.
 

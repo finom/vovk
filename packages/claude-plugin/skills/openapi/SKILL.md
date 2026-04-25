@@ -316,7 +316,7 @@ Per-operation `security` lives on `@operation` if you want to override.
 
 ### "Admin API should have its own docs and server URL"
 
-Per-segment override under `outputConfig.segments.admin.openAPIObject`. Import `from 'vovk-client/admin/openapi'` separately.
+Per-segment override under `outputConfig.segments.admin.openAPIObject`. Import the per-segment spec from the segmented client's local alias — `import { openapi } from '@/client/admin/openapi'` (path follows `segmentedClient.outDir`). There is no `vovk-client/admin/openapi` barrel.
 
 ### "Deprecate an endpoint"
 

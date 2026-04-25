@@ -15,10 +15,9 @@ Claude Code plugin for [Vovk.ts](https://vovk.dev). Topic-based skills that teac
 - **`vovk:openapi`** — OpenAPI 3.x generation: `@operation` metadata, `outputConfig.openAPIObject`, per-segment overrides, Scalar docs, `_schema_` endpoint.
 - **`vovk:mixins`** — import third-party OpenAPI 3.x schemas as typed client modules, use them identically to native RPC modules and with `deriveTools`.
 - **`vovk:tools`** — expose procedures as LLM tools via `deriveTools()`, MCP-compatible output, `@operation`, controllers vs RPC modules, OpenAI / Anthropic / MCP wiring.
-- **`vovk:bundle`** — `vovk bundle` CLI for publishable SDKs (TypeScript / Python / Rust), bundle vs generate, per-target configuration, registry publishing.
+- **`vovk:bundle`** — `vovk bundle` CLI for publishable TypeScript SDKs (`bundle.build`, tsdown recipe, `outputConfig` knobs, npm publishing). Python / Rust ship via `vovk generate` — see those skills.
 - **`vovk:python`** — generate a typed Python client (`vovk-python`), `py` / `pySrc` templates, `TypedDict` shapes, JSON Lines via Python generators, PyPI publishing.
 - **`vovk:rust`** — generate a typed Rust crate (`vovk-rust`), `rs` / `rsSrc` templates, async `reqwest` call shape, `futures::Stream` consumption, crates.io publishing.
-- **`vovk:test`** — write and run unit tests (via `.fn()`), service tests, and integration tests (via the generated `vovk-client`).
 
 ## Install
 
