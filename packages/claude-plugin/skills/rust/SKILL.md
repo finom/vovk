@@ -35,19 +35,21 @@ npm i -D vovk-rust
 
 ### Standalone crate
 
+The canonical output dir is `./dist_rust` (the convention used by the official hello-world example):
+
 ```bash
-npx vovk generate --from rs --out ./rust_package
+npx vovk generate --from rs --out ./dist_rust
 ```
 
 Output:
 
 ```
-rust_package/
+dist_rust/
   src/http_request.rs       # HTTP handling
   src/lib.rs                # RPC functions + types
   src/read_full_schema.rs   # Schema utilities
-  src/schema.json           # OpenAPI schema
-  Cargo.toml
+  schema.json               # OpenAPI schema (crate root, not src/)
+  Cargo.toml                # edition = "2021"
   README.md
 ```
 
@@ -69,20 +71,25 @@ const config = {
 export default config;
 ```
 
-Custom output directory:
+**Bake in the production API URL** via `clientTemplateDefs.rs.outputConfig.origin` — that's what the generated crate uses by default. Pattern from the hello-world example:
 
 ```ts
+// vovk.config.js
+const PROD_ORIGIN = 'https://hello-world.vovk.dev';
+
 const config = {
+  composedClient: { fromTemplates: ['js', 'rs'] },
   clientTemplateDefs: {
     rs: {
       extends: 'rs',
-      composedClient: {
-        outDir: './my_dist_rust',
-      },
+      outputConfig: { origin: PROD_ORIGIN },
+      // composedClient: { outDir: './dist_rust' }, // override output dir if needed
     },
   },
 };
 ```
+
+Consumers can still override per call via the `api_root` argument.
 
 ## Generated call shape
 
@@ -104,9 +111,9 @@ pub async fn update_user(
 ### Usage
 
 ```rust
-use vovk_hello_world::user_rpc;
+use my_api_client::user_rpc;
 
-pub async fn main() {
+pub async fn run() -> Result<(), Box<dyn std::error::Error>> {
     use user_rpc::update_user_::{
         body as Body,
         body_::profile as Profile,
@@ -132,10 +139,12 @@ pub async fn main() {
         false,  // disable_client_validation
     )
     .await?;
+
+    Ok(())
 }
 ```
 
-Method names on the Rust side are snake_case; the `user_rpc` module reflects the `UserRPC` controller.
+Method names on the Rust side are snake_case; the `user_rpc` module reflects the `UserRPC` controller. Module path (`my_api_client` above) depends on the crate name configured at generation time.
 
 ## JSON Lines streaming
 
@@ -157,7 +166,7 @@ Consume with `futures::StreamExt`:
 
 ```rust
 use futures::StreamExt;
-use vovk_hello_world_local::open_api_rpc::stream_rpc;
+use my_api_client::stream_rpc;
 
 pub async fn consume_stream() -> Result<(), Box<dyn std::error::Error>> {
     let mut stream = stream_rpc::stream_tokens((), (), (), None, None, false).await?;
@@ -173,12 +182,40 @@ See `jsonlines` skill for the server side.
 
 ## Dependencies pulled in
 
-The generated `Cargo.toml` brings:
+The generated `Cargo.toml` brings (per the hello-world example):
 
-- **`reqwest`** — async HTTP.
-- **`serde`** + `serde_json` — (de)serialization.
-- **`jsonschema`** — client-side validation against `schema.json`.
-- **`futures`** — streaming.
+```toml
+[dependencies]
+serde_json    = "1.0"
+futures-util  = "0.3"
+jsonschema    = "0.17"
+urlencoding   = "2.1"
+once_cell     = "1.17"
+
+[dependencies.serde]
+version  = "1.0"
+features = ["derive"]
+
+[dependencies.reqwest]
+version  = "0.12"
+features = ["json", "multipart", "stream"]
+
+[dependencies.tokio]
+version  = "1"
+features = ["macros", "rt-multi-thread", "io-util"]
+
+[dependencies.tokio-util]
+version  = "0.7"
+features = ["codec"]
+```
+
+- **`reqwest 0.12`** — async HTTP, with `multipart` and `stream` features for file uploads and JSON Lines.
+- **`tokio 1`** — async runtime. The generated crate assumes a multi-thread runtime is available; consumers pull this in transitively but typically add it directly with `#[tokio::main]` for binaries.
+- **`tokio-util` (`codec`)** — line-delimited framing for JSON Lines decoding.
+- **`serde` (`derive`) + `serde_json`** — (de)serialization.
+- **`futures-util`** — streaming combinators (`StreamExt::next` etc).
+- **`jsonschema 0.17`** — client-side validation against `schema.json`.
+- **`urlencoding`** + **`once_cell`** — internal utilities.
 
 ## Auth + base URL
 
@@ -210,11 +247,24 @@ Skip for hot paths; keep on for safety in application code.
 
 ## Publishing to crates.io
 
+Canonical script from the hello-world example — note `--allow-dirty`, which is required because the generated crate is an uncommitted build artifact:
+
 ```bash
-cargo publish --manifest-path rust_package/Cargo.toml
+cargo publish --manifest-path dist_rust/Cargo.toml --allow-dirty
 ```
 
-Crate name / version flow from the OpenAPI `info.title` + `info.version` (`vovk.config.mjs` → `outputConfig.openAPIObject.info`). Override in the template config when the OpenAPI title isn't a good crate name.
+Wire it into your release flow alongside the npm bundle and Python package (the hello-world example chains all three under `postversion`):
+
+```json
+"scripts": {
+  "publish:node":   "npm publish ./dist",
+  "publish:rust":   "cargo publish --manifest-path dist_rust/Cargo.toml --allow-dirty",
+  "publish:python": "python3 -m build ./dist_python --wheel --sdist && python3 -m twine upload ./dist_python/dist/*",
+  "postversion":    "vovk generate && vovk bundle && npm run publish:node && npm run publish:rust && npm run publish:python"
+}
+```
+
+Crate name / version flow from the project root `package.json` (the generator copies fields into the generated `Cargo.toml`). The hello-world example crate is `vovk_hello_world` (underscored, since hyphens are crates.io-discouraged).
 
 ## Flows
 

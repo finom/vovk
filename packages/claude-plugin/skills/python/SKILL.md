@@ -36,22 +36,21 @@ npm i -D vovk-python
 
 ### Standalone package
 
-Emits a complete Python package (ready for PyPI):
+Emits a complete Python package (ready for PyPI). The canonical output dir is `./dist_python` (the convention used by the official hello-world example):
 
 ```bash
-npx vovk generate --from py --out ./python_package
+npx vovk generate --from py --out ./dist_python
 ```
 
 Output:
 
 ```
-python_package/
-  src/.../__init__.py          # RPC functions + TypedDict definitions
-  src/.../api_client.py        # HTTP client
-  src/.../py.typed             # Type-hint marker
-  src/.../schema.json          # Generated schema
-  pyproject.toml
-  setup.cfg
+dist_python/
+  src/<package_name>/__init__.py    # RPC functions + TypedDict definitions
+  src/<package_name>/api_client.py  # HTTP client
+  src/<package_name>/py.typed       # Type-hint marker
+  src/<package_name>/schema.json    # Generated schema
+  pyproject.toml                    # hatchling build backend
   README.md
 ```
 
@@ -77,29 +76,32 @@ const config = {
 export default config;
 ```
 
-Custom output directory per template:
+**Bake in the production API URL** via `clientTemplateDefs.py.outputConfig.origin` — this is what the generated client uses by default. Pattern from the hello-world example:
 
 ```ts
+// vovk.config.js
+const PROD_ORIGIN = 'https://hello-world.vovk.dev';
+
 const config = {
+  composedClient: { fromTemplates: ['js', 'py'] },
   clientTemplateDefs: {
     py: {
       extends: 'py',
-      composedClient: {
-        outDir: './my_dist_python',
-      },
+      outputConfig: { origin: PROD_ORIGIN },
+      // composedClient: { outDir: './dist_python' }, // override output dir if needed
     },
   },
 };
 ```
 
-After this, every `npx vovk generate` (and every `vovk dev` regeneration) refreshes the Python client too.
+After this, every `npx vovk generate` (and every `vovk dev` regeneration) refreshes the Python client too — with `PROD_ORIGIN` baked in for consumers, and overridable per-call via `api_root`.
 
 ## Generated call shape
 
-Types follow the convention `[PascalCaseMethodName][Body|Query|Params|Output]` as `TypedDict`.
+Types follow the convention `[PascalCaseMethodName][Body|Query|Params|Output]` as `TypedDict`. Methods are static, snake_case, with positional args in this order: `body, query, params, headers?, files?, api_root?, disable_client_validation`.
 
 ```python
-from dist_python.src.vovk_hello_world import UserRPC
+from my_api_client import UserRPC  # whatever package the generator wrote
 
 body: UserRPC.UpdateUserBody = {
     "email": "john@example.com",
@@ -110,24 +112,108 @@ params: UserRPC.UpdateUserParams = {
     "id": "123e4567-e89b-12d3-a456-426614174000",
 }
 
-response = UserRPC.update_user(params=params, body=body, query=query)
+# Keyword args work for clarity at call sites:
+response = UserRPC.update_user(body=body, query=query, params=params)
 ```
 
 Method names are snake_case. Type names are PascalCase.
 
-## JSON Lines streaming
+### Multipart uploads via `files`
 
-Streaming endpoints return a Python **generator** — iterate with a `for` loop:
+Procedures with `multipart/form-data` content type accept a `files` keyword arg — pass a `Dict[str, Any]` matching `requests`' file upload format:
 
 ```python
-from dist_python.src.vovk_hello_world import StreamRPC
+with open("avatar.png", "rb") as f:
+    response = UserRPC.upload_avatar(
+        params={"id": user_id},
+        files={"avatar": ("avatar.png", f, "image/png")},
+    )
+```
 
-stream_response = StreamRPC.stream_tokens()
-for item in stream_response:
+## JSON Lines streaming
+
+Procedures with `iteration` schemas (server-side `async function*` handlers — see **`jsonlines`** skill) generate **synchronous Python generators** on the client side. The return type is `Generator[<MethodName>Iteration, None, None]`:
+
+```python
+@staticmethod
+def stream_tokens(
+    body: StreamTokensBody = None,         # () unit type → None when procedure has no body
+    query: StreamTokensQuery = None,
+    params: StreamTokensParams = None,
+    headers: Optional[Dict[str, str]] = None,
+    files: Optional[Dict[str, Any]] = None,
+    api_root: Optional[str] = None,
+    disable_client_validation: bool = False,
+) -> Generator[StreamTokensIteration, None, None]:
+    ...
+```
+
+The yielded items are typed against the procedure's `iteration` schema — `StreamTokensIteration` is a `TypedDict`, so editors autocomplete its fields.
+
+### Basic consumption
+
+```python
+from my_api_client import StreamRPC
+
+for item in StreamRPC.stream_tokens():
     print(item["message"], end="", flush=True)
 ```
 
-See `jsonlines` skill for what a streaming endpoint looks like server-side.
+### Standard generator patterns
+
+Sync generators support all the usual idioms:
+
+```python
+# Manual pull
+stream = StreamRPC.stream_tokens()
+first = next(stream)
+second = next(stream)
+
+# Collect into a list (drains the stream)
+all_items = list(StreamRPC.stream_tokens())
+
+# Comprehensions
+messages = [item["message"] for item in StreamRPC.stream_tokens()]
+
+# Early termination — break out of the for-loop
+for item in StreamRPC.stream_tokens():
+    if item["message"] == "STOP":
+        break
+    handle(item)
+# The underlying HTTP connection closes when the generator goes out of scope.
+```
+
+### With body / query / params
+
+Streaming endpoints accept the same input shape as JSON ones:
+
+```python
+from my_api_client import ChatRPC
+
+for token in ChatRPC.complete(
+    body={"messages": [{"role": "user", "content": "hello"}]},
+    query={"model": "gpt-4"},
+):
+    print(token["text"], end="", flush=True)
+```
+
+### Error handling
+
+If the underlying HTTP request fails or a line fails iteration validation, the generator raises on the next `next()` call. Wrap consumption in `try/except` if you need to recover gracefully:
+
+```python
+try:
+    for item in StreamRPC.stream_tokens():
+        handle(item)
+except Exception as exc:
+    log.error("stream failed mid-iteration: %s", exc)
+```
+
+### Sync, not async
+
+The generator is **synchronous** — backed by `requests`, which doesn't expose an async API. For asyncio code, run the iteration in a thread pool (`asyncio.to_thread` or `loop.run_in_executor`) or wrap each `next()` call accordingly. Native async streaming isn't available in the current Python client.
+
+See **`jsonlines`** skill for what the server-side handler looks like.
 
 ## Client-side validation
 
@@ -144,13 +230,24 @@ response = UserRPC.update_user(
 
 ## Dependencies pulled in
 
-The generated package declares:
+The generated `pyproject.toml` declares (per the hello-world example):
 
-- `requests` — HTTP.
+```toml
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+requires-python = ">=3.8"
+dependencies = ["requests", "jsonschema", "rfc3987", "urllib3==1.26.15"]
+```
+
+- `requests` — HTTP client.
 - `jsonschema` — client-side validation.
-- Standard library (`typing`, `json`).
+- `rfc3987` — URI/IRI validation (used by `jsonschema` format checkers).
+- `urllib3==1.26.15` — pinned to avoid `requests`/`urllib3` v2 compatibility issues.
 
-Lightweight; no heavy runtime footprint.
+Build backend is **hatchling**, no runtime overhead beyond the deps above.
 
 ## Auth + base URL
 
@@ -160,15 +257,26 @@ The generated client targets a URL baked in at generate time. For production con
 
 ## PyPI publishing
 
-Standard Python packaging:
+Canonical script from the hello-world example (build wheel + sdist, then upload via `twine`):
 
 ```bash
-cd python_package
-python3 -m build
-twine upload dist/*
+python3 -m build ./dist_python --wheel --sdist && python3 -m twine upload ./dist_python/dist/*
 ```
 
-Version / package name come from the OpenAPI `info.title` + `info.version` (`vovk.config.mjs` → `outputConfig.openAPIObject.info`). Override in the template config if the title isn't a good package name.
+Both `python3 -m build` and `python3 -m twine` invoke the modules directly — works with whatever Python environment has them installed (`pip install build twine`). Run `twine` with credentials configured via `~/.pypirc` or `TWINE_USERNAME` / `TWINE_PASSWORD` env vars.
+
+Wire it into your release flow alongside the npm bundle and Rust crate (the hello-world example chains all three under `postversion`):
+
+```json
+"scripts": {
+  "publish:node":   "npm publish ./dist",
+  "publish:rust":   "cargo publish --manifest-path dist_rust/Cargo.toml --allow-dirty",
+  "publish:python": "python3 -m build ./dist_python --wheel --sdist && python3 -m twine upload ./dist_python/dist/*",
+  "postversion":    "vovk generate && vovk bundle && npm run publish:node && npm run publish:rust && npm run publish:python"
+}
+```
+
+Version / package name flow from the project root `package.json` (the bundling step copies fields into the generated `pyproject.toml`). Set `version` in the root `package.json` and `npm version patch` propagates to all three targets.
 
 ## Flows
 
@@ -208,9 +316,12 @@ Then import from `my_project.vovk_client...`.
 ## Gotchas
 
 - **Experimental.** API shape is not frozen — pin `vovk-python` version and expect breaks on upgrade. Integration-test after every bump.
-- **`TypedDict`, not classes.** The generated shapes are dict-based for interop with JSON; treat them as plain dicts with type hints, not Pydantic models.
+- **`TypedDict`, not classes.** Generated shapes are dict-based for JSON interop; treat them as plain dicts with type hints, not Pydantic models.
 - **Method names are snake_case**, type names are PascalCase. `updateUser` on the server → `update_user(...)` in Python, with `UpdateUserBody` etc.
-- **Client-side validation uses `jsonschema`** — adds a small import + runtime cost. Disable per-call when you need speed or want server-only enforcement.
+- **Client-side validation uses `jsonschema`** — small import + runtime cost. Disable per-call when you need speed or want server-only enforcement.
 - **Base URL / auth indirection is version-dependent.** Read the generated `api_client.py` on the installed version rather than assuming a fixed surface.
 - **Regenerate on schema changes.** Any procedure / schema change on the server requires `vovk generate` before the Python client reflects it. CI should regenerate as part of the build.
 - **Don't hand-edit generated files.** Put shared Python utilities alongside, not inside, the generated package.
+- **Body content types beyond JSON + multipart are limited.** `text/plain` and `application/octet-stream` request bodies aren't fully supported yet (roadmap). For binary uploads, prefer multipart via the `files` arg.
+- **Mixins with circular `$refs` may fail to generate** — the Python generator can't yet resolve cycles in third-party OpenAPI specs. Roadmap item.
+- **Named schemas in `components/schemas` don't yet produce shared importable types.** Each call site gets its own scoped `TypedDict` instead of a single `UserSchema` reused across methods. Roadmap item — until fixed, expect duplicated type definitions.

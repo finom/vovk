@@ -12,7 +12,7 @@ Vovk produces LLM-consumable tool definitions — `{ name, description, paramete
 
 Both shapes are interoperable — mix them in one array and feed to OpenAI / Anthropic / Vercel AI SDK / MCP servers.
 
-**Out of scope:** procedure authoring (**`procedure`**), `@operation` for OpenAPI docs (**`openapi`**), third-party OpenAPI mixin setup (**`mixins`**). MCP server transport / hosting is outside Vovk; **for Next.js, the recommended runtime is [`mcp-handler`](https://www.npmjs.com/package/mcp-handler)** — example below.
+**Out of scope:** procedure authoring (**`procedure`**), `@operation` for OpenAPI docs (**`openapi`**), third-party OpenAPI mixin setup (**`mixins`**). MCP server transport / hosting is outside Vovk; **for Next.js, the recommended runtime is the `mcp-handler` npm package** — example below.
 
 > **Import path note.** Code samples import from `'vovk-client'` — the **composed client + `js` template** default, re-exported from `node_modules/.vovk-client`. With the `ts` template, import from `composedClient.outDir` (e.g. `@/client`). With the segmented client, import from `@/client/<segment>`. Call shape is identical. See the **`rpc`** skill.
 
