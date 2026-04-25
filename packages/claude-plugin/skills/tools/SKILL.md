@@ -387,6 +387,8 @@ For Anthropic: `input_schema = t.parameters`, otherwise identical.
 
 ### MCP servers via `mcp-handler` (recommended for Next.js)
 
+This pattern works for **procedure-backed controllers** (where each handler was produced by `procedure({...}).handle(...)` and so carries the `.definition` field). It does **not** work for mixin-backed RPC modules — mixins go through `createRPC` and don't carry `definition`, so their `inputSchemas` come back empty `{}` and the LLM has no input shape. For mixins, hand-write `createTool({...})` wrappers (snippet in "Mixins → tools" below).
+
 Each Vovk tool's `inputSchemas` field (per-key Standard Schemas for `body` / `query` / `params`) plugs directly into `server.registerTool`'s `inputSchema` argument:
 
 ```ts filename="src/app/api/mcp/route.ts"
@@ -442,6 +444,35 @@ export { authorizedHandler as GET, authorizedHandler as POST };
 
 Test locally with the official MCP Inspector: `npx @modelcontextprotocol/inspector`. To mix derived + standalone MCP tools, set `toModelOutput: ToModelOutput.MCP` on `createTool` too and register inside the same `createMcpHandler` callback. For non-Next.js MCP runtimes, the same `tools` + `toolsByName` pair drops into any SDK that accepts `ListTools` / `CallTool` handlers.
 
+### Mixins → tools — wrap, don't derive
+
+`deriveTools` reads each handler's `.definition` field, which only exists on procedure-backed controllers (set by `procedure({...}).handle(...)` in `withValidationLibrary.ts`). Mixin RPC modules come from `createRPC` and don't carry that — passing them directly to `deriveTools` produces tools with empty `inputSchemas`, unusable for MCP. Wrap each mixin call in `createTool` instead:
+
+```ts
+import { createTool, ToModelOutput } from 'vovk';
+import { z } from 'zod';
+import { PetstoreAPI } from 'vovk-client';
+
+const PetstoreAPIWithAuth = PetstoreAPI.withDefaults({
+  init: { headers: { Authorization: `Bearer ${process.env.PETSTORE_TOKEN}` } },
+});
+
+export const findPetsByStatusTool = createTool({
+  name: 'petstore_find_pets_by_status',
+  title: 'Find Petstore pets by status',
+  description: 'Look up pets by lifecycle status: available, pending, or sold.',
+  inputSchema: z.object({
+    status: z.enum(['available', 'pending', 'sold']),
+  }),
+  toModelOutput: ToModelOutput.MCP,
+  execute: async ({ status }) => {
+    return await PetstoreAPIWithAuth.findPetsByStatus({ query: { status } });
+  },
+});
+```
+
+You write the input schema by hand (Zod / Valibot / ArkType) — that's the cost of going through `createTool` instead of `deriveTools`. The mixin still gives you typed call shape and OpenAPI-derived response types via `VovkOutput<typeof PetstoreAPI.findPetsByStatus>`, so input is the only manual part.
+
 ## Gotchas
 
 - **No `@operation` → no tool.** `deriveTools` filters on `handler.schema.operationObject`. Procedures without `@operation` are skipped silently. Always annotate.
@@ -455,3 +486,4 @@ Test locally with the official MCP Inspector: `npx @modelcontextprotocol/inspect
 - **Local (`.fn()`) tools skip HTTP.** Auth decorators that read HTTP headers won't fire — use a shared service layer for auth logic that needs to run both via HTTP and via local tool calls.
 - **Mixing `toModelOutput` settings is rarely useful.** All tools in one LLM turn should use the same formatter, otherwise the call site has to branch on tool identity.
 - **`hidden: true` is the canonical exclusion knob** — filtered at derive time. `pick`/`omit` is for coarser per-call selection, not a substitute.
+- **Mixins do not work with `deriveTools`.** They go through `createRPC` and lack the `.definition` field `deriveTools` reads. Use `createTool` wrappers for mixin-backed LLM tools (see "Mixins → tools" above).
