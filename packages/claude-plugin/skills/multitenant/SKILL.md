@@ -118,7 +118,6 @@ export default function proxy(request: NextRequest) {
 
   if (action === 'rewrite' && destination) return NextResponse.rewrite(new URL(destination));
   if (action === 'redirect' && destination) return NextResponse.redirect(new URL(destination));
-  if (action === 'notfound') return new NextResponse('Not Found', { status: 404 });
   return NextResponse.next();
 }
 

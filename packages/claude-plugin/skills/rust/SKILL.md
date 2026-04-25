@@ -83,7 +83,7 @@ const config = {
     rs: {
       extends: 'rs',
       outputConfig: { origin: PROD_ORIGIN },
-      // composedClient: { outDir: './dist_rust' }, // override output dir if needed
+      // composedClient: { outDir: './my_other_dir' }, // optional — defaults to ./dist_rust
     },
   },
 };
@@ -105,6 +105,19 @@ pub async fn update_user(
     disable_client_validation: bool,
 ) -> Result<update_user_::output, HttpException>
 ```
+
+**Per-endpoint type variation** (verified in `packages/vovk-rust/client-templates/rsSrc/lib.rs.ejs:60-67`): each of `body`, `query`, `params` is typed `<handler_name>_::body` etc. **only when the procedure declares validation for that key**; otherwise the slot is the Rust unit type `()` and you pass `()` at the call site. So an endpoint with no body/query/params signature is:
+
+```rust
+pub async fn ping(
+    body: (), query: (), params: (),
+    headers: Option<&HashMap<String, String>>,
+    api_root: Option<&str>,
+    disable_client_validation: bool,
+) -> Result<serde_json::Value, HttpException>
+```
+
+**Method names** are lodash `snakeCase(handlerName)` — `getUser` → `get_user`, `findPetsByStatus` → `find_pets_by_status`, `UserRPC` (the module) → `user_rpc`.
 
 **Nested types** use `_::` module syntax. `body.profile` is typed as `update_user_::body_::profile`. This is how the generator flattens deep JSON Schema into Rust modules.
 
