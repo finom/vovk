@@ -119,11 +119,23 @@ Procedures can be executed locally for SSR/PPR and server actions:
 await UserController.getUser.fn({ params: { id: '123' } });
 ```
 
+## Claude Plugin
+
+Official **Claude Code plugin** at [`packages/claude-plugin`](./packages/claude-plugin) ships topic-based skills that teach the coding agent how to use Vovk.ts when you describe what you want to build. Skills load only when relevant — typing *"scaffold a new tenant"* pulls in the multitenant skill, *"stream chat tokens"* pulls in JSON Lines.
+
+```
+/plugin marketplace add finom/vovk
+/plugin install vovk@vovk
+```
+
+Full plugin docs: <https://vovk.dev/claude>.
+
 ## Links
 
 - Docs: https://vovk.dev
 - Quick Start: https://vovk.dev/quick-install
 - Manual install: https://vovk.dev/manual-install
+- Claude Plugin: https://vovk.dev/claude
 - OpenAPI Mixins: https://vovk.dev/mixins
 - Performance: https://vovk.dev/performance
 - “Hello World” example app: https://github.com/finom/vovk-hello-world
