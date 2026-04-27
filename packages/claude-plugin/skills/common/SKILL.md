@@ -23,7 +23,7 @@ If user's project doesn't meet these, stop and route to `init` skill.
 
 ## Vovk endpoints are plain REST
 
-Every procedure mounts as regular HTTP endpoint at deterministic URL. **Any HTTP client works** — `curl`, `httpx`, Python `requests`, Go's `net/http`, browser `fetch`, Postman, whatever. Typed RPC clients (`vovk-client` for JS/TS, `vovk-python`, `vovk-rust`) wrap endpoints w/ inferred types, client-side validation, helpers — conveniences, not only access path.
+Every procedure mounts as regular HTTP endpoint at deterministic URL. **Any HTTP client works** — `curl`, `httpx`, Python `requests`, Go's `net/http`, browser `fetch`, Postman, whatever. Typed RPC clients: `vovk-client` (JS/TS, runtime import). `vovk-python` and `vovk-rust` are codegen packages that emit Python / Rust client code — experimental. RPC clients wrap endpoints w/ inferred types, client-side validation, helpers — conveniences, not only access path.
 
 Practical implication: if user says *"call my API from a CLI / from Go / from a shell script / one-off curl test"*, right answer is plain HTTP request, not "generate typed client." Reach for **`python`** / **`rust`** skills only when user wants typed client codegen, ongoing integration, or PyPI / crates.io publishing. URL formula in **`procedure`** skill ("URL shape — composition rule"). For wire-level contract, generated OpenAPI 3.x spec lives in `vovk-client/openapi` (or under segmented client's `outDir`) and can mount as HTTP endpoint via small controller — see **`openapi`** skill.
 
@@ -62,7 +62,7 @@ export default config;
 | `rootEntry` | `'api'` | URL prefix for root segment — `/api/...`. Bake into `apiRoot` (see `rpc` skill). |
 | `rootSegmentModulesDirName` | `''` | Folder name for root-segment modules (rare override). |
 | `schemaOutDir` | `'.vovk-schema'` | Where dev watcher writes per-segment JSON artifacts. **Commit this dir.** |
-| `logLevel` | `'info'` | CLI verbosity: `'debug' \| 'info' \| 'warn' \| 'error'`. |
+| `logLevel` | `'info'` | CLI verbosity: `'error' \| 'trace' \| 'debug' \| 'info' \| 'warn'`. |
 | `devHttps` | `false` | Enable HTTPS in `vovk dev`. |
 | `exposeConfigKeys` | `['libs', 'rootEntry']` | Whitelist of config keys exposed in `.vovk-schema/_meta.json`. `true` exposes all, `false` none, or custom array. |
 | `moduleTemplates` | set by `vovk init` | Templates `vovk new controller service` uses. |
@@ -192,9 +192,9 @@ Minimal reference for cross-skill vocab. Details live in owning skill.
 
 ### Module: `vovk`
 
-- `initSegment({ controllers, segmentName?, emitSchema?, exposeValidation?, onError? })` → `{ GET, POST, PUT, PATCH, DELETE }`. **segment skill.**
+- `initSegment({ controllers, segmentName?, emitSchema?, exposeValidation?, onError?, onSuccess?, onBefore? })` → `{ GET, POST, PUT, PATCH, DELETE, HEAD, OPTIONS }`. **segment skill.**
 - `procedure({ params?, body?, query?, output?, iteration?, contentType?, ... })` → `{ handle(fn) }`. **procedure skill.**
-- HTTP decorators: `@get`, `@post`, `@put`, `@patch`, `@del`, each w/ optional path + options. **procedure skill.**
+- HTTP decorators: `@get`, `@post`, `@put`, `@patch`, `@del`, `@head`, `@options`, each w/ optional path + options. **procedure skill.**
 - `@prefix(path)` — controller-level route prefix. **procedure skill.**
 - `@operation({ summary, description?, tags?, ... })` — OpenAPI metadata. **openapi skill.**
 - `createDecorator((req, next) => ...)` — custom decorators. **decorators skill.**
@@ -202,7 +202,7 @@ Minimal reference for cross-skill vocab. Details live in owning skill.
 - `HttpException(status, message, cause?)`, `HttpStatus` enum. **procedure skill.**
 - `toDownloadResponse(payload, { filename, type, headers? })`. **procedure skill.**
 - `controllersToStaticParams(controllers, slug?)` — for static segments. **segment skill.**
-- `deriveTools(...)`, `createTools(...)` — AI tool derivation. **tools skill.**
+- `deriveTools(...)`, `createTool(...)` — AI tool derivation. **tools skill.**
 - `JSONLinesResponder` — streaming responses. **jsonlines skill.**
 - Types: `VovkRequest`, `VovkConfig`. Inference helpers — `VovkBody`, `VovkQuery`, `VovkParams`, `VovkInput`, `VovkOutput`, `VovkIteration`, `VovkReturnType`, `VovkYieldType` — covered in **`procedure`** (controller-side) and **`rpc`** (client-side) skills.
 

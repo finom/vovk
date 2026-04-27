@@ -78,6 +78,8 @@ export const { GET, POST, PUT, DELETE, PATCH } = initSegment({
 | `emitSchema` | no | `true` | Emit schema for codegen. Leave on unless you know why. |
 | `exposeValidation` | no | `true` | Expose validation data to client. Leave on for client-side validation. |
 | `onError` | no | — | `(err: Error, req: VovkRequest) => void \| Promise<void>` — for logging/metrics. `VovkRequest` extends `NextRequest`; `err` is whatever the handler threw (often `HttpException`). |
+| `onSuccess` | no | — | `(resp: unknown, req: VovkRequest) => void \| Promise<void>` — fires after successful response. Use for metrics, audit logs. |
+| `onBefore` | no | — | `(req: VovkRequest) => void \| Promise<void>` — fires before handler runs. Use for tracing, request enrichment. |
 
 ### Segment priority
 

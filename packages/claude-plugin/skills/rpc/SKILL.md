@@ -85,7 +85,7 @@ await ModuleRPC.methodName({
 
   // transport
   apiRoot?: string,                 // override the generation-time default
-  init?: RequestInit,               // headers, credentials, next.revalidate, etc. — see note on signal
+  init?: RequestInit,               // headers, credentials, next.revalidate, etc. — see "init.signal is silently overwritten" below
 
   // validation
   disableClientValidation?: boolean,
@@ -126,6 +126,8 @@ In browser, relative `/api` resolves against page origin, so same call works fro
 ### `init`
 
 `RequestInit` forwarded to `fetch` — `headers`, `credentials`, `mode`, `cache`, Next.js-specific `next: { revalidate: number }` all pass through.
+
+**`init.signal` is silently overwritten.** Internal fetcher creates own `AbortController` per call and overrides any `signal` you pass via `init` — `packages/vovk/src/client/fetcher.ts:134-136`. So passing `init.signal` does **NOT** abort request. For streaming endpoints, returned async iterable exposes `.abortController` — call `.abort()` on it. For non-streaming JSON responses, no public abort path exists today.
 
 ### `transform`
 
@@ -256,7 +258,7 @@ await UserRPC.updateUser({
 
 All optional; `options` = typed `TOptions` you declared.
 
-- `prepareRequestInit(init, options) => RequestInit` — mutate `RequestInit` before `fetch` (headers, credentials, mode, cache, `next.revalidate`).
+- `prepareRequestInit(init, options) => RequestInit | Promise<RequestInit>` — mutate `RequestInit` before `fetch` (headers, credentials, mode, cache, `next.revalidate`). Async OK — fetcher awaits return.
 - `transformResponse(data, options, info)` — transform parsed response; `info = { response, init, schema }` gives access to raw `Response`, final `RequestInit`, procedure's `VovkHandlerSchema` (useful for reading `operationObject`).
 - `onSuccess(data, options)` — observe successful responses (toasts, analytics).
 - `onError(error: HttpException, options)` — observe failures. Both network errors and HTTP-status errors land here; `error.statusCode === 0` (`HttpStatus.NULL`) = either transport failure or client-side validation rejection.

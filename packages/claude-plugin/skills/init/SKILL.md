@@ -74,7 +74,7 @@ From project root:
 npx vovk-cli@latest init
 ```
 
-CLI auto-detects package manager from lockfiles and handles its own prompts. When it asks for validation library, answer with choice from step 2. For client-side validator prompt (e.g., `vovk-ajv` for Zod) and other prompts, accept CLI's recommended default per interactive-prompts rule above — unless user said otherwise.
+CLI auto-detects package manager from lockfiles and handles its own prompts. When it asks for validation library, answer with choice from step 2. Accept CLI's recommended defaults for any other prompt (decorators, bundle, updateScripts, lang) per interactive-prompts rule above — unless user said otherwise.
 
 If CLI errors out, report error verbatim and stop. Don't patch half-init state by hand.
 
@@ -84,7 +84,7 @@ After init finishes, confirm:
 
 - `vovk.config.mjs` exists at project root, with `outputConfig.imports.validateOnClient` and `moduleTemplates.controller` / `moduleTemplates.service` set.
 - `tsconfig.json` has `"experimentalDecorators": true` under `compilerOptions`.
-- `package.json` `dependencies` gained `vovk`, `vovk-client`, plus chosen validation library and its client-side validator. Defaults: `zod` + `vovk-ajv`. (If user chose `valibot` or `arktype`, those land here.)
+- `package.json` `dependencies` gained `vovk` + `vovk-client` + `vovk-ajv` (always) + chosen server-side validation library. For `zod`: `zod`. For `valibot`: `valibot` + `@valibot/to-json-schema`. For `arktype`: `arktype`. `vovk-ajv` is the client-side validator regardless of server-side choice.
 - `package.json` `devDependencies` gained `vovk-cli`.
 - `package.json` `scripts` — existing `dev` is **replaced** with `vovk dev --next-dev` (vovk's dev wrapper around `next dev`), and new `prebuild` script added running `vovk generate` (so RPC codegen runs before every `next build`). `build` and `start` left untouched.
 

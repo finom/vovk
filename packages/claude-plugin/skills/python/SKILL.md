@@ -51,6 +51,7 @@ dist_python/
   src/<package_name>/py.typed       # Type-hint marker
   src/<package_name>/schema.json    # Generated schema
   pyproject.toml                    # hatchling build backend
+  setup.cfg
   README.md
 ```
 
@@ -98,7 +99,7 @@ After this, every `npx vovk generate` (+ every `vovk dev` regen) refreshes Pytho
 
 ## Generated call shape
 
-Types follow `[PascalCaseMethodName][Body|Query|Params|Output]` as `TypedDict`. Methods static, snake_case, positional args ordered: `body, query, params, headers?, files?, api_root?, disable_client_validation`.
+Types follow `[PascalCaseMethodName][Body|Query|Params|Output]` as `TypedDict`. Methods static, snake_case. Positional arg order from generator (`packages/vovk-python/client-templates/pySrc/__init__.py.ejs:39-49`): only emits slots where validation declared, in this order: `body`, `files` (multipart only, sits between `body` and `query`), `query`, `params`, then always-present trailing kwargs `headers`, `api_root`, `disable_client_validation`.
 
 ```python
 from my_api_client import UserRPC  # whatever package the generator wrote
@@ -132,21 +133,19 @@ with open("avatar.png", "rb") as f:
 
 ## JSON Lines streaming
 
-Procedures with `iteration` schemas (server-side `async function*` handlers — see **`jsonlines`** skill) generate **sync Python generators** client-side. Return type `Generator[<MethodName>Iteration, None, None]`:
+Procedures with `iteration` schemas (server-side `async function*` handlers — see **`jsonlines`** skill) generate **sync Python generators** client-side. Return type `Generator[<MethodName>Iteration, None, None]`. Generator only emits slots for validation declared on procedure — for an iteration-only endpoint with no body / query / params, signature is just trailing kwargs:
 
 ```python
 @staticmethod
 def stream_tokens(
-    body: StreamTokensBody = None,         # () unit type → None when procedure has no body
-    query: StreamTokensQuery = None,
-    params: StreamTokensParams = None,
     headers: Optional[Dict[str, str]] = None,
-    files: Optional[Dict[str, Any]] = None,
     api_root: Optional[str] = None,
     disable_client_validation: bool = False,
 ) -> Generator[StreamTokensIteration, None, None]:
     ...
 ```
+
+Add `body: StreamTokensBody`, `query: StreamTokensQuery`, `params: StreamTokensParams` to the signature only when the procedure declares validation for them (same rule as JSON endpoints).
 
 Yielded items typed against procedure's `iteration` schema — `StreamTokensIteration` is `TypedDict` → editors autocomplete fields.
 
@@ -251,7 +250,7 @@ Build backend **hatchling**, no runtime overhead past deps above.
 
 ## Auth + base URL
 
-Generated client targets URL baked at generate time. For prod consumers, pass base URL / headers via `api_client.py` hooks (inspect generated file on installed version — exact API surface version-dependent, may expose module-level setter, per-call kwargs, or both).
+Generated client targets URL baked at generate time. Override per call via `api_root` kwarg — fully replaces baked-in value for that call. No module-level setter exists; the `client = ApiClient(...)` inside generated `__init__.py` is frozen at generate time. For dynamic auth, pass `headers` per call.
 
 **Don't bake secrets into generated package.** Consumers supply API keys at runtime.
 
@@ -309,7 +308,7 @@ const config = {
 2. Add `'py'` to `composedClient.fromTemplates` in `vovk.config.mjs`.
 3. `npx vovk generate`.
 4. `pip install -e ./dist_python` (or wherever generator wrote it).
-5. `from dist_python.src.vovk_hello_world import UserRPC` and call.
+5. `from vovk_hello_world import UserRPC` and call (editable install exposes the package directly — no `dist_python.src.` prefix).
 
 ### "Ship a Python SDK to PyPI"
 
@@ -342,7 +341,7 @@ Then import from `my_project.vovk_client...`.
 - **`TypedDict`, not classes.** Generated shapes dict-based for JSON interop; treat as plain dicts with type hints, not Pydantic models.
 - **Method names snake_case**, type names PascalCase. `updateUser` server → `update_user(...)` Python, `UpdateUserBody` etc.
 - **Client-side validation uses `jsonschema`** — small import + runtime cost. Disable per-call for speed or server-only enforcement.
-- **Base URL / auth indirection version-dependent.** Read generated `api_client.py` on installed version, don't assume fixed surface.
+- **Base URL override is per-call only.** `api_root` kwarg overrides the URL baked at generate time. No module-level setter; the `ApiClient` instance is frozen.
 - **Regen on schema changes.** Any procedure / schema change server-side needs `vovk generate` before Python client reflects. CI should regen as part of build.
 - **Don't hand-edit generated files.** Put shared Python utilities alongside, not inside, generated package.
 - **Body content types past JSON + multipart limited.** `text/plain` and `application/octet-stream` request bodies not fully supported yet (roadmap). For binary uploads, prefer multipart via `files` arg.

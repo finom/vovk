@@ -48,7 +48,7 @@ dist_rust/
   src/http_request.rs       # HTTP handling
   src/lib.rs                # RPC functions + types
   src/read_full_schema.rs   # Schema utilities
-  src/schema.json           # OpenAPI schema (read at runtime via CARGO_MANIFEST_DIR/src/schema.json)
+  src/schema.json           # Vovk schema (read at runtime via CARGO_MANIFEST_DIR/src/schema.json)
   Cargo.toml                # edition = "2021"
   README.md
 ```
@@ -106,7 +106,7 @@ pub async fn update_user(
 ) -> Result<update_user_::output, HttpException>
 ```
 
-**Per-endpoint type variation** (verified in `packages/vovk-rust/client-templates/rsSrc/lib.rs.ejs:60-67`): each of `body`, `query`, `params` typed `<handler_name>_::body` etc. **only when procedure declares validation for that key**; else slot is Rust unit type `()` → pass `()` at call site. So endpoint with no body/query/params signature:
+**Per-endpoint type variation** (verified in `packages/vovk-rust/client-templates/rsSrc/lib.rs.ejs:60-67`): each of `query`, `params` typed `<handler_name>_::query` / `_::params` **only when procedure declares validation for that key**; else slot is Rust unit type `()` → pass `()` at call site. `body` has three cases: `multipart/form-data` content-type → `reqwest::multipart::Form`; declared body validation (JSON / text / binary) → `<handler>_::body`; no body → `()`. So endpoint with no body/query/params signature:
 
 ```rust
 pub async fn ping(

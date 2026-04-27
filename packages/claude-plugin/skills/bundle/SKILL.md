@@ -136,15 +136,24 @@ dist/
 | `imports.validateOnClient: null` | Disables client-side AJV validation in bundle — usually big size win. |
 | `imports.fetcher` | Custom fetcher path baked into bundle. |
 | `reExports` | Extra named exports in generated `index.ts`. E.g. `{ doSomething: './src/utils' }` exposes helper alongside RPC modules. |
-| `requires` | Template dir overrides — `readme`, `packageJson`, or any custom template. Defaults to project root for both. |
 | `readme.banner` | String prepended to generated `README.md` (badges, logo HTML, status callouts). |
 | `readme.installCommand` | Override install command in README (default: `npm install <package-name>`). For monorepo / private-registry / `pnpm` / `yarn`-first audiences. |
 | `readme.description` | Replaces description block in README. Defaults to bundled `package.json` description. |
 | `samples.apiRoot` | Base URL in generated README samples. Defaults to `outputConfig.origin`. Set to public-facing URL when `origin` points to staging/internal hostname. |
 | `samples.headers` | Header map (e.g. `{ Authorization: 'Bearer YOUR_TOKEN' }`) in generated samples — shows consumers how to auth. |
-| `includeSegments` / `excludeSegments` | Filter which Vovk segments contribute to bundle. |
 
 Min viable `outputConfig` is `origin` + `package` block with `main`/`types`/`exports` matching bundler's output filenames.
+
+### Root `bundle` keys (NOT under `outputConfig`)
+
+These three live on root `VovkBundleConfig` (`config.bundle.*`), **not** nested under `outputConfig`:
+
+| Field | Purpose |
+|---|---|
+| `requires` | Template dir overrides — `readme`, `packageJson`, or any custom template. Defaults to project root for both. Source: `packages/vovk/src/types/config.ts:46`. |
+| `includeSegments` / `excludeSegments` | Filter which Vovk segments contribute to bundle. Source: `packages/vovk/src/types/config.ts:52`; CLI reads them at `packages/vovk-cli/src/bundle/index.mts:55-56` from root `bundleConfig`. |
+
+> The published docs example nests these under `outputConfig` — that's the doc's mistake. Source places them at root `config.bundle.*`. Source wins.
 
 ## CLI flags
 

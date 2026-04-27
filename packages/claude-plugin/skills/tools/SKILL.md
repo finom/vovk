@@ -387,7 +387,7 @@ For Anthropic: `input_schema = t.parameters`, otherwise identical.
 
 ### MCP servers via `mcp-handler` (recommended for Next.js)
 
-Pattern works for **procedure-backed controllers** (each handler produced by `procedure({...}).handle(...)` carries `.definition` field). Does **not** work for mixin-backed RPC modules — mixins go through `createRPC` and don't carry `definition` → `inputSchemas` come back empty `{}` → LLM has no input shape. For mixins, hand-write `createTool({...})` wrappers (snippet in "Mixins → tools" below).
+Pattern works for **procedure-backed controllers** (each handler produced by `procedure({...}).handle(...)` carries `.definition` field). Does **not** work for mixin-backed RPC modules — mixins go through `createRPC` and don't carry `definition` → `inputSchemas` come back empty `{}` → LLM has no input shape. For mixins, hand-write `createTool({...})` wrappers (snippet in "Mixins → MCP" below).
 
 Each Vovk tool's `inputSchemas` field (per-key Standard Schemas for `body` / `query` / `params`) plugs directly into `server.registerTool`'s `inputSchema` arg:
 
@@ -444,9 +444,9 @@ export { authorizedHandler as GET, authorizedHandler as POST };
 
 Test locally with official MCP Inspector: `npx @modelcontextprotocol/inspector`. To mix derived + standalone MCP tools, set `toModelOutput: ToModelOutput.MCP` on `createTool` too and register inside same `createMcpHandler` callback. For non-Next.js MCP runtimes, same `tools` + `toolsByName` pair drops into any SDK that accepts `ListTools` / `CallTool` handlers.
 
-### Mixins → tools — wrap, don't derive
+### Mixins → MCP — wrap with `createTool`
 
-`deriveTools` reads each handler's `.definition` field, which only exists on procedure-backed controllers (set by `procedure({...}).handle(...)` in `withValidationLibrary.ts`). Mixin RPC modules come from `createRPC` and don't carry that — passing directly to `deriveTools` yields tools with empty `inputSchemas`, unusable for MCP. Wrap each mixin call in `createTool` instead:
+Wrap required **only for MCP**, not general LLM tool exposure. `deriveTools` reads each handler's `.definition` field for `inputSchemas` (Standard Schemas), which only exists on procedure-backed controllers (set by `procedure({...}).handle(...)` in `withValidationLibrary.ts`). Mixin RPC modules come from `createRPC` and don't carry that — passing directly to `deriveTools` yields tools with empty `inputSchemas`, unusable for `mcp-handler`. Function-calling paths (OpenAI / Anthropic / Vercel) work fine — they read `parameters` (JSON Schema), populated from mixin's `schema.validation`. For MCP, wrap each mixin call in `createTool` instead:
 
 ```ts
 import { createTool, ToModelOutput } from 'vovk';
@@ -486,4 +486,4 @@ You write input schema by hand (Zod / Valibot / ArkType) — cost of going throu
 - **Local (`.fn()`) tools skip HTTP.** Auth decorators reading HTTP headers won't fire — use shared service layer for auth logic running both via HTTP and via local tool calls.
 - **Mixing `toModelOutput` settings rarely useful.** All tools in one LLM turn should use same formatter, else call site must branch on tool identity.
 - **`hidden: true` is canonical exclusion knob** — filtered at derive time. `pick`/`omit` for coarser per-call selection, not substitute.
-- **Mixins do not work with `deriveTools`.** Go through `createRPC` and lack `.definition` field `deriveTools` reads. Use `createTool` wrappers for mixin-backed LLM tools (see "Mixins → tools" above).
+- **Mixins + `deriveTools` + `mcp-handler`: `inputSchemas` come back empty for mixin-backed modules** — `mcp-handler` needs Standard Schemas, mixins only carry JSON Schema in `parameters`. For MCP servers exposing mixin endpoints, wrap calls in `createTool` (see "Mixins → MCP — wrap with `createTool`" above). Function-calling paths (OpenAI / Anthropic / Vercel) work fine — they read `parameters`, not `inputSchemas`.

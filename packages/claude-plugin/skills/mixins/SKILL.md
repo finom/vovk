@@ -1,13 +1,13 @@
 ---
 name: mixins
-description: Vovk.ts OpenAPI mixins — importing third-party OpenAPI 3.x schemas as typed client modules that share the same call signature as native Vovk RPC modules. Use whenever the user asks to "call a third-party API from my Vovk app", "mixin an OpenAPI schema", "import an OpenAPI spec as a client", "wrap an external service that only ships an OpenAPI doc", or mentions `openAPIMixin`, `getModuleName`, `getMethodName`, `withDefaults` on a generated API module, or the `Mixins` namespace. Also use to push back when the user reaches for mixins for a vendor with a great official SDK (Stripe, AWS, GitHub via Octokit) — the skill explains when the official client is the better choice. Covers remote/local/inline specs, module + method naming strategies, `apiRoot`, per-mixin fetcher, AJV client validation knobs, and composed/segmented clients. **`deriveTools` does NOT work with mixins** — the mixin runtime module lacks the per-handler metadata `deriveTools` reads, so for "expose this third-party API as an LLM tool" wrap the mixin call in `createTool({...})` instead (see `tools` skill).
+description: Vovk.ts OpenAPI mixins — importing third-party OpenAPI 3.x schemas as typed client modules that share the same call signature as native Vovk RPC modules. Use whenever the user asks to "call a third-party API from my Vovk app", "mixin an OpenAPI schema", "import an OpenAPI spec as a client", "wrap an external service that only ships an OpenAPI doc", or mentions `openAPIMixin`, `getModuleName`, `getMethodName`, `withDefaults` on a generated API module, or the `Mixins` namespace. Also use to push back when the user reaches for mixins for a vendor with a great official SDK (Stripe, AWS, GitHub via Octokit) — the skill explains when the official client is the better choice. Covers remote/local/inline specs, module + method naming strategies, `apiRoot`, per-mixin fetcher, AJV client validation knobs, and composed/segmented clients. **`deriveTools` works with mixins for OpenAI / Anthropic / Vercel function-calling** (reads `parameters` JSON Schema), but the `mcp-handler` path needs `inputSchemas` Standard Schemas which mixins don't carry — wrap in `createTool({...})` for MCP (see `tools` skill).
 ---
 
 # Vovk.ts OpenAPI mixins
 
 Mixins turn any OpenAPI 3.x spec into typed client module behaving exactly like native Vovk RPC module — same `{ params, query, body }` call shape, same client surface, same type-inference helpers (`VovkBody`, `VovkOutput`, …). Can run mixins standalone (no Next.js) as pure codegen tool.
 
-**One caveat not obvious from call shape:** mixin modules produced by `createRPC` carry only client-side metadata (`schema`, `getURL`, `queryKey`, etc.). They do **not** carry per-handler `definition` field that `deriveTools` reads to build `inputSchemas` (verified in `packages/vovk/src/client/createRPC.ts:178-193` vs `packages/vovk/src/tools/deriveTools.ts:113-115` — `definition` set only by `procedure({...}).handle(...)` in `packages/vovk/src/validation/withValidationLibrary.ts:281`). So mixins **cannot be passed directly to `deriveTools`**. For LLM tool exposure, hand-write `createTool({...})` wrapper around mixin call — see `tools` skill.
+**One caveat not obvious from call shape:** mixins work with `deriveTools` for OpenAI / Anthropic / Vercel function-calling — `parameters` (JSON Schema) populates from the mixin's validation. **Exception: the `mcp-handler` path** reads `inputSchemas` (Standard Schemas), which mixins don't carry — for MCP servers, wrap mixin calls in `createTool` instead. Verified in `packages/vovk/src/client/createRPC.ts:178-193` (no `definition`) vs `packages/vovk/src/tools/deriveTools.ts:113-115` (reads `definition` for `inputSchemas`) and `packages/vovk/src/validation/withValidationLibrary.ts:281` (`definition` set only by `procedure({...}).handle(...)`). See `tools` skill for `createTool` wrapper pattern.
 
 ## Prefer the official SDK when one exists
 
@@ -16,7 +16,7 @@ Mixins turn any OpenAPI 3.x spec into typed client module behaving exactly like 
 Mixins right tool when:
 
 - **No official SDK exists** — internal services, niche vendors, legacy APIs that only publish OpenAPI document.
-- **LLM tool exposure** — mixins give typed call surface to wrap inside `createTool({...})` for MCP / OpenAI / Anthropic tool exposure. (Direct `deriveTools` doesn't work for mixins — see caveat at top.) For GitHub-style APIs `@octokit/rest` still better tool body, but mixin remains useful when third-party API has no official SDK.
+- **LLM tool exposure** — `deriveTools` works directly for OpenAI / Anthropic / Vercel function-calling. For MCP, wrap mixin calls in `createTool({...})` (see caveat at top). For GitHub-style APIs `@octokit/rest` still better tool body, but mixin remains useful when third-party API has no official SDK.
 - **Spec-as-source-of-truth** — internal microservices where OpenAPI doc is generated and you want client drift to surface as TypeScript error at build time.
 
 For everything else (Stripe charges, S3 uploads, Octokit pagination), reach for official package.
@@ -32,7 +32,7 @@ Covers:
 - Per-mixin fetcher + AJV strict-mode loosening for messy specs.
 - `Mixins` namespace for `components/schemas` types.
 - Composed vs segmented output (pointer to **`rpc`** skill).
-- Wrapping mixin calls in `createTool({...})` for LLM tool exposure (pointer to **`tools`** skill — mixins NOT directly compatible with `deriveTools`).
+- LLM tool exposure: `deriveTools` direct for function-calling; `createTool` wrapper for MCP (pointer to **`tools`** skill).
 
 Out of scope:
 
@@ -237,7 +237,7 @@ For specs that don't populate `components/schemas`, fall back to `VovkOutput<typ
 
 ## With `deriveTools`
 
-Mixin modules feed `deriveTools` identically to native RPC modules. Operation `summary`, `description`, `operationId` populate derived tool's metadata → LLM gets usable description straight from third-party spec.
+Mixin modules feed `deriveTools` identically to native RPC modules for function-calling paths. Operation `summary`, `description`, `operationId` populate derived tool's metadata → LLM gets usable description straight from third-party spec.
 
 ```ts
 import { deriveTools } from 'vovk';
@@ -258,6 +258,8 @@ const { tools } = deriveTools({
   },
 });
 ```
+
+**MCP exception:** `mcp-handler` reads `inputSchemas` (Standard Schemas), which mixins lack. For MCP servers exposing mixin endpoints, wrap calls in `createTool` instead — see **`tools`** skill. Function-calling paths (OpenAI / Anthropic / Vercel) work fine — they read `parameters` (JSON Schema), populated from mixin's validation.
 
 See **`tools`** skill for full provider-wiring pipeline (OpenAI / Anthropic / MCP).
 
