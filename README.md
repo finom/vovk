@@ -121,12 +121,23 @@ await UserController.getUser.fn({ params: { id: '123' } });
 
 ## Claude Plugin
 
-Official **Claude Code plugin** at [`packages/claude-plugin`](./packages/claude-plugin) ships topic-based skills that teach the coding agent how to use Vovk.ts when you describe what you want to build. Skills load only when relevant — typing *"scaffold a new tenant"* pulls in the multitenant skill, *"stream chat tokens"* pulls in JSON Lines.
+Official **Claude Code plugin** at [`packages/claude-plugin`](./packages/claude-plugin) ships 14 topic-based skills that teach the coding agent how to use Vovk.ts when you describe what you want to build. Skills load only when relevant — typing *"scaffold a new tenant"* pulls in the multitenant skill, *"stream chat tokens"* pulls in JSON Lines.
+
+Install (inside Claude Code):
 
 ```
 /plugin marketplace add finom/vovk
 /plugin install vovk@vovk
+/reload-plugins
 ```
+
+Verify:
+
+```
+/plugin
+```
+
+The **Installed** tab should list `vovk`. Skills are namespaced — typing `/vovk:` (with the trailing colon) lists all 14.
 
 Full plugin docs: <https://vovk.dev/claude>.
 
