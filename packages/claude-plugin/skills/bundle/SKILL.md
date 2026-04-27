@@ -1,26 +1,26 @@
 ---
 name: bundle
-description: The Vovk.ts `vovk bundle` CLI for packaging the composed TypeScript client as a zero-dependency, publishable npm package — `bundle.build` async function, `tsdown@0.19.0` recipe, `outputConfig.origin` / `package` / `reExports` / `imports.validateOnClient: null`, `prebundleOutDir` / `outDir` / `keepPrebundleDir`, `--include`/`--exclude` segments, `--openapi-*` mixin flags. Use whenever the user asks to "publish my API client", "ship an SDK to npm", "build a publishable client package", "bundle the Vovk client", "generate a distributable npm SDK", "use tsdown with vovk", or any variation, including questions about why the bundled package omits `openapi`/`schema` entry points. Note: `vovk bundle` is **TypeScript-only**. For Python/PyPI publishing, hand off to **`python`** skill. For Rust/crates.io publishing, hand off to **`rust`** skill. Does NOT cover in-project `vovk-client` codegen → **`rpc`** skill.
+description: Vovk.ts `vovk bundle` CLI — packages composed TypeScript client as zero-dep publishable npm package. Covers `bundle.build` async fn, `tsdown@0.19.0` recipe, `outputConfig.origin` / `package` / `reExports` / `imports.validateOnClient: null`, `prebundleOutDir` / `outDir` / `keepPrebundleDir`, `--include`/`--exclude` segments, `--openapi-*` mixin flags. Use when user asks to "publish my API client", "ship an SDK to npm", "build a publishable client package", "bundle the Vovk client", "generate a distributable npm SDK", "use tsdown with vovk", or variations including why bundled package omits `openapi`/`schema` entry points. Note: `vovk bundle` is **TypeScript-only**. For Python/PyPI publishing, hand off to **`python`** skill. For Rust/crates.io publishing, hand off to **`rust`** skill. Does NOT cover in-project `vovk-client` codegen → **`rpc`** skill.
 ---
 
 # Vovk.ts `vovk bundle`
 
-`vovk bundle` packages the **composed TypeScript client** as a zero-dependency npm package — pre-built JS + `.d.ts`, auto-generated `package.json`, auto-generated `README.md` with code samples, ready for `npm publish`. Think of it as the "release" step: `vovk generate` produces an in-project client during development; `vovk bundle` produces a distributable SDK other teams / services can install from the registry.
+`vovk bundle` packages composed TypeScript client as zero-dep npm package — pre-built JS + `.d.ts`, auto-gen `package.json`, auto-gen `README.md` w/ samples, ready for `npm publish`. Release step: `vovk generate` → in-project client for dev; `vovk bundle` → distributable SDK installed from registry.
 
-**TypeScript-only.** Despite the name, `vovk bundle` does not ship Python or Rust clients. Those have their own templates (`py` / `pySrc` / `rs` / `rsSrc`) and their own publishing flows — see **`python`** and **`rust`** skills.
+**TypeScript-only.** Despite name, ships no Python/Rust clients. Those have own templates (`py` / `pySrc` / `rs` / `rsSrc`) and own publish flows — see **`python`** and **`rust`** skills.
 
 ## Scope
 
 Covers:
 
-- The 4-step bundle workflow.
-- `bundle.build` async function (required) and the canonical `tsdown@0.19.0` recipe.
+- 4-step bundle workflow.
+- `bundle.build` async function (required) + canonical `tsdown@0.19.0` recipe.
 - `bundle.outputConfig` fields (`origin`, `package`, `reExports`, `imports`, `requires`, `readme`, `samples`, `includeSegments`/`excludeSegments`).
 - Default directory layout (`tmp_prebundle` → `dist`).
-- Full CLI flag list including the `--openapi-*` mixin family.
-- What's bundled / what's omitted (no `openapi`, no `schema` entry point — but `schema` still importable as a named export).
-- `npm publish dist` flow and consumer-side usage.
-- Integration with `deriveTools` (bundled modules feed it identically).
+- Full CLI flag list including `--openapi-*` mixin family.
+- What's bundled / omitted (no `openapi`, no `schema` entry point — but `schema` still importable as named export).
+- `npm publish dist` flow + consumer-side usage.
+- `deriveTools` integration (bundled modules feed it identically).
 
 Out of scope:
 
@@ -34,23 +34,23 @@ Out of scope:
 | Command | Purpose | Output | When |
 |---|---|---|---|
 | `vovk generate` | In-project TypeScript client + OpenAPI spec | `node_modules/.vovk-client/`, `.vovk-schema/` | Every build (`prebuild` hook), on schema changes during `vovk dev`. |
-| `vovk bundle` | Publishable npm package — pre-built JS + `.d.ts` + `package.json` + `README.md` | A `dist/` directory ready for `npm publish` | When you want to ship an SDK to consumers outside the Next.js app. |
+| `vovk bundle` | Publishable npm package — pre-built JS + `.d.ts` + `package.json` + `README.md` | `dist/` ready for `npm publish` | Ship SDK outside Next.js app. |
 
-Don't run `vovk bundle` in normal dev; the in-project client is faster. Bundle when you need a registry artifact.
+Don't run `vovk bundle` in normal dev; in-project client faster. Bundle when you need registry artifact.
 
 ## How bundling works
 
-1. Vovk generates a TypeScript client into `prebundleOutDir` (default `tmp_prebundle`) using the `tsBase` template — uncompiled `.ts` source.
-2. Vovk calls your `bundle.build({ entry, outDir, prebundleDir })` async function. Your function plugs in any bundler (tsdown is the only tested one) to compile `entry` (the `tmp_prebundle/index.ts` file) into JS + `.d.ts` under `outDir` (default `dist`).
-3. Vovk emits `package.json` and `README.md` from the `packageJson` and `readme` templates into `outDir`.
-4. Vovk deletes `prebundleOutDir` unless `keepPrebundleDir: true` (handy for debugging the prebundled source).
+1. Vovk gens TypeScript client into `prebundleOutDir` (default `tmp_prebundle`) via `tsBase` template — uncompiled `.ts` source.
+2. Vovk calls your `bundle.build({ entry, outDir, prebundleDir })` async fn. Plugs in any bundler (tsdown only tested one) to compile `entry` (the `tmp_prebundle/index.ts`) → JS + `.d.ts` under `outDir` (default `dist`).
+3. Vovk emits `package.json` and `README.md` from `packageJson` and `readme` templates into `outDir`.
+4. Vovk deletes `prebundleOutDir` unless `keepPrebundleDir: true` (handy for debugging prebundled source).
 
 ```sh
 npx vovk bundle
 npm publish dist
 ```
 
-The published package is consumed exactly like `vovk-client`:
+Published package consumed exactly like `vovk-client`:
 
 ```ts
 import { UserRPC } from 'my-api-bundle';
@@ -58,11 +58,11 @@ import { UserRPC } from 'my-api-bundle';
 await UserRPC.getUser({ params: { id: '123' } });
 ```
 
-All TypeScript-client features (call shape, `withDefaults`, type inference, `schema` access) survive the bundle.
+All TS-client features (call shape, `withDefaults`, type inference, `schema` access) survive bundle.
 
-## `bundle.build` — the required entry point
+## `bundle.build` — required entry point
 
-`bundle.build` is an async function. Vovk calls it with absolute paths:
+`bundle.build` is async fn. Vovk calls w/ absolute paths:
 
 ```ts
 build: async ({ entry, outDir, prebundleDir }) => {
@@ -72,7 +72,7 @@ build: async ({ entry, outDir, prebundleDir }) => {
 }
 ```
 
-Vovk is bundler-agnostic — `esbuild`, `tsup`, `tsdown`, even a `child_process` shell-out work. Only **tsdown** is currently tested by Vovk's authors; the docs explicitly warn to **pin `tsdown@0.19.0`** until newer versions are confirmed compatible.
+Vovk is bundler-agnostic — `esbuild`, `tsup`, `tsdown`, even `child_process` shell-out work. Only **tsdown** tested by Vovk's authors; docs warn: **pin `tsdown@0.19.0`** until newer versions confirmed compatible.
 
 ### Canonical `tsdown` recipe (pin 0.19.0)
 
@@ -125,26 +125,26 @@ dist/
 └── index.d.ts
 ```
 
-## `bundle.outputConfig` — what goes in the package
+## `bundle.outputConfig` — what goes in package
 
-`bundle.outputConfig` accepts the same options as the root-level `outputConfig` (with bundle-specific overrides taking precedence). The fields that matter most:
+`bundle.outputConfig` accepts same options as root-level `outputConfig` (bundle-specific overrides win). Key fields:
 
 | Field | Purpose |
 |---|---|
-| `origin` *(required)* | Default API base URL baked into the bundled client. Override at call time via `apiRoot` if needed. |
-| `package` | Overrides for the generated `package.json`. Set `name`, `version`, `type`, `main`, `types`, `exports` here. Defaults pull from the project root `package.json` where present. |
-| `imports.validateOnClient: null` | Disables client-side AJV validation in the bundled package — usually a big size win. |
-| `imports.fetcher` | Custom fetcher path baked into the bundle. |
-| `reExports` | Additional named exports in the generated `index.ts`. E.g. `{ doSomething: './src/utils' }` exposes a helper alongside the RPC modules. |
-| `requires` | Template directory overrides — `readme`, `packageJson`, or any custom template. Defaults to the project root for both. |
-| `readme.banner` | String prepended to the generated `README.md` (e.g. badges, logo HTML, status callouts). |
-| `readme.installCommand` | Override the install command shown in the README (default: `npm install <package-name>`). Useful for monorepo / private-registry / `pnpm` / `yarn`-first audiences. |
-| `readme.description` | Replaces the description block in the README. Defaults to the bundled `package.json` description. |
-| `samples.apiRoot` | Base URL used in generated code samples in the README. Defaults to `outputConfig.origin`. Set this to a public-facing URL when `origin` points to staging or an internal hostname. |
-| `samples.headers` | Header map (e.g. `{ Authorization: 'Bearer YOUR_TOKEN' }`) shown in the generated code samples — illustrates how consumers should authenticate. |
-| `includeSegments` / `excludeSegments` | Filter which Vovk segments contribute to the bundle. |
+| `origin` *(required)* | Default API base URL baked into bundled client. Override at call time via `apiRoot`. |
+| `package` | Overrides for generated `package.json`. Set `name`, `version`, `type`, `main`, `types`, `exports` here. Defaults pull from project root `package.json` where present. |
+| `imports.validateOnClient: null` | Disables client-side AJV validation in bundle — usually big size win. |
+| `imports.fetcher` | Custom fetcher path baked into bundle. |
+| `reExports` | Extra named exports in generated `index.ts`. E.g. `{ doSomething: './src/utils' }` exposes helper alongside RPC modules. |
+| `requires` | Template dir overrides — `readme`, `packageJson`, or any custom template. Defaults to project root for both. |
+| `readme.banner` | String prepended to generated `README.md` (badges, logo HTML, status callouts). |
+| `readme.installCommand` | Override install command in README (default: `npm install <package-name>`). For monorepo / private-registry / `pnpm` / `yarn`-first audiences. |
+| `readme.description` | Replaces description block in README. Defaults to bundled `package.json` description. |
+| `samples.apiRoot` | Base URL in generated README samples. Defaults to `outputConfig.origin`. Set to public-facing URL when `origin` points to staging/internal hostname. |
+| `samples.headers` | Header map (e.g. `{ Authorization: 'Bearer YOUR_TOKEN' }`) in generated samples — shows consumers how to auth. |
+| `includeSegments` / `excludeSegments` | Filter which Vovk segments contribute to bundle. |
 
-The minimum viable `outputConfig` is `origin` + a `package` block with `main`/`types`/`exports` matching the bundler's output filenames.
+Min viable `outputConfig` is `origin` + `package` block with `main`/`types`/`exports` matching bundler's output filenames.
 
 ## CLI flags
 
@@ -169,16 +169,16 @@ Usage: vovk bundle|b [options]
   --log-level <level>                              set the log level
 ```
 
-The `--openapi-*` family is positional — pass one entry per spec to `--openapi` and the corresponding entry at the same index to each subsidiary flag. This lets you bundle a client that combines your own segments with one or more OpenAPI mixins without touching the config file (handy for one-off bundles in CI).
+`--openapi-*` family is positional — one entry per spec to `--openapi`, matching entry at same index to each subsidiary flag. Lets you bundle client combining your own segments with OpenAPI mixins w/o touching config file (handy for one-off CI bundles).
 
 ## What's bundled, what's omitted
 
-**Included:** all RPC modules (with `@operation`-driven types), the `schema` named export, type inference helpers, the `withDefaults` method on each module.
+**Included:** all RPC modules (with `@operation`-driven types), `schema` named export, type inference helpers, `withDefaults` method on each module.
 
 **Omitted:**
 
-- The **`openapi` object** (would significantly inflate bundle size). Consumers needing the OpenAPI spec should hit a runtime endpoint that serves it (see **`openapi`** skill).
-- A separate **`schema` module entry point** — the bundle is single-entry by design. The `schema` named export is still importable from the package root, and `<RpcModule>.<method>.schema` is still on every method:
+- **`openapi` object** (would inflate bundle size). Consumers needing OpenAPI spec should hit runtime endpoint serving it (see **`openapi`** skill).
+- Separate **`schema` module entry point** — bundle is single-entry by design. `schema` named export still importable from package root, `<RpcModule>.<method>.schema` still on every method:
 
 ```ts
 import { schema, UserRPC } from 'my-api-bundle';
@@ -189,7 +189,7 @@ console.log(UserRPC.getUser.schema.validation.params);
 
 ## Bundled SDK + `deriveTools`
 
-Bundled modules feed `deriveTools` identically to native ones — same call signature, same `@operation` metadata, same tool surface:
+Bundled modules feed `deriveTools` identically to native ones — same call sig, same `@operation` metadata, same tool surface:
 
 ```ts
 import { UserRPC } from 'my-api-bundle';
@@ -198,23 +198,23 @@ import { deriveTools } from 'vovk';
 const { tools } = deriveTools({ modules: { UserRPC } });
 ```
 
-See **`tools`** skill for the full pipeline.
+See **`tools`** skill for full pipeline.
 
 ## Flows
 
 ### "Publish a TypeScript SDK for my Vovk API"
 
-1. Add `bundle` to `vovk.config.mjs` with a `build` function (use the tsdown recipe above) and an `outputConfig` containing `origin` + a `package` block.
+1. Add `bundle` to `vovk.config.mjs` w/ `build` fn (use tsdown recipe above) and `outputConfig` containing `origin` + `package` block.
 2. `npx vovk bundle`.
 3. `npm publish dist`.
 
 ### "Bundle a subset of segments as a public SDK"
 
-Set `bundle.outputConfig.includeSegments` (or pass `--include` on the CLI) to ship only the public-facing segments. Useful when `admin` and `internal` segments live in the same Vovk app but only `public` should ship to consumers.
+Set `bundle.outputConfig.includeSegments` (or pass `--include` on CLI) to ship only public-facing segments. Useful when `admin`/`internal` segments live in same Vovk app but only `public` ships to consumers.
 
 ### "Bundle our API combined with a third-party OpenAPI spec"
 
-Either configure mixins in `vovk.config.mjs` (see **`mixins`** skill) and run `npx vovk bundle`, or use the CLI's `--openapi*` flags for a one-off:
+Either configure mixins in `vovk.config.mjs` (see **`mixins`** skill) and run `npx vovk bundle`, or use CLI's `--openapi*` flags for one-off:
 
 ```sh
 npx vovk bundle \
@@ -226,20 +226,20 @@ npx vovk bundle \
 
 ### "My bundle is too large"
 
-Disable client-side validation in the bundled package: `bundle.outputConfig.imports.validateOnClient: null`. Most apps that consume a typed SDK trust their own input; AJV adds runtime weight that's often unnecessary post-publish.
+Disable client-side validation: `bundle.outputConfig.imports.validateOnClient: null`. Most apps consuming typed SDK trust their own input; AJV adds runtime weight often unneeded post-publish.
 
 ### "Debug the prebundled TypeScript before bundling"
 
-Set `bundle.keepPrebundleDir: true` (or pass `--keep-prebundle-dir`). The `tmp_prebundle` directory survives the bundle run so you can inspect the generated `index.ts` and module sources.
+Set `bundle.keepPrebundleDir: true` (or pass `--keep-prebundle-dir`). `tmp_prebundle` survives bundle run so you can inspect generated `index.ts` and module sources.
 
 ## Gotchas
 
-- **`bundle` is TypeScript-only.** Don't reach for it for Python or Rust SDKs — those use `vovk generate` with the `py`/`pySrc`/`rs`/`rsSrc` templates plus their language-native publish commands. See **`python`** / **`rust`** skills.
-- **Pin `tsdown@0.19.0`.** The Vovk docs explicitly warn that tsdown's API may break between minor versions; the recipe above is validated against 0.19.0. Don't take a floating range until upstream stability is confirmed.
-- **`origin` is required.** Without it, the bundled client has no default API base URL and consumers must pass `apiRoot` on every call. Bake it in — or use `withDefaults` post-import as a one-off.
-- **`NextResponse` type inference needs the `next` package** present at consumer install time (Next.js limitation, not Vovk's). For dynamic response headers in a controller you bundle, return a plain `Response` with manual type casting.
-- **The `openapi` module isn't bundled** — consumers needing the spec should fetch it from a runtime endpoint (see **`openapi`** skill's `OpenApiController` pattern). This is a deliberate size choice.
-- **No segmented bundle yet** — the bundled package is single-entry. Segmented bundling (one package per segment) is a roadmap item; for now, run `vovk bundle` once per segment-subset using `includeSegments` if you genuinely need separate packages.
-- **Don't bake secrets.** API tokens and signing keys must not be committed to a published package. Document that consumers configure auth themselves (via `withDefaults` or a custom fetcher).
-- **CI placement.** Bundle in a release workflow triggered by tag or manual dispatch, not on every PR. The build step is heavier than `vovk generate` and produces an artifact you don't want piling up in main-branch CI runs.
-- **`package.json` defaults inherit from the project root.** Set `bundle.outputConfig.package.name` (and `version`) explicitly when the project root's name isn't a good public package name — that's almost always the case for Next.js apps named after the product, not the SDK.
+- **`bundle` is TypeScript-only.** Don't reach for Python/Rust SDKs — those use `vovk generate` with `py`/`pySrc`/`rs`/`rsSrc` templates + language-native publish commands. See **`python`** / **`rust`** skills.
+- **Pin `tsdown@0.19.0`.** Docs warn tsdown's API may break between minor versions; recipe above validated against 0.19.0. No floating range until upstream stability confirmed.
+- **`origin` required.** Without it, bundled client has no default API base URL and consumers must pass `apiRoot` on every call. Bake it in — or use `withDefaults` post-import as one-off.
+- **`NextResponse` type inference needs `next` package** at consumer install time (Next.js limitation, not Vovk's). For dynamic response headers in bundled controller, return plain `Response` w/ manual type casting.
+- **`openapi` module isn't bundled** — consumers needing spec should fetch from runtime endpoint (see **`openapi`** skill's `OpenApiController` pattern). Deliberate size choice.
+- **No segmented bundle yet** — bundled package is single-entry. Segmented bundling (one package per segment) is roadmap item; for now, run `vovk bundle` once per segment-subset via `includeSegments` if you need separate packages.
+- **Don't bake secrets.** API tokens and signing keys must not ship in published package. Document consumers configure auth themselves (via `withDefaults` or custom fetcher).
+- **CI placement.** Bundle in release workflow triggered by tag or manual dispatch, not every PR. Build step heavier than `vovk generate` and produces artifact you don't want piling up in main-branch CI.
+- **`package.json` defaults inherit from project root.** Set `bundle.outputConfig.package.name` (and `version`) explicitly when project root's name isn't a good public package name — almost always the case for Next.js apps named after product, not SDK.

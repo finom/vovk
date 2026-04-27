@@ -5,7 +5,7 @@ description: Vovk.ts segments — the unit of backend slicing in a Vovk project.
 
 # Vovk.ts segments
 
-A segment is a **backend slice**. It owns an API path prefix (`/api`, `/api/admin`, `/api/openapi`, etc.), a set of controllers, and its own Next.js route-handler file. Each segment compiles to an independent serverless function, so runtime settings (`runtime`, `maxDuration`, etc.) can differ per segment.
+A segment is a **backend slice**. Owns API path prefix (`/api`, `/api/admin`, `/api/openapi`, etc.), set of controllers, own Next.js route-handler file. Each segment compiles to independent serverless function, so runtime settings (`runtime`, `maxDuration`, etc.) can differ per segment.
 
 Think: "one segment = one mini-backend."
 
@@ -13,13 +13,13 @@ Think: "one segment = one mini-backend."
 
 Covers:
 
-- What a segment is, when to create one, and how to pick between root / named / static.
-- The `vovk new segment` CLI.
+- What a segment is, when to create one, how to pick between root / named / static.
+- `vovk new segment` CLI.
 - `initSegment()` call shape and parameters.
 - Segment priority (deepest path wins).
 - Static segments: `generateStaticParams`, `controllersToStaticParams`, `staticParams` option on decorators, `output: 'export'`, `.json` endpoints.
 - Per-segment config in `vovk.config.mjs` (`outputConfig.segments.<name>`).
-- The `_schema_` dev endpoint (mention only — see `common` skill for details).
+- `_schema_` dev endpoint (mention only — see `common` skill for details).
 
 Out of scope (do not duplicate):
 
@@ -27,13 +27,13 @@ Out of scope (do not duplicate):
 - RPC client generation, composed vs. segmented clients → **`rpc` skill**.
 - OpenAPI metadata (`@operation`, Scalar) beyond segment-level `openAPIObject` → **`openapi` skill**.
 - `vovk.config.mjs` global options / package ecosystem → **`common` skill**. Type inference helpers (`VovkBody`, `VovkOutput`, etc.) → **`procedure` skill** (controller-side) or **`rpc` skill** (client-side).
-- Multi-tenant routing (subdomains, `multitenant()` proxy, per-tenant frontend pages, `segmentNameOverride`) → **`multitenant` skill**. This skill only mentions the segment side in passing.
+- Multi-tenant routing (subdomains, `multitenant()` proxy, per-tenant frontend pages, `segmentNameOverride`) → **`multitenant` skill**. This skill only mentions segment side in passing.
 
 ## Core concepts
 
 ### The catch-all file
 
-Every segment is a Next.js App Router **optional catch-all** route handler:
+Every segment is Next.js App Router **optional catch-all** route handler:
 
 ```
 src/app/api/[[...vovk]]/route.ts              ← root segment (path: /api/*)
@@ -41,7 +41,7 @@ src/app/api/foo/[[...vovk]]/route.ts          ← "foo" segment (path: /api/foo/
 src/app/api/foo/bar/[[...vovk]]/route.ts      ← "foo/bar" segment (path: /api/foo/bar/*)
 ```
 
-The slug name (`vovk`) is configurable via the `rootEntry` config option but stick with `vovk` unless the user has a reason to change it.
+Slug name (`vovk`) is configurable via `rootEntry` config option but stick with `vovk` unless user has reason to change it.
 
 ### `initSegment()`
 
@@ -67,34 +67,34 @@ export const { GET, POST, PUT, DELETE, PATCH } = initSegment({
 });
 ```
 
-The **keys** of `controllers` (`UserRPC`, `PostRPC`) are the client-side module names — the generated client will expose `UserRPC.getUser(...)`, etc.
+**Keys** of `controllers` (`UserRPC`, `PostRPC`) are client-side module names — generated client will expose `UserRPC.getUser(...)`, etc.
 
 `initSegment` parameters:
 
 | Param | Required | Default | Purpose |
 |---|---|---|---|
 | `controllers` | yes | — | Map of `RPCModuleName → ControllerClass`. |
-| `segmentName` | no | `""` (root) | Identifier; must mirror the folder path for named segments (e.g., `"foo/bar"`). |
+| `segmentName` | no | `""` (root) | Identifier; must mirror folder path for named segments (e.g., `"foo/bar"`). |
 | `emitSchema` | no | `true` | Emit schema for codegen. Leave on unless you know why. |
-| `exposeValidation` | no | `true` | Expose validation data to the client. Leave on for client-side validation. |
-| `onError` | no | — | `(err: Error, req: VovkRequest) => void \| Promise<void>` — for logging/metrics. `VovkRequest` extends `NextRequest`; `err` is whatever the handler threw (often an `HttpException`). |
+| `exposeValidation` | no | `true` | Expose validation data to client. Leave on for client-side validation. |
+| `onError` | no | — | `(err: Error, req: VovkRequest) => void \| Promise<void>` — for logging/metrics. `VovkRequest` extends `NextRequest`; `err` is whatever the handler threw (often `HttpException`). |
 
 ### Segment priority
 
-The deepest matching path wins. Given `/`, `/foo`, `/foo/bar`:
+Deepest matching path wins. Given `/`, `/foo`, `/foo/bar`:
 
 - `GET /api/foo/bar/baz` → handled by `foo/bar` segment.
 - `GET /api/foo/qux` → `foo` segment.
 - `GET /api/something` → root segment.
 
-When adding a new named segment, any existing root-handled paths under that prefix will stop reaching the root. Flag this to the user.
+When adding new named segment, any existing root-handled paths under that prefix will stop reaching root. Flag this to user.
 
 ## Picking a segment shape
 
 | Shape | When | Path |
 |---|---|---|
-| **Root** | The default. Most projects have exactly one. | `src/app/api/[[...vovk]]/route.ts` |
-| **Named** | Isolate a slice with different runtime settings (`maxDuration`, `runtime: 'edge'`), or for multi-tenancy. | `src/app/api/<name>/[[...vovk]]/route.ts` |
+| **Root** | Default. Most projects have exactly one. | `src/app/api/[[...vovk]]/route.ts` |
+| **Named** | Isolate slice with different runtime settings (`maxDuration`, `runtime: 'edge'`), or for multi-tenancy. | `src/app/api/<name>/[[...vovk]]/route.ts` |
 | **Static** | API that can be pre-rendered at build time — OpenAPI specs, enumerated datasets, infrequently changing reference data. Works with Next `output: 'export'`. | `src/app/api/<name>/[[...vovk]]/route.ts` + `generateStaticParams` |
 
 **When user says...**
@@ -107,7 +107,7 @@ When adding a new named segment, any existing root-handled paths under that pref
 
 ## Creating a segment (CLI)
 
-Always use the CLI — it writes `route.ts` with the right `initSegment()` wiring, which is easy to miscopy by hand.
+Always use the CLI — writes `route.ts` with right `initSegment()` wiring, easy to miscopy by hand.
 
 ```bash
 # Root
@@ -120,9 +120,9 @@ npx vovk new segment <name>
 npx vovk new segment <name> --static
 ```
 
-**`<name>` is a URL path segment**, not a JS identifier — lowercase or kebab-case for multi-word (`admin`, `user-portal`), slash-separated for nested paths (`foo/bar`, `admin/settings`). **Not camelCase.** If the user asks for a segment like `MyAdmin` or `user_portal`, convert to URL-safe form (`my-admin`, `user-portal`) before calling the CLI — the name becomes part of the URL (`/api/my-admin/...`) and the `segmentName` inside `initSegment({ segmentName: '...' })`. This is the opposite rule from `vovk new controller service` (module names there are camelCase — see `procedure` skill).
+**`<name>` is URL path segment**, not JS identifier — lowercase or kebab-case for multi-word (`admin`, `user-portal`), slash-separated for nested paths (`foo/bar`, `admin/settings`). **Not camelCase.** If user asks for segment like `MyAdmin` or `user_portal`, convert to URL-safe form (`my-admin`, `user-portal`) before calling CLI — name becomes part of URL (`/api/my-admin/...`) and `segmentName` inside `initSegment({ segmentName: '...' })`. Opposite rule from `vovk new controller service` (module names there are camelCase — see `procedure` skill).
 
-After the CLI runs, verify the expected `route.ts` landed at the expected path. If it didn't, surface the CLI output — don't hand-write it.
+After CLI runs, verify expected `route.ts` landed at expected path. If it didn't, surface CLI output — don't hand-write it.
 
 ## Named segment example
 
@@ -143,7 +143,7 @@ export const { GET, POST, PUT, DELETE, PATCH } = initSegment({
 });
 ```
 
-`segmentName` MUST match the folder path. For `src/app/api/foo/bar/[[...vovk]]/route.ts`, `segmentName: 'foo/bar'`.
+`segmentName` MUST match folder path. For `src/app/api/foo/bar/[[...vovk]]/route.ts`, `segmentName: 'foo/bar'`.
 
 ## Static segments
 
@@ -169,13 +169,13 @@ export const { GET } = initSegment({
 });
 ```
 
-If you've customized the slug (not `vovk`), pass it: `controllersToStaticParams(controllers, 'custom')`.
+If you've customized slug (not `vovk`), pass it: `controllersToStaticParams(controllers, 'custom')`.
 
 ### 2. Endpoints must be enumerable
 
-Every endpoint in a static segment must resolve to a finite set of URLs at build time.
+Every endpoint in static segment must resolve to finite set of URLs at build time.
 
-**Zero-param endpoint** — just give it a `.json` suffix so static hosting serves it with the right content type:
+**Zero-param endpoint** — give it `.json` suffix so static hosting serves with right content type:
 
 ```ts
 @prefix('hello')
@@ -187,7 +187,7 @@ export default class HelloController {
 }
 ```
 
-**Parameterized endpoint** — enumerate via `staticParams` on the decorator:
+**Parameterized endpoint** — enumerate via `staticParams` on decorator:
 
 ```ts
 import { z } from 'zod';
@@ -215,11 +215,11 @@ export default class StaticParamsController {
 }
 ```
 
-This pre-renders four JSON files at build time.
+Pre-renders four JSON files at build time.
 
 ### 3. Static export (optional)
 
-If the whole Next.js app is exported statically (`next.config.js` → `output: 'export'`), static segments work as-is. The generated RPC client still calls them the normal way:
+If whole Next.js app is exported statically (`next.config.js` → `output: 'export'`), static segments work as-is. Generated RPC client still calls them normal way:
 
 ```ts
 const resp = await StaticParamsRPC.getStaticParams({
@@ -229,15 +229,15 @@ const resp = await StaticParamsRPC.getStaticParams({
 
 ### Rules for static segments
 
-- No per-request state. Every response is baked at build time.
+- No per-request state. Every response baked at build time.
 - Use `.json` suffixes on endpoint paths for correct `Content-Type` when hosted statically.
-- Keep static segments dedicated to static endpoints. Mixing dynamic handlers in a static segment defeats the pre-render.
+- Keep static segments dedicated to static endpoints. Mixing dynamic handlers in static segment defeats pre-render.
 
 ## Multi-tenant routing
 
-One named segment per tenant, plus a Next.js proxy (`proxy.ts`) that maps subdomains to tenant segments via the `multitenant()` helper from `vovk`, lets one app serve `admin.example.com`, `customer.example.com`, `*.customer.example.com`, etc.
+One named segment per tenant, plus Next.js proxy (`proxy.ts`) mapping subdomains to tenant segments via `multitenant()` helper from `vovk`, lets one app serve `admin.example.com`, `customer.example.com`, `*.customer.example.com`, etc.
 
-This skill covers only the **segment side** (use `vovk new segment <tenant>` as usual). For the proxy wiring, `overrides` shape, `segmentNameOverride` in `vovk.config.mjs`, per-tenant frontend pages, and DNS, **hand off to the `multitenant` skill**.
+This skill covers only **segment side** (use `vovk new segment <tenant>` as usual). For proxy wiring, `overrides` shape, `segmentNameOverride` in `vovk.config.mjs`, per-tenant frontend pages, and DNS, **hand off to the `multitenant` skill**.
 
 ## Per-segment configuration
 
@@ -264,7 +264,7 @@ const config = {
 export default config;
 ```
 
-Segment-specific overrides supported: `openAPIObject`, `imports`, and other output settings. The segment name key (`admin`) matches the `segmentName` in `initSegment()`. Root segment uses key `""`.
+Segment-specific overrides supported: `openAPIObject`, `imports`, other output settings. Segment name key (`admin`) matches `segmentName` in `initSegment()`. Root segment uses key `""`.
 
 ## Schema output
 
@@ -278,21 +278,21 @@ Each segment emits one schema file:
   _meta.json
 ```
 
-Commit `.vovk-schema/` to version control — it's the source of truth for codegen. Details on schema consumption belong to the `common` and `rpc` skills.
+Commit `.vovk-schema/` to version control — source of truth for codegen. Details on schema consumption belong to `common` and `rpc` skills.
 
 ## Common flows
 
 ### "Add an admin API with a longer timeout"
 
 1. `npx vovk new segment admin`.
-2. In the generated `src/app/api/admin/[[...vovk]]/route.ts`, add `export const maxDuration = 300;` (or whatever).
-3. Controllers go into `src/modules/admin/*` — creating them is the `procedure` skill's job. Hand off.
+2. In generated `src/app/api/admin/[[...vovk]]/route.ts`, add `export const maxDuration = 300;` (or whatever).
+3. Controllers go into `src/modules/admin/*` — creating them is `procedure` skill's job. Hand off.
 
 ### "Pre-render my OpenAPI spec at build time"
 
 1. `npx vovk new segment openapi --static`.
-2. Create a controller in `src/modules/openapi/` with a `.json`-suffixed endpoint (see static example above). Hand off to `procedure` for the controller body.
-3. The OpenAPI payload itself comes from the `openapi` skill.
+2. Create controller in `src/modules/openapi/` with `.json`-suffixed endpoint (see static example above). Hand off to `procedure` for controller body.
+3. OpenAPI payload itself comes from `openapi` skill.
 
 ### "Split `/api/public` and `/api/internal`"
 
@@ -300,16 +300,16 @@ Two named segments (`public`, `internal`). Flag segment priority: any pre-existi
 
 ### "Host `admin.example.com` and `customer.example.com` from one app"
 
-Multi-tenant flow. Hand off to the **`multitenant` skill**. The segment side is `npx vovk new segment admin` + `npx vovk new segment customer`; everything else (proxy, `vovk.config.mjs` changes, frontend pages, DNS) belongs to that skill.
+Multi-tenant flow. Hand off to **`multitenant` skill**. Segment side is `npx vovk new segment admin` + `npx vovk new segment customer`; everything else (proxy, `vovk.config.mjs` changes, frontend pages, DNS) belongs to that skill.
 
 ### "Change the API root from `/api` to `/rpc`"
 
-That's a Next.js App Router path rename — move `src/app/api/` to `src/app/rpc/`. Vovk doesn't care which folder name you use; the `[[...vovk]]` catch-all is what matters.
+That's Next.js App Router path rename — move `src/app/api/` to `src/app/rpc/`. Vovk doesn't care which folder name you use; `[[...vovk]]` catch-all is what matters.
 
 ## Gotchas
 
-- **`segmentName` mismatch**: must mirror the folder path. `src/app/api/foo/bar/[[...vovk]]/route.ts` → `segmentName: 'foo/bar'`. Mismatch breaks codegen silently.
-- **Don't hand-write `route.ts`**: use the CLI. The `initSegment` shape and `controllers` object wiring are easy to miscopy.
-- **Static segment + dynamic handler**: the handler runs at build, not request time. If you need per-request logic, use a regular named segment.
-- **`controllers` keys vs. controller names**: the key (`UserRPC`) is the client-side module name, not the controller class name. Mismatches here are the most common "why doesn't my RPC call work" bug.
-- **Removing a segment**: deleting `route.ts` is not enough — also remove the folder and any `.vovk-schema/<name>.json` file, then run `vovk generate` to refresh the client.
+- **`segmentName` mismatch**: must mirror folder path. `src/app/api/foo/bar/[[...vovk]]/route.ts` → `segmentName: 'foo/bar'`. Mismatch breaks codegen silently.
+- **Don't hand-write `route.ts`**: use the CLI. `initSegment` shape and `controllers` object wiring are easy to miscopy.
+- **Static segment + dynamic handler**: handler runs at build, not request time. If you need per-request logic, use regular named segment.
+- **`controllers` keys vs. controller names**: key (`UserRPC`) is client-side module name, not controller class name. Mismatches here are most common "why doesn't my RPC call work" bug.
+- **Removing a segment**: deleting `route.ts` is not enough — also remove folder and any `.vovk-schema/<name>.json` file, then run `vovk generate` to refresh client.

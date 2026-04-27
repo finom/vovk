@@ -1,16 +1,16 @@
 ---
 name: rpc
-description: The Vovk.ts RPC client — how `vovk generate` turns controllers into type-safe client modules, the composed `vovk-client` vs segmented clients, the call shape (`apiRoot`, `params`, `body`, `query`, `meta`, `init`, `disableClientValidation`, `validateOnClient`, `interpretAs`, `transform`, `fetcher`), customizing generation via `outputConfig.imports.fetcher` and `createFetcher` (auth headers, retries, tracing, dynamic `onSuccess` / `onError` subscribers), configuring clients in `vovk.config.mjs` (`composedClient` / `segmentedClient`), error rethrow (`HttpException`, `HttpStatus.NULL`), `VovkInput`/`VovkOutput` against RPC modules, React Query integration (`queryKey`, `streamedQuery`), and the RPC method surface (`.withDefaults`, `.getURL`, `.queryKey`, `.schema`, `.isRPC`). Use whenever the user asks to call the API from a browser / mobile / other server ("fetch users from the client", "call the API from Next.js client component", "typed API client", "why is my RPC call failing", "add auth token to every request", "custom headers on RPC calls", "retry on 401", "why is the client stale"), regenerate the client (`vovk generate`), choose between composed vs segmented clients, or wire up `vovk-client` imports. Does NOT cover writing procedures / handlers → hand off to `procedure` skill. Does NOT cover segment registration / `initSegment` → hand off to `segment` skill. Does NOT cover JSON Lines streaming clients → hand off to `jsonlines` skill.
+description: Vovk.ts RPC client — how `vovk generate` turns controllers into type-safe client modules, composed `vovk-client` vs segmented clients, call shape (`apiRoot`, `params`, `body`, `query`, `meta`, `init`, `disableClientValidation`, `validateOnClient`, `interpretAs`, `transform`, `fetcher`), customizing generation via `outputConfig.imports.fetcher` + `createFetcher` (auth headers, retries, tracing, dynamic `onSuccess` / `onError` subscribers), configuring clients in `vovk.config.mjs` (`composedClient` / `segmentedClient`), error rethrow (`HttpException`, `HttpStatus.NULL`), `VovkInput`/`VovkOutput` against RPC modules, React Query integration (`queryKey`, `streamedQuery`), RPC method surface (`.withDefaults`, `.getURL`, `.queryKey`, `.schema`, `.isRPC`). Use whenever user asks to call API from browser / mobile / other server ("fetch users from the client", "call the API from Next.js client component", "typed API client", "why is my RPC call failing", "add auth token to every request", "custom headers on RPC calls", "retry on 401", "why is the client stale"), regenerate client (`vovk generate`), choose between composed vs segmented clients, or wire up `vovk-client` imports. Does NOT cover writing procedures / handlers → hand off to `procedure` skill. Does NOT cover segment registration / `initSegment` → hand off to `segment` skill. Does NOT cover JSON Lines streaming clients → hand off to `jsonlines` skill.
 ---
 
 # Vovk.ts RPC client
 
-Every controller procedure with an HTTP decorator automatically gets a typed client counterpart. `vovk generate` produces these client modules from the segment schemas. Where they're imported from depends on your config:
+Every controller procedure with HTTP decorator automatically gets typed client counterpart. `vovk generate` produces these client modules from segment schemas. Import path depends on config:
 
-- **Default setup only** (composed client + JS template + default `outDir: './node_modules/.vovk-client'`) → the `vovk-client` npm package barrel re-exports the emitted `.js` / `.d.ts`. You import from `'vovk-client'`.
-- **Any other configuration** — TS template, segmented client, or a custom source-tree `outDir` — the `vovk-client` package is *not* used at all. The generated files live in your source tree and you import them through a local path alias (e.g. `'@/client'`, `'@/client/<segment>'`).
+- **Default setup only** (composed client + JS template + default `outDir: './node_modules/.vovk-client'`) → `vovk-client` npm package barrel re-exports emitted `.js` / `.d.ts`. Import from `'vovk-client'`.
+- **Any other config** — TS template, segmented client, custom source-tree `outDir` — `vovk-client` package *not* used. Generated files live in source tree, import through local path alias (e.g. `'@/client'`, `'@/client/<segment>'`).
 
-**Key identity**: the client module name = the **key** used in `initSegment`'s `controllers` map, regardless of import path.
+**Key identity**: client module name = **key** used in `initSegment`'s `controllers` map, regardless of import path.
 
 ```ts
 // server
@@ -27,7 +27,7 @@ Not `UserControllerRPC`. Not `UserController`. Whatever the key is.
 
 Covers:
 
-- `vovk generate` — when to run it, what it produces.
+- `vovk generate` — when to run, what it produces.
 - Composed vs segmented clients (`composedClient` / `segmentedClient` config).
 - RPC method call shape.
 - Fetcher customization via `createFetcher` + `outputConfig.imports.fetcher`, plus dynamically registered `onSuccess` / `onError` subscribers.
@@ -46,7 +46,7 @@ Out of scope:
 - Python / Rust clients → **`python` / `rust` skills**.
 - `@operation` metadata for OpenAPI → **`openapi` skill**.
 
-## Generating the client
+## Generating client
 
 ```bash
 npx vovk generate
@@ -55,21 +55,21 @@ npx vovk generate
 What it does:
 
 - Reads `.vovk-schema/**/*.json` for every segment (nested segments live in subdirectories, e.g. `.vovk-schema/customer/static.json`).
-- Emits generated code into the configured `outDir` using the selected `fromTemplates` preset.
-- Default composed setup — `fromTemplates: ['js']` + `outDir: './node_modules/.vovk-client'` — emits `.js` / `.d.ts` files that the `vovk-client` npm package re-exports via `export * from '../.vovk-client/index.js'`. This is the **only** configuration where you import from `'vovk-client'`.
-- Alternate (recommended for pnpm) — `fromTemplates: ['ts']` + `outDir: './src/client'` — emits `.ts` files directly into the source tree. The `vovk-client` package isn't used at all; users import from a local alias like `'@/client'` and their own tsc handles the files.
-- Segmented client (any template) — always vendors per-segment modules into the source tree (default `./src/client/<segment>`). `vovk-client` is not used regardless of template.
+- Emits generated code into configured `outDir` using selected `fromTemplates` preset.
+- Default composed setup — `fromTemplates: ['js']` + `outDir: './node_modules/.vovk-client'` — emits `.js` / `.d.ts` files; `vovk-client` npm package re-exports via `export * from '../.vovk-client/index.js'`. **Only** config where you import from `'vovk-client'`.
+- Alternate (recommended for pnpm) — `fromTemplates: ['ts']` + `outDir: './src/client'` — emits `.ts` files directly into source tree. `vovk-client` package not used; users import from local alias like `'@/client'`, own tsc handles files.
+- Segmented client (any template) — always vendors per-segment modules into source tree (default `./src/client/<segment>`). `vovk-client` not used regardless of template.
 
 See "Import path depends on template + outDir" below for why these pair up.
 
-**`vovk generate` does NOT rebuild schemas from controller source.** Schema emission is a separate step: `vovk dev` runs alongside the Next.js dev server, hits each segment's `_schema_` endpoint (only available when `NODE_ENV === 'development'`), and writes JSON into `.vovk-schema/`. `vovk generate` then reads whatever's there.
+**`vovk generate` does NOT rebuild schemas from controller source.** Schema emission = separate step: `vovk dev` runs alongside Next.js dev server, hits each segment's `_schema_` endpoint (only available when `NODE_ENV === 'development'`), writes JSON into `.vovk-schema/`. `vovk generate` reads whatever's there.
 
-Consequence: if the backend changed and the client looks stale, running `vovk generate` alone isn't enough — `.vovk-schema/` hasn't been refreshed. Run `npm run dev` (which starts `vovk dev` alongside `next dev` via `concurrently`) to re-emit schemas, then the client regenerates from them.
+Consequence: if backend changed and client looks stale, running `vovk generate` alone isn't enough — `.vovk-schema/` hasn't been refreshed. Run `npm run dev` (starts `vovk dev` alongside `next dev` via `concurrently`) to re-emit schemas, then client regenerates from them.
 
 When to run:
 
-- **Automatic**: the `prebuild` script installed by `vovk init` runs `vovk generate` before `next build`. During `npm run dev`, the dev watcher refreshes `.vovk-schema/` on backend changes and the client regenerates from it.
-- **Explicit**: before integration tests, after checking out a branch, if a client method appears missing ("it compiled fine, why is `UserRPC.createUser` undefined?"). If a method you just wrote is missing, the schema is probably stale — restart `npm run dev` rather than just re-running `vovk generate`.
+- **Automatic**: `prebuild` script installed by `vovk init` runs `vovk generate` before `next build`. During `npm run dev`, dev watcher refreshes `.vovk-schema/` on backend changes, client regenerates.
+- **Explicit**: before integration tests, after checking out branch, if client method appears missing ("compiled fine, why is `UserRPC.createUser` undefined?"). If method just written is missing, schema probably stale — restart `npm run dev` rather than re-running `vovk generate`.
 
 ## Call shape
 
@@ -99,7 +99,7 @@ await ModuleRPC.methodName({
 });
 ```
 
-The return type is a `Promise` of whatever the procedure's `output` schema resolves to, or whatever `transform` returns if present. Override the inferred return type per call:
+Return type = `Promise` of whatever procedure's `output` schema resolves to, or whatever `transform` returns if present. Override per call:
 
 ```ts
 const user = await UserRPC.updateUser<SomeType>({ /* ... */ });
@@ -107,7 +107,7 @@ const user = await UserRPC.updateUser<SomeType>({ /* ... */ });
 
 ### Body by content type
 
-`body`'s accepted type narrows to the procedure's `contentType`: `FormData` for `multipart/form-data`, `URLSearchParams` or `FormData` for `application/x-www-form-urlencoded`, `File` / `Blob` / `ArrayBuffer` / `Uint8Array` for binary (`image/*`, `video/*`, `*/*`). Schema-typed objects are always accepted. Full matrix in the **`procedure`** skill.
+`body`'s accepted type narrows to procedure's `contentType`: `FormData` for `multipart/form-data`, `URLSearchParams` or `FormData` for `application/x-www-form-urlencoded`, `File` / `Blob` / `ArrayBuffer` / `Uint8Array` for binary (`image/*`, `video/*`, `*/*`). Schema-typed objects always accepted. Full matrix → **`procedure`** skill.
 
 ```ts
 const form = new FormData();
@@ -115,21 +115,21 @@ form.append('file', file);
 await UserRPC.uploadAvatar({ body: form }); // multipart/form-data procedure
 ```
 
-Never hand-set `Content-Type` — the fetcher derives it (multipart boundary included). Manual headers are the usual HTTP 415 trigger.
+Never hand-set `Content-Type` — fetcher derives it (multipart boundary included). Manual headers = usual HTTP 415 trigger.
 
 ### `apiRoot`
 
-`apiRoot` is **baked in at generation time**: defaults to `/${rootEntry}` (`rootEntry` defaults to `'api'`, so the default baked-in value is `/api`). When `outputConfig.origin` is set, the bake produces a full URL like `http://localhost:3000/api`. The per-call `apiRoot` option fully replaces the baked-in value for that one call — config-level changes still require `vovk generate`.
+`apiRoot` **baked in at generation time**: defaults to `/${rootEntry}` (`rootEntry` defaults to `'api'`, so default baked-in value = `/api`). When `outputConfig.origin` is set, bake produces full URL like `http://localhost:3000/api`. Per-call `apiRoot` fully replaces baked-in value for that call — config-level changes still require `vovk generate`.
 
-In the browser, a relative `/api` resolves against the page origin, so the same call works both from `/dashboard` and `/settings`. On the server (Node, edge, integration tests) relative URLs don't resolve — pass a full URL per call, bake one in via `outputConfig.origin`, or use `withDefaults({ apiRoot })`.
+In browser, relative `/api` resolves against page origin, so same call works from `/dashboard` and `/settings`. On server (Node, edge, integration tests) relative URLs don't resolve — pass full URL per call, bake one in via `outputConfig.origin`, or use `withDefaults({ apiRoot })`.
 
 ### `init`
 
-`RequestInit` forwarded to `fetch` — `headers`, `credentials`, `mode`, `cache`, and Next.js-specific `next: { revalidate: number }` all pass through.
+`RequestInit` forwarded to `fetch` — `headers`, `credentials`, `mode`, `cache`, Next.js-specific `next: { revalidate: number }` all pass through.
 
 ### `transform`
 
-Receives the parsed response data and the original `Response`. Return anything — including a tuple if you want the `Response` exposed to the caller:
+Receives parsed response data and original `Response`. Return anything — including tuple if you want `Response` exposed to caller:
 
 ```ts
 const [user, response] = await UserRPC.updateUser({
@@ -141,18 +141,18 @@ response satisfies Response;
 
 ### `interpretAs`
 
-Forces the fetcher's content-type dispatch. Useful when a server returns JSON Lines but omits `content-type: application/jsonl` (common behind some proxies or when streaming through Next.js): `interpretAs: 'application/jsonl'` makes the client treat the response as an async iterable anyway.
+Forces fetcher's content-type dispatch. Useful when server returns JSON Lines but omits `content-type: application/jsonl` (common behind some proxies or when streaming through Next.js): `interpretAs: 'application/jsonl'` makes client treat response as async iterable anyway.
 
 ## Composed vs segmented client
 
-Two top-level config keys — `composedClient` and `segmentedClient` — are **independent toggles**; enable one, the other, or both. Defaults differ because they target different workflows:
+Two top-level config keys — `composedClient` and `segmentedClient` — = **independent toggles**; enable one, the other, or both. Defaults differ because they target different workflows:
 
 | Key               | Default `enabled` | Default `fromTemplates` | Default `outDir`                         | Default import            |
 |-------------------|-------------------|--------------------------|-------------------------------------------|---------------------------|
 | `composedClient`  | `true`            | `['js']`                 | `./node_modules/.vovk-client`             | `'vovk-client'`           |
 | `segmentedClient` | `false`           | `['ts']`                 | `./src/client` (or `./client` if no `src`) | `'@/client/<segment>'`    |
 
-Only the composed client's *default* wires up the `vovk-client` npm barrel (it re-exports `.js`/`.d.ts` from `node_modules/.vovk-client`). Deviating from that exact combo — switching composed to the TS template, a source-tree `outDir`, or enabling segmented — bypasses `vovk-client` entirely and you import from a local alias.
+Only composed client's *default* wires up `vovk-client` npm barrel (re-exports `.js`/`.d.ts` from `node_modules/.vovk-client`). Deviating from that exact combo — switching composed to TS template, source-tree `outDir`, or enabling segmented — bypasses `vovk-client` entirely; import from local alias.
 
 ```ts
 // vovk.config.mjs
@@ -166,11 +166,11 @@ const config = {
 };
 ```
 
-Both keys can carry a nested `outputConfig` that overrides the top-level one for that specific output (e.g. segmented SDKs with a different OpenAPI block).
+Both keys can carry nested `outputConfig` overriding top-level for that specific output (e.g. segmented SDKs with different OpenAPI block).
 
-**Composed** — one client module re-exports every RPC across every segment. Default case for most projects: `import { UserRPC, PostRPC } from 'vovk-client'`. With a source-tree `outDir` (TS template), import from `'@/client'` instead.
+**Composed** — one client module re-exports every RPC across every segment. Default case for most projects: `import { UserRPC, PostRPC } from 'vovk-client'`. With source-tree `outDir` (TS template), import from `'@/client'`.
 
-**Segmented** — per-segment entries; importing `@/client/admin` keeps other segments out of the bundle. Useful when segment boundaries map to independent deploys, versioning, or SDK consumers.
+**Segmented** — per-segment entries; importing `@/client/admin` keeps other segments out of bundle. Useful when segment boundaries map to independent deploys, versioning, or SDK consumers.
 
 ```
 src/client/
@@ -187,7 +187,7 @@ import { AdminRPC } from '@/client/admin';
 
 ### Import path depends on template + outDir (composed client)
 
-Composed's import path follows from `fromTemplates` × `outDir`, because `vovk-client`'s barrel is just `export * from '../.vovk-client/index.js'` — it only resolves `.js`/`.d.ts` at the default location.
+Composed's import path follows from `fromTemplates` × `outDir`. `vovk-client`'s barrel = `export * from '../.vovk-client/index.js'` — only resolves `.js`/`.d.ts` at default location.
 
 | `fromTemplates` | `outDir`                                  | Import from               | Notes |
 |-----------------|-------------------------------------------|---------------------------|-------|
@@ -196,26 +196,26 @@ Composed's import path follows from `fromTemplates` × `outDir`, because `vovk-c
 | `['js']`        | custom source-tree path                    | local path                | Valid but unusual. |
 | `['ts']`        | default `node_modules/.vovk-client`        | broken                    | Barrel can't find `.js` to re-export. |
 
-Segmented has no equivalent table — it always vendors per-segment modules into the configured `outDir` and you always import from a local alias.
+Segmented has no equivalent table — always vendors per-segment modules into configured `outDir`; always import from local alias.
 
 **Why switch to TS template / source-tree `outDir`?**
-- **pnpm** — strict non-hoisted `node_modules` breaks the `vovk-client` → `.vovk-client` sibling hop.
-- **Commit the client** — review, CI reproducibility, offline builds.
-- **TS integration** — source maps, go-to-definition, and type narrowing align with your project's `tsconfig`.
+- **pnpm** — strict non-hoisted `node_modules` breaks `vovk-client` → `.vovk-client` sibling hop.
+- **Commit client** — review, CI reproducibility, offline builds.
+- **TS integration** — source maps, go-to-definition, type narrowing align with project's `tsconfig`.
 
 Step-by-step setup → **`init` skill**.
 
 ## Fetcher
 
-The fetcher is the client's core primitive — a function (`VovkFetcher<TFetcherOptions>`) that takes request metadata (endpoint, method, schema, validator) and dispatches the actual `fetch`. The default (`import { fetcher } from 'vovk/fetcher'`) already handles JSON and JSON Lines, runs client-side validation, injects the `x-meta` header, and rethrows `HttpException` on errors.
+Fetcher = client's core primitive — function (`VovkFetcher<TFetcherOptions>`) that takes request metadata (endpoint, method, schema, validator) and dispatches actual `fetch`. Default (`import { fetcher } from 'vovk/fetcher'`) already handles JSON and JSON Lines, runs client-side validation, injects `x-meta` header, rethrows `HttpException` on errors.
 
 Response-shape dispatch by content type:
 
-- `application/json` → parsed JSON (typed as the procedure's output schema).
+- `application/json` → parsed JSON (typed as procedure's output schema).
 - `application/jsonl` / `application/jsonlines` → disposable async iterable (see `jsonlines` skill).
-- Other content types → the raw `Response` object, so the caller can read text, binary, or stream it themselves.
+- Other content types → raw `Response` object — caller reads text, binary, or streams it.
 
-You **extend** the default rather than rewriting it, via `createFetcher`:
+You **extend** default rather than rewriting via `createFetcher`:
 
 ```ts
 // src/lib/fetcher.ts
@@ -241,7 +241,7 @@ export const fetcher = createFetcher<{
 });
 ```
 
-With that fetcher installed, callers get the custom options inline:
+With that fetcher installed, callers get custom options inline:
 
 ```ts
 await UserRPC.updateUser({
@@ -254,16 +254,16 @@ await UserRPC.updateUser({
 
 ### Hooks
 
-All optional; `options` is the typed `TOptions` you declared.
+All optional; `options` = typed `TOptions` you declared.
 
 - `prepareRequestInit(init, options) => RequestInit` — mutate `RequestInit` before `fetch` (headers, credentials, mode, cache, `next.revalidate`).
-- `transformResponse(data, options, info)` — transform the parsed response; `info = { response, init, schema }` gives access to the raw `Response`, the final `RequestInit`, and the procedure's `VovkHandlerSchema` (useful for reading `operationObject`).
+- `transformResponse(data, options, info)` — transform parsed response; `info = { response, init, schema }` gives access to raw `Response`, final `RequestInit`, procedure's `VovkHandlerSchema` (useful for reading `operationObject`).
 - `onSuccess(data, options)` — observe successful responses (toasts, analytics).
-- `onError(error: HttpException, options)` — observe failures. Both network errors and HTTP-status errors land here; `error.statusCode === 0` (`HttpStatus.NULL`) means either a transport failure or a client-side validation rejection.
+- `onError(error: HttpException, options)` — observe failures. Both network errors and HTTP-status errors land here; `error.statusCode === 0` (`HttpStatus.NULL`) = either transport failure or client-side validation rejection.
 
 ### Event-style subscribers (dynamic)
 
-`onSuccess` and `onError` can also be attached **after** the fetcher is created. Useful when the callback depends on state that isn't available at creation time (a React context value, a Zustand store reference, a lazily loaded logger). Each registration returns an unsubscribe function, and multiple subscribers run in order on every call:
+`onSuccess` and `onError` can also be attached **after** fetcher is created. Useful when callback depends on state not available at creation time (React context value, Zustand store reference, lazily loaded logger). Each registration returns unsubscribe function; multiple subscribers run in order on every call:
 
 ```ts
 // Somewhere in an app entry point (or a React effect, etc.)
@@ -282,9 +282,9 @@ unsubSuccess();
 unsubError();
 ```
 
-Prefer this pattern over baking toasts / store writes into `createFetcher` when the dependency graph would otherwise force you to import UI-layer modules from your transport layer.
+Prefer this pattern over baking toasts / store writes into `createFetcher` when dependency graph would otherwise force you to import UI-layer modules from transport layer.
 
-### Point the config at the fetcher
+### Point config at fetcher
 
 ```ts
 // vovk.config.mjs
@@ -299,9 +299,9 @@ const config = {
 export default config;
 ```
 
-The generated client imports `fetcher` from that path automatically. After editing config manually, `vovk generate`.
+Generated client imports `fetcher` from that path. After editing config manually, run `vovk generate`.
 
-**Per-segment fetcher**: different segments can use different fetchers (e.g., admin segment needs different auth than the public one):
+**Per-segment fetcher**: different segments can use different fetchers (e.g., admin segment needs different auth than public one):
 
 ```ts
 outputConfig: {
@@ -316,18 +316,18 @@ outputConfig: {
 
 **Common patterns:**
 
-- **Auth token**: inject `Authorization` header in `prepareRequestInit`, gated on a `useAuth` custom option.
-- **Retry on 401**: in `onError`, trigger a token refresh; wrap call sites in a retry helper.
-- **Telemetry**: start a timer in `prepareRequestInit`, report in `onSuccess` / `onError`.
+- **Auth token**: inject `Authorization` header in `prepareRequestInit`, gated on `useAuth` custom option.
+- **Retry on 401**: in `onError`, trigger token refresh; wrap call sites in retry helper.
+- **Telemetry**: start timer in `prepareRequestInit`, report in `onSuccess` / `onError`.
 - **Success toasts**: `successMessage` custom option + dynamic `fetcher.onSuccess(...)` subscriber that reads your toast library.
 
-Keep the fetcher focused on transport-layer concerns. Stateful things (request dedup, mutation queuing) belong in a layer above.
+Keep fetcher focused on transport-layer concerns. Stateful things (request dedup, mutation queuing) belong in layer above.
 
 ## Client-side validation
 
-Install `vovk-ajv` and set `outputConfig.imports.validateOnClient: 'vovk-ajv'`. The generated client validates `params` / `body` / `query` against the procedure's schema **before** the HTTP call — invalid inputs throw `HttpException(HttpStatus.NULL, ...)` locally (i.e. `statusCode === 0`, same as transport failures) instead of round-tripping.
+Install `vovk-ajv`, set `outputConfig.imports.validateOnClient: 'vovk-ajv'`. Generated client validates `params` / `body` / `query` against procedure's schema **before** HTTP call — invalid inputs throw `HttpException(HttpStatus.NULL, ...)` locally (i.e. `statusCode === 0`, same as transport failures) instead of round-tripping.
 
-Roll your own validator via `createValidateOnClient` from `vovk` if Ajv isn't a fit; point `imports.validateOnClient` at its module path:
+Roll your own validator via `createValidateOnClient` from `vovk` if Ajv isn't fit; point `imports.validateOnClient` at its module path:
 
 ```ts
 // src/lib/validateOnClient.ts
@@ -351,11 +351,11 @@ await UserRPC.updateUser({
 });
 ```
 
-`disableClientValidation` is also useful when debugging — bypass the local pass to surface the server-side validation error verbatim. Override with a different validator per call via `validateOnClient`. Don't make either a habit in production code paths.
+`disableClientValidation` also useful when debugging — bypass local pass to surface server-side validation error verbatim. Override with different validator per call via `validateOnClient`. Neither should be habit in production code paths.
 
 ## Error handling
 
-`HttpException` thrown on the server is rethrown on the client with the same `statusCode`, `message`, and `cause`:
+`HttpException` thrown on server rethrown on client with same `statusCode`, `message`, `cause`:
 
 ```ts
 import { HttpException } from 'vovk';
@@ -371,7 +371,7 @@ try {
 }
 ```
 
-Bare `Error` on the server → `HttpException` with status 500 on the client. Network failures (no server, DNS error) and client-side validation failures both throw `HttpException` with status 0 (`HttpStatus.NULL`) — so the same `instanceof HttpException` check covers transport, validation, and HTTP-status failures uniformly. Disambiguate by `e.statusCode`.
+Bare `Error` on server → `HttpException` with status 500 on client. Network failures (no server, DNS error) and client-side validation failures both throw `HttpException` with status 0 (`HttpStatus.NULL`) — same `instanceof HttpException` check covers transport, validation, HTTP-status failures uniformly. Disambiguate by `e.statusCode`.
 
 ## Types against RPC modules
 
@@ -397,17 +397,17 @@ type In     = VovkInput<typeof UserRPC.updateUser>;
 type Out    = VovkOutput<typeof UserRPC.updateUser>;
 ```
 
-All of these work identically against controller methods, RPC modules, and imported mixin modules. `VovkYieldType` / `VovkReturnType` exist for cases where validation hasn't been declared on a method (they can't be used for self-references in services without triggering "implicit any" TypeScript errors).
+All work identically against controller methods, RPC modules, imported mixin modules. `VovkYieldType` / `VovkReturnType` exist for cases where validation hasn't been declared on method (can't be used for self-references in services without triggering "implicit any" TypeScript errors).
 
 ## RPC method surface
 
-Every generated RPC method is more than just a callable. Useful properties:
+Every generated RPC method = more than just callable. Useful properties:
 
-- `.withDefaults(options)` — returns a new RPC module with the given options **deeply merged** into every call. Handy for per-environment `apiRoot`, persistent `init.headers`, or a scoped fetcher.
-- `.getURL({ params, query, apiRoot })` — compute the URL the call would hit, without making the request. Useful for `<a href>`, `<form action>`, or calling `fetch` directly.
-- `.queryKey(key?)` — returns a globally unique React Query / TanStack Query cache key. Shape: `[segmentName, controllerPrefix, rpcModuleName, decoratorPath, httpMethod, ...key]`. The optional `key` is an array of **extra scalars** to disambiguate similar queries (typically the same values passed in `params` / `query`).
-- `.apiRoot` — the baked-in `apiRoot` string.
-- `.schema` (`VovkHandlerSchema`), `.controllerSchema` (`VovkControllerSchema`), `.segmentSchema` (`VovkSegmentSchema`), `.fullSchema` (`VovkSchema`) — raw schema objects. `schema.validation.body` etc. give the per-input JSON Schema; `schema.operationObject` gives the OpenAPI operation fragment; `fullSchema.meta.config` exposes the config subset emitted into the client (by default only `libs` and `rootEntry`, e.g. `fullSchema.meta.config.libs.ajv`).
+- `.withDefaults(options)` — returns new RPC module with given options **deeply merged** into every call. Handy for per-environment `apiRoot`, persistent `init.headers`, scoped fetcher.
+- `.getURL({ params, query, apiRoot })` — compute URL call would hit, without making request. Useful for `<a href>`, `<form action>`, or calling `fetch` directly.
+- `.queryKey(key?)` — returns globally unique React Query / TanStack Query cache key. Shape: `[segmentName, controllerPrefix, rpcModuleName, decoratorPath, httpMethod, ...key]`. Optional `key` = array of **extra scalars** to disambiguate similar queries (typically same values passed in `params` / `query`).
+- `.apiRoot` — baked-in `apiRoot` string.
+- `.schema` (`VovkHandlerSchema`), `.controllerSchema` (`VovkControllerSchema`), `.segmentSchema` (`VovkSegmentSchema`), `.fullSchema` (`VovkSchema`) — raw schema objects. `schema.validation.body` etc. give per-input JSON Schema; `schema.operationObject` gives OpenAPI operation fragment; `fullSchema.meta.config` exposes config subset emitted into client (by default only `libs` and `rootEntry`, e.g. `fullSchema.meta.config.libs.ajv`).
 - `.isRPC: true` — type guard (distinguishes RPC modules from raw controllers in tools like `deriveTools`).
 
 ```ts
@@ -438,9 +438,9 @@ queryClient.invalidateQueries({
 });
 ```
 
-JSON Lines streams pair with TanStack's `experimental_streamedQuery` — see the `jsonlines` skill.
+JSON Lines streams pair with TanStack's `experimental_streamedQuery` → see `jsonlines` skill.
 
-Mutations just reference the method directly:
+Mutations reference method directly:
 
 ```ts
 import { useMutation } from '@tanstack/react-query';
@@ -448,7 +448,7 @@ import { useMutation } from '@tanstack/react-query';
 useMutation({ mutationFn: UserRPC.updateUser });
 ```
 
-## `openapi` and `schema` payloads from the client
+## `openapi` and `schema` payloads from client
 
 Composed (default JS setup — via `vovk-client` barrel):
 
@@ -458,7 +458,7 @@ import { schema }  from 'vovk-client/schema';    // Raw VovkSchema — all segme
 import { schema }  from 'vovk-client';           // Same thing, re-exported from the root
 ```
 
-Composed with TS template + source-tree `outDir` bypasses `vovk-client` entirely — import from the local alias instead (`'@/client/openapi'`, `'@/client/schema'`).
+Composed with TS template + source-tree `outDir` bypasses `vovk-client` entirely — import from local alias (`'@/client/openapi'`, `'@/client/schema'`).
 
 Segmented (one OpenAPI + schema per segment — always via local alias, `vovk-client` not involved):
 
@@ -468,13 +468,13 @@ import { schema }  from '@/client/admin/schema';
 import { schema }  from '@/client/admin';          // Same thing, re-exported from the segment root
 ```
 
-Import path follows the segmented client's `outDir` — if you changed `segmentedClient.outDir` to something else (e.g. `./sdk`), the path is `@/sdk/admin/openapi` etc.
+Import path follows segmented client's `outDir` — if you changed `segmentedClient.outDir` to something else (e.g. `./sdk`), path = `@/sdk/admin/openapi` etc.
 
-See `openapi` skill for how the spec is built.
+See `openapi` skill for how spec is built.
 
 ## Flows
 
-**"Fetch users on page load (client component)"** — ensure the procedure has an HTTP decorator, then:
+**"Fetch users on page load (client component)"** — ensure procedure has HTTP decorator, then:
 ```tsx
 'use client';
 import { UserRPC } from 'vovk-client';
@@ -483,18 +483,18 @@ useEffect(() => { UserRPC.list().then(setUsers); }, []);
 
 **"Add auth header to every RPC call"** — `createFetcher({ prepareRequestInit })`, point `outputConfig.imports.fetcher` at it. Don't hand-roll per-call.
 
-**"My new procedure isn't on the client"** — restart `npm run dev` to re-emit `.vovk-schema/`. Still missing → check the controller is registered in `initSegment({ controllers })` and the method has an HTTP decorator.
+**"My new procedure isn't on client"** — restart `npm run dev` to re-emit `.vovk-schema/`. Still missing → check controller is registered in `initSegment({ controllers })` and method has HTTP decorator.
 
-**"Call the API from another Node process"** — pass a full URL: `UserRPC.list({ apiRoot: 'https://api.example.com/api' })`, or bake it via `UserRPC.withDefaults({ apiRoot })`.
+**"Call API from another Node process"** — pass full URL: `UserRPC.list({ apiRoot: 'https://api.example.com/api' })`, or bake via `UserRPC.withDefaults({ apiRoot })`.
 
-**"Consume a JSON Lines stream"** — `using stream = await StreamRPC.xxx(...); for await (const chunk of stream) { /* ... */ }`. Full coverage in **`jsonlines` skill**.
+**"Consume JSON Lines stream"** — `using stream = await StreamRPC.xxx(...); for await (const chunk of stream) { /* ... */ }`. Full coverage → **`jsonlines` skill**.
 
 ## Gotchas
 
 - **Import name mismatch**: `UserRPC` (the `controllers` key), not `UserControllerRPC`. Most common "I can't import my RPC module" cause.
-- **Stale client**: `vovk generate` regenerates from `.vovk-schema/`, which is only refreshed by the running dev server. If the user edited a controller and then ran `vovk generate` directly, the output is stale. Fix: `npm run dev` to re-emit schemas, then regenerate.
-- **No HTTP decorator = no RPC**. A procedure without `@get`/`@post`/etc. is call-via-`.fn()` only; it won't appear on the client.
-- **Baked-in `apiRoot` defaults to `/api`** (`rootEntry: 'api'` with no `origin`). Works in the browser (resolves against page origin), fails outside one (Node, edge, integration tests). Pass a full URL per call, bake one in via `outputConfig.origin`, or use `withDefaults({ apiRoot })`.
-- **Fetcher path changes need regeneration**. Editing the fetcher file is fine; changing its path in `outputConfig.imports.fetcher` requires `vovk generate` (or a dev-watcher restart).
-- **`disableClientValidation` only skips the *client* validation pass**. Server-side validation still runs (unless the procedure disables it, which should be rare).
-- **Client `meta` ≠ server `req.vovk.meta()`**. The `meta` option is serialized as an `x-meta` header and lands on the server under the `xMetaHeader` key — isolated from server-set trusted state (what `authGuard` writes via `req.vovk.meta<AuthMeta>({ user })` is untouched by the client). Treat client `meta` as advisory only; never use it for auth or authorization decisions.
+- **Stale client**: `vovk generate` regenerates from `.vovk-schema/`, only refreshed by running dev server. If user edited controller and ran `vovk generate` directly, output stale. Fix: `npm run dev` to re-emit schemas, then regenerate.
+- **No HTTP decorator = no RPC**. Procedure without `@get`/`@post`/etc. is call-via-`.fn()` only; won't appear on client.
+- **Baked-in `apiRoot` defaults to `/api`** (`rootEntry: 'api'` with no `origin`). Works in browser (resolves against page origin), fails outside (Node, edge, integration tests). Pass full URL per call, bake one in via `outputConfig.origin`, or use `withDefaults({ apiRoot })`.
+- **Fetcher path changes need regeneration**. Editing fetcher file fine; changing its path in `outputConfig.imports.fetcher` requires `vovk generate` (or dev-watcher restart).
+- **`disableClientValidation` only skips *client* validation pass**. Server-side validation still runs (unless procedure disables it, which should be rare).
+- **Client `meta` ≠ server `req.vovk.meta()`**. `meta` option serialized as `x-meta` header and lands on server under `xMetaHeader` key — isolated from server-set trusted state (what `authGuard` writes via `req.vovk.meta<AuthMeta>({ user })` is untouched by client). Treat client `meta` as advisory only; never use for auth or authorization decisions.

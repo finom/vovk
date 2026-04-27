@@ -50,6 +50,10 @@ Once installed, the skills trigger automatically when you describe what you want
 
 Run any of these and the agent will load the relevant skills (you'll see them in `/vovk:` after the run).
 
+## Token-efficient prose
+
+Skill markdown uses a terse "caveman" style — articles, filler, and hedging dropped while every code block, file path, line-number pin, and cross-reference is preserved verbatim. ~10% fewer tokens per skill load with no loss of substance. The skill files read like fragments-and-arrows, but the technical content is intact and source-verified.
+
 ## Reporting bugs
 
 If a skill produces wrong code or contradicts itself, that's a plugin bug — open an issue at <https://github.com/finom/vovk/issues> with the prompt you used and the skill it loaded. The skills are source-verified against `packages/vovk/`, so bugs usually mean the docs and source diverged faster than the plugin tracked.

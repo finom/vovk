@@ -5,12 +5,12 @@ description: Vovk.ts JSON Lines streaming — generator handlers (`function*`, `
 
 # Vovk.ts JSON Lines streaming
 
-JSON Lines is Vovk's streaming model: the server yields one JSON object per line, the client consumes them as an async iterable. Works for chat completions, progress updates, long-running jobs, and anything where data arrives over time.
+JSON Lines is Vovk's streaming model: server yields one JSON object per line, client consumes as async iterable. Works for chat completions, progress updates, long-running jobs, anything where data arrives over time.
 
 Two authoring styles:
 
-- **Generator handlers** — `function*` / `async function*` with `yield`. The common case.
-- **`JSONLinesResponder`** — low-level manual `send` / `close` / `throw`. For orchestration, fan-in, or when the stream shape doesn't fit a generator.
+- **Generator handlers** — `function*` / `async function*` with `yield`. Common case.
+- **`JSONLinesResponder`** — low-level manual `send` / `close` / `throw`. For orchestration, fan-in, or when stream shape doesn't fit a generator.
 
 ## Scope
 
@@ -20,20 +20,20 @@ Covers:
 - `procedure({ iteration, validateEachIteration })` for per-item schema validation.
 - `JSONLinesResponder` class — `send`, `close`, `throw`, properties.
 - Client consumption — `for await`, `using`, `asPromise`, `onIterate`, `abortController`, `abortSilently`.
-- `progressive()` utility for multi-shape progressive responses.
-- `VovkIteration` and `VovkYieldType` type helpers.
+- `progressive()` for multi-shape progressive responses.
+- `VovkIteration` + `VovkYieldType` type helpers.
 - `Accept: application/jsonl` behavior.
 - Real-world patterns (OpenAI chat streaming, polling, multi-promise fan-in).
 
 Out of scope:
 
-- Writing non-streaming procedures → **`procedure` skill**.
+- Non-streaming procedures → **`procedure` skill**.
 - Client generation / `vovk-client` setup → **`rpc` skill**.
-- Generator basics (JavaScript language) — assume the reader knows them.
+- Generator basics (JS language) — assume reader knows them.
 
 ## Generator handler
 
-The simplest streaming handler: an `async function*` that yields objects. Each yield becomes one JSON line on the wire.
+Simplest streaming handler: `async function*` yielding objects. Each yield → one JSON line on wire.
 
 ```ts
 import { post, procedure, operation } from 'vovk';
@@ -51,11 +51,11 @@ export default class StreamController {
 }
 ```
 
-**`iteration`**: validation schema for each yielded object. Plays the same role `output` plays for non-streaming procedures.
+**`iteration`**: validation schema for each yielded object. Same role `output` plays for non-streaming procedures.
 
 ### Delegating to a service with `yield*`
 
-Keep controller thin, let the service do the work:
+Keep controller thin, let service do work:
 
 ```ts
 static getJSONLines = procedure({
@@ -67,7 +67,7 @@ static getJSONLines = procedure({
 
 ### Validation cadence
 
-By default, **only the first yielded item is validated** — cheap, catches shape bugs early. Opt into every-iteration validation when the shape varies:
+Default: **only first yielded item validated** — cheap, catches shape bugs early. Opt into every-iteration validation when shape varies:
 
 ```ts
 procedure({
@@ -83,7 +83,7 @@ Use sparingly — every-item validation adds per-yield cost.
 
 ## `JSONLinesResponder` — manual control
 
-For cases the generator shape can't express: fan-in from multiple concurrent sources, conditional close, error signaling outside the generator protocol. Still a `procedure` — the handler is a plain `async` function that builds a responder, kicks off the producer, and returns the responder. When `iteration` is defined, Vovk wires `responder.onBeforeSend` automatically so every `send()` runs through the same schema (and same `validateEachIteration` rules) as a generator handler.
+For cases generator can't express: fan-in from multiple concurrent sources, conditional close, error signaling outside generator protocol. Still a `procedure` — handler is plain `async` function building responder, kicking off producer, returning responder. With `iteration` defined, Vovk wires `responder.onBeforeSend` automatically → every `send()` runs through same schema (and same `validateEachIteration` rules) as generator handler.
 
 ```ts
 import { JSONLinesResponder, procedure, get } from 'vovk';
@@ -101,7 +101,7 @@ class StreamController {
 }
 ```
 
-The handler returns synchronously; the service runs as a floating promise (`void ...`) and feeds the responder over time. Don't `await` the service — that would block the response.
+Handler returns synchronously; service runs as floating promise (`void ...`), feeds responder over time. Don't `await` service — would block response.
 
 **Constructor**:
 
@@ -117,14 +117,14 @@ new JSONLinesResponder<T>(
 | Method | Purpose |
 |---|---|
 | `send(item: T): Promise<void>` | Serialize + send one JSON line. Validates per `validateEachIteration`. |
-| `close(): void` | End the stream. |
+| `close(): void` | End stream. |
 | `throw(err: Error): void` | Send error frame + close. |
 
 **Properties**: `response`, `headers`, `readableStream`.
 
 ### Service-owned streaming
 
-Let the service accept the responder and orchestrate:
+Service accepts responder + orchestrates:
 
 ```ts
 export default class StreamService {
@@ -136,11 +136,11 @@ export default class StreamService {
 }
 ```
 
-The controller returns the responder immediately; the service populates it via a floating promise (`void service.run(responder)`).
+Controller returns responder immediately; service populates via floating promise (`void service.run(responder)`).
 
 ## Client consumption
 
-The generated RPC method returns an async iterable.
+Generated RPC method returns async iterable.
 
 ### Basic iteration
 
@@ -158,7 +158,7 @@ for await (const { message } of stream) {
 
 ### Stream object API
 
-The returned value is a `VovkStreamAsyncIterable<T>` (from `vovk`) — an async iterable plus:
+Returned value is `VovkStreamAsyncIterable<T>` (from `vovk`) — async iterable plus:
 
 ```ts
 type VovkStreamAsyncIterable<T> = AsyncIterable<T> & {
@@ -172,7 +172,7 @@ type VovkStreamAsyncIterable<T> = AsyncIterable<T> & {
 };
 ```
 
-`abortController.abort()` throws an `AbortError` on the consumer (catchable via `error.cause`); `abortSilently()` tears the stream down without throwing. Pick deliberately.
+`abortController.abort()` throws `AbortError` on consumer (catchable via `error.cause`); `abortSilently()` tears stream down without throwing. Pick deliberately.
 
 ### Common patterns
 
@@ -201,7 +201,7 @@ for await (const item of stream) {
 
 ## Progressive responses
 
-Multi-shape stream where different lines populate different promises. Use when a single request produces several distinct payloads (users, tasks, summary) in parallel. **Experimental** — API may change.
+Multi-shape stream where different lines populate different promises. Use when single request produces several distinct payloads (users, tasks, summary) in parallel. **Experimental** — API may change.
 
 **Client:**
 
@@ -217,9 +217,9 @@ users.then(console.log);
 tasks.then(console.log);
 ```
 
-`progressive()` returns a proxy — each property access creates a promise that resolves when a matching JSON line arrives.
+`progressive()` returns proxy — each property access creates promise resolving when matching JSON line arrives.
 
-**Server** — controller declares the iteration union and builds the responder; service orchestrates fan-in. Every line has its own shape, so turn on `validateEachIteration`:
+**Server** — controller declares iteration union + builds responder; service orchestrates fan-in. Every line has own shape → turn on `validateEachIteration`:
 
 ```ts
 // ProgressiveController.ts
@@ -259,18 +259,18 @@ type Item = VovkIteration<typeof StreamRPC.getJSONLines>;
 type Yield = VovkYieldType<typeof StreamController.streamItems>;
 ```
 
-Use `VovkIteration` when an `iteration` schema exists (preferred). `VovkYieldType` infers from the handler's actual yield type when no schema is declared.
+`VovkIteration` when `iteration` schema exists (preferred). `VovkYieldType` infers from handler's actual yield type when no schema declared.
 
 ## Content negotiation
 
 - `Accept: application/jsonl` → response `Content-Type: application/jsonl`.
-- Otherwise → `Content-Type: text/plain` (browser-viewable during debugging).
+- Otherwise → `Content-Type: text/plain` (browser-viewable for debugging).
 
-JSON Lines responses **bypass compression** (Gzip/Brotli) — size is unknown, streaming matters more than size. For large streams, factor bandwidth into design.
+JSON Lines responses **bypass compression** (Gzip/Brotli) — size unknown, streaming matters more. For large streams, factor bandwidth into design.
 
 ## Real-world example: OpenAI chat completion
 
-Controller does thin pre-calc (validated body → plain values), the service owns the OpenAI call and `yield*`s its stream:
+Controller does thin pre-calc (validated body → plain values), service owns OpenAI call + `yield*`s its stream:
 
 ```ts
 // ChatController.ts
@@ -308,7 +308,7 @@ Generator handler yielding OpenAI chunks → client `for await`. See example abo
 
 ### "Long-running job with progress + final result"
 
-Server yields progress shapes then a terminal `done` shape carrying the result; client iterates until it sees the terminal one. This is what people usually mean by "poll until done" — the server pushes, the client just reads until the terminal line:
+Server yields progress shapes, then terminal `done` shape carrying result; client iterates until terminal one. What people mean by "poll until done" — server pushes, client reads until terminal line:
 
 ```ts
 // Server
@@ -337,7 +337,7 @@ for await (const update of stream) {
 
 ### "Infinite polling / reconnect ticker"
 
-For connections that outlast what proxies or load-balancers tolerate, or when you want bounded per-connection cost: server streams a short run, then closes at a natural boundary; client wraps the call in `while(true)` and resumes with the last cursor. JSON Lines is the primitive, `while` on both sides does the work.
+For connections outlasting what proxies / load-balancers tolerate, or when you want bounded per-connection cost: server streams short run, closes at natural boundary; client wraps call in `while(true)`, resumes with last cursor. JSON Lines is primitive, `while` on both sides does the work.
 
 ```ts
 // Server — yield until a break point, then let the stream end
@@ -363,7 +363,7 @@ while (true) {
 
 ### "Dashboard: users and tasks load in parallel, render each as it arrives"
 
-`progressive()` pattern — server fires both fetches concurrently, sends each result when ready; client awaits each property independently and renders piecewise.
+`progressive()` pattern — server fires both fetches concurrently, sends each result when ready; client awaits each property independently + renders piecewise.
 
 ### "Cancel the stream when the user navigates away"
 
@@ -374,11 +374,11 @@ controller.signal.addEventListener('abort', () => stream.abortSilently());
 
 ## Gotchas
 
-- **Only the first iteration is validated by default**. Turn on `validateEachIteration: true` for variable-shape streams, or accept that later items bypass schema enforcement.
-- **`using` matters**. Without it, `abortSilently` isn't called on early exit, and the server can keep pushing into a dropped connection.
-- **`asPromise()` vs `for await`**: `asPromise` is simpler but buffers everything. Use `for await` (or `onIterate`) to process items as they stream.
-- **No compression**. JSON Lines skips Gzip/Brotli. For large payloads, design accordingly.
-- **`yield*` with a service generator**: types must line up. If the service's yield type doesn't match the `iteration` schema, first-item validation catches it.
-- **`JSONLinesResponder` requires manual `close`**. Forgetting it leaves the client hanging.
-- **Error mid-stream**: use `responder.throw(err)` or throw from within the generator. Bare unhandled rejections just hang the connection.
-- **`VovkYieldType` is brittle for self-referential service methods** — explicit return types on the service method help.
+- **Only first iteration validated by default**. Turn on `validateEachIteration: true` for variable-shape streams, or accept later items bypass schema enforcement.
+- **`using` matters**. Without it, `abortSilently` not called on early exit → server keeps pushing into dropped connection.
+- **`asPromise()` vs `for await`**: `asPromise` simpler but buffers everything. Use `for await` (or `onIterate`) to process items as they stream.
+- **No compression**. JSON Lines skips Gzip/Brotli. Design accordingly for large payloads.
+- **`yield*` with service generator**: types must line up. If service's yield type doesn't match `iteration` schema, first-item validation catches it.
+- **`JSONLinesResponder` requires manual `close`**. Forgetting it leaves client hanging.
+- **Error mid-stream**: use `responder.throw(err)` or throw from within generator. Bare unhandled rejections hang connection.
+- **`VovkYieldType` brittle for self-referential service methods** — explicit return types on service method help.

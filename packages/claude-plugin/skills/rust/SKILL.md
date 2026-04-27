@@ -5,18 +5,18 @@ description: The Vovk.ts Rust client — generating a typed Rust crate from a Vo
 
 # Vovk.ts Rust client
 
-`vovk-rust` generates a typed Rust crate from the same `.vovk-schema/` artifacts that drive the TypeScript client. Async by default via `reqwest` + `tokio`; streaming via `futures`.
+`vovk-rust` generates typed Rust crate from same `.vovk-schema/` artifacts driving TS client. Async by default via `reqwest` + `tokio`; streaming via `futures`.
 
-**Experimental** — the generated API may change between Vovk versions. Pin the crate version when consuming.
+**Experimental** — generated API may shift between Vovk versions. Pin crate version on consume.
 
 ## Scope
 
 Covers:
 
-- Installing `vovk-rust` and generating a Rust crate.
-- Templates: `rs` (standalone crate) vs `rsSrc` (source files for embedding).
-- Configuring automatic generation in `vovk.config.mjs`.
-- Generated async call shape and the nested-module `_::` type convention.
+- Install `vovk-rust` + generate Rust crate.
+- Templates: `rs` (standalone crate) vs `rsSrc` (source files to embed).
+- Auto-gen config in `vovk.config.mjs`.
+- Async call shape + nested-module `_::` type convention.
 - JSON Lines streaming via `futures::Stream`.
 - Client-side validation toggle.
 - crates.io publishing flow.
@@ -24,8 +24,8 @@ Covers:
 Out of scope:
 
 - Procedure / controller authoring → **`procedure` skill**.
-- `vovk bundle` in general (TS bundling, Python bundling) → **`bundle` skill**.
-- Server-side JSON Lines implementation → **`jsonlines` skill**.
+- `vovk bundle` general (TS, Python) → **`bundle` skill**.
+- Server-side JSON Lines → **`jsonlines` skill**.
 
 ## Install + generate
 
@@ -35,7 +35,7 @@ npm i -D vovk-rust
 
 ### Standalone crate
 
-The canonical output dir is `./dist_rust` (the convention used by the official hello-world example):
+Canonical output dir `./dist_rust` (hello-world convention):
 
 ```bash
 npx vovk generate --from rs --out ./dist_rust
@@ -59,7 +59,7 @@ dist_rust/
 npx vovk generate --from rsSrc --out ./rust_src
 ```
 
-## Auto-generate with the composed client
+## Auto-generate with composed client
 
 ```ts
 // vovk.config.mjs
@@ -71,7 +71,7 @@ const config = {
 export default config;
 ```
 
-**Bake in the production API URL** via `clientTemplateDefs.rs.outputConfig.origin` — that's what the generated crate uses by default. Pattern from the hello-world example:
+**Bake prod API URL** via `clientTemplateDefs.rs.outputConfig.origin` — generated crate uses this by default. Pattern from hello-world:
 
 ```ts
 // vovk.config.js
@@ -89,11 +89,11 @@ const config = {
 };
 ```
 
-Consumers can still override per call via the `api_root` argument.
+Consumers can still override per call via `api_root` arg.
 
 ## Generated call shape
 
-Every RPC function is async and takes positional args in order: `body`, `query`, `params`, `headers?`, `api_root?`, `disable_client_validation`.
+Every RPC function async, takes positional args: `body`, `query`, `params`, `headers?`, `api_root?`, `disable_client_validation`.
 
 ```rust
 pub async fn update_user(
@@ -106,7 +106,7 @@ pub async fn update_user(
 ) -> Result<update_user_::output, HttpException>
 ```
 
-**Per-endpoint type variation** (verified in `packages/vovk-rust/client-templates/rsSrc/lib.rs.ejs:60-67`): each of `body`, `query`, `params` is typed `<handler_name>_::body` etc. **only when the procedure declares validation for that key**; otherwise the slot is the Rust unit type `()` and you pass `()` at the call site. So an endpoint with no body/query/params signature is:
+**Per-endpoint type variation** (verified in `packages/vovk-rust/client-templates/rsSrc/lib.rs.ejs:60-67`): each of `body`, `query`, `params` typed `<handler_name>_::body` etc. **only when procedure declares validation for that key**; else slot is Rust unit type `()` → pass `()` at call site. So endpoint with no body/query/params signature:
 
 ```rust
 pub async fn ping(
@@ -117,9 +117,9 @@ pub async fn ping(
 ) -> Result<serde_json::Value, HttpException>
 ```
 
-**Method names** are lodash `snakeCase(handlerName)` — `getUser` → `get_user`, `findPetsByStatus` → `find_pets_by_status`, `UserRPC` (the module) → `user_rpc`.
+**Method names** lodash `snakeCase(handlerName)` — `getUser` → `get_user`, `findPetsByStatus` → `find_pets_by_status`, `UserRPC` (module) → `user_rpc`.
 
-**Nested types** use `_::` module syntax. `body.profile` is typed as `update_user_::body_::profile`. This is how the generator flattens deep JSON Schema into Rust modules.
+**Nested types** use `_::` module syntax. `body.profile` typed `update_user_::body_::profile`. How generator flattens deep JSON Schema into Rust modules.
 
 ### Usage
 
@@ -157,11 +157,11 @@ pub async fn run() -> Result<(), Box<dyn std::error::Error>> {
 }
 ```
 
-Method names on the Rust side are snake_case; the `user_rpc` module reflects the `UserRPC` controller. Module path (`my_api_client` above) depends on the crate name configured at generation time.
+Method names Rust-side snake_case; `user_rpc` module reflects `UserRPC` controller. Module path (`my_api_client` above) depends on crate name set at generation time.
 
 ## JSON Lines streaming
 
-Streaming endpoints return a pinned boxed `Stream`:
+Streaming endpoints return pinned boxed `Stream`:
 
 ```rust
 pub async fn stream_tokens(
@@ -191,11 +191,11 @@ pub async fn consume_stream() -> Result<(), Box<dyn std::error::Error>> {
 }
 ```
 
-See `jsonlines` skill for the server side.
+See `jsonlines` skill for server side.
 
 ## Dependencies pulled in
 
-The generated `Cargo.toml` brings (per the hello-world example):
+Generated `Cargo.toml` brings (per hello-world):
 
 ```toml
 [dependencies]
@@ -222,8 +222,8 @@ version  = "0.7"
 features = ["codec"]
 ```
 
-- **`reqwest 0.12`** — async HTTP, with `multipart` and `stream` features for file uploads and JSON Lines.
-- **`tokio 1`** — async runtime. The generated crate assumes a multi-thread runtime is available; consumers pull this in transitively but typically add it directly with `#[tokio::main]` for binaries.
+- **`reqwest 0.12`** — async HTTP, with `multipart` and `stream` features for file uploads + JSON Lines.
+- **`tokio 1`** — async runtime. Generated crate assumes multi-thread runtime available; consumers pull transitively but typically add directly with `#[tokio::main]` for binaries.
 - **`tokio-util` (`codec`)** — line-delimited framing for JSON Lines decoding.
 - **`serde` (`derive`) + `serde_json`** — (de)serialization.
 - **`futures-util`** — streaming combinators (`StreamExt::next` etc).
@@ -232,7 +232,7 @@ features = ["codec"]
 
 ## Auth + base URL
 
-Pass `api_root` per call to override the baked-in URL. Pass a `&HashMap<String, String>` of headers for auth (Bearer token, API key, whatever the upstream requires):
+Pass `api_root` per call to override baked-in URL. Pass `&HashMap<String, String>` of headers for auth (Bearer token, API key, whatever upstream needs):
 
 ```rust
 let mut headers = HashMap::new();
@@ -246,27 +246,27 @@ let resp = user_rpc::get_user(
 ).await?;
 ```
 
-**Don't bake secrets into the crate.** Consumers supply auth at call time.
+**Don't bake secrets into crate.** Consumers supply auth at call time.
 
 ## Client-side validation
 
-Runs by default. Last positional arg disables it:
+Runs by default. Last positional arg disables:
 
 ```rust
 user_rpc::update_user(body, query, params, None, None, true /* disable */).await?;
 ```
 
-Skip for hot paths; keep on for safety in application code.
+Skip for hot paths; keep on for safety in app code.
 
 ## Publishing to crates.io
 
-Canonical script from the hello-world example — note `--allow-dirty`, which is required because the generated crate is an uncommitted build artifact:
+Canonical script from hello-world — note `--allow-dirty`, needed since generated crate is uncommitted build artifact:
 
 ```bash
 cargo publish --manifest-path dist_rust/Cargo.toml --allow-dirty
 ```
 
-Wire it into your release flow alongside the npm bundle and Python package (the hello-world example chains all three under `postversion`):
+Wire into release flow alongside npm bundle + Python package (hello-world chains all three under `postversion`):
 
 ```json
 "scripts": {
@@ -277,7 +277,7 @@ Wire it into your release flow alongside the npm bundle and Python package (the 
 }
 ```
 
-Crate name / version flow from the project root `package.json` (the generator copies fields into the generated `Cargo.toml`). The hello-world example crate is `vovk_hello_world` (underscored, since hyphens are crates.io-discouraged).
+Crate name / version flow from root `package.json` (generator copies fields into generated `Cargo.toml`). Hello-world example crate `vovk_hello_world` (underscored, since hyphens crates.io-discouraged).
 
 ## Flows
 
@@ -286,7 +286,7 @@ Crate name / version flow from the project root `package.json` (the generator co
 1. `npm i -D vovk-rust`.
 2. Add `'rs'` to `composedClient.fromTemplates`.
 3. `npx vovk generate`.
-4. Add the generated crate as a path dependency in the consumer's `Cargo.toml`.
+4. Add generated crate as path dependency in consumer's `Cargo.toml`.
 5. `use my_api::user_rpc;` and call.
 
 ### "Ship a Rust SDK to crates.io"
@@ -313,15 +313,15 @@ Use `rsSrc`:
 npx vovk generate --from rsSrc --out ./src/api
 ```
 
-Add the module to `src/lib.rs`: `pub mod api;`.
+Add module to `src/lib.rs`: `pub mod api;`.
 
 ## Gotchas
 
-- **Experimental.** Pin the crate version; expect breaks on Vovk upgrades. Integration-test after every bump.
-- **Nested types are deep.** `body_::profile_::address_::zip` patterns are common. The `use ... as Name;` import trick keeps call sites readable.
-- **OpenAPI mixins with circular `$refs` are not fully supported yet** — if your mixin has cycles, the generator may fail. Roadmap item.
-- **`text/plain` and `application/octet-stream` body params are not fully supported** — JSON is the solid path today.
-- **Named schemas in `components/schemas` don't yet produce importable shared types** — roadmap item. Every call site gets its own scoped types.
-- **Streaming needs `futures::StreamExt`** — forget the import and `.next()` won't compile.
-- **Regenerate on schema changes.** CI should regenerate as part of the build, same as for TS/Python.
-- **Don't hand-edit generated files.** Put shared utilities alongside, not inside, the generated crate.
+- **Experimental.** Pin crate version; expect breaks on Vovk upgrades. Integration-test after each bump.
+- **Nested types deep.** `body_::profile_::address_::zip` patterns common. `use ... as Name;` import trick keeps call sites readable.
+- **OpenAPI mixins with circular `$refs` not fully supported yet** — if mixin has cycles, generator may fail. Roadmap.
+- **`text/plain` and `application/octet-stream` body params not fully supported** — JSON is solid path today.
+- **Named schemas in `components/schemas` don't yet produce importable shared types** — roadmap. Every call site gets own scoped types.
+- **Streaming needs `futures::StreamExt`** — forget import → `.next()` won't compile.
+- **Regen on schema changes.** CI should regen as part of build, same as TS/Python.
+- **Don't hand-edit generated files.** Put shared utilities alongside, not inside, generated crate.

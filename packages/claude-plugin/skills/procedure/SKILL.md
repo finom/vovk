@@ -1,26 +1,26 @@
 ---
 name: procedure
-description: Vovk.ts procedures — the atomic unit of server-side logic in a Vovk project. Use whenever the user asks to build ANYTHING that produces or consumes data on the server — a page that loads data ("users page", "dashboard", "product list"), an endpoint, an API handler, a server action, a form submission, a controller, validation with Zod / Valibot / ArkType, request/response shape, file upload, file download, error handling (`HttpException`, status codes), content types (JSON, multipart, text, binary), or calling server code from a React Server Component / SSR / SSG / PPR / server action. Triggers on phrasings like "build a users page", "add an endpoint", "create a form handler", "fetch X from the server", "handle file upload", "validate input", "throw a 404", "server action for Y", "controller for Z", "add `req.body` parsing", ".fn()", "CORS". Does NOT cover segments / `route.ts` / `initSegment` → hand off to `segment` skill. Does NOT cover RPC client generation, fetcher, `vovk-client` imports → hand off to `rpc` skill. Does NOT cover custom decorators, `createDecorator`, authorization / auth guards → hand off to `decorators` skill. Does NOT cover `deriveTools` / `createTools` / MCP / AI tool wiring → hand off to `tools` skill. Does NOT cover JSON Lines streaming / generators / `JSONLinesResponder` → hand off to `jsonlines` skill. Does NOT cover `@operation` metadata / Scalar docs → hand off to `openapi` skill.
+description: Vovk.ts procedures — atomic unit of server-side logic in Vovk project. Use whenever user asks to build ANYTHING producing or consuming data on server — page loading data ("users page", "dashboard", "product list"), endpoint, API handler, server action, form submission, controller, validation with Zod / Valibot / ArkType, request/response shape, file upload, file download, error handling (`HttpException`, status codes), content types (JSON, multipart, text, binary), or calling server code from React Server Component / SSR / SSG / PPR / server action. Triggers on phrasings like "build a users page", "add an endpoint", "create a form handler", "fetch X from the server", "handle file upload", "validate input", "throw a 404", "server action for Y", "controller for Z", "add `req.body` parsing", ".fn()", "CORS". Does NOT cover segments / `route.ts` / `initSegment` → hand off to `segment` skill. Does NOT cover RPC client generation, fetcher, `vovk-client` imports → hand off to `rpc` skill. Does NOT cover custom decorators, `createDecorator`, authorization / auth guards → hand off to `decorators` skill. Does NOT cover `deriveTools` / `createTools` / MCP / AI tool wiring → hand off to `tools` skill. Does NOT cover JSON Lines streaming / generators / `JSONLinesResponder` → hand off to `jsonlines` skill. Does NOT cover `@operation` metadata / Scalar docs → hand off to `openapi` skill.
 ---
 
 # Vovk.ts procedures
 
-A **procedure** is a typed, validated unit of server-side logic. It's built with `procedure({ ... }).handle(...)` and is the atom of every Vovk app.
+**Procedure** = typed, validated server-logic unit. Built with `procedure({ ... }).handle(...)`. Atom of every Vovk app.
 
-**Key mental model:**
+**Mental model:**
 
-- **A procedure is valuable on its own.** It's a typed server function you call via `.fn()` from React Server Components, server actions, SSR/SSG/PPR, or any other server code. No HTTP involved.
-- **An HTTP decorator (`@get`, `@post`, `@put`, `@patch`, `@del`) is OPTIONAL.** Add one only when the user wants the procedure exposed as an HTTP endpoint (which also makes it callable via the generated RPC client from the browser).
+- **Procedure valuable alone.** Typed server function — call via `.fn()` from RSC, server actions, SSR/SSG/PPR, any server code. No HTTP.
+- **HTTP decorator (`@get`, `@post`, `@put`, `@patch`, `@del`) OPTIONAL.** Add only when exposing procedure as HTTP endpoint (also makes callable via generated RPC client from browser).
 
-This is the opposite of most frameworks: procedures come first, HTTP is opt-in.
+Opposite of most frameworks: procedures first, HTTP opt-in.
 
 ## Scope
 
-Covers procedure authoring end-to-end: `procedure({...}).handle(...)` options, validation with Zod/Valibot/ArkType (+ `vovk-ajv` client-side), controller classes and HTTP decorators (`@prefix`, `@get/@post/@put/@patch/@del`, `.auto()`), `req.vovk` + `VovkRequest`, error handling (`HttpException` / `HttpStatus`), content types (JSON, multipart, URL-encoded, text, binary, downloads), response headers + CORS, `.fn()` for server components / SSR / server actions, `decorate()`, and the `vovk new controller service` CLI.
+Covers procedure authoring end-to-end: `procedure({...}).handle(...)` options, validation with Zod/Valibot/ArkType (+ `vovk-ajv` client-side), controller classes and HTTP decorators (`@prefix`, `@get/@post/@put/@patch/@del`, `.auto()`), `req.vovk` + `VovkRequest`, error handling (`HttpException` / `HttpStatus`), content types (JSON, multipart, URL-encoded, text, binary, downloads), response headers + CORS, `.fn()` for server components / SSR / server actions, `decorate()`, `vovk new controller service` CLI.
 
 Out of scope (→ skill): segment setup / `initSegment` / `route.ts` → `segment`. RPC client generation / `vovk-client` → `rpc`. Custom decorators / `createDecorator` / auth guards → `decorators`. AI tools (`deriveTools`, `createTools`) → `tools`. Generator handlers / streaming → `jsonlines`. `@operation` / Scalar docs → `openapi`. Inference helpers against RPC modules → `rpc`.
 
-## The procedure, minimally
+## Procedure, minimally
 
 ```ts
 import { procedure } from 'vovk';
@@ -36,13 +36,13 @@ class UserController {
 }
 ```
 
-**What you have so far:**
+**What you have:**
 
-- A typed, validated procedure.
+- Typed, validated procedure.
 - Callable from ANY server code via `UserController.getUser.fn({ params: { id: '…' } })`.
-- **Not** an HTTP endpoint. Not in the generated RPC client.
+- **Not** HTTP endpoint. Not in generated RPC client.
 
-To expose it over HTTP, add an HTTP decorator:
+Expose over HTTP — add HTTP decorator:
 
 ```ts
 import { get, prefix, procedure } from 'vovk';
@@ -59,27 +59,27 @@ export default class UserController {
 }
 ```
 
-Now it's **also** `GET /api/users/{id}` and available as `UserRPC.getUser(...)` on the client.
+Now also `GET /api/users/{id}` and available as `UserRPC.getUser(...)` on client.
 
-## Deciding: decorator or no decorator?
+## Deciding: decorator or no?
 
-**When the user says...**
+**When user says...**
 
 | User intent | What to build |
 |---|---|
-| "Build a users page" / "load X on the server" / "dashboard showing Y" | Procedure, no decorator. Call via `.fn()` from the server component. |
-| "Server action for form submit" | Procedure, no decorator. Call via `.fn()` inside a `'use server'` function. |
-| "Add a `/api/users` endpoint" / "expose X as an API" / "browser needs to call it" | Procedure + HTTP decorator. |
-| "Users page AND also an API" | Procedure + HTTP decorator. Call `.fn()` from the server component; the RPC client covers the browser path. |
-| "Internal helper used only from other procedures" | Plain service function, not a procedure. Use `procedure` only when you want validation/types as a contract. |
+| "Build users page" / "load X on server" / "dashboard showing Y" | Procedure, no decorator. Call via `.fn()` from server component. |
+| "Server action for form submit" | Procedure, no decorator. Call via `.fn()` inside `'use server'` function. |
+| "Add `/api/users` endpoint" / "expose X as API" / "browser needs to call it" | Procedure + HTTP decorator. |
+| "Users page AND also API" | Procedure + HTTP decorator. Call `.fn()` from server component; RPC client covers browser path. |
+| "Internal helper used only from other procedures" | Plain service function, not procedure. Use `procedure` only when you want validation/types as contract. |
 
-**Default behavior:** when in doubt, start without an HTTP decorator. Adding one later is a one-line change. Exposing too eagerly and needing to retract it is harder.
+**Default:** when in doubt, start without HTTP decorator. Adding later = one-line change. Exposing too eagerly and retracting is harder.
 
 ## Controller / procedure / service — split of responsibilities
 
-- **Services** are **always** the business-logic module — data access, domain rules, calls to other services. Not optional "once logic gets big enough"; domain logic lives there from line one.
-- **Procedures** do only *thin pre-calculation*: pull validated body/query/params from `req.vovk`, read actor info from `req.vovk.meta()` / `next/headers`, then delegate to a service and return its result.
-- **Services must never touch `req` / `VovkRequest`.** They take plain typed arguments — ideally via `VovkBody` / `VovkParams` / `VovkOutput` (see "Type inference").
+- **Services** = **always** business-logic module — data access, domain rules, calls to other services. Not optional "once logic gets big enough"; domain logic lives there from line one.
+- **Procedures** do only *thin pre-calculation*: pull validated body/query/params from `req.vovk`, read actor info from `req.vovk.meta()` / `next/headers`, delegate to service, return its result.
+- **Services must never touch `req` / `VovkRequest`.** Take plain typed args — ideally via `VovkBody` / `VovkParams` / `VovkOutput` (see "Type inference").
 
 ```ts
 static updateUser = procedure({
@@ -92,7 +92,7 @@ static updateUser = procedure({
 });
 ```
 
-A service that takes `VovkRequest` — or branches on request shape — is a layering leak. Services must be callable from cron jobs, CLI scripts, migrations, and sibling procedures; if any of those paths would need a fake request, the logic is in the wrong file.
+Service taking `VovkRequest` — or branching on request shape — = layering leak. Services must be callable from cron jobs, CLI scripts, migrations, sibling procedures; if any path needs fake request, logic in wrong file.
 
 ## Scaffolding via CLI
 
@@ -100,14 +100,14 @@ A service that takes `VovkRequest` — or branches on request shape — is a lay
 npx vovk new controller service <name>   # shortcut: npx vovk n c s <name>
 ```
 
-`<name>` is `[segmentPath/]moduleName`, combining two conventions:
+`<name>` = `[segmentPath/]moduleName`, combines two conventions:
 
-- **`moduleName`** (after the last `/`) **must be camelCase**. Normalize user input: `USER` → `user`, `user-profile` → `userProfile`, `MyUser` → `myUser`. Combined example: "User-Profile in the Admin segment" → `admin/userProfile`.
-- **`segmentPath`** (before the last `/`) is an **existing** segment path — URL slug, kebab-case, slash-separated for nested (`admin`, `foo/bar`). Not camelCase. See `segment` skill.
+- **`moduleName`** (after last `/`) **must be camelCase**. Normalize user input: `USER` → `user`, `user-profile` → `userProfile`, `MyUser` → `myUser`. Example: "User-Profile in Admin segment" → `admin/userProfile`.
+- **`segmentPath`** (before last `/`) = **existing** segment path — URL slug, kebab-case, slash-separated for nested (`admin`, `foo/bar`). Not camelCase. See `segment` skill.
 
 Flags: `--empty` (no CRUD boilerplate), `--overwrite`, `--no-segment-update` (skip `route.ts` edit, rare), `--dry-run`.
 
-Creates `src/modules/<name>/<Name>Controller.ts` + `<Name>Service.ts` and registers the controller in the segment's `controllers` map. The scaffold ships with CRUD placeholders — **overwrite them in place** when writing real logic; don't leave dummies next to real code. Fails if no segment exists — create one first (`segment` skill).
+Creates `src/modules/<name>/<Name>Controller.ts` + `<Name>Service.ts`, registers controller in segment's `controllers` map. Scaffold ships with CRUD placeholders — **overwrite in place** when writing real logic; don't leave dummies next to real code. Fails if no segment exists — create one first (`segment` skill).
 
 ## `procedure()` options — full reference
 
@@ -140,15 +140,15 @@ procedure({
 }).handle(async (req, params) => { ... });
 ```
 
-Works with any library that emits **Standard JSON Schema** — Zod v4+ and ArkType pass through directly; Valibot needs `toStandardJsonSchema()` from `@valibot/to-json-schema`. See the "Validation — Standard Schema" section below for the exact patterns.
+Works with any library emitting **Standard JSON Schema** — Zod v4+ and ArkType pass through directly; Valibot needs `toStandardJsonSchema()` from `@valibot/to-json-schema`. See "Validation — Standard Schema" below for exact patterns.
 
-## The `req` argument & `req.vovk`
+## `req` argument & `req.vovk`
 
-The first argument to `.handle((req, params) => …)` is a **`VovkRequest`** — `NextRequest` patched with a typed `vovk` property. All usual Next.js request APIs work (`req.json()`, `req.formData()`, `req.headers`, `req.nextUrl`, …), but two conventions matter:
+First arg to `.handle((req, params) => …)` = **`VovkRequest`** — `NextRequest` patched with typed `vovk` property. All usual Next.js request APIs work (`req.json()`, `req.formData()`, `req.headers`, `req.nextUrl`, …). Two conventions matter:
 
-**Prefer `next/headers` over `req.headers` / `req.cookies`.** Works identically in procedures, server components, server actions, and middleware; `req.headers` only works in the HTTP path.
+**Prefer `next/headers` over `req.headers` / `req.cookies`.** Works identically in procedures, server components, server actions, middleware; `req.headers` only works in HTTP path.
 
-**Prefer `req.vovk` over `req.json()` / `req.nextUrl.searchParams`** for reading body/query/params. `req.json()` and `req.nextUrl.searchParams` are typed (`VovkRequest` infers them from schemas), but they're `undefined` under `.fn()` — so any handler using them can't be called locally. `req.vovk` works in both contexts.
+**Prefer `req.vovk` over `req.json()` / `req.nextUrl.searchParams`** for body/query/params. `req.json()` and `req.nextUrl.searchParams` typed (`VovkRequest` infers from schemas), but `undefined` under `.fn()` — handlers using them can't be called locally. `req.vovk` works both contexts.
 
 ```ts
 static createUser = procedure({
@@ -161,9 +161,9 @@ static createUser = procedure({
 });
 ```
 
-Destructuring `{ vovk }` is a stylistic signal that the handler is LPC-safe; `async (req) => req.vovk.body()` is equivalent. Reach for raw `req.*` only when `vovk` doesn't expose what you need — and guard those handlers from `.fn()` (check `typeof req.url === 'undefined'`).
+Destructuring `{ vovk }` = stylistic signal handler is LPC-safe; `async (req) => req.vovk.body()` equivalent. Reach for raw `req.*` only when `vovk` doesn't expose what you need — guard those handlers from `.fn()` (check `typeof req.url === 'undefined'`).
 
-**Meta** — per-request key-value storage shared between decorators and handlers. Pass the generic on both set and read; share one type alias so TypeScript stays honest:
+**Meta** — per-request key-value storage shared between decorators and handlers. Pass generic on both set and read; share one type alias so TypeScript stays honest:
 
 ```ts
 type SessionMeta = { userId: string };
@@ -172,9 +172,9 @@ const { userId } = req.vovk.meta<SessionMeta>();     // read
 req.vovk.meta(null);                                 // clear
 ```
 
-Multiple `meta()` calls merge. Clients can send meta via an `x-meta` header, which lands under `xMetaHeader` so it can't overwrite server-set keys — full auth pattern in the `decorators` skill.
+Multiple `meta()` calls merge. Clients can send meta via `x-meta` header → lands under `xMetaHeader` so can't overwrite server-set keys — full auth pattern in `decorators` skill.
 
-**`VovkRequest` without `procedure()`** (rare): `req: VovkRequest<TBody, TQuery, TParams>` types `req.json()` / `searchParams` manually, but you lose validation and `.fn()`. Almost always reach for `procedure()` instead.
+**`VovkRequest` without `procedure()`** (rare): `req: VovkRequest<TBody, TQuery, TParams>` types `req.json()` / `searchParams` manually, but loses validation and `.fn()`. Almost always reach for `procedure()`.
 
 ## HTTP decorators
 
@@ -218,13 +218,13 @@ Path template uses `{name}` for segments: `'{id}'`, `'{org}/members/{userId}'`.
 
 ### URL shape — composition rule
 
-The route string the framework builds is:
+Route string framework builds:
 
 ```
 /{rootEntry}/{segmentName}/{controllerPrefix}/{methodPath}
 ```
 
-Empty parts are dropped, then joined with `/` (verified in `packages/vovk/src/openapi/vovkSchemaToOpenAPI.ts:162`). So:
+Empty parts dropped, joined with `/` (verified in `packages/vovk/src/openapi/vovkSchemaToOpenAPI.ts:162`). So:
 
 | `rootEntry` | segment | `@prefix` | method | URL |
 |---|---|---|---|---|
@@ -234,13 +234,13 @@ Empty parts are dropped, then joined with `/` (verified in `packages/vovk/src/op
 | `'api'` | `'admin'` | — | `@put.auto()` (method `archive`) | `PUT /api/admin/archive` |
 | `''` (root-mounted API) | `'admin'` | `'users'` | `@get()` | `GET /admin/users` |
 
-`@prefix` is per-controller, `methodPath` is per-handler, both optional. `.auto()` derives the method-name segment kebab-cased. Nested segment names (`foo/bar`) collapse straight into the URL.
+`@prefix` per-controller, `methodPath` per-handler, both optional. `.auto()` derives method-name segment kebab-cased. Nested segment names (`foo/bar`) collapse straight into URL.
 
-These URLs are plain HTTP — `curl`, `httpx`, `fetch`, any client works. The typed RPC clients (`vovk-client`, `vovk-python`, `vovk-rust`) wrap the same endpoints with validation and inferred types; they're conveniences, not the only access path. If the user just wants to hit `/api/users/123` from a CLI, `curl` is the right answer.
+These URLs = plain HTTP — `curl`, `httpx`, `fetch`, any client works. Typed RPC clients (`vovk-client`, `vovk-python`, `vovk-rust`) wrap same endpoints with validation + inferred types; conveniences, not only access path. If user wants to hit `/api/users/123` from CLI, `curl` is right answer.
 
 ## `.fn()` — local procedure calls (SSR / server components / server actions)
 
-Every procedure exposes `.fn()`, which invokes the handler without going over HTTP.
+Every procedure exposes `.fn()` → invokes handler without HTTP.
 
 ```tsx
 // Server component — no 'use client'
@@ -262,7 +262,7 @@ async function createUser(body: FormData) {
 
 ### Server actions with `useActionState`
 
-Wrap `.fn()` in try/catch and return a discriminated union so the client can `'data' in result` / `'error' in result`:
+Wrap `.fn()` in try/catch, return discriminated union so client can `'data' in result` / `'error' in result`:
 
 ```ts
 // actions.ts
@@ -284,33 +284,33 @@ const [result, formAction, isPending] = useActionState(submitUserAction, null);
 
 Things to know:
 
-- **`contentType: 'multipart/form-data'` (or `'application/x-www-form-urlencoded'`) → `.fn()` auto-parses `FormData`.** Pass it straight through as `body`, no `Object.fromEntries`.
-- **`useActionState`'s signature is `(prevState, formData) => nextState`** — the action takes `_prev` as first arg, usually ignored.
-- **Validation still runs** — a bad field throws, `catch (e)` surfaces it as `{ error }`. `isPending` handles loading UI for free.
+- **`contentType: 'multipart/form-data'` (or `'application/x-www-form-urlencoded'`) → `.fn()` auto-parses `FormData`.** Pass straight through as `body`, no `Object.fromEntries`.
+- **`useActionState` signature = `(prevState, formData) => nextState`** — action takes `_prev` first arg, usually ignored.
+- **Validation still runs** — bad field throws, `catch (e)` surfaces as `{ error }`. `isPending` handles loading UI free.
 
 ### `.fn()` rules
 
-1. **No full `Request` object under `.fn()`.** `req.url`, `req.headers`, `req.json()`, `req.nextUrl`, `req.cookies`, etc. are all `undefined` — `.fn()` synthesizes only the `vovk` facet. This is why the rule in "The `req` argument" above matters: handlers that destructure `{ vovk }` and read data through `req.vovk` (plus `next/headers` for headers/cookies) are portable between HTTP and `.fn()`; handlers that call `req.json()` or touch `req.nextUrl` are not.
+1. **No full `Request` object under `.fn()`.** `req.url`, `req.headers`, `req.json()`, `req.nextUrl`, `req.cookies`, etc. all `undefined` — `.fn()` synthesizes only `vovk` facet. Why rule in "The `req` argument" above matters: handlers destructuring `{ vovk }` and reading data through `req.vovk` (plus `next/headers` for headers/cookies) are portable between HTTP and `.fn()`; handlers calling `req.json()` or touching `req.nextUrl` not.
 
-2. **Validation runs by default** (same schemas as the HTTP path). Pass `disableClientValidation: true` to skip it — use sparingly; trusted server input is still input.
+2. **Validation runs by default** (same schemas as HTTP path). Pass `disableClientValidation: true` to skip — use sparingly; trusted server input still input.
 
-3. **Detect local context** in custom decorators by checking `typeof req.url === 'undefined'`.
+3. **Detect local context** in custom decorators via `typeof req.url === 'undefined'`.
 
-4. **`meta` works** — pass `meta: { ... }` to `.fn()` to populate `req.vovk.meta()` inside the handler:
+4. **`meta` works** — pass `meta: { ... }` to `.fn()` → populates `req.vovk.meta()` inside handler:
 
    ```ts
    await UserController.getUser.fn({ params: { id: '…' }, meta: { userId: 'abc' } });
    ```
 
-5. **`.fn()` returns the handler's return value directly** — no JSON serialization, no network hop.
+5. **`.fn()` returns handler's return value directly** — no JSON serialization, no network hop.
 
 ## Testing
 
-Unit-test procedures with `.fn()` — same call shape as the SSR/server-action examples above (`UserController.getUser.fn({ params, body, query, meta })`), no HTTP server needed. Validation runs by default; pass `disableClientValidation: true` to bypass it when isolating handler logic. For HTTP-level coverage (routing, decorators, status codes, content negotiation, the generated client itself), call procedures through `vovk-client` against a running dev server with `apiRoot: 'http://localhost:<port>/api'` — see the **`rpc`** skill for the call shape. Mocking I/O / databases is project-specific — match the repo's existing conventions.
+Unit-test procedures with `.fn()` — same call shape as SSR/server-action examples above (`UserController.getUser.fn({ params, body, query, meta })`), no HTTP server needed. Validation runs by default; pass `disableClientValidation: true` to bypass when isolating handler logic. For HTTP-level coverage (routing, decorators, status codes, content negotiation, generated client itself), call procedures through `vovk-client` against running dev server with `apiRoot: 'http://localhost:<port>/api'` → **`rpc`** skill for call shape. Mocking I/O / databases = project-specific — match repo conventions.
 
 ## Validation — Standard Schema
 
-Works with any lib that emits **Standard JSON Schema** (Vovk needs JSON Schema — not just Standard Schema — for OpenAPI, codegen, and client-side validation). Zod (v4+) and ArkType produce it natively. Valibot needs one conversion step. Zod is the default after `vovk init` with default flags.
+Works with any lib emitting **Standard JSON Schema** (Vovk needs JSON Schema — not just Standard Schema — for OpenAPI, codegen, client-side validation). Zod (v4+) + ArkType produce natively. Valibot needs one conversion step. Zod = default after `vovk init` with default flags.
 
 ```ts
 // Zod — passes through directly
@@ -332,15 +332,15 @@ import { type } from 'arktype';
 body: type({ email: 'string.email', age: 'number.integer>=0' })
 ```
 
-**Valibot gotcha**: every Valibot schema handed to `procedure({...})` must be wrapped with `toStandardJsonSchema(...)`. Unwrapped Valibot passes Standard Schema runtime checks but fails codegen / OpenAPI because it doesn't expose JSON Schema. If you picked Valibot via `vovk init`, the generated templates already wrap — follow that pattern.
+**Valibot gotcha**: every Valibot schema handed to `procedure({...})` must be wrapped with `toStandardJsonSchema(...)`. Unwrapped Valibot passes Standard Schema runtime checks but fails codegen / OpenAPI — doesn't expose JSON Schema. If picked Valibot via `vovk init`, generated templates already wrap — follow that pattern.
 
-**Client-side validation** — install `vovk-ajv` (or roll your own via `createValidateOnClient`; see the `rpc` skill) and set `outputConfig.imports.validateOnClient: 'vovk-ajv'` in `vovk.config.mjs`. The RPC client then validates before sending; opt out per call with `disableClientValidation: true`.
+**Client-side validation** — install `vovk-ajv` (or roll your own via `createValidateOnClient`; see `rpc` skill), set `outputConfig.imports.validateOnClient: 'vovk-ajv'` in `vovk.config.mjs`. RPC client validates before sending; opt out per call with `disableClientValidation: true`.
 
-**Per-procedure disables** — `disableServerSideValidation: true | ['body'|'query'|...]` skips server validation; `skipSchemaEmission` keeps a field out of the generated schema. Use sparingly — validation disappearing silently is a nasty source of bugs.
+**Per-procedure disables** — `disableServerSideValidation: true | ['body'|'query'|...]` skips server validation; `skipSchemaEmission` keeps field out of generated schema. Use sparingly — silent validation disappearance = nasty bug source.
 
 ## Content types
 
-Default is `application/json`. Override via `contentType`:
+Default = `application/json`. Override via `contentType`:
 
 | `contentType` | `req.vovk.body()` returns | Client may send |
 |---|---|---|
@@ -349,9 +349,9 @@ Default is `application/json`. Override via `contentType`:
 | `application/x-www-form-urlencoded` | Parsed object. | Schema-typed value, `URLSearchParams`, `FormData`, or `Blob`. |
 | `text/*` | `string`. | `string` or `Blob`. |
 | `image/*`, `video/*`, binary | `File`. | `File`, `ArrayBuffer`, `Uint8Array`, `Blob`. |
-| `*/*` | Same as binary. | Any of the above. |
+| `*/*` | Same as binary. | Any of above. |
 
-Wildcards allowed. Requests without a matching `Content-Type` header get **415 Unsupported Media Type**.
+Wildcards allowed. Requests without matching `Content-Type` header → **415 Unsupported Media Type**.
 
 ### File upload (multipart)
 
@@ -401,14 +401,14 @@ static getUser = procedure({ /* ... */ }).handle(async (_req, { id }) => {
 });
 ```
 
-- Bare `Error` instances become HTTP 500 with the message stripped in production.
-- On the RPC client, `HttpException` is re-thrown with the same status/message/cause — `try/catch` works identically on both sides.
+- Bare `Error` instances → HTTP 500, message stripped in production.
+- On RPC client, `HttpException` re-thrown with same status/message/cause — `try/catch` works identically both sides.
 
 Common statuses from `HttpStatus`: `OK` (200), `CREATED` (201), `NO_CONTENT` (204), `BAD_REQUEST` (400), `UNAUTHORIZED` (401), `FORBIDDEN` (403), `NOT_FOUND` (404), `CONFLICT` (409), `UNPROCESSABLE_ENTITY` (422), `INTERNAL_SERVER_ERROR` (500).
 
 ## Response headers (dynamic)
 
-Static headers go on the decorator (`@get('x', { headers: {...} })`). For dynamic ones:
+Static headers go on decorator (`@get('x', { headers: {...} })`). For dynamic:
 
 ```ts
 import { NextResponse } from 'next/server';
@@ -423,11 +423,11 @@ static hello = procedure().handle(async () => {
 
 ## Custom decorators
 
-For authorization, logging, rate-limits, and other cross-cutting concerns, see the **`decorators` skill** (`createDecorator`, stacking, `.fn()` detection, auth patterns).
+For auth, logging, rate-limits, other cross-cutting concerns → **`decorators` skill** (`createDecorator`, stacking, `.fn()` detection, auth patterns).
 
 ## `decorate()` — non-decorator syntax
 
-For projects that don't enable `experimentalDecorators`:
+For projects without `experimentalDecorators`:
 
 ```ts
 import { decorate, get, prefix, procedure, operation } from 'vovk';
@@ -447,7 +447,7 @@ class UserController {
 }
 ```
 
-Decorators apply in order — **last listed is applied first**. `procedure()` typically goes last (applied first, closest to the handler).
+Decorators apply in order — **last listed applied first**. `procedure()` typically goes last (applied first, closest to handler).
 
 ## Type inference
 
@@ -473,9 +473,9 @@ type In     = VovkInput<typeof UserController.updateUser>;
 type Out    = VovkOutput<typeof UserController.updateUser>;
 ```
 
-All of these work identically against controller methods, RPC modules, and imported mixin modules. `VovkYieldType` / `VovkReturnType` exist for cases where validation hasn't been declared on a method (they can't be used for self-references in services without triggering "implicit any" TypeScript errors).
+All work identically against controller methods, RPC modules, imported mixin modules. `VovkYieldType` / `VovkReturnType` exist for cases where validation hasn't been declared on method (can't be used for self-references in services without triggering "implicit any" TypeScript errors).
 
-The most common use: type a service's inputs against the controller's procedure, so the schema stays the single source of truth — controller declares, service consumes, client infers via the RPC module.
+Most common use: type service's inputs against controller's procedure → schema = single source of truth: controller declares, service consumes, client infers via RPC module.
 
 ```ts
 export default class UserService {
@@ -486,11 +486,11 @@ export default class UserService {
 }
 ```
 
-For client-side usage (against `UserRPC.updateUser`) the helpers behave the same — see the **`rpc` skill**.
+For client-side usage (against `UserRPC.updateUser`) helpers behave same → **`rpc` skill**.
 
 ## Flows
 
-**"Build a users page that shows the user list on the server"** — procedure **without** an HTTP decorator, called via `.fn()` from a server component:
+**"Build users page showing user list on server"** — procedure **without** HTTP decorator, called via `.fn()` from server component:
 
 ```ts
 class UserController {
@@ -503,24 +503,24 @@ export default async function UsersPage() {
   return <ul>{users.map(u => <li key={u.id}>{u.email}</li>)}</ul>;
 }
 ```
-The HTML ships with data inline; the browser never talks to the server.
+HTML ships with data inline; browser never talks to server.
 
-**"Now also expose `/api/users` for the mobile app"** — add `@get()` to the same procedure. `UserRPC.list()` appears on the client; the server component is unchanged.
+**"Now also expose `/api/users` for mobile app"** — add `@get()` to same procedure. `UserRPC.list()` appears on client; server component unchanged.
 
-**"Add a form on the page to create a user"** — add a second procedure (no decorator needed), wire a server action calling `.fn({ body })`. For loading/error UX, use the `useActionState` pattern above.
+**"Add form on page to create user"** — add second procedure (no decorator needed), wire server action calling `.fn({ body })`. For loading/error UX, use `useActionState` pattern above.
 
-**"Protect `/api/admin/users` with auth"** → **`decorators` skill** (auth guards are custom decorators).
-**"Upload a profile picture"** → "File upload" section (`multipart/form-data` + `z.instanceof(File)`).
-**"Return a CSV download"** → "File download" section (`toDownloadResponse(...)`).
+**"Protect `/api/admin/users` with auth"** → **`decorators` skill** (auth guards = custom decorators).
+**"Upload profile picture"** → "File upload" section (`multipart/form-data` + `z.instanceof(File)`).
+**"Return CSV download"** → "File download" section (`toDownloadResponse(...)`).
 
 ## Gotchas
 
-- **HTTP decorator ≠ procedure validity.** A procedure without a decorator is still a valid, typed, callable unit — just not exposed via HTTP/RPC.
-- **`.fn()` validates by default** — same schemas as HTTP. `disableClientValidation: true` opts out, but only do that for trusted internal calls where the input was already checked.
-- **`req.vovk.body()` is async; `.query()` and `.params()` are sync.** Easy to mix up.
-- **`req.url` is `undefined` in `.fn()` context.** Any decorator checking the URL must guard.
-- **Zod default is `vovk init`'s choice** — if the user chose Valibot/ArkType, match their choice when adding schemas.
-- **CORS on a decorator is preflight handling only.** It doesn't whitelist origins — configure that at the Next.js / platform layer.
-- **`decorate()` order**: last listed applies first. Flipping the order changes behavior.
-- **`procedure().handle()` is the shape.** Don't confuse with `procedure(...).handle(...)` mid-chain — the options go in `procedure(...)`, the handler goes in `.handle(...)`.
-- **Never pass `req` to a service.** Procedures pre-calculate (`vovk.body()`, `vovk.meta()`, `next/headers`) and hand the service plain typed values — see "Controller / procedure / service — split of responsibilities" above.
+- **HTTP decorator ≠ procedure validity.** Procedure without decorator still valid, typed, callable — just not exposed via HTTP/RPC.
+- **`.fn()` validates by default** — same schemas as HTTP. `disableClientValidation: true` opts out, but only for trusted internal calls where input already checked.
+- **`req.vovk.body()` async; `.query()` and `.params()` sync.** Easy to mix up.
+- **`req.url` is `undefined` in `.fn()` context.** Any decorator checking URL must guard.
+- **Zod default = `vovk init`'s choice** — if user chose Valibot/ArkType, match their choice when adding schemas.
+- **CORS on decorator = preflight handling only.** Doesn't whitelist origins — configure at Next.js / platform layer.
+- **`decorate()` order**: last listed applies first. Flipping order changes behavior.
+- **`procedure().handle()` = the shape.** Don't confuse with `procedure(...).handle(...)` mid-chain — options go in `procedure(...)`, handler in `.handle(...)`.
+- **Never pass `req` to service.** Procedures pre-calculate (`vovk.body()`, `vovk.meta()`, `next/headers`) and hand service plain typed values — see "Controller / procedure / service — split of responsibilities" above.

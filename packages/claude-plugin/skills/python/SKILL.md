@@ -5,18 +5,18 @@ description: The Vovk.ts Python client — generating a typed Python package fro
 
 # Vovk.ts Python client
 
-`vovk-python` generates a typed Python package from the same `.vovk-schema/` artifacts that drive the TypeScript client. One source of truth, multiple languages.
+`vovk-python` generates typed Python package from same `.vovk-schema/` artifacts driving TS client. One source of truth, multi-language.
 
-**Experimental** — the generated API may change between Vovk versions. Pin the version when consuming.
+**Experimental** — generated API may shift between Vovk versions. Pin version on consume.
 
 ## Scope
 
 Covers:
 
-- Installing `vovk-python` and generating a Python package.
-- Templates: `py` (standalone package) vs `pySrc` (source files for embedding).
-- Configuring automatic generation in `vovk.config.mjs`.
-- Generated call shape (`TypedDict` per `[MethodName][Input|Output|Body|Query|Params]`).
+- Install `vovk-python` + generate Python package.
+- Templates: `py` (standalone) vs `pySrc` (source files to embed).
+- Auto-gen config in `vovk.config.mjs`.
+- Call shape (`TypedDict` per `[MethodName][Input|Output|Body|Query|Params]`).
 - JSON Lines streaming via Python generators.
 - Client-side validation toggle.
 - PyPI publishing flow.
@@ -24,8 +24,8 @@ Covers:
 Out of scope:
 
 - Procedure / controller authoring → **`procedure` skill**.
-- `vovk bundle` in general (TS bundling, Rust bundling) → **`bundle` skill**.
-- Server-side JSON Lines implementation → **`jsonlines` skill**.
+- `vovk bundle` general (TS, Rust) → **`bundle` skill**.
+- Server-side JSON Lines → **`jsonlines` skill**.
 - OpenAPI spec tuning → **`openapi` skill**.
 
 ## Install + generate
@@ -36,7 +36,7 @@ npm i -D vovk-python
 
 ### Standalone package
 
-Emits a complete Python package (ready for PyPI). The canonical output dir is `./dist_python` (the convention used by the official hello-world example):
+Emits complete Python package (PyPI-ready). Canonical output dir `./dist_python` (hello-world convention):
 
 ```bash
 npx vovk generate --from py --out ./dist_python
@@ -56,15 +56,15 @@ dist_python/
 
 ### Embedded source
 
-Emits just the `.py` files — drop into an existing Python project:
+Emits `.py` files only — drop into existing Python project:
 
 ```bash
 npx vovk generate --from pySrc --out ./python_src
 ```
 
-## Auto-generate with the composed client
+## Auto-generate with composed client
 
-Wire Python into `vovk generate` so it runs alongside TS:
+Wire Python into `vovk generate` → runs alongside TS:
 
 ```ts
 // vovk.config.mjs
@@ -76,7 +76,7 @@ const config = {
 export default config;
 ```
 
-**Bake in the production API URL** via `clientTemplateDefs.py.outputConfig.origin` — this is what the generated client uses by default. Pattern from the hello-world example:
+**Bake prod API URL** via `clientTemplateDefs.py.outputConfig.origin` — generated client uses this by default. Pattern from hello-world:
 
 ```ts
 // vovk.config.js
@@ -94,11 +94,11 @@ const config = {
 };
 ```
 
-After this, every `npx vovk generate` (and every `vovk dev` regeneration) refreshes the Python client too — with `PROD_ORIGIN` baked in for consumers, and overridable per-call via `api_root`.
+After this, every `npx vovk generate` (+ every `vovk dev` regen) refreshes Python client — `PROD_ORIGIN` baked in for consumers, overridable per-call via `api_root`.
 
 ## Generated call shape
 
-Types follow the convention `[PascalCaseMethodName][Body|Query|Params|Output]` as `TypedDict`. Methods are static, snake_case, with positional args in this order: `body, query, params, headers?, files?, api_root?, disable_client_validation`.
+Types follow `[PascalCaseMethodName][Body|Query|Params|Output]` as `TypedDict`. Methods static, snake_case, positional args ordered: `body, query, params, headers?, files?, api_root?, disable_client_validation`.
 
 ```python
 from my_api_client import UserRPC  # whatever package the generator wrote
@@ -116,11 +116,11 @@ params: UserRPC.UpdateUserParams = {
 response = UserRPC.update_user(body=body, query=query, params=params)
 ```
 
-Method names are snake_case. Type names are PascalCase.
+Method names snake_case. Type names PascalCase.
 
 ### Multipart uploads via `files`
 
-Procedures with `multipart/form-data` content type accept a `files` keyword arg — pass a `Dict[str, Any]` matching `requests`' file upload format:
+Procedures with `multipart/form-data` accept `files` kwarg — pass `Dict[str, Any]` matching `requests` upload format:
 
 ```python
 with open("avatar.png", "rb") as f:
@@ -132,7 +132,7 @@ with open("avatar.png", "rb") as f:
 
 ## JSON Lines streaming
 
-Procedures with `iteration` schemas (server-side `async function*` handlers — see **`jsonlines`** skill) generate **synchronous Python generators** on the client side. The return type is `Generator[<MethodName>Iteration, None, None]`:
+Procedures with `iteration` schemas (server-side `async function*` handlers — see **`jsonlines`** skill) generate **sync Python generators** client-side. Return type `Generator[<MethodName>Iteration, None, None]`:
 
 ```python
 @staticmethod
@@ -148,7 +148,7 @@ def stream_tokens(
     ...
 ```
 
-The yielded items are typed against the procedure's `iteration` schema — `StreamTokensIteration` is a `TypedDict`, so editors autocomplete its fields.
+Yielded items typed against procedure's `iteration` schema — `StreamTokensIteration` is `TypedDict` → editors autocomplete fields.
 
 ### Basic consumption
 
@@ -161,7 +161,7 @@ for item in StreamRPC.stream_tokens():
 
 ### Standard generator patterns
 
-Sync generators support all the usual idioms:
+Sync generators support usual idioms:
 
 ```python
 # Manual pull
@@ -185,7 +185,7 @@ for item in StreamRPC.stream_tokens():
 
 ### With body / query / params
 
-Streaming endpoints accept the same input shape as JSON ones:
+Streaming endpoints accept same input shape as JSON:
 
 ```python
 from my_api_client import ChatRPC
@@ -199,7 +199,7 @@ for token in ChatRPC.complete(
 
 ### Error handling
 
-If the underlying HTTP request fails or a line fails iteration validation, the generator raises on the next `next()` call. Wrap consumption in `try/except` if you need to recover gracefully:
+HTTP fail or iteration validation fail → generator raises on next `next()`. Wrap in `try/except` to recover:
 
 ```python
 try:
@@ -211,15 +211,15 @@ except Exception as exc:
 
 ### Sync, not async
 
-The generator is **synchronous** — backed by `requests`, which doesn't expose an async API. For asyncio code, run the iteration in a thread pool (`asyncio.to_thread` or `loop.run_in_executor`) or wrap each `next()` call accordingly. Native async streaming isn't available in the current Python client.
+Generator **sync** — backed by `requests`, no async API. For asyncio, run iteration in thread pool (`asyncio.to_thread` or `loop.run_in_executor`) or wrap each `next()` call. Native async streaming not in current Python client.
 
-See **`jsonlines`** skill for what the server-side handler looks like.
+See **`jsonlines`** skill for server-side handler.
 
 ## Client-side validation
 
-Validation runs against `schema.json` by default — same Zod/Valibot shapes the server enforces, cross-compiled to JSON Schema.
+Validation runs against `schema.json` by default — same Zod/Valibot shapes server enforces, cross-compiled to JSON Schema.
 
-Skip it for hot paths or when you want only server-side enforcement:
+Skip for hot paths or server-only enforcement:
 
 ```python
 response = UserRPC.update_user(
@@ -230,7 +230,7 @@ response = UserRPC.update_user(
 
 ## Dependencies pulled in
 
-The generated `pyproject.toml` declares (per the hello-world example):
+Generated `pyproject.toml` declares (per hello-world):
 
 ```toml
 [build-system]
@@ -245,27 +245,27 @@ dependencies = ["requests", "jsonschema", "rfc3987", "urllib3==1.26.15"]
 - `requests` — HTTP client.
 - `jsonschema` — client-side validation.
 - `rfc3987` — URI/IRI validation (used by `jsonschema` format checkers).
-- `urllib3==1.26.15` — pinned to avoid `requests`/`urllib3` v2 compatibility issues.
+- `urllib3==1.26.15` — pinned to dodge `requests`/`urllib3` v2 compat issues.
 
-Build backend is **hatchling**, no runtime overhead beyond the deps above.
+Build backend **hatchling**, no runtime overhead past deps above.
 
 ## Auth + base URL
 
-The generated client targets a URL baked in at generate time. For production consumers, pass base URL / headers via the `api_client.py` hooks (inspect the generated file on the installed version — exact API surface is version-dependent and may expose a module-level setter, per-call kwargs, or both).
+Generated client targets URL baked at generate time. For prod consumers, pass base URL / headers via `api_client.py` hooks (inspect generated file on installed version — exact API surface version-dependent, may expose module-level setter, per-call kwargs, or both).
 
-**Don't bake secrets into the generated package.** Consumers supply API keys at runtime.
+**Don't bake secrets into generated package.** Consumers supply API keys at runtime.
 
 ## PyPI publishing
 
-Canonical script from the hello-world example (build wheel + sdist, then upload via `twine`):
+Canonical script from hello-world (build wheel + sdist, upload via `twine`):
 
 ```bash
 python3 -m build ./dist_python --wheel --sdist && python3 -m twine upload ./dist_python/dist/*
 ```
 
-Both `python3 -m build` and `python3 -m twine` invoke the modules directly — works with whatever Python environment has them installed (`pip install build twine`). Run `twine` with credentials configured via `~/.pypirc` or `TWINE_USERNAME` / `TWINE_PASSWORD` env vars.
+Both `python3 -m build` and `python3 -m twine` invoke modules directly — works with any Python env that has them installed (`pip install build twine`). Run `twine` with creds via `~/.pypirc` or `TWINE_USERNAME` / `TWINE_PASSWORD` env vars.
 
-Wire it into your release flow alongside the npm bundle and Rust crate (the hello-world example chains all three under `postversion`):
+Wire into release flow alongside npm bundle + Rust crate (hello-world chains all three under `postversion`):
 
 ```json
 "scripts": {
@@ -276,14 +276,14 @@ Wire it into your release flow alongside the npm bundle and Rust crate (the hell
 }
 ```
 
-Version / package name flow from the project root `package.json` (the generator copies whitelisted fields — `name`, `version`, `description`, `license`, `author`, `contributors`, `repository`, `homepage`, `bugs`, `keywords` — into the generated `pyproject.toml`). Set `version` in the root `package.json` and `npm version patch` propagates to all three targets.
+Version / package name flow from root `package.json` (generator copies whitelisted fields — `name`, `version`, `description`, `license`, `author`, `contributors`, `repository`, `homepage`, `bugs`, `keywords` — into generated `pyproject.toml`). Set `version` in root `package.json`, `npm version patch` propagates to all three targets.
 
-**Name transform — pin this before publishing.** The Python package name is the root `name` with hyphens replaced by underscores (`my-api` → `my_api`). The same name is used for the filesystem path (`src/<name>/`), the `pyproject.toml` `name`, and the `pip install` command in the README. Two cases need an explicit override:
+**Name transform — pin before publishing.** Python package name = root `name` with hyphens → underscores (`my-api` → `my_api`). Same name used for filesystem path (`src/<name>/`), `pyproject.toml` `name`, `pip install` command in README. Two cases need explicit override:
 
-- **Scoped packages** (`@org/foo`) — `@` and `/` aren't transformed, so the default produces an invalid Python name. Set the override below.
-- **You want a different distribution name** than the npm one (e.g., npm is `my-api`, PyPI is `acme-client`).
+- **Scoped packages** (`@org/foo`) — `@` and `/` not transformed → default yields invalid Python name. Set override below.
+- **Different distribution name** than npm (e.g., npm `my-api`, PyPI `acme-client`).
 
-Override via `clientTemplateDefs.py.outputConfig.package.name` (same field shape the bundle skill documents):
+Override via `clientTemplateDefs.py.outputConfig.package.name` (same field shape bundle skill documents):
 
 ```js
 // vovk.config.mjs
@@ -308,7 +308,7 @@ const config = {
 1. `npm i -D vovk-python`.
 2. Add `'py'` to `composedClient.fromTemplates` in `vovk.config.mjs`.
 3. `npx vovk generate`.
-4. `pip install -e ./dist_python` (or wherever the generator wrote it).
+4. `pip install -e ./dist_python` (or wherever generator wrote it).
 5. `from dist_python.src.vovk_hello_world import UserRPC` and call.
 
 ### "Ship a Python SDK to PyPI"
@@ -319,7 +319,7 @@ const config = {
 
 ### "Consume a streaming endpoint from Python"
 
-Server defines `procedure({ iteration })` with an `async function*` handler (see `jsonlines`). Client iterates:
+Server defines `procedure({ iteration })` with `async function*` handler (see `jsonlines`). Client iterates:
 
 ```python
 for item in StreamRPC.stream_tokens():
@@ -338,13 +338,13 @@ Then import from `my_project.vovk_client...`.
 
 ## Gotchas
 
-- **Experimental.** API shape is not frozen — pin `vovk-python` version and expect breaks on upgrade. Integration-test after every bump.
-- **`TypedDict`, not classes.** Generated shapes are dict-based for JSON interop; treat them as plain dicts with type hints, not Pydantic models.
-- **Method names are snake_case**, type names are PascalCase. `updateUser` on the server → `update_user(...)` in Python, with `UpdateUserBody` etc.
-- **Client-side validation uses `jsonschema`** — small import + runtime cost. Disable per-call when you need speed or want server-only enforcement.
-- **Base URL / auth indirection is version-dependent.** Read the generated `api_client.py` on the installed version rather than assuming a fixed surface.
-- **Regenerate on schema changes.** Any procedure / schema change on the server requires `vovk generate` before the Python client reflects it. CI should regenerate as part of the build.
-- **Don't hand-edit generated files.** Put shared Python utilities alongside, not inside, the generated package.
-- **Body content types beyond JSON + multipart are limited.** `text/plain` and `application/octet-stream` request bodies aren't fully supported yet (roadmap). For binary uploads, prefer multipart via the `files` arg.
-- **Mixins with circular `$refs` may fail to generate** — the Python generator can't yet resolve cycles in third-party OpenAPI specs. Roadmap item.
-- **Named schemas in `components/schemas` don't yet produce shared importable types.** Each call site gets its own scoped `TypedDict` instead of a single `UserSchema` reused across methods. Roadmap item — until fixed, expect duplicated type definitions.
+- **Experimental.** API shape not frozen — pin `vovk-python` version, expect breaks on upgrade. Integration-test after each bump.
+- **`TypedDict`, not classes.** Generated shapes dict-based for JSON interop; treat as plain dicts with type hints, not Pydantic models.
+- **Method names snake_case**, type names PascalCase. `updateUser` server → `update_user(...)` Python, `UpdateUserBody` etc.
+- **Client-side validation uses `jsonschema`** — small import + runtime cost. Disable per-call for speed or server-only enforcement.
+- **Base URL / auth indirection version-dependent.** Read generated `api_client.py` on installed version, don't assume fixed surface.
+- **Regen on schema changes.** Any procedure / schema change server-side needs `vovk generate` before Python client reflects. CI should regen as part of build.
+- **Don't hand-edit generated files.** Put shared Python utilities alongside, not inside, generated package.
+- **Body content types past JSON + multipart limited.** `text/plain` and `application/octet-stream` request bodies not fully supported yet (roadmap). For binary uploads, prefer multipart via `files` arg.
+- **Mixins with circular `$refs` may fail to generate** — Python generator can't yet resolve cycles in third-party OpenAPI specs. Roadmap item.
+- **Named schemas in `components/schemas` don't yet produce shared importable types.** Each call site gets own scoped `TypedDict` instead of single `UserSchema` reused across methods. Roadmap item — until fixed, expect duplicated type definitions.
