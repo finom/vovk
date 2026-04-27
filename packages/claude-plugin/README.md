@@ -2,6 +2,8 @@
 
 Claude Code plugin for [Vovk.ts](https://vovk.dev). Topic-based skills that teach AI how to use the framework when a developer describes what they want to build.
 
+Full plugin docs at <https://vovk.dev/claude>.
+
 ## Skills
 
 - **`vovk:init`** — initialize Vovk.ts in a Next.js App Router project, or scaffold a fresh Next.js app and run `vovk init` on top.
