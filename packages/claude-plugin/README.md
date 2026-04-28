@@ -4,6 +4,20 @@ Claude Code plugin for [Vovk.ts](https://vovk.dev). Topic-based skills that teac
 
 Full plugin docs at <https://vovk.dev/claude>.
 
+## Why Vovk.ts + Claude is the pairing for vibe coding
+
+Vovk.ts's structure *is* the prompt — the AI mind model is built into the framework:
+
+- **Logic groups under `src/modules/<name>/`** — Controller + Service per feature, not scattered across `lib/`.
+- **Controller / Service split** — Controllers define procedures (decorated). Services hold business logic (plain classes). Clean separation between *what the endpoint is* and *what it does*.
+- **Methods on a service class, not loose helpers** — fewer files, predictable layout. Claude finds the right file on the first try.
+- **Single source of truth** — same `procedure().handle()` powers the HTTP endpoint, the SSR call (`.fn()`), and the AI tool (`deriveTools`). No duplication. Less for the model to reconcile.
+- **Plain REST under the hood** — `curl` works. `fetch` works. Types flow end-to-end without locking you into a custom protocol.
+- **Multitenancy baked in** — `multitenant()` proxy + segment-per-tenant; one Next.js app hosts many tenants on subdomains without re-architecting.
+- **OpenAPI + AI tools native** — schema generated from procedures, Scalar docs auto-mounted, every procedure can become an LLM tool with one line.
+
+The plugin packages all of this as 14 topic-scoped skills the agent loads only when relevant.
+
 ## Skills
 
 - **`vovk:init`** — initialize Vovk.ts in a Next.js App Router project, or scaffold a fresh Next.js app and run `vovk init` on top.
@@ -52,10 +66,8 @@ Once installed, the skills trigger automatically when you describe what you want
 
 Run any of these and the agent will load the relevant skills (you'll see them in `/vovk:` after the run).
 
-## Token-efficient prose
-
-Skill markdown uses a terse "caveman" style — articles, filler, and hedging dropped while every code block, file path, line-number pin, and cross-reference is preserved verbatim. ~10% fewer tokens per skill load with no loss of substance. The skill files read like fragments-and-arrows, but the technical content is intact and source-verified.
-
 ## Reporting bugs
 
-If a skill produces wrong code or contradicts itself, that's a plugin bug — open an issue at <https://github.com/finom/vovk/issues> with the prompt you used and the skill it loaded. The skills are source-verified against `packages/vovk/`, so bugs usually mean the docs and source diverged faster than the plugin tracked.
+If a skill produces wrong code or contradicts itself, open an issue at <https://github.com/finom/vovk/issues> with the prompt you used and the skill it loaded.
+
+> Skills are token-tightened ("caveman-style") — ~10% fewer tokens per load, no loss of substance.
