@@ -37,23 +37,21 @@ The plugin packages all of this as 14 topic-scoped skills the agent loads only w
 
 ## Install
 
-Inside Claude Code:
+Pick your agent. One command. Done.
 
-```
-/plugin marketplace add finom/vovk
-/plugin install vovk@vovk
-/reload-plugins
-```
+| Agent | Install |
+|-------|---------|
+| **Claude Code** (CLI) | `claude plugin marketplace add finom/vovk && claude plugin install vovk@vovk` |
+| **Claude Code** (interactive) | Inside the session: `/plugin marketplace add finom/vovk` then `/plugin install vovk@vovk` |
+| **Cursor** | `npx skills add finom/vovk -a cursor` |
+| **Windsurf** | `npx skills add finom/vovk -a windsurf` |
+| **Copilot** | `npx skills add finom/vovk -a github-copilot` |
+| **Cline** | `npx skills add finom/vovk -a cline` |
+| **Any other** | `npx skills add finom/vovk` |
 
-The `finom/vovk` shorthand resolves to the GitHub repo's `.claude-plugin/marketplace.json`. For private forks, ensure your `gh` auth is set; for a local checkout, replace the first command with `/plugin marketplace add /path/to/vovk` (point at the repo root, not at `packages/claude-plugin/`).
+`finom/vovk` resolves to the GitHub repo's `.claude-plugin/marketplace.json`. The plugin name is `vovk`; the marketplace name is also `vovk` — `vovk@vovk` is `<plugin-name>@<marketplace-name>`. For a local checkout, substitute a path: `claude plugin marketplace add /path/to/vovk` (point at the repo root, not at `packages/claude-plugin/`).
 
-Verify it loaded:
-
-```
-/plugin
-```
-
-The **Installed** tab should list `vovk`. Skills are namespaced — running `/vovk:` (with the trailing colon) lists all 14 skills available to the agent.
+In Claude Code, verify with `/plugin` — the **Installed** tab should list `vovk`. Skills are namespaced; `/vovk:` lists all 14.
 
 ## First prompt to try
 
