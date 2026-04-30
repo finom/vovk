@@ -19,14 +19,14 @@ Covers:
 - Segment priority (deepest path wins).
 - Static segments: `generateStaticParams`, `controllersToStaticParams`, `staticParams` option on decorators, `output: 'export'`, `.json` endpoints.
 - Per-segment config in `vovk.config.mjs` (`outputConfig.segments.<name>`).
-- `_schema_` dev endpoint (mention only — see `common` skill for details).
+- `_schema_` dev endpoint (mention only — see `base` skill for details).
 
 Out of scope (do not duplicate):
 
 - Writing handlers / `procedure()` / validation / `.fn()` / `req.vovk` / decorators → **`procedure` skill**.
 - RPC client generation, composed vs. segmented clients → **`rpc` skill**.
 - OpenAPI metadata (`@operation`, Scalar) beyond segment-level `openAPIObject` → **`openapi` skill**.
-- `vovk.config.mjs` global options / package ecosystem → **`common` skill**. Type inference helpers (`VovkBody`, `VovkOutput`, etc.) → **`procedure` skill** (controller-side) or **`rpc` skill** (client-side).
+- `vovk.config.mjs` global options → **`config` skill**. API surface + type inference helpers (`VovkBody`, `VovkOutput`, etc.) → **`base` skill** (registry) and **`procedure`** / **`rpc`** skills (usage).
 - Multi-tenant routing (subdomains, `multitenant()` proxy, per-tenant frontend pages, `segmentNameOverride`) → **`multitenant` skill**. This skill only mentions segment side in passing.
 
 ## Core concepts
@@ -280,7 +280,7 @@ Each segment emits one schema file:
   _meta.json
 ```
 
-Commit `.vovk-schema/` to version control — source of truth for codegen. Details on schema consumption belong to `common` and `rpc` skills.
+Commit `.vovk-schema/` to version control — source of truth for codegen. Details on schema consumption belong to `base` and `rpc` skills.
 
 ## Common flows
 
