@@ -16,12 +16,13 @@ Vovk.ts's structure *is* the prompt — the AI mind model is built into the fram
 - **Multitenancy baked in** — `multitenant()` proxy + segment-per-tenant; one Next.js app hosts many tenants on subdomains without re-architecting.
 - **OpenAPI + AI tools native** — schema generated from procedures, Scalar docs auto-mounted, every procedure can become an LLM tool with one line.
 
-The plugin packages all of this as 14 topic-scoped skills the agent loads only when relevant.
+The plugin packages all of this as 15 topic-scoped skills the agent loads only when relevant.
 
 ## Skills
 
+- **`vovk:base`** — foundational rules loaded alongside any other vovk:* skill: commit policy for `.vovk-schema/`, runtime requirements, template names, `_schema_` endpoint, brief API + type-inference surface (`VovkBody`, `VovkOutput`, …).
+- **`vovk:config`** — `vovk.config.{mjs,js,ts,cjs}` shape, every config key + default (`rootEntry`, `schemaOutDir`, `composedClient`, `segmentedClient`, `clientTemplateDefs`, `outputConfig`, `bundle`, …), `tsconfig.json` setup, and the `decorate()` alternative for projects without `experimentalDecorators`.
 - **`vovk:init`** — initialize Vovk.ts in a Next.js App Router project, or scaffold a fresh Next.js app and run `vovk init` on top.
-- **`vovk:common`** — framework fundamentals: packages, `vovk.config.mjs`, type inference helpers (`VovkBody`, `VovkOutput`, …), short API reference.
 - **`vovk:segment`** — segments (root, named, static), `initSegment`, segment priority, `generateStaticParams`.
 - **`vovk:multitenant`** — multi-tenant routing via subdomains: `multitenant()` proxy, `overrides` shape (static / dynamic / nested patterns), per-tenant segments + frontend pages, `segmentNameOverride`, wildcard DNS.
 - **`vovk:procedure`** — procedures, validation (Zod / Valibot / ArkType), controllers, HTTP decorators, `req.vovk`, error handling, content types, `.fn()` for SSR / server components / server actions.
@@ -51,7 +52,7 @@ Pick your agent. One command. Done.
 
 `finom/vovk` resolves to the GitHub repo's `.claude-plugin/marketplace.json`. The plugin name is `vovk`; the marketplace name is also `vovk` — `vovk@vovk` is `<plugin-name>@<marketplace-name>`. For a local checkout, substitute a path: `claude plugin marketplace add /path/to/vovk` (point at the repo root, not at `packages/claude-plugin/`).
 
-In Claude Code, verify with `/plugin` — the **Installed** tab should list `vovk`. Skills are namespaced; `/vovk:` lists all 14.
+In Claude Code, verify with `/plugin` — the **Installed** tab should list `vovk`. Skills are namespaced; `/vovk:` lists all 15.
 
 ## First prompt to try
 
