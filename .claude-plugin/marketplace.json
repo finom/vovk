@@ -4,7 +4,7 @@
   "plugins": [
     {
       "name": "vovk",
-      "source": "./packages/claude-plugin",
+      "source": "./",
       "description": "Claude Code plugin for Vovk.ts projects"
     }
   ]
