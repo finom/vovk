@@ -22,7 +22,7 @@
 
 ## Vovk.ts [![CI](https://github.com/finom/vovk/actions/workflows/main.yml/badge.svg)](https://github.com/finom/vovk/actions/workflows/main.yml) [![MIT License](https://img.shields.io/badge/license-MIT-0a0a0a.svg)](https://github.com/finom/vovk/blob/main/LICENSE) [![Runtime NPM Version](https://img.shields.io/npm/v/vovk?label=vovk)](https://www.npmjs.com/package/vovk) [![CLI NPM Version](https://img.shields.io/npm/v/vovk-cli?label=vovk-cli)](https://www.npmjs.com/package/vovk-cli) [![Docs Context](https://img.shields.io/badge/ai_context-docs.md-white)](https://vovk.dev/context/docs.md) [![Realtime UI Context](https://img.shields.io/badge/ai_context-realtime_ui.md-white)](https://vovk.dev/context/realtime-ui.md)
 
-Vovk.ts lets you build a structured back end on top of **Next.js App Router Route Handlers**. Define a procedure once — same code runs locally for SSR, mounts as an HTTP endpoint when you add a decorator, and exposes as an LLM tool. Vovk emits schema artifacts for codegen, generating a **type-safe client**, **OpenAPI** docs, and **AI tools** — no separate contract layer to maintain.
+Vovk.ts lets you build a structured back end on top of **Next.js App Router Route Handlers**. The unit is the **procedure** — a typed function paired with its schema. From that single source, Vovk derives the **HTTP endpoint**, the local **`.fn()`** call, the **type-safe client**, the **OpenAPI** document, and the **AI tool** with `execute`. No separate contract layer, no glue code.
 
 > **Requirements:** Node.js 22+ and Next.js 15+
 
@@ -101,6 +101,19 @@ Annotate with `@operation` and procedures expose as LLM tools — pass controlle
 const { tools } = deriveTools({ modules: { UserRPC, TaskController, PetstoreAPI } });
 console.log(tools); // [{ name, description, parameters, execute }, ...]
 ```
+
+## What one procedure becomes
+
+Function plus schema is a complete unit. From that pair Vovk derives:
+
+- the **Next.js Route Handler** — add an HTTP decorator and the same procedure mounts as an endpoint
+- the **local `.fn()` callable** — same call shape as the RPC client; for SSR, server components, server actions, and AI tool execution
+- the **typed RPC client module** — `fetch`-powered, generated from the emitted schema
+- the **OpenAPI 3.x document** — derived from the same schema, no parallel spec to maintain
+- the **LLM tool** with `name`, `description`, `parameters`, and `execute` — via `deriveTools`
+- a generated **`README.md`** — client library documentation rendered from the procedure surface
+
+One source, six destinations.
 
 ## Claude Plugin
 
