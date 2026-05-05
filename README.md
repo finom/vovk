@@ -113,7 +113,7 @@ Function plus schema is a complete unit. From that pair Vovk derives:
 - the **LLM tool** with `name`, `description`, `parameters`, and `execute` — via `deriveTools`
 - a generated **`README.md`** — client library documentation rendered from the procedure surface
 
-One source, six destinations.
+One source, multiple destinations.
 
 ## Claude Plugin
 
