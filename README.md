@@ -22,8 +22,7 @@
 
 ## Vovk.ts [![CI](https://github.com/finom/vovk/actions/workflows/main.yml/badge.svg)](https://github.com/finom/vovk/actions/workflows/main.yml) [![MIT License](https://img.shields.io/badge/license-MIT-0a0a0a.svg)](https://github.com/finom/vovk/blob/main/LICENSE) [![Runtime NPM Version](https://img.shields.io/npm/v/vovk?label=vovk)](https://www.npmjs.com/package/vovk) [![CLI NPM Version](https://img.shields.io/npm/v/vovk-cli?label=vovk-cli)](https://www.npmjs.com/package/vovk-cli) [![Docs Context](https://img.shields.io/badge/ai_context-docs.md-white)](https://vovk.dev/context/docs.md) [![Realtime UI Context](https://img.shields.io/badge/ai_context-realtime_ui.md-white)](https://vovk.dev/context/realtime-ui.md)
 
-Vovk.ts lets you build a structured back end on top of **Next.js App Router Route Handlers**—and generate a **type-safe client**, **OpenAPI**, and **AI tools** from the same code.
-Under the hood: you write Controllers, and Vovk **emits schema artifacts** for codegen—without maintaining a separate contract layer.
+Vovk.ts lets you build a structured back end on top of **Next.js App Router Route Handlers**. Define a procedure once — same code runs locally for SSR, mounts as an HTTP endpoint when you add a decorator, and exposes as an LLM tool. Vovk emits schema artifacts for codegen, generating a **type-safe client**, **OpenAPI** docs, and **AI tools** — no separate contract layer to maintain.
 
 > **Requirements:** Node.js 22+ and Next.js 15+
 
@@ -47,33 +46,23 @@ See: https://vovk.dev/quick-install
 
 ## What it looks like
 
-Controller + decorator:
+A procedure is a typed, validated callable. Define inputs and output with `procedure` and call it directly on the server for SSR/PPR, server actions, or AI tool execution:
 
 ```ts
 export default class UserController {
-  @get('{id}')
-  static async getUser(req: NextRequest, { id }: { id: string }) {
-    // ...
-  }
-}
-```
-
-With `procedure` you validate and type inputs in-place:
-
-```ts
-export default class UserController {
-  @get('{id}')
   static getUser = procedure({
-    params: z.object({
-      id: z.string().uuid(),
-    })
+    params: z.object({ id: z.string().uuid() }),
   }).handle(async (req, { id }) => {
-    // ...
+    return UserService.getUserById(id);
   });
 }
 ```
 
-Procedures can use services that infer parameter types from the controller method signature:
+```ts
+const user = await UserController.getUser.fn({ params: { id: '123' } });
+```
+
+Services hold business logic separately. Plain classes, no decorators — types infer from the procedure:
 
 ```ts
 import type { VovkParams } from 'vovk';
@@ -86,18 +75,18 @@ export default class UserService {
 }
 ```
 
-```ts
-import UserService from './UserService';
+Add an HTTP decorator and the same procedure becomes a Next.js Route Handler. Codegen produces a `fetch`-powered client that mirrors the `.fn()` signature:
 
+```ts
 export default class UserController {
   @get('{id}')
-  static getUser = procedure({ /*...*/ }).handle(async (req, { id }) => {
+  static getUser = procedure({
+    params: z.object({ id: z.string().uuid() }),
+  }).handle(async (req, { id }) => {
     return UserService.getUserById(id);
   });
 }
 ```
-
-Codegen emits `fetch`-powered client:
 
 ```ts
 import { UserRPC, PetstoreAPI } from 'vovk-client';
@@ -106,17 +95,11 @@ const user = await UserRPC.getUser({ params: { id: '123' } });
 const pet = await PetstoreAPI.getPetById({ params: { petId: 1 } });
 ```
 
-Controllers (current context execution), RPC/API modules (HTTP calls) can be used to derive AI tools:
+Annotate with `@operation` and procedures expose as LLM tools — pass controllers (in-process) or RPC modules (HTTP) to `deriveTools`:
 
 ```ts
 const { tools } = deriveTools({ modules: { UserRPC, TaskController, PetstoreAPI } });
 console.log(tools); // [{ name, description, parameters, execute }, ...]
-```
-
-Procedures can be executed locally for SSR/PPR and server actions:
-
-```ts
-await UserController.getUser.fn({ params: { id: '123' } });
 ```
 
 ## Claude Plugin
