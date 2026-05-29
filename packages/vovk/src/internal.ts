@@ -3,13 +3,13 @@ export { deepExtend } from './utils/deepExtend.js';
 export { resolveGeneratorConfigValues } from './core/resolveGeneratorConfigValues.js';
 export { createCodeSamples } from './samples/createCodeSamples.js';
 export { withValidationLibrary } from './validation/withValidationLibrary.js';
+export { validationSchemasObjectToSingleValidationSchema } from './validation/validationSchemasObjectToSingleValidationSchema.js';
 export { operation } from './openapi/operation.js';
 export { openAPIToVovkSchema } from './openapi/openAPIToVovkSchema/index.js';
 export { vovkSchemaToOpenAPI } from './openapi/vovkSchemaToOpenAPI.js';
 export { readableStreamToAsyncIterable } from './client/defaultStreamHandler.js';
 
 export { VovkSchemaIdEnum } from './types/enums.js';
-export type { VovkToolDerived, VovkToolNonDerived } from './types/tools.js';
 export type { MCPModelOutput } from './tools/toModelOutputMCP.js';
 export type {
   VovkErrorResponse,

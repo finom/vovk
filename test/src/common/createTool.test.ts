@@ -2,7 +2,7 @@ import { it, describe } from 'node:test';
 import { z } from 'zod';
 import assert from 'node:assert';
 import { ToModelOutput, type VovkTool, createTool } from 'vovk';
-import type { MCPModelOutput, VovkToolNonDerived } from 'vovk/internal';
+import type { MCPModelOutput } from 'vovk/internal';
 
 describe('createTool', () => {
   describe('Common, no toModelOutput', () => {
@@ -16,7 +16,6 @@ describe('createTool', () => {
       });
 
       tool satisfies VovkTool<null, { message: string }, unknown>;
-      tool satisfies VovkToolNonDerived<null, { message: string }, unknown>;
 
       const result = (await tool.execute(null)) satisfies { message: string } | { error: string };
       assert.strictEqual(tool.name, 'hello_world');
@@ -35,7 +34,7 @@ describe('createTool', () => {
         },
       });
 
-      tool satisfies VovkToolNonDerived<{ name: string }, { message: string }, unknown>;
+      tool satisfies VovkTool<{ name: string }, { message: string }, unknown>;
 
       const result = (await tool.execute({ name: 'Alice' })) satisfies { message: string } | { error: string };
       assert.strictEqual(tool.name, 'hello_name');
@@ -54,7 +53,7 @@ describe('createTool', () => {
         },
       });
 
-      tool satisfies VovkToolNonDerived<null, { message: string }, unknown>;
+      tool satisfies VovkTool<null, { message: string }, unknown>;
 
       const result = (await tool.execute(null)) satisfies { message: string } | { error: string };
       assert.strictEqual(tool.name, 'hello_output');
@@ -78,7 +77,7 @@ describe('createTool', () => {
         },
       });
 
-      tool satisfies VovkToolNonDerived<{ name: string }, { message: string }, unknown>;
+      tool satisfies VovkTool<{ name: string }, { message: string }, unknown>;
 
       const result = (await tool.execute({ name: 'Bob' })) satisfies { message: string } | { error: string };
       assert.strictEqual(tool.name, 'hello_full');
@@ -101,7 +100,7 @@ describe('createTool', () => {
         },
       });
 
-      tool satisfies VovkToolNonDerived<{ age: number }, { message: string }, unknown>;
+      tool satisfies VovkTool<{ age: number }, { message: string }, unknown>;
 
       const result = await tool.execute({ age: -5 });
 
@@ -122,7 +121,7 @@ describe('createTool', () => {
         },
       });
 
-      tool satisfies VovkToolNonDerived<null, { score: number }, unknown>;
+      tool satisfies VovkTool<null, { score: number }, unknown>;
 
       const result = await tool.execute(null);
 
@@ -144,7 +143,7 @@ describe('createTool', () => {
         },
       });
 
-      tool satisfies VovkToolNonDerived<number, unknown, unknown>;
+      tool satisfies VovkTool<number, unknown, unknown>;
 
       const result = await tool.execute(-1);
 
@@ -167,7 +166,7 @@ describe('createTool', () => {
         },
       });
 
-      tool satisfies VovkToolNonDerived<null, { message: string }, { message: string } | { error: string }>;
+      tool satisfies VovkTool<null, { message: string }, { message: string } | { error: string }>;
 
       const result = (await tool.execute(null)) satisfies { message: string } | { error: string };
       assert.strictEqual(tool.name, 'hello_default');
@@ -192,7 +191,7 @@ describe('createTool', () => {
         },
       });
 
-      tool satisfies VovkToolNonDerived<number, { message: string }, { message: string } | { error: string }>;
+      tool satisfies VovkTool<number, { message: string }, { message: string } | { error: string }>;
 
       const result = (await tool.execute(-5)) satisfies { message: string } | { error: string };
       assert.strictEqual(tool.name, 'hello_default_error');
@@ -212,7 +211,7 @@ describe('createTool', () => {
         },
       });
 
-      tool satisfies VovkToolNonDerived<null, { message: string }, MCPModelOutput>;
+      tool satisfies VovkTool<null, { message: string }, MCPModelOutput>;
 
       const result = (await tool.execute(null)) satisfies MCPModelOutput;
       assert.strictEqual(tool.name, 'hello_mcp_text');
@@ -240,7 +239,7 @@ describe('createTool', () => {
         },
       });
 
-      tool satisfies VovkToolNonDerived<number[], unknown, MCPModelOutput>;
+      tool satisfies VovkTool<number[], unknown, MCPModelOutput>;
 
       const result = (await tool.execute([137, 80, 78, 71])) satisfies MCPModelOutput;
       assert.strictEqual(tool.name, 'hello_mcp_image');
@@ -273,7 +272,7 @@ describe('createTool', () => {
         },
       });
 
-      tool satisfies VovkToolNonDerived<number, { message: string }, MCPModelOutput>;
+      tool satisfies VovkTool<number, { message: string }, MCPModelOutput>;
 
       const result = (await tool.execute(-10)) satisfies MCPModelOutput;
       assert.strictEqual(tool.name, 'hello_mcp_error');

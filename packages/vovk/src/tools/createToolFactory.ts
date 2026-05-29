@@ -1,6 +1,6 @@
 import { ToModelOutput } from './ToModelOutput.js';
 import type { VovkErrorResponse, VovkValidationType } from '../types/core.js';
-import type { VovkToolNonDerived } from '../types/tools.js';
+import type { VovkTool } from '../types/tools.js';
 import type { ToModelOutputFn } from '../types/tools.js';
 import type { DefaultModelOutput, ToModelOutputDefaultFn } from './toModelOutputDefault.js';
 import type { CombinedSpec } from '../types/validation.js';
@@ -31,8 +31,8 @@ export function createToolFactory({
     name: string;
     title?: string;
     description: string;
-    onExecute?: (result: unknown, tool: VovkToolNonDerived<TInput, TOutput, TFormattedOutput>) => void;
-    onError?: (error: Error, tool: VovkToolNonDerived<TInput, TOutput, TFormattedOutput>) => void;
+    onExecute?: (result: unknown, tool: VovkTool<TInput, TOutput, TFormattedOutput>) => void;
+    onError?: (error: Error, tool: VovkTool<TInput, TOutput, TFormattedOutput>) => void;
     target?: CombinedSpec.Target;
   };
 
@@ -56,7 +56,7 @@ export function createToolFactory({
     outputSchema?: undefined;
   };
 
-  type CreateToolResult<TInput, TOutput, TFormattedOutput> = VovkToolNonDerived<TInput, TOutput, TFormattedOutput>;
+  type CreateToolResult<TInput, TOutput, TFormattedOutput> = VovkTool<TInput, TOutput, TFormattedOutput>;
 
   // Overload 1: with inputSchema, with outputSchema, with toModelOutput
   function createTool<TInput, TOutput, TToModelOutput extends AnyToModelOutputFn>(
@@ -155,9 +155,9 @@ export function createToolFactory({
     outputSchema?: CombinedSpec<TOutput>;
     execute: (input: KnownAny, processingMeta?: unknown) => TOutput | Promise<TOutput>;
     toModelOutput?: ToModelOutputFn<TInput, TOutput, TFormattedOutput>;
-  }): VovkToolNonDerived<TInput, TOutput, TFormattedOutput> {
+  }): VovkTool<TInput, TOutput, TFormattedOutput> {
     let parameters: unknown;
-    const tool: VovkToolNonDerived<TInput, TOutput, TFormattedOutput> = {
+    const tool: VovkTool<TInput, TOutput, TFormattedOutput> = {
       type: 'function',
       name,
       title,

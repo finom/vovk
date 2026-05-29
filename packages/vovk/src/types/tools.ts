@@ -9,12 +9,12 @@ export type ToModelOutputFn<TInput, TOutput, TFormattedOutput> = (
   req: Pick<VovkRequest, 'vovk'> | null
 ) => TFormattedOutput | Promise<TFormattedOutput>;
 
-interface VovkToolCommon<
-  TInput = unknown,
-  TOutput = unknown,
-  TFormattedOutput = unknown,
-  TIsDerived extends boolean = boolean,
-> {
+/**
+ * Vovk tool — produced by both `deriveTools` (procedures → tools) and
+ * `createTool` (standalone tools). Both call sites return the same shape.
+ * @see https://vovk.dev/tools
+ */
+export interface VovkTool<TInput = KnownAny, TOutput = KnownAny, TFormattedOutput = KnownAny> {
   execute: (input: TInput, options?: unknown) => TFormattedOutput | Promise<TFormattedOutput>;
   name: string;
   title: string | undefined;
@@ -29,45 +29,23 @@ interface VovkToolCommon<
     required?: ('body' | 'query' | 'params')[];
     additionalProperties?: false;
   };
-  // if derived, input schema is undefined
-  inputSchema: TIsDerived extends true ? undefined : TInput extends undefined ? undefined : CombinedSpec<TInput>;
-  // if derived, output schema is output metod validation or undefined
-  outputSchema: TIsDerived extends true
-    ? CombinedSpec | undefined
-    : TOutput extends undefined
-      ? undefined
-      : CombinedSpec<TOutput>;
-  // set only if derived
-  inputSchemas: TIsDerived extends true
-    ? {
-        body?: CombinedSpec;
-        query?: CombinedSpec;
-        params?: CombinedSpec;
-      }
-    : undefined;
+  inputSchema: TInput extends undefined ? undefined : CombinedSpec<TInput>;
+  outputSchema: TOutput extends undefined ? undefined : CombinedSpec<TOutput>;
+  /**
+   * Per-slot Standard Schemas, populated only when the tool was built via
+   * `deriveTools` from a procedure. Always `undefined` for tools built via
+   * `createTool`.
+   *
+   * @deprecated Use {@link VovkTool.inputSchema} (a merged Standard Schema)
+   * instead. This field will be removed in the next major version.
+   */
+  inputSchemas?: {
+    body?: CombinedSpec;
+    query?: CombinedSpec;
+    params?: CombinedSpec;
+  };
   type: 'function';
 }
-
-export type VovkToolDerived<TInput, TOutput, TFormattedOutput> = VovkToolCommon<
-  TInput,
-  TOutput,
-  TFormattedOutput,
-  true
->;
-export type VovkToolNonDerived<TInput, TOutput, TFormattedOutput> = VovkToolCommon<
-  TInput,
-  TOutput,
-  TFormattedOutput,
-  false
->;
-
-/**
- * Vovk tool type, which can be either derived or non-derived.
- * @see https://vovk.dev/tools
- */
-export type VovkTool<TInput = KnownAny, TOutput = KnownAny, TFormattedOutput = KnownAny> =
-  | VovkToolDerived<TInput, TOutput, TFormattedOutput>
-  | VovkToolNonDerived<TInput, TOutput, TFormattedOutput>;
 
 export type VovkToolOptions = {
   hidden?: boolean;
