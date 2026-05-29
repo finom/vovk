@@ -14,6 +14,12 @@ import {
 } from 'vovk';
 import { z } from 'zod';
 
+// zod >=4.4 ships `sideEffects: false`, so bundlers (Next.js here) tree-shake zod's
+// built-in `config(en())` locale init — collapsing every validation message to the
+// bare "Invalid input" fallback. Load the English locale explicitly so server-side
+// error messages stay precise. This is an explicit call, so it survives tree-shaking.
+z.config(z.locales.en());
+
 const HandleAllInput = {
   body: z.object({ hello: z.string() }),
   query: z.object({ search: z.string() }),

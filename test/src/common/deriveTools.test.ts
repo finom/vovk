@@ -2,7 +2,7 @@ import { it, describe } from 'node:test';
 import { z } from 'zod';
 import assert from 'node:assert';
 import { deriveTools, toDownloadResponse, ToModelOutput, procedure, type VovkTool, type VovkOutput } from 'vovk';
-import type { MCPModelOutput, VovkToolDerived } from 'vovk/internal';
+import type { MCPModelOutput } from 'vovk/internal';
 
 describe('deriveTools', () => {
   const outputSchema = z.object({ foo: z.string().max(5), inputMeta: z.string().optional() });
@@ -91,18 +91,8 @@ describe('deriveTools', () => {
       unknown
     >[];
 
-    tools satisfies VovkToolDerived<
-      {
-        body?: unknown;
-        query?: unknown;
-        params?: unknown;
-      },
-      unknown,
-      unknown
-    >[];
-
     toolsByName satisfies {
-      [key: string]: VovkToolDerived<
+      [key: string]: VovkTool<
         {
           body?: unknown;
           query?: unknown;
@@ -140,9 +130,18 @@ describe('deriveTools', () => {
       });
     });
 
-    it('Should NOT provide inputSchema', async () => {
+    it('Should provide a merged inputSchema (Standard Schema + Standard JSON Schema)', async () => {
       const tool = toolsByName.MyModule_procedureWithBody;
-      assert.strictEqual(tool.inputSchema, undefined);
+      assert.ok(tool.inputSchema, 'expected merged inputSchema to be defined');
+      assert.strictEqual(tool.inputSchema['~standard'].vendor, 'vovk');
+      assert.strictEqual(tool.inputSchema['~standard'].version, 1);
+      const okResult = await tool.inputSchema['~standard'].validate({ body: { foo: 'foo1' } });
+      assert.deepStrictEqual(okResult, { value: { body: { foo: 'foo1' } } });
+      const badResult = (await tool.inputSchema['~standard'].validate({ extra: 'x' })) as {
+        issues?: ReadonlyArray<{ message: string; path?: unknown[] }>;
+      };
+      assert.ok(badResult.issues);
+      assert.ok(badResult.issues.length > 0);
     });
 
     it('Should validate input', async () => {
@@ -178,7 +177,7 @@ describe('deriveTools', () => {
       },
     });
 
-    tools satisfies VovkToolDerived<
+    tools satisfies VovkTool<
       {
         body?: unknown;
         query?: unknown;
@@ -188,7 +187,7 @@ describe('deriveTools', () => {
       { myResult?: unknown; myError?: string }
     >[];
     toolsByName satisfies {
-      [key: string]: VovkToolDerived<
+      [key: string]: VovkTool<
         {
           body?: unknown;
           query?: unknown;
@@ -221,7 +220,7 @@ describe('deriveTools', () => {
       },
     });
 
-    tools satisfies VovkToolDerived<
+    tools satisfies VovkTool<
       {
         body?: unknown;
         query?: unknown;
@@ -232,7 +231,7 @@ describe('deriveTools', () => {
     >[];
 
     toolsByName satisfies {
-      [key: string]: VovkToolDerived<
+      [key: string]: VovkTool<
         {
           body?: unknown;
           query?: unknown;
@@ -270,7 +269,7 @@ describe('deriveTools', () => {
         onExecute: (result, { name }) => console.log(`${name} executed`, result),
       });
 
-      tools satisfies VovkToolDerived<
+      tools satisfies VovkTool<
         {
           body?: unknown;
           query?: unknown;
@@ -281,7 +280,7 @@ describe('deriveTools', () => {
       >[];
 
       toolsByName satisfies {
-        [key: string]: VovkToolDerived<
+        [key: string]: VovkTool<
           {
             body?: unknown;
             query?: unknown;
@@ -608,7 +607,7 @@ describe('deriveTools', () => {
       },
     });
 
-    tools satisfies VovkToolDerived<
+    tools satisfies VovkTool<
       {
         body?: unknown;
         query?: unknown;
@@ -619,7 +618,7 @@ describe('deriveTools', () => {
     >[];
 
     toolsByName satisfies {
-      [key: string]: VovkToolDerived<
+      [key: string]: VovkTool<
         {
           body?: unknown;
           query?: unknown;
@@ -638,6 +637,66 @@ describe('deriveTools', () => {
       assert.deepStrictEqual(result, {
         myError: 'Error: Validation failed. Invalid body: Too big: expected string to have <=5 characters at foo',
       });
+    });
+  });
+
+  describe('Merged inputSchema (Standard Schema + Standard JSON Schema)', () => {
+    const paramsSchema = z.object({ baz: z.string().max(5) });
+    const procedureWithNoSlots = procedure({
+      operationObject: { description: 'procedureWithNoSlots description' },
+    }).handle(async () => ({ ok: true }));
+    const procedureWithAllSlots = procedure({
+      operationObject: { description: 'procedureWithAllSlots description' },
+      body: bodySchema,
+      query: querySchema,
+      params: paramsSchema,
+    }).handle(async () => ({ ok: true }));
+
+    const { toolsByName } = deriveTools({
+      modules: {
+        MyModule: { procedureWithNoSlots, procedureWithAllSlots },
+      },
+    });
+
+    it('Should leave inputSchema undefined when the procedure has no body/query/params', () => {
+      const tool = toolsByName.MyModule_procedureWithNoSlots;
+      assert.strictEqual(tool.inputSchema, undefined);
+      assert.deepStrictEqual(tool.inputSchemas, {});
+    });
+
+    it('Merged inputSchema produces the expected JSON Schema envelope', () => {
+      const tool = toolsByName.MyModule_procedureWithAllSlots;
+      assert.ok(tool.inputSchema);
+      const jsonSchema = tool.inputSchema['~standard'].jsonSchema.input({ target: 'draft-2020-12' });
+      assert.strictEqual(jsonSchema.type, 'object');
+      assert.strictEqual(jsonSchema.additionalProperties, false);
+      assert.deepStrictEqual(jsonSchema.required, ['body', 'query', 'params']);
+      const properties = jsonSchema.properties as Record<string, Record<string, unknown>>;
+      assert.ok(properties.body);
+      assert.ok(properties.query);
+      assert.ok(properties.params);
+    });
+
+    it('Merged inputSchema validates all three slots together', async () => {
+      const tool = toolsByName.MyModule_procedureWithAllSlots;
+      assert.ok(tool.inputSchema);
+      const okResult = await tool.inputSchema['~standard'].validate({
+        body: { foo: 'a' },
+        query: { bar: 'b' },
+        params: { baz: 'c' },
+      });
+      assert.deepStrictEqual(okResult, {
+        value: { body: { foo: 'a' }, query: { bar: 'b' }, params: { baz: 'c' } },
+      });
+      const missingResult = (await tool.inputSchema['~standard'].validate({ body: { foo: 'a' } })) as {
+        issues?: ReadonlyArray<{ message: string; path?: unknown[] }>;
+      };
+      assert.ok(missingResult.issues);
+      const missingKeys = missingResult.issues
+        .filter((i) => i.message === 'Required')
+        .map((i) => (i.path?.[0] as { key?: string } | undefined)?.key);
+      assert.ok(missingKeys.includes('query'));
+      assert.ok(missingKeys.includes('params'));
     });
   });
 });
