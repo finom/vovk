@@ -18,9 +18,7 @@ export type ToModelOutputFn<TInput, TOutput, TFormattedOutput> = (
  */
 export interface VovkTool<TInput = KnownAny, TOutput = KnownAny, TFormattedOutput = KnownAny>
   extends StandardTool<TInput, TOutput, TFormattedOutput> {
-  name: string;
   title: string | undefined;
-  description: string;
   parameters: {
     type?: 'object';
     properties?: {
