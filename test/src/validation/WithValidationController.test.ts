@@ -684,7 +684,7 @@ describe('Validation with with zod and validateOnClient defined at settings', ()
       });
     });
 
-    await rejects.toThrow(/Validation failed\. Invalid body:/);
+    await rejects.toThrow(/Too big: expected string to have <=5 characters/);
     await rejects.toThrowError(HttpException);
   });
 
@@ -1053,7 +1053,7 @@ describe('String contentType (not array)', () => {
       });
     });
 
-    await rejects.toThrow(/Validation failed\. Invalid body:/);
+    await rejects.toThrow(/Too big: expected string to have <=5 characters/);
     await rejects.toThrowError(HttpException);
   });
 });
