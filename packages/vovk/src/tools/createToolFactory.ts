@@ -63,7 +63,7 @@ export function createToolFactory({
     options: CreateToolBaseOptions<TInput, TOutput, InferFormattedOutput<TToModelOutput, TOutput>> &
       WithInputSchema<TInput> &
       WithOutputSchema<TOutput> & {
-        execute: (input: TInput, processingMeta?: unknown) => TOutput | Promise<TOutput>;
+        execute: (input: TInput, processingMeta?: KnownAny) => TOutput | Promise<TOutput>;
         toModelOutput: TToModelOutput;
       }
   ): CreateToolResult<TInput, TOutput, InferFormattedOutput<TToModelOutput, TOutput>>;
@@ -73,7 +73,7 @@ export function createToolFactory({
     options: CreateToolBaseOptions<TInput, TOutput, DefaultModelOutput<TOutput>> &
       WithInputSchema<TInput> &
       WithOutputSchema<TOutput> & {
-        execute: (input: TInput, processingMeta?: unknown) => TOutput | Promise<TOutput>;
+        execute: (input: TInput, processingMeta?: KnownAny) => TOutput | Promise<TOutput>;
         toModelOutput?: undefined;
       }
   ): CreateToolResult<TInput, TOutput, DefaultModelOutput<TOutput>>;
@@ -83,7 +83,7 @@ export function createToolFactory({
     options: CreateToolBaseOptions<TInput, TOutput, InferFormattedOutput<TToModelOutput, TOutput>> &
       WithInputSchema<TInput> &
       WithoutOutputSchema & {
-        execute: (input: TInput, processingMeta?: unknown) => TOutput | Promise<TOutput>;
+        execute: (input: TInput, processingMeta?: KnownAny) => TOutput | Promise<TOutput>;
         toModelOutput: TToModelOutput;
       }
   ): CreateToolResult<TInput, TOutput, InferFormattedOutput<TToModelOutput, TOutput>>;
@@ -93,7 +93,7 @@ export function createToolFactory({
     options: CreateToolBaseOptions<TInput, TOutput, DefaultModelOutput<TOutput>> &
       WithInputSchema<TInput> &
       WithoutOutputSchema & {
-        execute: (input: TInput, processingMeta?: unknown) => TOutput | Promise<TOutput>;
+        execute: (input: TInput, processingMeta?: KnownAny) => TOutput | Promise<TOutput>;
         toModelOutput?: undefined;
       }
   ): CreateToolResult<TInput, TOutput, DefaultModelOutput<TOutput>>;
@@ -103,7 +103,7 @@ export function createToolFactory({
     options: CreateToolBaseOptions<null, TOutput, InferFormattedOutput<TToModelOutput, TOutput>> &
       WithoutInputSchema &
       WithOutputSchema<TOutput> & {
-        execute: (input: null, processingMeta?: unknown) => TOutput | Promise<TOutput>;
+        execute: (input: null, processingMeta?: KnownAny) => TOutput | Promise<TOutput>;
         toModelOutput: TToModelOutput;
       }
   ): CreateToolResult<null, TOutput, InferFormattedOutput<TToModelOutput, TOutput>>;
@@ -113,7 +113,7 @@ export function createToolFactory({
     options: CreateToolBaseOptions<null, TOutput, DefaultModelOutput<TOutput>> &
       WithoutInputSchema &
       WithOutputSchema<TOutput> & {
-        execute: (input: null, processingMeta?: unknown) => TOutput | Promise<TOutput>;
+        execute: (input: null, processingMeta?: KnownAny) => TOutput | Promise<TOutput>;
         toModelOutput?: undefined;
       }
   ): CreateToolResult<null, TOutput, DefaultModelOutput<TOutput>>;
@@ -123,7 +123,7 @@ export function createToolFactory({
     options: CreateToolBaseOptions<null, TOutput, InferFormattedOutput<TToModelOutput, TOutput>> &
       WithoutInputSchema &
       WithoutOutputSchema & {
-        execute: (input: null, processingMeta?: unknown) => TOutput | Promise<TOutput>;
+        execute: (input: null, processingMeta?: KnownAny) => TOutput | Promise<TOutput>;
         toModelOutput: TToModelOutput;
       }
   ): CreateToolResult<null, TOutput, InferFormattedOutput<TToModelOutput, TOutput>>;
@@ -133,7 +133,7 @@ export function createToolFactory({
     options: CreateToolBaseOptions<null, TOutput, DefaultModelOutput<TOutput>> &
       WithoutInputSchema &
       WithoutOutputSchema & {
-        execute: (input: null, processingMeta?: unknown) => TOutput | Promise<TOutput>;
+        execute: (input: null, processingMeta?: KnownAny) => TOutput | Promise<TOutput>;
         toModelOutput?: undefined;
       }
   ): CreateToolResult<null, TOutput, DefaultModelOutput<TOutput>>;
@@ -153,7 +153,7 @@ export function createToolFactory({
   }: CreateToolBaseOptions<TInput, TOutput, TFormattedOutput> & {
     inputSchema?: CombinedSpec<TInput>;
     outputSchema?: CombinedSpec<TOutput>;
-    execute: (input: KnownAny, processingMeta?: unknown) => TOutput | Promise<TOutput>;
+    execute: (input: KnownAny, processingMeta?: KnownAny) => TOutput | Promise<TOutput>;
     toModelOutput?: ToModelOutputFn<TInput, TOutput, TFormattedOutput>;
   }): VovkTool<TInput, TOutput, TFormattedOutput> {
     let parameters: unknown;
