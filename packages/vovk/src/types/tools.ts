@@ -12,12 +12,8 @@ export type ToModelOutputFn<TInput, TOutput, TFormattedOutput> = (
 
 /**
  * Vovk tool — produced by both `deriveTools` (procedures → tools) and
- * `createTool` (standalone tools). Both call sites return the same shape.
- *
- * Structurally a {@link StandardTool} (https://github.com/finom/standard-tool): a VovkTool *is* a
- * standard tool, extended with Vovk specifics (`title`, JSON-Schema `parameters`, per-slot
- * `inputSchemas`, `type`). Vovk applies its output formatter (`toModelOutput`) internally, so it is
- * not part of the shared shape.
+ * `createTool` (standalone tools); both return the same shape. Extends the
+ * {@link StandardTool} convention with Vovk specifics (`title`, `parameters`, `type`).
  * @see https://vovk.dev/tools
  */
 export interface VovkTool<TInput = KnownAny, TOutput = KnownAny, TFormattedOutput = KnownAny>
