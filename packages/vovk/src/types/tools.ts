@@ -18,7 +18,6 @@ export type ToModelOutputFn<TInput, TOutput, TFormattedOutput> = (
  */
 export interface VovkTool<TInput = KnownAny, TOutput = KnownAny, TFormattedOutput = KnownAny>
   extends StandardTool<TInput, TOutput, TFormattedOutput> {
-  execute: (input: TInput, options?: unknown) => TFormattedOutput | Promise<TFormattedOutput>;
   name: string;
   title: string | undefined;
   description: string;
