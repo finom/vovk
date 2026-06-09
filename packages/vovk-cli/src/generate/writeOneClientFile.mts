@@ -7,6 +7,7 @@ import TOML from '@iarna/toml';
 import type { VovkSchema } from 'vovk';
 import {
   createCodeSamples,
+  reattachMixinDefs,
   VovkSchemaIdEnum,
   type VovkReadmeConfig,
   type VovkSamplesConfig,
@@ -152,6 +153,7 @@ export async function writeOneClientFile({
     VovkSchemaIdEnum,
     createCodeSamples,
     compileJSONSchemaToTypeScriptType,
+    reattachMixinDefs,
     YAML,
     TOML,
     getFirstLineBanner,

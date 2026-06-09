@@ -18,7 +18,13 @@ function cloneJSON(obj: unknown): unknown {
 export function applyComponentsSchemas(
   schema: VovkJSONSchemaBase,
   components: ComponentsObject['schemas'],
-  mixinName: string
+  mixinName: string,
+  /**
+   * true (default): embed the ref closure in `$defs` (self-contained — for AJV + Rust).
+   * false: keep `#/components/schemas/X`, emit no `$defs` (response slots, typed via
+   * `x-tsType`) — avoids the per-handler dup that overflows JSON.stringify on big specs.
+   */
+  emitDefs = true
 ): VovkJSONSchemaBase | VovkJSONSchemaBase[] {
   const key = 'components/schemas';
   if (!components || !Object.keys(components).length) return schema;
@@ -26,8 +32,10 @@ export function applyComponentsSchemas(
   // Create a deep copy of the schema
   const result = cloneJSON(schema) as VovkJSONSchemaBase;
 
-  // Initialize $defs if it doesn't exist
-  result.$defs = result.$defs || {};
+  // Initialize $defs only when embedding (self-contained slots).
+  if (emitDefs) {
+    result.$defs = result.$defs || {};
+  }
 
   // Set to track components we've added to $defs
   const addedComponents = new Set<string>();
@@ -48,20 +56,24 @@ export function applyComponentsSchemas(
     if ($ref && typeof $ref === 'string' && $ref.startsWith(`#/${key}/`)) {
       const componentName = $ref.replace(`#/${key}/`, '');
       if (components?.[componentName]) {
-        newObj.$ref = `#/$defs/${componentName}`;
+        // Set `x-tsType` so TS resolves the ref without local `$defs`.
         newObj['x-tsType'] ??= `Mixins.${upperFirst(camelCase(mixinName))}.${upperFirst(camelCase(componentName))}`;
-      } else {
-        delete newObj.$ref; // Remove $ref if component not found (Telegram API has Type $refs that is not defined in components)
-      }
 
-      // Add the component to $defs if not already added
-      if (!addedComponents.has(componentName) && components?.[componentName]) {
-        addedComponents.add(componentName);
-        if (result.$defs) {
-          result.$defs[componentName] = processSchema(
-            cloneJSON(components[componentName]) as VovkJSONSchemaBase
-          ) as VovkJSONSchemaBase;
+        if (emitDefs) {
+          // Self-contained slot: local $defs + embedded closure.
+          newObj.$ref = `#/$defs/${componentName}`;
+          if (!addedComponents.has(componentName)) {
+            addedComponents.add(componentName);
+            if (result.$defs) {
+              result.$defs[componentName] = processSchema(
+                cloneJSON(components[componentName]) as VovkJSONSchemaBase
+              ) as VovkJSONSchemaBase;
+            }
+          }
         }
+        // emitDefs === false: keep `#/components/schemas/X`, no `$defs` (lives once in meta).
+      } else {
+        delete newObj.$ref; // $ref to a component not in components (e.g. Telegram API)
       }
     }
 
@@ -79,4 +91,23 @@ export function applyComponentsSchemas(
 
   // Process the main schema
   return processSchema(result);
+}
+
+/**
+ * Re-attach a response slot's `$defs` closure at render time, for generators that
+ * resolve `$ref` against a self-contained schema (Rust). Pulls components from the
+ * segment's shared meta → identical to the `emitDefs=true` slot. No-op for non-mixin.
+ */
+export function reattachMixinDefs(
+  slot: VovkJSONSchemaBase | undefined,
+  segment: {
+    segmentType?: string;
+    segmentName: string;
+    meta?: { openAPIObject?: { components?: ComponentsObject } };
+  }
+): VovkJSONSchemaBase | VovkJSONSchemaBase[] | undefined {
+  if (!slot || segment?.segmentType !== 'mixin') return slot;
+  const components = segment.meta?.openAPIObject?.components?.schemas;
+  if (!components) return slot;
+  return applyComponentsSchemas(slot, components, segment.segmentName, true);
 }
