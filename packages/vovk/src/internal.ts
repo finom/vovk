@@ -6,6 +6,10 @@ export { withValidationLibrary } from './validation/withValidationLibrary.js';
 export { validationSchemasObjectToSingleValidationSchema } from './validation/validationSchemasObjectToSingleValidationSchema.js';
 export { operation } from './openapi/operation.js';
 export { openAPIToVovkSchema } from './openapi/openAPIToVovkSchema/index.js';
+export {
+  applyComponentsSchemas,
+  reattachMixinDefs,
+} from './openapi/openAPIToVovkSchema/applyComponentsSchemas.js';
 export { vovkSchemaToOpenAPI } from './openapi/vovkSchemaToOpenAPI.js';
 export { readableStreamToAsyncIterable } from './client/defaultStreamHandler.js';
 

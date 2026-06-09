@@ -30,9 +30,10 @@ vars.convertJSONSchemasToRustTypes({
         body: validation?.body,
         query: validation?.query,
         params: validation?.params,
-        output: validation?.output,
-        iteration: validation?.iteration
-    }, 
+        // Re-attach deduped $defs so Rust resolves refs as before (no-op for non-mixin).
+        output: t.reattachMixinDefs(validation?.output, segment),
+        iteration: t.reattachMixinDefs(validation?.iteration, segment)
+    },
     rootName: handlerName,
     pad: 4 
 })

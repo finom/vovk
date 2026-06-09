@@ -180,10 +180,11 @@ export function openAPIToVovkSchema({
               body: applyComponentsSchemas(body, componentsSchemas, segmentName),
             }),
             ...(output && {
-              output: applyComponentsSchemas(output, componentsSchemas, segmentName),
+              // Response slot: not validated + typed via x-tsType → skip $defs (dedup).
+              output: applyComponentsSchemas(output, componentsSchemas, segmentName, false),
             }),
             ...(iteration && {
-              iteration: applyComponentsSchemas(iteration, componentsSchemas, segmentName),
+              iteration: applyComponentsSchemas(iteration, componentsSchemas, segmentName, false),
             }),
           },
         };
