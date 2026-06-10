@@ -38,11 +38,12 @@ const spec = {
       },
       Nested: { type: 'object', properties: { value: { type: 'number' } } },
       CreateThing: { type: 'object', properties: { name: { type: 'string' } } },
+      Orphan: { type: 'object', properties: { unused: { type: 'boolean' } } },
     },
   },
 };
 
-function build() {
+function build(extra: Obj = {}) {
   return openAPIToVovkSchema({
     apiRoot: 'https://api.example.com',
     source: { object: spec },
@@ -50,6 +51,7 @@ function build() {
     getMethodName: ({ operationObject }: { operationObject: { operationId?: string } }) =>
       operationObject.operationId ?? 'op',
     segmentName: 'api',
+    ...extra,
   } as unknown as Parameters<typeof openAPIToVovkSchema>[0]);
 }
 
@@ -112,5 +114,94 @@ describe('reattachMixinDefs — render-time reconstitution (Rust)', () => {
     const slot = { $ref: '#/components/schemas/Shared', 'x-tsType': 'Mixins.Api.Shared' } as Obj;
     const out = reattachMixinDefs(slot, { segmentType: 'segment', segmentName: 'x' });
     strictEqual(out, slot, 'returns the slot unchanged for non-mixin segments');
+  });
+});
+
+describe('openAPIToVovkSchema — filterOperations', () => {
+  it('keeps only operations the predicate accepts (by method)', () => {
+    const segment = build({ filterOperations: ({ method }: Obj) => method === 'GET' }).segments.api as Seg;
+    const handlers = segment.controllers.Test.handlers;
+    deepStrictEqual(Object.keys(handlers).sort(), ['getThings', 'streamThings'], 'POST createThing is absent');
+  });
+
+  it('keeps only operations the predicate accepts (by path)', () => {
+    const segment = build({ filterOperations: ({ path }: Obj) => path === '/stream' }).segments.api as Seg;
+    const handlers = segment.controllers.Test.handlers;
+    deepStrictEqual(Object.keys(handlers), ['streamThings'], 'only the /stream operation survives');
+  });
+
+  it('never creates a module whose operations are all filtered out', () => {
+    const segment = build({ filterOperations: () => false }).segments.api as Seg;
+    deepStrictEqual(segment.controllers, {}, 'no empty controller entries');
+  });
+
+  it('defaults (no filter, no prune) keep every operation and every component', () => {
+    const segment = build().segments.api as Seg;
+    deepStrictEqual(Object.keys(segment.controllers.Test.handlers).sort(), [
+      'createThing',
+      'getThings',
+      'streamThings',
+    ]);
+    deepStrictEqual(Object.keys(segment.meta.openAPIObject.components.schemas).sort(), [
+      'CreateThing',
+      'Nested',
+      'Orphan',
+      'Shared',
+    ]);
+  });
+});
+
+describe('openAPIToVovkSchema — pruneComponents', () => {
+  it('drops components nothing references, keeps the transitive closure', () => {
+    const segment = build({ pruneComponents: true }).segments.api as Seg;
+    deepStrictEqual(
+      Object.keys(segment.meta.openAPIObject.components.schemas).sort(),
+      ['CreateThing', 'Nested', 'Shared'],
+      'Orphan pruned; Nested kept transitively via Shared'
+    );
+  });
+
+  it('drops components referenced only by filtered-out operations', () => {
+    const segment = build({
+      filterOperations: ({ method }: Obj) => method === 'GET',
+      pruneComponents: true,
+    }).segments.api as Seg;
+    deepStrictEqual(
+      Object.keys(segment.meta.openAPIObject.components.schemas).sort(),
+      ['Nested', 'Shared'],
+      'CreateThing (only used by the filtered-out POST) and Orphan pruned'
+    );
+  });
+
+  it('keeps the response closure of kept operations', () => {
+    const segment = build({
+      filterOperations: ({ method }: Obj) => method === 'POST',
+      pruneComponents: true,
+    }).segments.api as Seg;
+    deepStrictEqual(
+      Object.keys(segment.meta.openAPIObject.components.schemas).sort(),
+      ['CreateThing', 'Nested', 'Shared'],
+      'createThing needs CreateThing (body) and Shared→Nested (its 200 response)'
+    );
+  });
+
+  it('reattachMixinDefs still reconstitutes response slots from the pruned meta', () => {
+    const segment = build({
+      filterOperations: ({ method }: Obj) => method === 'GET',
+      pruneComponents: true,
+    }).segments.api as Seg;
+    const reattached = reattachMixinDefs(segment.controllers.Test.handlers.getThings.validation.output, segment) as Obj;
+    strictEqual(reattached.$ref, '#/$defs/Shared', 'ref rewritten to local $defs');
+    ok(reattached.$defs?.Shared, 'Shared re-embedded after pruning');
+    ok(reattached.$defs?.Nested, 'transitive Nested re-embedded after pruning');
+  });
+
+  it('does not mutate the input spec', () => {
+    build({ filterOperations: () => false, pruneComponents: true });
+    deepStrictEqual(
+      Object.keys(spec.components.schemas).sort(),
+      ['CreateThing', 'Nested', 'Orphan', 'Shared'],
+      'the caller-owned spec keeps its full components dict'
+    );
   });
 });
