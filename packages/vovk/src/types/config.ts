@@ -111,6 +111,17 @@ export interface VovkOpenAPIMixin {
     | 'camel-case-operation-id' // operation ID to camelCase
     | 'auto' // auto-detect based on operationObject method and path
     | GetOpenAPINameFn;
+  /**
+   * Keep only operations the predicate returns `true` for; omitted = keep all. Runs before
+   * `getModuleName`/`getMethodName`, so a module whose operations are all filtered out is never created.
+   */
+  filterOperations?: (config: Parameters<GetOpenAPINameFn>[0]) => boolean;
+  /**
+   * Prune `meta.openAPIObject.components.schemas` to the transitive `$ref` closure of the kept operations,
+   * shrinking the generated schema for large specs. Removes `Mixins.<Segment>.<Component>` types for
+   * components nothing kept references — keep `false` (default) if you import such types directly.
+   */
+  pruneComponents?: boolean;
   errorMessageKey?: string;
   mixinName?: string;
 }
