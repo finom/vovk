@@ -7,6 +7,7 @@ import type {
 } from 'openapi3-ts/oas31';
 import { applyComponentsSchemas } from './applyComponentsSchemas.js';
 import { inlineRefs } from './inlineRefs.js';
+import { pruneComponentsSchemas } from './pruneComponentsSchemas.js';
 import { type HttpMethod, VovkSchemaIdEnum } from '../../types/enums.js';
 import type { VovkSchema } from '../../types/core.js';
 import type { VovkJSONSchemaBase } from '../../types/json-schema.js';
@@ -39,6 +40,8 @@ export function openAPIToVovkSchema({
   source: { object: openAPIObject },
   getModuleName,
   getMethodName,
+  filterOperations,
+  pruneComponents,
   errorMessageKey,
   segmentName,
 }: VovkOpenAPIMixinNormalized & { segmentName?: string }): VovkSchema {
@@ -73,10 +76,22 @@ export function openAPIToVovkSchema({
   };
   const segment = schema.segments[segmentName];
 
-  return Object.entries(paths ?? {}).reduce((acc, [path, operations]) => {
+  Object.entries(paths ?? {}).forEach(([path, operations]) => {
     Object.entries(operations ?? {})
       .filter(([, operation]) => operation && typeof operation === 'object')
       .forEach(([method, operation]: [string, OperationObject]) => {
+        if (
+          filterOperations &&
+          !filterOperations({
+            method: method.toUpperCase() as HttpMethod,
+            path,
+            openAPIObject,
+            operationObject: operation,
+          })
+        ) {
+          return;
+        }
+
         const rpcModuleName = getModuleName({
           method: method.toUpperCase() as HttpMethod,
           path,
@@ -189,6 +204,23 @@ export function openAPIToVovkSchema({
           },
         };
       });
-    return acc;
-  }, schema);
+  });
+
+  if (pruneComponents && noPathsOpenAPIObject.components?.schemas) {
+    // Reassign with fresh objects only — `noPathsOpenAPIObject` shares references with the
+    // caller's spec, so the original `components.schemas` must stay untouched. Walking the
+    // whole controllers tree (validation slots + raw operation objects) keeps every `$ref`
+    // a kept handler carries resolvable against the pruned meta.
+    segment.meta = {
+      openAPIObject: {
+        ...noPathsOpenAPIObject,
+        components: {
+          ...noPathsOpenAPIObject.components,
+          schemas: pruneComponentsSchemas(segment.controllers, noPathsOpenAPIObject.components.schemas),
+        },
+      },
+    };
+  }
+
+  return schema;
 }
