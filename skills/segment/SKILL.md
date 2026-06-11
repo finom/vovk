@@ -50,8 +50,8 @@ Every segment's `route.ts` exports HTTP handlers produced by `initSegment()`:
 ```ts
 // src/app/api/[[...vovk]]/route.ts
 import { initSegment } from 'vovk';
-import UserController from '../../../modules/user/UserController';
-import PostController from '../../../modules/post/PostController';
+import UserController from '../../../modules/user/user-controller';
+import PostController from '../../../modules/post/post-controller';
 
 export const maxDuration = 300; // Next.js route-handler option
 
@@ -131,7 +131,7 @@ After CLI runs, verify expected `route.ts` landed at expected path. If it didn't
 ```ts
 // src/app/api/admin/[[...vovk]]/route.ts
 import { initSegment } from 'vovk';
-import AdminController from '../../../../modules/admin/AdminController';
+import AdminController from '../../../../modules/admin/admin-controller';
 
 export const runtime = 'nodejs';
 export const maxDuration = 60;
@@ -156,7 +156,7 @@ Pre-renders endpoints to JSON files at build time. Useful for APIs that don't ne
 ```ts
 // src/app/api/openapi/[[...vovk]]/route.ts
 import { initSegment, controllersToStaticParams } from 'vovk';
-import HelloController from '../../../../modules/hello/HelloController';
+import HelloController from '../../../../modules/hello/hello-controller';
 
 const controllers = { HelloRPC: HelloController };
 export type Controllers = typeof controllers;

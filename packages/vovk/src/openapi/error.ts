@@ -1,5 +1,5 @@
 import { HttpStatus } from '../types/enums.js';
-import { createDecorator } from '../core/createDecorator.js';
+import { createDecorator } from '../core/create-decorator.js';
 
 const statusDisplayText = {
   [HttpStatus.NULL]: 'Error',

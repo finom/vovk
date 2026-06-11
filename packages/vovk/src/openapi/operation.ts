@@ -1,4 +1,4 @@
-import { createDecorator } from '../core/createDecorator.js';
+import { createDecorator } from '../core/create-decorator.js';
 import { error } from './error.js';
 import { tool } from './tool.js';
 import type { VovkOperationObject } from '../types/operation.js';

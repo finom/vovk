@@ -1,4 +1,4 @@
-import type { JSONLinesResponder } from '../core/JSONLinesResponder.js';
+import type { JSONLinesResponder } from '../core/json-lines-responder.js';
 import type { VovkStreamAsyncIterable } from './client.js';
 import type { VovkRequest } from './request.js';
 import type { KnownAny } from './utils.js';

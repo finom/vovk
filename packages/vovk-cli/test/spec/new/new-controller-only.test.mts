@@ -1,6 +1,6 @@
 import { it, describe } from 'node:test';
 import path from 'node:path';
-import getCLIAssertions from '../../lib/getCLIAssertions.mts';
+import getCLIAssertions from '../../lib/get-cli-assertions.mts';
 
 await describe('CLI new controller only', async () => {
   const { runAtProjectDir, assertFile, assertNotExists, createVovkApp } = getCLIAssertions({
@@ -22,7 +22,7 @@ await describe('CLI new controller only', async () => {
     ]);
     await runAtProjectDir('../dist/index.mjs new controller user');
 
-    await assertFile('src/modules/user/UserController.ts', [
+    await assertFile('src/modules/user/user-controller.ts', [
       `export default class UserController {`,
       `@get()
         static getUsers = (`,
@@ -30,7 +30,7 @@ await describe('CLI new controller only', async () => {
       `static updateUser = `,
     ]);
     await assertFile('src/app/api/[[...vovk]]/route.ts', [
-      `import UserController from '../../../modules/user/UserController';`,
+      `import UserController from '../../../modules/user/user-controller';`,
       `const controllers = {
         UserRPC: UserController,
       };`,
@@ -41,7 +41,7 @@ await describe('CLI new controller only', async () => {
     ]);
 
     await runAtProjectDir('../dist/index.mjs new controller post');
-    await assertFile('src/modules/post/PostController.ts', [
+    await assertFile('src/modules/post/post-controller.ts', [
       `export default class PostController {`,
       `@get()
         static getPosts = (`,
@@ -49,7 +49,7 @@ await describe('CLI new controller only', async () => {
       `static updatePost = `,
     ]);
     await assertFile('src/app/api/[[...vovk]]/route.ts', [
-      `import PostController from '../../../modules/post/PostController';`,
+      `import PostController from '../../../modules/post/post-controller';`,
       `const controllers = {
         UserRPC: UserController,
         PostRPC: PostController,
@@ -68,10 +68,10 @@ await describe('CLI new controller only', async () => {
     await runAtProjectDir('../dist/index.mjs new segment');
     await runAtProjectDir('../dist/index.mjs new controller user --empty');
 
-    await assertFile('src/modules/user/UserController.ts', [`export default class UserController {}`]);
-    await assertNotExists('src/modules/user/UserService.ts');
+    await assertFile('src/modules/user/user-controller.ts', [`export default class UserController {}`]);
+    await assertNotExists('src/modules/user/user-service.ts');
     await assertFile('src/app/api/[[...vovk]]/route.ts', [
-      `import UserController from '../../../modules/user/UserController';`,
+      `import UserController from '../../../modules/user/user-controller';`,
       `const controllers = {
         UserRPC: UserController,
       };`,
@@ -97,7 +97,7 @@ await describe('CLI new controller only', async () => {
     ]);
     await runAtProjectDir('../dist/index.mjs new controller foo/user');
 
-    await assertFile('src/modules/foo/user/UserController.ts', [
+    await assertFile('src/modules/foo/user/user-controller.ts', [
       `export default class UserController {`,
       `@get()
         static getUsers = (`,
@@ -105,7 +105,7 @@ await describe('CLI new controller only', async () => {
       `static updateUser = `,
     ]);
     await assertFile('src/app/api/foo/[[...vovk]]/route.ts', [
-      `import UserController from '../../../../modules/foo/user/UserController';`,
+      `import UserController from '../../../../modules/foo/user/user-controller';`,
       `const controllers = {
         UserRPC: UserController,
       };`,
@@ -131,7 +131,7 @@ await describe('CLI new controller only', async () => {
     ]);
     await runAtProjectDir('../dist/index.mjs new controller user');
 
-    await assertFile('src/modules/user/UserController.ts', [
+    await assertFile('src/modules/user/user-controller.ts', [
       `import { z } from 'zod';`,
       `export default class UserController {`,
       `@get()
@@ -140,7 +140,7 @@ await describe('CLI new controller only', async () => {
       `static updateUser = `,
     ]);
     await assertFile('src/app/api/[[...vovk]]/route.ts', [
-      `import UserController from '../../../modules/user/UserController';`,
+      `import UserController from '../../../modules/user/user-controller';`,
       `const controllers = {
         UserRPC: UserController,
       };`,
@@ -165,7 +165,7 @@ await describe('CLI new controller only', async () => {
     ]);
     await runAtProjectDir('../dist/index.mjs new controller user');
 
-    await assertFile('src/modules/user/UserController.ts', [
+    await assertFile('src/modules/user/user-controller.ts', [
       `import * as v from 'valibot';`,
       `export default class UserController {`,
       `@get()
@@ -174,7 +174,7 @@ await describe('CLI new controller only', async () => {
       `static updateUser = `,
     ]);
     await assertFile('src/app/api/[[...vovk]]/route.ts', [
-      `import UserController from '../../../modules/user/UserController';`,
+      `import UserController from '../../../modules/user/user-controller';`,
       `const controllers = {
         UserRPC: UserController,
       };`,
@@ -199,7 +199,7 @@ await describe('CLI new controller only', async () => {
     ]);
     await runAtProjectDir('../dist/index.mjs new controller user');
 
-    await assertFile('src/modules/user/UserController.ts', [
+    await assertFile('src/modules/user/user-controller.ts', [
       `import { type } from 'arktype';`,
       `export default class UserController {`,
       `@get()
@@ -208,7 +208,7 @@ await describe('CLI new controller only', async () => {
       `static updateUser = `,
     ]);
     await assertFile('src/app/api/[[...vovk]]/route.ts', [
-      `import UserController from '../../../modules/user/UserController';`,
+      `import UserController from '../../../modules/user/user-controller';`,
       `const controllers = {
         UserRPC: UserController,
       };`,

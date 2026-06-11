@@ -2,12 +2,12 @@ import path from 'node:path';
 import fs from 'node:fs/promises';
 import type { VovkSchema } from 'vovk';
 import groupBy from 'lodash/groupBy.js';
-import type { ProjectInfo } from '../getProjectInfo/index.mjs';
+import type { ProjectInfo } from '../get-project-info/index.mjs';
 import { generate } from '../generate/generate.mjs';
-import { BuiltInTemplateName } from '../getProjectInfo/getConfig/getTemplateDefs.mjs';
-import { chalkHighlightThing } from '../utils/chalkHighlightThing.mjs';
+import { BuiltInTemplateName } from '../get-project-info/get-config/get-template-defs.mjs';
+import { chalkHighlightThing } from '../utils/chalk-highlight-thing.mjs';
 import type { BundleOptions } from '../types.mjs';
-import { locateSegments } from '../utils/locateSegments.mjs';
+import { locateSegments } from '../utils/locate-segments.mjs';
 
 export async function bundle({
   projectInfo,

@@ -1,20 +1,20 @@
 // internal exports for other packages and tests
-export { deepExtend } from './utils/deepExtend.js';
-export { resolveGeneratorConfigValues } from './core/resolveGeneratorConfigValues.js';
-export { createCodeSamples } from './samples/createCodeSamples.js';
-export { withValidationLibrary } from './validation/withValidationLibrary.js';
-export { validationSchemasObjectToSingleValidationSchema } from './validation/validationSchemasObjectToSingleValidationSchema.js';
+export { deepExtend } from './utils/deep-extend.js';
+export { resolveGeneratorConfigValues } from './core/resolve-generator-config-values.js';
+export { createCodeSamples } from './samples/create-code-samples.js';
+export { withValidationLibrary } from './validation/with-validation-library.js';
+export { validationSchemasObjectToSingleValidationSchema } from './validation/validation-schemas-object-to-single-validation-schema.js';
 export { operation } from './openapi/operation.js';
-export { openAPIToVovkSchema } from './openapi/openAPIToVovkSchema/index.js';
+export { openAPIToVovkSchema } from './openapi/openapi-to-vovk-schema/index.js';
 export {
   applyComponentsSchemas,
   reattachMixinDefs,
-} from './openapi/openAPIToVovkSchema/applyComponentsSchemas.js';
-export { vovkSchemaToOpenAPI } from './openapi/vovkSchemaToOpenAPI.js';
-export { readableStreamToAsyncIterable } from './client/defaultStreamHandler.js';
+} from './openapi/openapi-to-vovk-schema/apply-components-schemas.js';
+export { vovkSchemaToOpenAPI } from './openapi/vovk-schema-to-openapi.js';
+export { readableStreamToAsyncIterable } from './client/default-stream-handler.js';
 
 export { VovkSchemaIdEnum } from './types/enums.js';
-export type { MCPModelOutput } from './tools/toModelOutputMCP.js';
+export type { MCPModelOutput } from './tools/to-model-output-mcp.js';
 export type {
   VovkErrorResponse,
   VovkMetaSchema,

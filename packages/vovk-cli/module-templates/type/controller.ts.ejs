@@ -4,14 +4,14 @@
 }; %>
 ---
 outDir: <%= t.defaultOutDir %>
-fileName: <%= vars.ControllerName + '.ts' %>
+fileName: <%= t['the-thing'] + '-controller.ts' %>
 sourceName: <%= vars.ControllerName %>
 compiledName: <%= t.TheThing + 'RPC' %>
 ---
 
 import { prefix, get, put, post, del, operation, type VovkRequest } from 'vovk';
 <% if(t.withService) { %>
-import <%= vars.ServiceName %> from './<%= vars.ServiceName %><%= t.nodeNextResolutionExt.ts %>';
+import <%= vars.ServiceName %> from './<%= t['the-thing'] %>-service<%= t.nodeNextResolutionExt.ts %>';
 <% } %>
 
 @prefix('<%= t['the-things'] %>')

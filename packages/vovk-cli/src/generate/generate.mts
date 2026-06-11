@@ -5,18 +5,18 @@ import _ from 'lodash';
 import type { VovkSchema } from 'vovk';
 import { openAPIToVovkSchema, vovkSchemaToOpenAPI, type VovkOpenAPIMixin, type VovkStrictConfig } from 'vovk/internal';
 import type { PackageJson } from 'type-fest';
-import { getClientTemplateFiles } from './getClientTemplateFiles.mjs';
-import { chalkHighlightThing } from '../utils/chalkHighlightThing.mjs';
-import type { ProjectInfo } from '../getProjectInfo/index.mjs';
+import { getClientTemplateFiles } from './get-client-template-files.mjs';
+import { chalkHighlightThing } from '../utils/chalk-highlight-thing.mjs';
+import type { ProjectInfo } from '../get-project-info/index.mjs';
 import type { GenerateOptions } from '../types.mjs';
-import { pickSegmentFullSchema } from '../utils/pickSegmentFullSchema.mjs';
-import { removeUnlistedDirectories } from '../utils/removeUnlistedDirectories.mjs';
-import { writeOneClientFile, normalizeOutTemplatePath } from './writeOneClientFile.mjs';
-import { ROOT_SEGMENT_FILE_NAME } from '../dev/writeOneSegmentSchemaFile.mjs';
-import type { Segment } from '../utils/locateSegments.mjs';
+import { pickSegmentFullSchema } from '../utils/pick-segment-full-schema.mjs';
+import { removeUnlistedDirectories } from '../utils/remove-unlisted-directories.mjs';
+import { writeOneClientFile, normalizeOutTemplatePath } from './write-one-client-file.mjs';
+import { ROOT_SEGMENT_FILE_NAME } from '../dev/write-one-segment-schema-file.mjs';
+import type { Segment } from '../utils/locate-segments.mjs';
 import { getTsconfig } from 'get-tsconfig';
-import { normalizeOpenAPIMixin } from '../utils/normalizeOpenAPIMixin.mjs';
-import { BuiltInTemplateName } from '../getProjectInfo/getConfig/getTemplateDefs.mjs';
+import { normalizeOpenAPIMixin } from '../utils/normalize-openapi-mixin.mjs';
+import { BuiltInTemplateName } from '../get-project-info/get-config/get-template-defs.mjs';
 
 const getIncludedSegmentNames = (
   config: VovkStrictConfig,

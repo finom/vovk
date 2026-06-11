@@ -1,7 +1,7 @@
 import type { NextResponse } from 'next/server.js';
-import type { JSONLinesResponder } from '../core/JSONLinesResponder.js';
-import type { defaultStreamHandler } from '../client/defaultStreamHandler.js';
-import type { defaultHandler } from '../client/defaultHandler.js';
+import type { JSONLinesResponder } from '../core/json-lines-responder.js';
+import type { defaultStreamHandler } from '../client/default-stream-handler.js';
+import type { defaultHandler } from '../client/default-handler.js';
 import type { VovkRequest } from './request.js';
 import type {
   ControllerStaticMethod,

@@ -4,12 +4,12 @@
 }; %>
 ---
 outDir: <%= t.defaultOutDir %>
-fileName: <%= vars.ServiceName + '.ts' %>
+fileName: <%= t['the-thing'] + '-service.ts' %>
 sourceName: <%= vars.ServiceName %>
 ---
 
 import type { VovkBody, VovkParams } from 'vovk';
-import type <%= vars.ControllerName %> from './<%= vars.ControllerName %><%= t.nodeNextResolutionExt.ts %>';
+import type <%= vars.ControllerName %> from './<%= t['the-thing'] %>-controller<%= t.nodeNextResolutionExt.ts %>';
 
 export default class <%= vars.ServiceName %> {
   static get<%= t.TheThings %> = () => {

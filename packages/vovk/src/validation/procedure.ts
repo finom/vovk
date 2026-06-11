@@ -1,4 +1,4 @@
-import { createStandardValidation } from './createStandardValidation.js';
+import { createStandardValidation } from './create-standard-validation.js';
 import type { CombinedSpec } from '../types/validation.js';
 
 /**

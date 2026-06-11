@@ -1,0 +1,61 @@
+import { procedure, prefix, get, put, post, del, operation } from 'vovk';
+import * as v from 'valibot';
+import { toStandardJsonSchema } from '@valibot/to-json-schema';
+
+import ValibotControllerAndServiceEntityService from './valibot-controller-and-service-entity-service.ts';
+
+@prefix('valibot-controller-and-service-entities')
+export default class ValibotControllerAndServiceEntityController {
+  @operation({
+    summary: 'Get valibotControllerAndServiceEntities',
+  })
+  @get()
+  static getValibotControllerAndServiceEntities = procedure().handle(() => {
+    return ValibotControllerAndServiceEntityService.getValibotControllerAndServiceEntities();
+  });
+
+  @operation({
+    summary: 'Get single valibotControllerAndServiceEntity',
+  })
+  @get('{id}')
+  static getSingleValibotControllerAndServiceEntity = procedure({
+    params: toStandardJsonSchema(v.object({ id: v.string() })),
+  }).handle((_req, { id }) => {
+    return ValibotControllerAndServiceEntityService.getSingleValibotControllerAndServiceEntity(id);
+  });
+
+  @operation({
+    summary: 'Update valibotControllerAndServiceEntity',
+  })
+  @put('{id}')
+  static updateValibotControllerAndServiceEntity = procedure({
+    body: toStandardJsonSchema(v.object({ todo: v.literal(true) })),
+    params: toStandardJsonSchema(v.object({ id: v.string() })),
+  }).handle(async (req, { id }) => {
+    const body = await req.json();
+
+    return ValibotControllerAndServiceEntityService.updateValibotControllerAndServiceEntity(id, body);
+  });
+
+  @operation({
+    summary: 'Create valibotControllerAndServiceEntity',
+  })
+  @post()
+  static createValibotControllerAndServiceEntity = procedure({
+    body: toStandardJsonSchema(v.object({ todo: v.literal(true) })),
+  }).handle(async (req) => {
+    const body = await req.json();
+
+    return ValibotControllerAndServiceEntityService.createValibotControllerAndServiceEntity(body);
+  });
+
+  @operation({
+    summary: 'Delete valibotControllerAndServiceEntity',
+  })
+  @del('{id}')
+  static deleteValibotControllerAndServiceEntity = procedure({
+    params: toStandardJsonSchema(v.object({ id: v.string() })),
+  }).handle((_req, { id }) => {
+    return ValibotControllerAndServiceEntityService.deleteValibotControllerAndServiceEntity(id);
+  });
+}

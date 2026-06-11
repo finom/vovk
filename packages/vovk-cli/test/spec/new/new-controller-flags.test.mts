@@ -1,7 +1,7 @@
 import { it, describe } from 'node:test';
 import path from 'node:path';
-import getCLIAssertions from '../../lib/getCLIAssertions.mts';
-import { updateConfigFileProperty } from '../../../src/utils/updateConfigProperty.mts';
+import getCLIAssertions from '../../lib/get-cli-assertions.mts';
+import { updateConfigFileProperty } from '../../../src/utils/update-config-property.mts';
 
 await describe('CLI new controller and flags', async () => {
   const cwd = path.resolve(import.meta.dirname, '../../..');
@@ -27,9 +27,9 @@ await describe('CLI new controller and flags', async () => {
       '../dist/index.mjs new controller megaUser --template=../test/spec/new/custom-controller.ts.ejs'
     );
 
-    await assertFile('src/modules/megaUser/MegaUserController.ts', `// hello megaUser`);
+    await assertFile('src/modules/mega-user/MegaUserController.ts', `// hello megaUser`);
     await assertFile('src/app/api/[[...vovk]]/route.ts', [
-      `import MegaUserController from '../../../modules/megaUser/MegaUserController';`,
+      `import MegaUserController from '../../../modules/mega-user/MegaUserController';`,
       `const controllers = {
         MegaUserRPC: MegaUserController,
       };`,
@@ -55,9 +55,9 @@ await describe('CLI new controller and flags', async () => {
     ]);
     await runAtProjectDir('../dist/index.mjs new controller racoon');
 
-    await assertFile('src/modules/myRoot/racoon/RacoonController.ts', `export default class RacoonController {`);
+    await assertFile('src/modules/myRoot/racoon/racoon-controller.ts', `export default class RacoonController {`);
     await assertFile('src/app/api/[[...vovk]]/route.ts', [
-      `import RacoonController from '../../../modules/myRoot/racoon/RacoonController';`,
+      `import RacoonController from '../../../modules/myRoot/racoon/racoon-controller';`,
       `const controllers = {
         RacoonRPC: RacoonController,
       };`,
@@ -82,7 +82,7 @@ await describe('CLI new controller and flags', async () => {
     ]);
     await runAtProjectDir('../dist/index.mjs new controller veryComplexEntity --out=custom-dir');
 
-    await assertFile('custom-dir/VeryComplexEntityController.ts', [
+    await assertFile('custom-dir/very-complex-entity-controller.ts', [
       `export default class VeryComplexEntityController {`,
       `@get()
         static getVeryComplexEntities = (`,
@@ -90,7 +90,7 @@ await describe('CLI new controller and flags', async () => {
       `static updateVeryComplexEntity = `,
     ]);
     await assertFile('src/app/api/[[...vovk]]/route.ts', [
-      `import VeryComplexEntityController from '../../../../custom-dir/VeryComplexEntityController';`,
+      `import VeryComplexEntityController from '../../../../custom-dir/very-complex-entity-controller';`,
       `const controllers = {
         VeryComplexEntityRPC: VeryComplexEntityController,
       };`,
@@ -115,7 +115,7 @@ await describe('CLI new controller and flags', async () => {
     ]);
     await runAtProjectDir('../dist/index.mjs new controller coolRedChair --no-segment-update');
 
-    await assertFile('src/modules/coolRedChair/CoolRedChairController.ts', [
+    await assertFile('src/modules/cool-red-chair/cool-red-chair-controller.ts', [
       `export default class CoolRedChairController {`,
       `@get()
         static getCoolRedChairs = (`,
@@ -123,7 +123,7 @@ await describe('CLI new controller and flags', async () => {
       `static updateCoolRedChair = `,
     ]);
     await assertFile('src/app/api/[[...vovk]]/route.ts', [
-      `import CoolRedChairController from '../../../modules/coolRedChair/CoolRedChairController';`,
+      `import CoolRedChairController from '../../../modules/cool-red-chair/cool-red-chair-controller';`,
       `const controllers = {
         CoolRedChairRPC: CoolRedChairController,
       };`,
@@ -156,6 +156,6 @@ await describe('CLI new controller and flags', async () => {
       });`
     );
 
-    await assertNotExists('src/modules/coolRedChair/CoolRedChairController.ts');
+    await assertNotExists('src/modules/cool-red-chair/cool-red-chair-controller.ts');
   });
 });

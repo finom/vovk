@@ -4,7 +4,7 @@ import fs from 'node:fs/promises';
 import assert from 'node:assert';
 import { Agent, setGlobalDispatcher } from 'undici';
 import type { VovkSegmentSchema } from 'vovk/internal';
-import getCLIAssertions from '../../lib/getCLIAssertions.mts';
+import getCLIAssertions from '../../lib/get-cli-assertions.mts';
 
 let dev: Promise<string> & {
   kill: () => void;
@@ -54,14 +54,14 @@ await describe('CLI dev', async () => {
 
         await runAtProjectDir('../dist/index.mjs new controller user');
 
-        await assertFile('src/modules/user/UserController.ts', [
+        await assertFile('src/modules/user/user-controller.ts', [
           `export default class UserController {`,
           `@get()`,
           `static getUsers = (`,
         ]);
 
         await assertFile('src/app/api/[[...vovk]]/route.ts', [
-          `import UserController from '../../../modules/user/UserController';`,
+          `import UserController from '../../../modules/user/user-controller';`,
           `const controllers = {
             UserRPC: UserController,
         };`,
@@ -77,7 +77,7 @@ await describe('CLI dev', async () => {
         assert.ok((await getSchema()).controllers.UserRPC.handlers.getUsers);
 
         const segmentAbsolutePath = path.join(cwd, dir, 'src/app/api/[[...vovk]]/route.ts');
-        const controllerAbsolutePath = path.join(cwd, dir, 'src/modules/user/UserController.ts');
+        const controllerAbsolutePath = path.join(cwd, dir, 'src/modules/user/user-controller.ts');
 
         const segmentCode = await fs.readFile(segmentAbsolutePath, 'utf8');
 

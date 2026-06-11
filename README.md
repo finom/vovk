@@ -66,7 +66,7 @@ Services hold business logic separately. Plain classes, no decorators — types 
 
 ```ts
 import type { VovkParams } from 'vovk';
-import type UserController from './UserController';
+import type UserController from './user-controller';
 
 export default class UserService {
   static async getUserById(id: VovkParams<typeof UserController.getUser>['id']) {

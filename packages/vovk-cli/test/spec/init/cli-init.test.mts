@@ -2,12 +2,12 @@ import { it, describe } from 'node:test';
 import path from 'node:path';
 import fs from 'node:fs/promises';
 import omit from 'lodash/omit.js';
-import getCLIAssertions from '../../lib/getCLIAssertions.mts';
-import { DOWN, ENTER, SPACE } from '../../lib/runScript.mts';
+import getCLIAssertions from '../../lib/get-cli-assertions.mts';
+import { DOWN, ENTER, SPACE } from '../../lib/run-script.mts';
 import type { PackageJson } from 'type-fest';
 import NPMCliPackageJson from '@npmcli/package-json';
 import { deepStrictEqual } from 'node:assert';
-import { runScript } from '../../lib/runScript.mts';
+import { runScript } from '../../lib/run-script.mts';
 
 const combos = {
   /*
