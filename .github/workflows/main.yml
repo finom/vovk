@@ -19,6 +19,16 @@ jobs:
     timeout-minutes: 45
 
     steps:
+      # The CLI init/bundle specs accumulate multiple full Next.js apps under
+      # packages/vovk-cli and yarn copies that directory on every file: install,
+      # which overruns the ~14 GB free on stock ubuntu runners. Drop preinstalled
+      # toolchains we never use to reclaim ~25-30 GB.
+      - name: Free disk space
+        if: runner.os == 'Linux'
+        run: |
+          sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc /usr/local/.ghcup /opt/hostedtoolcache/CodeQL
+          sudo docker image prune --all --force
+          df -h /
       - uses: actions/checkout@v4
       - uses: oven-sh/setup-bun@v2
       - uses: pnpm/action-setup@v4
