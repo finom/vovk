@@ -11,7 +11,7 @@ import {
   type VovkBody,
   type VovkInput,
 } from 'vovk';
-import type WithValidationController from './WithValidationController.ts';
+import type WithValidationController from './with-validation-controller.ts';
 import { expectPromise, getConstrainingObject, NESTED_QUERY_EXAMPLE } from '../lib.ts';
 
 describe('Client validation with custom AJV options', () => {

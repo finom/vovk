@@ -1,6 +1,6 @@
 import { schema } from 'vovk-client';
-import type ClientController from './CommonController.ts';
-import { createRPC } from 'vovk/createRPC';
+import type ClientController from './common-controller.ts';
+import { createRPC } from 'vovk/create-rpc';
 import { fetcher } from 'vovk/fetcher';
 import type { VovkFetcherOptions } from 'vovk/internal';
 import { it, describe } from 'node:test';

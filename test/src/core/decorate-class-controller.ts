@@ -1,5 +1,5 @@
 import { get, decorate, cloneControllerMetadata } from 'vovk';
-import DecorateController from './DecorateController.ts';
+import DecorateController from './decorate-controller.ts';
 
 // Test class-level prefix via static property: no decorator syntax at all
 // Also uses decorate for handlers (no decorator syntax at all)

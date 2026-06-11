@@ -2,7 +2,7 @@ import { procedure, prefix, get, put, post, del, operation } from 'vovk';
 import * as v from 'valibot';
 import { toStandardJsonSchema } from '@valibot/to-json-schema';
 
-import ValibotControllerAndServiceEntityService from './ValibotControllerAndServiceEntityService.ts';
+import ValibotControllerAndServiceEntityService from './valibot-controller-and-service-entity-service.ts';
 
 @prefix('valibot-controller-and-service-entities')
 export default class ValibotControllerAndServiceEntityController {

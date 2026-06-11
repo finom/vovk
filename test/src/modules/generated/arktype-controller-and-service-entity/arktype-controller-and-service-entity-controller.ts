@@ -1,7 +1,7 @@
 import { procedure, prefix, get, put, post, del, operation } from 'vovk';
 import { type } from 'arktype';
 
-import ArktypeControllerAndServiceEntityService from './ArktypeControllerAndServiceEntityService.ts';
+import ArktypeControllerAndServiceEntityService from './arktype-controller-and-service-entity-service.ts';
 
 @prefix('arktype-controller-and-service-entities')
 export default class ArktypeControllerAndServiceEntityController {

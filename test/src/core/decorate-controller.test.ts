@@ -1,8 +1,8 @@
 import { it, describe } from 'node:test';
 import { deepStrictEqual, strictEqual } from 'node:assert';
 import { request } from '../lib.ts';
-import DecorateClassController, { DecorateClonedController } from './DecorateClassController.ts';
-import DecorateController from './DecorateController.ts';
+import DecorateClassController, { DecorateClonedController } from './decorate-class-controller.ts';
+import DecorateController from './decorate-controller.ts';
 
 describe('decorate function', () => {
   const names = ['get', 'post', 'put', 'patch', 'del'] as const;

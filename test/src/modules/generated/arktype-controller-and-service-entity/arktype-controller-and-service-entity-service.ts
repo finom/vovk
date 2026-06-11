@@ -1,5 +1,5 @@
 import type { VovkBody, VovkParams } from 'vovk';
-import type ArktypeControllerAndServiceEntityController from './ArktypeControllerAndServiceEntityController.ts';
+import type ArktypeControllerAndServiceEntityController from './arktype-controller-and-service-entity-controller.ts';
 
 export default class ArktypeControllerAndServiceEntityService {
   static getArktypeControllerAndServiceEntities = () => {

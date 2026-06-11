@@ -1,5 +1,5 @@
 import type { VovkBody, VovkParams } from 'vovk';
-import type ValibotControllerAndServiceEntityController from './ValibotControllerAndServiceEntityController.ts';
+import type ValibotControllerAndServiceEntityController from './valibot-controller-and-service-entity-controller.ts';
 
 export default class ValibotControllerAndServiceEntityService {
   static getValibotControllerAndServiceEntities = () => {

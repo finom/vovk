@@ -5,7 +5,7 @@ import { HttpStatus, type VovkBody, type VovkQuery, type VovkReturnType, type Vo
 import type { VovkHandlerSchema, VovkErrorResponse } from 'vovk/internal';
 import { it, describe } from 'node:test';
 import { deepStrictEqual, ok, strictEqual } from 'node:assert';
-import type CommonController from './CommonController.ts';
+import type CommonController from './common-controller.ts';
 import { NESTED_QUERY_EXAMPLE } from '../lib.ts';
 import { fetcher } from '../lib/fetcher.ts';
 import omit from 'lodash/omit.js';

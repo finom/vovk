@@ -1,6 +1,6 @@
 import { it, describe } from 'node:test';
 import { deepStrictEqual, strictEqual } from 'node:assert';
-import type { Token, default as StreamingController } from './StreamingController.ts';
+import type { Token, default as StreamingController } from './streaming-controller.ts';
 import { expectPromise } from '../lib.ts';
 import { HttpException, progressive, type VovkYieldType } from 'vovk';
 import { StreamingControllerRPC } from 'vovk-client';

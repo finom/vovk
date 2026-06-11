@@ -19,7 +19,7 @@ describe('resolveGeneratorConfigValues', () => {
       deepStrictEqual(result.imports, {
         fetcher: 'vovk/fetcher',
         validateOnClient: null,
-        createRPC: 'vovk/createRPC',
+        createRPC: 'vovk/create-rpc',
       });
       deepStrictEqual(result.reExports, {});
       deepStrictEqual(result.readme, {});
@@ -473,7 +473,7 @@ describe('resolveGeneratorConfigValues', () => {
       deepStrictEqual(result.imports, {
         fetcher: 'vovk/fetcher',
         validateOnClient: null,
-        createRPC: 'vovk/createRPC',
+        createRPC: 'vovk/create-rpc',
       });
     });
 
