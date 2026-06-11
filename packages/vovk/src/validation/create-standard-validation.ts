@@ -1,7 +1,7 @@
-import { withValidationLibrary } from './withValidationLibrary.js';
-import { HttpException } from '../core/HttpException.js';
-import { createToolFactory } from '../tools/createToolFactory.js';
-import { HttpStatus } from './createValidateOnClient.js';
+import { withValidationLibrary } from './with-validation-library.js';
+import { HttpException } from '../core/http-exception.js';
+import { createToolFactory } from '../tools/create-tool-factory.js';
+import { HttpStatus } from './create-validate-on-client.js';
 import type { VovkRequest } from '../types/request.js';
 import type { BodyTypeFromContentType, CombinedSpec, ContentType, NormalizeContentType } from '../types/validation.js';
 import type { VovkValidationType } from '../types/core.js';

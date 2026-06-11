@@ -1,8 +1,8 @@
-import { ToModelOutput } from './ToModelOutput.js';
+import { ToModelOutput } from './to-model-output.js';
 import type { VovkErrorResponse, VovkValidationType } from '../types/core.js';
 import type { VovkTool } from '../types/tools.js';
 import type { ToModelOutputFn } from '../types/tools.js';
-import type { DefaultModelOutput, ToModelOutputDefaultFn } from './toModelOutputDefault.js';
+import type { DefaultModelOutput, ToModelOutputDefaultFn } from './to-model-output-default.js';
 import type { CombinedSpec } from '../types/validation.js';
 import type { KnownAny } from '../types/utils.js';
 

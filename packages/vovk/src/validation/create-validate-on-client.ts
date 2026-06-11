@@ -1,4 +1,4 @@
-import { HttpException } from '../core/HttpException.js';
+import { HttpException } from '../core/http-exception.js';
 import { HttpStatus } from '../types/enums.js';
 import type { VovkValidateOnClient } from '../types/validation.js';
 import type { VovkJSONSchemaBase } from '../types/json-schema.js';

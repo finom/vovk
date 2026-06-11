@@ -1,16 +1,16 @@
-import { HttpException } from '../core/HttpException.js';
-import { reqMeta } from '../req/reqMeta.js';
-import { setHandlerSchema } from '../core/setHandlerSchema.js';
-import { JSONLinesResponder } from '../core/JSONLinesResponder.js';
+import { HttpException } from '../core/http-exception.js';
+import { reqMeta } from '../req/req-meta.js';
+import { setHandlerSchema } from '../core/set-handler-schema.js';
+import { JSONLinesResponder } from '../core/json-lines-responder.js';
 import { HttpStatus } from '../types/enums.js';
 import type { VovkHandlerSchema, VovkValidationType } from '../types/core.js';
 import type { VovkRequest } from '../types/request.js';
 import type { BodyTypeFromContentType, ContentType, VovkTypedProcedure } from '../types/validation.js';
 import type { VovkOperationObject } from '../types/operation.js';
 import type { KnownAny } from '../types/utils.js';
-import { validateContentType } from '../req/validateContentType.js';
-import { bufferBody } from '../req/bufferBody.js';
-import { parseForm } from '../req/parseForm.js';
+import { validateContentType } from '../req/validate-content-type.js';
+import { bufferBody } from '../req/buffer-body.js';
+import { parseForm } from '../req/parse-form.js';
 
 const validationTypes: VovkValidationType[] = ['body', 'query', 'params', 'output', 'iteration'] as const;
 

@@ -1,8 +1,8 @@
 import { fetcher as defaultFetcher } from './fetcher.js';
-import { defaultHandler } from './defaultHandler.js';
-import { defaultStreamHandler } from './defaultStreamHandler.js';
-import { serializeQuery } from './serializeQuery.js';
-import { deepExtend } from '../utils/deepExtend.js';
+import { defaultHandler } from './default-handler.js';
+import { defaultStreamHandler } from './default-stream-handler.js';
+import { serializeQuery } from './serialize-query.js';
+import { deepExtend } from '../utils/deep-extend.js';
 import type { VovkHandlerSchema } from '../internal.js';
 import type { VovkRequest } from '../types/request.js';
 import type { ControllerStaticMethod, VovkSchema } from '../types/core.js';

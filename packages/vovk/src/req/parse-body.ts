@@ -1,4 +1,4 @@
-import { parseForm } from './parseForm.js';
+import { parseForm } from './parse-form.js';
 
 const formTypes = ['multipart/form-data', 'application/x-www-form-urlencoded'];
 

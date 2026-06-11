@@ -1,11 +1,11 @@
-import { ToModelOutput } from './ToModelOutput.js';
-import type { DefaultModelOutput } from './toModelOutputDefault.js';
+import { ToModelOutput } from './to-model-output.js';
+import type { DefaultModelOutput } from './to-model-output-default.js';
 import type { procedure } from '../validation/procedure.js';
 import type { CombinedSpec } from '../types/validation.js';
 import type { VovkRequest } from '../types/request.js';
 import type { VovkHandlerSchema } from '../types/core.js';
 import type { VovkTool, ToModelOutputFn } from '../types/tools.js';
-import { validationSchemasObjectToSingleValidationSchema } from '../validation/validationSchemasObjectToSingleValidationSchema.js';
+import { validationSchemasObjectToSingleValidationSchema } from '../validation/validation-schemas-object-to-single-validation-schema.js';
 
 // Standard tool input type
 type DerivedToolInput = { body?: unknown; query?: unknown; params?: unknown };

@@ -1,4 +1,4 @@
-import { applyDecoratorAdapter } from './applyDecoratorAdapter.js';
+import { applyDecoratorAdapter } from './apply-decorator-adapter.js';
 import type { VovkHandlerSchema, VovkController } from '../types/core.js';
 import type { VovkRequest } from '../types/request.js';
 import type { KnownAny } from '../types/utils.js';

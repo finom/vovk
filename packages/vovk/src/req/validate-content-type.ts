@@ -1,4 +1,4 @@
-import { HttpException } from '../core/HttpException.js';
+import { HttpException } from '../core/http-exception.js';
 import { HttpStatus } from '../types/enums.js';
 
 export function validateContentType(request: Request | undefined, allowed: string[]): Response | null {

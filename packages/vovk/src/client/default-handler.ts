@@ -1,4 +1,4 @@
-import { HttpException } from '../core/HttpException.js';
+import { HttpException } from '../core/http-exception.js';
 import type { KnownAny } from '../types/utils.js';
 import type { VovkHandlerSchema } from '../types/core.js';
 

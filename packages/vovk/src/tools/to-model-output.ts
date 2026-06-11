@@ -1,5 +1,5 @@
-import { toModelOutputDefault } from './toModelOutputDefault.js';
-import { toModelOutputMCP } from './toModelOutputMCP.js';
+import { toModelOutputDefault } from './to-model-output-default.js';
+import { toModelOutputMCP } from './to-model-output-mcp.js';
 
 /**
  * Collection of functions to convert model outputs into different formats.

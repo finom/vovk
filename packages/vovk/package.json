@@ -7,7 +7,7 @@
   ],
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
-  "version": "3.4.0",
+  "version": "3.6.0",
   "bin": {
     "vovk-cli-npx": "./bin/index.mjs"
   },
@@ -24,13 +24,21 @@
       "types": "./dist/client/fetcher.d.ts",
       "default": "./dist/client/fetcher.js"
     },
+    "./create-rpc": {
+      "types": "./dist/client/create-rpc.d.ts",
+      "default": "./dist/client/create-rpc.js"
+    },
+    "./create-validate-on-client": {
+      "types": "./dist/validation/create-validate-on-client.d.ts",
+      "default": "./dist/validation/create-validate-on-client.js"
+    },
     "./createRPC": {
-      "types": "./dist/client/createRPC.d.ts",
-      "default": "./dist/client/createRPC.js"
+      "types": "./dist/client/create-rpc.d.ts",
+      "default": "./dist/client/create-rpc.js"
     },
     "./createValidateOnClient": {
-      "types": "./dist/validation/createValidateOnClient.d.ts",
-      "default": "./dist/validation/createValidateOnClient.js"
+      "types": "./dist/validation/create-validate-on-client.d.ts",
+      "default": "./dist/validation/create-validate-on-client.js"
     }
   },
   "description": "Back-end Framework for Next.js App Router",

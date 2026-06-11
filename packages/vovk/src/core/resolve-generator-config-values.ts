@@ -1,4 +1,4 @@
-import { deepExtend } from '../utils/deepExtend.js';
+import { deepExtend } from '../utils/deep-extend.js';
 import type { OpenAPIObject } from 'openapi3-ts/oas31';
 import type {
   VovkConfig,
@@ -106,7 +106,7 @@ export function resolveGeneratorConfigValues({
     {
       fetcher: 'vovk/fetcher',
       validateOnClient: null,
-      createRPC: 'vovk/createRPC',
+      createRPC: 'vovk/create-rpc',
     },
     config?.outputConfig?.imports,
     typeof segmentName === 'string' ? config?.outputConfig?.segments?.[segmentName]?.imports : undefined,

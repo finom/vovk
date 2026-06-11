@@ -5,15 +5,15 @@ import type {
   RequestBodyObject,
   SchemaObject,
 } from 'openapi3-ts/oas31';
-import { applyComponentsSchemas } from './applyComponentsSchemas.js';
-import { inlineRefs } from './inlineRefs.js';
-import { pruneComponentsSchemas } from './pruneComponentsSchemas.js';
+import { applyComponentsSchemas } from './apply-components-schemas.js';
+import { inlineRefs } from './inline-refs.js';
+import { pruneComponentsSchemas } from './prune-components-schemas.js';
 import { type HttpMethod, VovkSchemaIdEnum } from '../../types/enums.js';
 import type { VovkSchema } from '../../types/core.js';
 import type { VovkJSONSchemaBase } from '../../types/json-schema.js';
 import type { VovkOpenAPIMixinNormalized } from '../../types/config.js';
 import type { ContentType } from '../../types/validation.js';
-import { schemaToTsType } from '../../samples/schemaToTsType.js';
+import { schemaToTsType } from '../../samples/schema-to-ts-type.js';
 
 function getTsTypeString(contentType: ContentType[], schema: VovkJSONSchemaBase): string {
   const tsTypes = new Set(

@@ -1,5 +1,5 @@
 import { HttpStatus } from '../types/enums.js';
-import { HttpException } from '../core/HttpException.js';
+import { HttpException } from '../core/http-exception.js';
 import type { VovkStreamAsyncIterable } from '../types/client.js';
 import type { VovkErrorResponse } from '../types/core.js';
 import '../utils/shim.js';

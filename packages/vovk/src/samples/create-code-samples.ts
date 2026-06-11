@@ -1,5 +1,5 @@
-import { schemaToCode, getSampleValue } from './schemaToCode.js';
-import { objectToCode } from './objectToCode.js';
+import { schemaToCode, getSampleValue } from './schema-to-code.js';
+import { objectToCode } from './object-to-code.js';
 import type { VovkControllerSchema, VovkHandlerSchema } from '../types/core.js';
 import type { VovkJSONSchemaBase } from '../types/json-schema.js';
 import type { VovkSamplesConfig } from '../types/config.js';

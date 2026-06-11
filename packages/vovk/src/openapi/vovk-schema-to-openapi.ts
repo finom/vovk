@@ -1,7 +1,7 @@
 import type { OpenAPIObject, OperationObject, PathsObject, SchemaObject } from 'openapi3-ts/oas31';
-import { createCodeSamples } from '../samples/createCodeSamples.js';
-import { schemaToObject } from '../samples/schemaToObject.js';
-import { resolveGeneratorConfigValues } from '../core/resolveGeneratorConfigValues.js';
+import { createCodeSamples } from '../samples/create-code-samples.js';
+import { schemaToObject } from '../samples/schema-to-object.js';
+import { resolveGeneratorConfigValues } from '../core/resolve-generator-config-values.js';
 import type {
   VovkOutputConfig,
   VovkStrictConfig,

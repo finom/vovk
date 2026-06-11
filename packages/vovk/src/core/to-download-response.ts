@@ -1,4 +1,4 @@
-import { fileNameToDisposition } from '../utils/fileNameToDisposition.js';
+import { fileNameToDisposition } from '../utils/file-name-to-disposition.js';
 
 type BinaryData = Blob | File | ArrayBuffer | Uint8Array | ReadableStream<Uint8Array> | string;
 

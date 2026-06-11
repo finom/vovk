@@ -1,6 +1,6 @@
-import { vovkApp } from './vovkApp.js';
-import { trimPath } from '../utils/trimPath.js';
-import { getSchema } from './getSchema.js';
+import { vovkApp } from './vovk-app.js';
+import { trimPath } from '../utils/trim-path.js';
+import { getSchema } from './get-schema.js';
 import type { DecorateMetadata } from './decorate.js';
 import type { HttpMethod } from '../types/enums.js';
 import type { VovkController } from '../types/core.js';

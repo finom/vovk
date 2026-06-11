@@ -1,4 +1,4 @@
-import { parseQuery } from './parseQuery.js';
+import { parseQuery } from './parse-query.js';
 import type { VovkRequest } from '../types/request.js';
 
 export function reqQuery<T extends object | undefined>(req: VovkRequest<unknown, T>): T {
