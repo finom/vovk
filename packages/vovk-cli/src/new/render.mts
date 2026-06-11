@@ -3,7 +3,7 @@ import matter from 'gray-matter';
 import _ from 'lodash';
 import pluralize from 'pluralize';
 import type { VovkStrictConfig } from 'vovk/internal';
-import { addCommonTerms } from './addCommonTerms.mjs';
+import { addCommonTerms } from './add-common-terms.mjs';
 import type { VovkModuleRenderResult } from '../types.mjs';
 import path from 'node:path';
 
@@ -33,7 +33,7 @@ export async function render(
     srcRoot: string | null;
   }
 ): Promise<VovkModuleRenderResult> {
-  const defaultOutDir = [config.modulesDir, segmentName || config.rootSegmentModulesDirName, _.camelCase(moduleName)]
+  const defaultOutDir = [config.modulesDir, segmentName || config.rootSegmentModulesDirName, _.kebabCase(moduleName)]
     .filter(Boolean)
     .join('/');
 

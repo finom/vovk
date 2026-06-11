@@ -4,7 +4,7 @@
 }; %>
 ---
 outDir: <%= t.defaultOutDir %>
-fileName: <%= vars.ModuleName + '.ts' %>
+fileName: <%= t['the-thing'] + '-controller.ts' %>
 sourceName: <%= vars.ModuleName %>
 compiledName: <%= t.TheThing + 'RPC' %>
 ---
@@ -13,7 +13,7 @@ import { procedure, prefix, get, put, post, del, operation } from 'vovk';
 import * as v from 'valibot';
 import { toStandardJsonSchema } from '@valibot/to-json-schema';
 <% if(t.withService) { %>
-import <%= vars.ServiceName %> from './<%= vars.ServiceName %><%= t.nodeNextResolutionExt.ts %>';
+import <%= vars.ServiceName %> from './<%= t['the-thing'] %>-service<%= t.nodeNextResolutionExt.ts %>';
 <% } %>
 
 @prefix('<%= t['the-things'] %>')
