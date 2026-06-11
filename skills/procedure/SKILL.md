@@ -107,7 +107,7 @@ npx vovk new controller service <name>   # shortcut: npx vovk n c s <name>
 
 Flags: `--empty` (no CRUD boilerplate), `--overwrite`, `--no-segment-update` (skip `route.ts` edit, rare), `--dry-run`.
 
-Creates `src/modules/<name>/<Name>Controller.ts` + `<Name>Service.ts`, registers controller in segment's `controllers` map. Scaffold ships with CRUD placeholders — **overwrite in place** when writing real logic; don't leave dummies next to real code. Fails if no segment exists — create one first (`segment` skill).
+Creates `src/modules/<name>/<name>-controller.ts` + `<name>-service.ts`, registers controller in segment's `controllers` map. Scaffold ships with CRUD placeholders — **overwrite in place** when writing real logic; don't leave dummies next to real code. Fails if no segment exists — create one first (`segment` skill).
 
 ## `procedure()` options — full reference
 
@@ -224,7 +224,7 @@ Route string framework builds:
 /{rootEntry}/{segmentName}/{controllerPrefix}/{methodPath}
 ```
 
-Empty parts dropped, joined with `/` (verified in `packages/vovk/src/openapi/vovkSchemaToOpenAPI.ts:162`). So:
+Empty parts dropped, joined with `/` (verified in `packages/vovk/src/openapi/vovk-schema-to-openapi.ts:162`). So:
 
 | `rootEntry` | segment | `@prefix` | method | URL |
 |---|---|---|---|---|
@@ -244,7 +244,7 @@ Every procedure exposes `.fn()` → invokes handler without HTTP.
 
 ```tsx
 // Server component — no 'use client'
-import UserController from '@/modules/user/UserController';
+import UserController from '@/modules/user/user-controller';
 
 export default async function UserPage({ params }: { params: { id: string } }) {
   const user = await UserController.getUser.fn({ params });
@@ -464,7 +464,7 @@ import type {
   VovkYieldType,    // actual yielded type even when input isn't validated
   VovkReturnType,   // actual return type even when input isn't validated
 } from 'vovk';
-import UserController from './UserController';
+import UserController from './user-controller';
 
 type Body   = VovkBody<typeof UserController.updateUser>;
 type Query  = VovkQuery<typeof UserController.updateUser>;

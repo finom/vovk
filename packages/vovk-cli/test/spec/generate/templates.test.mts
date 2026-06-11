@@ -1,7 +1,7 @@
 import { it, describe } from 'node:test';
 import path from 'node:path';
-import getCLIAssertions from '../../lib/getCLIAssertions.mts';
-import updateConfig from '../../lib/updateConfig.mts';
+import getCLIAssertions from '../../lib/get-cli-assertions.mts';
+import updateConfig from '../../lib/update-config.mts';
 
 const compiledClientFolderName = 'client_from_template';
 
@@ -99,7 +99,7 @@ await describe('Client templates', async () => {
     await createApp();
     await runAtProjectDir(`../dist/index.mjs generate --from=js --from=custom --out ${compiledClientFolderName}`);
 
-    await assertFile(`${compiledClientFolderName}/index.js`, [`import { createRPC } from 'vovk/createRPC';`]);
+    await assertFile(`${compiledClientFolderName}/index.js`, [`import { createRPC } from 'vovk/create-rpc';`]);
     await assertFile(`${compiledClientFolderName}/index.d.ts`, [
       'import type { Controllers as Controllers0 } from "../src/app/api/[[...vovk]]/route.ts";',
     ]);
@@ -126,7 +126,7 @@ await describe('Client templates', async () => {
     await createApp();
     await runAtProjectDir(`../dist/index.mjs generate --from=js --from=customAsFile --out ${compiledClientFolderName}`);
 
-    await assertFile(`${compiledClientFolderName}/index.js`, [`import { createRPC } from 'vovk/createRPC';`]);
+    await assertFile(`${compiledClientFolderName}/index.js`, [`import { createRPC } from 'vovk/create-rpc';`]);
     await assertFile(`${compiledClientFolderName}/index.d.ts`, [
       'import type { Controllers as Controllers0 } from "../src/app/api/[[...vovk]]/route.ts";',
     ]);
@@ -155,7 +155,7 @@ await describe('Client templates', async () => {
       `../dist/index.mjs generate --from=js --from=custom --from helloWorld --from=js --out ${compiledClientFolderName}`
     );
 
-    await assertFile(`${compiledClientFolderName}/index.js`, [`import { createRPC } from 'vovk/createRPC';`]);
+    await assertFile(`${compiledClientFolderName}/index.js`, [`import { createRPC } from 'vovk/create-rpc';`]);
     await assertFile(`${compiledClientFolderName}/index.d.ts`, [
       'import type { Controllers as Controllers0 } from "../src/app/api/[[...vovk]]/route.ts";',
     ]);

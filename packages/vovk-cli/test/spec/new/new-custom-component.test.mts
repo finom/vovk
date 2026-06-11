@@ -1,7 +1,7 @@
 import { it, describe } from 'node:test';
 import path from 'node:path';
-import getCLIAssertions from '../../lib/getCLIAssertions.mts';
-import updateConfig from '../../lib/updateConfig.mts';
+import getCLIAssertions from '../../lib/get-cli-assertions.mts';
+import updateConfig from '../../lib/update-config.mts';
 
 await describe('Custom components', async () => {
   const cwd = path.resolve(import.meta.dirname, '../../..');
@@ -32,7 +32,7 @@ await describe('Custom components', async () => {
     }));
     await runAtProjectDir('../dist/index.mjs new c state user');
 
-    await assertFile('src/modules/user/UserController.ts', [
+    await assertFile('src/modules/user/user-controller.ts', [
       `export default class UserController {`,
       `@get()
           static getUsers = (`,
@@ -41,7 +41,7 @@ await describe('Custom components', async () => {
     ]);
     await assertFile('src/modules/user/UserState.ts', [`// this is the custom "User" state`]);
     await assertFile('src/app/api/[[...vovk]]/route.ts', [
-      `import UserController from '../../../modules/user/UserController';`,
+      `import UserController from '../../../modules/user/user-controller';`,
       `const controllers = {
         UserRPC: UserController,
       };`,
@@ -52,7 +52,7 @@ await describe('Custom components', async () => {
     ]);
 
     await runAtProjectDir('../dist/index.mjs new state post');
-    await assertNotExists('src/modules/post/PostController.ts');
+    await assertNotExists('src/modules/post/post-controller.ts');
     await assertFile('src/app/api/[[...vovk]]/route.ts', [
       `const controllers = {
         UserRPC: UserController,
@@ -83,6 +83,7 @@ await describe('Custom components', async () => {
     }));
     await runAtProjectDir('../dist/index.mjs new c state user');
 
+    // the custom controller template names its own file (PascalCase) — user templates own their naming
     await assertFile('src/modules/user/UserController.ts', [
       `// hello user
 import { prefix, get, put, post, del, type VovkRequest } from 'vovk';`,

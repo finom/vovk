@@ -205,7 +205,7 @@ Use these exports directly — no fetch required at runtime.
 Cleanest Vovk-idiomatic way is plain controller method returning imported `openapi` object:
 
 ```ts
-// src/modules/openapi/OpenApiController.ts
+// src/modules/openapi/openapi-controller.ts
 import { get, prefix, operation } from 'vovk';
 import { openapi } from 'vovk-client/openapi';
 

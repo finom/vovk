@@ -2,11 +2,11 @@ import { it, describe } from 'node:test';
 import type { OpenAPIObject } from 'openapi3-ts/oas31';
 import fs from 'node:fs/promises';
 import path from 'node:path';
-import { runScript } from '../../lib/runScript.mts';
+import { runScript } from '../../lib/run-script.mts';
 import { deepStrictEqual, ok, strictEqual } from 'node:assert';
 import { HttpMethod, type VovkSchema } from 'vovk';
 import * as YAML from 'yaml';
-import { importFresh } from '../../lib/importFresh.mts';
+import { importFresh } from '../../lib/import-fresh.mts';
 
 const PORT = 3021;
 

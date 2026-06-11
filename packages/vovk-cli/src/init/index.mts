@@ -3,17 +3,17 @@ import path from 'node:path';
 import fs from 'node:fs/promises';
 import chalk from 'chalk';
 import NPMCliPackageJson from '@npmcli/package-json';
-import { getConfigAbsolutePaths } from '../getProjectInfo/getConfig/getConfigAbsolutePaths.mjs';
-import { getFileSystemEntryType } from '../utils/getFileSystemEntryType.mjs';
-import { installDependencies, getPackageManager } from './installDependencies.mjs';
-import { getLogger } from '../utils/getLogger.mjs';
-import { createConfig } from './createConfig.mjs';
-import { updateNPMScripts, getDevScript } from './updateNPMScripts.mjs';
-import { checkTSConfigForExperimentalDecorators } from './checkTSConfigForExperimentalDecorators.mjs';
-import { updateTypeScriptConfig } from './updateTypeScriptConfig.mjs';
-import { updateDependenciesWithoutInstalling } from './updateDependenciesWithoutInstalling.mjs';
-import { logUpdateDependenciesError } from './logUpdateDependenciesError.mjs';
-import { chalkHighlightThing } from '../utils/chalkHighlightThing.mjs';
+import { getConfigAbsolutePaths } from '../get-project-info/get-config/get-config-absolute-paths.mjs';
+import { getFileSystemEntryType } from '../utils/get-file-system-entry-type.mjs';
+import { installDependencies, getPackageManager } from './install-dependencies.mjs';
+import { getLogger } from '../utils/get-logger.mjs';
+import { createConfig } from './create-config.mjs';
+import { updateNPMScripts, getDevScript } from './update-npm-scripts.mjs';
+import { checkTSConfigForExperimentalDecorators } from './check-tsconfig-for-experimental-decorators.mjs';
+import { updateTypeScriptConfig } from './update-typescript-config.mjs';
+import { updateDependenciesWithoutInstalling } from './update-dependencies-without-installing.mjs';
+import { logUpdateDependenciesError } from './log-update-dependencies-error.mjs';
+import { chalkHighlightThing } from '../utils/chalk-highlight-thing.mjs';
 import type { InitOptions } from '../types.mjs';
 
 export class Init {

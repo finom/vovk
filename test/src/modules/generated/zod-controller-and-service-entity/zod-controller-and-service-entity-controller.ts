@@ -1,0 +1,68 @@
+import { procedure, prefix, get, put, post, del, operation } from 'vovk';
+import { z } from 'zod';
+
+import ZodControllerAndServiceEntityService from './zod-controller-and-service-entity-service.ts';
+
+@prefix('zod-controller-and-service-entities')
+export default class ZodControllerAndServiceEntityController {
+  @operation({
+    summary: 'Get zodControllerAndServiceEntities',
+  })
+  @get()
+  static getZodControllerAndServiceEntities = procedure().handle(() => {
+    return ZodControllerAndServiceEntityService.getZodControllerAndServiceEntities();
+  });
+
+  @operation({
+    summary: 'Get single zodControllerAndServiceEntity',
+  })
+  @get('{id}')
+  static getSingleZodControllerAndServiceEntity = procedure({
+    params: z.object({
+      id: z.string(),
+    }),
+  }).handle((_req, { id }) => {
+    return ZodControllerAndServiceEntityService.getSingleZodControllerAndServiceEntity(id);
+  });
+
+  @operation({
+    summary: 'Update zodControllerAndServiceEntity',
+  })
+  @put('{id}')
+  static updateZodControllerAndServiceEntity = procedure({
+    body: z.object({
+      todo: z.literal(true),
+    }),
+    params: z.object({ id: z.string() }),
+  }).handle(async (req, { id }) => {
+    const body = await req.json();
+
+    return ZodControllerAndServiceEntityService.updateZodControllerAndServiceEntity(id, body);
+  });
+
+  @operation({
+    summary: 'Create zodControllerAndServiceEntity',
+  })
+  @post()
+  static createZodControllerAndServiceEntity = procedure({
+    body: z.object({
+      todo: z.literal(true),
+    }),
+  }).handle(async (req) => {
+    const body = await req.json();
+
+    return ZodControllerAndServiceEntityService.createZodControllerAndServiceEntity(body);
+  });
+
+  @operation({
+    summary: 'Delete zodControllerAndServiceEntity',
+  })
+  @del('{id}')
+  static deleteZodControllerAndServiceEntity = procedure({
+    params: z.object({
+      id: z.string(),
+    }),
+  }).handle((_req, { id }) => {
+    return ZodControllerAndServiceEntityService.deleteZodControllerAndServiceEntity(id);
+  });
+}

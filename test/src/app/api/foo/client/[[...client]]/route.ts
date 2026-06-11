@@ -1,12 +1,12 @@
 import { initSegment } from 'vovk';
 
-import CommonController from '../../../../../client/CommonController.ts';
-import StreamingController from '../../../../../client/StreamingController.ts';
-import StreamingGeneratorController from '../../../../../client/StreamingGeneratorController.ts';
-import CustomSchemaController from '../../../../../client/CustomSchemaController.ts';
-import WithValidationController from '../../../../../validation/WithValidationController.ts';
-import WithValidationDecorateController from '../../../../../validation/WithValidationDecorateController.ts';
-import OpenApiController from '../../../../../client/OpenApiController.ts';
+import CommonController from '../../../../../client/common-controller.ts';
+import StreamingController from '../../../../../client/streaming-controller.ts';
+import StreamingGeneratorController from '../../../../../client/streaming-generator-controller.ts';
+import CustomSchemaController from '../../../../../client/custom-schema-controller.ts';
+import WithValidationController from '../../../../../validation/with-validation-controller.ts';
+import WithValidationDecorateController from '../../../../../validation/with-validation-decorate-controller.ts';
+import OpenApiController from '../../../../../client/openapi-controller.ts';
 
 const controllers = {
   CommonControllerRPC: CommonController,

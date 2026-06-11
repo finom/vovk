@@ -9,7 +9,7 @@ import {
   type VovkJSONSchemaBase,
   type VovkValidateOnClient,
   type VovkSchema,
-} from 'vovk/createValidateOnClient';
+} from 'vovk/create-validate-on-client';
 
 // Handle ESM/CJS interop - these packages export CJS and may have .default wrapper
 const Ajv2020 = _Ajv2020.default ?? _Ajv2020;

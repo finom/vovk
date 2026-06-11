@@ -1,0 +1,339 @@
+import { HttpStatus } from '../types/enums.js';
+import { HttpException } from '../core/http-exception.js';
+import type { VovkStreamAsyncIterable } from '../types/client.js';
+import type { VovkErrorResponse } from '../types/core.js';
+import '../utils/shim.js';
+
+export const DEFAULT_ERROR_MESSAGE = 'An unknown error at the default stream handler';
+
+/**
+ * Converts a ReadableStream of JSON Lines into a VovkStreamAsyncIterable.
+ * This is the core streaming logic extracted for reuse outside of HTTP contexts.
+ * @see https://vovk.dev/jsonlines
+ */
+export const readableStreamToAsyncIterable = <T = unknown>({
+  readableStream,
+  abortController,
+}: {
+  readableStream: ReadableStream<Uint8Array | string>;
+  abortController?: AbortController;
+}): Omit<VovkStreamAsyncIterable<T>, 'abortController' | 'status'> => {
+  const reader = readableStream.getReader();
+  const subscribers = new Set<(data: T, i: number) => void>();
+
+  // State
+  let isAbortedWithoutError = false;
+  let streamExhausted = false;
+  let streamError: unknown = null;
+  let errorIndex = -1;
+  let primaryStarted = false;
+  const cachedItems: T[] = [];
+
+  type Waiter = {
+    index: number;
+    resolve: (value: IteratorResult<T>) => void;
+    reject: (error: unknown) => void;
+  };
+  const waiters: Waiter[] = [];
+
+  // --- Helper functions ---
+
+  const notifyWaiters = () => {
+    for (let i = waiters.length - 1; i >= 0; i--) {
+      const waiter = waiters[i];
+      let handled = false;
+
+      if (streamError && waiter.index >= errorIndex) {
+        waiter.reject(streamError);
+        handled = true;
+      } else if (waiter.index < cachedItems.length) {
+        waiter.resolve({ value: cachedItems[waiter.index], done: false });
+        handled = true;
+      } else if (streamExhausted || (abortController?.signal.aborted && isAbortedWithoutError)) {
+        waiter.resolve({ value: undefined, done: true });
+        handled = true;
+      }
+
+      if (handled) {
+        waiters.splice(i, 1);
+      }
+    }
+  };
+
+  const setStreamError = (error: unknown) => {
+    errorIndex = cachedItems.length;
+    streamError = error;
+    notifyWaiters();
+  };
+
+  const disposeStream = (reason: string) => {
+    isAbortedWithoutError = true;
+    streamExhausted = true;
+    notifyWaiters();
+    abortController?.abort(reason);
+    reader.cancel().catch(() => {});
+  };
+
+  // --- Primary reader ---
+
+  const runPrimaryReader = async () => {
+    let buffer = '';
+    let iterationIndex = 0;
+
+    // Returns true if the stream should stop (error encountered)
+    const processLine = (line: string): boolean => {
+      let data: T | undefined;
+      try {
+        data = JSON.parse(line) as T;
+      } catch {
+        return false;
+      }
+
+      if (data) {
+        subscribers.forEach((cb) => {
+          if (!abortController?.signal.aborted) cb(data, iterationIndex);
+        });
+
+        iterationIndex++;
+
+        if (typeof data === 'object' && data !== null && 'isError' in data && 'reason' in data) {
+          const upcomingError = (data as { reason: unknown }).reason;
+          abortController?.abort(upcomingError);
+          const error = typeof upcomingError === 'string' ? new Error(upcomingError) : upcomingError;
+          setStreamError(error);
+          return true;
+        } else if (!abortController?.signal.aborted) {
+          cachedItems.push(data);
+          notifyWaiters();
+        }
+      }
+
+      return false;
+    };
+
+    try {
+      while (true) {
+        if (abortController?.signal.aborted && isAbortedWithoutError) {
+          break;
+        }
+
+        let value: Uint8Array | string | undefined;
+        let done: boolean;
+
+        try {
+          ({ value, done } = await reader.read());
+          if (done) break;
+        } catch (error) {
+          if ((error as Error)?.name === 'AbortError' && isAbortedWithoutError) {
+            break;
+          }
+          const err = new Error(`JSONLines stream error. ${String(error)}`);
+          err.cause = error;
+          setStreamError(err);
+          return;
+        }
+
+        const chunk =
+          typeof value === 'string'
+            ? value
+            : typeof value === 'number'
+              ? String.fromCharCode(value)
+              : new TextDecoder().decode(value);
+        buffer += chunk;
+
+        let newlineIdx: number;
+        while (true) {
+          newlineIdx = buffer.indexOf('\n');
+          if (newlineIdx === -1) break;
+          if (abortController?.signal.aborted && isAbortedWithoutError) {
+            break;
+          }
+
+          const line = buffer.slice(0, newlineIdx);
+          buffer = buffer.slice(newlineIdx + 1);
+
+          if (!line) continue;
+          if (processLine(line)) return;
+        }
+
+        if (abortController?.signal.aborted && isAbortedWithoutError) {
+          break;
+        }
+      }
+
+      // Process any remaining data in the buffer (last line without trailing newline)
+      const remaining = buffer.trim();
+      if (remaining) {
+        processLine(remaining);
+      }
+    } finally {
+      streamExhausted = true;
+      notifyWaiters();
+    }
+  };
+
+  // --- Async iterator ---
+
+  async function* asyncIterator(): AsyncGenerator<T> {
+    if (!primaryStarted) {
+      primaryStarted = true;
+      void runPrimaryReader();
+    }
+
+    let index = 0;
+
+    while (true) {
+      // Check error first
+      if (streamError && index >= errorIndex) {
+        throw streamError;
+      }
+
+      // Clean exit on abort without error
+      if (abortController?.signal.aborted && isAbortedWithoutError) {
+        return;
+      }
+
+      // Yield from cache if available
+      if (index < cachedItems.length) {
+        yield cachedItems[index++];
+        continue;
+      }
+
+      // Stream finished
+      if (streamExhausted) {
+        return;
+      }
+
+      // Wait for next item or completion
+      const result = await new Promise<IteratorResult<T>>((resolve, reject) => {
+        // Re-check state inside promise to handle race conditions
+        if (streamError && index >= errorIndex) {
+          reject(streamError);
+          return;
+        }
+        if (abortController?.signal.aborted && isAbortedWithoutError) {
+          resolve({ value: undefined, done: true });
+          return;
+        }
+        if (index < cachedItems.length) {
+          resolve({ value: cachedItems[index], done: false });
+          return;
+        }
+        if (streamExhausted) {
+          resolve({ value: undefined, done: true });
+          return;
+        }
+
+        waiters.push({ index, resolve, reject });
+      });
+
+      if (result.done) {
+        return;
+      }
+
+      index++;
+      yield result.value;
+    }
+  }
+
+  // --- Public API ---
+
+  const asPromise = async () => {
+    const items: T[] = [];
+    for await (const item of asyncIterator()) {
+      items.push(item);
+    }
+    return items;
+  };
+
+  const abortSilently = (reason?: unknown) => {
+    isAbortedWithoutError = true;
+    streamExhausted = true;
+    notifyWaiters();
+    abortController?.abort(reason);
+    reader.cancel().catch(() => {});
+  };
+
+  return {
+    asPromise,
+    // abortController,
+    [Symbol.asyncIterator]: asyncIterator,
+    [Symbol.dispose]: () => disposeStream('Stream disposed'),
+    [Symbol.asyncDispose]: async () => disposeStream('Stream async disposed'),
+    abortSilently,
+    onIterate: (cb) => {
+      if (abortController?.signal.aborted) return () => {};
+      subscribers.add(cb);
+      return () => subscribers.delete(cb);
+    },
+  };
+};
+
+export const defaultStreamHandler = ({
+  response,
+  abortController,
+}: {
+  response: Response;
+  abortController: AbortController;
+}): VovkStreamAsyncIterable<unknown> => {
+  // Handle error responses by creating a stream that fails on first iteration
+  if (!response.ok) {
+    let cachedError: HttpException | null = null;
+    let errorParsed = false;
+
+    // Parse error asynchronously and cache it
+    void response
+      .json()
+      .then((res) => {
+        cachedError = new HttpException(response.status, (res as VovkErrorResponse).message ?? DEFAULT_ERROR_MESSAGE);
+      })
+      .catch((e) => {
+        cachedError = new HttpException(response.status, (e as Error).message ?? DEFAULT_ERROR_MESSAGE, e);
+      })
+      .finally(() => {
+        errorParsed = true;
+      });
+
+    const getError = async (): Promise<HttpException> => {
+      // Wait for error to be parsed
+      while (!errorParsed) {
+        await new Promise((resolve) => setTimeout(resolve, 0));
+      }
+      return cachedError ?? new HttpException(response.status, DEFAULT_ERROR_MESSAGE);
+    };
+
+    const errorIterator = (): AsyncIterator<unknown> => ({
+      async next() {
+        throw await getError();
+      },
+    });
+
+    const noop = () => {};
+
+    return {
+      status: response.status,
+      asPromise: async () => {
+        throw await getError();
+      },
+      abortController,
+      [Symbol.asyncIterator]: errorIterator,
+      [Symbol.dispose]: noop,
+      [Symbol.asyncDispose]: async () => {},
+      abortSilently: noop,
+      onIterate: () => noop,
+    };
+  }
+
+  if (!response.body) {
+    throw new HttpException(HttpStatus.NULL, 'Stream body is falsy');
+  }
+
+  return {
+    status: response.status,
+    abortController,
+    ...readableStreamToAsyncIterable({
+      readableStream: response.body,
+      abortController,
+    }),
+  };
+};
