@@ -16,6 +16,7 @@ jobs:
         os: [ubuntu-24.04, macos-latest]
         node-version: [22, 24]
     runs-on: ${{ matrix.os }}
+    timeout-minutes: 45
 
     steps:
       - uses: actions/checkout@v4
