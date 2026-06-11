@@ -21,7 +21,7 @@ Both shapes interoperable — mix in one array, feed to OpenAI / Anthropic / Ver
 ```ts
 import { deriveTools } from 'vovk';
 import { TaskRPC, PetstoreAPI } from 'vovk-client';
-import UserController from '@/modules/user/UserController';
+import UserController from '@/modules/user/user-controller';
 
 const { tools, toolsByName } = deriveTools({
   modules: { UserController, TaskRPC, PetstoreAPI },
@@ -331,7 +331,7 @@ Override keys (all optional, all merged shallowly):
 import { deriveTools, post, prefix, type VovkRequest } from 'vovk';
 import { jsonSchema, streamText, tool, convertToModelMessages, type UIMessage } from 'ai';
 import { openai } from '@ai-sdk/openai';
-import UserController from '@/modules/user/UserController';
+import UserController from '@/modules/user/user-controller';
 
 @prefix('ai-sdk')
 export default class AiSdkController {
@@ -395,8 +395,8 @@ Each Vovk tool's `inputSchemas` field (per-key Standard Schemas for `body` / `qu
 import { createMcpHandler } from 'mcp-handler';
 import { deriveTools, ToModelOutput } from 'vovk';
 import type z from 'zod';
-import TaskController from '@/modules/task/TaskController';
-import UserController from '@/modules/user/UserController';
+import TaskController from '@/modules/task/task-controller';
+import UserController from '@/modules/user/user-controller';
 
 const { tools } = deriveTools({
   modules: { UserController, TaskController },
@@ -446,7 +446,7 @@ Test locally with official MCP Inspector: `npx @modelcontextprotocol/inspector`.
 
 ### Mixins → MCP — wrap with `createTool`
 
-Wrap required **only for MCP**, not general LLM tool exposure. `deriveTools` reads each handler's `.definition` field for `inputSchemas` (Standard Schemas), which only exists on procedure-backed controllers (set by `procedure({...}).handle(...)` in `withValidationLibrary.ts`). Mixin RPC modules come from `createRPC` and don't carry that — passing directly to `deriveTools` yields tools with empty `inputSchemas`, unusable for `mcp-handler`. Function-calling paths (OpenAI / Anthropic / Vercel) work fine — they read `parameters` (JSON Schema), populated from mixin's `schema.validation`. For MCP, wrap each mixin call in `createTool` instead:
+Wrap required **only for MCP**, not general LLM tool exposure. `deriveTools` reads each handler's `.definition` field for `inputSchemas` (Standard Schemas), which only exists on procedure-backed controllers (set by `procedure({...}).handle(...)` in `with-validation-library.ts`). Mixin RPC modules come from `createRPC` and don't carry that — passing directly to `deriveTools` yields tools with empty `inputSchemas`, unusable for `mcp-handler`. Function-calling paths (OpenAI / Anthropic / Vercel) work fine — they read `parameters` (JSON Schema), populated from mixin's `schema.validation`. For MCP, wrap each mixin call in `createTool` instead:
 
 ```ts
 import { createTool, ToModelOutput } from 'vovk';

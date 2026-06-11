@@ -222,7 +222,7 @@ tasks.then(console.log);
 **Server** — controller declares iteration union + builds responder; service orchestrates fan-in. Every line has own shape → turn on `validateEachIteration`:
 
 ```ts
-// ProgressiveController.ts
+// progressive-controller.ts
 @get('/')
 static streamProgressiveResponse = procedure({
   iteration: z.union([
@@ -236,7 +236,7 @@ static streamProgressiveResponse = procedure({
   return responder;
 });
 
-// ProgressiveService.ts — no req, just the sink
+// progressive-service.ts — no req, just the sink
 static streamProgressiveResponse(responder: JSONLinesResponder<Iter>) {
   return Promise.all([
     ProgressiveService.getUsers().then((users) => responder.send({ users })),
@@ -273,7 +273,7 @@ JSON Lines responses **bypass compression** (Gzip/Brotli) — size unknown, stre
 Controller does thin pre-calc (validated body → plain values), service owns OpenAI call + `yield*`s its stream:
 
 ```ts
-// ChatController.ts
+// chat-controller.ts
 @post('chat')
 static createChatCompletion = procedure({
   body: z.object({ messages: z.array(MessageSchema) }),
@@ -283,7 +283,7 @@ static createChatCompletion = procedure({
   yield* ChatService.streamCompletion({ messages });
 });
 
-// ChatService.ts — no req, no VovkRequest
+// chat-service.ts — no req, no VovkRequest
 export default class ChatService {
   static async *streamCompletion({ messages }: { messages: Message[] }) {
     const openai = new OpenAI();
