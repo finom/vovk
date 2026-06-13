@@ -72,6 +72,7 @@ await describe('CLI new segment', async () => {
     });
     await runAtProjectDir('../dist/index.mjs new segment foo --static');
     await assertFile('src/app/api/foo/[[...vovk]]/route.ts', [
+      `export const dynamic = 'force-static';`,
       `export function generateStaticParams() {`,
       `export const { GET } = initSegment({
         segmentName: 'foo',
@@ -96,6 +97,7 @@ await describe('CLI new segment', async () => {
     );
 
     await assertFile('src/app/api/bar/baz/qwe/[[...vovk]]/route.ts', `export function generateStaticParams() {`, true);
+    await assertFile('src/app/api/bar/baz/qwe/[[...vovk]]/route.ts', `export const dynamic = 'force-static';`, true);
   });
 
   await it('Multiple new segments', async () => {
