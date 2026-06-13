@@ -1,18 +1,18 @@
-import test, { it, describe } from 'node:test';
 import { deepStrictEqual, ok, strictEqual } from 'node:assert';
-import { WithValidationRPC } from 'vovk-client';
-import { validateOnClient as validateOnClientAjv } from '../../../packages/vovk-ajv/index.ts';
+import test, { describe, it } from 'node:test';
 import {
   HttpException,
-  type VovkReturnType,
-  type VovkYieldType,
-  type VovkOutput,
-  type VovkIteration,
   type VovkBody,
   type VovkInput,
+  type VovkIteration,
+  type VovkOutput,
+  type VovkReturnType,
+  type VovkYieldType,
 } from 'vovk';
-import type WithValidationController from './with-validation-controller.ts';
+import { WithValidationRPC } from 'vovk-client';
+import { validateOnClient as validateOnClientAjv } from '../../../packages/vovk-ajv/index.ts';
 import { expectPromise, getConstrainingObject, NESTED_QUERY_EXAMPLE } from '../lib.ts';
+import type WithValidationController from './with-validation-controller.ts';
 
 describe('Client validation with custom AJV options', () => {
   it('Should handle body validation: with options', async () => {

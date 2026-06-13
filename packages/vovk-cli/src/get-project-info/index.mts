@@ -1,8 +1,8 @@
-import path from 'node:path';
-import { getConfig } from './get-config/index.mjs';
-import { getPackageJson } from '../utils/get-package-json.mjs';
 import { readFile } from 'node:fs/promises';
+import path from 'node:path';
 import type { LogLevelNames } from 'loglevel';
+import { getPackageJson } from '../utils/get-package-json.mjs';
+import { getConfig } from './get-config/index.mjs';
 
 export type ProjectInfo = Awaited<ReturnType<typeof getProjectInfo>>;
 

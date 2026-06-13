@@ -1,5 +1,5 @@
-import type { OpenAPIObject } from 'openapi3-ts/oas31';
 import type { JSONSchema7 } from 'json-schema';
+import type { OpenAPIObject } from 'openapi3-ts/oas31';
 import { compileTs } from './compile-ts.mjs';
 
 export function compileJSONSchemaToTypeScriptType(

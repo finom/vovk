@@ -1,5 +1,5 @@
 import path from 'node:path';
-import { getFileSystemEntryType, FileSystemEntryType } from '../../utils/get-file-system-entry-type.mjs';
+import { FileSystemEntryType, getFileSystemEntryType } from '../../utils/get-file-system-entry-type.mjs';
 
 export async function getRelativeSrcRoot({ cwd }: { cwd: string }) {
   // Next.js Docs: src/app or src/pages will be ignored if app or pages are present in the root directory.

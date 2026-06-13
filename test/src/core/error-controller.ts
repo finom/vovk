@@ -1,4 +1,4 @@
-import { prefix, get, HttpException, HttpStatus } from 'vovk';
+import { get, HttpException, HttpStatus, prefix } from 'vovk';
 
 @prefix('error')
 export default class ErrorController {

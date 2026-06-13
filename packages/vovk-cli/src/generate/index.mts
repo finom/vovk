@@ -1,12 +1,12 @@
 import path from 'node:path';
-import type { VovkSchema } from 'vovk';
 import * as chokidar from 'chokidar';
-import type { GenerateOptions } from '../types.mjs';
-import { getProjectFullSchema } from './get-project-full-schema.mjs';
+import type { VovkSchema } from 'vovk';
 import type { ProjectInfo } from '../get-project-info/index.mjs';
-import { generate } from './generate.mjs';
-import { locateSegments } from '../utils/locate-segments.mjs';
+import type { GenerateOptions } from '../types.mjs';
 import { chalkHighlightThing } from '../utils/chalk-highlight-thing.mjs';
+import { locateSegments } from '../utils/locate-segments.mjs';
+import { generate } from './generate.mjs';
+import { getProjectFullSchema } from './get-project-full-schema.mjs';
 
 const THROTTLE_DELAY = 5000;
 

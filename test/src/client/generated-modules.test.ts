@@ -1,14 +1,14 @@
-import { it, describe } from 'node:test';
 import { deepStrictEqual, ok, strictEqual } from 'node:assert';
+import { describe, it } from 'node:test';
 import {
-  NoValidationControllerOnlyEntityRPC,
-  NoValidationControllerAndServiceEntityRPC,
-  ZodControllerOnlyEntityRPC,
-  ZodControllerAndServiceEntityRPC,
-  ValibotControllerOnlyEntityRPC,
-  ValibotControllerAndServiceEntityRPC,
-  ArktypeControllerOnlyEntityRPC,
   ArktypeControllerAndServiceEntityRPC,
+  ArktypeControllerOnlyEntityRPC,
+  NoValidationControllerAndServiceEntityRPC,
+  NoValidationControllerOnlyEntityRPC,
+  ValibotControllerAndServiceEntityRPC,
+  ValibotControllerOnlyEntityRPC,
+  ZodControllerAndServiceEntityRPC,
+  ZodControllerOnlyEntityRPC,
 } from 'vovk-client';
 
 const rpcs = {

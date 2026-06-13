@@ -1,9 +1,9 @@
-import { it, describe } from 'node:test';
 import { deepStrictEqual, strictEqual } from 'node:assert';
-import type { Token, default as StreamingController } from './streaming-controller.ts';
-import { expectPromise } from '../lib.ts';
+import { describe, it } from 'node:test';
 import { HttpException, progressive, type VovkYieldType } from 'vovk';
 import { StreamingControllerRPC } from 'vovk-client';
+import { expectPromise } from '../lib.ts';
+import type { default as StreamingController, Token } from './streaming-controller.ts';
 
 const apiRoot = `http://localhost:${process.env.PORT}/api`;
 

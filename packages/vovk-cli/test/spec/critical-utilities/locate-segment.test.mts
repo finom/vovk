@@ -1,8 +1,8 @@
 import assert from 'node:assert';
-import { it, describe } from 'node:test';
 import path from 'node:path';
-import { locateSegments } from '../../../dist/utils/locate-segments.mjs';
+import { describe, it } from 'node:test';
 import { getLogger } from '../../../dist/utils/get-logger.mjs';
+import { locateSegments } from '../../../dist/utils/locate-segments.mjs';
 
 await describe('locateSegment', async () => {
   await it('Locates segments properly', async () => {

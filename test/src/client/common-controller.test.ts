@@ -1,15 +1,15 @@
-import { CommonControllerRPC, CommonControllerDifferentFetcherRPC } from 'vovk-client';
-import { CommonControllerRPC as SegmentClientCommonControllerRPC } from '../../other-compiled-test-sources/segmented-client/foo/client/index.ts';
-import { CommonControllerRPC as BundleClientCommonControllerRPC } from '../../other-compiled-test-sources/bundle/index.mjs';
-import { HttpStatus, type VovkBody, type VovkQuery, type VovkReturnType, type VovkParams, type VovkInput } from 'vovk';
-import type { VovkHandlerSchema, VovkErrorResponse } from 'vovk/internal';
-import { it, describe } from 'node:test';
 import { deepStrictEqual, ok, strictEqual } from 'node:assert';
-import type CommonController from './common-controller.ts';
-import { NESTED_QUERY_EXAMPLE } from '../lib.ts';
-import { fetcher } from '../lib/fetcher.ts';
-import omit from 'lodash/omit.js';
+import { describe, it } from 'node:test';
 import noop from 'lodash/noop.js';
+import omit from 'lodash/omit.js';
+import { HttpStatus, type VovkBody, type VovkInput, type VovkParams, type VovkQuery, type VovkReturnType } from 'vovk';
+import type { VovkErrorResponse, VovkHandlerSchema } from 'vovk/internal';
+import { CommonControllerDifferentFetcherRPC, CommonControllerRPC } from 'vovk-client';
+import { CommonControllerRPC as BundleClientCommonControllerRPC } from '../../other-compiled-test-sources/bundle/index.mjs';
+import { CommonControllerRPC as SegmentClientCommonControllerRPC } from '../../other-compiled-test-sources/segmented-client/foo/client/index.ts';
+import { fetcher } from '../lib/fetcher.ts';
+import { NESTED_QUERY_EXAMPLE } from '../lib.ts';
+import type CommonController from './common-controller.ts';
 
 const apiRoot = `http://localhost:${process.env.PORT}/api`;
 

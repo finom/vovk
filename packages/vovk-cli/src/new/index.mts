@@ -1,7 +1,7 @@
+import type { ProjectInfo } from '../get-project-info/index.mts';
+import type { NewOptions } from '../types.mjs';
 import { newModule } from './new-module.mjs';
 import { newSegment } from './new-segment.mjs';
-import type { NewOptions } from '../types.mjs';
-import type { ProjectInfo } from '../get-project-info/index.mts';
 
 export async function newComponents(
   components: string[],

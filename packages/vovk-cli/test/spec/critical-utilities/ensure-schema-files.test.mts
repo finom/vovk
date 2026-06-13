@@ -1,7 +1,7 @@
 import assert from 'node:assert';
-import { it, describe, beforeEach, afterEach, before } from 'node:test';
 import fs from 'node:fs/promises';
 import path from 'node:path';
+import { afterEach, before, beforeEach, describe, it } from 'node:test';
 import * as glob from 'glob';
 import { ensureSchemaFiles } from '../../../dist/dev/ensure-schema-files.mjs';
 import { getProjectInfo, type ProjectInfo } from '../../../dist/get-project-info/index.mjs';

@@ -1,10 +1,10 @@
-import { schema } from 'vovk-client';
-import type ClientController from './common-controller.ts';
+import { deepStrictEqual } from 'node:assert';
+import { describe, it } from 'node:test';
 import { createRPC } from 'vovk/create-rpc';
 import { fetcher } from 'vovk/fetcher';
 import type { VovkFetcherOptions } from 'vovk/internal';
-import { it, describe } from 'node:test';
-import { deepStrictEqual } from 'node:assert';
+import { schema } from 'vovk-client';
+import type ClientController from './common-controller.ts';
 
 const apiRoot = `http://localhost:${process.env.PORT}/api`;
 

@@ -1,4 +1,4 @@
-import { prefix, get } from 'vovk';
+import { get, prefix } from 'vovk';
 
 @prefix('post-does-not-exist')
 export default class DesNotExistController {

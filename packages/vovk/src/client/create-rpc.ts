@@ -1,18 +1,18 @@
-import { fetcher as defaultFetcher } from './fetcher.js';
+import type { VovkHandlerSchema } from '../internal.js';
+import type { ClientMethod, VovkFetcher, VovkFetcherOptions, VovkRPCModule } from '../types/client.js';
+import type { ControllerStaticMethod, VovkSchema } from '../types/core.js';
+import type { HttpMethod } from '../types/enums.js';
+import type { VovkControllerParams, VovkControllerQuery } from '../types/inference.js';
+import type { VovkRequest } from '../types/request.js';
+import type { KnownAny } from '../types/utils.js';
+import type { CombinedSpec, VovkValidateOnClient } from '../types/validation.js';
+import { deepExtend } from '../utils/deep-extend.js';
 import { defaultHandler } from './default-handler.js';
 import { defaultStreamHandler } from './default-stream-handler.js';
+import { fetcher as defaultFetcher } from './fetcher.js';
 import { serializeQuery } from './serialize-query.js';
-import { deepExtend } from '../utils/deep-extend.js';
-import type { VovkHandlerSchema } from '../internal.js';
-import type { VovkRequest } from '../types/request.js';
-import type { ControllerStaticMethod, VovkSchema } from '../types/core.js';
-import type { VovkControllerParams, VovkControllerQuery } from '../types/inference.js';
-import type { HttpMethod } from '../types/enums.js';
-import type { ClientMethod, VovkRPCModule, VovkFetcher, VovkFetcherOptions } from '../types/client.js';
-import type { CombinedSpec, VovkValidateOnClient } from '../types/validation.js';
-import type { KnownAny } from '../types/utils.js';
 
-export type { VovkHandlerSchema, VovkRequest, CombinedSpec };
+export type { CombinedSpec, VovkHandlerSchema, VovkRequest };
 
 const trimPath = (path: string) => path.trim().replace(/^\/|\/$/g, '');
 
