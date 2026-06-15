@@ -1,5 +1,5 @@
 import type { NextRequest } from 'next/server.js';
-import { prefix, post } from 'vovk';
+import { post, prefix } from 'vovk';
 
 @prefix('input')
 export default class InputController {

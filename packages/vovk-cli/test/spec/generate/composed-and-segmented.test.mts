@@ -1,7 +1,7 @@
-import { it, describe, beforeEach } from 'node:test';
 import { deepStrictEqual } from 'node:assert';
-import path from 'node:path';
 import fs from 'node:fs/promises';
+import path from 'node:path';
+import { beforeEach, describe, it } from 'node:test';
 import type { VovkSchema } from 'vovk';
 import getCLIAssertions from '../../lib/get-cli-assertions.mts';
 import updateConfig from '../../lib/update-config.mts';

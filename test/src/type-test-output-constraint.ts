@@ -1,4 +1,4 @@
-import { procedure, type VovkParams, type VovkBody, type VovkOutput } from 'vovk';
+import { procedure, type VovkBody, type VovkOutput, type VovkParams } from 'vovk';
 import { z } from 'zod';
 
 // ====== Builder pattern tests (with output type checking) ======
@@ -73,4 +73,4 @@ const selfRef = procedure({
   return { foo: 'bar' } satisfies VovkOutput<typeof selfRef>;
 });
 
-export { test1, test2, test3, test4, test5, TestController, selfRef };
+export { selfRef, TestController, test1, test2, test3, test4, test5 };

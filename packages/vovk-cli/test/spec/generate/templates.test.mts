@@ -1,5 +1,5 @@
-import { it, describe } from 'node:test';
 import path from 'node:path';
+import { describe, it } from 'node:test';
 import getCLIAssertions from '../../lib/get-cli-assertions.mts';
 import updateConfig from '../../lib/update-config.mts';
 

@@ -1,12 +1,12 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
+import camelCase from 'lodash/camelCase.js';
+import type { OpenAPIObject } from 'openapi3-ts/oas31';
 import type { HttpMethod, VovkConfig } from 'vovk';
 import type { VovkOperationObject, VovkStrictConfig } from 'vovk/internal';
-import type { OpenAPIObject } from 'openapi3-ts/oas31';
 import * as YAML from 'yaml';
 import type { ProjectInfo } from '../get-project-info/index.mjs';
 import { chalkHighlightThing } from './chalk-highlight-thing.mjs';
-import camelCase from 'lodash/camelCase.js';
 import { generateFnName } from './generate-fn-name.mjs';
 
 type OpenAPIMixin = NonNullable<

@@ -1,5 +1,5 @@
 import type { NextRequest } from 'next/server.js';
-import { prefix, get, createDecorator } from 'vovk';
+import { createDecorator, get, prefix } from 'vovk';
 
 type EnhancedNextRequest = NextRequest & {
   hello: string;

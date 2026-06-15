@@ -1,20 +1,20 @@
-import { confirm, select, checkbox } from '@inquirer/prompts';
-import path from 'node:path';
 import fs from 'node:fs/promises';
-import chalk from 'chalk';
+import path from 'node:path';
+import { checkbox, confirm, select } from '@inquirer/prompts';
 import NPMCliPackageJson from '@npmcli/package-json';
+import chalk from 'chalk';
 import { getConfigAbsolutePaths } from '../get-project-info/get-config/get-config-absolute-paths.mjs';
-import { getFileSystemEntryType } from '../utils/get-file-system-entry-type.mjs';
-import { installDependencies, getPackageManager } from './install-dependencies.mjs';
-import { getLogger } from '../utils/get-logger.mjs';
-import { createConfig } from './create-config.mjs';
-import { updateNPMScripts, getDevScript } from './update-npm-scripts.mjs';
-import { checkTSConfigForExperimentalDecorators } from './check-tsconfig-for-experimental-decorators.mjs';
-import { updateTypeScriptConfig } from './update-typescript-config.mjs';
-import { updateDependenciesWithoutInstalling } from './update-dependencies-without-installing.mjs';
-import { logUpdateDependenciesError } from './log-update-dependencies-error.mjs';
-import { chalkHighlightThing } from '../utils/chalk-highlight-thing.mjs';
 import type { InitOptions } from '../types.mjs';
+import { chalkHighlightThing } from '../utils/chalk-highlight-thing.mjs';
+import { getFileSystemEntryType } from '../utils/get-file-system-entry-type.mjs';
+import { getLogger } from '../utils/get-logger.mjs';
+import { checkTSConfigForExperimentalDecorators } from './check-tsconfig-for-experimental-decorators.mjs';
+import { createConfig } from './create-config.mjs';
+import { getPackageManager, installDependencies } from './install-dependencies.mjs';
+import { logUpdateDependenciesError } from './log-update-dependencies-error.mjs';
+import { updateDependenciesWithoutInstalling } from './update-dependencies-without-installing.mjs';
+import { getDevScript, updateNPMScripts } from './update-npm-scripts.mjs';
+import { updateTypeScriptConfig } from './update-typescript-config.mjs';
 
 export class Init {
   root!: string;

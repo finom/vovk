@@ -1,8 +1,8 @@
-import path from 'node:path';
 import fs from 'node:fs/promises';
+import path from 'node:path';
 import type { VovkSegmentSchema } from 'vovk/internal';
-import { diffSegmentSchema, type DiffResult } from './diff-segment-schema.mjs';
 import { getFileSystemEntryType } from '../utils/get-file-system-entry-type.mjs';
+import { type DiffResult, diffSegmentSchema } from './diff-segment-schema.mjs';
 
 export const ROOT_SEGMENT_FILE_NAME = 'root';
 export const META_FILE_NAME = '_meta';

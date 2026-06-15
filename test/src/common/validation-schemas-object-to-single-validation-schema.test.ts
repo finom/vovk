@@ -1,7 +1,7 @@
-import { it, describe } from 'node:test';
 import assert from 'node:assert';
-import { z } from 'zod';
+import { describe, it } from 'node:test';
 import { validationSchemasObjectToSingleValidationSchema } from 'vovk/internal';
+import { z } from 'zod';
 
 type StandardResult = { value?: unknown; issues?: ReadonlyArray<{ message: string; path?: unknown[] }> };
 
@@ -156,7 +156,8 @@ describe('validationSchemasObjectToSingleValidationSchema', () => {
       const result = merged['~standard'].validate({ body: { foo: 42 } }) as StandardResult;
       assert.ok(result.issues);
       assert.ok(result.issues.length > 0);
-      const first = result.issues[0]!;
+      const [first] = result.issues;
+      assert.ok(first);
       assert.deepStrictEqual(first.path?.[0], { key: 'body' });
       assert.ok((first.path?.length ?? 0) >= 2, 'expected slot path to be prefixed onto slot’s own path');
     });

@@ -1,6 +1,6 @@
-import { it, describe } from 'node:test';
-import { multitenant } from 'vovk';
 import assert from 'node:assert';
+import { describe, it } from 'node:test';
+import { multitenant } from 'vovk';
 
 describe('Multitenant', async () => {
   const testConfig = {

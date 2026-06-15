@@ -1,22 +1,22 @@
-import path from 'node:path';
 import fs from 'node:fs/promises';
+import path from 'node:path';
+import { getTsconfig } from 'get-tsconfig';
 import matter from 'gray-matter';
 import _ from 'lodash';
-import type { VovkSchema } from 'vovk';
-import { openAPIToVovkSchema, vovkSchemaToOpenAPI, type VovkOpenAPIMixin, type VovkStrictConfig } from 'vovk/internal';
 import type { PackageJson } from 'type-fest';
-import { getClientTemplateFiles } from './get-client-template-files.mjs';
-import { chalkHighlightThing } from '../utils/chalk-highlight-thing.mjs';
+import type { VovkSchema } from 'vovk';
+import { openAPIToVovkSchema, type VovkOpenAPIMixin, type VovkStrictConfig, vovkSchemaToOpenAPI } from 'vovk/internal';
+import { ROOT_SEGMENT_FILE_NAME } from '../dev/write-one-segment-schema-file.mjs';
+import { BuiltInTemplateName } from '../get-project-info/get-config/get-template-defs.mjs';
 import type { ProjectInfo } from '../get-project-info/index.mjs';
 import type { GenerateOptions } from '../types.mjs';
+import { chalkHighlightThing } from '../utils/chalk-highlight-thing.mjs';
+import type { Segment } from '../utils/locate-segments.mjs';
+import { normalizeOpenAPIMixin } from '../utils/normalize-openapi-mixin.mjs';
 import { pickSegmentFullSchema } from '../utils/pick-segment-full-schema.mjs';
 import { removeUnlistedDirectories } from '../utils/remove-unlisted-directories.mjs';
-import { writeOneClientFile, normalizeOutTemplatePath } from './write-one-client-file.mjs';
-import { ROOT_SEGMENT_FILE_NAME } from '../dev/write-one-segment-schema-file.mjs';
-import type { Segment } from '../utils/locate-segments.mjs';
-import { getTsconfig } from 'get-tsconfig';
-import { normalizeOpenAPIMixin } from '../utils/normalize-openapi-mixin.mjs';
-import { BuiltInTemplateName } from '../get-project-info/get-config/get-template-defs.mjs';
+import { getClientTemplateFiles } from './get-client-template-files.mjs';
+import { normalizeOutTemplatePath, writeOneClientFile } from './write-one-client-file.mjs';
 
 const getIncludedSegmentNames = (
   config: VovkStrictConfig,

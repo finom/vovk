@@ -1,6 +1,6 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
-import { getFileSystemEntryType, FileSystemEntryType } from './get-file-system-entry-type.mjs';
+import { FileSystemEntryType, getFileSystemEntryType } from './get-file-system-entry-type.mjs';
 
 /**
  * Removes all directories in a folder that aren't in the provided allowlist

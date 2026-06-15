@@ -1,7 +1,7 @@
+import fs from 'node:fs/promises';
+import { Node, type ObjectLiteralExpression, Project, SyntaxKind } from 'ts-morph';
 import type { VovkConfig } from 'vovk';
 import { prettify } from '../../src/utils/prettify.mts';
-import fs from 'node:fs/promises';
-import { Project, SyntaxKind, type ObjectLiteralExpression, Node } from 'ts-morph';
 
 /**
  * Converts a JS value to a ts-morph compatible source string

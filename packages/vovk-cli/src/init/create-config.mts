@@ -1,11 +1,11 @@
-import path from 'node:path';
 import fs from 'node:fs/promises';
+import path from 'node:path';
 import type { VovkConfig } from 'vovk';
 import type { VovkBundleConfig, VovkStrictConfig } from 'vovk/internal';
+import type { InitOptions } from '../types.mjs';
+import { FileSystemEntryType, getFileSystemEntryType } from '../utils/get-file-system-entry-type.mjs';
 import type { getLogger } from '../utils/get-logger.mjs';
 import { prettify } from '../utils/prettify.mjs';
-import { getFileSystemEntryType, FileSystemEntryType } from '../utils/get-file-system-entry-type.mjs';
-import type { InitOptions } from '../types.mjs';
 import { updateConfigProperty } from '../utils/update-config-property.mjs';
 
 export const BUNDLE_BUILD_TSDOWN = async ({ entry, outDir }: Parameters<VovkStrictConfig['bundle']['build']>[0]) => {

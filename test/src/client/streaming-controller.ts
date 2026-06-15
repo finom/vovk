@@ -1,5 +1,4 @@
-import { type VovkRequest, post, prefix } from 'vovk';
-import { JSONLinesResponder } from 'vovk';
+import { JSONLinesResponder, post, prefix, type VovkRequest } from 'vovk';
 
 export type Token = { token: string; query: 'queryValue' };
 

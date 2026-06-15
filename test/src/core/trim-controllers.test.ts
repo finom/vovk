@@ -1,5 +1,5 @@
-import { it, describe } from 'node:test';
-import { strictEqual, deepStrictEqual } from 'node:assert';
+import { deepStrictEqual, strictEqual } from 'node:assert';
+import { describe, it } from 'node:test';
 import { apiUrl, request } from '../lib.ts';
 
 export const prefixes = ['trim-prefix-1', '/trim-prefix-2', 'trim-prefix-3/', '/trim-prefix-4/'];

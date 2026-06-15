@@ -1,7 +1,7 @@
 import assert from 'node:assert';
-import { test, describe } from 'node:test';
-import { convertJSONSchemasToRustTypes } from '../index.js';
+import { describe, test } from 'node:test';
 import type { VovkJSONSchemaBase } from '../../vovk/src/index.js';
+import { convertJSONSchemasToRustTypes } from '../index.js';
 
 describe('convertJSONSchemasToRustTypes', () => {
   test('basic primitive types', () => {

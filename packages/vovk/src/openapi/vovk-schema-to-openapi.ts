@@ -1,17 +1,17 @@
 import type { OpenAPIObject, OperationObject, PathsObject, SchemaObject } from 'openapi3-ts/oas31';
+import { resolveGeneratorConfigValues } from '../core/resolve-generator-config-values.js';
 import { createCodeSamples } from '../samples/create-code-samples.js';
 import { schemaToObject } from '../samples/schema-to-object.js';
-import { resolveGeneratorConfigValues } from '../core/resolve-generator-config-values.js';
 import type {
   VovkOutputConfig,
-  VovkStrictConfig,
+  VovkPackageJson,
   VovkReadmeConfig,
   VovkSamplesConfig,
-  VovkPackageJson,
+  VovkStrictConfig,
 } from '../types/config.js';
 import type { VovkSchema } from '../types/core.js';
+import { type HttpMethod, HttpStatus } from '../types/enums.js';
 import type { VovkJSONSchemaBase } from '../types/json-schema.js';
-import { HttpStatus, type HttpMethod } from '../types/enums.js';
 
 function extractComponents(
   schema: VovkJSONSchemaBase | undefined

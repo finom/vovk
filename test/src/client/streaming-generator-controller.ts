@@ -1,4 +1,4 @@
-import { type VovkRequest, get, post, prefix } from 'vovk';
+import { get, post, prefix, type VovkRequest } from 'vovk';
 
 export type Token = { token: string; query: 'queryValue' };
 

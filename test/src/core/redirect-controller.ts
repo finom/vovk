@@ -1,5 +1,5 @@
 import { redirect } from 'next/navigation.js';
-import { prefix, get } from 'vovk';
+import { get, prefix } from 'vovk';
 
 @prefix('redirect')
 export default class RedirectController {

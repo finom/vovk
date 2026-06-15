@@ -1,15 +1,15 @@
 import {
-  post,
-  put,
-  get,
-  operation,
-  HttpStatus,
-  type VovkBody,
-  type VovkQuery,
-  type VovkParams,
-  type VovkOutput,
-  procedure,
   decorate,
+  get,
+  HttpStatus,
+  operation,
+  post,
+  procedure,
+  put,
+  type VovkBody,
+  type VovkOutput,
+  type VovkParams,
+  type VovkQuery,
 } from 'vovk';
 import { z } from 'zod';
 
