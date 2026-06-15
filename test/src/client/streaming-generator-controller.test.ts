@@ -1,9 +1,9 @@
-import { it, describe } from 'node:test';
 import { deepStrictEqual } from 'node:assert';
-import type { Token, default as StreamingGeneratorController } from './streaming-generator-controller.ts';
-import { StreamingGeneratorControllerRPC } from 'vovk-client';
+import { describe, it } from 'node:test';
 import type { VovkYieldType } from 'vovk';
+import { StreamingGeneratorControllerRPC } from 'vovk-client';
 import { expectPromise } from '../lib.ts';
+import type { default as StreamingGeneratorController, Token } from './streaming-generator-controller.ts';
 
 const apiRoot = `http://localhost:${process.env.PORT}/api`;
 

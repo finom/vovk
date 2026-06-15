@@ -1,14 +1,14 @@
 import path from 'node:path';
+import type { LogLevelNames } from 'loglevel';
 import type { VovkConfig } from 'vovk';
 import { VovkSchemaIdEnum, type VovkStrictConfig } from 'vovk/internal';
-import type { LogLevelNames } from 'loglevel';
-import { getLogger } from '../../utils/get-logger.mjs';
-import { getUserConfig } from './get-user-config.mjs';
-import { getRelativeSrcRoot } from './get-relative-src-root.mjs';
 import type { VovkEnv } from '../../types.mjs';
-import { getTemplateDefs, BuiltInTemplateName } from './get-template-defs.mjs';
-import { normalizeOpenAPIMixin } from '../../utils/normalize-openapi-mixin.mjs';
 import { chalkHighlightThing } from '../../utils/chalk-highlight-thing.mjs';
+import { getLogger } from '../../utils/get-logger.mjs';
+import { normalizeOpenAPIMixin } from '../../utils/normalize-openapi-mixin.mjs';
+import { getRelativeSrcRoot } from './get-relative-src-root.mjs';
+import { BuiltInTemplateName, getTemplateDefs } from './get-template-defs.mjs';
+import { getUserConfig } from './get-user-config.mjs';
 
 export async function getConfig({
   configPath,

@@ -1,11 +1,11 @@
-import { readFile, access } from 'node:fs/promises';
+import { access, readFile } from 'node:fs/promises';
 import path from 'node:path';
 import { glob } from 'glob';
 import type { VovkSchema } from 'vovk';
-import type { ProjectInfo } from '../get-project-info/index.mjs';
+import { deepExtend, type VovkMetaSchema, VovkSchemaIdEnum, type VovkStrictConfig } from 'vovk/internal';
 import { META_FILE_NAME, ROOT_SEGMENT_FILE_NAME } from '../dev/write-one-segment-schema-file.mjs';
 import { getMetaSchema } from '../get-project-info/get-meta-schema.mjs';
-import { deepExtend, VovkSchemaIdEnum, type VovkMetaSchema, type VovkStrictConfig } from 'vovk/internal';
+import type { ProjectInfo } from '../get-project-info/index.mjs';
 
 export async function getProjectFullSchema({
   schemaOutAbsolutePath,

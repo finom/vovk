@@ -1,10 +1,10 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
-import type { PackageJson } from 'type-fest';
 import chalk from 'chalk';
+import type { PackageJson } from 'type-fest';
+import type { InitOptions } from '../types.mjs';
 import type { getLogger } from '../utils/get-logger.mjs';
 import { getNPMPackageMetadata, type NpmPackageMetadata } from '../utils/get-npm-package-metadata.mjs';
-import type { InitOptions } from '../types.mjs';
 
 /** Root of the monorepo packages directory (…/packages) resolved from the compiled CLI location (dist/init/). */
 const packagesRoot = path.resolve(import.meta.dirname, '../../..');

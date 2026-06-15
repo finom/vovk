@@ -1,4 +1,4 @@
-import { prefix, get } from 'vovk';
+import { get, prefix } from 'vovk';
 
 @prefix('duplicated-parameter')
 export default class DuplicatedParameterController {

@@ -1,17 +1,17 @@
-import path from 'node:path';
 import fs from 'node:fs/promises';
+import path from 'node:path';
 import chalk from 'chalk';
-import _ from 'lodash';
 import { getTsconfig } from 'get-tsconfig';
-import { render } from './render.mjs';
-import { addClassToSegmentCode } from './add-class-to-segment-code.mjs';
+import _ from 'lodash';
 import type { ProjectInfo } from '../get-project-info/index.mjs';
 import { chalkHighlightThing } from '../utils/chalk-highlight-thing.mjs';
 import { formatLoggedSegmentName } from '../utils/format-logged-segment-name.mjs';
 import { getFileSystemEntryType } from '../utils/get-file-system-entry-type.mjs';
+import { locateSegments } from '../utils/locate-segments.mjs';
 import { prettify } from '../utils/prettify.mjs';
 import { resolveAbsoluteModulePath } from '../utils/resolve-absolute-module-path.mjs';
-import { locateSegments } from '../utils/locate-segments.mjs';
+import { addClassToSegmentCode } from './add-class-to-segment-code.mjs';
+import { render } from './render.mjs';
 
 function splitByLast(str: string, delimiter: string = '/'): [string, string] {
   const index = str.lastIndexOf(delimiter);

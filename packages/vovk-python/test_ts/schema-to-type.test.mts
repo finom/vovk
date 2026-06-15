@@ -1,7 +1,7 @@
-import { test } from 'node:test';
 import { strict as assert } from 'node:assert';
-import { convertJSONSchemaToPythonDataType } from '../index.js'; // Replace with your actual module path
+import { test } from 'node:test';
 import type { VovkJSONSchemaBase } from 'vovk';
+import { convertJSONSchemaToPythonDataType } from '../index.js'; // Replace with your actual module path
 
 test('convertJSONSchemaToPythonDataType - simple types', async (t) => {
   await t.test('converts string schema', () => {

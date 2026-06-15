@@ -1,6 +1,6 @@
+import { reqMeta } from '../req/req-meta.js';
 import type { VovkRequest } from '../types/request.js';
 import type { VovkTool } from '../types/tools.js';
-import { reqMeta } from '../req/req-meta.js';
 
 export type MCPModelOutput = {
   content: [

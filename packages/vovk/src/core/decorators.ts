@@ -1,10 +1,10 @@
-import { vovkApp } from './vovk-app.js';
-import { trimPath } from '../utils/trim-path.js';
-import { toKebabCase } from '../utils/to-kebab-case.js';
-import { applyDecoratorAdapter } from './apply-decorator-adapter.js';
+import type { DecoratorOptions, RouteHandler, VovkController, VovkHandlerSchema } from '../types/core.js';
 import { HttpMethod } from '../types/enums.js';
-import type { RouteHandler, VovkController, DecoratorOptions, VovkHandlerSchema } from '../types/core.js';
 import type { KnownAny } from '../types/utils.js';
+import { toKebabCase } from '../utils/to-kebab-case.js';
+import { trimPath } from '../utils/trim-path.js';
+import { applyDecoratorAdapter } from './apply-decorator-adapter.js';
+import { vovkApp } from './vovk-app.js';
 
 const isClass = (func: unknown) => typeof func === 'function' && /class/.test(func.toString());
 

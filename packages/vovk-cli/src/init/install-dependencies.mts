@@ -1,8 +1,8 @@
 import { spawn } from 'node:child_process';
 import type NPMCliPackageJson from '@npmcli/package-json';
-import type { getLogger } from '../utils/get-logger.mjs';
 import type { InitOptions } from '../types.mjs';
 import { chalkHighlightThing } from '../utils/chalk-highlight-thing.mjs';
+import type { getLogger } from '../utils/get-logger.mjs';
 
 export type PackageManager = 'npm' | 'yarn' | 'pnpm' | 'bun';
 

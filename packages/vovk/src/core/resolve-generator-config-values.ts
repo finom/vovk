@@ -1,4 +1,3 @@
-import { deepExtend } from '../utils/deep-extend.js';
 import type { OpenAPIObject } from 'openapi3-ts/oas31';
 import type {
   VovkConfig,
@@ -8,6 +7,7 @@ import type {
   VovkSamplesConfig,
 } from '../types/config.js';
 import type { PackageJson } from '../types/package.js';
+import { deepExtend } from '../utils/deep-extend.js';
 
 export function resolveGeneratorConfigValues({
   config,

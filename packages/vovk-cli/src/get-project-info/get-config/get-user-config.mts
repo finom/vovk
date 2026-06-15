@@ -1,7 +1,7 @@
-import { pathToFileURL } from 'node:url';
 import { readFile } from 'node:fs/promises';
 import { createRequire } from 'node:module';
 import { dirname, extname } from 'node:path';
+import { pathToFileURL } from 'node:url';
 import vm from 'node:vm';
 import type { VovkConfig } from 'vovk';
 import { getConfigAbsolutePaths } from './get-config-absolute-paths.mjs';

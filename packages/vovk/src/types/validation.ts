@@ -1,7 +1,7 @@
-import type { StandardSchemaV1, StandardJSONSchemaV1 } from './standard-schema.js';
-import type { KnownAny } from './utils.js';
-import type { VovkHandlerSchema, VovkSchema } from './core.js';
 import type { textTypes } from '../req/parse-body.js';
+import type { VovkHandlerSchema, VovkSchema } from './core.js';
+import type { StandardJSONSchemaV1, StandardSchemaV1 } from './standard-schema.js';
+import type { KnownAny } from './utils.js';
 
 export interface CombinedProps<Input = unknown, Output = Input>
   extends StandardSchemaV1.Props<Input, Output>,

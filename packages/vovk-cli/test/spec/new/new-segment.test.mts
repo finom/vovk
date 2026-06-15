@@ -1,7 +1,7 @@
-import { it, describe } from 'node:test';
-import path from 'node:path';
-import getCLIAssertions from '../../lib/get-cli-assertions.mts';
 import assert from 'node:assert';
+import path from 'node:path';
+import { describe, it } from 'node:test';
+import getCLIAssertions from '../../lib/get-cli-assertions.mts';
 
 await describe('CLI new segment', async () => {
   const { runAtProjectDir, assertFile, createVovkApp } = getCLIAssertions({

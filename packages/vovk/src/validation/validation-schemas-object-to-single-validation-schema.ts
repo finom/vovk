@@ -1,5 +1,5 @@
-import type { CombinedProps, CombinedSpec } from '../types/validation.js';
 import type { StandardJSONSchemaV1, StandardSchemaV1 } from '../types/standard-schema.js';
+import type { CombinedProps, CombinedSpec } from '../types/validation.js';
 
 const SLOT_KEYS = ['body', 'query', 'params'] as const;
 type SlotKey = (typeof SLOT_KEYS)[number];
@@ -33,7 +33,11 @@ function prefixIssues(issues: ReadonlyArray<StandardSchemaV1.Issue>, slot: SlotK
 export function validationSchemasObjectToSingleValidationSchema<TSchemas extends SchemasObject>(
   schemas: TSchemas
 ): CombinedSpec & TSchemas {
-  const definedSlots = SLOT_KEYS.filter((key) => schemas[key] !== undefined);
+  const definedEntries = SLOT_KEYS.flatMap((key): [SlotKey, CombinedSpec][] => {
+    const schema = schemas[key];
+    return schema ? [[key, schema]] : [];
+  });
+  const definedSlots = definedEntries.map(([key]) => key);
   const definedSlotSet = new Set<string>(definedSlots);
 
   const validate = (input: unknown): StandardSchemaV1.Result<unknown> | Promise<StandardSchemaV1.Result<unknown>> => {
@@ -61,9 +65,9 @@ export function validationSchemasObjectToSingleValidationSchema<TSchemas extends
       result: StandardSchemaV1.Result<unknown> | Promise<StandardSchemaV1.Result<unknown>>;
     };
     const pending: SlotPending[] = [];
-    for (const slot of definedSlots) {
+    for (const [slot, schema] of definedEntries) {
       if (slot in inputRecord) {
-        pending.push({ slot, result: schemas[slot]!['~standard'].validate(inputRecord[slot]) });
+        pending.push({ slot, result: schema['~standard'].validate(inputRecord[slot]) });
       }
     }
 
@@ -94,8 +98,8 @@ export function validationSchemasObjectToSingleValidationSchema<TSchemas extends
     direction: 'input' | 'output'
   ): Record<string, unknown> => {
     const properties: Record<string, Record<string, unknown>> = {};
-    for (const slot of definedSlots) {
-      properties[slot] = schemas[slot]!['~standard'].jsonSchema?.[direction](options) ?? {};
+    for (const [slot, schema] of definedEntries) {
+      properties[slot] = schema['~standard'].jsonSchema?.[direction](options) ?? {};
     }
     return {
       type: 'object',

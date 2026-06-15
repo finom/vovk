@@ -1,11 +1,11 @@
+import path from 'node:path';
 import ejs from 'ejs';
 import matter from 'gray-matter';
 import _ from 'lodash';
 import pluralize from 'pluralize';
 import type { VovkStrictConfig } from 'vovk/internal';
-import { addCommonTerms } from './add-common-terms.mjs';
 import type { VovkModuleRenderResult } from '../types.mjs';
-import path from 'node:path';
+import { addCommonTerms } from './add-common-terms.mjs';
 
 addCommonTerms();
 

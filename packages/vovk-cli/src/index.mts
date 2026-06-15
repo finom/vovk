@@ -1,19 +1,20 @@
 #!/usr/bin/env -S node --experimental-vm-modules --disable-warning=ExperimentalWarning
-import path from 'node:path';
 import { readFileSync } from 'node:fs';
+import path from 'node:path';
 import 'dotenv/config';
 import { Command } from 'commander';
 import concurrently from 'concurrently';
-import { getAvailablePort } from './utils/get-available-port.mjs';
-import { getProjectInfo } from './get-project-info/index.mjs';
-import { VovkGenerate } from './generate/index.mjs';
 import { bundle } from './bundle/index.mjs';
 import { VovkDev } from './dev/index.mjs';
-import { newComponents } from './new/index.mjs';
-import type { BundleOptions, DevOptions, GenerateOptions, NewOptions, InitOptions } from './types.mjs';
 import { getProjectFullSchema } from './generate/get-project-full-schema.mjs';
-import type { VovkEnv } from './types.mjs';
+import { VovkGenerate } from './generate/index.mjs';
+import { getProjectInfo } from './get-project-info/index.mjs';
+import { newComponents } from './new/index.mjs';
+import type { BundleOptions, DevOptions, GenerateOptions, InitOptions, NewOptions, VovkEnv } from './types.mjs';
+import { getAvailablePort } from './utils/get-available-port.mjs';
+
 export type { VovkEnv };
+
 import { Init } from './init/index.mjs';
 
 const program = new Command();

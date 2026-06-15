@@ -1,5 +1,5 @@
-import path from 'node:path';
 import { createRequire } from 'node:module';
+import path from 'node:path';
 import { getPublicModuleNameFromPath } from './get-public-module-name-from-path.mjs';
 
 // Returns the path up to and including the last occurrence of the given module name

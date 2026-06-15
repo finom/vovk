@@ -1,11 +1,11 @@
-import { vovkApp } from './vovk-app.js';
-import { trimPath } from '../utils/trim-path.js';
-import { getSchema } from './get-schema.js';
-import type { DecorateMetadata } from './decorate.js';
-import type { HttpMethod } from '../types/enums.js';
 import type { VovkController } from '../types/core.js';
+import type { HttpMethod } from '../types/enums.js';
 import type { VovkRequest } from '../types/request.js';
 import type { KnownAny, StaticClass } from '../types/utils.js';
+import { trimPath } from '../utils/trim-path.js';
+import type { DecorateMetadata } from './decorate.js';
+import { getSchema } from './get-schema.js';
+import { vovkApp } from './vovk-app.js';
 
 export const initSegment = (options: {
   segmentName?: string;

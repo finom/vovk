@@ -1,7 +1,7 @@
 import type { OpenAPIObject } from 'openapi3-ts/oas31';
-import type { PackageJson } from './package.js';
 import type { HttpMethod, VovkSchemaIdEnum } from './enums.js';
 import type { VovkOperationObject } from './operation.js';
+import type { PackageJson } from './package.js';
 import type { KnownAny, RequireFields } from './utils.js';
 
 export type VovkPackageJson = PackageJson & {

@@ -1,6 +1,6 @@
-import type { VovkConfig } from 'vovk';
-import { VovkSchemaIdEnum, type VovkStrictConfig, type VovkMetaSchema } from 'vovk/internal';
 import pick from 'lodash/pick.js';
+import type { VovkConfig } from 'vovk';
+import { type VovkMetaSchema, VovkSchemaIdEnum, type VovkStrictConfig } from 'vovk/internal';
 
 export function getMetaSchema({ config }: { config: VovkStrictConfig }): VovkMetaSchema {
   return {

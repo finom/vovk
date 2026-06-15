@@ -16,7 +16,9 @@
       "!**/.vovk-schema",
       "!.rollup.cache",
       "!.tmp*",
-      "!test_data"
+      "!test_data",
+      "!test/src/modules/generated",
+      "!test/src/app/api/generated"
     ]
   },
   "formatter": {
@@ -41,13 +43,6 @@
       "complexity": {
         "noStaticOnlyClass": "off",
         "noBannedTypes": "off"
-      }
-    }
-  },
-  "assist": {
-    "actions": {
-      "source": {
-        "organizeImports": "off"
       }
     }
   }

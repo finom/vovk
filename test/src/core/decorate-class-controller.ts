@@ -1,4 +1,4 @@
-import { get, decorate, cloneControllerMetadata } from 'vovk';
+import { cloneControllerMetadata, decorate, get } from 'vovk';
 import DecorateController from './decorate-controller.ts';
 
 // Test class-level prefix via static property: no decorator syntax at all
@@ -22,4 +22,5 @@ class DecorateClonedController extends DecorateController {
   static prefix = 'decorate-cloned';
 }
 cloneControllerMetadata()(DecorateClonedController);
+
 export { DecorateClonedController };

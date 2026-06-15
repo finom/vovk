@@ -1,5 +1,5 @@
 import type { NextRequest } from 'next/server.js';
-import { prefix, get } from 'vovk';
+import { get, prefix } from 'vovk';
 
 const prefixes = ['trim-prefix-1', '/trim-prefix-2', 'trim-prefix-3/', '/trim-prefix-4/'];
 const endpoints = ['trim-endpoint-1', '/trim-endpoint-2', 'trim-endpoint-3/', '/trim-endpoint-4/'];

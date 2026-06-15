@@ -1,9 +1,11 @@
-import { describe, it } from 'node:test';
 import { deepStrictEqual, ok, strictEqual } from 'node:assert';
+import { describe, it } from 'node:test';
 import { applyComponentsSchemas, openAPIToVovkSchema, reattachMixinDefs } from 'vovk/internal';
 
 // Loose aliases to keep assertions readable without deep schema typing.
+// biome-ignore lint/suspicious/noExplicitAny: loose test alias for readable assertions
 type Obj = Record<string, any>;
+// biome-ignore lint/suspicious/noExplicitAny: loose test alias for readable assertions
 type Seg = any;
 
 // Minimal spec: component `Shared` (which refs `Nested`) is the response of TWO ops

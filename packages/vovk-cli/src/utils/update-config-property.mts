@@ -1,13 +1,13 @@
 import {
-  Project,
-  QuoteKind,
+  type CodeBlockWriter,
   IndentationText,
   NewLineKind,
-  SyntaxKind,
-  type CodeBlockWriter,
   Node,
   type ObjectLiteralExpression,
+  Project,
   type PropertyAssignment,
+  QuoteKind,
+  SyntaxKind,
 } from 'ts-morph';
 
 export function updateConfigProperty(sourceCode: string, pathToProperty: string[], newValue: unknown) {

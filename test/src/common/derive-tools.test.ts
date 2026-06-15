@@ -1,8 +1,8 @@
-import { it, describe } from 'node:test';
-import { z } from 'zod';
 import assert from 'node:assert';
-import { deriveTools, toDownloadResponse, ToModelOutput, procedure, type VovkTool, type VovkOutput } from 'vovk';
+import { describe, it } from 'node:test';
+import { deriveTools, procedure, ToModelOutput, toDownloadResponse, type VovkOutput, type VovkTool } from 'vovk';
 import type { MCPModelOutput } from 'vovk/internal';
+import { z } from 'zod';
 
 describe('deriveTools', () => {
   const outputSchema = z.object({ foo: z.string().max(5), inputMeta: z.string().optional() });

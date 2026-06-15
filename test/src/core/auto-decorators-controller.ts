@@ -1,4 +1,4 @@
-import { prefix, get, post, put, del, patch, head, options } from 'vovk';
+import { del, get, head, options, patch, post, prefix, put } from 'vovk';
 
 @prefix('auto-decorators')
 export default class AutoDecoratorsController {

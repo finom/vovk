@@ -1,13 +1,13 @@
 import path from 'node:path';
 import { glob } from 'glob';
-import type { VovkStrictConfig } from 'vovk/internal';
-import { resolveAbsoluteModulePath } from '../utils/resolve-absolute-module-path.mjs';
-import type { ProjectInfo } from '../get-project-info/index.mjs';
-import { getFileSystemEntryType, FileSystemEntryType } from '../utils/get-file-system-entry-type.mjs';
-import type { GenerateOptions } from '../types.mjs';
-import { getPublicModuleNameFromPath } from '../utils/get-public-module-name-from-path.mjs';
-import omit from 'lodash/omit.js';
 import merge from 'lodash/merge.js';
+import omit from 'lodash/omit.js';
+import type { VovkStrictConfig } from 'vovk/internal';
+import type { ProjectInfo } from '../get-project-info/index.mjs';
+import type { GenerateOptions } from '../types.mjs';
+import { FileSystemEntryType, getFileSystemEntryType } from '../utils/get-file-system-entry-type.mjs';
+import { getPublicModuleNameFromPath } from '../utils/get-public-module-name-from-path.mjs';
+import { resolveAbsoluteModulePath } from '../utils/resolve-absolute-module-path.mjs';
 
 export interface ClientTemplateFile {
   templateName: string;

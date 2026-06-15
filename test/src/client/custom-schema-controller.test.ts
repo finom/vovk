@@ -1,5 +1,5 @@
-import { it, describe } from 'node:test';
 import { strictEqual } from 'node:assert';
+import { describe, it } from 'node:test';
 import { schema } from 'vovk-client';
 
 describe('Custom schema', () => {

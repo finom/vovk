@@ -1,7 +1,7 @@
-import { it, describe } from 'node:test';
 import path from 'node:path';
-import getCLIAssertions from '../../lib/get-cli-assertions.mts';
+import { describe, it } from 'node:test';
 import { updateConfigFileProperty } from '../../../src/utils/update-config-property.mts';
+import getCLIAssertions from '../../lib/get-cli-assertions.mts';
 
 await describe('CLI new controller and flags', async () => {
   const cwd = path.resolve(import.meta.dirname, '../../..');

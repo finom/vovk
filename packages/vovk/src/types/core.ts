@@ -1,11 +1,11 @@
 import type { OpenAPIObject } from 'openapi3-ts/oas31';
+import type { Responder } from '../core/json-lines-responder.js';
 import type { VovkPackageJson, VovkStrictConfig } from './config.js';
 import type { HttpStatus, VovkSchemaIdEnum } from './enums.js';
 import type { VovkJSONSchemaBase } from './json-schema.js';
 import type { VovkOperationObject } from './operation.js';
 import type { VovkRequest } from './request.js';
 import type { KnownAny, RequireFields, StaticClass } from './utils.js';
-import type { Responder } from '../core/json-lines-responder.js';
 
 /**
  * Schema for an individual handler, available as MyRPC.myHandler.schema and MyController.myHandler.schema

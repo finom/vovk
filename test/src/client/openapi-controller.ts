@@ -1,4 +1,4 @@
-import { get, HttpStatus, prefix, operation } from 'vovk';
+import { get, HttpStatus, operation, prefix } from 'vovk';
 import { openapi } from 'vovk-client/openapi';
 
 @prefix('openapi')

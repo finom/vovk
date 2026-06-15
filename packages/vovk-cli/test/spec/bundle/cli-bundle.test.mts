@@ -1,12 +1,12 @@
-import { it, describe } from 'node:test';
-import path from 'node:path';
 import { deepStrictEqual, strictEqual } from 'node:assert';
 import fs from 'node:fs/promises';
+import path from 'node:path';
+import { describe, it } from 'node:test';
 import type { VovkSchema } from 'vovk';
-import getCLIAssertions from '../../lib/get-cli-assertions.mts';
-import updateConfig from '../../lib/update-config.mts';
-import { importFresh } from '../../lib/import-fresh.mts';
 import { updateConfigFileProperty } from '../../../dist/utils/update-config-property.mjs';
+import getCLIAssertions from '../../lib/get-cli-assertions.mts';
+import { importFresh } from '../../lib/import-fresh.mts';
+import updateConfig from '../../lib/update-config.mts';
 
 await describe('TypeScript bundle', async () => {
   const { projectDir, runAtProjectDir, vovkDevAndKill, assertDirFileList, createVovkApp } = getCLIAssertions({

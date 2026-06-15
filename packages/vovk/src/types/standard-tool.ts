@@ -1,5 +1,5 @@
-import type { CombinedSpec } from './validation.js';
 import type { KnownAny } from './utils.js';
+import type { CombinedSpec } from './validation.js';
 
 /**
  * The `standard-tool` convention (https://github.com/finom/standard-tool): a neutral LLM tool shape —

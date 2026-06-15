@@ -1,6 +1,6 @@
 import { headers } from 'next/headers.js';
-import { HttpException, HttpStatus, type JSONLinesResponder, type VovkRequest, get, post, prefix } from 'vovk';
 import { NextResponse } from 'next/server.js';
+import { get, HttpException, HttpStatus, type JSONLinesResponder, post, prefix, type VovkRequest } from 'vovk';
 import type { NESTED_QUERY_EXAMPLE } from '../lib.ts';
 
 @prefix('common')

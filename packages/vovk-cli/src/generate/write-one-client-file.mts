@@ -1,28 +1,28 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
+import TOML from '@iarna/toml';
 import ejs from 'ejs';
 import _ from 'lodash';
-import * as YAML from 'yaml';
-import TOML from '@iarna/toml';
+import type { OpenAPIObject } from 'openapi3-ts/oas31';
+import type { PackageJson } from 'type-fest';
 import type { VovkSchema } from 'vovk';
 import {
   createCodeSamples,
   reattachMixinDefs,
-  VovkSchemaIdEnum,
   type VovkReadmeConfig,
   type VovkSamplesConfig,
+  VovkSchemaIdEnum,
   type VovkStrictConfig,
 } from 'vovk/internal';
-import type { PackageJson } from 'type-fest';
-import type { OpenAPIObject } from 'openapi3-ts/oas31';
-import type { ProjectInfo } from '../get-project-info/index.mjs';
-import type { ClientTemplateFile } from './get-client-template-files.mjs';
-import type { Segment } from '../utils/locate-segments.mjs';
-import { compileJSONSchemaToTypeScriptType } from '../utils/compile-json-schema-to-typescript-type.mjs';
-import { getTemplateClientImports } from './get-template-client-imports.mjs';
-import { chalkHighlightThing } from '../utils/chalk-highlight-thing.mjs';
+import * as YAML from 'yaml';
 import { ROOT_SEGMENT_FILE_NAME } from '../dev/write-one-segment-schema-file.mjs';
+import type { ProjectInfo } from '../get-project-info/index.mjs';
+import { chalkHighlightThing } from '../utils/chalk-highlight-thing.mjs';
+import { compileJSONSchemaToTypeScriptType } from '../utils/compile-json-schema-to-typescript-type.mjs';
+import type { Segment } from '../utils/locate-segments.mjs';
 import { prettify } from '../utils/prettify.mjs';
+import type { ClientTemplateFile } from './get-client-template-files.mjs';
+import { getTemplateClientImports } from './get-template-client-imports.mjs';
 
 export function normalizeOutTemplatePath(out: string, packageJson: PackageJson): string {
   return out.replace('[package_name]', packageJson.name?.replace(/-/g, '_') ?? 'my_package_name');

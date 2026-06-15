@@ -1,8 +1,8 @@
-import { it, describe } from 'node:test';
-import { procedure } from 'vovk';
-import type { VovkRequest } from 'vovk';
-import { z } from 'zod';
 import assert from 'node:assert';
+import { describe, it } from 'node:test';
+import type { VovkRequest } from 'vovk';
+import { procedure } from 'vovk';
+import { z } from 'zod';
 
 describe('procedure features', async () => {
   const definition = {

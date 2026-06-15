@@ -1,4 +1,4 @@
-import { initSegment, cloneControllerMetadata, prefix, get } from 'vovk';
+import { cloneControllerMetadata, get, initSegment, prefix } from 'vovk';
 import CommonController from '../../../../client/common-controller.ts';
 
 @cloneControllerMetadata()

@@ -1,9 +1,9 @@
-import { it, describe } from 'node:test';
 import { deepStrictEqual, strictEqual } from 'node:assert';
+import { describe, it } from 'node:test';
+import { HttpException, type VovkIteration, type VovkOutput, type VovkReturnType, type VovkYieldType } from 'vovk';
 import { WithValidationDecorateRPC } from 'vovk-client';
-import { HttpException, type VovkReturnType, type VovkYieldType, type VovkOutput, type VovkIteration } from 'vovk';
-import type WithValidationDecorateController from './with-validation-decorate-controller.ts';
 import { expectPromise } from '../lib.ts';
+import type WithValidationDecorateController from './with-validation-decorate-controller.ts';
 
 describe('decorate+procedure syntax', () => {
   it('Should handle all with decorate', async () => {

@@ -1,7 +1,7 @@
 import type { JSONSchema7, JSONSchema7Definition } from 'json-schema';
-import type { OpenAPIObject } from 'openapi3-ts/oas31';
-import upperFirst from 'lodash/upperFirst.js';
 import camelCase from 'lodash/camelCase.js';
+import upperFirst from 'lodash/upperFirst.js';
+import type { OpenAPIObject } from 'openapi3-ts/oas31';
 
 interface CompileOptions {
   name: string;

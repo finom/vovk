@@ -1,8 +1,8 @@
 import type { VovkJSONSchemaBase } from './json-schema.js';
 import type { VovkRequest } from './request.js';
-import type { CombinedSpec } from './validation.js';
 import type { StandardTool } from './standard-tool.js';
 import type { KnownAny } from './utils.js';
+import type { CombinedSpec } from './validation.js';
 
 export type ToModelOutputFn<TInput, TOutput, TFormattedOutput> = (
   result: TOutput | Error,

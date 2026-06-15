@@ -1,14 +1,14 @@
 import assert from 'node:assert';
 import { promises as fs } from 'node:fs';
-import { runScript } from './run-script.mts';
 import path from 'node:path';
-import { getUserConfig } from '../../dist/get-project-info/get-config/get-user-config.mjs';
 import type { VovkConfig } from 'vovk';
 import type { VovkStrictConfig } from 'vovk/internal';
-import { getFileSystemEntryType, FileSystemEntryType } from '../../dist/utils/get-file-system-entry-type.mjs';
-import { checkTSConfigForExperimentalDecorators } from '../../dist/init/check-tsconfig-for-experimental-decorators.mjs';
+import { getUserConfig } from '../../dist/get-project-info/get-config/get-user-config.mjs';
 import { getConfig } from '../../dist/get-project-info/get-config/index.mjs';
+import { checkTSConfigForExperimentalDecorators } from '../../dist/init/check-tsconfig-for-experimental-decorators.mjs';
 import { BUNDLE_BUILD_TSDOWN } from '../../dist/init/create-config.mjs';
+import { FileSystemEntryType, getFileSystemEntryType } from '../../dist/utils/get-file-system-entry-type.mjs';
+import { runScript } from './run-script.mts';
 
 function escapeFlags(flags: string | undefined): string {
   return flags ? `_${flags.replace(/[\s=]+/g, '_')}` : '';

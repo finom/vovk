@@ -2,10 +2,10 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import debounce from 'lodash/debounce.js';
 import { VovkSchemaIdEnum } from 'vovk/internal';
-import { writeOneSegmentSchemaFile, META_FILE_NAME, ROOT_SEGMENT_FILE_NAME } from './write-one-segment-schema-file.mjs';
 import type { ProjectInfo } from '../get-project-info/index.mjs';
 import { formatLoggedSegmentName } from '../utils/format-logged-segment-name.mjs';
 import { writeMetaJson } from './write-meta-json.mjs';
+import { META_FILE_NAME, ROOT_SEGMENT_FILE_NAME, writeOneSegmentSchemaFile } from './write-one-segment-schema-file.mjs';
 
 /**
  * Ensure that the schema files are created to avoid any import errors.

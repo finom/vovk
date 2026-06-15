@@ -1,7 +1,7 @@
-import { it, describe } from 'node:test';
-import path from 'node:path';
-import fs from 'node:fs/promises';
 import assert from 'node:assert';
+import fs from 'node:fs/promises';
+import path from 'node:path';
+import { describe, it } from 'node:test';
 import { Agent, setGlobalDispatcher } from 'undici';
 import type { VovkSegmentSchema } from 'vovk/internal';
 import getCLIAssertions from '../../lib/get-cli-assertions.mts';

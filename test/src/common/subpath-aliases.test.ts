@@ -1,8 +1,8 @@
-import { describe, it } from 'node:test';
 import { strictEqual } from 'node:assert';
+import { describe, it } from 'node:test';
 import { createRPC } from 'vovk/create-rpc';
-import { createRPC as createRPCLegacy } from 'vovk/createRPC';
 import { createValidateOnClient } from 'vovk/create-validate-on-client';
+import { createRPC as createRPCLegacy } from 'vovk/createRPC';
 import { createValidateOnClient as createValidateOnClientLegacy } from 'vovk/createValidateOnClient';
 
 // The camelCase subpaths remain as aliases of the kebab-case ones until the next major.

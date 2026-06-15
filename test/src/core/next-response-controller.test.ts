@@ -1,5 +1,5 @@
-import { it, describe } from 'node:test';
-import { strictEqual, deepStrictEqual } from 'node:assert';
+import { deepStrictEqual, strictEqual } from 'node:assert';
+import { describe, it } from 'node:test';
 import { request } from '../lib.ts';
 
 describe('NextResponse', () => {

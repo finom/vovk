@@ -1,8 +1,8 @@
-import { it, describe } from 'node:test';
-import { z } from 'zod';
 import assert from 'node:assert';
-import { ToModelOutput, type VovkTool, createTool } from 'vovk';
+import { describe, it } from 'node:test';
+import { createTool, ToModelOutput, type VovkTool } from 'vovk';
 import type { MCPModelOutput } from 'vovk/internal';
+import { z } from 'zod';
 
 describe('createTool', () => {
   describe('Common, no toModelOutput', () => {

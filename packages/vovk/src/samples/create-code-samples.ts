@@ -1,8 +1,8 @@
-import { schemaToCode, getSampleValue } from './schema-to-code.js';
-import { objectToCode } from './object-to-code.js';
+import type { VovkSamplesConfig } from '../types/config.js';
 import type { VovkControllerSchema, VovkHandlerSchema } from '../types/core.js';
 import type { VovkJSONSchemaBase } from '../types/json-schema.js';
-import type { VovkSamplesConfig } from '../types/config.js';
+import { objectToCode } from './object-to-code.js';
+import { getSampleValue, schemaToCode } from './schema-to-code.js';
 
 const toSnakeCase = (str: string) =>
   str

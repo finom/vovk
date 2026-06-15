@@ -1,8 +1,7 @@
 import type { NextResponse } from 'next/server.js';
-import type { JSONLinesResponder } from '../core/json-lines-responder.js';
-import type { defaultStreamHandler } from '../client/default-stream-handler.js';
 import type { defaultHandler } from '../client/default-handler.js';
-import type { VovkRequest } from './request.js';
+import type { defaultStreamHandler } from '../client/default-stream-handler.js';
+import type { JSONLinesResponder } from '../core/json-lines-responder.js';
 import type {
   ControllerStaticMethod,
   VovkControllerSchema,
@@ -10,8 +9,9 @@ import type {
   VovkSchema,
   VovkSegmentSchema,
 } from './core.js';
-import type { IsEmptyObject, KnownAny, Prettify } from './utils.js';
 import type { HttpMethod } from './enums.js';
+import type { VovkRequest } from './request.js';
+import type { IsEmptyObject, KnownAny, Prettify } from './utils.js';
 import type { BodyTypeFromContentType, ContentType, VovkValidateOnClient } from './validation.js';
 
 type OmitNullable<T> = {

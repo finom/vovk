@@ -1,5 +1,5 @@
-import type { VovkControllerSchema, VovkSegmentSchema } from 'vovk/internal';
 import isEqual from 'lodash/isEqual.js';
+import type { VovkControllerSchema, VovkSegmentSchema } from 'vovk/internal';
 
 interface HandlersDiff {
   nameOfClass: string;

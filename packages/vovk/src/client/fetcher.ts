@@ -1,7 +1,7 @@
-import { HttpStatus } from '../types/enums.js';
 import { HttpException } from '../core/http-exception.js';
-import type { VovkFetcherOptions, VovkFetcher } from '../types/client.js';
+import type { VovkFetcher, VovkFetcherOptions } from '../types/client.js';
 import type { VovkHandlerSchema } from '../types/core.js';
+import { HttpStatus } from '../types/enums.js';
 import { fileNameToDisposition } from '../utils/file-name-to-disposition.js';
 export const DEFAULT_ERROR_MESSAGE = 'Unknown error at default fetcher';
 

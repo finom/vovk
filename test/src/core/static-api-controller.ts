@@ -1,4 +1,4 @@
-import { prefix, get, controllersToStaticParams } from 'vovk';
+import { controllersToStaticParams, get, prefix } from 'vovk';
 
 @prefix('static-api')
 export default class StaticApiController {
