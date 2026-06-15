@@ -102,6 +102,11 @@ export default function getCLIAssertions({ cwd, dir }: { cwd: string; dir: strin
         await createNextApp(nextFlags, tmpVovkProjectDir);
         // Then initialize Vovk on top of it
         await initVovkApp(tmpVovkProjectDir);
+        // Drop the `.next` build output before the cache is used as a `cp -R` source.
+        // Next.js dev writes volatile `.next/dev/_events_<pid>.json` files and reaps them
+        // asynchronously, so copying a live `.next` races ("cp: cannot stat ..._events_*.json").
+        // Tests regenerate `.next` as needed; only `.vovk-schema` is reused from the cache.
+        await runScript(`rm -rf ${path.join(tmpVovkProjectDir, '.next')}`);
       }
 
       await runScript(`cp -R ${tmpVovkProjectDir} ${projectDir}`);
