@@ -21,7 +21,7 @@
     "test-only": "npm run pre-test && NODE_ENV=test node --experimental-transform-types --experimental-strip-types --experimental-vm-modules --test --test-only test/spec/**/*.mts",
     "test": "npm run pre-test && NODE_ENV=test node --experimental-transform-types --experimental-strip-types --experimental-vm-modules --test --test-concurrency=1 test/spec/**/*.mts",
     "tsc": "tsc --noEmit",
-    "ncu": "npm-check-updates -u -x commander,node-pty",
+    "ncu": "npm-check-updates -u -x commander,node-pty,tsdown",
     "npm-publish": "npm publish",
     "clear-test-cache": "rm -rf ./tmp_*"
   },
@@ -45,7 +45,7 @@
     "vovk": ">=3.0.0"
   },
   "optionalDependencies": {
-    "@rolldown/binding-linux-x64-gnu": "1.1.1"
+    "@rolldown/binding-linux-x64-gnu": "1.0.0-rc.12"
   },
   "dependencies": {
     "@iarna/toml": "^2.2.5",
@@ -87,7 +87,7 @@
     "http-server": "^14.1.1",
     "node-pty": "0.10.1",
     "openapi3-ts": "^4.6.0",
-    "tsdown": "^0.22.2",
+    "tsdown": "0.21.7",
     "zod": "^4.4.3"
   }
 }
