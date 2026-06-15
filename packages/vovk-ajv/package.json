@@ -1,6 +1,6 @@
 {
   "name": "vovk-ajv",
-  "version": "0.0.2",
+  "version": "0.1.0",
   "description": "Client-side JSON Schema validation library for Vovk.ts",
   "files": [
     "index.js",
