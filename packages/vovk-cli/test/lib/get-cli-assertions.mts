@@ -102,14 +102,15 @@ export default function getCLIAssertions({ cwd, dir }: { cwd: string; dir: strin
         await createNextApp(nextFlags, tmpVovkProjectDir);
         // Then initialize Vovk on top of it
         await initVovkApp(tmpVovkProjectDir);
-        // Drop the `.next` build output before the cache is used as a `cp -R` source.
-        // Next.js dev writes volatile `.next/dev/_events_<pid>.json` files and reaps them
-        // asynchronously, so copying a live `.next` races ("cp: cannot stat ..._events_*.json").
-        // Tests regenerate `.next` as needed; only `.vovk-schema` is reused from the cache.
-        await runScript(`rm -rf ${path.join(tmpVovkProjectDir, '.next')}`);
       }
 
-      await runScript(`cp -R ${tmpVovkProjectDir} ${projectDir}`);
+      // Copy the cached project but exclude `.next`: Next.js dev (run while building the
+      // cache) writes volatile `.next/dev/_events_<pid>.json` files and reaps them
+      // asynchronously. Touching a live `.next` races intermittently — `cp -R` fails
+      // "cannot stat ..._events_*.json" and `rm -rf` fails "Directory not empty" (BSD/macOS).
+      // rsync with --exclude never traverses `.next`, sidestepping the race entirely.
+      // Tests regenerate `.next` as needed; only `.vovk-schema` is reused from the cache.
+      await runScript(`rsync -a --exclude='.next' ${tmpVovkProjectDir}/ ${projectDir}/`);
     } else {
       // Use createNextApp to create the base project directly
       await createNextApp(nextFlags, projectDir);
