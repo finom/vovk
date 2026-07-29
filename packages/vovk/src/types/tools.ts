@@ -11,10 +11,8 @@ export type ToModelOutputFn<TInput, TOutput, TFormattedOutput> = (
 ) => TFormattedOutput | Promise<TFormattedOutput>;
 
 /**
- * Vovk tool — produced by both `deriveTools` (procedures → tools) and
- * `createTool` (standalone tools); both return the same shape. Extends the
- * {@link StandardToolV0} convention with Vovk specifics (`parameters`, `type`).
- * @see https://vovk.dev/tools
+ * Vovk tool, produced by both `deriveTools` and `createTool`; extends the {@link StandardToolV0}
+ * convention with Vovk specifics (`parameters`, `type`). @see https://vovk.dev/tools
  */
 export interface VovkTool<TInput = KnownAny, TOutput = KnownAny, TFormattedOutput = KnownAny>
   extends StandardToolV0<TInput, TOutput, TFormattedOutput> {
@@ -32,12 +30,8 @@ export interface VovkTool<TInput = KnownAny, TOutput = KnownAny, TFormattedOutpu
   inputSchema: TInput extends undefined ? undefined : CombinedSpec<TInput>;
   outputSchema: TOutput extends undefined ? undefined : CombinedSpec<TOutput>;
   /**
-   * Per-slot Standard Schemas, populated only when the tool was built via
-   * `deriveTools` from a procedure. Always `undefined` for tools built via
-   * `createTool`.
-   *
-   * @deprecated Use {@link VovkTool.inputSchema} (a merged Standard Schema)
-   * instead. This field will be removed in the next major version.
+   * Per-slot Standard Schemas, only set for procedure-derived tools.
+   * @deprecated Use {@link VovkTool.inputSchema} instead, removed in the next major.
    */
   inputSchemas?: {
     body?: CombinedSpec;

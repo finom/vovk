@@ -6,20 +6,12 @@ function valToString(value: unknown): string {
 // Regex to match words (including Unicode letters & digits)
 const reUnicodeWord = /[\p{Lu}]{2,}(?=[\p{Lu}][\p{Ll}]+[0-9]*|\b)|[\p{Lu}]?[\p{Ll}]+[0-9]*|[\p{Lu}]|[0-9]+/gu;
 
-/**
- * Splits string into an array of words based on Unicode word boundaries
- * @param {string} str
- * @returns {string[]}
- */
+// splits string into words based on Unicode word boundaries
 function unicodeWords(str: string) {
   return str.match(reUnicodeWord) || [];
 }
 
-/**
- * Converts string to camel case.
- * @param {*} input - The value to convert to camel case.
- * @returns {string}
- */
+// converts string to camel case
 export function camelCase(input: string) {
   const str = valToString(input);
   // replace separators with space

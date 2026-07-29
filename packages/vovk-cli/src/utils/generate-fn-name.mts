@@ -30,15 +30,8 @@ const DEFAULT_OPTIONS: GenerateFnNameOptions = {
   ignoreSegments: ['api'],
 };
 
-/**
- * Turn an HTTP method + OpenAPI path into a camelCased function name.
- *
- * Examples:
- *   generateFnName('GET', '/users')                     // "listUsers"
- *   generateFnName('GET', '/users/{id}')                // "getUsersById"
- *   generateFnName('POST', '/v1/api/orders')            // "createOrders"
- *   generateFnName('PATCH', '/users/{userId}/profile')  // "patchUsersProfileByUserId"
- */
+// HTTP method + OpenAPI path to a camelCased fn name,
+// e.g. GET /users -> "listUsers", GET /users/{id} -> "getUsersById", POST /v1/api/orders -> "createOrders"
 export function generateFnName(method: HttpMethod, rawPath: string, opts: GenerateFnNameOptions = {}): string {
   const { ignoreSegments } = {
     ...DEFAULT_OPTIONS,

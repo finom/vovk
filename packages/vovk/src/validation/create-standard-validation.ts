@@ -88,11 +88,8 @@ export function createStandardValidation({
               ? never
               : AsyncGenerator<CombinedSpec.InferOutput<TIteration>>);
 
-  // Return type for procedure().handle() — preserves VovkBody/VovkOutput/VovkReturnType extraction
-  // Stores the handler function type (THandleFn) instead of eagerly resolving its return type.
-  // This breaks circular type inference when the handler callback calls a service whose
-  // param types reference the controller — TypeScript captures THandleFn structurally
-  // without resolving ReturnType<THandleFn>, which is computed lazily when queried.
+  // return type for procedure().handle(), stores THandleFn instead of ReturnType<THandleFn>
+  // to avoid circular inference when the handler calls a service typed via the controller
   type BuilderHandleReturn<
     TBody extends CombinedSpec,
     TQuery extends CombinedSpec,

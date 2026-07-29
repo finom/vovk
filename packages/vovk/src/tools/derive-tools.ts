@@ -238,7 +238,6 @@ type DeriveToolsResult<TOutput, TFormattedOutput> = {
  * import { deriveTools, ToModelOutput } from 'vovk';
  * import { UserRPC } from 'vovk-client';
  *
- * // Derive AI tools from the UserRPC module
  * const { tools, toolsByName } = deriveTools({
  *   modules: { UserRPC },
  *   toModelOutput: ToModelOutput.MCP,

@@ -207,10 +207,8 @@ export function openAPIToVovkSchema({
   });
 
   if (pruneComponents && noPathsOpenAPIObject.components?.schemas) {
-    // Reassign with fresh objects only — `noPathsOpenAPIObject` shares references with the
-    // caller's spec, so the original `components.schemas` must stay untouched. Walking the
-    // whole controllers tree (validation slots + raw operation objects) keeps every `$ref`
-    // a kept handler carries resolvable against the pruned meta.
+    // reassign with fresh objects only, the caller's spec shares references so its
+    // components.schemas must stay untouched; walking the whole controllers tree keeps every kept $ref resolvable
     segment.meta = {
       openAPIObject: {
         ...noPathsOpenAPIObject,

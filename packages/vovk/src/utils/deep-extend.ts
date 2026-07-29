@@ -77,15 +77,8 @@ function safeGetProperty<T extends object>(object: T, property: PropertyKey): Kn
   return property === '__proto__' ? undefined : (object as KnownAny)[property];
 }
 
-/**
- * Extending object that entered in first argument.
- *
- * Returns extended object or false if have no target object or incorrect type.
- *
- * If you wish to clone source object (without modify it), just use empty new
- * object as first argument, like this:
- *   deepExtend({}, yourObj_1, [yourObj_N]);
- */
+// deep-extends the first argument in place, returns it (or false if target is not an object)
+// to clone without modifying the source: deepExtend({}, yourObj)
 function deepExtend<T extends object>(...args: [T, ...Partial<T>[]]): T;
 function deepExtend<T extends object, U extends object>(target: T, source: U): T & U;
 function deepExtend<T extends object, U extends object, V extends object>(target: T, source1: U, source2: V): T & U & V;

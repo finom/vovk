@@ -6,11 +6,7 @@ import '../utils/shim.js';
 
 export const DEFAULT_ERROR_MESSAGE = 'An unknown error at the default stream handler';
 
-/**
- * Converts a ReadableStream of JSON Lines into a VovkStreamAsyncIterable.
- * This is the core streaming logic extracted for reuse outside of HTTP contexts.
- * @see https://vovk.dev/jsonlines
- */
+/** ReadableStream of JSON Lines to VovkStreamAsyncIterable, reusable outside HTTP contexts. @see https://vovk.dev/jsonlines */
 export const readableStreamToAsyncIterable = <T = unknown>({
   readableStream,
   abortController,
