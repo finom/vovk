@@ -2,6 +2,10 @@ import type { VovkHandlerSchema } from '../types/core.js';
 import type { VovkRequest } from '../types/request.js';
 import type { ToModelOutputFn, VovkTool } from '../types/tools.js';
 import type { CombinedSpec } from '../types/validation.js';
+import {
+  jsonSchemasObjectToSingleJSONSchemaOnlySpec,
+  jsonSchemaToJSONSchemaOnlySpec,
+} from '../validation/json-schema-only-spec.js';
 import type { procedure } from '../validation/procedure.js';
 import { validationSchemasObjectToSingleValidationSchema } from '../validation/validation-schemas-object-to-single-validation-schema.js';
 import { ToModelOutput } from './to-model-output.js';
@@ -22,7 +26,7 @@ type CallerInput<TOutput, TFormattedOutput> = {
   body: unknown;
   query: unknown;
   params: unknown;
-  schema: VovkHandlerSchema;
+  schema: VovkHandlerSchema | undefined;
   inputSchemas:
     | {
         body?: CombinedSpec;
@@ -108,15 +112,34 @@ const makeTool = <TOutput, TFormattedOutput>({
     throw new Error(`Handler "${handlerName}" not found in module "${moduleName}".`);
   }
   const { schema, definition } = handler;
+
+  const name = schema?.operationObject?.['x-tool']?.name ?? `${moduleName}_${handlerName}`;
+
   const inputSchemas = Object.fromEntries(
     (['body', 'query', 'params'] as const).map((key) => [key, definition?.[key]]).filter(([, value]) => Boolean(value))
   ) as { body?: CombinedSpec; query?: CombinedSpec; params?: CombinedSpec };
-  const inputSchema =
-    Object.keys(inputSchemas).length > 0 ? validationSchemasObjectToSingleValidationSchema(inputSchemas) : undefined;
 
-  if (!schema?.operationObject) {
-    throw new Error(`Handler "${handlerName}" in module "${moduleName}" does not have a valid schema.`);
-  }
+  // prefer real Standard Schemas from `definition` (procedures); RPC modules only have JSON Schemas
+  // in `schema.validation`, so wrap those instead (validate() throws, see json-schema-only-spec.ts)
+  const inputSchema =
+    Object.keys(inputSchemas).length > 0
+      ? validationSchemasObjectToSingleValidationSchema(inputSchemas)
+      : jsonSchemasObjectToSingleJSONSchemaOnlySpec({
+          schemas: {
+            body: schema?.validation?.body,
+            query: schema?.validation?.query,
+            params: schema?.validation?.params,
+          },
+          subject: `inputSchema of the "${name}" tool`,
+        });
+  const outputSchema =
+    definition?.output ??
+    (schema?.validation?.output
+      ? jsonSchemaToJSONSchemaOnlySpec({
+          jsonSchema: schema.validation.output,
+          subject: `outputSchema of the "${name}" tool`,
+        })
+      : undefined);
 
   const execute = async (input: { body?: unknown; query?: unknown; params?: unknown }): Promise<TFormattedOutput> => {
     const { body, query, params } = input;
@@ -163,13 +186,15 @@ const makeTool = <TOutput, TFormattedOutput>({
   const tool: VovkTool<DerivedToolInput, TOutput, TFormattedOutput> = {
     type: 'function',
     execute,
-    name: schema.operationObject?.['x-tool']?.name ?? `${moduleName}_${handlerName}`,
+    name,
     inputSchema: inputSchema as VovkTool<DerivedToolInput, TOutput, TFormattedOutput>['inputSchema'],
-    outputSchema: definition?.output as VovkTool<DerivedToolInput, TOutput, TFormattedOutput>['outputSchema'],
-    title: schema.operationObject?.['x-tool']?.title ?? schema.operationObject?.summary,
+    outputSchema: outputSchema as VovkTool<DerivedToolInput, TOutput, TFormattedOutput>['outputSchema'],
+    title: schema?.operationObject?.['x-tool']?.title ?? schema?.operationObject?.summary,
     description:
-      schema.operationObject?.['x-tool']?.description ??
-      ([schema.operationObject?.summary ?? '', schema.operationObject?.description ?? ''].filter(Boolean).join('\n') ||
+      schema?.operationObject?.['x-tool']?.description ??
+      ([schema?.operationObject?.summary ?? '', schema?.operationObject?.description ?? '']
+        .filter(Boolean)
+        .join('\n') ||
         handlerName),
     parameters: {
       type: 'object',
