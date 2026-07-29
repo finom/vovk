@@ -1,6 +1,6 @@
 import type { VovkJSONSchemaBase } from './json-schema.js';
 import type { VovkRequest } from './request.js';
-import type { StandardTool } from './standard-tool.js';
+import type { StandardToolV0 } from './standard-tool.js';
 import type { KnownAny } from './utils.js';
 import type { CombinedSpec } from './validation.js';
 
@@ -13,11 +13,11 @@ export type ToModelOutputFn<TInput, TOutput, TFormattedOutput> = (
 /**
  * Vovk tool — produced by both `deriveTools` (procedures → tools) and
  * `createTool` (standalone tools); both return the same shape. Extends the
- * {@link StandardTool} convention with Vovk specifics (`title`, `parameters`, `type`).
+ * {@link StandardToolV0} convention with Vovk specifics (`parameters`, `type`).
  * @see https://vovk.dev/tools
  */
 export interface VovkTool<TInput = KnownAny, TOutput = KnownAny, TFormattedOutput = KnownAny>
-  extends StandardTool<TInput, TOutput, TFormattedOutput> {
+  extends StandardToolV0<TInput, TOutput, TFormattedOutput> {
   title: string | undefined;
   parameters: {
     type?: 'object';
