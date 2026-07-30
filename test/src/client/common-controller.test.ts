@@ -174,6 +174,22 @@ describe('Client with composed RPC client', () => {
     });
   });
 
+  it('should deep-merge options of chained withDefaults calls', async () => {
+    const rpcWithDefaults = CommonControllerRPC.withDefaults({
+      apiRoot,
+      init: { headers: { 'x-vovk-test': 'world' } },
+    }).withDefaults({
+      init: { headers: { 'x-vovk-another-header': 'another-value' } },
+    });
+
+    const result = await rpcWithDefaults.getHelloWorldHeaders();
+
+    deepStrictEqual(result, {
+      'x-vovk-test': 'world',
+      'x-vovk-another-header': 'another-value',
+    });
+  });
+
   it(`Should handle simple requests and use empty generic`, async () => {
     const result = await CommonControllerRPC.getHelloWorldAndEmptyGeneric();
     deepStrictEqual(result satisfies { hello: string | null }, { hello: 'world' });

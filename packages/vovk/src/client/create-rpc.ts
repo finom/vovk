@@ -197,10 +197,14 @@ export const createRPC = <T, OPTS extends Record<string, KnownAny> = Record<stri
 
   Object.defineProperty(client, 'withDefaults', {
     value: (newOptions?: VovkFetcherOptions<OPTS>) => {
-      return createRPC<T, OPTS>(schema, segmentName, rpcModuleName, givenFetcher, {
-        ...options,
-        ...newOptions,
-      } as VovkFetcherOptions<OPTS>);
+      // deep merge to match per-call option merging, so chained defaults don't clobber nested keys
+      return createRPC<T, OPTS>(
+        schema,
+        segmentName,
+        rpcModuleName,
+        givenFetcher,
+        deepExtend({}, options, newOptions) as VovkFetcherOptions<OPTS>
+      );
     },
     enumerable: false,
     writable: false,
