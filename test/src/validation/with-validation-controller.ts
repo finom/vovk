@@ -166,6 +166,15 @@ export default class WithValidationController {
   });
 
   @get.auto()
+  static handleFalsyOutput = procedure({
+    query: z.object({ type: z.enum(['boolean', 'number', 'string']) }),
+    output: z.union([z.boolean(), z.number(), z.string()]),
+  }).handle(async (req) => {
+    const { type } = req.vovk.query();
+    return type === 'boolean' ? false : type === 'number' ? 0 : '';
+  });
+
+  @get.auto()
   static handleStream = procedure({
     query: z.object({ values: z.string().array() }),
     iteration: z.object({ value: z.string().max(5) }),
