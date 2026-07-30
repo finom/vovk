@@ -299,6 +299,12 @@ describe('Validation with with zod and validateOnClient defined at settings', ()
     await rejects.toThrow(/Validation failed. Invalid output: .*hello.*/);
   });
 
+  it('Should handle falsy output values with output validation', async () => {
+    strictEqual(await WithValidationRPC.handleFalsyOutput({ query: { type: 'boolean' } }), false);
+    strictEqual(await WithValidationRPC.handleFalsyOutput({ query: { type: 'number' } }), 0);
+    strictEqual(await WithValidationRPC.handleFalsyOutput({ query: { type: 'string' } }), '');
+  });
+
   it('Should handle stream', async () => {
     const tokens = ['a', 'b', 'c', 'd'];
     const expected = tokens.map((value) => ({ value }));

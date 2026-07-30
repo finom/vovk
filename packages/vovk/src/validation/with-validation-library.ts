@@ -97,7 +97,8 @@ export function withValidationLibrary<
     }
 
     if (output && !disableServerSideValidationKeys.includes('output')) {
-      if (!data) {
+      // only undefined means a missing return, falsy values like false or 0 are valid outputs
+      if (data === undefined) {
         throw new HttpException(
           HttpStatus.INTERNAL_SERVER_ERROR,
           'Output is required. You probably forgot to return something from your handler.'
