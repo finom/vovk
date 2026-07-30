@@ -102,12 +102,10 @@ export interface VovkOpenAPIMixin {
       };
   apiRoot?: string;
   getModuleName?: // if not provided, will use 'api' by default
-    | 'nestjs-operation-id' // UserController from 'UserController_getUser' operation ID
     | (string & {}) // literal module name, like MedusaRPC, GithubReposRPC, etc.
     | 'api' // declared for documentation purposes as default
     | GetOpenAPINameFn;
   getMethodName?: // if not provided, will use 'camel-case-operation-id' if operationId is snake_case, in other cases will use 'auto' strategy
-    | 'nestjs-operation-id' // getUser from 'UserController_getUser' operation ID
     | 'camel-case-operation-id' // operation ID to camelCase
     | 'auto' // auto-detect based on operationObject method and path
     | GetOpenAPINameFn;
