@@ -86,19 +86,22 @@ export const readableStreamToAsyncIterable = <T = unknown>({
       }
 
       if (data) {
-        subscribers.forEach((cb) => {
-          if (!abortController?.signal.aborted) cb(data, iterationIndex);
-        });
-
-        iterationIndex++;
-
+        // the error envelope is a control message, not data, subscribers must not see it
         if (typeof data === 'object' && data !== null && 'isError' in data && 'reason' in data) {
           const upcomingError = (data as { reason: unknown }).reason;
           abortController?.abort(upcomingError);
           const error = typeof upcomingError === 'string' ? new Error(upcomingError) : upcomingError;
           setStreamError(error);
           return true;
-        } else if (!abortController?.signal.aborted) {
+        }
+
+        subscribers.forEach((cb) => {
+          if (!abortController?.signal.aborted) cb(data, iterationIndex);
+        });
+
+        iterationIndex++;
+
+        if (!abortController?.signal.aborted) {
           cachedItems.push(data);
           notifyWaiters();
         }
