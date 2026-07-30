@@ -329,6 +329,22 @@ describe('Client with composed RPC client', () => {
     );
   });
 
+  it('Parses query values that contain unencoded "="', async () => {
+    // raw fetch like curl or an HTML form, the RPC client percent-encodes "=" so it cannot reproduce this
+    const endpoint = CommonControllerRPC.getNestedQuery.getURL({ apiRoot });
+    const response = await fetch(`${endpoint}?x=YWJjZA==&y[0]=a=b=c&z[f]=eyJhbGciOiJIUzI1NiJ9.payload.sig==`);
+
+    strictEqual(response.status, 200);
+
+    const { query } = (await response.json()) as { query: unknown };
+
+    deepStrictEqual(query, {
+      x: 'YWJjZA==',
+      y: ['a=b=c'],
+      z: { f: 'eyJhbGciOiJIUzI1NiJ9.payload.sig==' },
+    });
+  });
+
   it('Handles JSONL response', async () => {
     const result = await CommonControllerRPC.getJsonlResponse({
       apiRoot,

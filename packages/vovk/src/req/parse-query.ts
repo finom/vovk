@@ -114,7 +114,10 @@ export function parseQuery(queryString: string): Record<string, unknown> {
     .split('&');
 
   for (const pair of pairs) {
-    const [rawKey, rawVal = ''] = pair.split('=');
+    // split at the first "=" only, unencoded "=" is legal inside values (base64, JWTs, signatures)
+    const eqIndex = pair.indexOf('=');
+    const rawKey = eqIndex === -1 ? pair : pair.slice(0, eqIndex);
+    const rawVal = eqIndex === -1 ? '' : pair.slice(eqIndex + 1);
 
     const decodedKey = decodeURIComponent(rawKey);
     const decodedVal = decodeURIComponent(rawVal);
