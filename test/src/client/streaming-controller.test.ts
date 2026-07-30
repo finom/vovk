@@ -1,5 +1,6 @@
 import { deepStrictEqual, ok, strictEqual } from 'node:assert';
 import { describe, it } from 'node:test';
+import { inspect } from 'node:util';
 import { fetcher, HttpException, progressive, type VovkYieldType } from 'vovk';
 import { StreamingControllerRPC } from '../generated-client/index.ts';
 import { expectPromise } from '../lib.ts';
@@ -270,6 +271,26 @@ describe('Streaming', () => {
     deepStrictEqual(await hello, 'world');
     deepStrictEqual(await foo, 'foo1');
     deepStrictEqual(await bar, 'bar2');
+  });
+
+  it('progressive() proxy is inspectable and rejects keys that were never sent', async () => {
+    const resp = progressive(StreamingControllerRPC.progressiveResponse, { body: { hello: 'world' } });
+
+    deepStrictEqual(await resp.hello, 'world');
+
+    // must not throw on inspection
+    inspect(resp);
+    ok(Object.keys(resp).includes('hello'));
+
+    deepStrictEqual(await resp.foo, 'foo1');
+    deepStrictEqual(await resp.bar, 'bar2');
+
+    // let the completion handler run so the late access hits the finished stream
+    await new Promise((resolve) => setTimeout(resolve, 100));
+
+    await expectPromise(async () => {
+      await (resp as unknown as Record<string, Promise<unknown>>).missing;
+    }).rejects.toThrow(/closed without sending a value/);
   });
 
   it('onIterate should not receive the error control line', async () => {
