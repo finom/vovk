@@ -56,6 +56,23 @@ const RUST_KEYWORDS = new Set([
   'union',
 ]);
 
+/**
+ * Determine the body kind from the schema's x-contentType and format fields.
+ * Returns 'none', 'form', 'binary', 'text', or 'json'.
+ */
+export function getBodyKind(schema: VovkJSONSchemaBase | undefined): 'none' | 'form' | 'binary' | 'text' | 'json' {
+  if (!schema) return 'none';
+  const ct = schema['x-contentType'] as string[] | undefined;
+  if (ct?.includes('multipart/form-data') || ct?.includes('application/x-www-form-urlencoded')) return 'form';
+  if (schema.format === 'binary' || schema.contentEncoding === 'binary') return 'binary';
+  if (ct?.some((c: string) => c.startsWith('text/'))) return 'text';
+  // a declared non JSON content type on a scalar body means raw bytes, e.g. application/octet-stream or image/png
+  const isStructured = schema.type === 'object' || schema.type === 'array' || !!schema.properties;
+  const isJSONContentType = (c: string) => c === '*/*' || c === 'application/json' || c.endsWith('+json');
+  if (!isStructured && ct?.length && !ct.some(isJSONContentType)) return 'binary';
+  return 'json';
+}
+
 // Helper function for indentation
 export function indent(level: number, pad: number = 0): string {
   return ' '.repeat(pad + level * 2);
@@ -85,17 +102,14 @@ export function generateDocComment(schema: VovkJSONSchemaBase, level: number, pa
   return comment;
 }
 
-// Track processed $refs to avoid circular references
-const processedRefs = new Set<string>();
-
-// Resolve $ref paths in the schema
-export function resolveRef(ref: string, rootSchema: VovkJSONSchemaBase): VovkJSONSchemaBase | undefined {
-  if (processedRefs.has(ref)) {
-    // Circular reference detected, return a placeholder
-    return { type: 'string' };
-  }
-
-  processedRefs.add(ref);
+// Resolve $ref paths in the schema, "seen" guards $ref chains that point back at themselves
+export function resolveRef(
+  ref: string,
+  rootSchema: VovkJSONSchemaBase,
+  seen: Set<string> = new Set()
+): VovkJSONSchemaBase | undefined {
+  if (seen.has(ref)) return undefined;
+  seen.add(ref);
 
   // Format: #/$defs/TypeName or #/components/schemas/TypeName or #/definitions/TypeName etc.
   const parts = ref.split('/').filter((part) => part && part !== '#');
@@ -117,11 +131,121 @@ export function resolveRef(ref: string, rootSchema: VovkJSONSchemaBase): VovkJSO
 
   // If the resolved schema also has a $ref, resolve it recursively
   if (current?.$ref) {
-    return resolveRef(current.$ref, rootSchema);
+    return resolveRef(current.$ref, rootSchema, seen);
   }
 
-  processedRefs.delete(ref);
   return current;
+}
+
+// $defs, definitions and components/schemas entries all become top level named types
+const namedSchemasCache = new WeakMap<VovkJSONSchemaBase, Record<string, VovkJSONSchemaBase>>();
+
+export function getNamedSchemas(rootSchema: VovkJSONSchemaBase | undefined): Record<string, VovkJSONSchemaBase> {
+  if (!rootSchema || typeof rootSchema !== 'object') return {};
+  const cached = namedSchemasCache.get(rootSchema);
+  if (cached) return cached;
+
+  const components = (rootSchema as { components?: { schemas?: Record<string, VovkJSONSchemaBase> } }).components
+    ?.schemas;
+  const named: Record<string, VovkJSONSchemaBase> = {
+    ...components,
+    ...rootSchema.definitions,
+    ...rootSchema.$defs,
+  };
+
+  namedSchemasCache.set(rootSchema, named);
+  return named;
+}
+
+// "#/$defs/User" => "User", null when the target is not a named type
+export function refToName(ref: string | undefined, rootSchema: VovkJSONSchemaBase): string | null {
+  if (!ref?.startsWith('#/')) return null;
+  const name = ref.split('/').pop();
+  return name && getNamedSchemas(rootSchema)[name] ? name : null;
+}
+
+// references that are not behind a Vec, a cycle among them means an infinitely sized Rust type
+const directEdgesCache = new WeakMap<VovkJSONSchemaBase, Map<string, Set<string>>>();
+
+function getDirectEdges(rootSchema: VovkJSONSchemaBase): Map<string, Set<string>> {
+  const cached = directEdgesCache.get(rootSchema);
+  if (cached) return cached;
+
+  const edges = new Map<string, Set<string>>();
+
+  const walk = (schema: VovkJSONSchemaBase | undefined, from: string, seen: Set<VovkJSONSchemaBase>) => {
+    if (!schema || typeof schema !== 'object' || seen.has(schema)) return;
+    seen.add(schema);
+
+    const name = refToName(schema.$ref, rootSchema);
+    if (name) {
+      const targets = edges.get(from) ?? new Set<string>();
+      targets.add(name);
+      edges.set(from, targets);
+      return;
+    }
+
+    // items sit behind a Vec, which already breaks the cycle
+    for (const sub of [
+      ...Object.values(schema.properties ?? {}),
+      ...(schema.allOf ?? []),
+      ...(schema.anyOf ?? []),
+      ...(schema.oneOf ?? []),
+    ]) {
+      walk(sub, from, seen);
+    }
+  };
+
+  for (const [name, schema] of Object.entries(getNamedSchemas(rootSchema))) {
+    walk(schema, name, new Set());
+  }
+
+  directEdgesCache.set(rootSchema, edges);
+  return edges;
+}
+
+// a field needs a Box when its target can reach back to the type that holds it
+export function refNeedsBox(from: string | null, to: string, rootSchema: VovkJSONSchemaBase): boolean {
+  if (!from) return false;
+
+  const edges = getDirectEdges(rootSchema);
+  const stack = [to];
+  const visited = new Set<string>();
+
+  while (stack.length) {
+    const current = stack.pop() as string;
+    if (current === from) return true;
+    if (visited.has(current)) continue;
+    visited.add(current);
+    for (const next of edges.get(current) ?? []) stack.push(next);
+  }
+
+  return false;
+}
+
+// named types live at the top of the handler module, nested structs reach them through super::
+function superPrefix(path: string[]): string {
+  return 'super::'.repeat(Math.max(0, path.length - 1));
+}
+
+// turn any string into a valid Rust identifier, serde keeps the original name on the wire
+export function toRustIdent(value: unknown, used?: Set<string>): string {
+  let ident = String(value ?? '').replace(/[^a-zA-Z0-9_]/g, '_');
+  if (!ident) ident = 'Empty';
+  if (/^[0-9]/.test(ident)) ident = `_${ident}`;
+  if (RUST_KEYWORDS.has(ident)) ident = `${ident}_`;
+
+  if (used) {
+    let candidate = ident;
+    let i = 2;
+    while (used.has(candidate)) {
+      candidate = `${ident}_${i++}`;
+    }
+    used.add(candidate);
+    return candidate;
+  }
+
+  return ident;
 }
 
 // Generate module path for nested types
@@ -167,8 +291,8 @@ export function toRustType(
   }
 
   if (schema.type === 'string') {
-    // Binary format maps to Vec<u8>
-    if (schema.format === 'binary' || schema.contentEncoding === 'binary') {
+    // Binary format or a non text content type maps to Vec<u8>
+    if (getBodyKind(schema) === 'binary') {
       return 'Vec<u8>';
     }
     return 'String';
@@ -265,11 +389,13 @@ export function generateEnum(schema: VovkJSONSchemaBase, name: string, level: nu
   code += `${indentFn(level)}#[allow(non_camel_case_types)]\n`;
   code += `${indentFn(level)}pub enum ${name} {\n`;
 
-  schema.enum?.forEach((value: string) => {
-    // Create valid Rust enum variant
-    const variant = value?.replace(/[^a-zA-Z0-9_]/g, '_');
+  const usedVariants = new Set<string>();
 
-    code += `${indentFn(level + 1)}#[serde(rename = "${value}")]\n`;
+  schema.enum?.forEach((value: string) => {
+    // enum values are free form, so the variant is sanitized and serde keeps the original name
+    const variant = toRustIdent(value, usedVariants);
+
+    code += `${indentFn(level + 1)}#[serde(rename = "${String(value ?? '').replace(/(["\\])/g, '\\$1')}")]\n`;
     code += `${indentFn(level + 1)}${variant},\n`;
   });
 
@@ -426,9 +552,48 @@ export function processObject(
   code += `${indentFn(level)}#[derive(Debug, Serialize, Deserialize, Clone)]\n`;
   code += `${indentFn(level)}#[allow(non_snake_case, non_camel_case_types)]\n`;
   code += `${indentFn(level)}pub struct ${currentName} {\n`;
+  // the type that holds these fields, when it is a named type its own refs may cycle back to it
+  const enclosingNamed = getNamedSchemas(rootSchema)[path[0]] ? path[0] : null;
+
+  const pushField = (propName: string, propType: string) => {
+    const ident = toRustIdent(propName);
+    if (RUST_KEYWORDS.has(propName)) {
+      code += `${indentFn(level + 1)}#[serde(rename = "${propName}")]\n`;
+      code += `${indentFn(level + 1)}pub r#${propName}: ${propType},\n`;
+    } else {
+      if (ident !== propName) {
+        code += `${indentFn(level + 1)}#[serde(rename = "${propName.replace(/(["\\])/g, '\\$1')}")]\n`;
+      }
+      code += `${indentFn(level + 1)}pub ${ident}: ${propType},\n`;
+    }
+  };
+
   // Generate struct fields
   Object.entries(schema.properties).forEach(([propName, propSchema]: [string, VovkJSONSchemaBase]) => {
     const isRequired = schema.required?.includes(propName);
+
+    // named refs point at the top level type instead of being inlined, which is what makes cycles terminate
+    const namedRef = refToName(propSchema.$ref, rootSchema);
+    const namedItemRef =
+      !namedRef && propSchema.type === 'array' && propSchema.items && typeof propSchema.items !== 'boolean'
+        ? refToName(propSchema.items.$ref, rootSchema)
+        : null;
+
+    if (namedRef || namedItemRef) {
+      const target = (namedRef ?? namedItemRef) as string;
+      code += generateDocComment(getNamedSchemas(rootSchema)[target], level + 1, pad);
+
+      let propType = `${superPrefix(path)}${target}`;
+      if (namedItemRef) {
+        propType = `Vec<${propType}>`;
+      } else if (refNeedsBox(enclosingNamed, target, rootSchema)) {
+        propType = `Box<${propType}>`;
+      }
+      if (!isRequired) propType = `Option<${propType}>`;
+
+      pushField(propName, propType);
+      return;
+    }
 
     // Handle $ref in property
     if (propSchema.$ref) {
@@ -459,7 +624,7 @@ export function processObject(
       propType = 'serde_json::Value';
     } else if (isNestedObject || isNestedEnum) {
       // For nested objects and enums, we need to reference them via their module path
-      propType = `${currentName}_::${propName}`;
+      propType = `${currentName}_::${toRustIdent(propName)}`;
 
       // Special case for enums which have a different naming convention
       if (isNestedEnum) {
@@ -474,18 +639,23 @@ export function processObject(
       propType = `Option<${propType}>`;
     }
 
-    if (RUST_KEYWORDS.has(propName)) {
-      code += `${indentFn(level + 1)}#[serde(rename = "${propName}")]\n`;
-      code += `${indentFn(level + 1)}pub r#${propName}: ${propType},\n`;
-    } else {
-      code += `${indentFn(level + 1)}pub ${propName}: ${propType},\n`;
-    }
+    pushField(propName, propType);
   });
 
   code += `${indentFn(level)}}\n\n`;
 
+  // named refs already resolve to top level types, so they never need a nested definition
+  const isNamedRefProp = (propSchema: VovkJSONSchemaBase) =>
+    !!refToName(propSchema.$ref, rootSchema) ||
+    (propSchema.type === 'array' &&
+      !!propSchema.items &&
+      typeof propSchema.items !== 'boolean' &&
+      !!refToName(propSchema.items.$ref, rootSchema));
+
   // Check if any properties require nested types before generating the sub-module
   const hasNestedTypes = Object.entries(schema.properties).some(([, propSchema]: [string, VovkJSONSchemaBase]) => {
+    if (isNamedRefProp(propSchema)) return false;
+
     // Resolve $ref if present
     if (propSchema.$ref) {
       const resolved = resolveRef(propSchema.$ref, rootSchema);
@@ -513,6 +683,8 @@ export function processObject(
     code += `${indentFn(level + 1)}use serde::{Serialize, Deserialize};\n\n`;
 
     Object.entries(schema.properties).forEach(([propName, propSchema]: [string, VovkJSONSchemaBase]) => {
+      if (isNamedRefProp(propSchema)) return;
+
       // Resolve $ref if present
       if (propSchema.$ref) {
         const resolved = resolveRef(propSchema.$ref, rootSchema);
@@ -521,13 +693,16 @@ export function processObject(
         }
       }
 
+      // property names are free form, the nested type name has to be a valid identifier
+      const propIdent = toRustIdent(propName);
+
       // Generate nested object types
       if (propSchema.type === 'object' || propSchema.properties) {
-        code += processObject(propSchema, [...path, propName], level + 1, rootSchema, pad);
+        code += processObject(propSchema, [...path, propIdent], level + 1, rootSchema, pad);
       }
       // Generate enum types for string enums (also when type is missing but enum exists)
       else if ((propSchema.type === 'string' || !propSchema.type) && propSchema.enum) {
-        code += generateEnum(propSchema, propName, level + 1, pad);
+        code += generateEnum(propSchema, propIdent, level + 1, pad);
       }
       // Generate types for array items if they're objects
       else if (propSchema.type === 'array' && propSchema.items && typeof propSchema.items !== 'boolean') {
@@ -535,15 +710,15 @@ export function processObject(
         if (propSchema.items.$ref) {
           const resolved = resolveRef(propSchema.items.$ref, rootSchema);
           if (resolved && (resolved.type === 'object' || resolved.properties)) {
-            code += processObject(resolved, [...path, `${propName}Item`], level + 1, rootSchema, pad);
+            code += processObject(resolved, [...path, `${propIdent}Item`], level + 1, rootSchema, pad);
           }
         } else if (propSchema.items.type === 'object' || propSchema.items.properties) {
-          code += processObject(propSchema.items, [...path, `${propName}Item`], level + 1, rootSchema, pad);
+          code += processObject(propSchema.items, [...path, `${propIdent}Item`], level + 1, rootSchema, pad);
         }
       }
       // Handle anyOf/oneOf/allOf schemas
       else if (propSchema.anyOf || propSchema.oneOf || propSchema.allOf) {
-        code += generateVariantEnum(propSchema, propName, path, level + 1, rootSchema, pad);
+        code += generateVariantEnum(propSchema, propIdent, path, level + 1, rootSchema, pad);
       }
     });
 
@@ -566,8 +741,8 @@ export function processPrimitive(schema: VovkJSONSchemaBase, name: string, level
   code += `${indentFn(level)}pub type ${name} = `;
 
   if (schema.type === 'string') {
-    // Binary format maps to Vec<u8>
-    if (schema.format === 'binary' || schema.contentEncoding === 'binary') {
+    // Binary format or a non text content type maps to Vec<u8>
+    if (getBodyKind(schema) === 'binary') {
       code += 'Vec<u8>';
     } else {
       code += 'String';
@@ -614,40 +789,40 @@ export function convertJSONSchemasToRustTypes({
   result += `${indentFn(1)}#[allow(unused_imports)]\n`;
   result += `${indentFn(1)}use serde::{Serialize, Deserialize};\n`;
 
+  // named types are shared by every slot of the handler, so they are emitted once
+  const emittedNamed = new Set<string>();
+
   // Process each schema in the schemas object
   Object.entries(schemas).forEach(([schemaName, schemaObj]) => {
     // Skip undefined schemas
     if (!schemaObj) return;
-
-    // Extract and process types from $defs if present
-    if (schemaObj.$defs) {
-      Object.entries(schemaObj.$defs).forEach(([defName, defSchema]: [string, VovkJSONSchemaBase]) => {
-        // Create a root object for each definition
-        if (defSchema) {
-          if (defSchema.type === 'object' || defSchema.properties) {
-            const rootDefObject = {
-              type: 'object',
-              properties: defSchema.properties || {},
-              required: defSchema.required || [],
-              title: defSchema.title,
-              description: defSchema.description,
-              'x-contentType': defSchema['x-contentType'],
-            } as const;
-            result += processObject(rootDefObject, [defName], 1, schemaObj, pad);
-          } else if (defSchema.type === 'string' && defSchema.enum) {
-            result += generateEnum(defSchema, defName, 1, pad);
-          } else if (defSchema.anyOf || defSchema.oneOf || defSchema.allOf) {
-            result += generateVariantEnum(defSchema, defName, [defName], 1, schemaObj, pad);
-          } else if (
-            typeof defSchema.type === 'string' &&
-            ['string', 'number', 'integer', 'boolean', 'null'].includes(defSchema.type)
-          ) {
-            // Handle primitive types in $defs
-            result += processPrimitive(defSchema, defName, 1, pad);
-          }
+    Object.entries(getNamedSchemas(schemaObj)).forEach(([defName, defSchema]: [string, VovkJSONSchemaBase]) => {
+      // Create a root object for each definition
+      if (defSchema && !emittedNamed.has(defName)) {
+        emittedNamed.add(defName);
+        if (defSchema.type === 'object' || defSchema.properties) {
+          const rootDefObject = {
+            type: 'object',
+            properties: defSchema.properties || {},
+            required: defSchema.required || [],
+            title: defSchema.title,
+            description: defSchema.description,
+            'x-contentType': defSchema['x-contentType'],
+          } as const;
+          result += processObject(rootDefObject, [defName], 1, schemaObj, pad);
+        } else if (defSchema.type === 'string' && defSchema.enum) {
+          result += generateEnum(defSchema, defName, 1, pad);
+        } else if (defSchema.anyOf || defSchema.oneOf || defSchema.allOf) {
+          result += generateVariantEnum(defSchema, defName, [defName], 1, schemaObj, pad);
+        } else if (
+          typeof defSchema.type === 'string' &&
+          ['string', 'number', 'integer', 'boolean', 'null'].includes(defSchema.type)
+        ) {
+          // Handle primitive types in $defs
+          result += processPrimitive(defSchema, defName, 1, pad);
         }
-      });
-    }
+      }
+    });
 
     // Handle the schema based on its type
     if (schemaObj.type === 'object' || schemaObj.properties) {
