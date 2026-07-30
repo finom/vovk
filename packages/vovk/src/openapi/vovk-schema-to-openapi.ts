@@ -187,7 +187,16 @@ export function vovkSchemaToOpenAPI({
             ],
             ...((queryParameters || pathParameters
               ? {
-                  parameters: h.operationObject?.parameters ?? [...(queryParameters || []), ...(pathParameters || [])],
+                  // merge derived path/query parameters with user-declared ones, user wins on (name, in) collision
+                  parameters: [
+                    ...[...(queryParameters || []), ...(pathParameters || [])].filter(
+                      (p) =>
+                        !h.operationObject?.parameters?.some(
+                          (up) => 'name' in up && up.name === p.name && up.in === p.in
+                        )
+                    ),
+                    ...(h.operationObject?.parameters ?? []),
+                  ],
                 }
               : {}) as OperationObject['parameters']),
             ...(paths[path][httpMethod].parameters
