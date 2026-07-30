@@ -1,12 +1,6 @@
 import type { OpenAPIObject } from 'openapi3-ts/oas31';
 
-/**
- * Resolves $ref references at the first level only (except for components/schemas references)
- * For arrays, checks each item at the first level
- * @param obj - The object to process (may contain $ref properties)
- * @param openAPIObject - The complete OpenAPI document containing definitions
- * @returns The object with resolved references (except components/schemas)
- */
+// resolves $ref at the first level only (skips components/schemas refs), arrays checked per item
 export function inlineRefs<T extends object>(obj: unknown, openAPIObject: OpenAPIObject): T | null {
   // Handle null or undefined
   if (obj === null || obj === undefined) {
@@ -74,12 +68,7 @@ export function inlineRefs<T extends object>(obj: unknown, openAPIObject: OpenAP
   return obj as T;
 }
 
-/**
- * Resolves a JSON Reference ($ref) to its target value
- * @param ref - The reference string (e.g., "#/components/parameters/id")
- * @param openAPIObject - The complete OpenAPI document
- * @returns The resolved value or undefined if not found
- */
+// resolves a local $ref like "#/components/parameters/id", undefined if not found
 function resolveRef(ref: string, openAPIObject: OpenAPIObject) {
   // Handle only local references (starting with #)
   if (!ref.startsWith('#/')) {

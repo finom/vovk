@@ -42,7 +42,6 @@ program
       ? process.env.PORT
       : process.env.PORT ||
         (await getAvailablePort(3000, portAttempts, 0, (failedPort, tryingPort) =>
-          // eslint-disable-next-line no-console
           console.warn(`🐺 Port ${failedPort} is in use, trying ${tryingPort} instead.`)
         ).catch(() => {
           throw new Error(`🐺 ❌ Failed to find an available port after ${portAttempts} attempts`);

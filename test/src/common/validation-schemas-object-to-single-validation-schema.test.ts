@@ -248,7 +248,7 @@ describe('validationSchemasObjectToSingleValidationSchema', () => {
           version: 1 as const,
           vendor: 'mock',
           validate: (input: unknown) => ({ value: input }),
-          // intentionally no jsonSchema — matches libraries that only implement Standard Schema, not Standard JSON Schema
+          // intentionally no jsonSchema, matches libraries that only implement Standard Schema
         },
         // biome-ignore lint/suspicious/noExplicitAny: minimal test fixture
       } as any;

@@ -2,14 +2,7 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import { FileSystemEntryType, getFileSystemEntryType } from './get-file-system-entry-type.mjs';
 
-/**
- * Removes all directories in a folder that aren't in the provided allowlist
- * Supports nested directory paths like 'foo/bar/baz'
- *
- * @param folderPath - The path to the folder to process
- * @param allowedDirs - Array of relative directory paths to keep
- * @returns Promise that resolves when all operations are complete
- */
+// removes all dirs in folderPath that aren't in allowedDirs, supports nested paths like 'foo/bar/baz'
 export async function removeUnlistedDirectories(folderPath: string, allowedDirs: string[]): Promise<void> {
   // Normalize all allowed paths to use the system-specific separator
   const normalizedAllowedDirs = allowedDirs.map((dir) => dir.split('/').join(path.sep));
@@ -18,13 +11,7 @@ export async function removeUnlistedDirectories(folderPath: string, allowedDirs:
   await processDirectory(folderPath, '', normalizedAllowedDirs);
 }
 
-/**
- * Recursively processes directories to determine which should be kept or removed
- *
- * @param basePath - The absolute base path being processed
- * @param relativePath - The current relative path from the base
- * @param allowedDirs - Normalized list of allowed directory paths
- */
+// recursively decides which dirs to keep or remove
 async function processDirectory(basePath: string, relativePath: string, allowedDirs: string[]): Promise<void> {
   const currentDirPath = path.join(basePath, relativePath);
 

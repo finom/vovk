@@ -28,7 +28,6 @@ export function resolveAbsoluteModulePath(modulePath: string, cwd: string) {
 
     return path.resolve(getPathUpToModule(moduleName, path.dirname(resolved)), restPath);
   } catch (e) {
-    // eslint-disable-next-line no-console
     console.error(`Error resolving module path: ${modulePath}`, e);
     // If resolution fails, fall back to the original behavior
     return path.resolve(cwd, './node_modules', modulePath);

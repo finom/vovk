@@ -14,7 +14,6 @@ export interface CombinedSpec<Input = unknown, Output = Input> {
   '~standard': CombinedProps<Input, Output>;
 }
 
-// eslint-disable-next-line @typescript-eslint/no-namespace
 export namespace CombinedSpec {
   export type Target = StandardJSONSchemaV1.Target;
   export type InferInput<T extends StandardSchemaV1> = StandardSchemaV1.InferInput<T>;

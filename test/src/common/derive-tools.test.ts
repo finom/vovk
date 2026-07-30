@@ -1,7 +1,7 @@
 import assert from 'node:assert';
 import { describe, it } from 'node:test';
-import { deriveTools, procedure, ToModelOutput, toDownloadResponse, type VovkOutput, type VovkTool } from 'vovk';
-import type { MCPModelOutput } from 'vovk/internal';
+import { deriveTools, procedure, ToModelOutput, toDownloadResponse, type VovkOutput } from 'vovk';
+import type { MCPModelOutput, StandardToolV0 } from 'vovk/internal';
 import { z } from 'zod';
 
 describe('deriveTools', () => {
@@ -81,7 +81,7 @@ describe('deriveTools', () => {
       onExecute: (result) => console.log('onExecute', result),
     });
 
-    tools satisfies VovkTool<
+    tools satisfies StandardToolV0<
       {
         body?: unknown;
         query?: unknown;
@@ -92,7 +92,7 @@ describe('deriveTools', () => {
     >[];
 
     toolsByName satisfies {
-      [key: string]: VovkTool<
+      [key: string]: StandardToolV0<
         {
           body?: unknown;
           query?: unknown;
@@ -116,18 +116,6 @@ describe('deriveTools', () => {
     it('Should provide outputSchema', async () => {
       const tool = toolsByName.MyModule_procedureWithBody;
       assert.deepStrictEqual(tool.outputSchema, outputSchema);
-    });
-
-    it('Should provide inputSchemas', async () => {
-      const toolProcedureWithBody = toolsByName.MyModule_procedureWithBody;
-      const toolProcedureWithQuery = toolsByName.MyModule2_procedureWithQuery;
-      assert.deepStrictEqual(toolProcedureWithBody.inputSchemas, {
-        body: bodySchema,
-      });
-
-      assert.deepStrictEqual(toolProcedureWithQuery.inputSchemas, {
-        query: querySchema,
-      });
     });
 
     it('Should provide a merged inputSchema (Standard Schema + Standard JSON Schema)', async () => {
@@ -177,7 +165,7 @@ describe('deriveTools', () => {
       },
     });
 
-    tools satisfies VovkTool<
+    tools satisfies StandardToolV0<
       {
         body?: unknown;
         query?: unknown;
@@ -187,7 +175,7 @@ describe('deriveTools', () => {
       { myResult?: unknown; myError?: string }
     >[];
     toolsByName satisfies {
-      [key: string]: VovkTool<
+      [key: string]: StandardToolV0<
         {
           body?: unknown;
           query?: unknown;
@@ -220,7 +208,7 @@ describe('deriveTools', () => {
       },
     });
 
-    tools satisfies VovkTool<
+    tools satisfies StandardToolV0<
       {
         body?: unknown;
         query?: unknown;
@@ -231,7 +219,7 @@ describe('deriveTools', () => {
     >[];
 
     toolsByName satisfies {
-      [key: string]: VovkTool<
+      [key: string]: StandardToolV0<
         {
           body?: unknown;
           query?: unknown;
@@ -269,7 +257,7 @@ describe('deriveTools', () => {
         onExecute: (result, { name }) => console.log(`${name} executed`, result),
       });
 
-      tools satisfies VovkTool<
+      tools satisfies StandardToolV0<
         {
           body?: unknown;
           query?: unknown;
@@ -280,7 +268,7 @@ describe('deriveTools', () => {
       >[];
 
       toolsByName satisfies {
-        [key: string]: VovkTool<
+        [key: string]: StandardToolV0<
           {
             body?: unknown;
             query?: unknown;
@@ -607,7 +595,7 @@ describe('deriveTools', () => {
       },
     });
 
-    tools satisfies VovkTool<
+    tools satisfies StandardToolV0<
       {
         body?: unknown;
         query?: unknown;
@@ -618,7 +606,7 @@ describe('deriveTools', () => {
     >[];
 
     toolsByName satisfies {
-      [key: string]: VovkTool<
+      [key: string]: StandardToolV0<
         {
           body?: unknown;
           query?: unknown;
@@ -661,7 +649,6 @@ describe('deriveTools', () => {
     it('Should leave inputSchema undefined when the procedure has no body/query/params', () => {
       const tool = toolsByName.MyModule_procedureWithNoSlots;
       assert.strictEqual(tool.inputSchema, undefined);
-      assert.deepStrictEqual(tool.inputSchemas, {});
     });
 
     it('Merged inputSchema produces the expected JSON Schema envelope', () => {

@@ -1,8 +1,6 @@
 import type { ComponentsObject } from 'openapi3-ts/oas31';
 
-// Collect the trailing name of every `$ref` in the tree. Covers both pointer styles
-// the transform emits: `#/components/schemas/X` (response slots, raw operation objects)
-// and `#/$defs/X` (request slots embed components under their original names).
+// collects the trailing name of every $ref in the tree, both `#/components/schemas/X` and `#/$defs/X` styles
 function collectRefNames(node: unknown, into: Set<string>): void {
   if (!node || typeof node !== 'object') return;
   if (Array.isArray(node)) {
@@ -21,11 +19,8 @@ function collectRefNames(node: unknown, into: Set<string>): void {
   }
 }
 
-/**
- * Shrinks a `components.schemas` dict to the transitive `$ref` closure of `roots`
- * (BFS with a visited set — component graphs of large specs like Stripe are cyclic).
- * Preserves the original key order for deterministic output.
- */
+// shrinks components.schemas to the transitive $ref closure of roots, BFS with a visited set
+// (big specs like Stripe are cyclic); preserves key order for deterministic output
 export function pruneComponentsSchemas(
   roots: unknown,
   componentsSchemas: NonNullable<ComponentsObject['schemas']>
