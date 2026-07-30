@@ -55,6 +55,8 @@ const vovkConfig = {
         fixedExtension: true,
         clean: true,
         outDir,
+        // next is resolved from the monorepo root, keep its types external
+        deps: { neverBundle: [/^next(\/|$)/] },
       });
     },
     outDir: './other-compiled-test-sources/bundle',

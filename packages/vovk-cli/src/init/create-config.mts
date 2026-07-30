@@ -21,14 +21,14 @@ export const BUNDLE_BUILD_TSDOWN = async ({ entry, outDir }: Parameters<VovkStri
     platform: 'neutral',
     outExtensions: () => ({ js: '.js', dts: '.d.ts' }),
     outputOptions: {
-      inlineDynamicImports: true,
+      codeSplitting: false,
     },
     inputOptions: {
       resolve: {
         mainFields: ['module', 'main'],
       },
     },
-    noExternal: ['!next/**'],
+    deps: { alwaysBundle: ['!next/**'] },
   });
 };
 
