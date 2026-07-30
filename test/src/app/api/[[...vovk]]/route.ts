@@ -36,7 +36,6 @@ export const { GET, POST, PATCH, PUT, HEAD, OPTIONS, DELETE } = initSegment({
     StaticApiController,
   },
   onError: (err, req) => {
-    // eslint-disable-next-line no-console
     console.log('\x1b[42m onError \x1b[0m', err.message, req.url);
   },
 });

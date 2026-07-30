@@ -404,7 +404,6 @@ class VovkApp {
       try {
         await controller._onError?.(err, req);
       } catch (onErrorError) {
-        // eslint-disable-next-line no-console
         console.error('An error caught in onError handler:', onErrorError);
       }
 

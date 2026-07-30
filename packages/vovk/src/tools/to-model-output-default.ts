@@ -11,9 +11,7 @@ export type ToModelOutputDefaultFn = <TInput, TOutput>(
 
 export const toModelOutputDefault: ToModelOutputDefaultFn = <TInput, TOutput>(
   result: TOutput | Error,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   _tool: StandardToolV0<TInput, TOutput, unknown>,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   _req: Pick<VovkRequest, 'vovk'> | null
 ): DefaultModelOutput<TOutput> => {
   return result instanceof Error ? { error: result.message } : result;
