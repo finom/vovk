@@ -26,6 +26,8 @@ export class JSONLinesResponder<T> extends Responder {
 
   private i = 0;
 
+  private pendingSends = new Set<Promise<void>>();
+
   private controller?: ReadableStreamDefaultController | null;
 
   // biome-ignore lint/correctness/noUnusedPrivateClassMembers: biome bug
@@ -73,13 +75,21 @@ export class JSONLinesResponder<T> extends Responder {
   }
 
   public readonly send = async (item: T) => {
+    const promise = (async () => {
+      try {
+        // zero timeout lets withValidationLibrary set onBeforeSend before the first send,
+        // otherwise immediate streaming would skip the first iteration validation
+        await new Promise((resolve) => setTimeout(resolve, 0));
+        this.sendLineOrError(await this.onBeforeSend(item, this.i++));
+      } catch (e) {
+        this.throw(e);
+      }
+    })();
+    this.pendingSends.add(promise);
     try {
-      // zero timeout lets withValidationLibrary set onBeforeSend before the first send,
-      // otherwise immediate streaming would skip the first iteration validation
-      await new Promise((resolve) => setTimeout(resolve, 0));
-      this.sendLineOrError(await this.onBeforeSend(item, this.i++));
-    } catch (e) {
-      this.throw(e);
+      await promise;
+    } finally {
+      this.pendingSends.delete(promise);
     }
   };
 
@@ -90,11 +100,15 @@ export class JSONLinesResponder<T> extends Responder {
     controller?.enqueue(encoder?.encode(`${JSON.stringify(data)}\n`));
   };
 
-  public readonly close = () => {
-    const { controller } = this;
+  public readonly close = async () => {
+    if (this.isClosed) return;
+    // let unawaited send() calls finish first, per the documented send-then-close pattern
+    while (this.pendingSends.size) {
+      await Promise.allSettled([...this.pendingSends]);
+    }
     if (this.isClosed) return;
     this.isClosed = true;
-    controller?.close();
+    this.controller?.close();
   };
 
   public readonly throw = (e: unknown) => {

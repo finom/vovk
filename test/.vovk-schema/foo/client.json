@@ -88,6 +88,10 @@
           "path": "post-with-streaming-and-immediate-error",
           "httpMethod": "POST"
         },
+        "postWithUnawaitedSends": {
+          "path": "post-with-unawaited-sends",
+          "httpMethod": "POST"
+        },
         "postWithStreamingAndDelayedError": {
           "path": "post-with-streaming-and-delayed-error",
           "httpMethod": "POST"

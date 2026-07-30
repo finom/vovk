@@ -29,6 +29,24 @@ describe('Streaming', () => {
     deepStrictEqual(expectedCollected, expected);
   });
 
+  it('Delivers all lines when send and close are not awaited', async () => {
+    const tokens = ['token1', 'token2', 'token3'].map((token) => ({ token }));
+    const expected = tokens.map((token) => ({ ...token, query: 'queryValue' }));
+    const collected: typeof expected = [];
+
+    const resp = await StreamingControllerRPC.postWithUnawaitedSends({
+      body: tokens,
+      query: { query: 'queryValue' },
+      apiRoot,
+    });
+
+    for await (const message of resp) {
+      collected.push(message);
+    }
+
+    deepStrictEqual(collected, expected);
+  });
+
   it('Should consume streaming multiple times', async () => {
     const tokens = ['token1', 'token2\n', 'token3'].map((token) => ({ token }));
     const expected = tokens.map((token) => ({ ...token, query: 'queryValue' }));
