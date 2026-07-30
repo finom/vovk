@@ -1,7 +1,7 @@
 import { strict as assert } from 'node:assert';
 import { test } from 'node:test';
 import type { VovkJSONSchemaBase } from 'vovk';
-import { convertJSONSchemaToPythonDataType } from '../index.js'; // Replace with your actual module path
+import { convertJSONSchemaToPythonDataType, getBodyKind } from '../index.js';
 
 test('convertJSONSchemaToPythonDataType - simple types', async (t) => {
   await t.test('converts string schema', () => {
@@ -697,5 +697,80 @@ class AppConfig(TypedDict):
     ipAddress: Optional[str]`;
 
     assert.equal(result, expected);
+  });
+});
+
+test('convertJSONSchemaToPythonDataType - $refs', async (t) => {
+  await t.test('resolves named refs and terminates on cycles', () => {
+    const result = convertJSONSchemaToPythonDataType({
+      schema: {
+        type: 'object',
+        properties: { user: { $ref: '#/$defs/User' } },
+        required: ['user'],
+        $defs: {
+          User: {
+            type: 'object',
+            properties: {
+              id: { type: 'string' },
+              friend: { $ref: '#/$defs/User' },
+              posts: { type: 'array', items: { $ref: '#/$defs/Post' } },
+            },
+            required: ['id'],
+          },
+          Post: { type: 'object', properties: { title: { type: 'string' } } },
+        },
+      },
+      namespace: 'Rpc',
+      className: 'Body',
+      pad: 0,
+    });
+
+    assert.ok(result.includes('class _Body_User(TypedDict):'), result);
+    assert.ok(result.includes('friend: Optional[Rpc._Body_User]'), result);
+    assert.ok(result.includes('posts: Optional[List[Rpc._Body_Post]]'), result);
+    assert.ok(result.includes('user: Rpc._Body_User'), result);
+    // the class name must not be mangled by Python's double underscore rule
+    assert.ok(!result.includes('class __Body_User'), result);
+  });
+
+  await t.test('aliases non object definitions', () => {
+    const result = convertJSONSchemaToPythonDataType({
+      schema: {
+        type: 'object',
+        properties: { kind: { $ref: '#/$defs/Kind' } },
+        required: ['kind'],
+        $defs: { Kind: { type: 'string', enum: ['a', 'b'] } },
+      },
+      namespace: 'Rpc',
+      className: 'Body',
+      pad: 0,
+    });
+
+    assert.ok(result.includes('_Body_Kind = Literal["a", "b"]'), result);
+    assert.ok(result.includes('kind: Rpc._Body_Kind'), result);
+  });
+
+  await t.test('unknown refs fall back to Any', () => {
+    const result = convertJSONSchemaToPythonDataType({
+      schema: { type: 'object', properties: { x: { $ref: '#/$defs/Missing' } }, required: ['x'] },
+      namespace: 'Rpc',
+      className: 'Body',
+      pad: 0,
+    });
+
+    assert.ok(result.includes('x: Any'), result);
+  });
+});
+
+test('getBodyKind', async (t) => {
+  await t.test('classifies content types', () => {
+    assert.equal(getBodyKind(undefined), 'none');
+    assert.equal(getBodyKind({ type: 'string', 'x-contentType': ['text/plain'] }), 'text');
+    assert.equal(getBodyKind({ type: 'string', 'x-contentType': ['application/octet-stream'] }), 'binary');
+    assert.equal(getBodyKind({ type: 'string', 'x-contentType': ['image/png'] }), 'binary');
+    assert.equal(getBodyKind({ type: 'string', format: 'binary' }), 'binary');
+    assert.equal(getBodyKind({ type: 'object', 'x-contentType': ['multipart/form-data'] }), 'form');
+    assert.equal(getBodyKind({ type: 'object', 'x-contentType': ['application/json'] }), 'json');
+    assert.equal(getBodyKind({ type: 'object', properties: {} }), 'json');
   });
 });
