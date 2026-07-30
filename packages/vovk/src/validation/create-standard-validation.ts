@@ -1,5 +1,4 @@
 import { HttpException } from '../core/http-exception.js';
-import { createToolFactory } from '../tools/create-tool-factory.js';
 import type { VovkValidationType } from '../types/core.js';
 import type { VovkOperationObject } from '../types/operation.js';
 import type { VovkRequest } from '../types/request.js';
@@ -206,5 +205,5 @@ export function createStandardValidation({
     });
   }
 
-  return Object.assign(procedure, { createTool: createToolFactory({ toJSONSchema }) });
+  return procedure;
 }

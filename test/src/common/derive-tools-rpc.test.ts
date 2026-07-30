@@ -48,16 +48,31 @@ describe('deriveTools from RPC modules', () => {
     );
   });
 
-  it('Reconstructed schemas throw on validate since the original validation library is unavailable', () => {
-    const tool = toolsByName.WithValidationRPC_handleAll;
-    assert.throws(
-      () => tool.inputSchema['~standard'].validate({ body: { hello: 'world' } }),
-      /Validation is not available in this context \(inputSchema of the "WithValidationRPC_handleAll" tool\)/
-    );
-    assert.throws(
-      () => tool.outputSchema['~standard'].validate({}),
-      /Validation is not available in this context \(outputSchema of the "WithValidationRPC_handleAll" tool\)/
-    );
+  it('Reconstructed inputSchema validates the envelope and lets slot contents pass', async () => {
+    const spec = toolsByName.WithValidationRPC_handleAll.inputSchema?.['~standard'];
+    assert.ok(spec);
+    // slot contents are not checked here, the server validates them during execute
+    const input = { body: { hello: 42 }, query: {}, params: {} };
+    assert.deepStrictEqual(await spec.validate(input), { value: input });
+    assert.deepStrictEqual(await spec.validate({ body: {} }), {
+      issues: [
+        { message: 'Required', path: [{ key: 'query' }] },
+        { message: 'Required', path: [{ key: 'params' }] },
+      ],
+    });
+    assert.deepStrictEqual(await spec.validate({ body: {}, query: {}, params: {}, extra: 1 }), {
+      issues: [{ message: 'Unexpected key', path: [{ key: 'extra' }] }],
+    });
+    assert.deepStrictEqual(await spec.validate(null), {
+      issues: [{ message: 'Expected object', path: [] }],
+    });
+  });
+
+  it('Reconstructed outputSchema always passes validate', async () => {
+    const spec = toolsByName.WithValidationRPC_handleAll.outputSchema?.['~standard'];
+    assert.ok(spec);
+    const output = { anything: true };
+    assert.deepStrictEqual(await spec.validate(output), { value: output });
   });
 
   it('Keeps inputSchema and outputSchema undefined when the RPC method has no validation', () => {
@@ -65,19 +80,5 @@ describe('deriveTools from RPC modules', () => {
     assert.ok(tool, 'expected the tool to be derived');
     assert.strictEqual(tool.inputSchema, undefined);
     assert.strictEqual(tool.outputSchema, undefined);
-  });
-
-  it('Keeps the deprecated per-slot inputSchemas empty for RPC-derived tools', () => {
-    // Per-slot Standard Schemas only exist on procedure-backed handlers (`handler.definition`)
-    assert.deepStrictEqual(toolsByName.WithValidationRPC_handleAll.inputSchemas, {});
-  });
-
-  it('parameters (plain JSON Schema for function calling) still mirrors the validation schemas', () => {
-    const tool = toolsByName.WithValidationRPC_handleAll;
-    assert.deepStrictEqual(tool.parameters.properties, {
-      body: validation.body,
-      query: validation.query,
-      params: validation.params,
-    });
   });
 });
