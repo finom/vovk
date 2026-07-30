@@ -189,12 +189,6 @@ type DeriveToolsBaseOptions<TOutput = unknown, TFormattedOutput = unknown> = {
   ) => void;
 };
 
-// Return type helper
-type DeriveToolsResult<TOutput, TFormattedOutput> = {
-  tools: StandardToolV0<DerivedToolInput, TOutput, TFormattedOutput>[];
-  toolsByName: Record<string, StandardToolV0<DerivedToolInput, TOutput, TFormattedOutput>>;
-};
-
 /**
  * Derives AI tools from controllers and RPC modules.
  * @see https://vovk.dev/tools
@@ -203,7 +197,7 @@ type DeriveToolsResult<TOutput, TFormattedOutput> = {
  * import { deriveTools, ToModelOutput } from 'vovk';
  * import { UserRPC } from 'vovk-client';
  *
- * const { tools, toolsByName } = deriveTools({
+ * const tools = deriveTools({
  *   modules: { UserRPC },
  *   toModelOutput: ToModelOutput.MCP,
  *   onExecute: (result, tool) => {
@@ -220,14 +214,14 @@ export function deriveTools<TOutput = unknown, TFormattedOutput = DefaultModelOu
   options: DeriveToolsBaseOptions & {
     toModelOutput?: never;
   }
-): DeriveToolsResult<TOutput, TFormattedOutput>;
+): StandardToolV0<DerivedToolInput, TOutput, TFormattedOutput>[];
 
 // Overload: with toModelOutput - infers TFormattedOutput from the function
 export function deriveTools<TOutput = unknown, TFormattedOutput = unknown>(
   options: DeriveToolsBaseOptions & {
     toModelOutput: ToModelOutputFn<unknown, TOutput, TFormattedOutput>;
   }
-): DeriveToolsResult<TOutput, TFormattedOutput>;
+): StandardToolV0<DerivedToolInput, TOutput, TFormattedOutput>[];
 
 export function deriveTools<TOutput = unknown, TFormattedOutput = unknown>(options: {
   modules: Record<string, object>;
@@ -243,7 +237,7 @@ export function deriveTools<TOutput = unknown, TFormattedOutput = unknown>(optio
     tool: StandardToolV0<DerivedToolInput, TOutput, TFormattedOutput>,
     req: Pick<VovkRequest, 'vovk'> | null
   ) => void;
-}): DeriveToolsResult<TOutput, TFormattedOutput> {
+}): StandardToolV0<DerivedToolInput, TOutput, TFormattedOutput>[] {
   const {
     modules,
     meta,
@@ -252,7 +246,7 @@ export function deriveTools<TOutput = unknown, TFormattedOutput = unknown>(optio
     onError = () => {},
   } = options;
 
-  const tools = Object.entries(
+  return Object.entries(
     (modules as Record<string, Record<string, Handler & { schema?: VovkHandlerSchema }>>) ?? {}
   ).flatMap(([moduleName, module]) => {
     return Object.entries(module ?? {})
@@ -271,9 +265,4 @@ export function deriveTools<TOutput = unknown, TFormattedOutput = unknown>(optio
         })
       );
   });
-  const toolsByName = Object.fromEntries(tools.map((tool) => [tool.name, tool]));
-  return {
-    tools,
-    toolsByName,
-  };
 }
