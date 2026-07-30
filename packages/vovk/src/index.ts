@@ -15,7 +15,6 @@ export { toDownloadResponse } from './core/to-download-response.js';
 
 // openapi
 export { operation } from './openapi/operation.js';
-export { createTool } from './tools/create-tool.js';
 export { deriveTools } from './tools/derive-tools.js';
 
 // tools
@@ -37,7 +36,6 @@ export type {
 } from './types/inference.js';
 export type { VovkJSONSchemaBase } from './types/json-schema.js';
 export type { VovkRequest } from './types/request.js';
-export type { VovkTool } from './types/tools.js';
 export type { VovkValidateOnClient } from './types/validation.js';
 // validation
 export { createValidateOnClient } from './validation/create-validate-on-client.js';

@@ -6,10 +6,7 @@ export abstract class Responder {
 }
 
 /**
- * A Responder subclass for streaming JSON Lines (JSONL) data.
- * @see https://vovk.dev/jsonlines
- * @param request The incoming Request object.
- * @param getResponse Optional function to create a custom Response object.
+ * Responder subclass for streaming JSON Lines. @see https://vovk.dev/jsonlines
  * @example
  * ```ts
  * import { JSONLinesResponder } from 'vovk';
@@ -18,13 +15,9 @@ export abstract class Responder {
  *   return new Response(responder.readableStream, { headers: responder.headers });
  * });
  *
- * // Send items
- * responder.send({ ... });
- * // Close the stream when done
- * responder.close();
- * // Or throw an error
+ * responder.send({ ... }); // send items
+ * responder.close(); // close the stream when done
  * responder.throw(new Error('Something went wrong'));
- * // get the Response object, headers, etc.
  * const { response, headers } = responder;
  * ```
  */
@@ -81,9 +74,8 @@ export class JSONLinesResponder<T> extends Responder {
 
   public readonly send = async (item: T) => {
     try {
-      // onBeforeSend is set by withValidationLibrary if iteration validation is provided
-      // in case if data is streamed immediately in a controller/service, we're going to lose the first iteration validation
-      // the await with zero timeout ensures onBeforeSend is set before the first send
+      // zero timeout lets withValidationLibrary set onBeforeSend before the first send,
+      // otherwise immediate streaming would skip the first iteration validation
       await new Promise((resolve) => setTimeout(resolve, 0));
       this.sendLineOrError(await this.onBeforeSend(item, this.i++));
     } catch (e) {

@@ -52,7 +52,6 @@ export default class CommonController {
   }
 
   @get.auto()
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   static getHelloWorldAndEmptyGeneric(_req: VovkRequest) {
     return { hello: 'world' };
   }

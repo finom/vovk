@@ -1,12 +1,6 @@
 import type { KnownAny } from '../types/utils.js';
 
-/**
- * Parse a bracket-based key (e.g. "z[d][0][x]" or "arr[]")
- * into an array of path segments (strings or special push-markers).
- *
- * Example: "z[d][0][x]" => ["z", "d", "0", "x"]
- * Example: "arr[]"      => ["arr", "" ]  // "" indicates "push" onto array
- */
+// bracket key to path segments: "z[d][0][x]" => ["z", "d", "0", "x"], "arr[]" => ["arr", ""] ("" means push)
 function parseKey(key: string): string[] {
   // The first segment is everything up to the first '[' (or the entire key if no '[')
   const segments: string[] = [];
@@ -31,12 +25,7 @@ function parseKey(key: string): string[] {
   return segments;
 }
 
-/**
- * Recursively set a value in a nested object/array, given a path of segments.
- * - If segment is numeric => treat as array index
- * - If segment is empty "" => push to array
- * - Else => object property
- */
+// sets a value at a segment path: numeric => array index, "" => array push, else object property
 function setValue(obj: Record<string, unknown>, path: string[], value: unknown): void {
   let current: KnownAny = obj;
 
@@ -112,29 +101,8 @@ function setValue(obj: Record<string, unknown>, path: string[], value: unknown):
   }
 }
 
-/**
- * Deserialize a bracket-based query string into an object.
- *
- * Supports:
- *   - Key/value pairs with nested brackets (e.g. "a[b][0]=value")
- *   - Arrays with empty bracket (e.g. "arr[]=1&arr[]=2")
- *   - Mixed arrays of objects, etc.
- *
- * @example
- *   parseQuery("x=xx&y[0]=yy&y[1]=uu&z[f]=x&z[u][0]=uu&z[u][1]=xx&z[d][x]=ee")
- *   => {
- *        x: "xx",
- *        y: ["yy", "uu"],
- *        z: {
- *          f: "x",
- *          u: ["uu", "xx"],
- *          d: { x: "ee" }
- *        }
- *      }
- *
- * @param queryString - The raw query string (e.g. location.search.slice(1))
- * @returns           - A nested object representing the query params
- */
+// bracket query string to a nested object, supports "a[b][0]=value", "arr[]=1&arr[]=2" etc,
+// e.g. "x=xx&y[0]=yy&z[f]=x&z[d][x]=ee" => { x: "xx", y: ["yy"], z: { f: "x", d: { x: "ee" } } }
 export function parseQuery(queryString: string): Record<string, unknown> {
   const result: Record<string, unknown> = {};
 

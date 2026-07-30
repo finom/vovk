@@ -144,9 +144,8 @@ type _OmitUndefinedOrUnknown<T> = {
 };
 
 /**
- * Utility type to extract the full input (params, query, body) from both controller and client methods.
- * Only includes properties that are actually defined — omits keys whose types resolve to `undefined` or `unknown`.
- * Useful for Next.js server actions and other cases where you need all input types at once.
+ * Extracts the full input (params, query, body) from both controller and client methods,
+ * omitting keys that resolve to `undefined` or `unknown`.
  * @see https://vovk.dev/inference
  * @example
  * ```ts

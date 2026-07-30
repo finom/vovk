@@ -117,9 +117,8 @@ export interface VovkOpenAPIMixin {
    */
   filterOperations?: (config: Parameters<GetOpenAPINameFn>[0]) => boolean;
   /**
-   * Prune `meta.openAPIObject.components.schemas` to the transitive `$ref` closure of the kept operations,
-   * shrinking the generated schema for large specs. Removes `Mixins.<Segment>.<Component>` types for
-   * components nothing kept references — keep `false` (default) if you import such types directly.
+   * Prune `meta.openAPIObject.components.schemas` to the `$ref` closure of kept operations (shrinks big
+   * specs); removes unreferenced `Mixins.*` types, keep `false` (default) if you import those directly.
    */
   pruneComponents?: boolean;
   errorMessageKey?: string;

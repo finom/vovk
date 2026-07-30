@@ -2,8 +2,7 @@ import type { VovkController } from '../types/core.js';
 import type { StaticClass } from '../types/utils.js';
 
 /**
- * Generates static API of the given controllers for a static segment.
- * @see https://vovk.dev/segment
+ * Static params for the controllers of a static segment. @see https://vovk.dev/segment
  * @example
  * ```ts
  * export function generateStaticParams() {

@@ -420,7 +420,6 @@ test('convertJSONSchemaToPythonDataType - error handling', async (t) => {
 
   await t.test('handles null schema', () => {
     const result = convertJSONSchemaToPythonDataType({
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       schema: null as unknown as VovkJSONSchemaBase,
       namespace: 'MyNamespace',
       className: 'NullSchema',

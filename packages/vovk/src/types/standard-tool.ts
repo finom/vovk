@@ -1,16 +1,14 @@
-import type { KnownAny } from './utils.js';
-import type { CombinedSpec } from './validation.js';
+import type { StandardJSONSchemaV1, StandardSchemaV1 } from './standard-schema.js';
 
 /**
- * The `standard-tool` convention (https://github.com/finom/standard-tool): a neutral LLM tool shape —
- * `name`, `description`, optional `inputSchema`/`outputSchema`, `execute`. Vendored as a type only
- * (no logic) so `VovkTool` can extend it with zero added dependencies. Kept identical to the
- * `StandardTool` type published by `standard-tool` (`meta` is `KnownAny`, i.e. its `any`).
+ * Vendored `standard-tool` type (https://standard-tool.js.org), no dependency, no logic.
+ * Keep it identical to the published `StandardToolV0` interface.
  */
-export interface StandardTool<Input = unknown, Output = unknown, FormattedOutput = Output | { error: string }> {
+export interface StandardToolV0<Input = unknown, Output = unknown, FormattedOutput = Output, Meta = unknown> {
   name: string;
+  title?: string;
   description: string;
-  inputSchema?: CombinedSpec<Input>;
-  outputSchema?: CombinedSpec<Output>;
-  execute(input: Input, meta?: KnownAny): FormattedOutput | Promise<FormattedOutput>;
+  inputSchema?: StandardSchemaV1<Input> & StandardJSONSchemaV1<Input>;
+  outputSchema?: StandardSchemaV1<Output> & StandardJSONSchemaV1<Output>;
+  execute(input: Input, meta?: Meta): FormattedOutput | Promise<FormattedOutput>;
 }

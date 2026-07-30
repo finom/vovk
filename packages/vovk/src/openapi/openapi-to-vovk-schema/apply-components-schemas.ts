@@ -19,11 +19,8 @@ export function applyComponentsSchemas(
   schema: VovkJSONSchemaBase,
   components: ComponentsObject['schemas'],
   mixinName: string,
-  /**
-   * true (default): embed the ref closure in `$defs` (self-contained — for AJV + Rust).
-   * false: keep `#/components/schemas/X`, emit no `$defs` (response slots, typed via
-   * `x-tsType`) — avoids the per-handler dup that overflows JSON.stringify on big specs.
-   */
+  // true (default): embed the ref closure in `$defs`, self-contained (AJV + Rust);
+  // false: keep `#/components/schemas/X` refs, no `$defs` (avoids the per-handler dup that overflows big specs)
   emitDefs = true
 ): VovkJSONSchemaBase | VovkJSONSchemaBase[] {
   const key = 'components/schemas';
@@ -93,11 +90,8 @@ export function applyComponentsSchemas(
   return processSchema(result);
 }
 
-/**
- * Re-attach a response slot's `$defs` closure at render time, for generators that
- * resolve `$ref` against a self-contained schema (Rust). Pulls components from the
- * segment's shared meta → identical to the `emitDefs=true` slot. No-op for non-mixin.
- */
+// re-attaches a response slot's `$defs` closure at render time (Rust needs self-contained schemas);
+// pulls components from the segment's shared meta, no-op for non-mixin
 export function reattachMixinDefs(
   slot: VovkJSONSchemaBase | undefined,
   segment: {
