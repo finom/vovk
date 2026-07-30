@@ -5,6 +5,10 @@ import { HttpStatus } from '../types/enums.js';
 import { fileNameToDisposition } from '../utils/file-name-to-disposition.js';
 export const DEFAULT_ERROR_MESSAGE = 'Unknown error at default fetcher';
 
+// header values must be ByteString, escape non-ASCII as \uXXXX which JSON.parse reads natively
+const toAsciiJson = (value: unknown) =>
+  JSON.stringify(value).replace(/[\u007f-\uffff]/g, (c) => `\\u${c.charCodeAt(0).toString(16).padStart(4, '0')}`);
+
 // invokes emitError once for errors that surface during stream consumption, after the fetcher has returned
 function wrapStreamErrors(
   stream: VovkStreamAsyncIterable<unknown>,
@@ -148,7 +152,7 @@ export function createFetcher<T>({
         accept: 'application/jsonl, application/json',
         ...(resolvedContentType ? { 'content-type': resolvedContentType } : {}),
         ...(resolvedFileName ? { 'content-disposition': fileNameToDisposition(resolvedFileName) } : {}),
-        ...(meta ? { 'x-meta': JSON.stringify(meta) } : {}),
+        ...(meta ? { 'x-meta': toAsciiJson(meta) } : {}),
       };
 
       // Normalize user headers to lowercase keys via Headers API (handles plain objects, arrays, and Headers instances)

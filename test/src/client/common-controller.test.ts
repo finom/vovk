@@ -350,6 +350,18 @@ describe('Client with composed RPC client', () => {
     });
   });
 
+  it('Sends non-Latin1 meta values without crashing', async () => {
+    const body = { isBody: true } as const;
+    const query = { simpleQueryParam: 'queryValue', array1: ['foo'], array2: ['bar', 'baz'] } as const;
+    const result = await CommonControllerRPC.postWithBodyAndQueryUsingReqVovk({
+      body,
+      query,
+      meta: { clientMeta: true, note: 'привіт 🐺' },
+    });
+
+    deepStrictEqual(result.meta.xMetaHeader, { clientMeta: true, note: 'привіт 🐺' });
+  });
+
   it('Should handle nested queries', async () => {
     const { query, search } = await CommonControllerRPC.getNestedQuery({ query: NESTED_QUERY_EXAMPLE });
 
