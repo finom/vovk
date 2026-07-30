@@ -272,6 +272,30 @@ describe('Streaming', () => {
     deepStrictEqual(await bar, 'bar2');
   });
 
+  it('onIterate should not receive the error control line', async () => {
+    const tokens = ['token1', 'token2', 'token3'].map((token) => ({ token }));
+    const collected: unknown[] = [];
+
+    const resp = await StreamingControllerRPC.postWithStreamingAndDelayedError({
+      body: tokens,
+      query: { query: 'queryValue' },
+      apiRoot,
+    });
+
+    resp.onIterate((message) => {
+      collected.push(message);
+    });
+
+    await expectPromise(async () => {
+      await resp.asPromise();
+    }).rejects.toThrow(/oh no/);
+
+    deepStrictEqual(
+      collected,
+      tokens.slice(0, 2).map((token) => ({ ...token, query: 'queryValue' }))
+    );
+  });
+
   it('onIterate and asPromise should work', async () => {
     const resp = await StreamingControllerRPC.progressiveResponse({ body: { hello: 'world' } });
     const data: Partial<VovkYieldType<typeof StreamingControllerRPC.progressiveResponse>> = {};
