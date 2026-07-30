@@ -3,7 +3,7 @@ import { describe, it } from 'node:test';
 import { createRPC } from 'vovk/create-rpc';
 import { fetcher } from 'vovk/fetcher';
 import type { VovkFetcherOptions } from 'vovk/internal';
-import { schema } from 'vovk-client';
+import { schema } from '../generated-client/index.ts';
 import type ClientController from './common-controller.ts';
 
 const apiRoot = `http://localhost:${process.env.PORT}/api`;

@@ -1,6 +1,6 @@
 ---
 name: bundle
-description: "Vovk.ts `vovk bundle` CLI — packages composed TypeScript client as zero-dep publishable npm package. Covers `bundle.build` async fn, `tsdown@0.19.0` recipe, `outputConfig.origin` / `package` / `reExports` / `imports.validateOnClient: null`, `prebundleOutDir` / `outDir` / `keepPrebundleDir`, `--include`/`--exclude` segments, `--openapi-*` mixin flags. Use when user asks to \"publish my API client\", \"ship an SDK to npm\", \"build a publishable client package\", \"bundle the Vovk client\", \"generate a distributable npm SDK\", \"use tsdown with vovk\", or variations including why bundled package omits `openapi`/`schema` entry points. Note: `vovk bundle` is **TypeScript-only**. For Python/PyPI publishing, hand off to **`python`** skill. For Rust/crates.io publishing, hand off to **`rust`** skill. Does NOT cover in-project `vovk-client` codegen → **`rpc`** skill."
+description: "Vovk.ts `vovk bundle` CLI — packages composed TypeScript client as zero-dep publishable npm package. Covers `bundle.build` async fn, `tsdown@0.19.0` recipe, `outputConfig.origin` / `package` / `reExports` / `imports.validateOnClient: null`, `prebundleOutDir` / `outDir` / `keepPrebundleDir`, `--include`/`--exclude` segments, `--openapi-*` mixin flags. Use when user asks to \"publish my API client\", \"ship an SDK to npm\", \"build a publishable client package\", \"bundle the Vovk client\", \"generate a distributable npm SDK\", \"use tsdown with vovk\", or variations including why bundled package omits `openapi`/`schema` entry points. Note: `vovk bundle` is **TypeScript-only**. For Python/PyPI publishing, hand off to **`python`** skill. For Rust/crates.io publishing, hand off to **`rust`** skill. Does NOT cover in-project client codegen (`@/client`) → **`rpc`** skill."
 ---
 
 # Vovk.ts `vovk bundle`
@@ -24,7 +24,7 @@ Covers:
 
 Out of scope:
 
-- In-project `vovk-client` generation → **`rpc`** skill.
+- In-project client generation (`@/client`) → **`rpc`** skill.
 - Python client publishing (PyPI) → **`python`** skill.
 - Rust client publishing (crates.io) → **`rust`** skill.
 - Mixin authoring (consumed here as bundle inputs) → **`mixins`** skill.
@@ -33,7 +33,7 @@ Out of scope:
 
 | Command | Purpose | Output | When |
 |---|---|---|---|
-| `vovk generate` | In-project TypeScript client + OpenAPI spec | `node_modules/.vovk-client/`, `.vovk-schema/` | Every build (`prebuild` hook), on schema changes during `vovk dev`. |
+| `vovk generate` | In-project TypeScript client + OpenAPI spec | `src/client/` (or `client/` without `src`), `.vovk-schema/` | Every build (`prebuild` hook), on schema changes during `vovk dev`. |
 | `vovk bundle` | Publishable npm package — pre-built JS + `.d.ts` + `package.json` + `README.md` | `dist/` ready for `npm publish` | Ship SDK outside Next.js app. |
 
 Don't run `vovk bundle` in normal dev; in-project client faster. Bundle when you need registry artifact.
@@ -50,7 +50,7 @@ npx vovk bundle
 npm publish dist
 ```
 
-Published package consumed exactly like `vovk-client`:
+Published package consumed exactly like the in-project `@/client`:
 
 ```ts
 import { UserRPC } from 'my-api-bundle';
@@ -204,7 +204,7 @@ Bundled modules feed `deriveTools` identically to native ones — same call sig,
 import { UserRPC } from 'my-api-bundle';
 import { deriveTools } from 'vovk';
 
-const { tools } = deriveTools({ modules: { UserRPC } });
+const tools = deriveTools({ modules: { UserRPC } });
 ```
 
 See **`tools`** skill for full pipeline.

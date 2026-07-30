@@ -14,16 +14,16 @@ Both shapes interoperable — mix in one array, feed to OpenAI / Anthropic / Ver
 
 **Out of scope:** procedure authoring (**`procedure`**), `@operation` for OpenAPI docs (**`openapi`**), third-party OpenAPI mixin setup (**`mixins`**). MCP server transport / hosting outside Vovk; **for Next.js, recommended runtime is `mcp-handler` npm package** — example below.
 
-> **Import path note.** Code samples import from `'vovk-client'` — **composed client + `js` template** default, re-exported from `node_modules/.vovk-client`. With `ts` template, import from `composedClient.outDir` (e.g. `@/client`). With segmented client, import from `@/client/<segment>`. Call shape identical. See **`rpc`** skill.
+> **Import path note.** Code samples import from `'@/client'`: the composed client generated into `src/client` (or `client/` without a `src` folder). Custom `composedClient.outDir` changes the path. With segmented client, import from `@/client/<segment>`. Call shape identical. See **`rpc`** skill.
 
 ## `deriveTools` — core shape
 
 ```ts
 import { deriveTools } from 'vovk';
-import { TaskRPC, PetstoreAPI } from 'vovk-client';
+import { TaskRPC, PetstoreAPI } from '@/client';
 import UserController from '@/modules/user/user-controller';
 
-const { tools, toolsByName } = deriveTools({
+const tools = deriveTools({
   modules: { UserController, TaskRPC, PetstoreAPI },
 });
 ```
@@ -31,7 +31,7 @@ const { tools, toolsByName } = deriveTools({
 `modules` accepts record of:
 
 - **Controllers** — execute via `.fn()` in-process, no HTTP.
-- **RPC modules** (from `vovk-client` or `@/client[/segment]` per layout) — execute via HTTP using standard fetcher.
+- **RPC modules** (from `@/client`, or `@/client/<segment>` for segmented layout) — execute via HTTP using standard fetcher.
 - **OpenAPI mixins** (same client surface) — execute via HTTP against third-party API. See **`mixins`** skill.
 
 Each module yields one tool per procedure with `@operation` schema, not `hidden`.
@@ -121,7 +121,7 @@ For coarser selection — when same controller serves both REST and tool-exposed
 ```ts
 import { pick, omit } from 'lodash';
 
-const { tools } = deriveTools({
+const tools = deriveTools({
   modules: {
     PostRPC: pick(PostRPC, ['createPost', 'getPost']),
     UserController: omit(UserController, ['deleteUser']),
@@ -134,7 +134,7 @@ const { tools } = deriveTools({
 `deriveTools({ meta })` flows into every tool execution. Controllers read via `req.vovk.meta()`; RPC modules send as `xMetaHeader` request header.
 
 ```ts
-const { tools } = deriveTools({
+const tools = deriveTools({
   modules: { UserController },
   meta: { tenantId: 'acme', actorRole: 'admin' },
 });
@@ -154,9 +154,9 @@ Mixin modules carry `withDefaults({ init?, apiRoot? })` method returning pre-con
 
 ```ts
 import { deriveTools } from 'vovk';
-import { GithubIssuesAPI } from 'vovk-client';
+import { GithubIssuesAPI } from '@/client';
 
-const { tools } = deriveTools({
+const tools = deriveTools({
   modules: {
     AuthorizedGithubIssuesAPI: GithubIssuesAPI.withDefaults({
       init: {
@@ -338,7 +338,7 @@ export default class AiSdkController {
   @post('tools')
   static async functionCalling(req: VovkRequest<{ messages: UIMessage[] }>) {
     const { messages } = await req.json();
-    const { tools: llmTools } = deriveTools({ modules: { UserController } });
+    const llmTools = deriveTools({ modules: { UserController } });
 
     const tools = Object.fromEntries(
       llmTools.map(({ name, execute, description, parameters }) => [
@@ -398,7 +398,7 @@ import type z from 'zod';
 import TaskController from '@/modules/task/task-controller';
 import UserController from '@/modules/user/user-controller';
 
-const { tools } = deriveTools({
+const tools = deriveTools({
   modules: { UserController, TaskController },
   toModelOutput: ToModelOutput.MCP,
   onExecute: (result, { name }) => console.log(`${name} executed`, result),
@@ -451,7 +451,7 @@ Wrap required **only for MCP**, not general LLM tool exposure. `deriveTools` rea
 ```ts
 import { createTool, ToModelOutput } from 'vovk';
 import { z } from 'zod';
-import { PetstoreAPI } from 'vovk-client';
+import { PetstoreAPI } from '@/client';
 
 const PetstoreAPIWithAuth = PetstoreAPI.withDefaults({
   init: { headers: { Authorization: `Bearer ${process.env.PETSTORE_TOKEN}` } },

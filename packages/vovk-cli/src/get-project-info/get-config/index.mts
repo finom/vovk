@@ -46,9 +46,9 @@ export async function getConfig({
     composedClient: {
       ...conf.composedClient,
       enabled: conf.composedClient?.enabled ?? true,
-      fromTemplates: conf.composedClient?.fromTemplates ?? [BuiltInTemplateName.js],
-      outDir: conf.composedClient?.outDir ?? './node_modules/.vovk-client',
-      prettifyClient: conf.composedClient?.prettifyClient ?? false,
+      fromTemplates: conf.composedClient?.fromTemplates ?? [BuiltInTemplateName.ts],
+      outDir: conf.composedClient?.outDir ?? path.join(srcRoot ?? '.', 'client'),
+      prettifyClient: conf.composedClient?.prettifyClient ?? true,
     },
     segmentedClient: {
       ...conf.segmentedClient,

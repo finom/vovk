@@ -1,7 +1,7 @@
 import assert from 'node:assert';
 import { describe, it } from 'node:test';
 import { deriveTools } from 'vovk';
-import { OpenApiControllerRPC, WithValidationRPC } from 'vovk-client';
+import { OpenApiControllerRPC, WithValidationRPC } from '../generated-client/index.ts';
 
 describe('deriveTools from RPC modules', () => {
   const tools = deriveTools({

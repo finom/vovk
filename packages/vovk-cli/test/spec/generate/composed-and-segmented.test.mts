@@ -44,15 +44,15 @@ await describe.only('Composed & Segmented client', async () => {
     await createApp();
   });
   await it('Generates composed client', async () => {
-    await runAtProjectDir('rm -rf ./node_modules/.vovk-client');
+    await runAtProjectDir('rm -rf ./src/client');
     await runAtProjectDir(`../dist/index.mjs generate`);
 
     await assertDirFileList({
-      dirPath: './node_modules/.vovk-client',
-      files: ['index.js', 'index.d.ts', 'schema.js', 'schema.d.ts', 'openapi.json', 'openapi.d.ts', 'openapi.js'],
+      dirPath: './src/client',
+      files: ['index.ts', 'schema.ts', 'openapi.ts', 'openapi.json'],
     });
 
-    await assertNotExists('./node_modules/.vovk-client/root/index.mjs');
+    await assertNotExists('./src/client/root/index.mjs');
   });
 
   await it('Generates composed client using --from, --out and --composed-only', async () => {

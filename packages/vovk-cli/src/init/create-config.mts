@@ -72,7 +72,7 @@ export async function createConfig({
 
   if (lang?.length) {
     config.composedClient ??= {};
-    config.composedClient.fromTemplates = ['js', ...lang];
+    config.composedClient.fromTemplates = ['ts', ...lang];
   }
 
   config.moduleTemplates = moduleTemplates;

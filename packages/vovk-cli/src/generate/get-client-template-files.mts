@@ -45,6 +45,10 @@ export async function getClientTemplateFiles({
 
   for (const templateName of fromTemplates) {
     if (!(templateName in config.clientTemplateDefs)) {
+      // js family removed in v4
+      if (['js', 'jsBase', 'schemaJs', 'openapiJs'].includes(templateName)) {
+        throw new Error(`The "${templateName}" template was removed in v4. Use "ts" instead.`);
+      }
       throw new Error(`Unknown template name: ${templateName}`);
     }
 
