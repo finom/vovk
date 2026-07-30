@@ -378,7 +378,8 @@ describe('Client with composed RPC client', () => {
 
   it('Parses query values that contain unencoded "="', async () => {
     // raw fetch like curl or an HTML form, the RPC client percent-encodes "=" so it cannot reproduce this
-    const endpoint = CommonControllerRPC.getNestedQuery.getURL({ apiRoot });
+    const getURL = CommonControllerRPC.getNestedQuery.getURL as (options: { apiRoot: string }) => string;
+    const endpoint = getURL({ apiRoot });
     const response = await fetch(`${endpoint}?x=YWJjZA==&y[0]=a=b=c&z[f]=eyJhbGciOiJIUzI1NiJ9.payload.sig==`);
 
     strictEqual(response.status, 200);
