@@ -174,7 +174,10 @@ export function createFetcher<T>({
 
       const abortController = new AbortController();
 
-      requestInit.signal = abortController.signal;
+      // keep the internal controller for stream disposal but let a user-provided init.signal abort too
+      requestInit.signal = init?.signal
+        ? AbortSignal.any([abortController.signal, init.signal])
+        : abortController.signal;
 
       requestInit = prepareRequestInit ? await prepareRequestInit(requestInit, inputOptions) : requestInit;
 

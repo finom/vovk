@@ -190,6 +190,41 @@ describe('Client with composed RPC client', () => {
     });
   });
 
+  it('Keeps Headers instances passed via init.headers', async () => {
+    const perCall = await CommonControllerRPC.getHelloWorldHeaders({
+      apiRoot,
+      init: { headers: new Headers({ 'x-vovk-test': 'world' }) },
+    });
+
+    deepStrictEqual(perCall, { 'x-vovk-test': 'world' });
+
+    const viaDefaults = await CommonControllerRPC.withDefaults({
+      apiRoot,
+      init: { headers: new Headers({ 'x-vovk-test': 'world' }) },
+    }).getHelloWorldHeaders();
+
+    deepStrictEqual(viaDefaults, { 'x-vovk-test': 'world' });
+  });
+
+  it('Aborts the request when init.signal is aborted', async () => {
+    const abortController = new AbortController();
+    abortController.abort();
+
+    let error: Error | null = null;
+
+    try {
+      await CommonControllerRPC.getHelloWorldObjectLiteralPromise({
+        apiRoot,
+        init: { signal: abortController.signal },
+      });
+    } catch (e) {
+      error = e as Error;
+    }
+
+    ok(error, 'Expected the request to be aborted');
+    ok(/abort/i.test(error.message));
+  });
+
   it(`Should handle simple requests and use empty generic`, async () => {
     const result = await CommonControllerRPC.getHelloWorldAndEmptyGeneric();
     deepStrictEqual(result satisfies { hello: string | null }, { hello: 'world' });

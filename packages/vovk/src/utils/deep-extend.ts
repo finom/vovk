@@ -37,6 +37,12 @@ function isSpecificValue(val: KnownAny): val is SpecificValue {
   return val instanceof Buffer || val instanceof Date || val instanceof RegExp;
 }
 
+// class instances like Headers or AbortSignal have no enumerable keys and must not be fake-cloned into {}
+function isPlainObject(val: object): boolean {
+  const proto = Object.getPrototypeOf(val);
+  return proto === Object.prototype || proto === null;
+}
+
 function cloneSpecificValue(val: SpecificValue): SpecificValue {
   if (val instanceof Buffer) {
     const x = Buffer.alloc ? Buffer.alloc(val.length) : Buffer.from(val);
@@ -62,6 +68,8 @@ function deepCloneArray<T = KnownAny>(arr: T[]): T[] {
         clone[index] = deepCloneArray(item) as T;
       } else if (isSpecificValue(item)) {
         clone[index] = cloneSpecificValue(item) as T;
+      } else if (!isPlainObject(item)) {
+        clone[index] = item;
       } else {
         clone[index] = deepExtend({}, item) as T;
       }
@@ -132,8 +140,13 @@ function deepExtend(...args: KnownAny[]): KnownAny {
         target[key] = cloneSpecificValue(val);
         return;
       }
-      // overwrite by new value if source isn't object or array
-      else if (typeof src !== 'object' || src === null || Array.isArray(src)) {
+      // pass class instances by reference, cloning by enumerable keys would produce {}
+      else if (!isPlainObject(val)) {
+        target[key] = val;
+        return;
+      }
+      // overwrite by new value if source isn't a plain object or is an array
+      else if (typeof src !== 'object' || src === null || Array.isArray(src) || !isPlainObject(src)) {
         target[key] = deepExtend({}, val);
         return;
       }
