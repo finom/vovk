@@ -165,6 +165,10 @@ export async function newModule({
           `${chalk.green('Created')}${empty ? ' empty' : ''} ${chalkHighlightThing(absoluteModulePath)} using ${chalkHighlightThing(`"${type}"`)} template for ${formatLoggedSegmentName(segmentName)}`
         );
       }
+    } else {
+      log.info(
+        `Dry run: would create${empty ? ' empty' : ''} ${chalkHighlightThing(absoluteModulePath)} using ${chalkHighlightThing(`"${type}"`)} template for ${formatLoggedSegmentName(segmentName)}`
+      );
     }
 
     if (type === 'controller') {
@@ -193,12 +197,15 @@ export async function newModule({
         );
         if (!dryRun) {
           await fs.writeFile(routeFilePath, newSegmentCode);
+          log.info(
+            `${chalk.green('Added')} ${chalkHighlightThing(sourceName)} ${type} as ${chalkHighlightThing(compiledName)} to ${formatLoggedSegmentName(segmentName)}`
+          );
+        } else {
+          log.info(
+            `Dry run: would add ${chalkHighlightThing(sourceName)} ${type} as ${chalkHighlightThing(compiledName)} to ${formatLoggedSegmentName(segmentName)}`
+          );
         }
       }
-
-      log.info(
-        `${chalk.green('Added')} ${chalkHighlightThing(sourceName)} ${type} as ${chalkHighlightThing(compiledName)} to ${formatLoggedSegmentName(segmentName)}`
-      );
     }
   }
 }

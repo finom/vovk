@@ -25,6 +25,7 @@ export type GetOpenAPINameFn = (config: {
 }) => string;
 
 const normalizeGetModuleName = (getModuleName: OpenAPIMixin['getModuleName']): OpenAPIMixinStrict['getMethodName'] => {
+  getModuleName = getModuleName ?? 'api';
   if (typeof getModuleName === 'string') {
     const moduleName = getModuleName;
     getModuleName = () => moduleName;
@@ -36,6 +37,7 @@ const normalizeGetModuleName = (getModuleName: OpenAPIMixin['getModuleName']): O
 };
 
 const normalizeGetMethodName = (getMethodName: OpenAPIMixin['getMethodName']) => {
+  getMethodName = getMethodName ?? 'auto';
   if (getMethodName === 'camel-case-operation-id') {
     getMethodName = ({ operationObject }: Parameters<GetOpenAPINameFn>[0]) => {
       const operationId = operationObject.operationId;
@@ -83,8 +85,21 @@ async function getOpenApiSpecRemote({
   fallback?: string;
   log: ProjectInfo['log'];
 }): Promise<OpenAPIObject> {
-  const resp = await fetch(url);
-  const text = await resp.text();
+  let resp: Response;
+  let text: string;
+  try {
+    resp = await fetch(url);
+    text = await resp.text();
+  } catch (error) {
+    // network failures (DNS, offline, timeouts) should use the fallback too
+    const message = `Failed to fetch OpenAPI spec from ${chalkHighlightThing(url)}: ${(error as Error).message}`;
+    if (fallback) {
+      log.warn(`${message}. Falling back to ${chalkHighlightThing(fallback)}`);
+      return getOpenApiSpecLocal(fallback, cwd);
+    }
+
+    throw new Error(message);
+  }
 
   if (!resp.ok) {
     if (fallback) {

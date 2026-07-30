@@ -25,33 +25,42 @@ const getIncludedSegmentNames = (
   cliGenerateOptions: GenerateOptions | undefined
 ) => {
   const segments = Object.values(fullSchema.segments);
-  const includeSegments =
-    cliGenerateOptions?.[configKey === 'segmentedClient' ? 'segmentedIncludeSegments' : 'composedIncludeSegments'] ??
-    config[configKey].includeSegments;
-  const excludeSegments =
-    cliGenerateOptions?.[configKey === 'segmentedClient' ? 'segmentedExcludeSegments' : 'composedExcludeSegments'] ??
-    config[configKey].excludeSegments;
+  const cliIncludeSegments =
+    cliGenerateOptions?.[configKey === 'segmentedClient' ? 'segmentedIncludeSegments' : 'composedIncludeSegments'];
+  const cliExcludeSegments =
+    cliGenerateOptions?.[configKey === 'segmentedClient' ? 'segmentedExcludeSegments' : 'composedExcludeSegments'];
+  // CLI options win as a pair so config exclude cannot conflict with CLI include
+  const isFromCli = !!(cliIncludeSegments?.length || cliExcludeSegments?.length);
+  const includeSegments = isFromCli ? cliIncludeSegments : config[configKey].includeSegments;
+  const excludeSegments = isFromCli ? cliExcludeSegments : config[configKey].excludeSegments;
   if (includeSegments?.length && excludeSegments?.length) {
     throw new Error(
-      `Both includeSegments and excludeSegments are set in "${configKey}" config. Please use only one of them.`
+      `Both includeSegments and excludeSegments are set ${isFromCli ? 'as CLI options' : `in "${configKey}" config`}. Please use only one of them.`
     );
   }
-  const includedSegmentNames =
-    Array.isArray(includeSegments) && includeSegments.length
-      ? includeSegments.map((segmentName) => {
-          const segment = segments.find(({ segmentName: sName }) => sName === segmentName);
-          if (!segment) {
-            throw new Error(`Segment "${segmentName}" not found in the config for "${configKey}"`);
-          }
-          return segment.segmentName;
-        })
-      : Array.isArray(excludeSegments) && excludeSegments.length // TODO: Warn if excludeSegments includes a segment name that is not listed at segments
-        ? segments
-            .filter(({ segmentName }) => !excludeSegments?.includes(segmentName))
-            .map(({ segmentName }) => segmentName)
-        : segments.map(({ segmentName }) => segmentName);
+  const segmentExists = (segmentName: string) => segments.some(({ segmentName: sName }) => sName === segmentName);
 
-  return includedSegmentNames;
+  if (includeSegments?.length) {
+    for (const segmentName of includeSegments) {
+      if (!segmentExists(segmentName)) {
+        throw new Error(`Segment "${segmentName}" not found in the config for "${configKey}"`);
+      }
+    }
+    return includeSegments;
+  }
+
+  if (excludeSegments?.length) {
+    for (const segmentName of excludeSegments) {
+      if (!segmentExists(segmentName)) {
+        throw new Error(`Segment "${segmentName}" from excludeSegments not found in the config for "${configKey}"`);
+      }
+    }
+    return segments
+      .filter(({ segmentName }) => !excludeSegments.includes(segmentName))
+      .map(({ segmentName }) => segmentName);
+  }
+
+  return segments.map(({ segmentName }) => segmentName);
 };
 
 interface GenerationResult {

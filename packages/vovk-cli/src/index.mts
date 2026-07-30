@@ -44,11 +44,11 @@ program
         (await getAvailablePort(3000, portAttempts, 0, (failedPort, tryingPort) =>
           console.warn(`🐺 Port ${failedPort} is in use, trying ${tryingPort} instead.`)
         ).catch(() => {
-          throw new Error(`🐺 ❌ Failed to find an available port after ${portAttempts} attempts`);
+          throw new Error(`Failed to find an available port after ${portAttempts} attempts`);
         }));
 
     if (!PORT) {
-      throw new Error('🐺 ❌ PORT env variable is required');
+      throw new Error('PORT env variable is required');
     }
 
     if (nextDev) {
@@ -67,7 +67,7 @@ program
               __VOVK_START_WATCHER_IN_STANDALONE_MODE__: 'true' as const,
               // TODO: Pass these as flags
               __VOVK_SCHEMA_OUT_FLAG__: schemaOut ?? '',
-              __VOVK_DEV_HTTPS_FLAG__: devHttps ? 'true' : 'false',
+              __VOVK_DEV_HTTPS_FLAG__: devHttps ? 'true' : '',
               __VOVK_EXIT__: exit ? 'true' : 'false',
               __VOVK_LOG_LEVEL__: logLevel ?? undefined,
             } satisfies VovkEnv,
@@ -81,11 +81,15 @@ program
       );
       try {
         await result;
-      } finally {
-        // do nothing, all processes are killed
+      } catch (closeEvents) {
+        // concurrently rejects with child close events on shutdown; children already logged the reason
+        const hasFailure =
+          Array.isArray(closeEvents) &&
+          closeEvents.some((event) => typeof event?.exitCode === 'number' && event.exitCode !== 0);
+        if (hasFailure) process.exit(1);
       }
     } else {
-      void new VovkDev({ schemaOut, devHttps, logLevel }).start({ exit });
+      await new VovkDev({ schemaOut, devHttps, logLevel }).start({ exit });
     }
   });
 
@@ -251,7 +255,13 @@ program
   .description('Show help message')
   .action(() => program.help());
 
-program.parse(process.argv);
+program.parseAsync(process.argv).catch((error: unknown) => {
+  const logLevelFlagIndex = process.argv.indexOf('--log-level');
+  const isDebug = ['debug', 'trace'].includes(process.argv[logLevelFlagIndex + 1] ?? '');
+  const err = error instanceof Error ? error : new Error(String(error));
+  console.error(`🐺 ❌ ${isDebug ? (err.stack ?? err.message) : err.message}`);
+  process.exit(1);
+});
 
 if (!process.argv.slice(2).length) {
   program.outputHelp();
