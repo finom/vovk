@@ -9,8 +9,8 @@ import {
   type VovkReturnType,
   type VovkYieldType,
 } from 'vovk';
-import { WithValidationRPC } from 'vovk-client';
 import { validateOnClient as validateOnClientAjv } from '../../../packages/vovk-ajv/index.ts';
+import { WithValidationRPC } from '../generated-client/index.ts';
 import { expectPromise, getConstrainingObject, NESTED_QUERY_EXAMPLE } from '../lib.ts';
 import type WithValidationController from './with-validation-controller.ts';
 

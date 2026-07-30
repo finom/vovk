@@ -1,7 +1,7 @@
 import { deepStrictEqual, strictEqual } from 'node:assert';
 import { describe, it } from 'node:test';
 import { HttpStatus } from 'vovk';
-import { OpenApiControllerRPC } from 'vovk-client';
+import { OpenApiControllerRPC } from '../generated-client/index.ts';
 
 describe('OpenAPI', () => {
   it(`Should work`, async () => {

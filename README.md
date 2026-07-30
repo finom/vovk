@@ -89,7 +89,7 @@ export default class UserController {
 ```
 
 ```ts
-import { UserRPC, PetstoreAPI } from 'vovk-client';
+import { UserRPC, PetstoreAPI } from '@/client';
 
 const user = await UserRPC.getUser({ params: { id: '123' } });
 const pet = await PetstoreAPI.getPetById({ params: { petId: 1 } });
@@ -98,8 +98,8 @@ const pet = await PetstoreAPI.getPetById({ params: { petId: 1 } });
 Annotate with `@operation` and procedures expose as LLM tools — pass controllers (in-process) or RPC modules (HTTP) to `deriveTools`:
 
 ```ts
-const { tools } = deriveTools({ modules: { UserRPC, TaskController, PetstoreAPI } });
-console.log(tools); // [{ name, description, parameters, execute }, ...]
+const tools = deriveTools({ modules: { UserRPC, TaskController, PetstoreAPI } });
+console.log(tools); // [{ name, description, inputSchema, execute }, ...]
 ```
 
 ## What one procedure becomes

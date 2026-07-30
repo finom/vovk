@@ -20,7 +20,7 @@ import type { ProjectInfo } from '../get-project-info/index.mjs';
 import { chalkHighlightThing } from '../utils/chalk-highlight-thing.mjs';
 import { compileJSONSchemaToTypeScriptType } from '../utils/compile-json-schema-to-typescript-type.mjs';
 import type { Segment } from '../utils/locate-segments.mjs';
-import { prettify } from '../utils/prettify.mjs';
+import { prettify, warnIfPrettierMissing } from '../utils/prettify.mjs';
 import type { ClientTemplateFile } from './get-client-template-files.mjs';
 import { getTemplateClientImports } from './get-template-client-imports.mjs';
 
@@ -251,6 +251,7 @@ export async function writeOneClientFile({
 
   // Optionally prettify
   if (prettifyClient) {
+    await warnIfPrettierMissing(log);
     rendered = await prettify(rendered, outPath);
   }
 

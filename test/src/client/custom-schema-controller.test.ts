@@ -1,6 +1,6 @@
 import { strictEqual } from 'node:assert';
 import { describe, it } from 'node:test';
-import { schema } from 'vovk-client';
+import { schema } from '../generated-client/index.ts';
 
 describe('Custom schema', () => {
   it('Should write custom schema', () => {

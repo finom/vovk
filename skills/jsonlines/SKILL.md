@@ -28,7 +28,7 @@ Covers:
 Out of scope:
 
 - Non-streaming procedures → **`procedure` skill**.
-- Client generation / `vovk-client` setup → **`rpc` skill**.
+- Client generation / `@/client` setup → **`rpc` skill**.
 - Generator basics (JS language) — assume reader knows them.
 
 ## Generator handler
@@ -145,7 +145,7 @@ Generated RPC method returns async iterable.
 ### Basic iteration
 
 ```ts
-import { StreamRPC } from 'vovk-client';
+import { StreamRPC } from '@/client';
 
 using stream = await StreamRPC.getJSONLines();
 

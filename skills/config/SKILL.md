@@ -38,7 +38,7 @@ export default config;
 | `libs` | `{}` | Validation library config (used by `vovk-cli` codegen). |
 | `info` | `undefined` | OpenAPI `info` block (title, version, description, contact, license). |
 | `moduleTemplates` | set by `vovk init` | Templates `vovk new controller service` uses. |
-| `clientTemplateDefs` | template defaults | Override / extend built-in templates (`js`, `ts`, `py`, `rs`, ...). |
+| `clientTemplateDefs` | template defaults | Override / extend built-in templates (`ts`, `py`, `rs`, ...). |
 | `composedClient` | see below | Composed client output config. |
 | `segmentedClient` | see below | Segmented client output config. |
 | `bundle` | `{}` | `vovk bundle` config (CLI flow → `bundle` skill). |
@@ -49,17 +49,21 @@ export default config;
 ```ts
 composedClient: {
   enabled: true,
-  outDir: 'node_modules/.vovk-client',
+  outDir: 'src/client', // 'client' when project has no src folder
   fromTemplates: ['ts'],
+  prettifyClient: true, // project prettier; warns and skips if not installed
 }
 
 segmentedClient: {
   enabled: false,
   outDir: 'src/client',
   fromTemplates: ['ts'],
+  prettifyClient: true,
   segmentNameOverride: undefined,
 }
 ```
+
+Import composed from `@/client`, segmented from `@/client/<segment>`. Both enabled share `outDir`: composed files at the root, per-segment subdirs. `prettifyClient` uses the project-installed prettier; if missing, CLI warns once per run and writes unformatted.
 
 Multitenant projects flip these — `composedClient.enabled: false`, `segmentedClient.enabled: true`. Detail → `multitenant` skill.
 
@@ -81,7 +85,7 @@ clientTemplateDefs: {
 }
 ```
 
-Built-in templates: `js`, `jsSrc`, `ts`, `tsSrc`, `py`, `pySrc`, `rs`, `rsSrc`. Per-language flow → `python` / `rust` skills.
+Built-in templates: `ts`, `py` / `pySrc`, `rs` / `rsSrc`, plus internal building blocks (`tsBase`, `schemaTs`, `openapiTs`, `openapiJson`, ...). Per-language flow → `python` / `rust` skills.
 
 ## `moduleTemplates` — `vovk new` scaffolding
 
