@@ -281,7 +281,9 @@ export function vovkSchemaToOpenAPI({
       components: {
         ...openAPIObject?.components,
         schemas: {
-          ...(openAPIObject?.components?.schemas ?? components),
+          // merge so user-declared schemas extend the derived ones instead of replacing them
+          ...components,
+          ...openAPIObject?.components?.schemas,
           HttpStatus: {
             type: 'integer',
             description: 'HTTP status code',
