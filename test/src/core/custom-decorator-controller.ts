@@ -17,4 +17,11 @@ export default class CustomDecoratorController {
   static get(req: EnhancedNextRequest) {
     return { hello: req.hello };
   }
+
+  // reversed order: custom decorator above the HTTP decorator
+  @customDecorator('above')
+  @get('above-http')
+  static getWithDecoratorAbove(req: EnhancedNextRequest) {
+    return { hello: req.hello };
+  }
 }
