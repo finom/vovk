@@ -30,6 +30,13 @@ export async function getConfig({
     cwd,
   });
 
+  // a config that exists but fails to load must not be silently replaced by defaults
+  if (!userConfig && configAbsolutePaths.length) {
+    throw new Error(
+      `Failed to load config file at ${chalkHighlightThing(configAbsolutePaths[0])}. ${error?.message ?? 'Unknown error'}`
+    );
+  }
+
   const conf = userConfig ?? {};
   logLevel = logLevel ?? (conf.logLevel as LogLevelNames) ?? 'info';
   const log = getLogger(logLevel);
@@ -68,9 +75,13 @@ export async function getConfig({
       outputConfig: {},
       build:
         conf.bundle?.build ??
-        (() => {
-          throw new Error('No bundle.build function specified');
-        }),
+        // isMissingBuild lets the bundle command fail fast before doing any work
+        Object.assign(
+          () => {
+            throw new Error('No bundle.build function specified');
+          },
+          { isMissingBuild: true }
+        ),
       ...conf.bundle,
     },
     modulesDir: conf.modulesDir ?? path.join(srcRoot ?? '.', 'modules'),
@@ -113,7 +124,7 @@ export async function getConfig({
   } // else it's false and exposeConfigKeys already is []
 
   if (!userConfig) {
-    log.warn(`Unable to load config at ${chalkHighlightThing(`${cwd}/`)}. Using default values. ${error ?? ''}`);
+    log.warn(`No config file found at ${chalkHighlightThing(`${cwd}/`)}. Using default values.`);
   }
 
   return { config, srcRoot, configAbsolutePaths, userConfig, log };

@@ -17,6 +17,11 @@ import { updateGitignore } from './update-gitignore.mjs';
 import { getDevScript, updateNPMScripts } from './update-npm-scripts.mjs';
 import { updateTypeScriptConfig } from './update-typescript-config.mjs';
 
+const VALIDATION_LIBRARIES = ['zod', 'valibot', 'arktype', 'none'];
+const LANGS = ['py', 'rs'];
+const UPDATE_SCRIPTS_MODES = ['implicit', 'explicit'];
+const CHANNELS = ['latest', 'beta', 'draft'];
+
 export class Init {
   root!: string;
   log!: ReturnType<typeof getLogger>;
@@ -59,8 +64,10 @@ export class Init {
 
     // delete older config files
     if (configPaths.length) {
-      await Promise.all(configPaths.map((configPath) => fs.rm(configPath)));
-      log.debug(`Deleted existing config file${configPaths.length > 1 ? 's' : ''} at ${configPaths.join(', ')}`);
+      if (!dryRun) await Promise.all(configPaths.map((configPath) => fs.rm(configPath)));
+      log.debug(
+        `${dryRun ? 'Dry run: would delete' : 'Deleted'} existing config file${configPaths.length > 1 ? 's' : ''} at ${configPaths.join(', ')}`
+      );
     }
 
     if (validationLibrary) {
@@ -81,7 +88,7 @@ export class Init {
     if (updateScripts) {
       try {
         if (!dryRun && pkgJson) await updateNPMScripts({ pkgJson, root, bundle, updateScriptsMode: updateScripts });
-        log.info('Updated scripts at package.json');
+        log.info(`${dryRun ? 'Dry run: would update' : 'Updated'} scripts at package.json`);
       } catch (error) {
         log.error(`Failed to update scripts at package.json: ${(error as Error).message}`);
       }
@@ -98,7 +105,7 @@ export class Init {
 
         if (!dryRun) await updateTypeScriptConfig(root, compilerOptions);
         log.info(
-          `Added ${Object.keys(compilerOptions)
+          `${dryRun ? 'Dry run: would add' : 'Added'} ${Object.keys(compilerOptions)
             .map((k) => `"${k}"`)
             .join(' and ')} to tsconfig.json`
         );
@@ -171,7 +178,9 @@ export class Init {
         options: { validationLibrary, channel, bundle, lang, dryRun },
       });
 
-      log.info(`Config created successfully at ${chalkHighlightThing(configAbsolutePath)}`);
+      log.info(
+        `Config ${dryRun ? 'would be created (dry run)' : 'created successfully'} at ${chalkHighlightThing(configAbsolutePath)}`
+      );
       log.info(`You can now create a root segment with ${chalkHighlightThing('npx vovk new segment')} command`);
     } catch (error) {
       log.error(
@@ -200,6 +209,29 @@ export class Init {
     const cwd = process.cwd();
     const root = path.resolve(cwd, prefix ?? '.');
     const log = getLogger(logLevel ?? 'info');
+
+    validationLibrary = validationLibrary?.toLowerCase() as typeof validationLibrary;
+    lang = lang?.map((l) => l.toLowerCase());
+
+    if (validationLibrary && !VALIDATION_LIBRARIES.includes(validationLibrary)) {
+      throw new Error(
+        `Unknown --validation-library value "${validationLibrary}". Supported values: ${VALIDATION_LIBRARIES.join(', ')}`
+      );
+    }
+    for (const l of lang ?? []) {
+      if (!LANGS.includes(l)) {
+        throw new Error(`Unknown --lang value "${l}". Supported values: ${LANGS.join(', ')}`);
+      }
+    }
+    if (updateScripts && !UPDATE_SCRIPTS_MODES.includes(updateScripts)) {
+      throw new Error(
+        `Unknown --update-scripts value "${updateScripts}". Supported values: ${UPDATE_SCRIPTS_MODES.join(', ')}`
+      );
+    }
+    if (channel && !CHANNELS.includes(channel)) {
+      throw new Error(`Unknown --channel value "${channel}". Supported values: ${CHANNELS.join(', ')}`);
+    }
+
     const pkgJson = await NPMCliPackageJson.load(root).catch(() => null);
 
     this.root = root;
