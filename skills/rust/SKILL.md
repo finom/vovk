@@ -65,7 +65,7 @@ npx vovk generate --from rsSrc --out ./rust_src
 // vovk.config.mjs
 const config = {
   composedClient: {
-    fromTemplates: ['js', 'rs'],
+    fromTemplates: ['ts', 'rs'],
   },
 };
 export default config;
@@ -78,7 +78,7 @@ export default config;
 const PROD_ORIGIN = 'https://hello-world.vovk.dev';
 
 const config = {
-  composedClient: { fromTemplates: ['js', 'rs'] },
+  composedClient: { fromTemplates: ['ts', 'rs'] },
   clientTemplateDefs: {
     rs: {
       extends: 'rs',

@@ -1,6 +1,6 @@
 ---
 name: procedure
-description: Vovk.ts procedures — atomic unit of server-side logic in Vovk project. Use whenever user asks to build ANYTHING producing or consuming data on server — page loading data ("users page", "dashboard", "product list"), endpoint, API handler, server action, form submission, controller, validation with Zod / Valibot / ArkType, request/response shape, file upload, file download, error handling (`HttpException`, status codes), content types (JSON, multipart, text, binary), or calling server code from React Server Component / SSR / SSG / PPR / server action. Triggers on phrasings like "build a users page", "add an endpoint", "create a form handler", "fetch X from the server", "handle file upload", "validate input", "throw a 404", "server action for Y", "controller for Z", "add `req.body` parsing", ".fn()", "CORS". Does NOT cover segments / `route.ts` / `initSegment` → hand off to `segment` skill. Does NOT cover RPC client generation, fetcher, `vovk-client` imports → hand off to `rpc` skill. Does NOT cover custom decorators, `createDecorator`, authorization / auth guards → hand off to `decorators` skill. Does NOT cover `deriveTools` / `createTool` / MCP / AI tool wiring → hand off to `tools` skill. Does NOT cover JSON Lines streaming / generators / `JSONLinesResponder` → hand off to `jsonlines` skill. Does NOT cover `@operation` metadata / Scalar docs → hand off to `openapi` skill.
+description: Vovk.ts procedures — atomic unit of server-side logic in Vovk project. Use whenever user asks to build ANYTHING producing or consuming data on server — page loading data ("users page", "dashboard", "product list"), endpoint, API handler, server action, form submission, controller, validation with Zod / Valibot / ArkType, request/response shape, file upload, file download, error handling (`HttpException`, status codes), content types (JSON, multipart, text, binary), or calling server code from React Server Component / SSR / SSG / PPR / server action. Triggers on phrasings like "build a users page", "add an endpoint", "create a form handler", "fetch X from the server", "handle file upload", "validate input", "throw a 404", "server action for Y", "controller for Z", "add `req.body` parsing", ".fn()", "CORS". Does NOT cover segments / `route.ts` / `initSegment` → hand off to `segment` skill. Does NOT cover RPC client generation, fetcher, `@/client` imports → hand off to `rpc` skill. Does NOT cover custom decorators, `createDecorator`, authorization / auth guards → hand off to `decorators` skill. Does NOT cover `deriveTools` / `createTool` / MCP / AI tool wiring → hand off to `tools` skill. Does NOT cover JSON Lines streaming / generators / `JSONLinesResponder` → hand off to `jsonlines` skill. Does NOT cover `@operation` metadata / Scalar docs → hand off to `openapi` skill.
 ---
 
 # Vovk.ts procedures
@@ -18,7 +18,7 @@ Opposite of most frameworks: procedures first, HTTP opt-in.
 
 Covers procedure authoring end-to-end: `procedure({...}).handle(...)` options, validation with Zod/Valibot/ArkType (+ `vovk-ajv` client-side), controller classes and HTTP decorators (`@prefix`, `@get/@post/@put/@patch/@del`, `.auto()`), `req.vovk` + `VovkRequest`, error handling (`HttpException` / `HttpStatus`), content types (JSON, multipart, URL-encoded, text, binary, downloads), response headers + CORS, `.fn()` for server components / SSR / server actions, `decorate()`, `vovk new controller service` CLI.
 
-Out of scope (→ skill): segment setup / `initSegment` / `route.ts` → `segment`. RPC client generation / `vovk-client` → `rpc`. Custom decorators / `createDecorator` / auth guards → `decorators`. AI tools (`deriveTools`, `createTool`) → `tools`. Generator handlers / streaming → `jsonlines`. `@operation` / Scalar docs → `openapi`. Inference helpers against RPC modules → `rpc`.
+Out of scope (→ skill): segment setup / `initSegment` / `route.ts` → `segment`. RPC client generation / `@/client` → `rpc`. Custom decorators / `createDecorator` / auth guards → `decorators`. AI tools (`deriveTools`, `createTool`) → `tools`. Generator handlers / streaming → `jsonlines`. `@operation` / Scalar docs → `openapi`. Inference helpers against RPC modules → `rpc`.
 
 ## Procedure, minimally
 
@@ -236,7 +236,7 @@ Empty parts dropped, joined with `/` (verified in `packages/vovk/src/openapi/vov
 
 `@prefix` per-controller, `methodPath` per-handler, both optional. `.auto()` derives method-name segment kebab-cased. Nested segment names (`foo/bar`) collapse straight into URL.
 
-These URLs = plain HTTP — `curl`, `httpx`, `fetch`, any client works. Typed RPC clients (`vovk-client`, `vovk-python`, `vovk-rust`) wrap same endpoints with validation + inferred types; conveniences, not only access path. If user wants to hit `/api/users/123` from CLI, `curl` is right answer.
+These URLs = plain HTTP — `curl`, `httpx`, `fetch`, any client works. Typed RPC clients (generated `@/client`, `vovk-python`, `vovk-rust`) wrap same endpoints with validation + inferred types; conveniences, not only access path. If user wants to hit `/api/users/123` from CLI, `curl` is right answer.
 
 ## `.fn()` — local procedure calls (SSR / server components / server actions)
 
@@ -306,7 +306,7 @@ Things to know:
 
 ## Testing
 
-Unit-test procedures with `.fn()` — same call shape as SSR/server-action examples above (`UserController.getUser.fn({ params, body, query, meta })`), no HTTP server needed. Validation runs by default; pass `disableClientValidation: true` to bypass when isolating handler logic. For HTTP-level coverage (routing, decorators, status codes, content negotiation, generated client itself), call procedures through `vovk-client` against running dev server with `apiRoot: 'http://localhost:<port>/api'` → **`rpc`** skill for call shape. Mocking I/O / databases = project-specific — match repo conventions.
+Unit-test procedures with `.fn()` — same call shape as SSR/server-action examples above (`UserController.getUser.fn({ params, body, query, meta })`), no HTTP server needed. Validation runs by default; pass `disableClientValidation: true` to bypass when isolating handler logic. For HTTP-level coverage (routing, decorators, status codes, content negotiation, generated client itself), call procedures through the generated client (`@/client`) against running dev server with `apiRoot: 'http://localhost:<port>/api'` → **`rpc`** skill for call shape. Mocking I/O / databases = project-specific — match repo conventions.
 
 ## Validation — Standard Schema
 

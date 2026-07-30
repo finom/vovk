@@ -74,12 +74,12 @@ export default config;
 Run `npx vovk generate` (or keep `vovk dev` running) → mixin emitted alongside native RPC modules.
 
 ```ts
-import { PetstoreAPI } from 'vovk-client';
+import { PetstoreAPI } from '@/client';
 
 const pets = await PetstoreAPI.getPets({ query: { limit: 10 } });
 ```
 
-> **Import path depends on client layout.** Code samples here import from `'vovk-client'` — default for **composed client + `js` template**, re-exported from `node_modules/.vovk-client`. If project emits composed client into source tree via `ts` template (`composedClient.outDir`), import from that path — e.g. `@/client`. If project uses **segmented client**, each mixin lives in own folder named after pseudo-segment key — e.g. `@/client/petstore`. Call shape + types identical across all three. See **`rpc`** skill for full comparison.
+> **Import path depends on client layout.** Code samples here import from `'@/client'`: the composed client generated into `src/client` (or `client/` without a `src` folder). Custom `composedClient.outDir` changes the path. With **segmented client**, each mixin lives in own folder named after pseudo-segment key, e.g. `@/client/petstore`. Call shape + types identical in both. See **`rpc`** skill for full comparison.
 
 ## Source variants
 
@@ -156,7 +156,7 @@ Result: `GithubIssuesAPI.listForOrg`, `GithubReposAPI.removeStatusCheckContexts`
 For auth, prefer **`withDefaults`** over per-call plumbing. Every generated API module exposes `withDefaults({ init?, apiRoot? })`, returns new module with options deeply merged into every call:
 
 ```ts
-import { PetstoreAPI } from 'vovk-client';
+import { PetstoreAPI } from '@/client';
 
 const PetstoreAPIWithAuth = PetstoreAPI.withDefaults({
   init: { headers: { Authorization: `Bearer ${process.env.PETSTORE_TOKEN}` } },
@@ -219,7 +219,7 @@ Mixin modules support same inference helpers as native RPC:
 
 ```ts
 import type { VovkBody, VovkQuery, VovkParams, VovkOutput } from 'vovk';
-import { PetstoreAPI } from 'vovk-client';
+import { PetstoreAPI } from '@/client';
 
 type Body = VovkBody<typeof PetstoreAPI.updatePet>;
 type Output = VovkOutput<typeof PetstoreAPI.getPetById>;
@@ -228,7 +228,7 @@ type Output = VovkOutput<typeof PetstoreAPI.getPetById>;
 Named types from `components/schemas` across **all** mixins exposed under `Mixins` namespace export. Prefer this when third-party spec properly names its components:
 
 ```ts
-import { PetstoreAPI, type Mixins } from 'vovk-client';
+import { PetstoreAPI, type Mixins } from '@/client';
 
 const pet: Mixins.Pet = { id: 1, name: 'Doggo' };
 ```
@@ -241,9 +241,9 @@ Mixin modules feed `deriveTools` identically to native RPC modules for function-
 
 ```ts
 import { deriveTools } from 'vovk';
-import { GithubIssuesAPI, PetstoreAPI } from 'vovk-client';
+import { GithubIssuesAPI, PetstoreAPI } from '@/client';
 
-const { tools } = deriveTools({
+const tools = deriveTools({
   modules: {
     // Wrap with withDefaults to bake in the auth header
     AuthorizedGithubIssuesAPI: GithubIssuesAPI.withDefaults({
@@ -265,15 +265,14 @@ See **`tools`** skill for full provider-wiring pipeline (OpenAI / Anthropic / MC
 
 ## Composed vs segmented output
 
-Mixins emit into same client layouts as native RPC. Three TypeScript import paths:
+Mixins emit into same client layouts as native RPC. Two TypeScript import paths:
 
 | Layout | Import path | Notes |
 |---|---|---|
-| Composed + `js` template *(default)* | `import { PetstoreAPI } from 'vovk-client'` | Emitted to `node_modules/.vovk-client`, re-exported by `vovk-client` package. Best for most apps. |
-| Composed + `ts` template | `import { PetstoreAPI } from '@/client'` | Uncompiled TypeScript emitted to `composedClient.outDir` (e.g. `./src/client` or `./src/lib/client`). Import from that path. |
-| Segmented | `import { PetstoreAPI } from '@/client/petstore'` | Folder-per-segment under `segmentedClient.outDir` (default `./src/client`). Pseudo-segment key from `outputConfig.segments.<name>` becomes folder name — `petstore`, `github`, etc. |
+| Composed *(default)* | `import { PetstoreAPI } from '@/client'` | One client for all segments, generated into `composedClient.outDir` (default `./src/client`, or `./client` without a `src` folder). Best for most apps. |
+| Segmented | `import { PetstoreAPI } from '@/client/petstore'` | Folder-per-segment under `segmentedClient.outDir` (default `./src/client`, shared with composed). Pseudo-segment key from `outputConfig.segments.<name>` becomes folder name: `petstore`, `github`, etc. |
 
-All three share identical call shape + identical types — pick by emission preference. Full comparison in **`rpc`** skill.
+Both share identical call shape + identical types; pick by emission preference. Full comparison in **`rpc`** skill.
 
 Python and Rust templates (see **`python`** / **`rust`** skills) also support mixins.
 

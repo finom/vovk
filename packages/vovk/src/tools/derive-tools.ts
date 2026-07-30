@@ -195,7 +195,7 @@ type DeriveToolsBaseOptions<TOutput = unknown, TFormattedOutput = unknown> = {
  * @example
  * ```ts
  * import { deriveTools, ToModelOutput } from 'vovk';
- * import { UserRPC } from 'vovk-client';
+ * import { UserRPC } from '@/client';
  *
  * const tools = deriveTools({
  *   modules: { UserRPC },

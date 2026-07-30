@@ -44,15 +44,15 @@ await describe.only('Composed & Segmented client', async () => {
     await createApp();
   });
   await it('Generates composed client', async () => {
-    await runAtProjectDir('rm -rf ./node_modules/.vovk-client');
+    await runAtProjectDir('rm -rf ./src/client');
     await runAtProjectDir(`../dist/index.mjs generate`);
 
     await assertDirFileList({
-      dirPath: './node_modules/.vovk-client',
-      files: ['index.js', 'index.d.ts', 'schema.js', 'schema.d.ts', 'openapi.json', 'openapi.d.ts', 'openapi.js'],
+      dirPath: './src/client',
+      files: ['index.ts', 'schema.ts', 'openapi.ts', 'openapi.json'],
     });
 
-    await assertNotExists('./node_modules/.vovk-client/root/index.mjs');
+    await assertNotExists('./src/client/root/index.mjs');
   });
 
   await it('Generates composed client using --from, --out and --composed-only', async () => {
@@ -369,6 +369,14 @@ await describe.only('Composed & Segmented client', async () => {
     deepStrictEqual({ b }, { b: 4 });
   });
 
+  // makes the generated ts client importable by node directly (extensions in imports)
+  const useNodeNextResolution = async () => {
+    const tsconfigPath = path.join(projectDir, 'tsconfig.json');
+    const tsconfig = JSON.parse(await fs.readFile(tsconfigPath, 'utf-8'));
+    tsconfig.compilerOptions.moduleResolution = 'nodenext';
+    await fs.writeFile(tsconfigPath, JSON.stringify(tsconfig, null, 2));
+  };
+
   await it('Uses origin option', async () => {
     await updateConfig(path.join(projectDir, 'vovk.config.mjs'), (config) => ({
       ...config,
@@ -376,9 +384,10 @@ await describe.only('Composed & Segmented client', async () => {
         origin: 'https://example.com/',
       },
     }));
+    await useNodeNextResolution();
 
-    await runAtProjectDir(`../dist/index.mjs generate --out ./composed-client-origin-1 --from js --composed-only`);
-    const { UserRPC } = await import(path.join(projectDir, 'composed-client-origin-1', 'index.js'));
+    await runAtProjectDir(`../dist/index.mjs generate --out ./composed-client-origin-1 --from ts --composed-only`);
+    const { UserRPC } = await import(path.join(projectDir, 'composed-client-origin-1', 'index.ts'));
 
     deepStrictEqual(UserRPC.createUser.apiRoot, 'https://example.com/api');
   });
@@ -390,11 +399,12 @@ await describe.only('Composed & Segmented client', async () => {
         origin: 'https://example.com/', // should be overridden by --origin
       },
     }));
+    await useNodeNextResolution();
 
     await runAtProjectDir(
-      `../dist/index.mjs generate --out ./composed-client-origin-2 --from js --composed-only --origin https://example.org/`
+      `../dist/index.mjs generate --out ./composed-client-origin-2 --from ts --composed-only --origin https://example.org/`
     );
-    const { UserRPC } = await import(path.join(projectDir, 'composed-client-origin-2', 'index.js'));
+    const { UserRPC } = await import(path.join(projectDir, 'composed-client-origin-2', 'index.ts'));
 
     deepStrictEqual(UserRPC.createUser.apiRoot, 'https://example.org/api');
   });

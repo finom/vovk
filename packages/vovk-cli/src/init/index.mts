@@ -13,6 +13,7 @@ import { createConfig } from './create-config.mjs';
 import { getPackageManager, installDependencies } from './install-dependencies.mjs';
 import { logUpdateDependenciesError } from './log-update-dependencies-error.mjs';
 import { updateDependenciesWithoutInstalling } from './update-dependencies-without-installing.mjs';
+import { updateGitignore } from './update-gitignore.mjs';
 import { getDevScript, updateNPMScripts } from './update-npm-scripts.mjs';
 import { updateTypeScriptConfig } from './update-typescript-config.mjs';
 
@@ -46,7 +47,7 @@ export class Init {
   ) {
     const { log, root } = this;
 
-    const dependencies: string[] = ['vovk', 'vovk-client', 'vovk-ajv'];
+    const dependencies: string[] = ['vovk', 'vovk-ajv'];
     const devDependencies: string[] = ['vovk-cli'];
 
     if (lang?.includes('py')) {
@@ -73,7 +74,7 @@ export class Init {
     }
 
     if (bundle) {
-      const TSDOWN_VERSION = '0.19.0';
+      const TSDOWN_VERSION = '0.22.14';
       devDependencies.push(`tsdown@${TSDOWN_VERSION}`);
     }
 
@@ -152,6 +153,15 @@ export class Init {
           }
         }
       }
+    }
+
+    try {
+      if (!dryRun) {
+        const gitignoreEntry = await updateGitignore(root);
+        if (gitignoreEntry) log.info(`Added ${chalkHighlightThing(gitignoreEntry)} to .gitignore`);
+      }
+    } catch (error) {
+      log.error(`Failed to update .gitignore: ${(error as Error).message}`);
     }
 
     try {

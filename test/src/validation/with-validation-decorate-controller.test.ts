@@ -1,7 +1,7 @@
 import { deepStrictEqual, strictEqual } from 'node:assert';
 import { describe, it } from 'node:test';
 import { HttpException, type VovkIteration, type VovkOutput, type VovkReturnType, type VovkYieldType } from 'vovk';
-import { WithValidationDecorateRPC } from 'vovk-client';
+import { WithValidationDecorateRPC } from '../generated-client/index.ts';
 import { expectPromise } from '../lib.ts';
 import type WithValidationDecorateController from './with-validation-decorate-controller.ts';
 

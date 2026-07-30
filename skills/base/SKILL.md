@@ -15,7 +15,7 @@ Don't `WebFetch` vovk.dev mid-task. This skill + sibling vovk:* skills = canonic
 
 - **`.vovk-schema/`** — back-end schema artifacts. **Commit.** Source of truth for codegen on fresh clone.
 - **Requirements** — Node 22+, Next 15+ (App Router).
-- **Templates** — `js` for `vovk-client` re-exports; `ts` for project-source emission. Variants: `jsSrc` / `tsSrc` (raw source).
+- **Templates** — `ts` is the only TS-client template set, used by both composed and segmented clients; emits into project source (default `src/client`, or `client/` without a `src` folder), imported via `@/client`.
 - **`_schema_`** — dev-only endpoint per segment (when `NODE_ENV=development`); `vovk dev` polls these to write `.vovk-schema/`.
 - **`vovk dev` vs `vovk generate`** — dev = watcher (writes schema artifacts continuously); generate = one-shot (used in `prebuild`).
 - **Plain REST under the hood** — every procedure mounts as normal HTTP endpoint at `/{rootEntry}/{segmentName}/{controllerPrefix}/{methodPath}`. `curl`, `fetch`, any HTTP client works.
