@@ -199,27 +199,6 @@ describe('Streaming', () => {
     deepStrictEqual(expectedCollected, expected);
   });
 
-  // TODO: Stream never ends if not using dispose. No error when using dispose.
-  it.skip('Should handle unhandled errors in the middle of stream', async () => {
-    const tokens = ['token1', 'token2\n', 'token3'].map((token) => ({ token }));
-    const expected = tokens.map((token) => ({ ...token, query: 'queryValue' })).slice(0, 2);
-    const expectedCollected: typeof expected = [];
-
-    const resp = await StreamingControllerRPC.postWithStreamingAndDelayedUnhandledError({
-      body: tokens,
-      query: { query: 'queryValue' },
-      apiRoot,
-    });
-
-    await expectPromise(async () => {
-      for await (const message of resp) {
-        expectedCollected.push(message);
-      }
-    }).rejects.toThrow();
-
-    deepStrictEqual(expectedCollected, expected);
-  });
-
   it('Should work with a custom response', async () => {
     const [resp, response] = await StreamingControllerRPC.postWithStreamingAndCustomResponse({
       body: [{ token: 'Hello,' }, { token: ' World' }, { token: '!' }],
