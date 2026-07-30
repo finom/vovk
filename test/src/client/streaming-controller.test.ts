@@ -1,6 +1,6 @@
-import { deepStrictEqual, strictEqual } from 'node:assert';
+import { deepStrictEqual, ok, strictEqual } from 'node:assert';
 import { describe, it } from 'node:test';
-import { HttpException, progressive, type VovkYieldType } from 'vovk';
+import { fetcher, HttpException, progressive, type VovkYieldType } from 'vovk';
 import { StreamingControllerRPC } from '../generated-client/index.ts';
 import { expectPromise } from '../lib.ts';
 import type { default as StreamingController, Token } from './streaming-controller.ts';
@@ -171,6 +171,34 @@ describe('Streaming', () => {
     }).rejects.toThrow(/oh no/);
 
     deepStrictEqual(expectedCollected, expected);
+  });
+
+  it('Should invoke fetcher onError for errors in the middle of stream', async () => {
+    const tokens = ['token1', 'token2', 'token3'].map((token) => ({ token }));
+    const collected: unknown[] = [];
+    let onErrorArg: unknown = null;
+    const unsubscribe = fetcher.onError((error) => {
+      onErrorArg = error;
+    });
+
+    try {
+      const resp = await StreamingControllerRPC.postWithStreamingAndDelayedError({
+        body: tokens,
+        query: { query: 'queryValue' },
+        apiRoot,
+      });
+
+      await expectPromise(async () => {
+        for await (const message of resp) {
+          collected.push(message);
+        }
+      }).rejects.toThrow(/oh no/);
+    } finally {
+      unsubscribe();
+    }
+
+    ok(onErrorArg instanceof Error, 'onError callback received the mid-stream error');
+    ok((onErrorArg as Error).message.includes('oh no'));
   });
 
   it('Should handle custom errors in the middle of stream', async () => {

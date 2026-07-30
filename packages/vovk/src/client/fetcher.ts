@@ -1,9 +1,50 @@
 import { HttpException } from '../core/http-exception.js';
-import type { VovkFetcher, VovkFetcherOptions } from '../types/client.js';
+import type { VovkFetcher, VovkFetcherOptions, VovkStreamAsyncIterable } from '../types/client.js';
 import type { VovkHandlerSchema } from '../types/core.js';
 import { HttpStatus } from '../types/enums.js';
 import { fileNameToDisposition } from '../utils/file-name-to-disposition.js';
 export const DEFAULT_ERROR_MESSAGE = 'Unknown error at default fetcher';
+
+// invokes emitError once for errors that surface during stream consumption, after the fetcher has returned
+function wrapStreamErrors(
+  stream: VovkStreamAsyncIterable<unknown>,
+  emitError: (error: unknown) => Promise<void>
+): VovkStreamAsyncIterable<unknown> {
+  let emitted = false;
+  const emitOnce = async (error: unknown) => {
+    if (emitted) return;
+    emitted = true;
+    await emitError(error);
+  };
+  const getIterator = stream[Symbol.asyncIterator].bind(stream);
+  const asPromise = stream.asPromise.bind(stream);
+
+  return Object.assign(stream, {
+    [Symbol.asyncIterator]: (): AsyncIterator<unknown> => {
+      const iterator = getIterator();
+      return {
+        next: async () => {
+          try {
+            return await iterator.next();
+          } catch (error) {
+            await emitOnce(error);
+            throw error;
+          }
+        },
+        return: iterator.return?.bind(iterator),
+        throw: iterator.throw?.bind(iterator),
+      };
+    },
+    asPromise: async () => {
+      try {
+        return await asPromise();
+      } catch (error) {
+        await emitOnce(error);
+        throw error;
+      }
+    },
+  });
+}
 
 export type { VovkFetcher };
 
@@ -152,7 +193,12 @@ export function createFetcher<T>({
       const contentType = interpretAs ?? response.headers.get('content-type');
 
       if (contentType?.startsWith('application/jsonl')) {
-        respData = defaultStreamHandler({ response, abortController });
+        // route mid-stream errors to onError callbacks, which otherwise never see them
+        respData = wrapStreamErrors(defaultStreamHandler({ response, abortController }), async (error) => {
+          for (const cb of onErrorCallbacks) {
+            await cb(error as HttpException, inputOptions, { response, init: requestInit, respData, schema });
+          }
+        });
       } else if (contentType?.startsWith('application/json')) {
         respData = await defaultHandler({ response, schema });
       } else {
