@@ -1,5 +1,8 @@
 import type { KnownAny } from '../types/utils.js';
 
+// segments that would let a query string reach Object.prototype, such pairs are dropped like qs does
+const FORBIDDEN_KEYS = new Set(['__proto__', 'constructor', 'prototype']);
+
 // bracket key to path segments: "z[d][0][x]" => ["z", "d", "0", "x"], "arr[]" => ["arr", ""] ("" means push)
 function parseKey(key: string): string[] {
   // The first segment is everything up to the first '[' (or the entire key if no '[')
@@ -124,6 +127,8 @@ export function parseQuery(queryString: string): Record<string, unknown> {
 
     // Parse bracket notation
     const pathSegments = parseKey(decodedKey);
+
+    if (pathSegments.some((segment) => FORBIDDEN_KEYS.has(segment))) continue;
 
     // Insert into the result object
     setValue(result, pathSegments, decodedVal);
