@@ -27,7 +27,17 @@ export async function bundle({
   }
 
   const keepPrebundleDir = cliBundleOptions?.keepPrebundleDir ?? bundleConfig?.keepPrebundleDir ?? false;
-  const prebundleOutDirAbsolute = path.resolve(cwd, cliBundleOptions?.prebundleOutDir ?? bundleConfig.prebundleOutDir);
+  const prebundleOutDir = cliBundleOptions?.prebundleOutDir ?? bundleConfig.prebundleOutDir;
+  const prebundleOutDirAbsolute = path.resolve(cwd, prebundleOutDir);
+
+  // this directory gets removed recursively, so it must be a directory of our own inside the project
+  const relativeToCwd = path.relative(cwd, prebundleOutDirAbsolute);
+  const escapesCwd = relativeToCwd === '..' || relativeToCwd.startsWith(`..${path.sep}`);
+  if (!relativeToCwd || escapesCwd || path.isAbsolute(relativeToCwd)) {
+    throw new Error(
+      `Invalid prebundle output directory ${JSON.stringify(prebundleOutDir)}. It is deleted after bundling, so it must be a subdirectory of the project, such as "tmp_prebundle".`
+    );
+  }
   const entry = path.join(prebundleOutDirAbsolute, 'index.ts');
   const outDir = cliBundleOptions?.outDir ?? bundleConfig.outDir;
 

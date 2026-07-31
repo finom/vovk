@@ -152,7 +152,8 @@ program
   .option('--out, --out-dir <path>', 'path to output directory for bundle')
   .option('--include, --include-segments <segments...>', 'include segments')
   .option('--exclude, --exclude-segments <segments...>', 'exclude segments')
-  .option('--prebundle-out-dir, --prebundle-out <path>', 'path to output directory for prebundle')
+  // the last long flag names the option, it has to stay prebundleOutDir
+  .option('--prebundle-out, --prebundle-out-dir <path>', 'path to output directory for prebundle')
   .option('--keep-prebundle-dir', 'do not delete prebundle directory after bundling')
   .option('--schema, --schema-path <path>', 'path to schema folder (default: .vovk-schema)')
   .option('--config, --config-path <config>', 'path to config file')
