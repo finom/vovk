@@ -545,6 +545,54 @@ describe('deriveTools', () => {
     });
   });
 
+  describe('onExecute and onError', () => {
+    const throwingProcedure = procedure({
+      operationObject: { description: 'throwingProcedure description' },
+    }).handle(async () => {
+      throw new Error('handler exploded');
+    });
+
+    it('Calls onError with the thrown error and leaves onExecute alone', async () => {
+      const calls: [string, string][] = [];
+      const [tool] = deriveTools({
+        modules: { MyModule: { throwingProcedure } },
+        onExecute: (result) => calls.push(['onExecute', JSON.stringify(result)]),
+        onError: (error) => calls.push(['onError', error.message]),
+      });
+
+      const result = await tool.execute({});
+
+      assert.deepStrictEqual(result, { error: 'handler exploded' });
+      assert.deepStrictEqual(calls, [['onError', 'handler exploded']]);
+    });
+
+    it('Calls onError when input validation fails', async () => {
+      const calls: string[] = [];
+      const [tool] = deriveTools({
+        modules: { MyModule: { procedureWithBody } },
+        onExecute: () => calls.push('onExecute'),
+        onError: () => calls.push('onError'),
+      });
+
+      await tool.execute({ body: { foo: 'foo1long' } });
+
+      assert.deepStrictEqual(calls, ['onError']);
+    });
+
+    it('Calls onExecute on success', async () => {
+      const calls: string[] = [];
+      const [tool] = deriveTools({
+        modules: { MyModule: { procedureWithBody } },
+        onExecute: () => calls.push('onExecute'),
+        onError: () => calls.push('onError'),
+      });
+
+      await tool.execute({ body: { foo: 'ok' } });
+
+      assert.deepStrictEqual(calls, ['onExecute']);
+    });
+  });
+
   describe('Custom Result Formatter', () => {
     const tools = deriveTools({
       meta: { inputMeta: 'hello' },

@@ -37,7 +37,7 @@ type CallerInput<TOutput, TFormattedOutput> = {
 async function caller<TOutput, TFormattedOutput>(
   { handler, handlerName, body, query, params, meta, toModelOutput }: CallerInput<TOutput, TFormattedOutput>,
   tool: StandardToolV0<DerivedToolInput, TOutput, TFormattedOutput>
-): Promise<[TFormattedOutput, Pick<VovkRequest, 'vovk'> | null]> {
+): Promise<[TFormattedOutput, Pick<VovkRequest, 'vovk'> | null, Error | null]> {
   if (!handler.isRPC && !handler.fn) {
     throw new Error('Handler is not a valid RPC or controller method');
   }
@@ -69,9 +69,15 @@ async function caller<TOutput, TFormattedOutput>(
     return [
       await toModelOutput(result as TOutput, tool as StandardToolV0<unknown, TOutput, TFormattedOutput>, req),
       req,
+      null,
     ];
   } catch (e) {
-    return [await toModelOutput(e as Error, tool as StandardToolV0<unknown, TOutput, TFormattedOutput>, null), null];
+    // report the error separately, the formatted output is never an Error instance
+    return [
+      await toModelOutput(e as Error, tool as StandardToolV0<unknown, TOutput, TFormattedOutput>, null),
+      null,
+      e as Error,
+    ];
   }
 }
 
@@ -147,9 +153,9 @@ const makeTool = <TOutput, TFormattedOutput>({
       toModelOutput,
     };
 
-    const [result, req] = await caller(callerInput, tool);
-    if (result instanceof Error) {
-      onError(result, tool, req);
+    const [result, req, error] = await caller(callerInput, tool);
+    if (error) {
+      onError(error, tool, req);
     } else {
       onExecute(result, tool, req);
     }
