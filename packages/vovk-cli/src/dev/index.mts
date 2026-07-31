@@ -371,6 +371,14 @@ export class VovkDev {
 
     log.debug(`Handling received schema from ${formatLoggedSegmentName(segmentName)}`);
 
+    // the write path is built from segmentName, an http response must not name a different segment
+    if ((segmentSchema.segmentName ?? '') !== segmentName) {
+      log.error(
+        `Schema for ${formatLoggedSegmentName(segmentName)} reported a different segment name ${JSON.stringify(segmentSchema.segmentName)}, ignoring it`
+      );
+      return;
+    }
+
     const schemaOutAbsolutePath = path.resolve(cwd, this.#schemaOut ?? config.schemaOutDir);
     const segment = this.#segments.find((s) => s.segmentName === segmentName);
 
