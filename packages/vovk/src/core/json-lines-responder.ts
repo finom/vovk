@@ -112,6 +112,13 @@ export class JSONLinesResponder<T> extends Responder {
   };
 
   public readonly throw = (e: unknown) => {
+    // same rule as a non streaming handler, an error without a statusCode is internal
+    const isExpected = typeof (e as { statusCode?: unknown })?.statusCode === 'number';
+    if (!isExpected && process.env.NODE_ENV === 'production') {
+      console.error('🐺 Unhandled error in a Vovk stream:', e);
+      this.sendLineOrError({ isError: true, reason: 'Internal server error' });
+      return this.close();
+    }
     this.sendLineOrError({ isError: true, reason: e instanceof Error ? e.message : e });
     return this.close();
   };

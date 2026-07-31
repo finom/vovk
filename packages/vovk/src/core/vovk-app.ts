@@ -414,6 +414,12 @@ class VovkApp {
               await responder.send(chunk);
             }
           } catch (e) {
+            // the outer catch already returned the response, so onError has to run here
+            try {
+              await controller._onError?.(e as HttpException, req);
+            } catch (onErrorError) {
+              console.error('An error caught in onError handler:', onErrorError);
+            }
             return responder.throw(e);
           }
 
