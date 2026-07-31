@@ -436,6 +436,17 @@ class VovkApp {
 
       if (err.message !== 'NEXT_REDIRECT' && err.message !== 'NEXT_NOT_FOUND') {
         const statusCode = err.statusCode || HttpStatus.INTERNAL_SERVER_ERROR;
+        // an error without a statusCode is internal, its message and cause stay on the server in production
+        const isExpected = typeof err.statusCode === 'number';
+        if (!isExpected && process.env.NODE_ENV === 'production') {
+          console.error('🐺 Unhandled error in a Vovk handler:', err);
+          return this.#respondWithError({
+            req,
+            statusCode,
+            message: 'Internal server error',
+            options: staticMethod._options,
+          });
+        }
         return this.#respondWithError({
           req,
           statusCode,
