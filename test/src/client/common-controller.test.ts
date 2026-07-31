@@ -393,6 +393,20 @@ describe('Client with composed RPC client', () => {
     });
   });
 
+  it('Drops query keys that would reach Object.prototype', async () => {
+    const getURL = CommonControllerRPC.getNestedQuery.getURL as (options: { apiRoot: string }) => string;
+    const endpoint = getURL({ apiRoot });
+    const response = await fetch(
+      `${endpoint}?__proto__[polluted]=yes&constructor[prototype][polluted]=yes&safe=ok`
+    );
+
+    strictEqual(response.status, 200);
+
+    const { query } = (await response.json()) as { query: Record<string, unknown> };
+
+    deepStrictEqual(query, { safe: 'ok' });
+  });
+
   it('Handles JSONL response', async () => {
     const result = await CommonControllerRPC.getJsonlResponse({
       apiRoot,
