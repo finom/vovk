@@ -125,10 +125,12 @@ class VovkApp {
       return { handler: handlers[''], methodParams };
     }
 
+    // a decoded "/" inside one segment makes the joined path ambiguous, /files/a%2Fb vs /files/a/b
+    const hasEncodedSlash = path.some((segment) => segment.includes('/'));
     const pathStr = path.join('/');
 
     // Fast path: Check if this exact path has been matched before
-    let matchCache = this.#routeMatchCache.get(handlers);
+    let matchCache = hasEncodedSlash ? undefined : this.#routeMatchCache.get(handlers);
     const cachedMatch = matchCache?.get(pathStr);
     if (cachedMatch) {
       return {
@@ -138,7 +140,7 @@ class VovkApp {
     }
 
     // Check for direct static route match, hasOwn so /toString doesn't resolve a prototype member
-    let methodKey = Object.hasOwn(handlers, pathStr) ? pathStr : null;
+    let methodKey = !hasEncodedSlash && Object.hasOwn(handlers, pathStr) ? pathStr : null;
 
     if (!methodKey) {
       const methodKeys: string[] = [];
@@ -210,7 +212,8 @@ class VovkApp {
             if (!regex) {
               const regexPattern = routeSegment
                 .replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
-                .replace(/\\{(\w+)\\}/g, '(?<$1>[^/]+)');
+                // matched per segment, so a decoded "/" from %2F belongs to the value
+                .replace(/\\{(\w+)\\}/g, '(?<$1>[\\s\\S]+)');
               regex = new RegExp(`^${regexPattern}$`);
               this.#routeRegexCache.set(routeSegment, regex);
             }
@@ -254,8 +257,8 @@ class VovkApp {
 
       [methodKey] = methodKeys;
 
-      // Cache successful matches
-      if (methodKey) {
+      // Cache successful matches, an ambiguous joined path must not become a cache key
+      if (methodKey && !hasEncodedSlash) {
         if (!matchCache) {
           matchCache = new Map();
           this.#routeMatchCache.set(handlers, matchCache);

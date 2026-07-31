@@ -279,6 +279,15 @@ describe('Client with composed RPC client', () => {
     strictEqual(message, 'Invalid x-meta request header');
   });
 
+  it('Treats an encoded slash as part of the param, not as a separator', async () => {
+    // %2F must not let a 2 segment URL reach the 3 segment route
+    const result = await CommonControllerRPC.getSlashyParam({ params: { name: 'deep/route' } });
+    deepStrictEqual(result, { handler: 'param', params: { name: 'deep/route' } });
+
+    const deep = await CommonControllerRPC.getSlashyDeep();
+    deepStrictEqual(deep, { handler: 'deep' });
+  });
+
   it('Should handle requests with params', async () => {
     const result = await CommonControllerRPC.getWithParams({
       params: { hello: 'world' },
