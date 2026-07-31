@@ -61,6 +61,17 @@ export default class CommonController {
     return { hello };
   }
 
+  // same concrete path as postSameShape below but a different param name, guards the route match cache
+  @get('same-shape/{getParam}')
+  static getSameShape(_req: VovkRequest, params: { getParam: string }) {
+    return { method: 'GET', params };
+  }
+
+  @post('same-shape/{postParam}')
+  static postSameShape(_req: VovkRequest, params: { postParam: string }) {
+    return { method: 'POST', params };
+  }
+
   @post('with-all/{hello}')
   static async postWithAll(
     req: VovkRequest<{ isBody: true }, { simpleQueryParam: 'queryValue' }, { hello: 'world' }>,

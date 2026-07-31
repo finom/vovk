@@ -105,7 +105,10 @@ class VovkApp {
   #routeRegexCache = new Map<string, RegExp>();
   #routeSegmentsCache = new Map<string, string[]>();
   #routeParamPositionsCache = new Map<string, { index: number; paramName: string }[]>();
-  #routeMatchCache = new Map<string, { route: string; params: Record<string, string> }>();
+  // matches are only valid for the handlers map they were resolved against, so scope by its identity
+  #routeMatchCache = new WeakMap<object, Map<string, { route: string; params: Record<string, string> }>>();
+  // concrete paths come from the URL, cap the per handlers map cache so it can't grow forever
+  static #ROUTE_MATCH_CACHE_LIMIT = 1000;
 
   #getHandler = ({
     handlers,
@@ -125,7 +128,8 @@ class VovkApp {
     const pathStr = path.join('/');
 
     // Fast path: Check if this exact path has been matched before
-    const cachedMatch = this.#routeMatchCache.get(pathStr);
+    let matchCache = this.#routeMatchCache.get(handlers);
+    const cachedMatch = matchCache?.get(pathStr);
     if (cachedMatch) {
       return {
         handler: handlers[cachedMatch.route],
@@ -252,7 +256,14 @@ class VovkApp {
 
       // Cache successful matches
       if (methodKey) {
-        this.#routeMatchCache.set(pathStr, { route: methodKey, params: methodParams });
+        if (!matchCache) {
+          matchCache = new Map();
+          this.#routeMatchCache.set(handlers, matchCache);
+        }
+        if (matchCache.size >= VovkApp.#ROUTE_MATCH_CACHE_LIMIT) {
+          matchCache.delete(matchCache.keys().next().value as string);
+        }
+        matchCache.set(pathStr, { route: methodKey, params: methodParams });
       }
     }
 
