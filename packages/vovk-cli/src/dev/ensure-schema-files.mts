@@ -42,12 +42,23 @@ export async function ensureSchemaFiles(
     })
   );
 
-  // Recursive function to delete unnecessary JSON files and folders
+  // only a file carrying the vovk $schema id is ours to delete
+  async function isVovkSchemaFile(absolutePath: string): Promise<boolean> {
+    try {
+      const parsed = JSON.parse(await fs.readFile(absolutePath, 'utf-8')) as { $schema?: unknown };
+      return typeof parsed.$schema === 'string' && parsed.$schema.startsWith('https://vovk.dev/api/schema/');
+    } catch {
+      return false;
+    }
+  }
+
+  // Recursive function to delete unnecessary JSON files and folders, returns true if anything was deleted
   async function deleteUnnecessaryJsonFiles(
     dirPath: string,
     allow: string[] = [`${META_FILE_NAME}.json`]
-  ): Promise<void> {
+  ): Promise<boolean> {
     const entries = await fs.readdir(dirPath, { withFileTypes: true });
+    let hasDeleted = false;
 
     await Promise.all(
       entries.map(async (entry) => {
@@ -55,14 +66,17 @@ export async function ensureSchemaFiles(
 
         if (entry.isDirectory()) {
           // Recursively delete unnecessary files and folders within nested directories
-          await deleteUnnecessaryJsonFiles(absolutePath);
+          const deletedInside = await deleteUnnecessaryJsonFiles(absolutePath);
 
-          // Check if the directory is empty after deletion and remove it if so
-          const remainingEntries = await fs.readdir(absolutePath);
-          if (remainingEntries.length === 0) {
-            await fs.rmdir(absolutePath);
-            projectInfo?.log.debug(`Deleted unnecessary schema directory "${absolutePath}"`);
-            hasChanged = true;
+          // remove the directory only when this cleanup emptied it, a pre-existing empty dir is not ours
+          if (deletedInside) {
+            const remainingEntries = await fs.readdir(absolutePath);
+            if (remainingEntries.length === 0) {
+              await fs.rmdir(absolutePath);
+              projectInfo?.log.debug(`Deleted unnecessary schema directory "${absolutePath}"`);
+              hasChanged = true;
+              hasDeleted = true;
+            }
           }
         } else if (entry.isFile() && entry.name.endsWith('.json')) {
           const relativePath = path.relative(schemaOutAbsolutePath, absolutePath);
@@ -71,15 +85,20 @@ export async function ensureSchemaFiles(
           if (
             !segmentNames.includes(segmentName) &&
             !segmentNames.includes(segmentName.replace(ROOT_SEGMENT_FILE_NAME, '')) &&
-            !allow.includes(entry.name)
+            !allow.includes(entry.name) &&
+            // never delete a json file vovk did not write, schemaOutDir may point at user dirs
+            (await isVovkSchemaFile(absolutePath))
           ) {
             await fs.unlink(absolutePath);
             projectInfo?.log.debug(`Deleted unnecessary schema file for ${formatLoggedSegmentName(segmentName)}`);
             hasChanged = true;
+            hasDeleted = true;
           }
         }
       })
     );
+
+    return hasDeleted;
   }
 
   await deleteUnnecessaryJsonFiles(schemaOutAbsolutePath);

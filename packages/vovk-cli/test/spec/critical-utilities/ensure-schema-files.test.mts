@@ -71,4 +71,39 @@ await describe('ensureSchemaFiles', async () => {
       }
     }
   });
+
+  await it('Leaves json files it did not write and pre-existing empty dirs alone', async () => {
+    const SEGMENT_ID = 'https://vovk.dev/api/schema/v3/segment.json';
+
+    await fs.mkdir(path.join(tmpDir, 'src/data'), { recursive: true });
+    await fs.mkdir(path.join(tmpDir, 'src/empty'), { recursive: true });
+    await fs.mkdir(path.join(tmpDir, 'folder'), { recursive: true });
+    // user files, schemaOutDir may point at a dir that holds them
+    await fs.writeFile(path.join(tmpDir, 'package.json'), '{"name":"my-app"}');
+    await fs.writeFile(path.join(tmpDir, 'src/data/config.json'), '{"apiUrl":"https://example.com"}');
+    // stale vovk segment schemas
+    await fs.writeFile(path.join(tmpDir, 'stale.json'), JSON.stringify({ $schema: SEGMENT_ID, segmentName: 'stale' }));
+    await fs.writeFile(
+      path.join(tmpDir, 'folder/old.json'),
+      JSON.stringify({ $schema: SEGMENT_ID, segmentName: 'folder/old' })
+    );
+
+    await ensureSchemaFiles(projectInfo, tmpDir, ['root']);
+
+    const files = glob.sync('**/*.json', { cwd: tmpDir });
+    assert.deepStrictEqual(files.sort(), ['_meta.json', 'package.json', 'root.json', 'src/data/config.json'].sort());
+    // pre-existing dirs stay, the emptied stale schema dir goes
+    assert.ok(
+      await fs.stat(path.join(tmpDir, 'src/empty')).then(
+        () => true,
+        () => false
+      )
+    );
+    assert.ok(
+      !(await fs.stat(path.join(tmpDir, 'folder')).then(
+        () => true,
+        () => false
+      ))
+    );
+  });
 });
