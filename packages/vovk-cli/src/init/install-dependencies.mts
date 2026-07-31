@@ -6,15 +6,28 @@ import type { getLogger } from '../utils/get-logger.mjs';
 
 export type PackageManager = 'npm' | 'yarn' | 'pnpm' | 'bun';
 
+const KNOWN_PACKAGE_MANAGERS: PackageManager[] = ['npm', 'yarn', 'pnpm', 'bun'];
+
 export function getPackageManager(
-  options: Pick<InitOptions, 'useNpm' | 'useYarn' | 'usePnpm' | 'useBun'> & { pkgJson: NPMCliPackageJson }
+  options: Pick<InitOptions, 'useNpm' | 'useYarn' | 'usePnpm' | 'useBun'> & {
+    pkgJson: NPMCliPackageJson;
+    log?: ReturnType<typeof getLogger>;
+  }
 ): PackageManager {
   if (options.useNpm) return 'npm';
   if (options.useYarn) return 'yarn';
   if (options.usePnpm) return 'pnpm';
   if (options.useBun) return 'bun';
-  const packageManager = options.pkgJson.content?.packageManager;
-  return packageManager ? (packageManager.split('@')[0] as PackageManager) : 'npm'; // Default to npm if no options are true
+  const packageManager = options.pkgJson.content?.packageManager?.split('@')[0];
+  if (!packageManager) return 'npm'; // Default to npm if no options are true
+  // this name gets spawned, so an unknown one from package.json is not executed
+  if (!KNOWN_PACKAGE_MANAGERS.includes(packageManager as PackageManager)) {
+    options.log?.warn(
+      `Unknown "packageManager" ${JSON.stringify(packageManager)} in package.json, using ${chalkHighlightThing('npm')} instead`
+    );
+    return 'npm';
+  }
+  return packageManager as PackageManager;
 }
 
 export async function installDependencies({
