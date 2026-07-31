@@ -72,6 +72,17 @@ export default class CommonController {
     return { method: 'POST', params };
   }
 
+  // deeper static route that an encoded slash in the param position must not reach
+  @get('slashy/{name}')
+  static getSlashyParam(_req: VovkRequest, params: { name: string }) {
+    return { handler: 'param', params };
+  }
+
+  @get('slashy/deep/route')
+  static getSlashyDeep() {
+    return { handler: 'deep' };
+  }
+
   @post('with-all/{hello}')
   static async postWithAll(
     req: VovkRequest<{ isBody: true }, { simpleQueryParam: 'queryValue' }, { hello: 'world' }>,
