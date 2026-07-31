@@ -321,7 +321,19 @@ class VovkApp {
       headerList = null;
     }
     const xMeta = headerList?.get('x-meta');
-    const xMetaHeader: Record<string, unknown> = xMeta && JSON.parse(xMeta);
+    let xMetaHeader: Record<string, unknown> | null = null;
+    if (xMeta) {
+      try {
+        xMetaHeader = JSON.parse(xMeta);
+      } catch {
+        // malformed client input is a 400, not an uncaught SyntaxError
+        return this.#respondWithError({
+          req,
+          statusCode: HttpStatus.BAD_REQUEST,
+          message: 'Invalid x-meta request header',
+        });
+      }
+    }
 
     if (xMetaHeader) reqMeta(req, { xMetaHeader });
 

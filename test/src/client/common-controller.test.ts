@@ -268,6 +268,17 @@ describe('Client with composed RPC client', () => {
     }
   });
 
+  it('Responds with 400 when the x-meta header is not valid JSON', async () => {
+    const response = await fetch(`${apiRoot}/foo/client/common/get-hello-world-object-literal`, {
+      headers: { 'x-meta': 'not-json' },
+    });
+
+    strictEqual(response.status, 400);
+    const { isError, message } = (await response.json()) as VovkErrorResponse;
+    strictEqual(isError, true);
+    strictEqual(message, 'Invalid x-meta request header');
+  });
+
   it('Should handle requests with params', async () => {
     const result = await CommonControllerRPC.getWithParams({
       params: { hello: 'world' },
