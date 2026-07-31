@@ -492,6 +492,15 @@ export default class WithValidationController {
     return { hello: body.hello };
   });
 
+  // === Content-type validation: declared without a body schema ===
+  @post.auto()
+  static handleContentTypeWithoutBody = procedure({
+    contentType: ['text/plain'],
+    output: z.object({ ok: z.boolean() }),
+  }).handle(async () => {
+    return { ok: true };
+  });
+
   // === Content-type validation: partial wildcard image/* ===
   @post.auto()
   static handleImageWildcard = procedure({
