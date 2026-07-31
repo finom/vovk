@@ -235,6 +235,21 @@ describe('Client with composed RPC client', () => {
     deepStrictEqual(result satisfies { hello: string }, { hello: 'world' });
   });
 
+  it('Encodes path params so a value cannot escape its segment', () => {
+    const getURL = CommonControllerRPC.getWithParams.getURL as (options: {
+      apiRoot: string;
+      params: Record<string, string>;
+    }) => string;
+
+    strictEqual(
+      getURL({ apiRoot, params: { hello: '../../internal/admin?x=1#y' } }),
+      `${apiRoot}/foo/client/common/with-params/..%2F..%2Finternal%2Fadmin%3Fx%3D1%23y`
+    );
+
+    // "$&" must stay literal instead of acting as a replacement pattern
+    strictEqual(getURL({ apiRoot, params: { hello: '$&' } }), `${apiRoot}/foo/client/common/with-params/%24%26`);
+  });
+
   it('Should handle requests with params', async () => {
     const result = await CommonControllerRPC.getWithParams({
       params: { hello: 'world' },
