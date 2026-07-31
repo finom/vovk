@@ -132,6 +132,32 @@ describe('Streaming', () => {
     deepStrictEqual(expectedCollected, expected);
   });
 
+  it('Releases the stream when the consumer breaks early', async () => {
+    const tokens = ['token1', 'token2\n', 'token3'].map((token) => ({ token }));
+    const expected = tokens.map((token) => ({ ...token, query: 'queryValue' })).slice(0, 2);
+    const expectedCollected: typeof expected = [];
+
+    const resp = await StreamingControllerRPC.postWithStreaming({
+      body: tokens,
+      query: { query: 'queryValue' },
+      apiRoot,
+    });
+
+    let count = 0;
+
+    // a bare break must dispose the stream, otherwise the body keeps streaming
+    for await (const message of resp) {
+      expectedCollected.push(message);
+      if (++count === 2) break;
+    }
+
+    for await (const message of resp) {
+      expectedCollected.push(message);
+    }
+
+    deepStrictEqual(expectedCollected, expected);
+  });
+
   it('Should be able to dispose', async () => {
     const tokens = ['token1', 'token2\n', 'token3'].map((token) => ({ token }));
     const expected = tokens.map((token) => ({ ...token, query: 'queryValue' })).slice(0, 2);
