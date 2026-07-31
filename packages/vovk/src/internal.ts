@@ -2,6 +2,7 @@
 
 export { readableStreamToAsyncIterable } from './client/default-stream-handler.js';
 export { resolveGeneratorConfigValues } from './core/resolve-generator-config-values.js';
+export { vovkApp } from './core/vovk-app.js';
 export {
   applyComponentsSchemas,
   reattachMixinDefs,
