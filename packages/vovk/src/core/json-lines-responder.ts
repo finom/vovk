@@ -28,6 +28,11 @@ export class JSONLinesResponder<T> extends Responder {
 
   private pendingSends = new Set<Promise<void>>();
 
+  // sends are chained so unawaited calls keep their order, see send()
+  private sendQueue: Promise<void> = Promise.resolve();
+
+  private hasSent = false;
+
   private controller?: ReadableStreamDefaultController | null;
 
   // biome-ignore lint/correctness/noUnusedPrivateClassMembers: biome bug
@@ -75,16 +80,21 @@ export class JSONLinesResponder<T> extends Responder {
   }
 
   public readonly send = async (item: T) => {
-    const promise = (async () => {
+    // chaining keeps lines in call order even when send() is not awaited
+    const promise = this.sendQueue.then(async () => {
       try {
-        // zero timeout lets withValidationLibrary set onBeforeSend before the first send,
-        // otherwise immediate streaming would skip the first iteration validation
-        await new Promise((resolve) => setTimeout(resolve, 0));
+        if (!this.hasSent) {
+          this.hasSent = true;
+          // zero timeout lets withValidationLibrary set onBeforeSend before the first send,
+          // otherwise immediate streaming would skip the first iteration validation
+          await new Promise((resolve) => setTimeout(resolve, 0));
+        }
         this.sendLineOrError(await this.onBeforeSend(item, this.i++));
       } catch (e) {
         this.throw(e);
       }
-    })();
+    });
+    this.sendQueue = promise;
     this.pendingSends.add(promise);
     try {
       await promise;
