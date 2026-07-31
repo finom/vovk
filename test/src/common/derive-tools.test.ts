@@ -545,6 +545,42 @@ describe('deriveTools', () => {
     });
   });
 
+  describe('Default formatter with Response and generator results', () => {
+    const returnsJSONResponse = procedure({ operationObject: { description: 'd' } }).handle(async () =>
+      Response.json({ ok: true })
+    );
+    const returnsTextResponse = procedure({ operationObject: { description: 'd' } }).handle(async () =>
+      toDownloadResponse('a,b\n1,2', { type: 'text/csv', filename: 'a.csv' })
+    );
+    const returnsBinaryResponse = procedure({ operationObject: { description: 'd' } }).handle(async () =>
+      toDownloadResponse(new Uint8Array([1, 2, 3]), { type: 'image/png', filename: 'a.png' })
+    );
+    const returnsGenerator = procedure({ operationObject: { description: 'd' } }).handle(async function* () {
+      yield { n: 1 };
+      yield { n: 2 };
+    });
+
+    const [jsonTool, textTool, binaryTool, generatorTool] = deriveTools({
+      modules: { MyModule: { returnsJSONResponse, returnsTextResponse, returnsBinaryResponse, returnsGenerator } },
+    });
+
+    it('Parses a JSON Response instead of handing over the Response object', async () => {
+      assert.deepStrictEqual(await jsonTool.execute({}), { ok: true });
+    });
+
+    it('Reads a text Response as a string', async () => {
+      assert.deepStrictEqual(await textTool.execute({}), 'a,b\n1,2');
+    });
+
+    it('Encodes a binary Response', async () => {
+      assert.deepStrictEqual(await binaryTool.execute({}), { mimeType: 'image/png', data: 'AQID' });
+    });
+
+    it('Collects the items of a generator handler', async () => {
+      assert.deepStrictEqual(await generatorTool.execute({}), [{ n: 1 }, { n: 2 }]);
+    });
+  });
+
   describe('onExecute and onError', () => {
     const throwingProcedure = procedure({
       operationObject: { description: 'throwingProcedure description' },

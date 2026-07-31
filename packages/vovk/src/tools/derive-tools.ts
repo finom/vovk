@@ -34,6 +34,10 @@ type CallerInput<TOutput, TFormattedOutput> = {
   toModelOutput: ToModelOutputFn<unknown, TOutput, TFormattedOutput>;
 };
 
+function isAsyncIterable(value: unknown): value is AsyncIterable<unknown> {
+  return typeof (value as AsyncIterable<unknown>)?.[Symbol.asyncIterator] === 'function';
+}
+
 async function caller<TOutput, TFormattedOutput>(
   { handler, handlerName, body, query, params, meta, toModelOutput }: CallerInput<TOutput, TFormattedOutput>,
   tool: StandardToolV0<DerivedToolInput, TOutput, TFormattedOutput>
@@ -64,6 +68,13 @@ async function caller<TOutput, TFormattedOutput>(
       throw new Error(
         `Unable to call handler "${handlerName}". It's neither RPC nor controller method with "fn" interface.`
       );
+    }
+
+    // a streaming handler yields its items, collect them so the model sees data instead of an iterator
+    if (isAsyncIterable(result)) {
+      const items: unknown[] = [];
+      for await (const item of result) items.push(item);
+      result = items;
     }
 
     return [
