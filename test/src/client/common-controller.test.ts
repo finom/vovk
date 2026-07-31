@@ -250,6 +250,15 @@ describe('Client with composed RPC client', () => {
     strictEqual(getURL({ apiRoot, params: { hello: '$&' } }), `${apiRoot}/foo/client/common/with-params/%24%26`);
   });
 
+  it('Does not reuse a route match across http methods', async () => {
+    // GET runs first and used to poison the shared route match cache for the same concrete path
+    const getResult = await CommonControllerRPC.getSameShape({ params: { getParam: 'x' } });
+    deepStrictEqual(getResult, { method: 'GET', params: { getParam: 'x' } });
+
+    const postResult = await CommonControllerRPC.postSameShape({ params: { postParam: 'x' } });
+    deepStrictEqual(postResult, { method: 'POST', params: { postParam: 'x' } });
+  });
+
   it('Should handle requests with params', async () => {
     const result = await CommonControllerRPC.getWithParams({
       params: { hello: 'world' },
@@ -411,9 +420,7 @@ describe('Client with composed RPC client', () => {
   it('Drops query keys that would reach Object.prototype', async () => {
     const getURL = CommonControllerRPC.getNestedQuery.getURL as (options: { apiRoot: string }) => string;
     const endpoint = getURL({ apiRoot });
-    const response = await fetch(
-      `${endpoint}?__proto__[polluted]=yes&constructor[prototype][polluted]=yes&safe=ok`
-    );
+    const response = await fetch(`${endpoint}?__proto__[polluted]=yes&constructor[prototype][polluted]=yes&safe=ok`);
 
     strictEqual(response.status, 200);
 

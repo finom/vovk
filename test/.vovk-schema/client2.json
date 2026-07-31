@@ -45,6 +45,14 @@
           "path": "with-params/{hello}",
           "httpMethod": "GET"
         },
+        "getSameShape": {
+          "path": "same-shape/{getParam}",
+          "httpMethod": "GET"
+        },
+        "postSameShape": {
+          "path": "same-shape/{postParam}",
+          "httpMethod": "POST"
+        },
         "postWithAll": {
           "path": "with-all/{hello}",
           "httpMethod": "POST"
