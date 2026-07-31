@@ -28,9 +28,30 @@ function parseKey(key: string): string[] {
   return segments;
 }
 
+// past this an index becomes an object key, like qs does, so a short query cannot size a huge array
+const ARRAY_LIMIT = 100;
+
+function isArrayIndex(segment: string): boolean {
+  const idx = Number(segment);
+  return !Number.isNaN(idx) && idx <= ARRAY_LIMIT;
+}
+
 // sets a value at a segment path: numeric => array index, "" => array push, else object property
 function setValue(obj: Record<string, unknown>, path: string[], value: unknown): void {
   let current: KnownAny = obj;
+  let parent: KnownAny = null;
+  let parentKey: string | number = '';
+
+  // an index like key extends an array's length even when assigned as a plain property,
+  // so an over limit index has to replace the array with an object first
+  const demoteArray = (segment: string) => {
+    if (!Array.isArray(current) || !/^\d+$/.test(segment)) return;
+    const replacement: Record<string, unknown> = {};
+    const source = current as unknown as Record<string, unknown>;
+    for (const key of Object.keys(source)) replacement[key] = source[key];
+    if (parent) parent[parentKey] = replacement;
+    current = replacement;
+  };
 
   for (let i = 0; i < path.length; i++) {
     const segment = path[i];
@@ -43,7 +64,7 @@ function setValue(obj: Record<string, unknown>, path: string[], value: unknown):
           current = [];
         }
         current.push(value);
-      } else if (!Number.isNaN(Number(segment))) {
+      } else if (isArrayIndex(segment)) {
         // Numeric segment => array index
         const idx = Number(segment);
         if (!Array.isArray(current)) {
@@ -52,6 +73,7 @@ function setValue(obj: Record<string, unknown>, path: string[], value: unknown):
         current[idx] = value;
       } else {
         // Object property
+        demoteArray(segment);
         current[segment] = value;
       }
     } else {
@@ -68,8 +90,8 @@ function setValue(obj: Record<string, unknown>, path: string[], value: unknown):
         // for the next segment. We'll push something and move current to that.
         if (current.length === 0) {
           // nothing in array yet
-          current.push(typeof nextSegment === 'string' && !Number.isNaN(Number(nextSegment)) ? [] : {});
-        } else if (typeof nextSegment === 'string' && !Number.isNaN(Number(nextSegment))) {
+          current.push(typeof nextSegment === 'string' && isArrayIndex(nextSegment) ? [] : {});
+        } else if (typeof nextSegment === 'string' && isArrayIndex(nextSegment)) {
           // next is numeric => we want an array
           if (!Array.isArray(current[current.length - 1])) {
             current[current.length - 1] = [];
@@ -80,8 +102,10 @@ function setValue(obj: Record<string, unknown>, path: string[], value: unknown):
             current[current.length - 1] = {};
           }
         }
+        parent = current;
+        parentKey = current.length - 1;
         current = current[current.length - 1];
-      } else if (!Number.isNaN(Number(segment))) {
+      } else if (isArrayIndex(segment)) {
         // segment is numeric => array index
         const idx = Number(segment);
         if (!Array.isArray(current)) {
@@ -89,15 +113,20 @@ function setValue(obj: Record<string, unknown>, path: string[], value: unknown):
         }
         if (current[idx] === undefined) {
           // Create placeholder for next segment
-          current[idx] = typeof nextSegment === 'string' && !Number.isNaN(Number(nextSegment)) ? [] : {};
+          current[idx] = typeof nextSegment === 'string' && isArrayIndex(nextSegment) ? [] : {};
         }
+        parent = current;
+        parentKey = idx;
         current = current[idx];
       } else {
         // segment is an object key
+        demoteArray(segment);
         if (current[segment] === undefined) {
           // Create placeholder
-          current[segment] = typeof nextSegment === 'string' && !Number.isNaN(Number(nextSegment)) ? [] : {};
+          current[segment] = typeof nextSegment === 'string' && isArrayIndex(nextSegment) ? [] : {};
         }
+        parent = current;
+        parentKey = segment;
         current = current[segment];
       }
     }

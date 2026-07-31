@@ -458,6 +458,22 @@ describe('Client with composed RPC client', () => {
     deepStrictEqual(query, { safe: 'ok' });
   });
 
+  it('Does not let a query index size a huge array', async () => {
+    const getURL = CommonControllerRPC.getNestedQuery.getURL as (options: { apiRoot: string }) => string;
+    const endpoint = getURL({ apiRoot });
+    // a bare index and an index appended to an existing array both used to allocate millions of holes
+    const response = await fetch(`${endpoint}?big[10000000]=1&mixed[0]=x&mixed[10000000]=y`);
+
+    strictEqual(response.status, 200);
+
+    const { query } = (await response.json()) as { query: Record<string, unknown> };
+
+    deepStrictEqual(query, {
+      big: { '10000000': '1' },
+      mixed: { '0': 'x', '10000000': 'y' },
+    });
+  });
+
   it('Handles JSONL response', async () => {
     const result = await CommonControllerRPC.getJsonlResponse({
       apiRoot,
