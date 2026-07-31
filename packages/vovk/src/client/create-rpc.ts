@@ -24,7 +24,8 @@ const getHandlerPath = <T extends ControllerStaticMethod>(
   let result = endpoint;
   const queryStr = query ? serializeQuery(query) : null;
   for (const [key, value] of Object.entries(params ?? {})) {
-    result = result.replace(`{${key}}`, value as string);
+    // encode so a value stays one path segment, the callback form also keeps $& from being a replacement pattern
+    result = result.replaceAll(`{${key}}`, () => encodeURIComponent(String(value)));
   }
   return `${result}${queryStr ? `?${queryStr}` : ''}`;
 };
