@@ -35,6 +35,18 @@ function getTsTypeString(contentType: ContentType[], schema: VovkJSONSchemaBase)
   return [...tsTypes].join(' | ') || schemaToTsType(schema);
 }
 
+// a spec is third party input, its x-tsType would land in the generated client as raw TS
+function stripXTsType<T>(value: T): T {
+  if (Array.isArray(value)) return value.map(stripXTsType) as T;
+  if (!value || typeof value !== 'object') return value;
+  const result: Record<string, unknown> = {};
+  for (const [key, val] of Object.entries(value)) {
+    if (key === 'x-tsType') continue;
+    result[key] = stripXTsType(val);
+  }
+  return result as T;
+}
+
 export function openAPIToVovkSchema({
   apiRoot,
   source: { object: openAPIObject },
@@ -46,6 +58,8 @@ export function openAPIToVovkSchema({
   segmentName,
 }: VovkOpenAPIMixinNormalized & { segmentName?: string }): VovkSchema {
   segmentName = segmentName ?? '';
+  // x-tsType is emitted verbatim into the generated client, only ours may reach it
+  openAPIObject = stripXTsType(openAPIObject);
   const forceApiRoot =
     apiRoot ||
     (openAPIObject.servers?.[0]?.url ??
