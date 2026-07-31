@@ -348,6 +348,11 @@ export async function generate({
       configKey: 'segmentedClient',
     });
 
+    // what a generated file may look like inside a segment directory, used to spare user files when pruning
+    const generatedRelPaths = segmentedClientTemplateFiles.map(({ templateFilePath, relativeDir }) =>
+      path.join(relativeDir, path.basename(templateFilePath).replace(/\.ejs$/, ''))
+    );
+
     const segmentedClientResults = await Promise.all(
       segmentedClientTemplateFiles.map(async (clientTemplateFile) => {
         const { templateFilePath, templateName, templateDef, outCwdRelativeDir } = clientTemplateFile;
@@ -430,10 +435,17 @@ export async function generate({
         const outAbsoluteDir = path.resolve(cwd, outCwdRelativeDir);
 
         // Remove unlisted directories in the output directory
-        await removeUnlistedDirectories(
+        const skippedDirs = await removeUnlistedDirectories(
           outAbsoluteDir,
-          segmentNames.map((s) => s || ROOT_SEGMENT_FILE_NAME)
+          segmentNames.map((s) => s || ROOT_SEGMENT_FILE_NAME),
+          generatedRelPaths
         );
+
+        for (const skippedDir of skippedDirs) {
+          log.warn(
+            `Directory ${chalkHighlightThing(skippedDir)} is not a known segment but holds files that were not generated, so it is left untouched.`
+          );
+        }
         return {
           written: results.filter((result): result is GenerationResult => !!result).some(({ written }) => written),
           templateName,
