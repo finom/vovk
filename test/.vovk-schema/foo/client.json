@@ -1727,6 +1727,24 @@
           "path": "handle-wildcard-content-type-with-json-body",
           "httpMethod": "POST"
         },
+        "handleContentTypeWithoutBody": {
+          "validation": {
+            "output": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "object",
+              "properties": {
+                "ok": {
+                  "type": "boolean"
+                }
+              },
+              "required": [
+                "ok"
+              ]
+            }
+          },
+          "path": "handle-content-type-without-body",
+          "httpMethod": "POST"
+        },
         "handleImageWildcard": {
           "validation": {
             "body": {

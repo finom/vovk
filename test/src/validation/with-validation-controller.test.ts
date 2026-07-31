@@ -965,6 +965,17 @@ describe('Content-type validation: wildcard and partial wildcard', () => {
     deepStrictEqual(result, { size: 9, type: 'application/octet-stream' });
   });
 
+  it('Should enforce a declared content type when there is no body schema', async () => {
+    const endpoint = WithValidationRPC.handleContentTypeWithoutBody.getURL();
+
+    const wrong = await fetch(endpoint, { method: 'POST', headers: { 'content-type': 'application/json' } });
+    strictEqual(wrong.status, 415);
+
+    const right = await fetch(endpoint, { method: 'POST', headers: { 'content-type': 'text/plain' } });
+    strictEqual(right.status, 200);
+    deepStrictEqual(await right.json(), { ok: true });
+  });
+
   it('Should handle image/* partial wildcard content type', async () => {
     const result = await WithValidationRPC.handleImageWildcard({
       body: new File(['png binary data'], 'photo.png', { type: 'image/png' }),

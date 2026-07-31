@@ -159,6 +159,11 @@ export function withValidationLibrary<
   const resultHandler = (async (req: VovkRequestAny, handlerParams: Parameters<THandle>[1]) => {
     const { __disableClientValidation } = req.vovk.meta<Meta>();
     if (!__disableClientValidation) {
+      // a declared contentType is enforced even with no body schema to validate against
+      if (contentType && (!body || disableServerSideValidationKeys.includes('body'))) {
+        validateContentType(req, contentType);
+      }
+
       if (body && !disableServerSideValidationKeys.includes('body')) {
         if (typeof req.url === 'string') await bufferBody(req); // buffer the body to make it replayable for validation and actual parsing
         validateContentType(req, contentType ?? ['application/json']);
