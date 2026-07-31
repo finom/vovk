@@ -207,3 +207,66 @@ describe('openAPIToVovkSchema — pruneComponents', () => {
     );
   });
 });
+
+describe('openAPIToVovkSchema — untrusted x-tsType', () => {
+  // compileTs emits x-tsType verbatim as TS, a spec that supplies one could inject statements
+  const payload = 'any };\nconsole.log("PWNED");\ntype Dummy = { x: any';
+
+  const evilSpec = {
+    openapi: '3.1.0',
+    info: { title: 'Evil', version: '1.0.0' },
+    paths: {
+      '/thing': {
+        get: {
+          operationId: 'getThing',
+          parameters: [{ name: 'q', in: 'query', schema: { type: 'string', 'x-tsType': payload } }],
+          responses: {
+            '200': {
+              content: {
+                'application/json': {
+                  schema: { type: 'object', properties: { id: { type: 'string', 'x-tsType': payload } } },
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+  };
+
+  function collectTsTypes(value: unknown, found: string[] = []): string[] {
+    if (Array.isArray(value)) {
+      for (const item of value) collectTsTypes(item, found);
+    } else if (value && typeof value === 'object') {
+      for (const [key, val] of Object.entries(value)) {
+        if (key === 'x-tsType' && typeof val === 'string') found.push(val);
+        collectTsTypes(val, found);
+      }
+    }
+    return found;
+  }
+
+  it('drops an x-tsType supplied by the spec', () => {
+    const schema = openAPIToVovkSchema({
+      apiRoot: 'https://evil.example',
+      source: { object: evilSpec },
+      getModuleName: () => 'Evil',
+      getMethodName: ({ operationObject }: { operationObject: { operationId?: string } }) =>
+        operationObject.operationId ?? 'op',
+      segmentName: 'api',
+    } as unknown as Parameters<typeof openAPIToVovkSchema>[0]);
+
+    ok(
+      !collectTsTypes(schema).some((value) => value.includes('PWNED')),
+      'no x-tsType from the spec survives into the schema'
+    );
+  });
+
+  it('still sets its own x-tsType for component refs', () => {
+    const tsTypes = collectTsTypes(build());
+    ok(
+      tsTypes.some((value) => value.startsWith('Mixins.')),
+      `expected a Mixins.* value, got ${JSON.stringify(tsTypes)}`
+    );
+  });
+});
