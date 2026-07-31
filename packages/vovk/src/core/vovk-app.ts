@@ -137,8 +137,8 @@ class VovkApp {
       };
     }
 
-    // Check for direct static route match
-    let methodKey = handlers[pathStr] ? pathStr : null;
+    // Check for direct static route match, hasOwn so /toString doesn't resolve a prototype member
+    let methodKey = Object.hasOwn(handlers, pathStr) ? pathStr : null;
 
     if (!methodKey) {
       const methodKeys: string[] = [];

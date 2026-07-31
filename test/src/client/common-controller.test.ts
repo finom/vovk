@@ -259,6 +259,15 @@ describe('Client with composed RPC client', () => {
     deepStrictEqual(postResult, { method: 'POST', params: { postParam: 'x' } });
   });
 
+  it('Returns 404 for prototype member paths instead of crashing', async () => {
+    for (const path of ['toString', 'constructor', 'valueOf', 'hasOwnProperty']) {
+      const response = await fetch(`${apiRoot}/foo/client/${path}`);
+      strictEqual(response.status, 404, path);
+      const { isError } = (await response.json()) as VovkErrorResponse;
+      strictEqual(isError, true, path);
+    }
+  });
+
   it('Should handle requests with params', async () => {
     const result = await CommonControllerRPC.getWithParams({
       params: { hello: 'world' },
