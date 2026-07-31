@@ -14,7 +14,8 @@ class VovkApp {
     const corsHeaders = {
       'access-control-allow-origin': '*',
       'access-control-allow-methods': 'GET, POST, PUT, DELETE, OPTIONS, HEAD',
-      'access-control-allow-headers': 'content-type, authorization',
+      // x-meta is ours, the client sends it whenever meta is set
+      'access-control-allow-headers': 'content-type, authorization, x-meta',
     };
 
     const headers = {
