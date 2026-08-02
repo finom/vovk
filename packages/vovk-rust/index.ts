@@ -147,11 +147,14 @@ export function getNamedSchemas(rootSchema: VovkJSONSchemaBase | undefined): Rec
 
   const components = (rootSchema as { components?: { schemas?: Record<string, VovkJSONSchemaBase> } }).components
     ?.schemas;
-  const named: Record<string, VovkJSONSchemaBase> = {
+  const raw: Record<string, VovkJSONSchemaBase> = {
     ...components,
     ...rootSchema.definitions,
     ...rootSchema.$defs,
   };
+  // a spec may name a schema "google.protobuf.Timestamp", keyed by the Rust name so
+  // emission and references agree, serde keeps the original name on the wire
+  const named = Object.fromEntries(Object.entries(raw).map(([name, schema]) => [toRustIdent(name), schema]));
 
   namedSchemasCache.set(rootSchema, named);
   return named;
@@ -161,7 +164,8 @@ export function getNamedSchemas(rootSchema: VovkJSONSchemaBase | undefined): Rec
 export function refToName(ref: string | undefined, rootSchema: VovkJSONSchemaBase): string | null {
   if (!ref?.startsWith('#/')) return null;
   const name = ref.split('/').pop();
-  return name && getNamedSchemas(rootSchema)[name] ? name : null;
+  const ident = name ? toRustIdent(name) : null;
+  return ident && getNamedSchemas(rootSchema)[ident] ? ident : null;
 }
 
 // references that are not behind a Vec, a cycle among them means an infinitely sized Rust type
@@ -231,7 +235,8 @@ function superPrefix(path: string[]): string {
 // turn any string into a valid Rust identifier, serde keeps the original name on the wire
 export function toRustIdent(value: unknown, used?: Set<string>): string {
   let ident = String(value ?? '').replace(/[^a-zA-Z0-9_]/g, '_');
-  if (!ident) ident = 'Empty';
+  // "_" alone is reserved, and "" has nothing left to name
+  if (!ident || /^_+$/.test(ident)) ident = `Empty${ident}`;
   if (/^[0-9]/.test(ident)) ident = `_${ident}`;
   if (RUST_KEYWORDS.has(ident)) ident = `${ident}_`;
 
@@ -555,17 +560,21 @@ export function processObject(
   // the type that holds these fields, when it is a named type its own refs may cycle back to it
   const enclosingNamed = getNamedSchemas(rootSchema)[path[0]] ? path[0] : null;
 
+  // property names are free form and two of them may sanitize alike, e.g. "foo-bar" and "foo.bar",
+  // so each gets one ident that fields, nested types and their references all share
+  const usedIdents = new Set<string>();
+  const identOf = new Map(
+    Object.keys(schema.properties ?? {}).map((propName) => [propName, toRustIdent(propName, usedIdents)])
+  );
+  const identFor = (propName: string) => identOf.get(propName) ?? toRustIdent(propName);
+
   const pushField = (propName: string, propType: string) => {
-    const ident = toRustIdent(propName);
-    if (RUST_KEYWORDS.has(propName)) {
-      code += `${indentFn(level + 1)}#[serde(rename = "${propName}")]\n`;
-      code += `${indentFn(level + 1)}pub r#${propName}: ${propType},\n`;
-    } else {
-      if (ident !== propName) {
-        code += `${indentFn(level + 1)}#[serde(rename = "${propName.replace(/(["\\])/g, '\\$1')}")]\n`;
-      }
-      code += `${indentFn(level + 1)}pub ${ident}: ${propType},\n`;
+    // r#self and r#crate are forbidden, so keywords go through toRustIdent too
+    const ident = identFor(propName);
+    if (ident !== propName) {
+      code += `${indentFn(level + 1)}#[serde(rename = "${propName.replace(/(["\\])/g, '\\$1')}")]\n`;
     }
+    code += `${indentFn(level + 1)}pub ${ident}: ${propType},\n`;
   };
 
   // Generate struct fields
@@ -624,7 +633,7 @@ export function processObject(
       propType = 'serde_json::Value';
     } else if (isNestedObject || isNestedEnum) {
       // For nested objects and enums, we need to reference them via their module path
-      propType = `${currentName}_::${toRustIdent(propName)}`;
+      propType = `${currentName}_::${identFor(propName)}`;
 
       // Special case for enums which have a different naming convention
       if (isNestedEnum) {
@@ -693,8 +702,7 @@ export function processObject(
         }
       }
 
-      // property names are free form, the nested type name has to be a valid identifier
-      const propIdent = toRustIdent(propName);
+      const propIdent = identFor(propName);
 
       // Generate nested object types
       if (propSchema.type === 'object' || propSchema.properties) {

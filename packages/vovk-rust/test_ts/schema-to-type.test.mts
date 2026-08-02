@@ -244,6 +244,40 @@ describe('convertJSONSchemasToRustTypes', () => {
     assert.ok(output.includes('#[serde(rename = "")]\n      Empty,'), output);
   });
 
+  test('field and named type names are valid Rust identifiers', () => {
+    const schemas: Record<string, VovkJSONSchemaBase> = {
+      body: {
+        type: 'object',
+        properties: {
+          self: { type: 'string' },
+          crate: { type: 'string' },
+          'foo-bar': { type: 'string' },
+          'foo.bar': { type: 'string' },
+          sign: { type: 'string', enum: ['+', '-'] },
+          ts: { $ref: '#/$defs/google.protobuf.Timestamp' },
+        },
+        $defs: {
+          'google.protobuf.Timestamp': { type: 'object', properties: { seconds: { type: 'number' } } },
+        },
+      },
+    } as const;
+
+    const output = convertJSONSchemasToRustTypes({ schemas, rootName: 'test' });
+
+    // r#self and r#crate are forbidden raw identifiers
+    assert.ok(!output.includes('r#'), output);
+    assert.ok(output.includes('#[serde(rename = "self")]\n    pub self_:'), output);
+    assert.ok(output.includes('#[serde(rename = "crate")]\n    pub crate_:'), output);
+    // colliding property names must not produce two fields of the same name
+    assert.ok(output.includes('pub foo_bar:') && output.includes('pub foo_bar_2:'), output);
+    // a variant that sanitizes to a bare "_" would be a reserved identifier
+    assert.ok(!/^\s*_,$/m.test(output), output);
+    // the named type and every reference to it agree on the sanitized name
+    assert.ok(output.includes('pub struct google_protobuf_Timestamp {'), output);
+    assert.ok(output.includes('pub ts: Option<google_protobuf_Timestamp>'), output);
+    assert.ok(!output.includes('google.protobuf.Timestamp {'), output);
+  });
+
   test('body kinds', () => {
     assert.strictEqual(getBodyKind(undefined), 'none');
     assert.strictEqual(getBodyKind({ type: 'string', 'x-contentType': ['text/plain'] }), 'text');
