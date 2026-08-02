@@ -82,6 +82,16 @@ export function convertJSONSchemaToPythonDataType(options: ConvertOptions): stri
     ...schema.$defs,
   };
   const namedTypeNames = new Map<string, string>();
+  // a spec may name a schema "google.protobuf.Timestamp", python identifiers hold no dots or dashes
+  const usedRefIdents = new Set<string>();
+  function toPyIdent(name: string): string {
+    const base = name.replace(/[^A-Za-z0-9_]/g, '_').replace(/^(?=[0-9])/, '_') || 'Empty';
+    let ident = base;
+    let i = 2;
+    while (usedRefIdents.has(ident)) ident = `${base}_${i++}`;
+    usedRefIdents.add(ident);
+    return ident;
+  }
 
   /**
    * Turn a schema into a Python type expression
@@ -101,11 +111,12 @@ export function convertJSONSchemaToPythonDataType(options: ConvertOptions): stri
       if (known) return known;
 
       // single underscore on purpose, Python mangles __names inside a class body
-      const localName = `_${className}_${refName}`;
+      const safeRefName = toPyIdent(refName);
+      const localName = `_${className}_${safeRefName}`;
       const qualifiedName = `${namespace}.${localName}`;
       namedTypeNames.set(refName, qualifiedName);
 
-      const built = buildType(namedSchemas[refName], `${className}_${refName}`, localName);
+      const built = buildType(namedSchemas[refName], `${className}_${safeRefName}`, localName);
       // non-object definitions (enums, primitives) need an alias to keep the reference valid
       if (built !== qualifiedName) {
         classDefinitions.push(`${localName} = ${built}`);
