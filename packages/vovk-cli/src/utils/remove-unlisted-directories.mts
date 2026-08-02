@@ -1,5 +1,6 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
+import { GENERATED_BANNER_PREFIX } from './generated-banner.mjs';
 import { FileSystemEntryType, getFileSystemEntryType } from './get-file-system-entry-type.mjs';
 
 // removes all dirs in folderPath that aren't in allowedDirs, supports nested paths like 'foo/bar/baz'
@@ -33,7 +34,21 @@ function matchesGeneratedPath(relPath: string, generatedRelPaths: string[]): boo
   });
 }
 
-// true when every file below dirPath is something the generator writes
+// a matching name is not enough, a user file may be named like ours, so require our banner too.
+// json holds no comment and therefore no banner, so there the name stays the only signal
+async function isGeneratedFile(absolutePath: string, relPath: string, generatedRelPaths: string[]): Promise<boolean> {
+  if (!matchesGeneratedPath(relPath, generatedRelPaths)) return false;
+  if (path.extname(absolutePath) === '.json') return true;
+
+  try {
+    const content = await fs.readFile(absolutePath, 'utf-8');
+    return content.slice(0, content.indexOf('\n') + 1 || undefined).includes(GENERATED_BANNER_PREFIX);
+  } catch {
+    return false;
+  }
+}
+
+// true when every file below dirPath is something the generator wrote
 async function containsOnlyGenerated(
   dirPath: string,
   generatedRelPaths: string[],
@@ -46,7 +61,7 @@ async function containsOnlyGenerated(
 
     if (entry.isDirectory()) {
       if (!(await containsOnlyGenerated(dirPath, generatedRelPaths, entryRelPath))) return false;
-    } else if (!matchesGeneratedPath(entryRelPath, generatedRelPaths)) {
+    } else if (!(await isGeneratedFile(path.join(dirPath, entryRelPath), entryRelPath, generatedRelPaths))) {
       return false;
     }
   }
