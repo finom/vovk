@@ -5,7 +5,8 @@
   "files": [
     "dist",
     "client-templates",
-    "module-templates"
+    "module-templates",
+    "CHANGELOG.md"
   ],
   "bin": {
     "vovk": "./dist/index.mjs"

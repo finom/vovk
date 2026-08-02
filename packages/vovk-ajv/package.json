@@ -4,7 +4,8 @@
   "description": "Client-side JSON Schema validation library for Vovk.ts",
   "files": [
     "index.js",
-    "index.d.ts"
+    "index.d.ts",
+    "CHANGELOG.md"
   ],
   "type": "module",
   "main": "./index.js",

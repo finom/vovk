@@ -5,7 +5,8 @@
   "files": [
     "client-templates",
     "index.js",
-    "index.d.ts"
+    "index.d.ts",
+    "CHANGELOG.md"
   ],
   "scripts": {
     "build": "tsc",
