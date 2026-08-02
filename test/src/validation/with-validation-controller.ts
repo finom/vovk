@@ -501,6 +501,16 @@ export default class WithValidationController {
     return { ok: true };
   });
 
+  // === Content-type validation: opted out server side ===
+  @post.auto()
+  static handleContentTypeDisabled = procedure({
+    contentType: ['text/plain'],
+    disableServerSideValidation: ['body'],
+    output: z.object({ ok: z.boolean() }),
+  }).handle(async () => {
+    return { ok: true };
+  });
+
   // === Content-type validation: partial wildcard image/* ===
   @post.auto()
   static handleImageWildcard = procedure({

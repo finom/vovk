@@ -159,8 +159,9 @@ export function withValidationLibrary<
   const resultHandler = (async (req: VovkRequestAny, handlerParams: Parameters<THandle>[1]) => {
     const { __disableClientValidation } = req.vovk.meta<Meta>();
     if (!__disableClientValidation) {
-      // a declared contentType is enforced even with no body schema to validate against
-      if (contentType && (!body || disableServerSideValidationKeys.includes('body'))) {
+      // a declared contentType is enforced even with no body schema to validate against,
+      // disabling body validation still opts out of it, same as in the body branch below
+      if (contentType && !body && !disableServerSideValidationKeys.includes('body')) {
         validateContentType(req, contentType);
       }
 
