@@ -760,6 +760,28 @@ test('convertJSONSchemaToPythonDataType - $refs', async (t) => {
 
     assert.ok(result.includes('x: Any'), result);
   });
+
+  await t.test('turns ref names into valid python identifiers', () => {
+    const result = convertJSONSchemaToPythonDataType({
+      schema: {
+        type: 'object',
+        properties: { ts: { $ref: '#/$defs/google.protobuf.Timestamp' }, u: { $ref: '#/$defs/user-profile' } },
+        required: ['ts', 'u'],
+        $defs: {
+          'google.protobuf.Timestamp': { type: 'object', properties: { seconds: { type: 'number' } } },
+          'user-profile': { type: 'string', enum: ['a', 'b'] },
+        },
+      },
+      namespace: 'Rpc',
+      className: 'Body',
+      pad: 0,
+    });
+
+    assert.ok(!result.includes('.protobuf.') && !result.includes('user-profile'), result);
+    assert.ok(result.includes('class _Body_google_protobuf_Timestamp(TypedDict):'), result);
+    assert.ok(result.includes('ts: Rpc._Body_google_protobuf_Timestamp'), result);
+    assert.ok(result.includes('_Body_user_profile = Literal["a", "b"]'), result);
+  });
 });
 
 test('getBodyKind', async (t) => {
