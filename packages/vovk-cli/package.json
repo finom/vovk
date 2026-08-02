@@ -44,9 +44,6 @@
   "peerDependencies": {
     "vovk": ">=3.0.0"
   },
-  "optionalDependencies": {
-    "@rolldown/binding-linux-x64-gnu": "1.0.0-rc.12"
-  },
   "dependencies": {
     "@iarna/toml": "^2.2.5",
     "@inquirer/prompts": "^8.5.2",
