@@ -31,14 +31,6 @@
     "./create-validate-on-client": {
       "types": "./dist/validation/create-validate-on-client.d.ts",
       "default": "./dist/validation/create-validate-on-client.js"
-    },
-    "./createRPC": {
-      "types": "./dist/client/create-rpc.d.ts",
-      "default": "./dist/client/create-rpc.js"
-    },
-    "./createValidateOnClient": {
-      "types": "./dist/validation/create-validate-on-client.d.ts",
-      "default": "./dist/validation/create-validate-on-client.js"
     }
   },
   "description": "Back-end Framework for Next.js App Router",

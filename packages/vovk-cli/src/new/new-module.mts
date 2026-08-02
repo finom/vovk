@@ -2,7 +2,6 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import chalk from 'chalk';
 import { getTsconfig } from 'get-tsconfig';
-import _ from 'lodash';
 import type { ProjectInfo } from '../get-project-info/index.mjs';
 import { chalkHighlightThing } from '../utils/chalk-highlight-thing.mjs';
 import { formatLoggedSegmentName } from '../utils/format-logged-segment-name.mjs';
@@ -130,24 +129,6 @@ export async function newModule({
 
     const absoluteModuleDir = path.join(cwd, outDir);
     const absoluteModulePath = path.join(absoluteModuleDir, fileName);
-
-    // Pre-kebab-case projects keep modules at e.g. userProfile/UserProfileController.ts; scaffolding
-    // user-profile/user-profile-controller.ts next to it would register a duplicate class in the segment.
-    const legacySuffix = type === 'controller' ? 'Controller' : type === 'service' ? 'Service' : null;
-    if (!outDirFlag && legacySuffix && path.basename(absoluteModuleDir) === _.kebabCase(moduleName)) {
-      const legacyModulePath = path.join(
-        path.dirname(absoluteModuleDir),
-        _.camelCase(moduleName),
-        `${_.upperFirst(_.camelCase(moduleName))}${legacySuffix}.ts`
-      );
-      if (await getFileSystemEntryType(legacyModulePath)) {
-        log.error(
-          `Found ${chalkHighlightThing(legacyModulePath)} created with the pre-kebab-case naming convention. Rename it to ${chalkHighlightThing(absoluteModulePath)} manually or pass --out-dir to scaffold elsewhere.`
-        );
-
-        return process.exit(1);
-      }
-    }
 
     const prettiedCode = await prettify(code, absoluteModulePath);
 
