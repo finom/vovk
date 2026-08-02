@@ -976,6 +976,14 @@ describe('Content-type validation: wildcard and partial wildcard', () => {
     deepStrictEqual(await right.json(), { ok: true });
   });
 
+  it('Should not enforce a declared content type when body validation is disabled', async () => {
+    const endpoint = WithValidationRPC.handleContentTypeDisabled.getURL();
+
+    const wrong = await fetch(endpoint, { method: 'POST', headers: { 'content-type': 'application/json' } });
+    strictEqual(wrong.status, 200);
+    deepStrictEqual(await wrong.json(), { ok: true });
+  });
+
   it('Should handle image/* partial wildcard content type', async () => {
     const result = await WithValidationRPC.handleImageWildcard({
       body: new File(['png binary data'], 'photo.png', { type: 'image/png' }),
