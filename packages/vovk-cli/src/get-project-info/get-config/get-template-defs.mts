@@ -1,33 +1,35 @@
 import type { VovkStrictConfig } from 'vovk/internal';
 
-export enum BuiltInTemplateName {
+// const object instead of enum, node 26 runs ts with erasable syntax only
+export const BuiltInTemplateName = {
   // ts
-  tsBase = 'tsBase',
-  ts = 'ts',
+  tsBase: 'tsBase',
+  ts: 'ts',
 
   // schema
-  schemaTs = 'schemaTs',
-  schemaJson = 'schemaJson',
+  schemaTs: 'schemaTs',
+  schemaJson: 'schemaJson',
 
   // openapi
-  openapiTs = 'openapiTs',
-  openapiJson = 'openapiJson',
+  openapiTs: 'openapiTs',
+  openapiJson: 'openapiJson',
 
   // misc
-  readme = 'readme',
-  packageJson = 'packageJson',
-  mixins = 'mixins',
+  readme: 'readme',
+  packageJson: 'packageJson',
+  mixins: 'mixins',
 
   // other languages (packages installed separately)
-  rsSrc = 'rsSrc',
-  rsPkg = 'rsPkg',
-  rsReadme = 'rsReadme',
-  rs = 'rs',
-  pySrc = 'pySrc',
-  pyPkg = 'pyPkg',
-  pyReadme = 'pyReadme',
-  py = 'py',
-}
+  rsSrc: 'rsSrc',
+  rsPkg: 'rsPkg',
+  rsReadme: 'rsReadme',
+  rs: 'rs',
+  pySrc: 'pySrc',
+  pyPkg: 'pyPkg',
+  pyReadme: 'pyReadme',
+  py: 'py',
+} as const;
+export type BuiltInTemplateName = (typeof BuiltInTemplateName)[keyof typeof BuiltInTemplateName];
 
 export function getTemplateDefs(
   userTemplateDefs: VovkStrictConfig['clientTemplateDefs'] = {}
