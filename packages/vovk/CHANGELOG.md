@@ -1,73 +1,44 @@
 # Changelog
 
-All notable changes to `vovk` are documented here. This file is the canonical record; GitHub Releases are occasional announcements for headline versions and are generated from these entries.
+All notable changes to `vovk` are documented here. This file is the canonical record: noteworthy changes only, one short line each, linked to the pull request or commit that made them. GitHub Releases are not used.
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## 4.0.0-beta.0 — unreleased
+## 4.0.0-beta.0 - unreleased
 
-A cleanup major. Everything below that is marked breaking is a removal or a rename; no new APIs were added.
+A cleanup major: removals and renames, no new APIs.
 
 ### Removed
 
-- **`toolsByName`** is gone from the `deriveTools` return value. It now returns the tools array only ([#28](https://github.com/finom/vovk/pull/28)).
-- **`VovkTool`, `createTool`, `parameters`, `type` and `inputSchemas`** are retired in favour of the `StandardToolV0` convention. The vendored type is exported from `vovk/internal` only ([#27](https://github.com/finom/vovk/pull/27)).
-- **`vovk/createRPC` and `vovk/createValidateOnClient`** subpath exports. They were aliases kept to make the June 2026 kebab-case rename non-breaking inside 3.x. Use `vovk/create-rpc` and `vovk/create-validate-on-client`.
-- Dead `nestjs-operation-id` name-strategy literals from the config types.
+- `toolsByName`: `deriveTools` returns the tools array only ([#28](https://github.com/finom/vovk/pull/28))
+- `VovkTool`, `createTool`, `parameters`, `type` and `inputSchemas`: replaced by the `StandardToolV0` convention ([#27](https://github.com/finom/vovk/pull/27))
+- `vovk/createRPC` and `vovk/createValidateOnClient` subpath aliases: use `vovk/create-rpc` and `vovk/create-validate-on-client` ([b7dc4b2](https://github.com/finom/vovk/commit/b7dc4b2a))
+- Dead `nestjs-operation-id` name-strategy literals ([3f84c25](https://github.com/finom/vovk/commit/3f84c253))
 
 ### Changed
 
-- **`HttpStatus.TOO_MANY_TRequestS` is renamed to `HttpStatus.TOO_MANY_REQUESTS`.** The old spelling is gone.
-- **`deriveTools` returns `StandardToolV0` tools**, and `toModelOutputDefault` is now async.
-- **Error responses in production no longer carry internal detail.** Messages and causes for unexpected errors are withheld when `NODE_ENV` is production; `onError` still receives the full error.
-- A declared `contentType` is enforced even when the procedure has no body schema. Turning off body validation opts out of that check too.
+- `HttpStatus.TOO_MANY_TRequestS` renamed to `TOO_MANY_REQUESTS` ([c739e4b](https://github.com/finom/vovk/commit/c739e4bc))
+- Production error responses carry no internal detail; `onError` still receives the full error ([d0be248](https://github.com/finom/vovk/commit/d0be2482), [419cf7f](https://github.com/finom/vovk/commit/419cf7f6))
+- A declared `contentType` is enforced even without a body schema; disabling body validation opts out ([444644b](https://github.com/finom/vovk/commit/444644b8), [27edb95](https://github.com/finom/vovk/commit/27edb95e))
 
 ### Fixed
 
-Client:
-
-- `withDefaults` deep-merges when chained instead of replacing nested options.
-- Path params are percent-encoded when the request URL is built, and an encoded slash stays inside its param.
-- Non-ASCII `meta` is escaped so the `x-meta` header remains a valid ByteString.
-- `Headers` instances survive RPC options, and `init.signal` is honoured rather than discarded.
-- The stream error envelope no longer reaches `onIterate` subscribers.
-- The progressive proxy is inspectable, and property access after the stream ends settles instead of hanging.
-- The underlying stream is released when a consumer stops iterating early.
-- Mid-stream errors reach fetcher `onError` callbacks.
-
-Core:
-
-- HTTP routes dispatch through the outermost decorator wrapper, so stacked decorators all run.
-- Prototype members such as `constructor` and `toString` no longer resolve as route handlers.
-- The route match cache is scoped to its handlers map, fixing cross-method cache poisoning.
-- `JSONLinesResponder.close()` awaits pending sends.
-- A malformed `x-meta` header responds 400 instead of throwing.
-- `x-meta` is allowed in the default CORS `access-control-allow-headers`.
-- Stream failures run `onError` and hide internal reasons.
-
-Request parsing:
-
-- Query keys that would reach `Object.prototype` are dropped.
-- Query pairs split at the first `=` only, so values keep any later `=`.
-- A large query index can no longer size a huge array.
-
-OpenAPI:
-
-- Derived path and query parameters merge with user-declared ones instead of replacing them.
-- User `components.schemas` merge with derived component schemas.
-- Circular `$ref`s terminate when code samples are built.
-
-Validation and tools:
-
-- A falsy handler output (`false`, `0`, `''`, `null`) is accepted when an output schema is set; only `undefined` is treated as a missing return.
-- `Response` and generator results are materialized for the model.
-- Derived tool failures are reported to `onError`.
+- Stacked decorators all run: HTTP routes dispatch through the outermost wrapper ([18ce506](https://github.com/finom/vovk/commit/18ce5063))
+- Prototype members such as `constructor` no longer resolve as route handlers ([8fa67bb](https://github.com/finom/vovk/commit/8fa67bb0))
+- The route match cache is scoped to its handlers map, fixing cross-method poisoning ([6db95ff](https://github.com/finom/vovk/commit/6db95ff5))
+- Path params are percent-encoded, and an encoded slash stays inside its param ([d2d9046](https://github.com/finom/vovk/commit/d2d90464), [0cb5aa4](https://github.com/finom/vovk/commit/0cb5aa40))
+- Chained `withDefaults` deep-merges instead of replacing nested options ([4f53fc7](https://github.com/finom/vovk/commit/4f53fc78))
+- `Headers` instances and `init.signal` survive RPC options ([fc61920](https://github.com/finom/vovk/commit/fc619204))
+- Streaming: mid-stream errors reach `onError`, the error envelope stays out of `onIterate`, an abandoned iterator releases the stream ([b440310](https://github.com/finom/vovk/commit/b4403106), [06e99fa](https://github.com/finom/vovk/commit/06e99faa), [06b9c00](https://github.com/finom/vovk/commit/06b9c007))
+- Falsy handler output (`false`, `0`, `''`, `null`) is accepted when an output schema is set ([dc8c6a3](https://github.com/finom/vovk/commit/dc8c6a38))
+- Derived tools materialize `Response` and generator results, and failures reach `onError` ([7b7f1b8](https://github.com/finom/vovk/commit/7b7f1b87), [ff18ee5](https://github.com/finom/vovk/commit/ff18ee5d))
+- Derived path/query parameters and `components.schemas` merge with user-declared ones ([d86bae0](https://github.com/finom/vovk/commit/d86bae0b), [6a174ac](https://github.com/finom/vovk/commit/6a174ac1))
+- Malformed `x-meta` responds 400, `x-meta` is allowed in default CORS headers, non-ASCII meta is escaped ([5327a32](https://github.com/finom/vovk/commit/5327a327), [e34acae](https://github.com/finom/vovk/commit/e34acaea), [be58398](https://github.com/finom/vovk/commit/be583983))
 
 ### Security
 
-- **`x-tsType` from a third-party OpenAPI spec is stripped on ingestion.** `compileTs` emits `x-tsType` verbatim as a TypeScript type, so a crafted value in a fetched spec could close the type literal and append statements, meaning importing the generated client executed code chosen by whoever hosted the spec. vovk sets its own `x-tsType` after stripping.
-- Prototype-polluting query keys are dropped during request parsing (see above).
-- Internal error detail is kept off the wire in production (see above).
+- `x-tsType` is stripped from third-party OpenAPI specs on ingestion; a crafted value could inject executable code into the generated client ([c5e63cd](https://github.com/finom/vovk/commit/c5e63cd7))
+- Query parsing hardened: prototype-polluting keys dropped, pairs split at the first `=`, a large index cannot size a huge array ([46aaadf](https://github.com/finom/vovk/commit/46aaadf7), [03522f3](https://github.com/finom/vovk/commit/03522f3f), [14bbc17](https://github.com/finom/vovk/commit/14bbc179))
 
 ### Upgrading from 3.x
 
@@ -76,20 +47,27 @@ Validation and tools:
 3. If you destructured `toolsByName` from `deriveTools`, build the map yourself from the returned array.
 4. If you used `createTool` / `VovkTool` / `inputSchemas`, move to the `StandardToolV0` shape.
 5. If you relied on error responses carrying internal messages in production, read them from `onError` instead.
-6. The composed client no longer comes from the `vovk-client` package — see the `vovk-cli` changelog for the client generation changes.
+6. The composed client no longer comes from the `vovk-client` package; see the `vovk-cli` changelog.
 
-## 3.5.0 — 2026-06-10
+## 3.7.0 - 2026-06-11
 
-**`filterOperations` + `pruneComponents` for OpenAPI mixins.** Two opt-in `openAPIMixin` options that shrink clients generated from large OpenAPI specs ([#22](https://github.com/finom/vovk/pull/22)). `filterOperations` is a predicate deciding which operations are generated; `pruneComponents` drops components nothing references. Full notes: [release](https://github.com/finom/vovk/releases/tag/vovk-v3.5.0).
+- Kebab-case file naming and subpath exports across packages; camelCase aliases such as `vovk/createRPC` kept for compatibility ([#23](https://github.com/finom/vovk/pull/23))
 
-## 3.4.0 — 2026-05-30
+## 3.5.0 - 2026-06-10
 
-**Merged `inputSchema`, the `standard-tool` convention, and per-call tool `meta`.** Full notes: [release](https://github.com/finom/vovk/releases/tag/vovk-v3.4.0).
+- `openAPIMixin.filterOperations` and `pruneComponents`: generate only the operations you call and drop components nothing references ([#22](https://github.com/finom/vovk/pull/22))
 
-## 3.2.2 — 2026-04-03
+## 3.4.0 - 2026-05-30
 
-**Fetcher events, the `VovkInput` type, and LPC (`.fn`) compatibility for Next.js server actions.** Full notes: [release](https://github.com/finom/vovk/releases/tag/vovk-v3.2.2).
+- Merged `inputSchema`, one Standard Schema for body, query and params; per-slot `inputSchemas` deprecated ([#16](https://github.com/finom/vovk/pull/16))
+- `VovkTool` follows the `standard-tool` convention, and `execute` takes per-call `meta` ([#18](https://github.com/finom/vovk/pull/18), [#19](https://github.com/finom/vovk/pull/19), [#20](https://github.com/finom/vovk/pull/20))
 
-## 3.1.3 — 2026-03-21
+## 3.2.2 - 2026-04-03
 
-**`decorate()` and `static prefix` — decorator-free procedures.** Full notes: [release](https://github.com/finom/vovk/releases/tag/vovk-v3.1.3).
+- Fetcher `onSuccess`/`onError` assignable after initialization ([#3](https://github.com/finom/vovk/pull/3)), the `VovkInput` type ([#1](https://github.com/finom/vovk/pull/1)), and `.fn` LPC calls inside Next.js server actions ([#2](https://github.com/finom/vovk/pull/2))
+
+## 3.1.3 - 2026-03-21
+
+- `decorate()` and `static prefix`: controllers and procedures without decorator syntax ([docs](https://vovk.dev/decorator-overview))
+
+Earlier history predates this changelog; see the git tags.
