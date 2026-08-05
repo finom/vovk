@@ -39,6 +39,7 @@ A cleanup major: removals and renames, no new APIs.
 
 - `x-tsType` is stripped from third-party OpenAPI specs on ingestion; a crafted value could inject executable code into the generated client ([c5e63cd](https://github.com/finom/vovk/commit/c5e63cd7))
 - Query parsing hardened: prototype-polluting keys dropped, pairs split at the first `=`, a large index cannot size a huge array ([46aaadf](https://github.com/finom/vovk/commit/46aaadf7), [03522f3](https://github.com/finom/vovk/commit/03522f3f), [14bbc17](https://github.com/finom/vovk/commit/14bbc179))
+- A non-index bracket key such as `?a[-1]=x` no longer discards the value; it becomes an object key, matching `qs`
 
 ### Upgrading from 3.x
 
