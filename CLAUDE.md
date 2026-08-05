@@ -7,7 +7,6 @@ Workspaces: `packages/vovk` (runtime), `packages/vovk-cli`, `packages/vovk-ajv`,
 - `npm run build` builds all packages (turbo)
 - `npm t` runs everything: lint (biome), build, unit and integration suites, CLI specs
 - `npm run test:main` generates the client, typechecks and runs the test app suites
-- CLI specs (`packages/vovk-cli/test`) spawn real ptys and full Next.js apps; they are slow locally, prefer CI (node 22/24/26 matrix) for full runs.
 
 ## Conventions
 
