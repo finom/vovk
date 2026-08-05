@@ -11,4 +11,3 @@ This package is experimental and its generated output may still shift between re
 - Named `$ref`s resolve into `TypedDict` classes, and binary bodies are detected from the content type ([d1b05b6](https://github.com/finom/vovk/commit/d1b05b65))
 - Schema names become valid Python identifiers: `google.protobuf.Timestamp` no longer emits a syntax error that breaks the generated module ([d5700a3](https://github.com/finom/vovk/commit/d5700a3d))
 - `$ref` cycles terminate, and unknown refs fall back to `Any` ([d1b05b6](https://github.com/finom/vovk/commit/d1b05b65))
-- Tool derivation follows the `StandardToolV0` convention ([#27](https://github.com/finom/vovk/pull/27))
