@@ -73,5 +73,9 @@
     "prettier": "^3.9.6",
     "turbo": "^2.10.8",
     "typescript": "^6.0.3"
+  },
+  "allowScripts": {
+    "node-pty@1.1.0": true,
+    "sharp@0.34.5": true
   }
 }

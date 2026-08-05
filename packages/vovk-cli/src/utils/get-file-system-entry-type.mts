@@ -1,9 +1,11 @@
 import fs from 'node:fs/promises';
 
-export enum FileSystemEntryType {
-  FILE = 'FILE',
-  DIRECTORY = 'DIRECTORY',
-}
+// const object instead of enum, node 26 runs ts with erasable syntax only
+export const FileSystemEntryType = {
+  FILE: 'FILE',
+  DIRECTORY: 'DIRECTORY',
+} as const;
+export type FileSystemEntryType = (typeof FileSystemEntryType)[keyof typeof FileSystemEntryType];
 
 export async function getFileSystemEntryType(filePath: string): Promise<FileSystemEntryType | null> {
   try {
