@@ -31,9 +31,14 @@ function parseKey(key: string): string[] {
 // past this an index becomes an object key, like qs does, so a short query cannot size a huge array
 const ARRAY_LIMIT = 100;
 
+// digits only, Number() would take "-1" and "1e2" and then drop the value on an array
 function isArrayIndex(segment: string): boolean {
-  const idx = Number(segment);
-  return !Number.isNaN(idx) && idx <= ARRAY_LIMIT;
+  return /^\d+$/.test(segment) && Number(segment) <= ARRAY_LIMIT;
+}
+
+// which container the next segment needs, "" is a push and so wants an array too
+function wantsArray(segment: unknown): boolean {
+  return typeof segment === 'string' && (segment === '' || isArrayIndex(segment));
 }
 
 // sets a value at a segment path: numeric => array index, "" => array push, else object property
@@ -42,10 +47,10 @@ function setValue(obj: Record<string, unknown>, path: string[], value: unknown):
   let parent: KnownAny = null;
   let parentKey: string | number = '';
 
-  // an index like key extends an array's length even when assigned as a plain property,
-  // so an over limit index has to replace the array with an object first
-  const demoteArray = (segment: string) => {
-    if (!Array.isArray(current) || !/^\d+$/.test(segment)) return;
+  // an array only keeps numeric indices, any other key is dropped on serialization,
+  // so replace the array with an object before setting one
+  const demoteArray = () => {
+    if (!Array.isArray(current)) return;
     const replacement: Record<string, unknown> = {};
     const source = current as unknown as Record<string, unknown>;
     for (const key of Object.keys(source)) replacement[key] = source[key];
@@ -73,7 +78,7 @@ function setValue(obj: Record<string, unknown>, path: string[], value: unknown):
         current[idx] = value;
       } else {
         // Object property
-        demoteArray(segment);
+        demoteArray();
         current[segment] = value;
       }
     } else {
@@ -90,8 +95,8 @@ function setValue(obj: Record<string, unknown>, path: string[], value: unknown):
         // for the next segment. We'll push something and move current to that.
         if (current.length === 0) {
           // nothing in array yet
-          current.push(typeof nextSegment === 'string' && isArrayIndex(nextSegment) ? [] : {});
-        } else if (typeof nextSegment === 'string' && isArrayIndex(nextSegment)) {
+          current.push(wantsArray(nextSegment) ? [] : {});
+        } else if (wantsArray(nextSegment)) {
           // next is numeric => we want an array
           if (!Array.isArray(current[current.length - 1])) {
             current[current.length - 1] = [];
@@ -113,17 +118,17 @@ function setValue(obj: Record<string, unknown>, path: string[], value: unknown):
         }
         if (current[idx] === undefined) {
           // Create placeholder for next segment
-          current[idx] = typeof nextSegment === 'string' && isArrayIndex(nextSegment) ? [] : {};
+          current[idx] = wantsArray(nextSegment) ? [] : {};
         }
         parent = current;
         parentKey = idx;
         current = current[idx];
       } else {
         // segment is an object key
-        demoteArray(segment);
+        demoteArray();
         if (current[segment] === undefined) {
           // Create placeholder
-          current[segment] = typeof nextSegment === 'string' && isArrayIndex(nextSegment) ? [] : {};
+          current[segment] = wantsArray(nextSegment) ? [] : {};
         }
         parent = current;
         parentKey = segment;
