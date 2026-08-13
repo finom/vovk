@@ -23,7 +23,7 @@ Covers:
 Out of scope:
 
 - Writing procedures / schemas → **`procedure` skill**.
-- `deriveTools()` / `createTool()` / MCP wiring → **`tools` skill**.
+- `deriveTools()` / standalone tools / MCP wiring → **`tools` skill**.
 - Third-party OpenAPI codegen → **`mixins` skill**.
 
 ## How procedures map to OpenAPI
