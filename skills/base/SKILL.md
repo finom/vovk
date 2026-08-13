@@ -23,6 +23,6 @@ Don't `WebFetch` vovk.dev mid-task. This skill + sibling vovk:* skills = canonic
 ## API surface (brief)
 
 - **Inference** — `VovkBody`, `VovkQuery`, `VovkParams`, `VovkInput`, `VovkOutput`, `VovkIteration`, `VovkReturnType`, `VovkYieldType`.
-- **Core** — `procedure`, `initSegment`, `controllersToStaticParams`, `decorate`, `multitenant`, `deriveTools`, `createTool`, `JSONLinesResponder`, `progressive`, `HttpException`, `HttpStatus`, `toDownloadResponse`, `createDecorator`.
+- **Core** — `procedure`, `initSegment`, `controllersToStaticParams`, `decorate`, `multitenant`, `deriveTools`, `JSONLinesResponder`, `progressive`, `HttpException`, `HttpStatus`, `toDownloadResponse`, `createDecorator`.
 - **HTTP decorators** — `@get` `@post` `@put` `@patch` `@del` `@head` `@options` `@prefix` `@operation`.
 - **Types** — `VovkRequest` (extends `NextRequest`), `VovkConfig`.
