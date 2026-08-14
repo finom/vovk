@@ -179,6 +179,8 @@ const makeTool = <TOutput, TFormattedOutput>({
     inputSchema: inputSchema as StandardToolV0<DerivedToolInput, TOutput, TFormattedOutput>['inputSchema'],
     outputSchema: outputSchema as StandardToolV0<DerivedToolInput, TOutput, TFormattedOutput>['outputSchema'],
     title: schema?.operationObject?.['x-tool']?.title ?? schema?.operationObject?.summary,
+    // static tool data from @operation.tool({ meta }), not the runtime `meta` handed to handlers
+    meta: schema?.operationObject?.['x-tool']?.meta,
     description:
       schema?.operationObject?.['x-tool']?.description ??
       ([schema?.operationObject?.summary ?? '', schema?.operationObject?.description ?? '']

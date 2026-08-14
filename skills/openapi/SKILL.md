@@ -47,7 +47,7 @@ Three decorators, same namespace, all attached to `operation`:
 |---|---|---|
 | `@operation({...})` | `operationObject` | Standard OpenAPI metadata (`summary`, `description`, `tags`, `deprecated`, `security`, …). Accepts any field from OpenAPI 3.1's `OperationObject`. |
 | `@operation.error(status, message)` | `operationObject.responses[status]` | Document a known error shape. Generates response referencing `#/components/schemas/VovkErrorResponse` with `message` pinned to a literal. |
-| `@operation.tool({...})` | `operationObject['x-tool']` | AI-tool metadata read by `deriveTools` — `name`, `description`, `title`, `hidden`. See **`tools` skill** for full usage. |
+| `@operation.tool({...})` | `operationObject['x-tool']` | AI-tool metadata read by `deriveTools` — `name`, `description`, `title`, `hidden`, `meta`. See **`tools` skill** for full usage. |
 
 ### `@operation({...})`
 
