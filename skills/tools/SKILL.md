@@ -1,6 +1,6 @@
 ---
 name: tools
-description: Building LLM tools with Vovk.ts — `deriveTools()` (procedures → tools) returning a `StandardToolV0[]` array, standalone tools via the `standard-tool` package, `@operation.tool({ name, title, description, hidden })` decorator, `x-tool` metadata, `ToModelOutput.DEFAULT` vs `ToModelOutput.MCP` formatters, the merged `inputSchema`, the `meta` option for passing context to procedures, `withDefaults` for baking auth into third-party API tools, and the `pick` / `omit` pattern for selecting specific procedures. Use whenever the user asks to expose an API to an LLM, wire up tool calling, build an MCP server, "let Claude / GPT call this", "turn my controllers into tools", "function calling with Vercel AI SDK", "standalone tool", "hide a procedure from the LLM", "tool that wraps a third-party SDK", or any variation. Does NOT cover procedure authoring → `procedure` skill. Does NOT cover the OpenAPI spec beyond `@operation`/`x-tool` → `openapi` skill. Does NOT cover third-party OpenAPI mixin setup → `mixins` skill.
+description: Building LLM tools with Vovk.ts — `deriveTools()` (procedures → tools) returning a `StandardToolV0[]` array, standalone tools via the `standard-tool` package, `@operation.tool({ name, title, description, hidden, meta })` decorator, `x-tool` metadata, `ToModelOutput.DEFAULT` vs `ToModelOutput.MCP` formatters, the merged `inputSchema`, the `meta` option for passing context to procedures, `withDefaults` for baking auth into third-party API tools, and the `pick` / `omit` pattern for selecting specific procedures. Use whenever the user asks to expose an API to an LLM, wire up tool calling, build an MCP server, "let Claude / GPT call this", "turn my controllers into tools", "function calling with Vercel AI SDK", "standalone tool", "hide a procedure from the LLM", "tool that wraps a third-party SDK", or any variation. Does NOT cover procedure authoring → `procedure` skill. Does NOT cover the OpenAPI spec beyond `@operation`/`x-tool` → `openapi` skill. Does NOT cover third-party OpenAPI mixin setup → `mixins` skill.
 ---
 
 # Vovk.ts LLM tools
@@ -54,7 +54,8 @@ type StandardToolV0 = {
   description: string;                  // x-tool.description, OR `${summary}\n${description}`, OR handlerName fallback
   inputSchema?: StandardSchemaV1 & StandardJSONSchemaV1;   // merged body/query/params, see below
   outputSchema?: StandardSchemaV1 & StandardJSONSchemaV1;  // procedure's output schema if declared
-  execute: (input, meta?) => Promise<unknown>; // HTTP for RPC/mixins, .fn() for controllers
+  meta?: Record<string, unknown>;       // verbatim from x-tool.meta — static data for consumers
+  execute: (input, context?) => Promise<unknown>; // HTTP for RPC/mixins, .fn() for controllers
 };
 ```
 
@@ -103,7 +104,7 @@ export default class UserController {
 }
 ```
 
-Equivalent long form: `@operation({ ..., 'x-tool': { name, title, description, hidden } })`. Keys (all optional):
+Equivalent long form: `@operation({ ..., 'x-tool': { name, title, description, hidden, meta } })`. Keys (all optional):
 
 | Key | Effect |
 |---|---|
@@ -111,6 +112,9 @@ Equivalent long form: `@operation({ ..., 'x-tool': { name, title, description, h
 | `name` | Overrides default `ModuleName_handlerName`. |
 | `title` | Optional title — used by MCP clients in tool-list UI. |
 | `description` | Overrides `summary\ndescription` concatenation. |
+| `meta` | Static `Record<string, unknown>` copied to `tool.meta` for consumers to read. Not sent to the model. |
+
+Don't confuse `x-tool.meta` (static, per tool, ends up on `tool.meta`) with `deriveTools({ meta })` (runtime context handed to every procedure, readable via `req.vovk.meta()`).
 
 ## Hide procedures
 
