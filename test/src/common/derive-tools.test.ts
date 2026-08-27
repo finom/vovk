@@ -59,7 +59,7 @@ describe('deriveTools', () => {
 
     const procedureWithToolName = procedure({
       operationObject: {
-        'x-tool': { name: 'customToolName' },
+        'x-tool': { name: 'customToolName', meta: { customToolMeta: 'hi' } },
       },
       query: z.object({ bar: z.string().max(5) }),
     }).handle(async () => {
@@ -145,6 +145,11 @@ describe('deriveTools', () => {
         getTool('MyModule_procedureWithToolDescription').description,
         'procedureWithToolDescription x-tool-description'
       );
+    });
+
+    it('Should expose x-tool meta as standard tool meta', async () => {
+      assert.deepStrictEqual(getTool('customToolName').meta, { customToolMeta: 'hi' });
+      assert.strictEqual(getTool('MyModule_procedureWithBody').meta, undefined);
     });
   });
 

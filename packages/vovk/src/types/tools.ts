@@ -12,4 +12,6 @@ export type VovkToolOptions = {
   name?: string;
   title?: string;
   description?: string;
+  // static data about the tool, copied to the derived standard tool as is
+  meta?: Record<string, unknown>;
 };
