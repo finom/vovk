@@ -270,3 +270,146 @@ describe('openAPIToVovkSchema — untrusted x-tsType', () => {
     );
   });
 });
+
+// same `{ ok: boolean }` body everywhere, only status and media type vary
+const responseSpec = {
+  openapi: '3.1.0',
+  info: { title: 'Responses', version: '1.0.0' },
+  paths: {
+    '/wildcard': {
+      get: {
+        operationId: 'wildcard',
+        responses: { '2XX': { content: { 'application/json': { schema: okSchema() } } } },
+      },
+    },
+    '/vendor': {
+      get: {
+        operationId: 'vendor',
+        responses: { '200': { content: { 'application/vnd.github+json': { schema: okSchema() } } } },
+      },
+    },
+    '/charset': {
+      get: {
+        operationId: 'charset',
+        responses: { '200': { content: { 'application/json; charset=utf-8': { schema: okSchema() } } } },
+      },
+    },
+    '/accepted': {
+      get: {
+        operationId: 'accepted',
+        responses: { '202': { content: { 'application/json': { schema: okSchema() } } } },
+      },
+    },
+    '/fallthrough': {
+      get: {
+        operationId: 'fallthrough',
+        responses: {
+          '200': { content: { 'text/plain': { schema: { type: 'string' } } } },
+          '201': { content: { 'application/json': { schema: okSchema() } } },
+        },
+      },
+    },
+    '/prefer-exact': {
+      get: {
+        operationId: 'preferExact',
+        responses: {
+          '200': {
+            content: {
+              'application/hal+json': { schema: { type: 'object', properties: { hal: { type: 'boolean' } } } },
+              'application/json': { schema: okSchema() },
+            },
+          },
+        },
+      },
+    },
+    '/error-only': {
+      get: {
+        operationId: 'errorOnly',
+        responses: {
+          '204': {},
+          default: {
+            content: { 'application/json': { schema: { type: 'object', properties: { error: { type: 'string' } } } } },
+          },
+        },
+      },
+    },
+    '/stream-wildcard': {
+      get: {
+        operationId: 'streamWildcard',
+        responses: { '2XX': { content: { 'application/jsonlines': { schema: okSchema() } } } },
+      },
+    },
+    '/legacy-json': {
+      get: {
+        operationId: 'legacyJson',
+        responses: { '200': { content: { 'application/json': { schema: okSchema() } } } },
+      },
+    },
+    '/legacy-jsonl': {
+      get: {
+        operationId: 'legacyJsonl',
+        responses: { '200': { content: { 'application/jsonl': { schema: okSchema() } } } },
+      },
+    },
+  },
+};
+
+function okSchema() {
+  return { type: 'object', properties: { ok: { type: 'boolean' } } };
+}
+
+function responseHandler(name: string): Obj {
+  const schema = openAPIToVovkSchema({
+    apiRoot: 'https://api.example.com',
+    source: { object: responseSpec },
+    getModuleName: () => 'Responses',
+    getMethodName: ({ operationObject }: { operationObject: { operationId?: string } }) =>
+      operationObject.operationId ?? 'op',
+    segmentName: 'api',
+  } as unknown as Parameters<typeof openAPIToVovkSchema>[0]) as Seg;
+  return schema.segments.api.controllers.Responses.handlers[name];
+}
+
+const okProperties = { ok: { type: 'boolean' } };
+
+describe('openAPIToVovkSchema — success response selection', () => {
+  it('reads the 2XX wildcard status', () => {
+    deepStrictEqual(responseHandler('wildcard').validation.output.properties, okProperties);
+  });
+
+  it('reads a +json structured suffix media type', () => {
+    deepStrictEqual(responseHandler('vendor').validation.output.properties, okProperties);
+  });
+
+  it('ignores media type parameters', () => {
+    deepStrictEqual(responseHandler('charset').validation.output.properties, okProperties);
+  });
+
+  it('reads a 2xx status other than 200 and 201', () => {
+    deepStrictEqual(responseHandler('accepted').validation.output.properties, okProperties);
+  });
+
+  it('falls through a success status that carries no JSON body', () => {
+    deepStrictEqual(responseHandler('fallthrough').validation.output.properties, okProperties);
+  });
+
+  it('prefers an exact application/json over a +json sibling', () => {
+    deepStrictEqual(responseHandler('preferExact').validation.output.properties, okProperties);
+  });
+
+  it('never types the success path from `default`', () => {
+    strictEqual(responseHandler('errorOnly').validation.output, undefined);
+  });
+
+  it('applies the same status handling to the iteration slot', () => {
+    deepStrictEqual(responseHandler('streamWildcard').validation.iteration.properties, okProperties);
+  });
+
+  it('still reads a plain 200 application/json output', () => {
+    deepStrictEqual(responseHandler('legacyJson').validation.output.properties, okProperties);
+  });
+
+  it('still reads a plain 200 application/jsonl iteration', () => {
+    deepStrictEqual(responseHandler('legacyJsonl').validation.iteration.properties, okProperties);
+  });
+});
