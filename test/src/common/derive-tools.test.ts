@@ -1,7 +1,7 @@
 import assert from 'node:assert';
 import { describe, it } from 'node:test';
-import { deriveTools, procedure, ToModelOutput, toDownloadResponse, type VovkOutput, type VovkTool } from 'vovk';
-import type { MCPModelOutput } from 'vovk/internal';
+import { deriveTools, procedure, ToModelOutput, toDownloadResponse, type VovkOutput } from 'vovk';
+import type { MCPModelOutput, StandardToolV0 } from 'vovk/internal';
 import { z } from 'zod';
 
 describe('deriveTools', () => {
@@ -59,14 +59,14 @@ describe('deriveTools', () => {
 
     const procedureWithToolName = procedure({
       operationObject: {
-        'x-tool': { name: 'customToolName' },
+        'x-tool': { name: 'customToolName', meta: { customToolMeta: 'hi' } },
       },
       query: z.object({ bar: z.string().max(5) }),
     }).handle(async () => {
       // ...
     });
 
-    const { tools, toolsByName } = deriveTools({
+    const tools = deriveTools({
       meta: { inputMeta: 'hello' },
       modules: {
         MyModule: {
@@ -81,7 +81,7 @@ describe('deriveTools', () => {
       onExecute: (result) => console.log('onExecute', result),
     });
 
-    tools satisfies VovkTool<
+    tools satisfies StandardToolV0<
       {
         body?: unknown;
         query?: unknown;
@@ -91,47 +91,32 @@ describe('deriveTools', () => {
       unknown
     >[];
 
-    toolsByName satisfies {
-      [key: string]: VovkTool<
-        {
-          body?: unknown;
-          query?: unknown;
-          params?: unknown;
-        },
-        unknown,
-        unknown
-      >;
+    const getTool = (name: string) => {
+      const tool = tools.find((tool) => tool.name === name);
+      assert.ok(tool, `expected the "${name}" tool to be derived`);
+      return tool;
     };
 
     it('Should return tools', async () => {
       assert.equal(tools.length, 4);
-      assert.deepStrictEqual(Object.keys(toolsByName), [
-        'MyModule_procedureWithBody',
-        'MyModule_procedureWithToolDescription',
-        'customToolName',
-        'MyModule2_procedureWithQuery',
-      ]);
+      assert.deepStrictEqual(
+        tools.map(({ name }) => name),
+        [
+          'MyModule_procedureWithBody',
+          'MyModule_procedureWithToolDescription',
+          'customToolName',
+          'MyModule2_procedureWithQuery',
+        ]
+      );
     });
 
     it('Should provide outputSchema', async () => {
-      const tool = toolsByName.MyModule_procedureWithBody;
+      const tool = getTool('MyModule_procedureWithBody');
       assert.deepStrictEqual(tool.outputSchema, outputSchema);
     });
 
-    it('Should provide inputSchemas', async () => {
-      const toolProcedureWithBody = toolsByName.MyModule_procedureWithBody;
-      const toolProcedureWithQuery = toolsByName.MyModule2_procedureWithQuery;
-      assert.deepStrictEqual(toolProcedureWithBody.inputSchemas, {
-        body: bodySchema,
-      });
-
-      assert.deepStrictEqual(toolProcedureWithQuery.inputSchemas, {
-        query: querySchema,
-      });
-    });
-
     it('Should provide a merged inputSchema (Standard Schema + Standard JSON Schema)', async () => {
-      const tool = toolsByName.MyModule_procedureWithBody;
+      const tool = getTool('MyModule_procedureWithBody');
       assert.ok(tool.inputSchema, 'expected merged inputSchema to be defined');
       assert.strictEqual(tool.inputSchema['~standard'].vendor, 'vovk');
       assert.strictEqual(tool.inputSchema['~standard'].version, 1);
@@ -145,7 +130,7 @@ describe('deriveTools', () => {
     });
 
     it('Should validate input', async () => {
-      const tool = toolsByName.MyModule_procedureWithBody;
+      const tool = getTool('MyModule_procedureWithBody');
       let result = await tool.execute({ body: { foo: 'foo1' } });
       assert.deepStrictEqual(result, { foo: 'foo1', inputMeta: 'hello' });
       result = await tool.execute({ body: { foo: 'foo1long' } });
@@ -155,16 +140,21 @@ describe('deriveTools', () => {
     });
 
     it('Should use proper description', async () => {
-      assert.strictEqual(toolsByName.MyModule_procedureWithBody.description, 'procedureWithBody description');
+      assert.strictEqual(getTool('MyModule_procedureWithBody').description, 'procedureWithBody description');
       assert.strictEqual(
-        toolsByName.MyModule_procedureWithToolDescription.description,
+        getTool('MyModule_procedureWithToolDescription').description,
         'procedureWithToolDescription x-tool-description'
       );
+    });
+
+    it('Should expose x-tool meta as standard tool meta', async () => {
+      assert.deepStrictEqual(getTool('customToolName').meta, { customToolMeta: 'hi' });
+      assert.strictEqual(getTool('MyModule_procedureWithBody').meta, undefined);
     });
   });
 
   describe('Explicit custom toModelOutput', () => {
-    const { tools, toolsByName } = deriveTools({
+    const tools = deriveTools({
       meta: { inputMeta: 'hello' },
       toModelOutput: async (result) => {
         if (result instanceof Error) {
@@ -177,7 +167,7 @@ describe('deriveTools', () => {
       },
     });
 
-    tools satisfies VovkTool<
+    tools satisfies StandardToolV0<
       {
         body?: unknown;
         query?: unknown;
@@ -186,20 +176,9 @@ describe('deriveTools', () => {
       unknown,
       { myResult?: unknown; myError?: string }
     >[];
-    toolsByName satisfies {
-      [key: string]: VovkTool<
-        {
-          body?: unknown;
-          query?: unknown;
-          params?: unknown;
-        },
-        unknown,
-        { myResult?: unknown; myError?: string }
-      >;
-    };
 
     it('Should validate input', async () => {
-      const tool = toolsByName.MyModule_procedureWithBody;
+      const [tool] = tools;
       let result = await tool.execute({ body: { foo: 'foo1' } });
       assert.deepStrictEqual(result, { myResult: { foo: 'foo1', inputMeta: 'hello' } });
       result = await tool.execute({ body: { foo: 'foo1long' } });
@@ -210,7 +189,7 @@ describe('deriveTools', () => {
   });
 
   describe('Explicit default toModelOutput = ToModelOutput.DEFAULT', () => {
-    const { tools, toolsByName } = deriveTools({
+    const tools = deriveTools({
       meta: { inputMeta: 'hello' },
       toModelOutput: ToModelOutput.DEFAULT,
       modules: {
@@ -220,7 +199,7 @@ describe('deriveTools', () => {
       },
     });
 
-    tools satisfies VovkTool<
+    tools satisfies StandardToolV0<
       {
         body?: unknown;
         query?: unknown;
@@ -230,25 +209,16 @@ describe('deriveTools', () => {
       unknown
     >[];
 
-    toolsByName satisfies {
-      [key: string]: VovkTool<
-        {
-          body?: unknown;
-          query?: unknown;
-          params?: unknown;
-        },
-        unknown,
-        unknown
-      >;
-    };
-
     it('Should return tools', async () => {
       assert.equal(tools.length, 1);
-      assert.deepStrictEqual(Object.keys(toolsByName), ['MyModule_procedureWithBody']);
+      assert.deepStrictEqual(
+        tools.map(({ name }) => name),
+        ['MyModule_procedureWithBody']
+      );
     });
 
     it('Should validate input', async () => {
-      const tool = toolsByName.MyModule_procedureWithBody;
+      const [tool] = tools;
       let result = await tool.execute({ body: { foo: 'foo1' } });
       assert.deepStrictEqual(result, { foo: 'foo1', inputMeta: 'hello' });
       result = await tool.execute({ body: { foo: 'foo1long' } });
@@ -260,7 +230,7 @@ describe('deriveTools', () => {
 
   describe('toModelOutput = ToModelOutput.MCP', () => {
     describe('Common, normal JSON output', () => {
-      const { tools, toolsByName } = deriveTools({
+      const tools = deriveTools({
         meta: { inputMeta: 'hello' },
         toModelOutput: ToModelOutput.MCP,
         modules: {
@@ -269,7 +239,7 @@ describe('deriveTools', () => {
         onExecute: (result, { name }) => console.log(`${name} executed`, result),
       });
 
-      tools satisfies VovkTool<
+      tools satisfies StandardToolV0<
         {
           body?: unknown;
           query?: unknown;
@@ -279,20 +249,8 @@ describe('deriveTools', () => {
         MCPModelOutput
       >[];
 
-      toolsByName satisfies {
-        [key: string]: VovkTool<
-          {
-            body?: unknown;
-            query?: unknown;
-            params?: unknown;
-          },
-          unknown,
-          MCPModelOutput
-        >;
-      };
-
       it('Should validate input', async () => {
-        const tool = toolsByName.MyModule_procedureWithBody;
+        const [tool] = tools;
         let result: MCPModelOutput = await tool.execute({ body: { foo: 'foo1' } });
         assert.deepStrictEqual(result, {
           content: [
@@ -324,13 +282,12 @@ describe('deriveTools', () => {
           return ['item1', 'item2', 'item3'];
         });
 
-        const { toolsByName } = deriveTools({
+        const [tool] = deriveTools({
           toModelOutput: ToModelOutput.MCP,
           modules: {
             MyModule: { arrayProcedure },
           },
         });
-        const tool = toolsByName.MyModule_arrayProcedure;
         const result: MCPModelOutput = await tool.execute({});
         assert.deepStrictEqual(result, {
           content: [
@@ -345,7 +302,7 @@ describe('deriveTools', () => {
     });
 
     describe('Audio Response instance', () => {
-      const { toolsByName } = deriveTools({
+      const [withAudioResponseTool] = deriveTools({
         toModelOutput: ToModelOutput.MCP,
         modules: {
           MyModule: {
@@ -365,7 +322,7 @@ describe('deriveTools', () => {
       });
 
       it('Should return audio output', async () => {
-        const result: MCPModelOutput = await toolsByName.withAudioResponse.execute({});
+        const result: MCPModelOutput = await withAudioResponseTool.execute({});
         assert.deepStrictEqual(result, {
           content: [
             {
@@ -380,7 +337,7 @@ describe('deriveTools', () => {
 
     describe('Image Response instance', () => {
       // 2x2 red PNG image
-      const { toolsByName } = deriveTools({
+      const [withImageResponseTool] = deriveTools({
         toModelOutput: ToModelOutput.MCP,
         modules: {
           MyModule: {
@@ -409,7 +366,7 @@ describe('deriveTools', () => {
       });
 
       it('Should return image output', async () => {
-        const result: MCPModelOutput = await toolsByName.withImageResponse.execute({});
+        const result: MCPModelOutput = await withImageResponseTool.execute({});
         assert.deepStrictEqual(result, {
           content: [
             {
@@ -425,7 +382,7 @@ describe('deriveTools', () => {
     describe('Image Response instance (fetch)', () => {
       const base64 = 'iVBORw0KGgoAAAANSUhEUgAAAAIAAAACCAIAAAD91JpzAAAADklEQVQI12P4z8AAAAEBAQAY3Y20AAAAAElFTkSuQmCC';
 
-      const { toolsByName } = deriveTools({
+      const [withImageResponseTool] = deriveTools({
         toModelOutput: ToModelOutput.MCP,
         modules: {
           MyModule: {
@@ -442,7 +399,7 @@ describe('deriveTools', () => {
       });
 
       it('Should return fetched image output', async () => {
-        const result: MCPModelOutput = await toolsByName.withImageResponse.execute({});
+        const result: MCPModelOutput = await withImageResponseTool.execute({});
         assert.deepStrictEqual(result, {
           content: [
             {
@@ -456,7 +413,7 @@ describe('deriveTools', () => {
     });
 
     describe('CSV Response instance', () => {
-      const { toolsByName } = deriveTools({
+      const [withCSVResponseTool] = deriveTools({
         toModelOutput: ToModelOutput.MCP,
         modules: {
           MyModule: {
@@ -477,7 +434,7 @@ describe('deriveTools', () => {
       });
 
       it('Should return CSV output', async () => {
-        const result: MCPModelOutput = await toolsByName.withCSVResponse.execute({});
+        const result: MCPModelOutput = await withCSVResponseTool.execute({});
         assert.deepStrictEqual(result, {
           content: [
             {
@@ -490,7 +447,7 @@ describe('deriveTools', () => {
     });
 
     describe('Text Response instance', () => {
-      const { toolsByName } = deriveTools({
+      const [withTextResponseTool] = deriveTools({
         toModelOutput: ToModelOutput.MCP,
         modules: {
           MyModule: {
@@ -509,7 +466,7 @@ describe('deriveTools', () => {
       });
 
       it('Should return text output', async () => {
-        const result: MCPModelOutput = await toolsByName.withTextResponse.execute({});
+        const result: MCPModelOutput = await withTextResponseTool.execute({});
         assert.deepStrictEqual(result, {
           content: [
             {
@@ -522,7 +479,7 @@ describe('deriveTools', () => {
     });
 
     describe('JSON Response instance', () => {
-      const { toolsByName } = deriveTools({
+      const [withJSONResponseTool] = deriveTools({
         toModelOutput: ToModelOutput.MCP,
         modules: {
           MyModule: {
@@ -541,7 +498,7 @@ describe('deriveTools', () => {
       });
 
       it('Should return JSON MCPModelOutput', async () => {
-        const result: MCPModelOutput = await toolsByName.withJSONResponse.execute({});
+        const result: MCPModelOutput = await withJSONResponseTool.execute({});
         assert.deepStrictEqual(result, {
           content: [
             {
@@ -570,7 +527,7 @@ describe('deriveTools', () => {
         return { foo };
       });
 
-      const { toolsByName } = deriveTools({
+      const [procedureWithAnnotationsTool] = deriveTools({
         toModelOutput: ToModelOutput.MCP,
         modules: {
           MyModule: {
@@ -579,7 +536,7 @@ describe('deriveTools', () => {
         },
       });
 
-      const result: MCPModelOutput = await toolsByName.procedureWithAnnotations.execute({ body: { foo: 'bar' } });
+      const result: MCPModelOutput = await procedureWithAnnotationsTool.execute({ body: { foo: 'bar' } });
       assert.deepStrictEqual(result, {
         content: [
           {
@@ -593,8 +550,92 @@ describe('deriveTools', () => {
     });
   });
 
+  describe('Default formatter with Response and generator results', () => {
+    const returnsJSONResponse = procedure({ operationObject: { description: 'd' } }).handle(async () =>
+      Response.json({ ok: true })
+    );
+    const returnsTextResponse = procedure({ operationObject: { description: 'd' } }).handle(async () =>
+      toDownloadResponse('a,b\n1,2', { type: 'text/csv', filename: 'a.csv' })
+    );
+    const returnsBinaryResponse = procedure({ operationObject: { description: 'd' } }).handle(async () =>
+      toDownloadResponse(new Uint8Array([1, 2, 3]), { type: 'image/png', filename: 'a.png' })
+    );
+    const returnsGenerator = procedure({ operationObject: { description: 'd' } }).handle(async function* () {
+      yield { n: 1 };
+      yield { n: 2 };
+    });
+
+    const [jsonTool, textTool, binaryTool, generatorTool] = deriveTools({
+      modules: { MyModule: { returnsJSONResponse, returnsTextResponse, returnsBinaryResponse, returnsGenerator } },
+    });
+
+    it('Parses a JSON Response instead of handing over the Response object', async () => {
+      assert.deepStrictEqual(await jsonTool.execute({}), { ok: true });
+    });
+
+    it('Reads a text Response as a string', async () => {
+      assert.deepStrictEqual(await textTool.execute({}), 'a,b\n1,2');
+    });
+
+    it('Encodes a binary Response', async () => {
+      assert.deepStrictEqual(await binaryTool.execute({}), { mimeType: 'image/png', data: 'AQID' });
+    });
+
+    it('Collects the items of a generator handler', async () => {
+      assert.deepStrictEqual(await generatorTool.execute({}), [{ n: 1 }, { n: 2 }]);
+    });
+  });
+
+  describe('onExecute and onError', () => {
+    const throwingProcedure = procedure({
+      operationObject: { description: 'throwingProcedure description' },
+    }).handle(async () => {
+      throw new Error('handler exploded');
+    });
+
+    it('Calls onError with the thrown error and leaves onExecute alone', async () => {
+      const calls: [string, string][] = [];
+      const [tool] = deriveTools({
+        modules: { MyModule: { throwingProcedure } },
+        onExecute: (result) => calls.push(['onExecute', JSON.stringify(result)]),
+        onError: (error) => calls.push(['onError', error.message]),
+      });
+
+      const result = await tool.execute({});
+
+      assert.deepStrictEqual(result, { error: 'handler exploded' });
+      assert.deepStrictEqual(calls, [['onError', 'handler exploded']]);
+    });
+
+    it('Calls onError when input validation fails', async () => {
+      const calls: string[] = [];
+      const [tool] = deriveTools({
+        modules: { MyModule: { procedureWithBody } },
+        onExecute: () => calls.push('onExecute'),
+        onError: () => calls.push('onError'),
+      });
+
+      await tool.execute({ body: { foo: 'foo1long' } });
+
+      assert.deepStrictEqual(calls, ['onError']);
+    });
+
+    it('Calls onExecute on success', async () => {
+      const calls: string[] = [];
+      const [tool] = deriveTools({
+        modules: { MyModule: { procedureWithBody } },
+        onExecute: () => calls.push('onExecute'),
+        onError: () => calls.push('onError'),
+      });
+
+      await tool.execute({ body: { foo: 'ok' } });
+
+      assert.deepStrictEqual(calls, ['onExecute']);
+    });
+  });
+
   describe('Custom Result Formatter', () => {
-    const { tools, toolsByName } = deriveTools({
+    const tools = deriveTools({
       meta: { inputMeta: 'hello' },
       toModelOutput: async (result) => {
         if (result instanceof Error) {
@@ -607,7 +648,7 @@ describe('deriveTools', () => {
       },
     });
 
-    tools satisfies VovkTool<
+    tools satisfies StandardToolV0<
       {
         body?: unknown;
         query?: unknown;
@@ -617,20 +658,8 @@ describe('deriveTools', () => {
       { myResult?: unknown; myError?: string }
     >[];
 
-    toolsByName satisfies {
-      [key: string]: VovkTool<
-        {
-          body?: unknown;
-          query?: unknown;
-          params?: unknown;
-        },
-        unknown,
-        { myResult?: unknown; myError?: string }
-      >;
-    };
-
     it('Should validate input', async () => {
-      const tool = toolsByName.MyModule_procedureWithBody;
+      const [tool] = tools;
       let result = await tool.execute({ body: { foo: 'foo1' } });
       assert.deepStrictEqual(result, { myResult: { foo: 'foo1', inputMeta: 'hello' } });
       result = await tool.execute({ body: { foo: 'foo1long' } });
@@ -652,20 +681,25 @@ describe('deriveTools', () => {
       params: paramsSchema,
     }).handle(async () => ({ ok: true }));
 
-    const { toolsByName } = deriveTools({
+    const tools = deriveTools({
       modules: {
         MyModule: { procedureWithNoSlots, procedureWithAllSlots },
       },
     });
 
+    const getTool = (name: string) => {
+      const tool = tools.find((tool) => tool.name === name);
+      assert.ok(tool, `expected the "${name}" tool to be derived`);
+      return tool;
+    };
+
     it('Should leave inputSchema undefined when the procedure has no body/query/params', () => {
-      const tool = toolsByName.MyModule_procedureWithNoSlots;
+      const tool = getTool('MyModule_procedureWithNoSlots');
       assert.strictEqual(tool.inputSchema, undefined);
-      assert.deepStrictEqual(tool.inputSchemas, {});
     });
 
     it('Merged inputSchema produces the expected JSON Schema envelope', () => {
-      const tool = toolsByName.MyModule_procedureWithAllSlots;
+      const tool = getTool('MyModule_procedureWithAllSlots');
       assert.ok(tool.inputSchema);
       const jsonSchema = tool.inputSchema['~standard'].jsonSchema.input({ target: 'draft-2020-12' });
       assert.strictEqual(jsonSchema.type, 'object');
@@ -678,7 +712,7 @@ describe('deriveTools', () => {
     });
 
     it('Merged inputSchema validates all three slots together', async () => {
-      const tool = toolsByName.MyModule_procedureWithAllSlots;
+      const tool = getTool('MyModule_procedureWithAllSlots');
       assert.ok(tool.inputSchema);
       const okResult = await tool.inputSchema['~standard'].validate({
         body: { foo: 'a' },

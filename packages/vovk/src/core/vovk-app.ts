@@ -14,7 +14,8 @@ class VovkApp {
     const corsHeaders = {
       'access-control-allow-origin': '*',
       'access-control-allow-methods': 'GET, POST, PUT, DELETE, OPTIONS, HEAD',
-      'access-control-allow-headers': 'content-type, authorization',
+      // x-meta is ours, the client sends it whenever meta is set
+      'access-control-allow-headers': 'content-type, authorization, x-meta',
     };
 
     const headers = {
@@ -105,7 +106,10 @@ class VovkApp {
   #routeRegexCache = new Map<string, RegExp>();
   #routeSegmentsCache = new Map<string, string[]>();
   #routeParamPositionsCache = new Map<string, { index: number; paramName: string }[]>();
-  #routeMatchCache = new Map<string, { route: string; params: Record<string, string> }>();
+  // matches are only valid for the handlers map they were resolved against, so scope by its identity
+  #routeMatchCache = new WeakMap<object, Map<string, { route: string; params: Record<string, string> }>>();
+  // concrete paths come from the URL, cap the per handlers map cache so it can't grow forever
+  static #ROUTE_MATCH_CACHE_LIMIT = 1000;
 
   #getHandler = ({
     handlers,
@@ -122,10 +126,13 @@ class VovkApp {
       return { handler: handlers[''], methodParams };
     }
 
+    // a decoded "/" inside one segment makes the joined path ambiguous, /files/a%2Fb vs /files/a/b
+    const hasEncodedSlash = path.some((segment) => segment.includes('/'));
     const pathStr = path.join('/');
 
     // Fast path: Check if this exact path has been matched before
-    const cachedMatch = this.#routeMatchCache.get(pathStr);
+    let matchCache = hasEncodedSlash ? undefined : this.#routeMatchCache.get(handlers);
+    const cachedMatch = matchCache?.get(pathStr);
     if (cachedMatch) {
       return {
         handler: handlers[cachedMatch.route],
@@ -133,8 +140,8 @@ class VovkApp {
       };
     }
 
-    // Check for direct static route match
-    let methodKey = handlers[pathStr] ? pathStr : null;
+    // Check for direct static route match, hasOwn so /toString doesn't resolve a prototype member
+    let methodKey = !hasEncodedSlash && Object.hasOwn(handlers, pathStr) ? pathStr : null;
 
     if (!methodKey) {
       const methodKeys: string[] = [];
@@ -206,7 +213,8 @@ class VovkApp {
             if (!regex) {
               const regexPattern = routeSegment
                 .replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
-                .replace(/\\{(\w+)\\}/g, '(?<$1>[^/]+)');
+                // matched per segment, so a decoded "/" from %2F belongs to the value
+                .replace(/\\{(\w+)\\}/g, '(?<$1>[\\s\\S]+)');
               regex = new RegExp(`^${regexPattern}$`);
               this.#routeRegexCache.set(routeSegment, regex);
             }
@@ -250,9 +258,16 @@ class VovkApp {
 
       [methodKey] = methodKeys;
 
-      // Cache successful matches
-      if (methodKey) {
-        this.#routeMatchCache.set(pathStr, { route: methodKey, params: methodParams });
+      // Cache successful matches, an ambiguous joined path must not become a cache key
+      if (methodKey && !hasEncodedSlash) {
+        if (!matchCache) {
+          matchCache = new Map();
+          this.#routeMatchCache.set(handlers, matchCache);
+        }
+        if (matchCache.size >= VovkApp.#ROUTE_MATCH_CACHE_LIMIT) {
+          matchCache.delete(matchCache.keys().next().value as string);
+        }
+        matchCache.set(pathStr, { route: methodKey, params: methodParams });
       }
     }
 
@@ -310,7 +325,19 @@ class VovkApp {
       headerList = null;
     }
     const xMeta = headerList?.get('x-meta');
-    const xMetaHeader: Record<string, unknown> = xMeta && JSON.parse(xMeta);
+    let xMetaHeader: Record<string, unknown> | null = null;
+    if (xMeta) {
+      try {
+        xMetaHeader = JSON.parse(xMeta);
+      } catch {
+        // malformed client input is a 400, not an uncaught SyntaxError
+        return this.#respondWithError({
+          req,
+          statusCode: HttpStatus.BAD_REQUEST,
+          message: 'Invalid x-meta request header',
+        });
+      }
+    }
 
     if (xMetaHeader) reqMeta(req, { xMetaHeader });
 
@@ -339,7 +366,8 @@ class VovkApp {
     try {
       await staticMethod._options?.before?.call(controller, req);
       await onBefore?.(req);
-      const result = await staticMethod.call(controller, req, methodParams);
+      // dispatch via the latest wrapper so decorators applied above the HTTP decorator still run
+      const result = await (staticMethod._sourceMethod?.wrapper ?? staticMethod).call(controller, req, methodParams);
 
       if (result instanceof Response) {
         await onSuccess?.(result, req);
@@ -387,6 +415,12 @@ class VovkApp {
               await responder.send(chunk);
             }
           } catch (e) {
+            // the outer catch already returned the response, so onError has to run here
+            try {
+              await controller._onError?.(e as HttpException, req);
+            } catch (onErrorError) {
+              console.error('An error caught in onError handler:', onErrorError);
+            }
             return responder.throw(e);
           }
 
@@ -404,12 +438,22 @@ class VovkApp {
       try {
         await controller._onError?.(err, req);
       } catch (onErrorError) {
-        // eslint-disable-next-line no-console
         console.error('An error caught in onError handler:', onErrorError);
       }
 
       if (err.message !== 'NEXT_REDIRECT' && err.message !== 'NEXT_NOT_FOUND') {
         const statusCode = err.statusCode || HttpStatus.INTERNAL_SERVER_ERROR;
+        // an error without a statusCode is internal, its message and cause stay on the server in production
+        const isExpected = typeof err.statusCode === 'number';
+        if (!isExpected && process.env.NODE_ENV === 'production') {
+          console.error('🐺 Unhandled error in a Vovk handler:', err);
+          return this.#respondWithError({
+            req,
+            statusCode,
+            message: 'Internal server error',
+            options: staticMethod._options,
+          });
+        }
         return this.#respondWithError({
           req,
           statusCode,

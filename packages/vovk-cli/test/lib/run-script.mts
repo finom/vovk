@@ -1,5 +1,13 @@
 /* global NodeJS */
+import fs from 'node:fs';
+import { createRequire } from 'node:module';
+import path from 'node:path';
 import * as pty from 'node-pty';
+
+// node-pty 1.1.0 prebuilds ship spawn-helper without the exec bit, fixed upstream in 1.2
+const ptyRoot = path.join(path.dirname(createRequire(import.meta.url).resolve('node-pty')), '..');
+const spawnHelper = path.join(ptyRoot, 'prebuilds', `${process.platform}-${process.arch}`, 'spawn-helper');
+if (fs.existsSync(spawnHelper)) fs.chmodSync(spawnHelper, 0o755);
 
 async function runInputs(combo: string[], child: pty.IPty) {
   for (const input of combo) {
@@ -23,7 +31,6 @@ export function runScript(
     cwd: process.cwd(),
   }
 ) {
-  // eslint-disable-next-line no-console
   console.info('Running script: ', commandWithArgs, ' at ', options.cwd);
   const { env = process.env, combo = [] } = options;
 

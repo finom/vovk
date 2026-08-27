@@ -21,15 +21,8 @@ function prefixIssues(issues: ReadonlyArray<StandardSchemaV1.Issue>, slot: SlotK
   }));
 }
 
-/**
- * Combine optional `body` / `query` / `params` Standard Schemas into a single
- * `CombinedSpec` whose `~standard` interface fully conforms to Standard Schema
- * + Standard JSON Schema. Top-level validation (object shape, key presence,
- * rejection of unknown keys) is handled here; per-slot value validation and
- * JSON Schema conversion are delegated to the slot schemas.
- *
- * Internal helper. Not exported from the public `vovk` entrypoint.
- */
+// combines body/query/params Standard Schemas into a single CombinedSpec; top level object
+// shape is validated here, per slot validation and JSON Schema are delegated to slot schemas
 export function validationSchemasObjectToSingleValidationSchema<TSchemas extends SchemasObject>(
   schemas: TSchemas
 ): CombinedSpec & TSchemas {

@@ -9,7 +9,7 @@ import {
   ValibotControllerOnlyEntityRPC,
   ZodControllerAndServiceEntityRPC,
   ZodControllerOnlyEntityRPC,
-} from 'vovk-client';
+} from '../generated-client/index.ts';
 
 const rpcs = {
   NoValidationControllerOnlyEntityRPC: {

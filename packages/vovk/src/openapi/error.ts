@@ -44,7 +44,7 @@ const statusDisplayText = {
   [HttpStatus.UNPROCESSABLE_ENTITY]: 'Unprocessable Entity',
   [HttpStatus.FAILED_DEPENDENCY]: 'Failed Dependency',
   [HttpStatus.PRECONDITION_REQUIRED]: 'Precondition Required',
-  [HttpStatus.TOO_MANY_TRequestS]: 'Too Many Requests',
+  [HttpStatus.TOO_MANY_REQUESTS]: 'Too Many Requests',
   [HttpStatus.INTERNAL_SERVER_ERROR]: 'Internal Server Error',
   [HttpStatus.NOT_IMPLEMENTED]: 'Not Implemented',
   [HttpStatus.BAD_GATEWAY]: 'Bad Gateway',

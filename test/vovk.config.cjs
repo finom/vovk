@@ -2,6 +2,11 @@
 /** @type {import('vovk').VovkConfig} */
 const vovkConfig = {
   modulesDir: './src/modules',
+  composedClient: {
+    fromTemplates: ['ts'],
+    // src/client is taken by client test sources
+    outDir: './src/generated-client',
+  },
   segmentedClient: {
     enabled: true,
     outDir: './other-compiled-test-sources/segmented-client',
@@ -50,6 +55,8 @@ const vovkConfig = {
         fixedExtension: true,
         clean: true,
         outDir,
+        // next is resolved from the monorepo root, keep its types external
+        deps: { neverBundle: [/^next(\/|$)/] },
       });
     },
     outDir: './other-compiled-test-sources/bundle',

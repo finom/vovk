@@ -1,4 +1,4 @@
-import { deepStrictEqual, strictEqual } from 'node:assert';
+import { deepStrictEqual, ok, strictEqual } from 'node:assert';
 import { describe, it } from 'node:test';
 import { request } from '../lib.ts';
 
@@ -25,6 +25,8 @@ describe('All decorators', () => {
 
     strictEqual(response.status, 200);
     strictEqual(response.headers['access-control-allow-origin'], '*');
+    // the client sends x-meta whenever meta is set, so a preflight has to allow it
+    ok(response.headers['access-control-allow-headers'].includes('x-meta'));
   });
 
   it('Should handle before', async () => {

@@ -52,6 +52,10 @@ export function getBodyKind(schema: VovkJSONSchemaBase | undefined): 'none' | 'f
   if (ct?.includes('multipart/form-data') || ct?.includes('application/x-www-form-urlencoded')) return 'form';
   if (schema.format === 'binary' || schema.contentEncoding === 'binary') return 'binary';
   if (ct?.some((c: string) => c.startsWith('text/'))) return 'text';
+  // a declared non JSON content type on a scalar body means raw bytes, e.g. application/octet-stream or image/png
+  const isStructured = schema.type === 'object' || schema.type === 'array' || !!schema.properties;
+  const isJSONContentType = (c: string) => c === '*/*' || c === 'application/json' || c.endsWith('+json');
+  if (!isStructured && ct?.length && !ct.some(isJSONContentType)) return 'binary';
   return 'json';
 }
 
@@ -71,13 +75,54 @@ export function convertJSONSchemaToPythonDataType(options: ConvertOptions): stri
   // To avoid re-generating the same schema multiple times
   const seenObjects = new Map<VovkJSONSchemaBase, string>();
 
+  // $defs, definitions and components/schemas become one class each, referenced by name
+  const namedSchemas: Record<string, VovkJSONSchemaBase> = {
+    ...(schema as { components?: { schemas?: Record<string, VovkJSONSchemaBase> } }).components?.schemas,
+    ...schema.definitions,
+    ...schema.$defs,
+  };
+  const namedTypeNames = new Map<string, string>();
+  // a spec may name a schema "google.protobuf.Timestamp", python identifiers hold no dots or dashes
+  const usedRefIdents = new Set<string>();
+  function toPyIdent(name: string): string {
+    const base = name.replace(/[^A-Za-z0-9_]/g, '_').replace(/^(?=[0-9])/, '_') || 'Empty';
+    let ident = base;
+    let i = 2;
+    while (usedRefIdents.has(ident)) ident = `${base}_${i++}`;
+    usedRefIdents.add(ident);
+    return ident;
+  }
+
   /**
    * Turn a schema into a Python type expression
    */
-  function buildType(s: VovkJSONSchemaBase, propNameForParent: string): string {
+  function buildType(s: VovkJSONSchemaBase, propNameForParent: string, forcedClassName?: string): string {
     // Skip file upload schemas at the type level
     if (isFileUploadSchema(s)) {
       return 'Any'; // This will be filtered out at property level
+    }
+
+    // 0. Named $ref: point at the shared class, registering it first so cycles terminate
+    if (s.$ref) {
+      const refName = s.$ref.startsWith('#/') ? s.$ref.split('/').pop() : undefined;
+      if (!refName || !namedSchemas[refName]) return 'Any';
+
+      const known = namedTypeNames.get(refName);
+      if (known) return known;
+
+      // single underscore on purpose, Python mangles __names inside a class body
+      const safeRefName = toPyIdent(refName);
+      const localName = `_${className}_${safeRefName}`;
+      const qualifiedName = `${namespace}.${localName}`;
+      namedTypeNames.set(refName, qualifiedName);
+
+      const built = buildType(namedSchemas[refName], `${className}_${safeRefName}`, localName);
+      // non-object definitions (enums, primitives) need an alias to keep the reference valid
+      if (built !== qualifiedName) {
+        classDefinitions.push(`${localName} = ${built}`);
+      }
+
+      return qualifiedName;
     }
 
     // For convenience, handle arrays of type or single type
@@ -160,7 +205,7 @@ export function convertJSONSchemaToPythonDataType(options: ConvertOptions): stri
           }
 
           const isTopLevel = propNameForParent === className;
-          const newClassName = isTopLevel ? className : `__${propNameForParent}`;
+          const newClassName = forcedClassName ?? (isTopLevel ? className : `__${propNameForParent}`);
           const fullyQualifiedName = `${namespace}.${newClassName}`;
 
           seenObjects.set(s, fullyQualifiedName);

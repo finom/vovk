@@ -187,7 +187,16 @@ export function vovkSchemaToOpenAPI({
             ],
             ...((queryParameters || pathParameters
               ? {
-                  parameters: h.operationObject?.parameters ?? [...(queryParameters || []), ...(pathParameters || [])],
+                  // merge derived path/query parameters with user-declared ones, user wins on (name, in) collision
+                  parameters: [
+                    ...[...(queryParameters || []), ...(pathParameters || [])].filter(
+                      (p) =>
+                        !h.operationObject?.parameters?.some(
+                          (up) => 'name' in up && up.name === p.name && up.in === p.in
+                        )
+                    ),
+                    ...(h.operationObject?.parameters ?? []),
+                  ],
                 }
               : {}) as OperationObject['parameters']),
             ...(paths[path][httpMethod].parameters
@@ -281,7 +290,9 @@ export function vovkSchemaToOpenAPI({
       components: {
         ...openAPIObject?.components,
         schemas: {
-          ...(openAPIObject?.components?.schemas ?? components),
+          // merge so user-declared schemas extend the derived ones instead of replacing them
+          ...components,
+          ...openAPIObject?.components?.schemas,
           HttpStatus: {
             type: 'integer',
             description: 'HTTP status code',

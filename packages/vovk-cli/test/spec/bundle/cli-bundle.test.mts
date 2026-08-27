@@ -1,4 +1,4 @@
-import { deepStrictEqual, strictEqual } from 'node:assert';
+import { deepStrictEqual, ok, strictEqual } from 'node:assert';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { describe, it } from 'node:test';
@@ -229,5 +229,24 @@ await describe('TypeScript bundle', async () => {
       dirPath: './dist',
       files: ['index.js', 'index.d.ts', 'package.json', 'README.md'],
     });
+  });
+
+  await it('Refuses a prebundle out dir that is not inside the project', async () => {
+    await createApp();
+
+    for (const dir of ['.', '..', '/']) {
+      let failedWith = '';
+      try {
+        await runAtProjectDir(`../dist/index.mjs bundle --prebundle-out-dir '${dir}' --log-level debug`);
+      } catch (e) {
+        failedWith = (e as Error).message;
+      }
+
+      ok(failedWith.includes('Invalid prebundle output directory'), `${dir} should be rejected, got: ${failedWith}`);
+    }
+
+    // the project must still be there, the prebundle dir is deleted recursively
+    ok(await fs.stat(path.join(projectDir, 'package.json')).catch(() => null), 'package.json survived');
+    ok(await fs.stat(path.join(projectDir, 'src')).catch(() => null), 'src survived');
   });
 });

@@ -11,12 +11,8 @@ export type DecorateMetadata = {
 };
 
 /**
- * Applies decorators to a handler without using decorator syntax.
- * Returns an object with `.handle()` to register the handler function.
- *
- * When the last argument is a procedure result (has `.handle`), its `.handle()` is proxied.
- * Otherwise, `.handle()` wraps a plain handler directly.
- *
+ * Applies decorators without decorator syntax; `.handle()` registers the handler
+ * (proxied when the last arg is a procedure result, wraps a plain handler otherwise).
  * @example With procedure
  * ```ts
  * static handleParams = decorate(

@@ -1,13 +1,17 @@
 ---
 name: mixins
-description: Vovk.ts OpenAPI mixins — importing third-party OpenAPI 3.x schemas as typed client modules that share the same call signature as native Vovk RPC modules. Use whenever the user asks to "call a third-party API from my Vovk app", "mixin an OpenAPI schema", "import an OpenAPI spec as a client", "wrap an external service that only ships an OpenAPI doc", or mentions `openAPIMixin`, `getModuleName`, `getMethodName`, `withDefaults` on a generated API module, or the `Mixins` namespace. Also use to push back when the user reaches for mixins for a vendor with a great official SDK (Stripe, AWS, GitHub via Octokit) — the skill explains when the official client is the better choice. Covers remote/local/inline specs, module + method naming strategies, `apiRoot`, per-mixin fetcher, AJV client validation knobs, and composed/segmented clients. **`deriveTools` works with mixins for OpenAI / Anthropic / Vercel function-calling** (reads `parameters` JSON Schema), but the `mcp-handler` path needs `inputSchemas` Standard Schemas which mixins don't carry — wrap in `createTool({...})` for MCP (see `tools` skill).
+description: Vovk.ts OpenAPI mixins — importing third-party OpenAPI 3.x schemas as typed client modules that share the same call signature as native Vovk RPC modules. Use whenever the user asks to "call a third-party API from my Vovk app", "mixin an OpenAPI schema", "import an OpenAPI spec as a client", "wrap an external service that only ships an OpenAPI doc", or mentions `openAPIMixin`, `getModuleName`, `getMethodName`, `withDefaults` on a generated API module, or the `Mixins` namespace. Also use to push back when the user reaches for mixins for a vendor with a great official SDK (Stripe, AWS, GitHub via Octokit) — the skill explains when the official client is the better choice. Covers remote/local/inline specs, module + method naming strategies, `apiRoot`, per-mixin fetcher, AJV client validation knobs, and composed/segmented clients. **`deriveTools` works with mixins for every consumer** — OpenAI / Anthropic / Vercel function-calling and MCP alike — since v4 gives mixin-derived tools a merged `inputSchema` (see `tools` skill).
 ---
 
 # Vovk.ts OpenAPI mixins
 
 Mixins turn any OpenAPI 3.x spec into typed client module behaving exactly like native Vovk RPC module — same `{ params, query, body }` call shape, same client surface, same type-inference helpers (`VovkBody`, `VovkOutput`, …). Can run mixins standalone (no Next.js) as pure codegen tool.
 
-**One caveat not obvious from call shape:** mixins work with `deriveTools` for OpenAI / Anthropic / Vercel function-calling — `parameters` (JSON Schema) populates from the mixin's validation. **Exception: the `mcp-handler` path** reads `inputSchemas` (Standard Schemas), which mixins don't carry — for MCP servers, wrap mixin calls in `createTool` instead. Verified in `packages/vovk/src/client/create-rpc.ts:178-193` (no `definition`) vs `packages/vovk/src/tools/derive-tools.ts:113-115` (reads `definition` for `inputSchemas`) and `packages/vovk/src/validation/with-validation-library.ts:281` (`definition` set only by `procedure({...}).handle(...)`). See `tools` skill for `createTool` wrapper pattern.
+**LLM tool exposure works out of the box.** Pass mixin modules straight to `deriveTools` — for function calling *and* for MCP. Each derived tool gets a merged `inputSchema` that is both a Standard Schema and a Standard JSON Schema, rebuilt from the mixin's OpenAPI-derived JSON Schema (`jsonSchemasObjectToSingleJSONSchemaOnlySpec` in `packages/vovk/src/validation/json-schema-only-spec.ts`, selected in `packages/vovk/src/tools/derive-tools.ts` when a handler has no `definition`).
+
+The one real difference from a procedure-backed controller: that schema's `validate` checks the `{ body, query, params }` **envelope only** — required slots present, no unknown keys — and defers slot values to execution time, where the generated client's AJV validation and the remote API enforce them. Controllers validate values up front because they carry your original Zod / Valibot / ArkType schemas.
+
+> v3 required hand-written `createTool` wrappers for the MCP path. That is obsolete: `createTool` was removed in v4 and mixins now carry the schema MCP needs.
 
 ## Prefer the official SDK when one exists
 
@@ -16,7 +20,7 @@ Mixins turn any OpenAPI 3.x spec into typed client module behaving exactly like 
 Mixins right tool when:
 
 - **No official SDK exists** — internal services, niche vendors, legacy APIs that only publish OpenAPI document.
-- **LLM tool exposure** — `deriveTools` works directly for OpenAI / Anthropic / Vercel function-calling. For MCP, wrap mixin calls in `createTool({...})` (see caveat at top). For GitHub-style APIs `@octokit/rest` still better tool body, but mixin remains useful when third-party API has no official SDK.
+- **LLM tool exposure** — `deriveTools` works directly for function calling and MCP alike (see note at top). For GitHub-style APIs `@octokit/rest` still better tool body, but mixin remains useful when third-party API has no official SDK.
 - **Spec-as-source-of-truth** — internal microservices where OpenAPI doc is generated and you want client drift to surface as TypeScript error at build time.
 
 For everything else (Stripe charges, S3 uploads, Octokit pagination), reach for official package.
@@ -32,7 +36,7 @@ Covers:
 - Per-mixin fetcher + AJV strict-mode loosening for messy specs.
 - `Mixins` namespace for `components/schemas` types.
 - Composed vs segmented output (pointer to **`rpc`** skill).
-- LLM tool exposure: `deriveTools` direct for function-calling; `createTool` wrapper for MCP (pointer to **`tools`** skill).
+- LLM tool exposure: `deriveTools` direct, for function-calling and MCP alike (pointer to **`tools`** skill).
 
 Out of scope:
 
@@ -74,12 +78,12 @@ export default config;
 Run `npx vovk generate` (or keep `vovk dev` running) → mixin emitted alongside native RPC modules.
 
 ```ts
-import { PetstoreAPI } from 'vovk-client';
+import { PetstoreAPI } from '@/client';
 
 const pets = await PetstoreAPI.getPets({ query: { limit: 10 } });
 ```
 
-> **Import path depends on client layout.** Code samples here import from `'vovk-client'` — default for **composed client + `js` template**, re-exported from `node_modules/.vovk-client`. If project emits composed client into source tree via `ts` template (`composedClient.outDir`), import from that path — e.g. `@/client`. If project uses **segmented client**, each mixin lives in own folder named after pseudo-segment key — e.g. `@/client/petstore`. Call shape + types identical across all three. See **`rpc`** skill for full comparison.
+> **Import path depends on client layout.** Code samples here import from `'@/client'`: the composed client generated into `src/client` (or `client/` without a `src` folder). Custom `composedClient.outDir` changes the path. With **segmented client**, each mixin lives in own folder named after pseudo-segment key, e.g. `@/client/petstore`. Call shape + types identical in both. See **`rpc`** skill for full comparison.
 
 ## Source variants
 
@@ -156,7 +160,7 @@ Result: `GithubIssuesAPI.listForOrg`, `GithubReposAPI.removeStatusCheckContexts`
 For auth, prefer **`withDefaults`** over per-call plumbing. Every generated API module exposes `withDefaults({ init?, apiRoot? })`, returns new module with options deeply merged into every call:
 
 ```ts
-import { PetstoreAPI } from 'vovk-client';
+import { PetstoreAPI } from '@/client';
 
 const PetstoreAPIWithAuth = PetstoreAPI.withDefaults({
   init: { headers: { Authorization: `Bearer ${process.env.PETSTORE_TOKEN}` } },
@@ -166,7 +170,7 @@ const PetstoreAPIWithAuth = PetstoreAPI.withDefaults({
 await PetstoreAPIWithAuth.updatePet({ body: { name: 'Doggo' } });
 ```
 
-Also preferred pattern when wrapping mixin in `createTool` for LLM exposure — wrap module with `withDefaults` first so LLM-triggered calls go out authenticated, then call from inside tool's `execute`.
+Also the preferred pattern for LLM exposure — wrap the module with `withDefaults` first, then hand the authorized module to `deriveTools`, so LLM-triggered calls go out authenticated and the token never reaches the model.
 
 Per-call override fine for one-off cases:
 
@@ -219,7 +223,7 @@ Mixin modules support same inference helpers as native RPC:
 
 ```ts
 import type { VovkBody, VovkQuery, VovkParams, VovkOutput } from 'vovk';
-import { PetstoreAPI } from 'vovk-client';
+import { PetstoreAPI } from '@/client';
 
 type Body = VovkBody<typeof PetstoreAPI.updatePet>;
 type Output = VovkOutput<typeof PetstoreAPI.getPetById>;
@@ -228,7 +232,7 @@ type Output = VovkOutput<typeof PetstoreAPI.getPetById>;
 Named types from `components/schemas` across **all** mixins exposed under `Mixins` namespace export. Prefer this when third-party spec properly names its components:
 
 ```ts
-import { PetstoreAPI, type Mixins } from 'vovk-client';
+import { PetstoreAPI, type Mixins } from '@/client';
 
 const pet: Mixins.Pet = { id: 1, name: 'Doggo' };
 ```
@@ -241,9 +245,9 @@ Mixin modules feed `deriveTools` identically to native RPC modules for function-
 
 ```ts
 import { deriveTools } from 'vovk';
-import { GithubIssuesAPI, PetstoreAPI } from 'vovk-client';
+import { GithubIssuesAPI, PetstoreAPI } from '@/client';
 
-const { tools } = deriveTools({
+const tools = deriveTools({
   modules: {
     // Wrap with withDefaults to bake in the auth header
     AuthorizedGithubIssuesAPI: GithubIssuesAPI.withDefaults({
@@ -259,21 +263,20 @@ const { tools } = deriveTools({
 });
 ```
 
-**MCP exception:** `mcp-handler` reads `inputSchemas` (Standard Schemas), which mixins lack. For MCP servers exposing mixin endpoints, wrap calls in `createTool` instead — see **`tools`** skill. Function-calling paths (OpenAI / Anthropic / Vercel) work fine — they read `parameters` (JSON Schema), populated from mixin's validation.
+**MCP works too.** A mixin-derived tool's merged `inputSchema` exposes JSON Schema via `inputSchema['~standard'].jsonSchema.input({ target: 'draft-2020-12' })`, which is what `mcp-handler` needs (convert to Zod with `z.fromJSONSchema` and pass `.shape` — see **`tools`** skill). No `createTool` wrapper, no hand-written schema.
 
 See **`tools`** skill for full provider-wiring pipeline (OpenAI / Anthropic / MCP).
 
 ## Composed vs segmented output
 
-Mixins emit into same client layouts as native RPC. Three TypeScript import paths:
+Mixins emit into same client layouts as native RPC. Two TypeScript import paths:
 
 | Layout | Import path | Notes |
 |---|---|---|
-| Composed + `js` template *(default)* | `import { PetstoreAPI } from 'vovk-client'` | Emitted to `node_modules/.vovk-client`, re-exported by `vovk-client` package. Best for most apps. |
-| Composed + `ts` template | `import { PetstoreAPI } from '@/client'` | Uncompiled TypeScript emitted to `composedClient.outDir` (e.g. `./src/client` or `./src/lib/client`). Import from that path. |
-| Segmented | `import { PetstoreAPI } from '@/client/petstore'` | Folder-per-segment under `segmentedClient.outDir` (default `./src/client`). Pseudo-segment key from `outputConfig.segments.<name>` becomes folder name — `petstore`, `github`, etc. |
+| Composed *(default)* | `import { PetstoreAPI } from '@/client'` | One client for all segments, generated into `composedClient.outDir` (default `./src/client`, or `./client` without a `src` folder). Best for most apps. |
+| Segmented | `import { PetstoreAPI } from '@/client/petstore'` | Folder-per-segment under `segmentedClient.outDir` (default `./src/client`, shared with composed). Pseudo-segment key from `outputConfig.segments.<name>` becomes folder name: `petstore`, `github`, etc. |
 
-All three share identical call shape + identical types — pick by emission preference. Full comparison in **`rpc`** skill.
+Both share identical call shape + identical types; pick by emission preference. Full comparison in **`rpc`** skill.
 
 Python and Rust templates (see **`python`** / **`rust`** skills) also support mixins.
 

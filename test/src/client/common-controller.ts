@@ -52,7 +52,6 @@ export default class CommonController {
   }
 
   @get.auto()
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   static getHelloWorldAndEmptyGeneric(_req: VovkRequest) {
     return { hello: 'world' };
   }
@@ -60,6 +59,28 @@ export default class CommonController {
   @get('with-params/{hello}')
   static getWithParams(_req: VovkRequest, { hello }: { hello: 'world' }) {
     return { hello };
+  }
+
+  // same concrete path as postSameShape below but a different param name, guards the route match cache
+  @get('same-shape/{getParam}')
+  static getSameShape(_req: VovkRequest, params: { getParam: string }) {
+    return { method: 'GET', params };
+  }
+
+  @post('same-shape/{postParam}')
+  static postSameShape(_req: VovkRequest, params: { postParam: string }) {
+    return { method: 'POST', params };
+  }
+
+  // deeper static route that an encoded slash in the param position must not reach
+  @get('slashy/{name}')
+  static getSlashyParam(_req: VovkRequest, params: { name: string }) {
+    return { handler: 'param', params };
+  }
+
+  @get('slashy/deep/route')
+  static getSlashyDeep() {
+    return { handler: 'deep' };
   }
 
   @post('with-all/{hello}')

@@ -1,7 +1,8 @@
-import { deepStrictEqual, strictEqual } from 'node:assert';
+import { deepStrictEqual, ok, strictEqual } from 'node:assert';
 import { describe, it } from 'node:test';
-import { HttpException, progressive, type VovkYieldType } from 'vovk';
-import { StreamingControllerRPC } from 'vovk-client';
+import { inspect } from 'node:util';
+import { fetcher, HttpException, progressive, type VovkYieldType } from 'vovk';
+import { StreamingControllerRPC } from '../generated-client/index.ts';
 import { expectPromise } from '../lib.ts';
 import type { default as StreamingController, Token } from './streaming-controller.ts';
 
@@ -27,6 +28,24 @@ describe('Streaming', () => {
     null as unknown as VovkYieldType<typeof StreamingControllerRPC.postWithStreaming> satisfies Token;
 
     deepStrictEqual(expectedCollected, expected);
+  });
+
+  it('Delivers all lines when send and close are not awaited', async () => {
+    const tokens = ['token1', 'token2', 'token3'].map((token) => ({ token }));
+    const expected = tokens.map((token) => ({ ...token, query: 'queryValue' }));
+    const collected: typeof expected = [];
+
+    const resp = await StreamingControllerRPC.postWithUnawaitedSends({
+      body: tokens,
+      query: { query: 'queryValue' },
+      apiRoot,
+    });
+
+    for await (const message of resp) {
+      collected.push(message);
+    }
+
+    deepStrictEqual(collected, expected);
   });
 
   it('Should consume streaming multiple times', async () => {
@@ -113,6 +132,32 @@ describe('Streaming', () => {
     deepStrictEqual(expectedCollected, expected);
   });
 
+  it('Releases the stream when the consumer breaks early', async () => {
+    const tokens = ['token1', 'token2\n', 'token3'].map((token) => ({ token }));
+    const expected = tokens.map((token) => ({ ...token, query: 'queryValue' })).slice(0, 2);
+    const expectedCollected: typeof expected = [];
+
+    const resp = await StreamingControllerRPC.postWithStreaming({
+      body: tokens,
+      query: { query: 'queryValue' },
+      apiRoot,
+    });
+
+    let count = 0;
+
+    // a bare break must dispose the stream, otherwise the body keeps streaming
+    for await (const message of resp) {
+      expectedCollected.push(message);
+      if (++count === 2) break;
+    }
+
+    for await (const message of resp) {
+      expectedCollected.push(message);
+    }
+
+    deepStrictEqual(expectedCollected, expected);
+  });
+
   it('Should be able to dispose', async () => {
     const tokens = ['token1', 'token2\n', 'token3'].map((token) => ({ token }));
     const expected = tokens.map((token) => ({ ...token, query: 'queryValue' })).slice(0, 2);
@@ -173,6 +218,34 @@ describe('Streaming', () => {
     deepStrictEqual(expectedCollected, expected);
   });
 
+  it('Should invoke fetcher onError for errors in the middle of stream', async () => {
+    const tokens = ['token1', 'token2', 'token3'].map((token) => ({ token }));
+    const collected: unknown[] = [];
+    let onErrorArg: unknown = null;
+    const unsubscribe = fetcher.onError((error) => {
+      onErrorArg = error;
+    });
+
+    try {
+      const resp = await StreamingControllerRPC.postWithStreamingAndDelayedError({
+        body: tokens,
+        query: { query: 'queryValue' },
+        apiRoot,
+      });
+
+      await expectPromise(async () => {
+        for await (const message of resp) {
+          collected.push(message);
+        }
+      }).rejects.toThrow(/oh no/);
+    } finally {
+      unsubscribe();
+    }
+
+    ok(onErrorArg instanceof Error, 'onError callback received the mid-stream error');
+    ok((onErrorArg as Error).message.includes('oh no'));
+  });
+
   it('Should handle custom errors in the middle of stream', async () => {
     const tokens = ['token1', 'token2\n', 'token3'].map((token) => ({ token }));
     const expected = tokens.map((token) => ({ ...token, query: 'queryValue' })).slice(0, 2);
@@ -195,27 +268,6 @@ describe('Streaming', () => {
     };
 
     deepStrictEqual(await call(), { customError: 'custom error' });
-
-    deepStrictEqual(expectedCollected, expected);
-  });
-
-  // TODO: Stream never ends if not using dispose. No error when using dispose.
-  it.skip('Should handle unhandled errors in the middle of stream', async () => {
-    const tokens = ['token1', 'token2\n', 'token3'].map((token) => ({ token }));
-    const expected = tokens.map((token) => ({ ...token, query: 'queryValue' })).slice(0, 2);
-    const expectedCollected: typeof expected = [];
-
-    const resp = await StreamingControllerRPC.postWithStreamingAndDelayedUnhandledError({
-      body: tokens,
-      query: { query: 'queryValue' },
-      apiRoot,
-    });
-
-    await expectPromise(async () => {
-      for await (const message of resp) {
-        expectedCollected.push(message);
-      }
-    }).rejects.toThrow();
 
     deepStrictEqual(expectedCollected, expected);
   });
@@ -245,6 +297,50 @@ describe('Streaming', () => {
     deepStrictEqual(await hello, 'world');
     deepStrictEqual(await foo, 'foo1');
     deepStrictEqual(await bar, 'bar2');
+  });
+
+  it('progressive() proxy is inspectable and rejects keys that were never sent', async () => {
+    const resp = progressive(StreamingControllerRPC.progressiveResponse, { body: { hello: 'world' } });
+
+    deepStrictEqual(await resp.hello, 'world');
+
+    // must not throw on inspection
+    inspect(resp);
+    ok(Object.keys(resp).includes('hello'));
+
+    deepStrictEqual(await resp.foo, 'foo1');
+    deepStrictEqual(await resp.bar, 'bar2');
+
+    // let the completion handler run so the late access hits the finished stream
+    await new Promise((resolve) => setTimeout(resolve, 100));
+
+    await expectPromise(async () => {
+      await (resp as unknown as Record<string, Promise<unknown>>).missing;
+    }).rejects.toThrow(/closed without sending a value/);
+  });
+
+  it('onIterate should not receive the error control line', async () => {
+    const tokens = ['token1', 'token2', 'token3'].map((token) => ({ token }));
+    const collected: unknown[] = [];
+
+    const resp = await StreamingControllerRPC.postWithStreamingAndDelayedError({
+      body: tokens,
+      query: { query: 'queryValue' },
+      apiRoot,
+    });
+
+    resp.onIterate((message) => {
+      collected.push(message);
+    });
+
+    await expectPromise(async () => {
+      await resp.asPromise();
+    }).rejects.toThrow(/oh no/);
+
+    deepStrictEqual(
+      collected,
+      tokens.slice(0, 2).map((token) => ({ ...token, query: 'queryValue' }))
+    );
   });
 
   it('onIterate and asPromise should work', async () => {

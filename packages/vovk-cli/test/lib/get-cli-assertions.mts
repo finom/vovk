@@ -119,7 +119,6 @@ export default function getCLIAssertions({ cwd, dir }: { cwd: string; dir: strin
   }
 
   async function assertConfig(testConfigPaths: string[], testConfig: VovkConfig | null) {
-    // eslint-disable-next-line prefer-const
     let { userConfig, configAbsolutePaths } = await getUserConfig({ cwd: projectDir });
 
     if (typeof userConfig?.bundle?.build === 'function') {

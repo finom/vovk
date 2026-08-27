@@ -21,6 +21,14 @@ export async function writeOneSegmentSchemaFile({
 }> {
   const segmentPath = path.join(schemaOutAbsolutePath, `${segmentSchema.segmentName || ROOT_SEGMENT_FILE_NAME}.json`);
 
+  // segmentName may come from an http response, keep the write inside the schema out dir
+  const relativeToOut = path.relative(schemaOutAbsolutePath, segmentPath);
+  if (relativeToOut.startsWith(`..${path.sep}`) || relativeToOut === '..' || path.isAbsolute(relativeToOut)) {
+    throw new Error(
+      `Refusing to write schema outside ${schemaOutAbsolutePath} for segment ${JSON.stringify(segmentSchema.segmentName)}`
+    );
+  }
+
   if (skipIfExists && (await getFileSystemEntryType(segmentPath))) {
     try {
       await fs.stat(segmentPath);

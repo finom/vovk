@@ -14,10 +14,8 @@ import {
 } from 'vovk';
 import { z } from 'zod';
 
-// zod >=4.4 ships `sideEffects: false`, so bundlers (Next.js here) tree-shake zod's
-// built-in `config(en())` locale init — collapsing every validation message to the
-// bare "Invalid input" fallback. Load the English locale explicitly so server-side
-// error messages stay precise. This is an explicit call, so it survives tree-shaking.
+// zod >=4.4 is sideEffects: false, so Next.js tree-shakes the default locale init and
+// every message becomes "Invalid input"; load the English locale explicitly
 z.config(z.locales.en());
 
 const HandleAllInput = {
@@ -165,6 +163,15 @@ export default class WithValidationController {
     output: z.object({ hello: z.string().max(5) }),
   }).handle(async (req) => {
     return { hello: req.vovk.query().helloOutput };
+  });
+
+  @get.auto()
+  static handleFalsyOutput = procedure({
+    query: z.object({ type: z.enum(['boolean', 'number', 'string']) }),
+    output: z.union([z.boolean(), z.number(), z.string()]),
+  }).handle(async (req) => {
+    const { type } = req.vovk.query();
+    return type === 'boolean' ? false : type === 'number' ? 0 : '';
   });
 
   @get.auto()
@@ -483,6 +490,25 @@ export default class WithValidationController {
   }).handle(async (req) => {
     const body = await req.vovk.body();
     return { hello: body.hello };
+  });
+
+  // === Content-type validation: declared without a body schema ===
+  @post.auto()
+  static handleContentTypeWithoutBody = procedure({
+    contentType: ['text/plain'],
+    output: z.object({ ok: z.boolean() }),
+  }).handle(async () => {
+    return { ok: true };
+  });
+
+  // === Content-type validation: opted out server side ===
+  @post.auto()
+  static handleContentTypeDisabled = procedure({
+    contentType: ['text/plain'],
+    disableServerSideValidation: ['body'],
+    output: z.object({ ok: z.boolean() }),
+  }).handle(async () => {
+    return { ok: true };
   });
 
   // === Content-type validation: partial wildcard image/* ===

@@ -25,33 +25,42 @@ const getIncludedSegmentNames = (
   cliGenerateOptions: GenerateOptions | undefined
 ) => {
   const segments = Object.values(fullSchema.segments);
-  const includeSegments =
-    cliGenerateOptions?.[configKey === 'segmentedClient' ? 'segmentedIncludeSegments' : 'composedIncludeSegments'] ??
-    config[configKey].includeSegments;
-  const excludeSegments =
-    cliGenerateOptions?.[configKey === 'segmentedClient' ? 'segmentedExcludeSegments' : 'composedExcludeSegments'] ??
-    config[configKey].excludeSegments;
+  const cliIncludeSegments =
+    cliGenerateOptions?.[configKey === 'segmentedClient' ? 'segmentedIncludeSegments' : 'composedIncludeSegments'];
+  const cliExcludeSegments =
+    cliGenerateOptions?.[configKey === 'segmentedClient' ? 'segmentedExcludeSegments' : 'composedExcludeSegments'];
+  // CLI options win as a pair so config exclude cannot conflict with CLI include
+  const isFromCli = !!(cliIncludeSegments?.length || cliExcludeSegments?.length);
+  const includeSegments = isFromCli ? cliIncludeSegments : config[configKey].includeSegments;
+  const excludeSegments = isFromCli ? cliExcludeSegments : config[configKey].excludeSegments;
   if (includeSegments?.length && excludeSegments?.length) {
     throw new Error(
-      `Both includeSegments and excludeSegments are set in "${configKey}" config. Please use only one of them.`
+      `Both includeSegments and excludeSegments are set ${isFromCli ? 'as CLI options' : `in "${configKey}" config`}. Please use only one of them.`
     );
   }
-  const includedSegmentNames =
-    Array.isArray(includeSegments) && includeSegments.length
-      ? includeSegments.map((segmentName) => {
-          const segment = segments.find(({ segmentName: sName }) => sName === segmentName);
-          if (!segment) {
-            throw new Error(`Segment "${segmentName}" not found in the config for "${configKey}"`);
-          }
-          return segment.segmentName;
-        })
-      : Array.isArray(excludeSegments) && excludeSegments.length // TODO: Warn if excludeSegments includes a segment name that is not listed at segments
-        ? segments
-            .filter(({ segmentName }) => !excludeSegments?.includes(segmentName))
-            .map(({ segmentName }) => segmentName)
-        : segments.map(({ segmentName }) => segmentName);
+  const segmentExists = (segmentName: string) => segments.some(({ segmentName: sName }) => sName === segmentName);
 
-  return includedSegmentNames;
+  if (includeSegments?.length) {
+    for (const segmentName of includeSegments) {
+      if (!segmentExists(segmentName)) {
+        throw new Error(`Segment "${segmentName}" not found in the config for "${configKey}"`);
+      }
+    }
+    return includeSegments;
+  }
+
+  if (excludeSegments?.length) {
+    for (const segmentName of excludeSegments) {
+      if (!segmentExists(segmentName)) {
+        throw new Error(`Segment "${segmentName}" from excludeSegments not found in the config for "${configKey}"`);
+      }
+    }
+    return segments
+      .filter(({ segmentName }) => !excludeSegments.includes(segmentName))
+      .map(({ segmentName }) => segmentName);
+  }
+
+  return segments.map(({ segmentName }) => segmentName);
 };
 
 interface GenerationResult {
@@ -339,6 +348,11 @@ export async function generate({
       configKey: 'segmentedClient',
     });
 
+    // what a generated file may look like inside a segment directory, used to spare user files when pruning
+    const generatedRelPaths = segmentedClientTemplateFiles.map(({ templateFilePath, relativeDir }) =>
+      path.join(relativeDir, path.basename(templateFilePath).replace(/\.ejs$/, ''))
+    );
+
     const segmentedClientResults = await Promise.all(
       segmentedClientTemplateFiles.map(async (clientTemplateFile) => {
         const { templateFilePath, templateName, templateDef, outCwdRelativeDir } = clientTemplateFile;
@@ -421,10 +435,17 @@ export async function generate({
         const outAbsoluteDir = path.resolve(cwd, outCwdRelativeDir);
 
         // Remove unlisted directories in the output directory
-        await removeUnlistedDirectories(
+        const skippedDirs = await removeUnlistedDirectories(
           outAbsoluteDir,
-          segmentNames.map((s) => s || ROOT_SEGMENT_FILE_NAME)
+          segmentNames.map((s) => s || ROOT_SEGMENT_FILE_NAME),
+          generatedRelPaths
         );
+
+        for (const skippedDir of skippedDirs) {
+          log.warn(
+            `Directory ${chalkHighlightThing(skippedDir)} is not a known segment but holds files that were not generated, so it is left untouched.`
+          );
+        }
         return {
           written: results.filter((result): result is GenerationResult => !!result).some(({ written }) => written),
           templateName,

@@ -15,7 +15,6 @@ type JsonPrimitive = string | number | boolean | null;
 
 type JsonValue = JsonPrimitive | JsonObject | JsonArray;
 
-// eslint-disable-next-line @typescript-eslint/no-namespace
 export namespace PackageJson {
   /**
 	A person who has been involved in creating or maintaining the package.

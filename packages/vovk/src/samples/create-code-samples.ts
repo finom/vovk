@@ -389,8 +389,9 @@ export function createCodeSamples({
 
   const hasArg = !!queryValidation || !!bodyValidation || !!paramsValidation || !!config?.apiRoot || !!config?.headers;
   const rpcName = controllerSchema.rpcModuleName;
-  const packageName = packageJson?.name || 'vovk-client';
-  const packageNameSnake = toSnakeCase(packageName);
+  const packageName = packageJson?.name || '@/client';
+  // snake fallback avoids invalid "@/client" in py/rs imports
+  const packageNameSnake = toSnakeCase(packageJson?.name || 'client');
   const pyPackageName = packageJson?.py_name ?? packageNameSnake;
   const rsPackageName = packageJson?.rs_name ?? packageNameSnake;
 

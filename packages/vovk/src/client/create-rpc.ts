@@ -24,7 +24,8 @@ const getHandlerPath = <T extends ControllerStaticMethod>(
   let result = endpoint;
   const queryStr = query ? serializeQuery(query) : null;
   for (const [key, value] of Object.entries(params ?? {})) {
-    result = result.replace(`{${key}}`, value as string);
+    // encode so a value stays one path segment, the callback form also keeps $& from being a replacement pattern
+    result = result.replaceAll(`{${key}}`, () => encodeURIComponent(String(value)));
   }
   return `${result}${queryStr ? `?${queryStr}` : ''}`;
 };
@@ -49,7 +50,6 @@ export const createRPC = <T, OPTS extends Record<string, KnownAny> = Record<stri
   let controllerSchema = schema.segments[segmentName]?.controllers[rpcModuleName];
   const client = {} as VovkRPCModule<T, OPTS>;
   if (!controllerSchema) {
-    // eslint-disable-next-line no-console
     console.warn(
       `🐺 Unable to create RPC module. Controller schema is missing for module "${rpcModuleName}" from segment "${segmentName}". Assuming that schema is not ready yet and a segment is importing an uncompiled RPC module.`
     );
@@ -198,10 +198,14 @@ export const createRPC = <T, OPTS extends Record<string, KnownAny> = Record<stri
 
   Object.defineProperty(client, 'withDefaults', {
     value: (newOptions?: VovkFetcherOptions<OPTS>) => {
-      return createRPC<T, OPTS>(schema, segmentName, rpcModuleName, givenFetcher, {
-        ...options,
-        ...newOptions,
-      } as VovkFetcherOptions<OPTS>);
+      // deep merge to match per-call option merging, so chained defaults don't clobber nested keys
+      return createRPC<T, OPTS>(
+        schema,
+        segmentName,
+        rpcModuleName,
+        givenFetcher,
+        deepExtend({}, options, newOptions) as VovkFetcherOptions<OPTS>
+      );
     },
     enumerable: false,
     writable: false,

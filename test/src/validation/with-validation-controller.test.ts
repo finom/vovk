@@ -9,8 +9,8 @@ import {
   type VovkReturnType,
   type VovkYieldType,
 } from 'vovk';
-import { WithValidationRPC } from 'vovk-client';
 import { validateOnClient as validateOnClientAjv } from '../../../packages/vovk-ajv/index.ts';
+import { WithValidationRPC } from '../generated-client/index.ts';
 import { expectPromise, getConstrainingObject, NESTED_QUERY_EXAMPLE } from '../lib.ts';
 import type WithValidationController from './with-validation-controller.ts';
 
@@ -297,6 +297,12 @@ describe('Validation with with zod and validateOnClient defined at settings', ()
     });
 
     await rejects.toThrow(/Validation failed. Invalid output: .*hello.*/);
+  });
+
+  it('Should handle falsy output values with output validation', async () => {
+    strictEqual(await WithValidationRPC.handleFalsyOutput({ query: { type: 'boolean' } }), false);
+    strictEqual(await WithValidationRPC.handleFalsyOutput({ query: { type: 'number' } }), 0);
+    strictEqual(await WithValidationRPC.handleFalsyOutput({ query: { type: 'string' } }), '');
   });
 
   it('Should handle stream', async () => {
@@ -957,6 +963,25 @@ describe('Content-type validation: wildcard and partial wildcard', () => {
       body: new Blob(['blob data'], { type: 'application/octet-stream' }),
     });
     deepStrictEqual(result, { size: 9, type: 'application/octet-stream' });
+  });
+
+  it('Should enforce a declared content type when there is no body schema', async () => {
+    const endpoint = WithValidationRPC.handleContentTypeWithoutBody.getURL();
+
+    const wrong = await fetch(endpoint, { method: 'POST', headers: { 'content-type': 'application/json' } });
+    strictEqual(wrong.status, 415);
+
+    const right = await fetch(endpoint, { method: 'POST', headers: { 'content-type': 'text/plain' } });
+    strictEqual(right.status, 200);
+    deepStrictEqual(await right.json(), { ok: true });
+  });
+
+  it('Should not enforce a declared content type when body validation is disabled', async () => {
+    const endpoint = WithValidationRPC.handleContentTypeDisabled.getURL();
+
+    const wrong = await fetch(endpoint, { method: 'POST', headers: { 'content-type': 'application/json' } });
+    strictEqual(wrong.status, 200);
+    deepStrictEqual(await wrong.json(), { ok: true });
   });
 
   it('Should handle image/* partial wildcard content type', async () => {

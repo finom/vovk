@@ -56,11 +56,11 @@ await describe('Client templates', async () => {
 
     await assertDirFileList({
       dirPath: compiledClientFolderName,
-      files: ['index.js', 'index.d.ts', 'schema.js', 'schema.d.ts', 'openapi.json', 'openapi.d.ts', 'openapi.js'],
+      files: ['index.ts', 'schema.ts', 'openapi.json', 'openapi.ts'],
     });
 
-    assertFile(`${compiledClientFolderName}/schema.js`, [
-      `import schema0 from './../custom-schema-dir/root.json' with { type: 'json' };`,
+    await assertFile(`${compiledClientFolderName}/schema.ts`, [
+      `import segment0 from './../custom-schema-dir/root.json' with { type: 'json' };`,
     ]);
   });
 
@@ -70,112 +70,73 @@ await describe('Client templates', async () => {
 
     await assertDirFileList({
       dirPath: compiledClientFolderName,
-      files: ['index.js', 'index.d.ts', 'schema.js', 'schema.d.ts', 'openapi.json', 'openapi.d.ts', 'openapi.js'],
+      files: ['index.ts', 'schema.ts', 'openapi.json', 'openapi.ts'],
     });
   });
 
   await it('Should use default templates explicitly', async () => {
     await createApp();
-    await runAtProjectDir(`../dist/index.mjs generate --from=js --from=ts --out ${compiledClientFolderName}`);
+    await runAtProjectDir(`../dist/index.mjs generate --from=ts --out ${compiledClientFolderName}`);
 
     await assertDirFileList({
       dirPath: compiledClientFolderName,
-      files: [
-        'index.ts',
-        'index.js',
-        'index.d.ts',
-        'schema.js',
-        'schema.d.ts',
-        'schema.ts',
-        'openapi.json',
-        'openapi.d.ts',
-        'openapi.js',
-        'openapi.ts',
-      ],
+      files: ['index.ts', 'schema.ts', 'openapi.json', 'openapi.ts'],
     });
   });
 
   await it('Generates file from compiled and custom template', async () => {
     await createApp();
-    await runAtProjectDir(`../dist/index.mjs generate --from=js --from=custom --out ${compiledClientFolderName}`);
+    await runAtProjectDir(`../dist/index.mjs generate --from=ts --from=custom --out ${compiledClientFolderName}`);
 
-    await assertFile(`${compiledClientFolderName}/index.js`, [`import { createRPC } from 'vovk/create-rpc';`]);
-    await assertFile(`${compiledClientFolderName}/index.d.ts`, [
-      'import type { Controllers as Controllers0 } from "../src/app/api/[[...vovk]]/route.ts";',
+    await assertFile(`${compiledClientFolderName}/index.ts`, [
+      `import { createRPC } from 'vovk/create-rpc';`,
+      "import type { Controllers as Controllers0 } from '../src/app/api/[[...vovk]]/route.ts';",
     ]);
     await assertFile(`${compiledClientFolderName}/custom.ts`, [
-      'import type { Controllers as Controllers0 } from "../src/app/api/[[...vovk]]/route.ts";',
+      "import type { Controllers as Controllers0 } from '../src/app/api/[[...vovk]]/route.ts';",
     ]);
 
     await assertDirFileList({
       dirPath: compiledClientFolderName,
-      files: [
-        'index.js',
-        'index.d.ts',
-        'custom.ts',
-        'schema.js',
-        'schema.d.ts',
-        'openapi.json',
-        'openapi.d.ts',
-        'openapi.js',
-      ],
+      files: ['index.ts', 'custom.ts', 'schema.ts', 'openapi.json', 'openapi.ts'],
     });
   });
 
   await it('Generates file from compiled and custom template as file', async () => {
     await createApp();
-    await runAtProjectDir(`../dist/index.mjs generate --from=js --from=customAsFile --out ${compiledClientFolderName}`);
+    await runAtProjectDir(`../dist/index.mjs generate --from=ts --from=customAsFile --out ${compiledClientFolderName}`);
 
-    await assertFile(`${compiledClientFolderName}/index.js`, [`import { createRPC } from 'vovk/create-rpc';`]);
-    await assertFile(`${compiledClientFolderName}/index.d.ts`, [
-      'import type { Controllers as Controllers0 } from "../src/app/api/[[...vovk]]/route.ts";',
+    await assertFile(`${compiledClientFolderName}/index.ts`, [
+      `import { createRPC } from 'vovk/create-rpc';`,
+      "import type { Controllers as Controllers0 } from '../src/app/api/[[...vovk]]/route.ts';",
     ]);
     await assertFile(`${compiledClientFolderName}/custom.ts`, [
-      'import type { Controllers as Controllers0 } from "../src/app/api/[[...vovk]]/route.ts";',
+      "import type { Controllers as Controllers0 } from '../src/app/api/[[...vovk]]/route.ts';",
     ]);
 
     await assertDirFileList({
       dirPath: compiledClientFolderName,
-      files: [
-        'index.js',
-        'index.d.ts',
-        'custom.ts',
-        'schema.js',
-        'schema.d.ts',
-        'openapi.json',
-        'openapi.d.ts',
-        'openapi.js',
-      ],
+      files: ['index.ts', 'custom.ts', 'schema.ts', 'openapi.json', 'openapi.ts'],
     });
   });
 
   await it('Generates files from multiple custom templates', async () => {
     await createApp();
     await runAtProjectDir(
-      `../dist/index.mjs generate --from=js --from=custom --from helloWorld --from=js --out ${compiledClientFolderName}`
+      `../dist/index.mjs generate --from=ts --from=custom --from helloWorld --from=ts --out ${compiledClientFolderName}`
     );
 
-    await assertFile(`${compiledClientFolderName}/index.js`, [`import { createRPC } from 'vovk/create-rpc';`]);
-    await assertFile(`${compiledClientFolderName}/index.d.ts`, [
-      'import type { Controllers as Controllers0 } from "../src/app/api/[[...vovk]]/route.ts";',
+    await assertFile(`${compiledClientFolderName}/index.ts`, [
+      `import { createRPC } from 'vovk/create-rpc';`,
+      "import type { Controllers as Controllers0 } from '../src/app/api/[[...vovk]]/route.ts';",
     ]);
     await assertFile(`${compiledClientFolderName}/custom.ts`, [
-      'import type { Controllers as Controllers0 } from "../src/app/api/[[...vovk]]/route.ts";',
+      "import type { Controllers as Controllers0 } from '../src/app/api/[[...vovk]]/route.ts';",
       '// Hello from custom.js.ejs',
     ]);
     await assertDirFileList({
       dirPath: compiledClientFolderName,
-      files: [
-        'index.js',
-        'index.d.ts',
-        'custom.ts',
-        'hello-world.js',
-        'schema.js',
-        'schema.d.ts',
-        'openapi.json',
-        'openapi.d.ts',
-        'openapi.js',
-      ],
+      files: ['index.ts', 'custom.ts', 'hello-world.js', 'schema.ts', 'openapi.json', 'openapi.ts'],
     });
   });
 

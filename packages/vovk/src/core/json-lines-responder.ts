@@ -6,10 +6,7 @@ export abstract class Responder {
 }
 
 /**
- * A Responder subclass for streaming JSON Lines (JSONL) data.
- * @see https://vovk.dev/jsonlines
- * @param request The incoming Request object.
- * @param getResponse Optional function to create a custom Response object.
+ * Responder subclass for streaming JSON Lines. @see https://vovk.dev/jsonlines
  * @example
  * ```ts
  * import { JSONLinesResponder } from 'vovk';
@@ -18,13 +15,9 @@ export abstract class Responder {
  *   return new Response(responder.readableStream, { headers: responder.headers });
  * });
  *
- * // Send items
- * responder.send({ ... });
- * // Close the stream when done
- * responder.close();
- * // Or throw an error
+ * responder.send({ ... }); // send items
+ * responder.close(); // close the stream when done
  * responder.throw(new Error('Something went wrong'));
- * // get the Response object, headers, etc.
  * const { response, headers } = responder;
  * ```
  */
@@ -32,6 +25,13 @@ export class JSONLinesResponder<T> extends Responder {
   private isClosed = false;
 
   private i = 0;
+
+  private pendingSends = new Set<Promise<void>>();
+
+  // sends are chained so unawaited calls keep their order, see send()
+  private sendQueue: Promise<void> = Promise.resolve();
+
+  private hasSent = false;
 
   private controller?: ReadableStreamDefaultController | null;
 
@@ -80,14 +80,26 @@ export class JSONLinesResponder<T> extends Responder {
   }
 
   public readonly send = async (item: T) => {
+    // chaining keeps lines in call order even when send() is not awaited
+    const promise = this.sendQueue.then(async () => {
+      try {
+        if (!this.hasSent) {
+          this.hasSent = true;
+          // zero timeout lets withValidationLibrary set onBeforeSend before the first send,
+          // otherwise immediate streaming would skip the first iteration validation
+          await new Promise((resolve) => setTimeout(resolve, 0));
+        }
+        this.sendLineOrError(await this.onBeforeSend(item, this.i++));
+      } catch (e) {
+        this.throw(e);
+      }
+    });
+    this.sendQueue = promise;
+    this.pendingSends.add(promise);
     try {
-      // onBeforeSend is set by withValidationLibrary if iteration validation is provided
-      // in case if data is streamed immediately in a controller/service, we're going to lose the first iteration validation
-      // the await with zero timeout ensures onBeforeSend is set before the first send
-      await new Promise((resolve) => setTimeout(resolve, 0));
-      this.sendLineOrError(await this.onBeforeSend(item, this.i++));
-    } catch (e) {
-      this.throw(e);
+      await promise;
+    } finally {
+      this.pendingSends.delete(promise);
     }
   };
 
@@ -98,14 +110,25 @@ export class JSONLinesResponder<T> extends Responder {
     controller?.enqueue(encoder?.encode(`${JSON.stringify(data)}\n`));
   };
 
-  public readonly close = () => {
-    const { controller } = this;
+  public readonly close = async () => {
+    if (this.isClosed) return;
+    // let unawaited send() calls finish first, per the documented send-then-close pattern
+    while (this.pendingSends.size) {
+      await Promise.allSettled([...this.pendingSends]);
+    }
     if (this.isClosed) return;
     this.isClosed = true;
-    controller?.close();
+    this.controller?.close();
   };
 
   public readonly throw = (e: unknown) => {
+    // same rule as a non streaming handler, an error without a statusCode is internal
+    const isExpected = typeof (e as { statusCode?: unknown })?.statusCode === 'number';
+    if (!isExpected && process.env.NODE_ENV === 'production') {
+      console.error('🐺 Unhandled error in a Vovk stream:', e);
+      this.sendLineOrError({ isError: true, reason: 'Internal server error' });
+      return this.close();
+    }
     this.sendLineOrError({ isError: true, reason: e instanceof Error ? e.message : e });
     return this.close();
   };

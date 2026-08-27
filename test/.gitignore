@@ -41,3 +41,6 @@ __pycache__
 .tmp-ts-rpc
 
 other-compiled-test-sources
+
+# vovk generated client
+/src/generated-client

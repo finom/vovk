@@ -10,4 +10,12 @@ describe('Custom decorator', () => {
 
     deepStrictEqual(response.body, { hello: 'world' });
   });
+
+  it('should use decorator placed above the HTTP decorator', async () => {
+    const response = await request.get(`/custom-decorator/above-http`);
+
+    strictEqual(response.status, 200);
+
+    deepStrictEqual(response.body, { hello: 'above' });
+  });
 });

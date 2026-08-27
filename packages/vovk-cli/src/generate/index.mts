@@ -33,9 +33,11 @@ export class VovkGenerate {
     if (watch) {
       const throttleDelay = typeof watch === 'boolean' ? THROTTLE_DELAY : parseFloat(watch) * 1e3 || THROTTLE_DELAY;
       this.watch({ throttleDelay });
-    } else {
-      this.generate();
+      return;
     }
+
+    // return the promise so one-shot generate errors reach the CLI error handler
+    return this.generate();
   }
 
   async generate() {
@@ -81,6 +83,17 @@ export class VovkGenerate {
   watchSchema({ schemaPath, throttleDelay }: { schemaPath: string; throttleDelay: number }) {
     const { log } = this.#projectInfo;
     let lastGenerationTime = 0;
+    let pendingTimer: NodeJS.Timeout | null = null;
+
+    const generateCode = async () => {
+      try {
+        lastGenerationTime = Date.now();
+        await this.generate();
+        log.debug(`Regenerated from schema changes`);
+      } catch (error) {
+        log.error(`Failed to regenerate from schema: ${error instanceof Error ? error.message : String(error)}`);
+      }
+    };
 
     chokidar
       .watch(schemaPath, {
@@ -92,21 +105,18 @@ export class VovkGenerate {
           log.debug(`Schema file ${event}: ${path}`);
 
           const now = Date.now();
-          const shouldGenerateImmediately = now - lastGenerationTime > throttleDelay;
 
-          const generateCode = async () => {
-            try {
-              lastGenerationTime = Date.now();
-              await this.generate();
-              log.debug(`Regenerated from schema changes`);
-            } catch (error) {
-              log.error(`Failed to regenerate from schema: ${error instanceof Error ? error.message : String(error)}`);
-            }
-          };
-
-          // Generate immediately if it's been a while since the last generation
-          if (shouldGenerateImmediately) {
-            generateCode();
+          // generate immediately outside the throttle window, otherwise defer to the end of it
+          if (now - lastGenerationTime > throttleDelay) {
+            void generateCode();
+          } else if (!pendingTimer) {
+            pendingTimer = setTimeout(
+              () => {
+                pendingTimer = null;
+                void generateCode();
+              },
+              throttleDelay - (now - lastGenerationTime)
+            );
           }
         }
       });
@@ -135,6 +145,17 @@ export class VovkGenerate {
   watchOpenApiSpecLocal({ openApiSpecPaths, throttleDelay }: { openApiSpecPaths: string[]; throttleDelay: number }) {
     const { log, cwd } = this.#projectInfo;
     let lastGenerationTime = 0;
+    let pendingTimer: NodeJS.Timeout | null = null;
+
+    const generateCode = async () => {
+      try {
+        lastGenerationTime = Date.now();
+        await this.generate();
+        log.debug(`Regenerated from OpenAPI spec changes`);
+      } catch (error) {
+        log.error(`Failed to regenerate from OpenAPI spec: ${error instanceof Error ? error.message : String(error)}`);
+      }
+    };
 
     chokidar
       .watch(openApiSpecPaths, {
@@ -147,23 +168,18 @@ export class VovkGenerate {
           log.debug(`OpenAPI spec file changed: ${path}`);
 
           const now = Date.now();
-          const shouldGenerateImmediately = now - lastGenerationTime > throttleDelay;
 
-          const generateCode = async () => {
-            try {
-              lastGenerationTime = Date.now();
-              await this.generate();
-              log.debug(`Regenerated from OpenAPI spec changes`);
-            } catch (error) {
-              log.error(
-                `Failed to regenerate from OpenAPI spec: ${error instanceof Error ? error.message : String(error)}`
-              );
-            }
-          };
-
-          // Generate immediately if it's been a while since the last generation
-          if (shouldGenerateImmediately) {
-            generateCode();
+          // generate immediately outside the throttle window, otherwise defer to the end of it
+          if (now - lastGenerationTime > throttleDelay) {
+            void generateCode();
+          } else if (!pendingTimer) {
+            pendingTimer = setTimeout(
+              () => {
+                pendingTimer = null;
+                void generateCode();
+              },
+              throttleDelay - (now - lastGenerationTime)
+            );
           }
         }
       });

@@ -6,11 +6,7 @@ import '../utils/shim.js';
 
 export const DEFAULT_ERROR_MESSAGE = 'An unknown error at the default stream handler';
 
-/**
- * Converts a ReadableStream of JSON Lines into a VovkStreamAsyncIterable.
- * This is the core streaming logic extracted for reuse outside of HTTP contexts.
- * @see https://vovk.dev/jsonlines
- */
+/** ReadableStream of JSON Lines to VovkStreamAsyncIterable, reusable outside HTTP contexts. @see https://vovk.dev/jsonlines */
 export const readableStreamToAsyncIterable = <T = unknown>({
   readableStream,
   abortController,
@@ -27,6 +23,9 @@ export const readableStreamToAsyncIterable = <T = unknown>({
   let streamError: unknown = null;
   let errorIndex = -1;
   let primaryStarted = false;
+
+  // consumers currently iterating, the last one to leave early releases the connection
+  let activeIterators = 0;
   const cachedItems: T[] = [];
 
   type Waiter = {
@@ -90,19 +89,22 @@ export const readableStreamToAsyncIterable = <T = unknown>({
       }
 
       if (data) {
-        subscribers.forEach((cb) => {
-          if (!abortController?.signal.aborted) cb(data, iterationIndex);
-        });
-
-        iterationIndex++;
-
+        // the error envelope is a control message, not data, subscribers must not see it
         if (typeof data === 'object' && data !== null && 'isError' in data && 'reason' in data) {
           const upcomingError = (data as { reason: unknown }).reason;
           abortController?.abort(upcomingError);
           const error = typeof upcomingError === 'string' ? new Error(upcomingError) : upcomingError;
           setStreamError(error);
           return true;
-        } else if (!abortController?.signal.aborted) {
+        }
+
+        subscribers.forEach((cb) => {
+          if (!abortController?.signal.aborted) cb(data, iterationIndex);
+        });
+
+        iterationIndex++;
+
+        if (!abortController?.signal.aborted) {
           cachedItems.push(data);
           notifyWaiters();
         }
@@ -180,59 +182,66 @@ export const readableStreamToAsyncIterable = <T = unknown>({
       void runPrimaryReader();
     }
 
+    activeIterators++;
     let index = 0;
 
-    while (true) {
-      // Check error first
-      if (streamError && index >= errorIndex) {
-        throw streamError;
-      }
-
-      // Clean exit on abort without error
-      if (abortController?.signal.aborted && isAbortedWithoutError) {
-        return;
-      }
-
-      // Yield from cache if available
-      if (index < cachedItems.length) {
-        yield cachedItems[index++];
-        continue;
-      }
-
-      // Stream finished
-      if (streamExhausted) {
-        return;
-      }
-
-      // Wait for next item or completion
-      const result = await new Promise<IteratorResult<T>>((resolve, reject) => {
-        // Re-check state inside promise to handle race conditions
+    try {
+      while (true) {
+        // Check error first
         if (streamError && index >= errorIndex) {
-          reject(streamError);
-          return;
+          throw streamError;
         }
+
+        // Clean exit on abort without error
         if (abortController?.signal.aborted && isAbortedWithoutError) {
-          resolve({ value: undefined, done: true });
           return;
         }
+
+        // Yield from cache if available
         if (index < cachedItems.length) {
-          resolve({ value: cachedItems[index], done: false });
-          return;
+          yield cachedItems[index++];
+          continue;
         }
+
+        // Stream finished
         if (streamExhausted) {
-          resolve({ value: undefined, done: true });
           return;
         }
 
-        waiters.push({ index, resolve, reject });
-      });
+        // Wait for next item or completion
+        const result = await new Promise<IteratorResult<T>>((resolve, reject) => {
+          // Re-check state inside promise to handle race conditions
+          if (streamError && index >= errorIndex) {
+            reject(streamError);
+            return;
+          }
+          if (abortController?.signal.aborted && isAbortedWithoutError) {
+            resolve({ value: undefined, done: true });
+            return;
+          }
+          if (index < cachedItems.length) {
+            resolve({ value: cachedItems[index], done: false });
+            return;
+          }
+          if (streamExhausted) {
+            resolve({ value: undefined, done: true });
+            return;
+          }
 
-      if (result.done) {
-        return;
+          waiters.push({ index, resolve, reject });
+        });
+
+        if (result.done) {
+          return;
+        }
+
+        index++;
+        yield result.value;
       }
-
-      index++;
-      yield result.value;
+    } finally {
+      activeIterators--;
+      // a consumer that stopped early must release the connection, same as dispose does
+      if (activeIterators === 0 && !streamExhausted) disposeStream('Stream iteration stopped');
     }
   }
 

@@ -63,11 +63,14 @@ ${segmentName ? `  segmentName: '${segmentName}',\n` : ''}  emitSchema: true,
   if (!dryRun) {
     await fs.mkdir(path.dirname(absoluteSegmentRoutePath), { recursive: true });
     await fs.writeFile(absoluteSegmentRoutePath, code);
+    log.info(
+      `${chalk.green('Created')} ${formatLoggedSegmentName(segmentName, { isStatic: isStaticSegment })} at ${absoluteSegmentRoutePath}.`
+    );
+  } else {
+    log.info(
+      `Dry run: would create ${formatLoggedSegmentName(segmentName, { isStatic: isStaticSegment })} at ${absoluteSegmentRoutePath}.`
+    );
   }
-
-  log.info(
-    `${chalk.green('Created')} ${formatLoggedSegmentName(segmentName, { isStatic: isStaticSegment })} at ${absoluteSegmentRoutePath}.`
-  );
 
   const dir = chalk.cyanBright([segmentName, 'thing'].filter(Boolean).join('/'));
   log.info(

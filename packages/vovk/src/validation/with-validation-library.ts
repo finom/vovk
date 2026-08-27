@@ -97,7 +97,8 @@ export function withValidationLibrary<
     }
 
     if (output && !disableServerSideValidationKeys.includes('output')) {
-      if (!data) {
+      // only undefined means a missing return, falsy values like false or 0 are valid outputs
+      if (data === undefined) {
         throw new HttpException(
           HttpStatus.INTERNAL_SERVER_ERROR,
           'Output is required. You probably forgot to return something from your handler.'
@@ -158,6 +159,12 @@ export function withValidationLibrary<
   const resultHandler = (async (req: VovkRequestAny, handlerParams: Parameters<THandle>[1]) => {
     const { __disableClientValidation } = req.vovk.meta<Meta>();
     if (!__disableClientValidation) {
+      // a declared contentType is enforced even with no body schema to validate against,
+      // disabling body validation still opts out of it, same as in the body branch below
+      if (contentType && !body && !disableServerSideValidationKeys.includes('body')) {
+        validateContentType(req, contentType);
+      }
+
       if (body && !disableServerSideValidationKeys.includes('body')) {
         if (typeof req.url === 'string') await bufferBody(req); // buffer the body to make it replayable for validation and actual parsing
         validateContentType(req, contentType ?? ['application/json']);
