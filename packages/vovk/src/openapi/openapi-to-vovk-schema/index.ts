@@ -177,8 +177,11 @@ export function openAPIToVovkSchema({
 
       const rpcModuleName = getModuleName(nameInput);
       const methodName = getMethodName(nameInput);
+      // a mixin has no controller class and no prefix, but every client reads both fields
       segment.controllers[rpcModuleName] ??= {
         rpcModuleName,
+        originalControllerName: rpcModuleName,
+        prefix: '',
         handlers: {},
       };
       const { handlers } = segment.controllers[rpcModuleName];

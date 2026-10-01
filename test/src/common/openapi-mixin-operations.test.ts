@@ -29,6 +29,25 @@ function convert(spec: Partial<OpenAPIObject>, options: Obj = {}) {
 
 const handlersOf = (spec: Partial<OpenAPIObject>) => convert(spec).controllers.TestAPI.handlers as Obj;
 
+describe('openAPIToVovkSchema — controller fields', () => {
+  it('Gives every module the fields a client reads from a controller', () => {
+    const segment = convert(
+      {
+        paths: {
+          '/users': { get: { operationId: 'listUsers', responses: { '200': {} } } },
+          '/posts': { get: { operationId: 'listPosts', responses: { '200': {} } } },
+        },
+      },
+      { getModuleName: ({ path }: { path: string }) => (path === '/users' ? 'UsersAPI' : 'PostsAPI') }
+    );
+    for (const [key, controller] of Object.entries(segment.controllers as Obj)) {
+      strictEqual(controller.rpcModuleName, key);
+      strictEqual(controller.originalControllerName, key);
+      strictEqual(controller.prefix, '');
+    }
+  });
+});
+
 describe('openAPIToVovkSchema — Path Item fields', () => {
   const spec: Partial<OpenAPIObject> = {
     components: {
