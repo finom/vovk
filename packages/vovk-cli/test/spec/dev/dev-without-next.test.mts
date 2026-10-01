@@ -317,4 +317,24 @@ await describe('vovk dev in a project without Next.js', async () => {
     assert.match(dev.getOutput(), /tss/);
     assert.doesNotMatch(dev.getOutput(), /Unhandled Rejection/);
   });
+
+  await it('Requests the schema on the port given to next dev with -p', async () => {
+    await createProject(projectDir, {
+      'package.json': { name: 'app', version: '1.0.0', type: 'module' },
+      'vovk.config.mjs': `export default ${JSON.stringify({ composedClient: { prettifyClient: false } })};`,
+      'node_modules/.bin/next': getFakeNextBin({ '': makeSegmentSchema('') }),
+      'src/app/api/[[...vovk]]/route.ts': '',
+    });
+    await fs.chmod(path.join(projectDir, 'node_modules/.bin/next'), 0o755);
+
+    // next dev prefers -p to PORT
+    const dev = startCLI(['dev', '--next-dev', '--exit', '--', '-p', await getFreePort()], {
+      cwd: projectDir,
+      env: { PORT: await getFreePort() },
+    });
+
+    assert.strictEqual(await dev.exitCode, 0, dev.getOutput());
+    const rootSchema = JSON.parse(await fs.readFile(path.join(projectDir, '.vovk-schema/root.json'), 'utf-8'));
+    assert.deepStrictEqual(Object.keys(rootSchema.controllers), ['UserRPC'], dev.getOutput());
+  });
 });

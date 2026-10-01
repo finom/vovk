@@ -1,4 +1,5 @@
 import type NPMCliPackageJson from '@npmcli/package-json';
+import { getNextDevPort } from '../dev/get-next-dev-port.mjs';
 
 export function getDevScript(pkgJson: NPMCliPackageJson, updateScriptsMode: 'implicit' | 'explicit') {
   const dev = pkgJson.content.scripts?.dev ?? 'next dev';
@@ -6,8 +7,10 @@ export function getDevScript(pkgJson: NPMCliPackageJson, updateScriptsMode: 'imp
     return dev; // Already has vovk dev
   }
   const nextDevFlags = dev.replace('next dev', '').trim();
+  // vovk dev requests the schema on PORT, next dev listens on -p when it's given
+  const port = getNextDevPort(nextDevFlags.split(/\s+/)) ?? '3000';
   return updateScriptsMode === 'explicit'
-    ? `PORT=3000 concurrently '${dev}' 'vovk dev' --kill-others`
+    ? `PORT=${port} concurrently '${dev}' 'vovk dev' --kill-others`
     : `vovk dev --next-dev${nextDevFlags ? ` -- ${nextDevFlags}` : ''}`;
 }
 

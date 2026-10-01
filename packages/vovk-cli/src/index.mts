@@ -5,6 +5,7 @@ import 'dotenv/config';
 import { Command } from 'commander';
 import concurrently from 'concurrently';
 import { bundle } from './bundle/index.mjs';
+import { getNextDevPort } from './dev/get-next-dev-port.mjs';
 import { VovkDev } from './dev/index.mjs';
 import { getProjectFullSchema } from './generate/get-project-full-schema.mjs';
 import { VovkGenerate } from './generate/index.mjs';
@@ -41,7 +42,8 @@ program
     const portAttempts = 30;
     const PORT = !nextDev
       ? process.env.PORT
-      : process.env.PORT ||
+      : getNextDevPort(nextArgs) ||
+        process.env.PORT ||
         (await getAvailablePort(3000, portAttempts, 0, (failedPort, tryingPort) =>
           console.warn(`🐺 Port ${failedPort} is in use, trying ${tryingPort} instead.`)
         ).catch(() => {

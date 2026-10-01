@@ -63,6 +63,8 @@ To pass flags to `next dev`, append them after `--`:
 npx vovk dev --https --next-dev -- --experimental-https --turbo
 ```
 
+A port passed this way (`-p 4000` or `--port 4000`) is used instead of the automatic one, for Next.js and for the schema requests.
+
 Internally, the implicit mode uses the concurrently API, making both approaches nearly identical.
 
 Read more about [HTTPS in development](/config#devhttps).
