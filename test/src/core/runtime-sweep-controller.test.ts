@@ -60,6 +60,23 @@ describe('Runtime sweep over HTTP', () => {
       strictEqual(wrong.status, 415);
     });
 
+    it('Enforces the declared content type of a procedure without a body schema for a chunked body', async () => {
+      const body = new ReadableStream({
+        start(controller) {
+          controller.enqueue(new TextEncoder().encode('{"admin":true}'));
+          controller.close();
+        },
+      });
+      // fetch() sends a stream chunked, without a content type
+      const response = await fetch(`${apiUrl}/runtime-sweep/typed-without-body`, {
+        method: 'POST',
+        body,
+        duplex: 'half',
+      } as RequestInit);
+
+      strictEqual(response.status, 415);
+    });
+
     it('Answers a multipart body without its boundary with 400', async () => {
       const response = await fetch(`${apiUrl}/runtime-sweep/form`, {
         method: 'POST',

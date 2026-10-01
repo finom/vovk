@@ -18,11 +18,15 @@ type VovkRequestAny = VovkRequest<KnownAny, KnownAny, KnownAny>;
 
 type Meta = { __disableClientValidation?: boolean; [key: string]: KnownAny };
 
-// fetch() without a body sends no Content-Type, and no length or a length of 0
+// fetch() without a body sends no Content-Type, and no length or a length of 0; a chunked body has no length
 const hasBody = (req: VovkRequestAny) => {
   if (req.body === null) return false;
   const contentLength = req.headers?.get('content-length');
-  return !!req.headers?.get('content-type') || (!!contentLength && contentLength !== '0');
+  return (
+    !!req.headers?.get('content-type') ||
+    !!req.headers?.get('transfer-encoding') ||
+    (!!contentLength && contentLength !== '0')
+  );
 };
 
 // fn() calls made without a body, the local counterpart of a request without one

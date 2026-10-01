@@ -435,6 +435,29 @@ describe('Runtime sweep', () => {
       );
     });
 
+    it('Enforces the declared content type of a procedure without a body schema for a chunked body', async () => {
+      class EchoController {
+        static echo = procedure({ contentType: 'text/plain' }).handle(async (req) => ({ body: await req.vovk.body() }));
+      }
+      post('echo')(EchoController, 'echo');
+      const handlers = initSegment({ segmentName: 'typed-echo', controllers: { EchoController } });
+      // a chunked request carries its transfer-encoding header and no content-length
+      const body = new ReadableStream({
+        start(controller) {
+          controller.enqueue(new TextEncoder().encode('{"admin":true}'));
+          controller.close();
+        },
+      });
+
+      const response = await call(handlers, 'POST', 'echo', {
+        body,
+        headers: { 'transfer-encoding': 'chunked' },
+        duplex: 'half',
+      } as RequestInit);
+
+      strictEqual(response.status, 415);
+    });
+
     it('Passes the validated params to the handler through fn()', async () => {
       const getItem = procedure({ params: z.object({ id: z.coerce.number() }) }).handle(async (_req, params) => params);
 
