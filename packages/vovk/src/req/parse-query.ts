@@ -13,6 +13,9 @@ function decodeQueryComponent(component: string): string {
 // segments that would let a query string reach Object.prototype, such pairs are dropped like qs does
 const FORBIDDEN_KEYS = new Set(['__proto__', 'constructor', 'prototype']);
 
+// brackets in one key; no client nests this deep, and toValue() recurses once per level
+const MAX_DEPTH = 32;
+
 // bracket key to path segments: "z[d][0][x]" => ["z", "d", "0", "x"], "arr[]" => ["arr", ""] ("" means push)
 function parseKey(key: string): string[] {
   // The first segment is everything up to the first '[' (or the entire key if no '[')
@@ -147,6 +150,10 @@ export function parseQuery(queryString: string): Record<string, unknown> {
 
     // Parse bracket notation
     const pathSegments = parseKey(decodedKey);
+
+    if (pathSegments.length > MAX_DEPTH + 1) {
+      throw new HttpException(HttpStatus.BAD_REQUEST, `Query string nested deeper than ${MAX_DEPTH} levels`);
+    }
 
     // a key that starts with a bracket has no name to set
     if (pathSegments[0] === '' || pathSegments.some((segment) => FORBIDDEN_KEYS.has(segment))) continue;

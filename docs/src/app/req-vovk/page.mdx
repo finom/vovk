@@ -46,7 +46,7 @@ Nested data is serialized as a query string with square brackets, commonly refer
 - Any other keys make an object: named keys (e.g., `[f]`, `[u]`), and numeric keys with gaps, so `record[7]=on` gives `{ record: { 7: "on" } }`.
 - A key given more than once collects its values into an array, so `tag=a&tag=b` gives `{ tag: ["a", "b"] }`. A repeated index names the same element, so its last value wins.
 - `[]` followed by more brackets adds to the last element until that element already has the key: `items[][name]=a&items[][price]=1&items[][name]=b` gives `{ items: [{ name: "a", price: "1" }, { name: "b" }] }`.
-- The structure can be nested arbitrarily to represent complex data.
+- The structure can be nested up to 32 levels deep. A key with more brackets gets a 400 response.
 
 The following query string:
 

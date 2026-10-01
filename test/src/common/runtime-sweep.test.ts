@@ -496,6 +496,30 @@ describe('Runtime sweep', () => {
         tags: [{ list: ['x', 'y'] }],
       });
     });
+
+    it('Answers a key nested deeper than 32 levels with 400', async () => {
+      const errors: string[] = [];
+      const guarded = initSegment({
+        segmentName: 'search-depth',
+        controllers: { SearchController },
+        onError: (error) => {
+          errors.push(error.constructor.name);
+        },
+      });
+
+      const deepest = await call(guarded, 'GET', `search?a${'[b]'.repeat(32)}=1`);
+      strictEqual(deepest.status, 200);
+
+      const response = await call(guarded, 'GET', `search?a${'[]'.repeat(3000)}=1`);
+
+      strictEqual(response.status, 400);
+      deepStrictEqual(await response.json(), {
+        statusCode: 400,
+        message: 'Query string nested deeper than 32 levels',
+        isError: true,
+      });
+      deepStrictEqual(errors, ['HttpException']);
+    });
   });
 
   describe('multitenant', () => {
