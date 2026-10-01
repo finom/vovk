@@ -41,7 +41,6 @@ export async function getProjectInfo(
     throw new Error(`Could not find app router directory at ${cwd}. Check Next.js docs for more info.`);
   }
 
-  const apiRoot = `${config.outputConfig.origin ?? ''}/${config.rootEntry}`;
   const apiDirAbsolutePath = srcRoot ? path.resolve(cwd, srcRoot, 'app', config.rootEntry) : null;
 
   if (configAbsolutePaths.length > 1) {
@@ -55,7 +54,6 @@ export async function getProjectInfo(
   return {
     cwd,
     port,
-    apiRoot,
     apiDirAbsolutePath,
     srcRoot,
     vovkCliPackage,

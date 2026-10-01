@@ -32,6 +32,21 @@ export function getSegmentNameFromRouteFile(relativeRouteFilePath: string) {
   return toPosixPath(relativeRouteFilePath).replace(SEGMENT_ROUTE_FILE_REGEX, '');
 }
 
+// the schema always comes from the local dev server, outputConfig.origin only applies to the generated client
+export function getSchemaEndpoint({
+  port,
+  rootEntry,
+  devHttps,
+  segmentName,
+}: {
+  port: string;
+  rootEntry: string;
+  devHttps: boolean;
+  segmentName: string;
+}) {
+  return `http${devHttps ? 's' : ''}://localhost:${port}/${rootEntry}/${segmentName ? `${segmentName}/` : ''}_schema_`;
+}
+
 export class VovkDev {
   #projectInfo!: ProjectInfo;
 
@@ -305,9 +320,13 @@ export class VovkDev {
   };
 
   #requestSchema = debounceWithArgs(async (segmentName: string) => {
-    const { apiRoot, log, port, config } = this.#projectInfo;
-    const devHttps = this.#devHttps ?? config.devHttps;
-    const endpoint = `${apiRoot.startsWith(`http${devHttps ? 's' : ''}://`) ? apiRoot : `http${devHttps ? 's' : ''}://localhost:${port}${apiRoot}`}/${segmentName ? `${segmentName}/` : ''}_schema_`;
+    const { log, port, config } = this.#projectInfo;
+    const endpoint = getSchemaEndpoint({
+      port,
+      rootEntry: config.rootEntry,
+      devHttps: this.#devHttps ?? config.devHttps,
+      segmentName,
+    });
 
     log.debug(`Requesting schema for ${formatLoggedSegmentName(segmentName)} at ${endpoint}`);
 
@@ -327,10 +346,10 @@ export class VovkDev {
 
       if (resp.status !== 200) {
         const probableCause = {
-          404: 'The segment did not compile or config.origin is wrong.',
+          404: 'the segment did not compile or another server listens on this port',
         }[resp.status];
         log.warn(
-          `Schema request to ${chalkHighlightThing(endpoint)} for ${formatLoggedSegmentName(segmentName)} failed with status code ${resp.status} but expected 200.${probableCause ? ` Probable cause: ${probableCause}.` : ''}.`
+          `Schema request to ${chalkHighlightThing(endpoint)} for ${formatLoggedSegmentName(segmentName)} failed with status code ${resp.status} but expected 200.${probableCause ? ` Probable cause: ${probableCause}.` : ''}`
         );
         log.warn(`Response from ${formatLoggedSegmentName(segmentName)}: ${text}`);
         return { isError: true };
