@@ -34,6 +34,8 @@ The `init` command sets up Vovk.ts in an existing Next.js project. It applies th
 npx vovk-cli init
 ```
 
+In a project that already has a [config](/config), `init` asks before it reinitializes the project (`--yes` doesn't ask). An existing config that differs from the new one is kept as a backup next to it, for example **vovk.config.mjs.bak**, so you can move your settings over.
+
 ## Available Flags
 
 ### `--prefix <prefix>`

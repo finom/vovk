@@ -22,6 +22,14 @@ const LANGS = ['py', 'rs'];
 const UPDATE_SCRIPTS_MODES = ['implicit', 'explicit'];
 const CHANNELS = ['latest', 'beta', 'draft'];
 
+// vovk.config.mjs.bak, then vovk.config.mjs.bak.1 and so on, an earlier backup is never overwritten
+async function getBackupPath(filePath: string) {
+  for (let index = 0; ; index++) {
+    const backupPath = `${filePath}.bak${index ? `.${index}` : ''}`;
+    if (!(await getFileSystemEntryType(backupPath))) return backupPath;
+  }
+}
+
 export class Init {
   root!: string;
   log!: ReturnType<typeof getLogger>;
@@ -60,14 +68,6 @@ export class Init {
     }
     if (lang?.includes('rs')) {
       devDependencies.push('vovk-rust');
-    }
-
-    // delete older config files
-    if (configPaths.length) {
-      if (!dryRun) await Promise.all(configPaths.map((configPath) => fs.rm(configPath)));
-      log.debug(
-        `${dryRun ? 'Dry run: would delete' : 'Deleted'} existing config file${configPaths.length > 1 ? 's' : ''} at ${configPaths.join(', ')}`
-      );
     }
 
     if (validationLibrary) {
@@ -181,11 +181,25 @@ export class Init {
     }
 
     try {
-      const { configAbsolutePath } = await createConfig({
+      const { configAbsolutePath, configStr } = await createConfig({
         root,
         log,
-        options: { validationLibrary, channel, bundle, lang, dryRun },
+        options: { validationLibrary, channel, bundle, lang },
       });
+
+      // a config init didn't write this way is kept as a backup, so customizations can be moved over
+      for (const configPath of configPaths) {
+        const isSameConfig =
+          configPath === configAbsolutePath && (await fs.readFile(configPath, 'utf-8').catch(() => null)) === configStr;
+        if (isSameConfig) continue;
+        const backupPath = await getBackupPath(configPath);
+        if (!dryRun) await fs.rename(configPath, backupPath);
+        log.warn(
+          `${dryRun ? 'Dry run: would move' : 'Moved'} the existing config ${chalkHighlightThing(configPath)} to ${chalkHighlightThing(backupPath)}`
+        );
+      }
+
+      if (!dryRun) await fs.writeFile(configAbsolutePath, configStr, 'utf-8');
 
       log.info(
         `Config ${dryRun ? 'would be created (dry run)' : 'created successfully'} at ${chalkHighlightThing(configAbsolutePath)}`
