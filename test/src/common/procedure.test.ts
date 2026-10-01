@@ -1,5 +1,8 @@
 import assert from 'node:assert';
 import { describe, it } from 'node:test';
+import { toStandardJsonSchema } from '@valibot/to-json-schema';
+import { type } from 'arktype';
+import * as v from 'valibot';
 import type { VovkRequest } from 'vovk';
 import { procedure } from 'vovk';
 import { z } from 'zod';
@@ -168,5 +171,17 @@ describe('procedure features', async () => {
     assert.equal(handler.schema.validation?.body?.$schema, 'https://json-schema.org/draft/2020-12/schema');
     assert.equal(handler.schema.validation?.query?.$schema, 'https://json-schema.org/draft/2020-12/schema');
     assert.equal(handler.schema.validation?.params?.$schema, 'https://json-schema.org/draft/2020-12/schema');
+  });
+
+  it('Should emit a type JSON Schema cannot describe as any value', async () => {
+    const zodHandler = procedure({ query: z.object({ from: z.coerce.date(), id: z.bigint(), ok: z.string() }) }).handle(
+      () => null
+    );
+    const valibotHandler = procedure({ query: toStandardJsonSchema(v.object({ from: v.date() })) }).handle(() => null);
+    const arktypeHandler = procedure({ query: type({ from: 'Date' }) }).handle(() => null);
+
+    assert.deepEqual(zodHandler.schema.validation?.query?.properties, { from: {}, id: {}, ok: { type: 'string' } });
+    assert.deepEqual(valibotHandler.schema.validation?.query?.properties, { from: {} });
+    assert.deepEqual(arktypeHandler.schema.validation?.query?.properties, { from: {} });
   });
 });

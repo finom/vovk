@@ -605,6 +605,30 @@ describe('Runtime sweep', () => {
       strictEqual(await upload('attachment; filename=""'), 'file');
       strictEqual(await upload('attachment'), 'file');
     });
+
+    it('Serves the schema of a segment with a type JSON Schema cannot describe', async () => {
+      await withNodeEnv('development', async () => {
+        class EventController {
+          static list = procedure({ query: z.object({ from: z.coerce.date() }) }).handle(async (req) =>
+            req.vovk.query()
+          );
+
+          static day = procedure({ params: z.object({ date: z.coerce.date() }) }).handle(
+            async (_req, params) => params
+          );
+        }
+        get('events')(EventController, 'list');
+        get.auto()(EventController, 'day');
+        const handlers = initSegment({ segmentName: 'events', controllers: { EventRPC: EventController } });
+
+        const response = await call(handlers, 'GET', '_schema_');
+        const { schema } = await response.json();
+
+        strictEqual(response.status, 200);
+        deepStrictEqual(schema.controllers.EventRPC.handlers.list.validation.query.properties, { from: {} });
+        strictEqual(schema.controllers.EventRPC.handlers.day.path, 'day/{date}');
+      });
+    });
   });
 
   describe('Query', () => {
