@@ -107,6 +107,8 @@ npx vovk new controller service user
 
 When you create a controller with `vovk new`, the script updates the `controllers` list in the segment file and modifies `route.ts` using [AST](https://www.npmjs.com/package/ts-morph).
 
+If one of the module's files already exists, `vovk new` writes none of them, unless you pass `--overwrite`. The module name has to start with a letter, since the templates turn it into class and method names.
+
 Template paths are defined via `moduleTemplates` in the [config](/config):
 
 ```js filename="vovk.config.mjs"

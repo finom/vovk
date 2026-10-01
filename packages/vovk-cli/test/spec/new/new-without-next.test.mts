@@ -44,6 +44,40 @@ await describe('vovk new in a project without Next.js', async () => {
     assert.strictEqual(await read('src/app/api/[[...vovk]]/route.ts'), route);
   });
 
+  await it('Writes no file of a module when one of its files exists', async () => {
+    await runCLI(['new', 'segment'], { cwd: projectDir });
+    const existingController = path.join(projectDir, 'src/modules/user/user-controller.ts');
+    await fs.mkdir(path.dirname(existingController), { recursive: true });
+    await fs.writeFile(existingController, '// my controller\n');
+    const route = await read('src/app/api/[[...vovk]]/route.ts');
+
+    await assert.rejects(
+      runCLI(['new', 'service', 'controller', 'user'], { cwd: projectDir }),
+      (error: Error & { stderr: string }) => {
+        assert.ok(error.stderr.includes(existingController), error.stderr);
+        return true;
+      }
+    );
+
+    await assert.rejects(fs.stat(path.join(projectDir, 'src/modules/user/user-service.ts')), { code: 'ENOENT' });
+    assert.strictEqual(await read('src/modules/user/user-controller.ts'), '// my controller\n');
+    assert.strictEqual(await read('src/app/api/[[...vovk]]/route.ts'), route);
+  });
+
+  await it('Refuses a module name that is no identifier', async () => {
+    await runCLI(['new', 'segment'], { cwd: projectDir });
+
+    await assert.rejects(
+      runCLI(['new', 'controller', '2fa'], { cwd: projectDir }),
+      (error: Error & { stderr: string }) => {
+        assert.match(error.stderr, /Invalid module name "2fa"/);
+        return true;
+      }
+    );
+
+    await assert.rejects(fs.stat(path.join(projectDir, 'src/modules/2-fa')), { code: 'ENOENT' });
+  });
+
   await it('Refuses a segment named "root" in any letter case', async () => {
     for (const segmentName of ['root', 'Root']) {
       await assert.rejects(

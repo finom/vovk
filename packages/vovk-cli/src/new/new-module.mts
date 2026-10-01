@@ -96,6 +96,8 @@ export async function newModule({
     return process.exit(1);
   }
 
+  // every file is rendered and checked first, so a conflict leaves no half-made module
+  const modules = [];
   for (const type of what) {
     const templatePath = templates[type];
     if (!templatePath) continue; // suppresses TypeScript error, but it shouldn't happen
@@ -128,31 +130,6 @@ export async function newModule({
       throw new Error(`The template for "${type}" does not provide a fileName`);
     }
 
-    const absoluteModuleDir = path.resolve(cwd, outDir);
-    const absoluteModulePath = path.join(absoluteModuleDir, fileName);
-
-    const prettiedCode = await prettify(code, absoluteModulePath);
-
-    if (!dryRun) {
-      if (!overwrite && (await getFileSystemEntryType(absoluteModulePath))) {
-        log.error(
-          `File ${chalkHighlightThing(absoluteModulePath)} already exists, skipping this "${chalkHighlightThing(type)}". You can use --overwrite flag to overwrite it.`
-        );
-
-        return process.exit(1);
-      } else {
-        await fs.mkdir(absoluteModuleDir, { recursive: true });
-        await fs.writeFile(absoluteModulePath, prettiedCode);
-        log.info(
-          `${chalk.green('Created')}${empty ? ' empty' : ''} ${chalkHighlightThing(absoluteModulePath)} using ${chalkHighlightThing(`"${type}"`)} template for ${formatLoggedSegmentName(segmentName)}`
-        );
-      }
-    } else {
-      log.info(
-        `Dry run: would create${empty ? ' empty' : ''} ${chalkHighlightThing(absoluteModulePath)} using ${chalkHighlightThing(`"${type}"`)} template for ${formatLoggedSegmentName(segmentName)}`
-      );
-    }
-
     if (type === 'controller') {
       if (!sourceName) {
         throw new Error(`The template for "${type}" does not provide a sourceName`);
@@ -161,7 +138,51 @@ export async function newModule({
       if (!compiledName) {
         throw new Error(`The template for "${type}" does not provide a compiledName`);
       }
+    }
 
+    const absoluteModuleDir = path.resolve(cwd, outDir);
+    const absoluteModulePath = path.join(absoluteModuleDir, fileName);
+
+    modules.push({
+      type,
+      absoluteModuleDir,
+      absoluteModulePath,
+      sourceName,
+      compiledName,
+      prettiedCode: await prettify(code, absoluteModulePath),
+    });
+  }
+
+  if (!dryRun && !overwrite) {
+    const existingPaths = [];
+    for (const { absoluteModulePath } of modules) {
+      if (await getFileSystemEntryType(absoluteModulePath)) existingPaths.push(absoluteModulePath);
+    }
+
+    if (existingPaths.length) {
+      for (const existingPath of existingPaths) {
+        log.error(`File ${chalkHighlightThing(existingPath)} already exists.`);
+      }
+      log.error('No file is written. You can use --overwrite flag to overwrite existing files.');
+
+      return process.exit(1);
+    }
+  }
+
+  for (const { type, absoluteModuleDir, absoluteModulePath, sourceName, compiledName, prettiedCode } of modules) {
+    if (!dryRun) {
+      await fs.mkdir(absoluteModuleDir, { recursive: true });
+      await fs.writeFile(absoluteModulePath, prettiedCode);
+      log.info(
+        `${chalk.green('Created')}${empty ? ' empty' : ''} ${chalkHighlightThing(absoluteModulePath)} using ${chalkHighlightThing(`"${type}"`)} template for ${formatLoggedSegmentName(segmentName)}`
+      );
+    } else {
+      log.info(
+        `Dry run: would create${empty ? ' empty' : ''} ${chalkHighlightThing(absoluteModulePath)} using ${chalkHighlightThing(`"${type}"`)} template for ${formatLoggedSegmentName(segmentName)}`
+      );
+    }
+
+    if (type === 'controller' && sourceName && compiledName && segmentUpdate) {
       const { routeFilePath } = segment;
       const segmentSourceCode = await fs.readFile(routeFilePath, 'utf-8');
       let importPath = toImportPath(
@@ -170,25 +191,23 @@ export async function newModule({
 
       importPath += isNodeNextResolution ? '.ts' : '';
 
-      if (segmentUpdate) {
-        const newSegmentCode = await prettify(
-          addClassToSegmentCode(segmentSourceCode, {
-            sourceName,
-            compiledName,
-            importPath,
-          }),
-          routeFilePath
+      const newSegmentCode = await prettify(
+        addClassToSegmentCode(segmentSourceCode, {
+          sourceName,
+          compiledName,
+          importPath,
+        }),
+        routeFilePath
+      );
+      if (!dryRun) {
+        await fs.writeFile(routeFilePath, newSegmentCode);
+        log.info(
+          `${chalk.green('Added')} ${chalkHighlightThing(sourceName)} ${type} as ${chalkHighlightThing(compiledName)} to ${formatLoggedSegmentName(segmentName)}`
         );
-        if (!dryRun) {
-          await fs.writeFile(routeFilePath, newSegmentCode);
-          log.info(
-            `${chalk.green('Added')} ${chalkHighlightThing(sourceName)} ${type} as ${chalkHighlightThing(compiledName)} to ${formatLoggedSegmentName(segmentName)}`
-          );
-        } else {
-          log.info(
-            `Dry run: would add ${chalkHighlightThing(sourceName)} ${type} as ${chalkHighlightThing(compiledName)} to ${formatLoggedSegmentName(segmentName)}`
-          );
-        }
+      } else {
+        log.info(
+          `Dry run: would add ${chalkHighlightThing(sourceName)} ${type} as ${chalkHighlightThing(compiledName)} to ${formatLoggedSegmentName(segmentName)}`
+        );
       }
     }
   }
