@@ -60,6 +60,16 @@ describe('Runtime sweep over HTTP', () => {
       strictEqual(wrong.status, 415);
     });
 
+    it('Answers a multipart body without its boundary with 400', async () => {
+      const response = await fetch(`${apiUrl}/runtime-sweep/form`, {
+        method: 'POST',
+        headers: { 'content-type': 'multipart/form-data' },
+        body: 'not a multipart body',
+      });
+
+      strictEqual(response.status, 400);
+    });
+
     it('Answers a malformed JSON body with 400', async () => {
       const response = await request
         .post('/runtime-sweep/transfer')
@@ -182,6 +192,10 @@ describe('Runtime sweep over HTTP', () => {
 
       strictEqual(preflight.status, 200);
       strictEqual(preflight.headers['access-control-allow-origin'], '*');
+      ok(
+        preflight.headers['access-control-allow-methods'].includes('PATCH'),
+        'a PATCH route can be called cross-origin'
+      );
 
       const response = await request.post('/runtime-sweep/secure').send({});
 
