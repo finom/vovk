@@ -12,6 +12,7 @@ import HeadersController from '../../../core/headers-controller.ts';
 import InputController from '../../../core/input-controller.ts';
 import NextResponseController from '../../../core/next-response-controller.ts';
 import RedirectController from '../../../core/redirect-controller.ts';
+import RuntimeSweepController from '../../../core/runtime-sweep-controller.ts';
 import StaticApiController from '../../../core/static-api-controller.ts';
 import trimControllers from '../../../core/trim-controllers.ts';
 
@@ -34,6 +35,7 @@ export const { GET, POST, PATCH, PUT, HEAD, OPTIONS, DELETE } = initSegment({
     DecorateClassController,
     DecorateClonedController,
     StaticApiController,
+    RuntimeSweepController,
   },
   onError: (err, req) => {
     console.log('\x1b[42m onError \x1b[0m', err.message, req.url);

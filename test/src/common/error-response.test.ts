@@ -122,7 +122,7 @@ describe('Error response details', () => {
     await withNodeEnv('production', async () => {
       const { lines } = await callStream('stream-expected');
 
-      deepStrictEqual(lines, [{ n: 1 }, { isError: true, reason: 'Not enough credits' }]);
+      deepStrictEqual(lines, [{ n: 1 }, { isError: true, reason: 'Not enough credits', statusCode: 402 }]);
     });
   });
 
