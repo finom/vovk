@@ -11,4 +11,4 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 - Formats Ajv doesn't know, such as Zod's `cuid` or `e164`, no longer fail compilation and block the request ([#35](https://github.com/finom/vovk/pull/35))
 - An object body sent as form data is validated before the conversion, so numbers and arrays keep their types ([#35](https://github.com/finom/vovk/pull/35))
 - Compiled validators are cached per schema instead of rebuilt on every call ([#35](https://github.com/finom/vovk/pull/35))
-- The `types` condition comes first in `exports` ([232022d](https://github.com/finom/vovk/commit/232022d3))
+- The `types` condition comes first in `exports` ([1e7f9f4](https://github.com/finom/vovk/commit/1e7f9f44))

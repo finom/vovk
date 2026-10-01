@@ -12,14 +12,14 @@ A cleanup major: removals and renames, no new APIs.
 
 - `toolsByName`: `deriveTools` returns the tools array only ([#28](https://github.com/finom/vovk/pull/28))
 - `VovkTool`, `createTool`, `parameters`, `type` and `inputSchemas`: replaced by the `StandardToolV0` convention ([#27](https://github.com/finom/vovk/pull/27))
-- `vovk/createRPC` and `vovk/createValidateOnClient` subpath aliases: use `vovk/create-rpc` and `vovk/create-validate-on-client` ([b7dc4b2](https://github.com/finom/vovk/commit/b7dc4b2a))
-- Dead `nestjs-operation-id` name-strategy literals ([3f84c25](https://github.com/finom/vovk/commit/3f84c253))
+- `vovk/createRPC` and `vovk/createValidateOnClient` subpath aliases: use `vovk/create-rpc` and `vovk/create-validate-on-client` ([fd71067](https://github.com/finom/vovk/commit/fd710677))
+- Dead `nestjs-operation-id` name-strategy literals ([2ae94a2](https://github.com/finom/vovk/commit/2ae94a2a))
 
 ### Changed
 
-- `HttpStatus.TOO_MANY_TRequestS` renamed to `TOO_MANY_REQUESTS` ([c739e4b](https://github.com/finom/vovk/commit/c739e4bc))
-- Production error responses carry no internal detail; `onError` still receives the full error ([d0be248](https://github.com/finom/vovk/commit/d0be2482), [419cf7f](https://github.com/finom/vovk/commit/419cf7f6))
-- A declared `contentType` is enforced even without a body schema; disabling body validation opts out ([444644b](https://github.com/finom/vovk/commit/444644b8), [27edb95](https://github.com/finom/vovk/commit/27edb95e)); a request without a body skips the check ([#35](https://github.com/finom/vovk/pull/35))
+- `HttpStatus.TOO_MANY_TRequestS` renamed to `TOO_MANY_REQUESTS` ([900c3ed](https://github.com/finom/vovk/commit/900c3ed6))
+- Production error responses carry no internal detail; `onError` still receives the full error ([6dbb795](https://github.com/finom/vovk/commit/6dbb795f), [e069b6c](https://github.com/finom/vovk/commit/e069b6ca))
+- A declared `contentType` is enforced even without a body schema; disabling body validation opts out ([17156a3](https://github.com/finom/vovk/commit/17156a3d), [9b9460d](https://github.com/finom/vovk/commit/9b9460d4)); a request without a body skips the check ([#35](https://github.com/finom/vovk/pull/35))
 - Failed `output` or `iteration` validation is an internal error: 500 in production, the issues stay on the server ([#35](https://github.com/finom/vovk/pull/35))
 - Only an `HttpException` sets the status and keeps its message; any other error answers 500 and is masked in production, for AI tools too ([#35](https://github.com/finom/vovk/pull/35))
 - `Content-Type` must name one media type, compared case-insensitively; a list answers 415 ([#35](https://github.com/finom/vovk/pull/35))
@@ -29,17 +29,17 @@ A cleanup major: removals and renames, no new APIs.
 
 ### Fixed
 
-- Stacked decorators all run: HTTP routes dispatch through the outermost wrapper ([18ce506](https://github.com/finom/vovk/commit/18ce5063))
-- Prototype members such as `constructor` no longer resolve as route handlers ([8fa67bb](https://github.com/finom/vovk/commit/8fa67bb0))
-- The route match cache is scoped to its handlers map, fixing cross-method poisoning ([6db95ff](https://github.com/finom/vovk/commit/6db95ff5))
-- Path params are percent-encoded, and an encoded slash stays inside its param ([d2d9046](https://github.com/finom/vovk/commit/d2d90464), [0cb5aa4](https://github.com/finom/vovk/commit/0cb5aa40))
-- Chained `withDefaults` deep-merges instead of replacing nested options ([4f53fc7](https://github.com/finom/vovk/commit/4f53fc78))
-- `Headers` instances and `init.signal` survive RPC options ([fc61920](https://github.com/finom/vovk/commit/fc619204))
-- Streaming: mid-stream errors reach `onError`, the error envelope stays out of `onIterate`, an abandoned iterator releases the stream ([b440310](https://github.com/finom/vovk/commit/b4403106), [06e99fa](https://github.com/finom/vovk/commit/06e99faa), [06b9c00](https://github.com/finom/vovk/commit/06b9c007))
-- Falsy handler output (`false`, `0`, `''`, `null`) is accepted when an output schema is set ([dc8c6a3](https://github.com/finom/vovk/commit/dc8c6a38))
-- Derived tools materialize `Response` and generator results, and failures reach `onError` ([7b7f1b8](https://github.com/finom/vovk/commit/7b7f1b87), [ff18ee5](https://github.com/finom/vovk/commit/ff18ee5d))
-- Derived path/query parameters and `components.schemas` merge with user-declared ones ([d86bae0](https://github.com/finom/vovk/commit/d86bae0b), [6a174ac](https://github.com/finom/vovk/commit/6a174ac1))
-- Malformed `x-meta` responds 400, `x-meta` is allowed in default CORS headers, non-ASCII meta is escaped ([5327a32](https://github.com/finom/vovk/commit/5327a327), [e34acae](https://github.com/finom/vovk/commit/e34acaea), [be58398](https://github.com/finom/vovk/commit/be583983))
+- Stacked decorators all run: HTTP routes dispatch through the outermost wrapper ([572f7f0](https://github.com/finom/vovk/commit/572f7f0a))
+- Prototype members such as `constructor` no longer resolve as route handlers ([24d727c](https://github.com/finom/vovk/commit/24d727cd))
+- The route match cache is scoped to its handlers map, fixing cross-method poisoning ([bae0fde](https://github.com/finom/vovk/commit/bae0fde5))
+- Path params are percent-encoded, and an encoded slash stays inside its param ([a41e23a](https://github.com/finom/vovk/commit/a41e23a1), [0ec1aef](https://github.com/finom/vovk/commit/0ec1aefb))
+- Chained `withDefaults` deep-merges instead of replacing nested options ([a554d22](https://github.com/finom/vovk/commit/a554d22b))
+- `Headers` instances and `init.signal` survive RPC options ([138296c](https://github.com/finom/vovk/commit/138296cd))
+- Streaming: mid-stream errors reach `onError`, the error envelope stays out of `onIterate`, an abandoned iterator releases the stream ([78019dc](https://github.com/finom/vovk/commit/78019dc0), [89960e8](https://github.com/finom/vovk/commit/89960e8a), [3378c9b](https://github.com/finom/vovk/commit/3378c9bb))
+- Falsy handler output (`false`, `0`, `''`, `null`) is accepted when an output schema is set ([a0bfec7](https://github.com/finom/vovk/commit/a0bfec71))
+- Derived tools materialize `Response` and generator results, and failures reach `onError` ([7df7093](https://github.com/finom/vovk/commit/7df7093f), [b50e6e9](https://github.com/finom/vovk/commit/b50e6e97))
+- Derived path/query parameters and `components.schemas` merge with user-declared ones ([dda4abf](https://github.com/finom/vovk/commit/dda4abfe), [0e1d735](https://github.com/finom/vovk/commit/0e1d7355))
+- Malformed `x-meta` responds 400, `x-meta` is allowed in default CORS headers, non-ASCII meta is escaped ([569da87](https://github.com/finom/vovk/commit/569da871), [307282b](https://github.com/finom/vovk/commit/307282bd), [193385c](https://github.com/finom/vovk/commit/193385c7))
 - JSON Lines: backpressure, the generator is returned when the client goes away, falsy items and split multi-byte characters survive, error lines carry `statusCode` ([#35](https://github.com/finom/vovk/pull/35))
 - `notFound()`, `forbidden()` and `unauthorized()` reach Next.js instead of answering 500 ([#35](https://github.com/finom/vovk/pull/35))
 - Malformed JSON, form and query input answers 400 ([#35](https://github.com/finom/vovk/pull/35))
@@ -54,8 +54,8 @@ A cleanup major: removals and renames, no new APIs.
 
 ### Security
 
-- `x-tsType` is stripped from third-party OpenAPI specs on ingestion; a crafted value could inject executable code into the generated client ([c5e63cd](https://github.com/finom/vovk/commit/c5e63cd7))
-- Query parsing hardened: prototype-polluting keys dropped, pairs split at the first `=`, a large index cannot size a huge array ([46aaadf](https://github.com/finom/vovk/commit/46aaadf7), [03522f3](https://github.com/finom/vovk/commit/03522f3f), [14bbc17](https://github.com/finom/vovk/commit/14bbc179))
+- `x-tsType` is stripped from third-party OpenAPI specs on ingestion; a crafted value could inject executable code into the generated client ([2b0064e](https://github.com/finom/vovk/commit/2b0064e0))
+- Query parsing hardened: prototype-polluting keys dropped, pairs split at the first `=`, a large index cannot size a huge array ([271d51c](https://github.com/finom/vovk/commit/271d51c2), [17de08e](https://github.com/finom/vovk/commit/17de08ee), [0df2cc5](https://github.com/finom/vovk/commit/0df2cc58))
 - A non-index bracket key such as `?a[-1]=x` no longer discards the value; it becomes an object key, matching `qs`
 - Query keys naming inherited members (`hasOwnProperty[call]=1`) no longer write onto shared built-ins; a form `__proto__` field is skipped ([#35](https://github.com/finom/vovk/pull/35))
 - A `Content-Type` list such as `text/plain; x=1,application/json` is refused, so a cross-origin request can't reach a JSON handler without a preflight ([#35](https://github.com/finom/vovk/pull/35))
