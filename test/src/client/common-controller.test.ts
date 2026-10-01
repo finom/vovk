@@ -458,6 +458,35 @@ describe('Client with composed RPC client', () => {
     deepStrictEqual(query, { safe: 'ok' });
   });
 
+  it('Keeps inherited keys such as valueOf and toString on the parsed object', async () => {
+    const getURL = CommonControllerRPC.getNestedQuery.getURL as (options: { apiRoot: string }) => string;
+    const endpoint = getURL({ apiRoot });
+    // these used to write onto the shared Object.prototype methods and break every later request
+    const response = await fetch(`${endpoint}?valueOf[polluted]=yes&toString[call]=x&hasOwnProperty[call]=x&safe=ok`);
+
+    strictEqual(response.status, 200);
+    const { query } = (await response.json()) as { query: Record<string, unknown> };
+    deepStrictEqual(query, {
+      valueOf: { polluted: 'yes' },
+      toString: { call: 'x' },
+      hasOwnProperty: { call: 'x' },
+      safe: 'ok',
+    });
+
+    const next = await fetch(`${endpoint}?safe=ok`);
+    strictEqual(next.status, 200);
+    deepStrictEqual(((await next.json()) as { query: Record<string, unknown> }).query, { safe: 'ok' });
+  });
+
+  it('Turns a scalar into a container when a later key nests under it', async () => {
+    const getURL = CommonControllerRPC.getNestedQuery.getURL as (options: { apiRoot: string }) => string;
+    const endpoint = getURL({ apiRoot });
+    const response = await fetch(`${endpoint}?a=1&a[b]=2`);
+
+    strictEqual(response.status, 200);
+    deepStrictEqual(((await response.json()) as { query: Record<string, unknown> }).query, { a: { b: '2' } });
+  });
+
   it('Does not let a query index size a huge array', async () => {
     const getURL = CommonControllerRPC.getNestedQuery.getURL as (options: { apiRoot: string }) => string;
     const endpoint = getURL({ apiRoot });
