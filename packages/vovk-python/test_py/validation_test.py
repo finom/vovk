@@ -141,6 +141,10 @@ class TestValidation(unittest.TestCase):
         with self.assertRaises(ValueError):
             WithValidationRPC.handle_params(params={"foo": "..", "bar": "x"})
 
+        # an empty segment would reach another route, or a redirect to one
+        with self.assertRaises(ValueError):
+            WithValidationRPC.handle_params(params={"foo": "", "bar": "x"}, disable_client_validation=True)
+
     def test_query_encoding(self) -> None:
         data = WithValidationRPC.handle_query(query={"search": "a&b=c"})
         self.assertEqual(data, {'search': 'a&b=c'})

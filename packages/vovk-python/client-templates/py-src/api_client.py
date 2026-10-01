@@ -178,9 +178,9 @@ class ApiClient:
         if params:
             for key, value in params.items():
                 text = str(value)
-                # "." and ".." would leave the handler's path once the URL is normalized
-                if text in ('.', '..'):
-                    raise ValueError(f'Path parameter "{key}" cannot be "{text}"')
+                # "", "." and ".." would drop or climb a path segment and so reach another route
+                if text in ('', '.', '..'):
+                    raise ValueError(f'Path parameter "{key}" cannot be empty, "." or "..", got "{text}"')
                 processed_url = processed_url.replace(f"{{{key}}}", quote(text, safe=''))
         
         # Process query parameters if present
