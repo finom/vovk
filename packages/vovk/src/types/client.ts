@@ -183,8 +183,23 @@ type OmitNever<T> = {
   [K in keyof T as T[K] extends never ? never : K]: T[K];
 };
 
+// a handler takes a request or nothing, so a static helper such as formatName(name: string) gets no RPC method
+type IsHandler<F> = F extends () => unknown
+  ? true
+  : F extends (req: infer R, ...args: KnownAny[]) => unknown
+    ? unknown extends R
+      ? true
+      : [R] extends [Request]
+        ? true
+        : false
+    : false;
+
 type VovkClientWithNever<T, TFetcherOptions extends { [key: string]: KnownAny }> = {
-  [K in keyof T]: T[K] extends (...args: KnownAny) => KnownAny ? ClientMethod<T[K], TFetcherOptions> : never;
+  [K in keyof T]: T[K] extends (...args: KnownAny) => KnownAny
+    ? IsHandler<T[K]> extends true
+      ? ClientMethod<T[K], TFetcherOptions>
+      : never
+    : never;
 };
 
 export type VovkRPCModule<T, TFetcherOptions extends { [key: string]: KnownAny }> = OmitNever<

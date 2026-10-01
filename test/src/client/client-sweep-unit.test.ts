@@ -329,6 +329,42 @@ describe('Client sweep, pure functions', () => {
       ]);
     });
 
+    it('Uses a fetcher given per call', async () => {
+      let isUsed = false;
+      const fetcher = createFetcher({
+        prepareRequestInit: (init) => {
+          isUsed = true;
+          return init;
+        },
+      });
+
+      await withFetch(
+        () => Response.json({}),
+        () => rpcOf(handlers).get({ fetcher })
+      );
+
+      strictEqual(isUsed, true);
+    });
+
+    it('Takes validateOnClient per call as a module promise', async () => {
+      const bodySchema = { type: 'object', properties: { name: { type: 'string' } }, required: ['name'] };
+      const rpc = rpcOf({ create: { path: '', httpMethod: 'POST', validation: { body: bodySchema } } });
+      const validateOnClientModule = import('../../../packages/vovk-ajv/index.js');
+
+      await withFetch(
+        () => Response.json({ ok: true }),
+        async () => {
+          deepStrictEqual(await rpc.create({ body: { name: 'a' }, validateOnClient: validateOnClientModule }), {
+            ok: true,
+          });
+          await rejects(
+            rpc.create({ body: {}, validateOnClient: validateOnClientModule }),
+            /Client-side validation failed\. Invalid body: data must have required property 'name'/
+          );
+        }
+      );
+    });
+
     it('Gives null for a JSON response without a body', async () => {
       const rpc = rpcOf({
         exists: { path: '', httpMethod: 'HEAD' },

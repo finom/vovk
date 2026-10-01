@@ -194,7 +194,11 @@ const user = await UserRPC.updateUser({
 
 ### `validateOnClient`
 
-Overrides the `validateOnClient` setting from [imports](/imports#validateonclient).
+Overrides the `validateOnClient` setting from [imports](/imports#validateonclient). It takes the function or a module that exports it, such as `import('vovk-ajv'){:ts}`.
+
+### `fetcher`
+
+Overrides the [fetcher](/imports#fetcher) for this call, for example one made with `createFetcher{:ts}`.
 
 ## `withDefaults`
 

@@ -1,4 +1,4 @@
-import { procedure, type VovkRequest } from 'vovk';
+import { createFetcher, procedure, type VovkRequest } from 'vovk';
 import { createRPC } from 'vovk/create-rpc';
 import type { VovkFetcherOptions } from 'vovk/internal';
 
@@ -54,4 +54,33 @@ export async function oneTypeArgument() {
 
   await rpc.list();
   await rpc.plain({ body: { a: 1 }, query: { q: 'x' }, apiRoot: '/api' });
+}
+
+// ====== Per-call options, and statics that are not handlers ======
+
+class HelperController {
+  static list = procedure().handle(async () => [1, 2]);
+
+  static getHello(_req: VovkRequest) {
+    return { hello: 'world' };
+  }
+
+  static ping() {
+    return { ok: true };
+  }
+
+  static formatName(name: string) {
+    return name.trim();
+  }
+}
+
+export async function perCallOptionsAndHelpers() {
+  const rpc = createRPC<typeof HelperController, VovkFetcherOptions<unknown>>({}, '', 'HelperRPC');
+
+  await rpc.list({ fetcher: createFetcher() });
+  await rpc.list({ validateOnClient: import('vovk-ajv') });
+  await rpc.getHello();
+  await rpc.ping();
+  // @ts-expect-error a static that takes no request is not a handler, the RPC module has no such method
+  rpc.formatName;
 }

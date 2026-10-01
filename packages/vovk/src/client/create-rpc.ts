@@ -80,6 +80,12 @@ const toFormBody = (source: Record<string, unknown>, contentTypes: string[]) => 
   return form;
 };
 
+// a module promise, as from import('vovk-ajv'), gives its validateOnClient export
+const resolveValidateOnClient = async <OPTS>(
+  validateOnClient: VovkValidateOnClient<OPTS> | Promise<{ validateOnClient: VovkValidateOnClient<OPTS> }> | undefined
+): Promise<VovkValidateOnClient<OPTS> | undefined> =>
+  validateOnClient instanceof Promise ? (await validateOnClient)?.validateOnClient : validateOnClient;
+
 // deep merge, as per-call options and chained defaults merge; the headers of every layer, an object, a Headers
 // instance or entries, merge by name with the later layer winning
 const mergeOptions = <T>(...layers: unknown[]): T => {
@@ -153,18 +159,18 @@ export const createRPC = <T, OPTS extends Record<string, KnownAny> = VovkFetcher
         query?: unknown;
         params?: unknown;
         meta?: unknown;
-        validateOnClient?: VovkValidateOnClient<OPTS>;
+        validateOnClient?: VovkValidateOnClient<OPTS> | Promise<{ validateOnClient: VovkValidateOnClient<OPTS> }>;
         transform?: (respData: unknown, resp: Response) => unknown;
+        fetcher?: VovkFetcher<OPTS>;
       } & OPTS = {} as OPTS
     ) => {
-      const optionsResolvedValidateOnClient =
-        options?.validateOnClient instanceof Promise
-          ? ((await options?.validateOnClient)?.validateOnClient as VovkValidateOnClient<OPTS>)
-          : options?.validateOnClient;
+      const optionsResolvedValidateOnClient = await resolveValidateOnClient(options?.validateOnClient);
+      const inputResolvedValidateOnClient = await resolveValidateOnClient(input.validateOnClient);
       const fetcher =
-        givenFetcher instanceof Promise
+        input.fetcher ??
+        (givenFetcher instanceof Promise
           ? (await givenFetcher).fetcher
-          : (givenFetcher ?? (defaultFetcher as unknown as VovkFetcher<OPTS>));
+          : (givenFetcher ?? (defaultFetcher as unknown as VovkFetcher<OPTS>)));
 
       const contentTypes: string[] = validation?.body?.['x-contentType'] ?? [];
       // an object goes out as a form only when JSON can't carry it: no JSON declared, or a file inside;
@@ -185,7 +191,7 @@ export const createRPC = <T, OPTS extends Record<string, KnownAny> = VovkFetcher
           endpoint: string;
         }
       ) => {
-        const validateOnClient = input.validateOnClient ?? optionsResolvedValidateOnClient;
+        const validateOnClient = inputResolvedValidateOnClient ?? optionsResolvedValidateOnClient;
         if (validateOnClient && validation) {
           if (typeof validateOnClient !== 'function') {
             throw new Error('validateOnClient must be a function');
