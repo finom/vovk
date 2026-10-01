@@ -1,7 +1,17 @@
 import { deepStrictEqual, ok, rejects, strictEqual } from 'node:assert';
 import { describe, it } from 'node:test';
 import { forbidden, redirect, unauthorized } from 'next/dist/client/components/navigation.react-server.js';
-import { get, HttpException, HttpStatus, initSegment, multitenant, post, procedure, type VovkRequest } from 'vovk';
+import {
+  createDecorator,
+  get,
+  HttpException,
+  HttpStatus,
+  initSegment,
+  multitenant,
+  post,
+  procedure,
+  type VovkRequest,
+} from 'vovk';
 import { z } from 'zod';
 
 type Handlers = ReturnType<typeof initSegment>;
@@ -425,11 +435,198 @@ describe('Runtime sweep', () => {
       );
     });
 
+    it('Enforces the declared content type of a procedure without a body schema for a chunked body', async () => {
+      class EchoController {
+        static echo = procedure({ contentType: 'text/plain' }).handle(async (req) => ({ body: await req.vovk.body() }));
+      }
+      post('echo')(EchoController, 'echo');
+      const handlers = initSegment({ segmentName: 'typed-echo', controllers: { EchoController } });
+      // a chunked request carries its transfer-encoding header and no content-length
+      const body = new ReadableStream({
+        start(controller) {
+          controller.enqueue(new TextEncoder().encode('{"admin":true}'));
+          controller.close();
+        },
+      });
+
+      const response = await call(handlers, 'POST', 'echo', {
+        body,
+        headers: { 'transfer-encoding': 'chunked' },
+        duplex: 'half',
+      } as RequestInit);
+
+      strictEqual(response.status, 415);
+    });
+
     it('Passes the validated params to the handler through fn()', async () => {
       const getItem = procedure({ params: z.object({ id: z.coerce.number() }) }).handle(async (_req, params) => params);
 
       deepStrictEqual(await getItem.fn({ params: { id: '5', ownerId: 'someone-else' } as unknown as { id: number } }), {
         id: 5,
+      });
+    });
+
+    it('Lists the first 20 issues of an invalid body', async () => {
+      class TagController {
+        static tags = procedure({ body: z.object({ tags: z.array(z.string()) }) }).handle(async () => ({ ok: true }));
+      }
+      post('tags')(TagController, 'tags');
+      const handlers = initSegment({ segmentName: 'tags', controllers: { TagController } });
+
+      const response = await call(handlers, 'POST', 'tags', {
+        body: JSON.stringify({ tags: new Array(100_000).fill(0) }),
+        headers: { 'content-type': 'application/json' },
+      });
+      const { message, cause } = await response.json();
+      const issues = Array.from(
+        { length: 20 },
+        (_, i) => `Invalid input: expected string, received number at tags.${i}`
+      );
+
+      strictEqual(response.status, 400);
+      strictEqual(message, `Validation failed. Invalid body: ${issues.join(', ')}, and 99980 more`);
+      strictEqual(cause.issues.length, 20);
+    });
+
+    it('Validates a body that a decorator and the segment onBefore read first', async () => {
+      const ownerGuard = createDecorator(async (req: VovkRequest<{ ownerId: string }>, next) => {
+        const { ownerId } = await req.vovk.body();
+        if (ownerId !== 'me') throw new HttpException(HttpStatus.FORBIDDEN, 'Not yours');
+        return next();
+      });
+      class NoteController {
+        static create = procedure({ body: z.object({ ownerId: z.string(), title: z.string() }) }).handle(
+          async (req) => ({ body: await req.vovk.body(), text: await req.text() })
+        );
+      }
+      ownerGuard()(NoteController, 'create');
+      post('create')(NoteController, 'create');
+      const bodiesBefore: unknown[] = [];
+      const handlers = initSegment({
+        segmentName: 'notes',
+        controllers: { NoteController },
+        onBefore: async (req) => {
+          bodiesBefore.push(await req.vovk.body());
+        },
+      });
+      const text = JSON.stringify({ ownerId: 'me', title: 'Hello' });
+
+      const response = await call(handlers, 'POST', 'create', {
+        body: text,
+        headers: { 'content-type': 'application/json' },
+      });
+
+      strictEqual(response.status, 200);
+      deepStrictEqual(await response.json(), { body: { ownerId: 'me', title: 'Hello' }, text });
+      deepStrictEqual(bodiesBefore, [{ ownerId: 'me', title: 'Hello' }]);
+    });
+
+    it('Validates a missing body as undefined, so an optional body can be left out', async () => {
+      class DraftController {
+        static optional = procedure({ body: z.object({ title: z.string() }).optional() }).handle(async (req) => ({
+          body: (await req.vovk.body()) ?? 'none',
+        }));
+
+        static required = procedure({ body: z.object({ title: z.string() }) }).handle(async () => ({ ok: true }));
+      }
+      post('optional')(DraftController, 'optional');
+      post('required')(DraftController, 'required');
+      const handlers = initSegment({ segmentName: 'drafts', controllers: { DraftController } });
+
+      const optional = await call(handlers, 'POST', 'optional');
+      strictEqual(optional.status, 200);
+      deepStrictEqual(await optional.json(), { body: 'none' });
+      deepStrictEqual(await DraftController.optional.fn(), { body: 'none' });
+
+      const required = await call(handlers, 'POST', 'required');
+      strictEqual(required.status, 400);
+      strictEqual(
+        (await required.json()).message,
+        'Validation failed. Invalid body: Invalid input: expected object, received undefined'
+      );
+    });
+
+    it('Validates the items of a sync generator', async () => {
+      class CountController {
+        static count = procedure({ iteration: z.object({ n: z.number() }) }).handle(function* () {
+          yield { n: 1 };
+          yield { n: 2 };
+        });
+
+        static wrong = procedure({ iteration: z.object({ n: z.number() }) }).handle(function* () {
+          yield { n: 'one' };
+        });
+      }
+      get('count')(CountController, 'count');
+      get('wrong')(CountController, 'wrong');
+      const handlers = initSegment({ segmentName: 'count', controllers: { CountController } });
+      const readLines = async (response: Response) =>
+        (await response.text())
+          .split('\n')
+          .filter(Boolean)
+          .map((line) => JSON.parse(line));
+
+      const response = await call(handlers, 'GET', 'count');
+
+      strictEqual(response.status, 200);
+      deepStrictEqual(await readLines(response), [{ n: 1 }, { n: 2 }]);
+      deepStrictEqual(await readLines(await call(handlers, 'GET', 'wrong')), [
+        {
+          isError: true,
+          reason: 'Validation failed. Invalid iteration #0: Invalid input: expected number, received string at n',
+        },
+      ]);
+    });
+
+    it('Names the file of a binary body after filename* first', async () => {
+      class FileController {
+        static upload = procedure({ contentType: 'application/octet-stream', body: z.file() }).handle(async (req) => ({
+          name: (await req.vovk.body()).name,
+        }));
+      }
+      post('upload')(FileController, 'upload');
+      const handlers = initSegment({ segmentName: 'files', controllers: { FileController } });
+      const upload = async (disposition: string) => {
+        const response = await call(handlers, 'POST', 'upload', {
+          body: new Uint8Array([37, 80, 68, 70]),
+          headers: { 'content-type': 'application/octet-stream', 'content-disposition': disposition },
+        });
+        return (await response.json()).name;
+      };
+
+      // what the TypeScript client sends for a File named résumé.pdf
+      strictEqual(
+        await upload(`attachment; filename="r_sum_.pdf"; filename*=UTF-8''r%C3%A9sum%C3%A9.pdf`),
+        'résumé.pdf'
+      );
+      strictEqual(await upload('attachment; filename="say \\"hi\\".pdf"'), 'say "hi".pdf');
+      strictEqual(await upload('attachment; FILENAME=report.pdf'), 'report.pdf');
+      strictEqual(await upload(`attachment; filename*=UTF-8''%E0%A4%A; filename="fallback.pdf"`), 'fallback.pdf');
+      strictEqual(await upload('attachment; filename=""'), 'file');
+      strictEqual(await upload('attachment'), 'file');
+    });
+
+    it('Serves the schema of a segment with a type JSON Schema cannot describe', async () => {
+      await withNodeEnv('development', async () => {
+        class EventController {
+          static list = procedure({ query: z.object({ from: z.coerce.date() }) }).handle(async (req) =>
+            req.vovk.query()
+          );
+
+          static day = procedure({ params: z.object({ date: z.coerce.date() }) }).handle(
+            async (_req, params) => params
+          );
+        }
+        get('events')(EventController, 'list');
+        get.auto()(EventController, 'day');
+        const handlers = initSegment({ segmentName: 'events', controllers: { EventRPC: EventController } });
+
+        const response = await call(handlers, 'GET', '_schema_');
+        const { schema } = await response.json();
+
+        strictEqual(response.status, 200);
+        deepStrictEqual(schema.controllers.EventRPC.handlers.list.validation.query.properties, { from: {} });
+        strictEqual(schema.controllers.EventRPC.handlers.day.path, 'day/{date}');
       });
     });
   });
@@ -458,6 +655,67 @@ describe('Runtime sweep', () => {
       const response = await call(handlers, 'GET', `search?${new URLSearchParams({ q: 'new york', tag: 'a+b' })}`);
 
       deepStrictEqual(await response.json(), { q: 'new york', tag: 'a+b' });
+    });
+
+    it('Collects the values of a repeated key, and keeps the last value of a repeated index', async () => {
+      const response = await call(
+        handlers,
+        'GET',
+        'search?tag=a&tag=b&filter[status]=open&filter[status]=closed&page[0]=1&page[0]=2'
+      );
+
+      deepStrictEqual(await response.json(), {
+        tag: ['a', 'b'],
+        filter: { status: ['open', 'closed'] },
+        page: ['2'],
+      });
+    });
+
+    it('Appends [] after the highest index', async () => {
+      const response = await call(handlers, 'GET', 'search?a[1]=x&a[]=y&b[0]=x&b[2]=z&b[]=y&c[]=1&c[]=2');
+
+      deepStrictEqual(await response.json(), {
+        a: { 1: 'x', 2: 'y' },
+        b: { 0: 'x', 2: 'z', 3: 'y' },
+        c: ['1', '2'],
+      });
+    });
+
+    it('Fills the last element of [] until it holds the key again', async () => {
+      const response = await call(
+        handlers,
+        'GET',
+        'search?items[][name]=a&items[][price]=1&items[][name]=b&tags[][list][]=x&tags[][list][]=y'
+      );
+
+      deepStrictEqual(await response.json(), {
+        items: [{ name: 'a', price: '1' }, { name: 'b' }],
+        tags: [{ list: ['x', 'y'] }],
+      });
+    });
+
+    it('Answers a key nested deeper than 32 levels with 400', async () => {
+      const errors: string[] = [];
+      const guarded = initSegment({
+        segmentName: 'search-depth',
+        controllers: { SearchController },
+        onError: (error) => {
+          errors.push(error.constructor.name);
+        },
+      });
+
+      const deepest = await call(guarded, 'GET', `search?a${'[b]'.repeat(32)}=1`);
+      strictEqual(deepest.status, 200);
+
+      const response = await call(guarded, 'GET', `search?a${'[]'.repeat(3000)}=1`);
+
+      strictEqual(response.status, 400);
+      deepStrictEqual(await response.json(), {
+        statusCode: 400,
+        message: 'Query string nested deeper than 32 levels',
+        isError: true,
+      });
+      deepStrictEqual(errors, ['HttpException']);
     });
   });
 
