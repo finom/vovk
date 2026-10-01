@@ -3,6 +3,7 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import { describe, it } from 'node:test';
 import type { OpenAPIObject } from 'openapi3-ts/oas31';
+import { Project, ts } from 'ts-morph';
 import { HttpMethod, type VovkSchema } from 'vovk';
 import * as YAML from 'yaml';
 import { importFresh } from '../../lib/import-fresh.mts';
@@ -495,6 +496,92 @@ await describe('OpenAPI flags', async () => {
     strictEqual(schema.segments.mixin2.controllers.RPC2.handlers.postTest2.httpMethod, HttpMethod.POST);
     ok(typeof RPC1.postTest1 === 'function', 'RPC1.postTest1 should be a function');
     ok(typeof RPC2.postTest2 === 'function', 'RPC2.postTest2 should be a function');
+    await fs.rm(generatedClientDir, { recursive: true, force: true });
+  });
+});
+
+// the diagnostics of the files in dir; declaration files are checked too, so an unresolved type can't turn into any
+function typecheck(rootFile: string, dir: string) {
+  const project = new Project({
+    compilerOptions: {
+      strict: true,
+      noEmit: true,
+      skipLibCheck: false,
+      target: ts.ScriptTarget.ES2022,
+      lib: ['lib.esnext.d.ts', 'lib.dom.d.ts', 'lib.dom.iterable.d.ts'],
+      module: ts.ModuleKind.NodeNext,
+      moduleResolution: ts.ModuleResolutionKind.NodeNext,
+      allowImportingTsExtensions: true,
+      resolveJsonModule: true,
+      types: ['node'],
+    },
+  });
+  project.addSourceFileAtPath(rootFile);
+  project.resolveSourceFileDependencies();
+  return project
+    .getPreEmitDiagnostics()
+    .map(({ compilerObject: { file, messageText } }) => ({ file: file?.fileName ?? '', messageText }))
+    .filter(({ file }) => file.startsWith(dir))
+    .map(
+      ({ file, messageText }) => `${path.relative(dir, file)}: ${ts.flattenDiagnosticMessageText(messageText, '\n')}`
+    );
+}
+
+await describe('Generated mixin client', async () => {
+  await it('typechecks with skipLibCheck false', async () => {
+    const spec: OpenAPIObject = {
+      openapi: '3.1.0',
+      info: { title: 'Events', version: '1.0.0' },
+      servers: [{ url: 'https://example.com/api' }],
+      paths: {
+        '/events': {
+          get: {
+            operationId: 'streamEvents',
+            responses: {
+              '200': {
+                description: 'ok',
+                content: { 'application/jsonl': { schema: { $ref: '#/components/schemas/Event' } } },
+              },
+            },
+          },
+        },
+        '/thing': {
+          get: {
+            operationId: 'getThing',
+            responses: {
+              '200': { description: 'ok', content: { 'application/json': { schema: { type: 'object' } } } },
+            },
+          },
+        },
+      },
+      components: {
+        schemas: { Event: { type: 'object', properties: { n: { type: 'number' } }, required: ['n'] } },
+      },
+    };
+    await fs.mkdir(artifactsDir, { recursive: true });
+    await fs.writeFile(path.join(artifactsDir, 'typed-spec.json'), JSON.stringify(spec));
+    const generatedClientDir = path.join(artifactsDir, `generated-client${Date.now()}`);
+
+    await runAtProjectDir(`../dist/index.mjs generate --openapi typed-spec.json --out ${generatedClientDir} --from ts`);
+
+    const consumer = path.join(generatedClientDir, 'consumer.ts');
+    await fs.writeFile(
+      consumer,
+      `import { api, type Mixins } from './index.ts';
+type IsAny<T> = 0 extends 1 & T ? true : false;
+export async function check() {
+  await api.getThing();
+  for await (const event of await api.streamEvents()) {
+    const typed: IsAny<typeof event> = false;
+    const n: number = event.n;
+    const declared: Mixins.Mixin.Event = event;
+    return [typed, n, declared];
+  }
+}
+`
+    );
+
+    deepStrictEqual(typecheck(consumer, generatedClientDir), []);
     await fs.rm(generatedClientDir, { recursive: true, force: true });
   });
 });

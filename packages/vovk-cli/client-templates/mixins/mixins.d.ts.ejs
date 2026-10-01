@@ -1,5 +1,5 @@
 <%- t.getFirstLineBanner() %>
-import type { VovkRequest, VovkStreamAsyncIterable, KnownAny } from 'vovk';
+import type { VovkRequest, VovkStreamAsyncIterable } from 'vovk';
 
 <% const mixins = Object.values(t.schema.segments).filter((segment) => segment.emitSchema && segment.segmentType === 'mixin'); %>
 
@@ -56,7 +56,7 @@ export type Controllers = {
             <%- getType(segment, controllerSchema, handlerName, 'body') %>, 
             <%- getType(segment, controllerSchema, handlerName, 'query') %>, 
             <%- getType(segment, controllerSchema, handlerName, 'params')  %>
-          >) => <%- handlerSchema.validation?.output ? `Promise<${getType(segment, controllerSchema, handlerName, 'output')}>` : handlerSchema.validation?.iteration ? `Promise<VovkStreamAsyncIterable<${getType(segment, controllerSchema, handlerName, 'iteration')}>>` : 'Promise<KnownAny>' %>,
+          >) => <%- handlerSchema.validation?.output ? `Promise<${getType(segment, controllerSchema, handlerName, 'output')}>` : handlerSchema.validation?.iteration ? `Promise<VovkStreamAsyncIterable<${getType(segment, controllerSchema, handlerName, 'iteration')}>>` : 'Promise<any>' %>,
         <% } %>
       };
      <% } %>
