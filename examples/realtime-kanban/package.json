@@ -50,7 +50,7 @@
     "mitt": "^3.0.1",
     "motion": "^13.0.0",
     "nanoid": "^6.0.1",
-    "next": "^16.3.0",
+    "next": "^16.3.6",
     "openai": "^7.4.0",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
@@ -73,7 +73,7 @@
   },
   "devDependencies": {
     "@biomejs/biome": "^2.5.14",
-    "@next/bundle-analyzer": "^16.3.0",
+    "@next/bundle-analyzer": "^16.3.6",
     "@tailwindcss/postcss": "^4",
     "@types/lodash": "^4.17.25",
     "@types/node": "^26",
