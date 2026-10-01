@@ -43,7 +43,7 @@
   },
   "scripts": {
     "postbuild": "chmod +x ./bin/index.mjs",
-    "build": "rm -rf dist *.tsbuildinfo && tsc",
+    "build": "rm -f *.tsbuildinfo && tsc",
     "rm-dist": "rm -rf dist mjs cjs",
     "lint": "biome check --fix",
     "tsc": "tsc --noEmit",
