@@ -109,6 +109,34 @@
         "getIsErrorData": {
           "path": "is-error-data",
           "httpMethod": "GET"
+        },
+        "getQueryArray": {
+          "validation": {
+            "query": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "object",
+              "properties": {
+                "items": {
+                  "type": "array",
+                  "items": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  }
+                }
+              },
+              "required": [
+                "items"
+              ]
+            }
+          },
+          "path": "query-array",
+          "httpMethod": "GET"
         }
       }
     }

@@ -39,4 +39,9 @@ export default class RustSweepController {
   static getIsErrorData() {
     return { isError: false, data: 1 };
   }
+
+  @get('query-array')
+  static getQueryArray = procedure({
+    query: z.object({ items: z.array(z.string().nullable()) }),
+  }).handle((req) => req.vovk.query());
 }

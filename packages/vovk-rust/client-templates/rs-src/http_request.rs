@@ -646,15 +646,14 @@ fn build_query_string(data: &Value, prefix: &str) -> String {
             parts.join("&")
         }
         Value::Array(arr) => {
-            let parts: Vec<String> = arr
-                .iter()
-                .enumerate()
-                .map(|(i, v)| {
-                    let new_prefix = format!("{}[{}]", prefix, i);
-                    build_query_string(v, &new_prefix)
-                })
-                .filter(|part| !part.is_empty())
-                .collect();
+            // an item that sends nothing, such as null, takes no index: the server reads indexes with a gap as an object
+            let mut parts: Vec<String> = Vec::new();
+            for item in arr {
+                let part = build_query_string(item, &format!("{}[{}]", prefix, parts.len()));
+                if !part.is_empty() {
+                    parts.push(part);
+                }
+            }
             parts.join("&")
         }
         Value::Null => String::new(),

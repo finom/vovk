@@ -185,6 +185,23 @@ pub mod test_requests {
         assert_eq!(data, json!({"isError": false, "data": 1}));
     }
 
+    // a null item takes no index: the server reads indexes with a gap as an object
+    #[tokio::test]
+    async fn test_query_array_without_gaps() {
+        let data = rust_sweep_rpc::get_query_array(
+            (),
+            rust_sweep_rpc::get_query_array_::query {
+                items: vec![Some("a".to_string()), None, Some("b".to_string())],
+            },
+            (),
+            None,
+            None,
+            false,
+        ).await.unwrap();
+
+        assert_eq!(data, json!({"items": ["a", "b"]}));
+    }
+
     // calls share a connection: a client per call would open one per call
     #[tokio::test]
     async fn test_connection_reuse() {
