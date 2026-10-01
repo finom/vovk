@@ -95,6 +95,15 @@ class VovkApp {
     }
   }
 
+  // an error onError throws is logged, it doesn't replace the response
+  private static async callOnError(onError: SegmentHooks['onError'], error: unknown, req: VovkRequest) {
+    try {
+      await onError?.(error as Error, req);
+    } catch (onErrorError) {
+      console.error('An error caught in onError handler:', onErrorError);
+    }
+  }
+
   // HEAD answers with the status and headers only, a stream behind the dropped body is cancelled
   private static withoutBody(response: Response) {
     if (!response.body) return response;
@@ -428,6 +437,9 @@ class VovkApp {
       }
 
       if (result instanceof Responder) {
+        if (result instanceof JSONLinesResponder) {
+          result._onError = (error) => void VovkApp.callOnError(onError, error, req);
+        }
         await onSuccess?.(result, req);
         return VovkApp.withHeaders(result.response, headersFromDecoratorOptions);
       }
@@ -449,22 +461,20 @@ class VovkApp {
               headers: { ...headersFromDecoratorOptions, ...headers },
             })
         );
+        responder._onError = (error) => void VovkApp.callOnError(onError, error, req);
 
         void (async () => {
           try {
             // send() waits while the client reads slower than the generator yields
             for await (const chunk of result as AsyncGenerator<unknown>) {
               await responder.send(chunk);
-              // the client went away: leaving the loop returns the iterator, so a generator's finally runs
+              // the client went away or a line failed: leaving the loop returns the iterator, so a generator's
+              // finally runs
               if (responder.isClosed) break;
             }
           } catch (e) {
             // the outer catch already returned the response, so onError has to run here
-            try {
-              await onError?.(e as HttpException, req);
-            } catch (onErrorError) {
-              console.error('An error caught in onError handler:', onErrorError);
-            }
+            await VovkApp.callOnError(onError, e, req);
             return responder.throw(e);
           }
 
@@ -479,11 +489,7 @@ class VovkApp {
       return this.respond({ req, statusCode: 200, responseBody, options: staticMethod._options });
     } catch (e) {
       const err = e as Error | null | undefined;
-      try {
-        await this.#getHooks(segmentName, route?.controller).onError?.(err as Error, req);
-      } catch (onErrorError) {
-        console.error('An error caught in onError handler:', onErrorError);
-      }
+      await VovkApp.callOnError(this.#getHooks(segmentName, route?.controller).onError, e, req);
 
       if (isNextNavigationError(e)) throw e;
 

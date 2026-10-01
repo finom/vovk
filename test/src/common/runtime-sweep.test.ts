@@ -1,7 +1,17 @@
 import { deepStrictEqual, ok, rejects, strictEqual } from 'node:assert';
 import { describe, it } from 'node:test';
 import { forbidden, redirect, unauthorized } from 'next/dist/client/components/navigation.react-server.js';
-import { get, HttpException, HttpStatus, initSegment, multitenant, post, procedure, type VovkRequest } from 'vovk';
+import {
+  get,
+  HttpException,
+  HttpStatus,
+  initSegment,
+  JSONLinesResponder,
+  multitenant,
+  post,
+  procedure,
+  type VovkRequest,
+} from 'vovk';
 import { z } from 'zod';
 
 type Handlers = ReturnType<typeof initSegment>;
@@ -377,6 +387,99 @@ describe('Runtime sweep', () => {
       abortController.abort();
       await wait(50);
 
+      strictEqual(finalized, true);
+    });
+  });
+
+  describe('JSON Lines responder', () => {
+    const errors: string[] = [];
+    let isClosedAfterClose = false;
+    let finalized = false;
+    class ResponderController {
+      static throwAfterSend(req: VovkRequest) {
+        const responder = new JSONLinesResponder<{ n: number | string }>(req);
+        void responder.send({ n: 1 });
+        void responder.throw(new Error('boom'));
+        void responder.send({ n: 'after throw' });
+        return responder;
+      }
+
+      static sendAfterClose(req: VovkRequest) {
+        const responder = new JSONLinesResponder<{ n: number }>(req);
+        void responder.send({ n: 1 });
+        void responder.close();
+        isClosedAfterClose = responder.isClosed;
+        void responder.send({ n: 2 });
+        return responder;
+      }
+
+      static invalidItem = procedure({ iteration: z.object({ n: z.number() }) }).handle(async (req) => {
+        const responder = new JSONLinesResponder<{ n: number }>(req);
+        void (async () => {
+          await responder.send({ n: 'one' } as unknown as { n: number });
+          await responder.send({ n: 2 });
+          await responder.close();
+        })();
+        return responder;
+      });
+
+      static async *bigIntItem() {
+        try {
+          yield { n: 1 };
+          yield { n: 2n };
+          yield { n: 3 };
+        } finally {
+          finalized = true;
+        }
+      }
+    }
+    get('throw-after-send')(ResponderController, 'throwAfterSend');
+    get('send-after-close')(ResponderController, 'sendAfterClose');
+    get('invalid-item')(ResponderController, 'invalidItem');
+    get('big-int-item')(ResponderController, 'bigIntItem');
+    const handlers = initSegment({
+      segmentName: 'responder',
+      controllers: { ResponderController },
+      onError: (error) => {
+        errors.push(error.message);
+      },
+    });
+    const readLines = async (response: Response) =>
+      (await response.text())
+        .split('\n')
+        .filter(Boolean)
+        .map((line) => JSON.parse(line));
+
+    it('Writes the error line of throw() after the earlier sends and drops the later ones', async () => {
+      const lines = await readLines(await call(handlers, 'GET', 'throw-after-send'));
+
+      deepStrictEqual(lines, [{ n: 1 }, { isError: true, reason: 'boom' }]);
+    });
+
+    it('Drops a send after close()', async () => {
+      const lines = await readLines(await call(handlers, 'GET', 'send-after-close'));
+
+      deepStrictEqual(lines, [{ n: 1 }]);
+      strictEqual(isClosedAfterClose, true);
+    });
+
+    it('Ends the stream and calls onError when a send fails validation', async () => {
+      errors.length = 0;
+      const lines = await readLines(await call(handlers, 'GET', 'invalid-item'));
+
+      strictEqual(lines.length, 1);
+      strictEqual(lines[0].isError, true);
+      ok(lines[0].reason.startsWith('Validation failed. Invalid iteration #0'), lines[0].reason);
+      deepStrictEqual(errors, [lines[0].reason]);
+    });
+
+    it('Ends the stream, calls onError and returns the generator when an item fails to serialize', async () => {
+      errors.length = 0;
+      const lines = await readLines(await call(handlers, 'GET', 'big-int-item'));
+      await wait(10);
+
+      deepStrictEqual(lines, [{ n: 1 }, { isError: true, reason: 'Do not know how to serialize a BigInt' }]);
+      deepStrictEqual(errors, ['Do not know how to serialize a BigInt']);
       strictEqual(finalized, true);
     });
   });

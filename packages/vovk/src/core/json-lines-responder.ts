@@ -30,14 +30,16 @@ const UNREAD_LIMIT = 16 * 1024 * 1024;
  * ```
  */
 export class JSONLinesResponder<T> extends Responder {
+  // set at once by close() and throw(): later lines are dropped, the queued ones still go out
+  private closing = false;
+
+  // the stream is closed, or the client went away
   private closed = false;
 
   private i = 0;
 
-  private pendingSends = new Set<Promise<void>>();
-
-  // sends are chained so unawaited calls keep their order, see send()
-  private sendQueue: Promise<void> = Promise.resolve();
+  // lines and the closing step are chained so unawaited calls keep their order, see enqueue()
+  private queue: Promise<void> = Promise.resolve();
 
   private hasSent = false;
 
@@ -53,6 +55,9 @@ export class JSONLinesResponder<T> extends Responder {
   public readonly headers: Record<string, string>;
 
   public onBeforeSend: (item: T, i: number) => T | Promise<T> = (item) => item;
+
+  // set by vovk to the segment's onError: a failed send ends the stream, and its caller never sees the error
+  public _onError?: (error: unknown) => void;
 
   constructor(request?: Request | null, getResponse?: (responder: JSONLinesResponder<T>) => Response) {
     super();
@@ -96,69 +101,84 @@ export class JSONLinesResponder<T> extends Responder {
 
   /** Whether the stream is closed: by close() or throw(), or because the client went away. Later lines are dropped. */
   public get isClosed() {
-    return this.closed;
+    return this.closing || this.closed;
   }
 
   public readonly send = async (item: T) => {
-    // chaining keeps lines in call order even when send() is not awaited
-    const promise = this.sendQueue.then(async () => {
-      if (this.closed) return;
-      try {
-        if (!this.hasSent) {
-          this.hasSent = true;
-          // zero timeout lets withValidationLibrary set onBeforeSend before the first send,
-          // otherwise immediate streaming would skip the first iteration validation
-          await new Promise((resolve) => setTimeout(resolve, 0));
-        }
-        const line = await this.onBeforeSend(item, this.i++);
-        await this.waitForRoom();
-        this.sendLineOrError(line);
-      } catch (e) {
-        this.throw(e);
+    if (this.isClosed) return;
+    await this.enqueue(async () => {
+      if (!this.hasSent) {
+        this.hasSent = true;
+        // zero timeout lets withValidationLibrary set onBeforeSend before the first send,
+        // otherwise immediate streaming would skip the first iteration validation
+        await new Promise((resolve) => setTimeout(resolve, 0));
       }
+      const line = await this.onBeforeSend(item, this.i++);
+      await this.waitForRoom();
+      this.writeLine(line);
     });
-    this.sendQueue = promise;
-    this.pendingSends.add(promise);
-    try {
-      await promise;
-    } finally {
-      this.pendingSends.delete(promise);
-    }
   };
 
+  /** Writes a line as it is, after the queued ones. */
   public sendLineOrError = (data: T | StreamAbortMessage) => {
-    const { controller, encoder } = this;
-    if (this.closed) return;
-
-    controller?.enqueue(encoder?.encode(`${JSON.stringify(data)}\n`));
+    if (this.isClosed) return;
+    void this.enqueue(() => this.writeLine(data));
   };
 
-  public readonly close = async () => {
-    if (this.closed) return;
-    // let unawaited send() calls finish first, per the documented send-then-close pattern
-    while (this.pendingSends.size) {
-      await Promise.allSettled([...this.pendingSends]);
-    }
-    if (this.closed) return;
-    this.closed = true;
-    this.controller?.close();
+  public readonly close = () => {
+    if (this.isClosed) return this.queue;
+    this.closing = true;
+    return this.enqueue(() => this.end());
   };
 
   public readonly throw = (e: unknown) => {
+    if (this.isClosed) return this.queue;
+    const errorLine = this.toErrorLine(e);
+    this.closing = true;
+    return this.enqueue(() => this.end(errorLine));
+  };
+
+  // a step runs after the queued ones, chained so unawaited calls keep their order; one that throws, as a send that
+  // fails iteration validation, ends the stream with an error line and drops the rest
+  private enqueue(step: () => unknown) {
+    this.queue = this.queue.then(async () => {
+      if (this.closed) return;
+      try {
+        await step();
+      } catch (e) {
+        this.closing = true;
+        this._onError?.(e);
+        this.end(this.toErrorLine(e));
+      }
+    });
+    return this.queue;
+  }
+
+  private writeLine(data: unknown) {
+    if (this.closed) return;
+    this.controller?.enqueue(this.encoder?.encode(`${JSON.stringify(data)}\n`));
+  }
+
+  private toErrorLine(e: unknown) {
     // same rule as a non streaming handler, an error other than an HttpException is internal
     if (!isHttpException(e) && process.env.NODE_ENV === 'production') {
       console.error('🐺 Unhandled error in a Vovk stream:', e);
-      this.sendLineOrError({ isError: true, reason: 'Internal server error' });
-      return this.close();
+      return JSON.stringify({ isError: true, reason: 'Internal server error' } satisfies StreamAbortMessage);
     }
     // the client takes a line for an error only with these keys, and statusCode only as a number
-    this.sendLineOrError({
+    return JSON.stringify({
       isError: true,
       reason: e instanceof Error ? e.message : e,
       ...(isHttpException(e) && typeof e.statusCode === 'number' ? { statusCode: e.statusCode } : {}),
-    });
-    return this.close();
-  };
+    } satisfies StreamAbortMessage);
+  }
+
+  private end(errorLine?: string) {
+    if (this.closed) return;
+    if (errorLine) this.controller?.enqueue(this.encoder?.encode(`${errorLine}\n`));
+    this.closed = true;
+    this.controller?.close();
+  }
 
   // a full queue means the client reads slower than the lines come
   private async waitForRoom() {
