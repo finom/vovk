@@ -88,6 +88,27 @@ type StaticMethodReturn<T extends ControllerStaticMethod> = IsNextJs extends tru
 
 type StaticMethodReturnPromise<T extends ControllerStaticMethod> = ToPromise<StaticMethodReturn<T>>;
 
+// the items a handler streams: from the iteration schema, else from a generator or JSONLinesResponder it returns
+type StreamItem<T extends ControllerStaticMethod> = T extends { __types: { iteration: infer U } }
+  ? unknown extends U
+    ? HandlerStreamItem<T>
+    : U
+  : HandlerStreamItem<T>;
+
+type HandlerStreamItem<T extends ControllerStaticMethod> =
+  ActualReturnType<T> extends
+    | Promise<JSONLinesResponder<infer U>>
+    | JSONLinesResponder<infer U>
+    | Iterator<infer U>
+    | AsyncIterator<infer U>
+    ? U
+    : never;
+
+// what a call resolves to without transform
+type ClientMethodData<T extends ControllerStaticMethod> = [StreamItem<T>] extends [never]
+  ? Awaited<StaticMethodReturn<T>>
+  : VovkStreamAsyncIterable<StreamItem<T>>;
+
 type StaticMethodOptions<
   T extends (
     req: VovkRequest<KnownAny, KnownAny, KnownAny>,
@@ -99,16 +120,7 @@ type StaticMethodOptions<
   F extends VovkFetcherOptions<KnownAny>,
 > = Partial<
   TFetcherOptions & {
-    transform: (
-      staticMethodReturn: T extends { __types: { iteration: infer U } }
-        ? unknown extends U
-          ? Awaited<StaticMethodReturn<T>>
-          : VovkStreamAsyncIterable<U>
-        : Awaited<StaticMethodReturn<T>> extends JSONLinesResponder<infer U>
-          ? VovkStreamAsyncIterable<U>
-          : Awaited<StaticMethodReturn<T>>,
-      resp: Response
-    ) => R;
+    transform: (staticMethodReturn: ClientMethodData<T>, resp: Response) => R;
     fetcher: VovkFetcher<F>;
   }
 >;
@@ -124,17 +136,9 @@ export type ClientMethodReturn<
   IsAny<R> extends true
     ? Promise<R>
     : unknown extends R // no transform, or one that returns unknown
-      ? T extends { __types: { iteration: infer U } }
-        ? unknown extends U
-          ? StaticMethodReturnPromise<T>
-          : Promise<VovkStreamAsyncIterable<U>>
-        : ActualReturnType<T> extends
-              | Promise<JSONLinesResponder<infer U>>
-              | JSONLinesResponder<infer U>
-              | Iterator<infer U>
-              | AsyncIterator<infer U>
-          ? Promise<VovkStreamAsyncIterable<U>>
-          : StaticMethodReturnPromise<T>
+      ? [StreamItem<T>] extends [never]
+        ? StaticMethodReturnPromise<T>
+        : Promise<VovkStreamAsyncIterable<StreamItem<T>>>
       : Promise<Awaited<R>>;
 
 export type ClientMethod<

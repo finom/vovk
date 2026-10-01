@@ -106,3 +106,23 @@ export async function transformToPrimitive() {
   const pair = await rpc.withOutput({ transform: (data, response) => [data, response] as const });
   pair[0].n satisfies number;
 }
+
+// ====== A generator without an iteration schema ======
+
+class GeneratorController {
+  static noIteration = procedure({ query: z.object({ q: z.string() }) }).handle(async function* () {
+    yield { token: 'a' };
+  });
+}
+
+export async function generatorWithoutIterationSchema() {
+  const rpc = createRPC<typeof GeneratorController>({}, '', 'GeneratorRPC');
+
+  const stream = await rpc.noIteration({ query: { q: 'x' } });
+  const items = await stream.asPromise();
+  items satisfies { token: string }[];
+  stream.abortSilently();
+  for await (const item of stream) item.token satisfies string;
+  // @ts-expect-error the stream is not an async generator
+  stream.next;
+}
