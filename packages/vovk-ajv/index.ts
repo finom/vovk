@@ -49,9 +49,12 @@ const createAjv = (options: Options, target: Target, isForm: boolean) => {
 type AjvInstance = ReturnType<typeof createAjv>;
 
 // null for a schema Ajv can't compile, which is left to the server
-type CachedAjv = { ajv: AjvInstance; validators: WeakMap<object, ValidateFunction | null> };
+type Validator = ValidateFunction | null;
 
-// one Ajv per options object, draft and form or not, each compiling a schema object once
+// Ajv keeps every function it compiles, so a schema compiles once per text, also when each call brings a new object
+type CachedAjv = { ajv: AjvInstance; validators: WeakMap<object, Validator>; byText: Map<string, Validator> };
+
+// one Ajv per options object, draft, and form or not
 const cache = new WeakMap<Options, Partial<Record<`${Target}${'' | ' form'}`, CachedAjv>>>();
 
 // formats ajv-formats doesn't know, such as Zod's cuid, nanoid or e164, pass instead of failing compilation;
@@ -111,17 +114,26 @@ const getValidator = (
   const instances = cache.get(options) ?? {};
   cache.set(options, instances);
   const key = isForm ? (`${target} form` as const) : target;
-  const cached = instances[key] ?? { ajv: createAjv(options, target, isForm), validators: new WeakMap() };
+  const cached = instances[key] ?? {
+    ajv: createAjv(options, target, isForm),
+    validators: new WeakMap(),
+    byText: new Map(),
+  };
   instances[key] = cached;
 
   let validator = cached.validators.get(schema);
   if (validator === undefined) {
-    allowUnknownFormats(cached.ajv, schema);
-    try {
-      validator = cached.ajv.compile(toNumericBounds(schema) as VovkJSONSchemaBase);
-    } catch (error) {
-      console.warn(`🐺 Client-side validation of ${description} is skipped, Ajv can't compile its schema:`, error);
-      validator = null;
+    const text = JSON.stringify(schema);
+    validator = cached.byText.get(text);
+    if (validator === undefined) {
+      allowUnknownFormats(cached.ajv, schema);
+      try {
+        validator = cached.ajv.compile(toNumericBounds(schema) as VovkJSONSchemaBase);
+      } catch (error) {
+        console.warn(`🐺 Client-side validation of ${description} is skipped, Ajv can't compile its schema:`, error);
+        validator = null;
+      }
+      cached.byText.set(text, validator);
     }
     cached.validators.set(schema, validator);
   }

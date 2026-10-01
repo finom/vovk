@@ -1,4 +1,5 @@
 import { deepStrictEqual, rejects, strictEqual } from 'node:assert';
+import { createRequire } from 'node:module';
 import { describe, it } from 'node:test';
 import type { VovkJSONSchemaBase } from 'vovk';
 import { validateOnClient } from '../../../packages/vovk-ajv/index.js';
@@ -94,5 +95,28 @@ describe('vovk-ajv', () => {
     deepStrictEqual(form.getAll('age'), ['5']);
     await rejects(validateBody(invalid, schema), /data\/age must be number/);
     await rejects(validateBody({ age: '5' }, schema), /data\/age must be number/);
+  });
+
+  it('Compiles a schema once for every object with the same text', async () => {
+    // the copy of Ajv that vovk-ajv itself loads
+    const requireFromAjvPackage = createRequire(new URL('../../../packages/vovk-ajv/index.js', import.meta.url));
+    const AjvCore = requireFromAjvPackage('ajv/dist/core.js').default;
+    const compile = AjvCore.prototype.compile;
+    let compiles = 0;
+    AjvCore.prototype.compile = function (this: unknown, ...args: unknown[]) {
+      compiles++;
+      return compile.apply(this, args);
+    };
+    // Ajv keeps every function it compiles, so a new object for each call must not compile again
+    const schema = { $schema, type: 'object', properties: { name: { type: 'string', minLength: 2 } } };
+
+    try {
+      for (let i = 0; i < 5; i++) await validateBody({ name: 'ab' }, structuredClone(schema));
+      await rejects(validateBody({ name: 'a' }, structuredClone(schema)), /data\/name must NOT have fewer than 2/);
+    } finally {
+      AjvCore.prototype.compile = compile;
+    }
+
+    strictEqual(compiles, 1);
   });
 });
