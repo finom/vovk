@@ -29,6 +29,12 @@ export default class ClientSweepController {
     return { contentType: req.headers.get('content-type') };
   }
 
+  @post('lines')
+  static postLines = procedure({
+    contentType: 'application/jsonl',
+    body: z.string(),
+  }).handle(async (req) => ({ contentType: req.headers.get('content-type'), body: await req.vovk.body() }));
+
   @post('content-type')
   static postContentType(req: VovkRequest<{ hello: string }>) {
     return { contentType: req.headers.get('content-type') };

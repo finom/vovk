@@ -51,7 +51,14 @@ export async function parseBody(
 
   // multipart/form-data → FormData
   if (formTypes.includes(mediaType)) {
-    const body = await req.formData();
+    let body: FormData;
+    try {
+      body = await req.formData();
+    } catch (e) {
+      // a body that doesn't match its form type, e.g. a multipart body without its boundary
+      if (e instanceof TypeError) throw new HttpException(HttpStatus.BAD_REQUEST, `Invalid form body: ${e.message}`);
+      throw e;
+    }
     req.formData = () => Promise.resolve(body);
     return parseForm(body);
   }

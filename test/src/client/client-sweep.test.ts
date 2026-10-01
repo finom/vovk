@@ -94,6 +94,13 @@ describe('Client sweep', () => {
       });
     });
 
+    it('Sends a string body as the text type the procedure declares', async () => {
+      deepStrictEqual(await ClientSweepRPC.postLines({ body: '{"a":1}\n{"a":2}\n' }), {
+        contentType: 'application/jsonl',
+        body: '{"a":1}\n{"a":2}\n',
+      });
+    });
+
     it('Sends a Date in the query as an ISO string', async () => {
       const result = await ClientSweepRPC.getQueryEcho({
         query: { since: new Date(0), nested: { at: new Date(1000) } },

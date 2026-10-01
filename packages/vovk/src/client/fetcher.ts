@@ -73,6 +73,17 @@ export type CreateFetcherOnError<T> = (
  * Creates a customizable fetcher function for client requests.
  * @see https://vovk.dev/imports
  */
+// a string body goes out as the type the procedure declares, e.g. application/jsonl, so the server accepts it;
+// a form, JSON or wildcard type says nothing about a string, so it falls back to text/plain
+const getStringBodyContentType = (schema: VovkHandlerSchema) => {
+  const declared = schema.validation?.body?.['x-contentType'] as string[] | undefined;
+  const isTextLike = (type: string) =>
+    !type.includes('*') &&
+    !['multipart/form-data', 'application/x-www-form-urlencoded', 'application/json'].includes(type) &&
+    !type.endsWith('+json');
+  return declared?.find(isTextLike) ?? 'text/plain';
+};
+
 export function createFetcher<T>({
   prepareRequestInit,
   transformResponse,
@@ -143,7 +154,7 @@ export function createFetcher<T>({
           : body instanceof URLSearchParams
             ? 'application/x-www-form-urlencoded'
             : typeof body === 'string'
-              ? 'text/plain'
+              ? getStringBodyContentType(schema)
               : body instanceof Blob
                 ? body.type || 'application/octet-stream'
                 : body instanceof ArrayBuffer || body instanceof Uint8Array

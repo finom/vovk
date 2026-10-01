@@ -11,6 +11,12 @@ export default class RuntimeSweepController {
     body: z.object({ to: z.string(), amount: z.number() }),
   }).handle(async (req) => ({ executed: await req.vovk.body() }));
 
+  @post('form')
+  static form = procedure({
+    contentType: 'multipart/form-data',
+    body: z.object({ a: z.string() }),
+  }).handle(async (req) => req.vovk.body());
+
   @post('lines')
   static lines = procedure({
     contentType: 'application/jsonl',

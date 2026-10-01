@@ -54,6 +54,19 @@
           "path": "content-type",
           "httpMethod": "GET"
         },
+        "postLines": {
+          "validation": {
+            "body": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "string",
+              "x-contentType": [
+                "application/jsonl"
+              ]
+            }
+          },
+          "path": "lines",
+          "httpMethod": "POST"
+        },
         "postContentType": {
           "path": "content-type",
           "httpMethod": "POST"
