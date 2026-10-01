@@ -67,7 +67,7 @@ export default class UserController {
 }
 ```
 
-The RPC method's `body` type is inferred as `TBody | FormData | Blob{:ts}`, where `TBody` is the type inferred from the validation schema (an object is converted to `FormData` on the client side, based on the content type).
+The RPC method's `body` type is inferred as `TBody | FormData | Blob{:ts}`, where `TBody` is the type inferred from the validation schema. An object is validated as an object, then converted to `FormData` on the client side: `null` and `undefined` fields are left out, an array becomes one entry per item, a `Date{:ts}` is sent as an ISO string and another object as JSON.
 
 ```ts showLineNumbers copy
 import { UserRPC } from '@/client';
@@ -127,7 +127,7 @@ Note that client-side validation does not fully support the OpenAPI-compatible `
 
 ## URL-Encoded Form Data
 
-Set `contentType` to `'application/x-www-form-urlencoded'` to accept URL-encoded form submissions. The body is parsed the same way as `multipart/form-data`, but the client `body` type also accepts `URLSearchParams{:ts}`.
+Set `contentType` to `'application/x-www-form-urlencoded'` to accept URL-encoded form submissions. The body is parsed the same way as `multipart/form-data`, but the client `body` type also accepts `URLSearchParams{:ts}`. When the procedure doesn't also accept `multipart/form-data`, an object body is sent as `URLSearchParams{:ts}`.
 
 ```ts showLineNumbers copy {7}
 import { z } from 'zod';
