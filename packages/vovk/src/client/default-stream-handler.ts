@@ -33,259 +33,179 @@ export const readableStreamToAsyncIterable = <T = unknown>({
 }): Omit<VovkStreamAsyncIterable<T>, 'abortController' | 'status'> => {
   const reader = readableStream.getReader();
   const subscribers = new Set<(data: T, i: number) => void>();
+  // one decoder for the whole stream keeps a multi-byte character that a chunk boundary splits
+  const decoder = new TextDecoder();
+  let text = '';
 
-  // State
-  let isAbortedWithoutError = false;
-  let streamExhausted = false;
+  // the items a running iteration hasn't passed yet, kept[0] is item number keptFrom
+  const kept: T[] = [];
+  let keptFrom = 0;
+  // the index of the next item for each running iteration
+  const cursors = new Set<{ index: number }>();
+
+  let exhausted = false; // nothing more is read
+  let stopped = false; // aborted silently or disposed, iterations end at once
   let streamError: unknown = null;
   let errorIndex = -1;
-  let primaryStarted = false;
+  let reading: Promise<void> | null = null;
+  let collecting: Promise<T[]> | null = null;
 
-  // consumers currently iterating, the last one to leave early releases the connection
-  let activeIterators = 0;
-  const cachedItems: T[] = [];
-
-  type Waiter = {
-    index: number;
-    resolve: (value: IteratorResult<T>) => void;
-    reject: (error: unknown) => void;
-  };
-  const waiters: Waiter[] = [];
-
-  // --- Helper functions ---
-
-  const notifyWaiters = () => {
-    for (let i = waiters.length - 1; i >= 0; i--) {
-      const waiter = waiters[i];
-      let handled = false;
-
-      if (streamError && waiter.index >= errorIndex) {
-        waiter.reject(streamError);
-        handled = true;
-      } else if (waiter.index < cachedItems.length) {
-        waiter.resolve({ value: cachedItems[waiter.index], done: false });
-        handled = true;
-      } else if (streamExhausted || (abortController?.signal.aborted && isAbortedWithoutError)) {
-        waiter.resolve({ value: undefined, done: true });
-        handled = true;
-      }
-
-      if (handled) {
-        waiters.splice(i, 1);
-      }
+  const dropPassed = (leftAt = keptFrom) => {
+    let oldest = cursors.size ? Number.POSITIVE_INFINITY : leftAt;
+    for (const cursor of cursors) oldest = Math.min(oldest, cursor.index);
+    if (oldest > keptFrom) {
+      kept.splice(0, oldest - keptFrom);
+      keptFrom = oldest;
     }
   };
 
-  const setStreamError = (error: unknown) => {
-    errorIndex = cachedItems.length;
+  const fail = (error: unknown) => {
     streamError = error;
-    notifyWaiters();
+    errorIndex = keptFrom + kept.length;
+    exhausted = true;
   };
 
-  const disposeStream = (reason: string) => {
-    isAbortedWithoutError = true;
-    streamExhausted = true;
-    notifyWaiters();
+  const release = (reason: unknown) => {
+    exhausted = true;
     abortController?.abort(reason);
     reader.cancel().catch(() => {});
   };
 
-  // --- Primary reader ---
-
-  const runPrimaryReader = async () => {
-    let buffer = '';
-    let iterationIndex = 0;
-    // one decoder for the whole stream keeps a multi-byte character that a chunk boundary splits
-    const decoder = new TextDecoder();
-
-    // Returns true if the stream should stop (error encountered)
-    const processLine = (line: string): boolean => {
-      let data: T;
-      try {
-        data = JSON.parse(line) as T;
-      } catch {
-        return false;
-      }
-
-      // the error envelope is a control message, not data, subscribers must not see it
-      if (isErrorLine(data)) {
-        abortController?.abort(data.reason);
-        setStreamError(toStreamError(data));
-        return true;
-      }
-
-      subscribers.forEach((cb) => {
-        if (!abortController?.signal.aborted) cb(data, iterationIndex);
-      });
-
-      iterationIndex++;
-
-      if (!abortController?.signal.aborted) {
-        cachedItems.push(data);
-        notifyWaiters();
-      }
-
-      return false;
-    };
-
-    try {
-      while (true) {
-        if (abortController?.signal.aborted && isAbortedWithoutError) {
-          break;
-        }
-
-        let value: Uint8Array | string | undefined;
-        let done: boolean;
-
-        try {
-          ({ value, done } = await reader.read());
-          if (done) break;
-        } catch (error) {
-          if ((error as Error)?.name === 'AbortError' && isAbortedWithoutError) {
-            break;
-          }
-          const err = new Error(`JSONLines stream error. ${String(error)}`);
-          err.cause = error;
-          setStreamError(err);
-          return;
-        }
-
-        const chunk =
-          typeof value === 'string'
-            ? value
-            : typeof value === 'number'
-              ? String.fromCharCode(value)
-              : decoder.decode(value, { stream: true });
-        buffer += chunk;
-
-        let newlineIdx: number;
-        while (true) {
-          newlineIdx = buffer.indexOf('\n');
-          if (newlineIdx === -1) break;
-          if (abortController?.signal.aborted && isAbortedWithoutError) {
-            break;
-          }
-
-          const line = buffer.slice(0, newlineIdx);
-          buffer = buffer.slice(newlineIdx + 1);
-
-          if (!line) continue;
-          if (processLine(line)) return;
-        }
-
-        if (abortController?.signal.aborted && isAbortedWithoutError) {
-          break;
-        }
-      }
-
-      // Process any remaining data in the buffer (last line without trailing newline)
-      buffer += decoder.decode();
-      const remaining = buffer.trim();
-      if (remaining) {
-        processLine(remaining);
-      }
-    } finally {
-      streamExhausted = true;
-      notifyWaiters();
-    }
+  const stop = (reason?: unknown) => {
+    stopped = true;
+    kept.length = 0;
+    release(reason);
   };
 
-  // --- Async iterator ---
+  const isStopped = () => stopped || !!abortController?.signal.aborted;
 
-  async function* asyncIterator(): AsyncGenerator<T> {
-    if (!primaryStarted) {
-      primaryStarted = true;
-      void runPrimaryReader();
+  // false when the stream ends at this line
+  const handleLine = (line: string): boolean => {
+    if (!line) return true;
+    let data: T;
+    try {
+      data = JSON.parse(line) as T;
+    } catch {
+      return true;
     }
 
-    activeIterators++;
-    let index = 0;
+    // the error envelope is a control message, not data, subscribers must not see it
+    if (isErrorLine(data)) {
+      abortController?.abort(data.reason);
+      fail(toStreamError(data));
+      return false;
+    }
+
+    const index = keptFrom + kept.length;
+    for (const cb of subscribers) {
+      if (!isStopped()) cb(data, index);
+    }
+    if (isStopped()) return false;
+    kept.push(data);
+    return true;
+  };
+
+  const handleText = (isLast: boolean) => {
+    let lineStart = 0;
+    let newlineIndex = text.indexOf('\n');
+    while (newlineIndex !== -1) {
+      const line = text.slice(lineStart, newlineIndex);
+      lineStart = newlineIndex + 1;
+      if (!handleLine(line)) {
+        text = '';
+        return;
+      }
+      newlineIndex = text.indexOf('\n', lineStart);
+    }
+    text = text.slice(lineStart);
+    // the last line may come without a trailing newline
+    if (isLast && text.trim()) handleLine(text.trim());
+  };
+
+  const readChunk = async () => {
+    let result: ReadableStreamReadResult<Uint8Array | string>;
+    try {
+      result = await reader.read();
+    } catch (error) {
+      if (stopped) return;
+      const err = new Error(`JSONLines stream error. ${String(error)}`);
+      err.cause = error;
+      fail(err);
+      return;
+    }
+    if (stopped) return;
+    const { done, value } = result;
+    text += done
+      ? decoder.decode()
+      : typeof value === 'string'
+        ? value
+        : typeof value === 'number'
+          ? String.fromCharCode(value)
+          : decoder.decode(value, { stream: true });
+    try {
+      handleText(done);
+    } catch (error) {
+      // an onIterate callback threw: the stream ends with its error
+      text = '';
+      fail(error);
+      release(error);
+      return;
+    }
+    if (done) exhausted = true;
+  };
+
+  // a chunk is read only when an iteration needs an item past the kept ones, iterations waiting together share it
+  const read = () => {
+    reading ??= readChunk().finally(() => {
+      reading = null;
+    });
+    return reading;
+  };
+
+  async function* iterate(): AsyncGenerator<T> {
+    // a later iteration starts at the oldest kept item
+    const cursor = { index: keptFrom };
+    cursors.add(cursor);
 
     try {
-      while (true) {
-        // Check error first
-        if (streamError && index >= errorIndex) {
+      while (!stopped) {
+        if (cursor.index < keptFrom + kept.length) {
+          const item = kept[cursor.index - keptFrom];
+          cursor.index++;
+          dropPassed();
+          yield item;
+        } else if (streamError && cursor.index >= errorIndex) {
           throw streamError;
-        }
-
-        // Clean exit on abort without error
-        if (abortController?.signal.aborted && isAbortedWithoutError) {
+        } else if (exhausted) {
           return;
+        } else {
+          await read();
         }
-
-        // Yield from cache if available
-        if (index < cachedItems.length) {
-          yield cachedItems[index++];
-          continue;
-        }
-
-        // Stream finished
-        if (streamExhausted) {
-          return;
-        }
-
-        // Wait for next item or completion
-        const result = await new Promise<IteratorResult<T>>((resolve, reject) => {
-          // Re-check state inside promise to handle race conditions
-          if (streamError && index >= errorIndex) {
-            reject(streamError);
-            return;
-          }
-          if (abortController?.signal.aborted && isAbortedWithoutError) {
-            resolve({ value: undefined, done: true });
-            return;
-          }
-          if (index < cachedItems.length) {
-            resolve({ value: cachedItems[index], done: false });
-            return;
-          }
-          if (streamExhausted) {
-            resolve({ value: undefined, done: true });
-            return;
-          }
-
-          waiters.push({ index, resolve, reject });
-        });
-
-        if (result.done) {
-          return;
-        }
-
-        index++;
-        yield result.value;
       }
     } finally {
-      activeIterators--;
+      cursors.delete(cursor);
+      dropPassed(cursor.index);
       // a consumer that stopped early must release the connection, same as dispose does
-      if (activeIterators === 0 && !streamExhausted) disposeStream('Stream iteration stopped');
+      if (!cursors.size && !exhausted) stop('Stream iteration stopped');
     }
   }
 
-  // --- Public API ---
-
+  // one consumer collects the items for every call
   const asPromise = async () => {
-    const items: T[] = [];
-    for await (const item of asyncIterator()) {
-      items.push(item);
-    }
-    return items;
-  };
-
-  const abortSilently = (reason?: unknown) => {
-    isAbortedWithoutError = true;
-    streamExhausted = true;
-    notifyWaiters();
-    abortController?.abort(reason);
-    reader.cancel().catch(() => {});
+    collecting ??= (async () => {
+      const items: T[] = [];
+      for await (const item of iterate()) items.push(item);
+      return items;
+    })();
+    return [...(await collecting)];
   };
 
   return {
     asPromise,
-    // abortController,
-    [Symbol.asyncIterator]: asyncIterator,
-    [Symbol.dispose]: () => disposeStream('Stream disposed'),
-    [Symbol.asyncDispose]: async () => disposeStream('Stream async disposed'),
-    abortSilently,
+    [Symbol.asyncIterator]: iterate,
+    [Symbol.dispose]: () => stop('Stream disposed'),
+    [Symbol.asyncDispose]: async () => stop('Stream async disposed'),
+    abortSilently: stop,
     onIterate: (cb) => {
       if (abortController?.signal.aborted) return () => {};
       subscribers.add(cb);

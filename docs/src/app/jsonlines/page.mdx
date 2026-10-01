@@ -112,12 +112,14 @@ for await (const { message } of stream) {
 The iterable (represented as `stream` above), besides `Symbol.asyncIterator`, `Symbol.dispose`, and `Symbol.asyncDispose`, also provides:
 
 - `status`: The HTTP response status (e.g., 200 for OK, 404 for Not Found).
-- `asPromise`: A promise that resolves with an array of all emitted values when the stream completes.
+- `asPromise`: A promise that resolves with an array of all emitted values when the stream completes. Every call gets the same items.
 - `onIterate`: Registers a callback for each iteration.
 - `abortController`: An `AbortController` instance to abort the stream. When the stream is closed with `abortController.abort()`, it throws an `AbortError` on the stream reader that can be caught on the client side via error `cause` property.
 - `abortSilently`: A method to abort the stream without throwing an error on the stream reader. This is useful when you want to stop processing the stream gracefully.
 
 The `using` statement ensures the stream is aborted with `stream.abortSilently('Stream disposed')` when it goes out of scope.
+
+The client reads the response only as fast as the iteration takes items, so a slow consumer slows the stream down instead of buffering it. An item is kept until every running iteration has passed it: iterations that run at the same time each get all items, an iteration that starts later begins at the oldest kept item, and iterating a consumed stream again yields nothing.
 
 ```ts showLineNumbers copy
 console.log('Response status:', stream.status);

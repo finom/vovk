@@ -138,6 +138,63 @@ describe('Client sweep, pure functions', () => {
       deepStrictEqual(await users, [1]);
     });
 
+    it('Reads the stream only as fast as the iteration takes items', async () => {
+      let pulls = 0;
+      const readableStream = new ReadableStream<Uint8Array>({
+        async pull(controller) {
+          await new Promise((resolve) => setTimeout(resolve, 1));
+          pulls++;
+          controller.enqueue(new TextEncoder().encode(`${JSON.stringify({ n: pulls })}\n`));
+        },
+      });
+      const iterable = readableStreamToAsyncIterable({ readableStream, abortController: new AbortController() });
+      let taken = 0;
+
+      for await (const _item of iterable) {
+        await new Promise((resolve) => setTimeout(resolve, 20));
+        if (++taken === 3) break;
+      }
+
+      ok(pulls <= taken + 2, `${pulls} lines read for ${taken} items`);
+    });
+
+    it('Keeps only the items a running iteration has not passed', async () => {
+      const iterable = readableStreamToAsyncIterable<{ n: number }>({
+        readableStream: streamOf([new TextEncoder().encode('{"n":1}\n{"n":2}\n{"n":3}\n')]),
+        abortController: new AbortController(),
+      });
+      const first = iterable[Symbol.asyncIterator]();
+
+      deepStrictEqual(await first.next(), { value: { n: 1 }, done: false });
+      // a later consumer starts at the oldest kept item
+      deepStrictEqual(await iterable.asPromise(), [{ n: 2 }, { n: 3 }]);
+      deepStrictEqual(await first.next(), { value: { n: 2 }, done: false });
+      deepStrictEqual(await first.next(), { value: { n: 3 }, done: false });
+      deepStrictEqual(await first.next(), { value: undefined, done: true });
+    });
+
+    it('Ends the stream with the error an onIterate callback throws', async () => {
+      const iterable = readableStreamToAsyncIterable({
+        readableStream: streamOf([new TextEncoder().encode('{"n":1}\n{"n":2}\n')]),
+        abortController: new AbortController(),
+      });
+      iterable.onIterate((_item, i) => {
+        if (i === 1) throw new Error('callback failed');
+      });
+
+      await rejects(iterable.asPromise(), /callback failed/);
+    });
+
+    it('Gives every asPromise() call the same items', async () => {
+      const iterable = readableStreamToAsyncIterable({
+        readableStream: streamOf([new TextEncoder().encode('{"n":1}\n{"n":2}\n')]),
+        abortController: new AbortController(),
+      });
+
+      deepStrictEqual(await iterable.asPromise(), [{ n: 1 }, { n: 2 }]);
+      deepStrictEqual(await iterable.asPromise(), [{ n: 1 }, { n: 2 }]);
+    });
+
     it('Throws a plain Error for an error line without a status', async () => {
       const iterable = readableStreamToAsyncIterable({
         readableStream: streamOf([new TextEncoder().encode('{"n":1}\n{"isError":true,"reason":"oh no"}\n')]),
