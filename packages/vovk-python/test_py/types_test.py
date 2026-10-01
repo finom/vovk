@@ -1,4 +1,5 @@
 import configparser
+import inspect
 import json
 import os
 import re
@@ -34,7 +35,8 @@ class TestTypes(unittest.TestCase):
         for rpc in rpc_modules:
             for name, value in vars(rpc).items():
                 target = value.__func__ if isinstance(value, staticmethod) else value
-                if name.startswith('__') or not (isinstance(target, type) or callable(target)):
+                # an alias such as Dict[str, Any] is evaluated on import, and get_type_hints refuses it before Python 3.14
+                if name.startswith('__') or not (isinstance(target, type) or inspect.isroutine(target)):
                     continue
                 try:
                     typing.get_type_hints(target, localns=dict(vars(rpc)))
