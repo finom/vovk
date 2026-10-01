@@ -9,7 +9,7 @@ import { getNextDevPort } from './dev/get-next-dev-port.mjs';
 import { VovkDev } from './dev/index.mjs';
 import { getProjectFullSchema } from './generate/get-project-full-schema.mjs';
 import { VovkGenerate } from './generate/index.mjs';
-import { getProjectInfo } from './get-project-info/index.mjs';
+import { getProjectInfo, loadOpenAPIMixins } from './get-project-info/index.mjs';
 import { newComponents } from './new/index.mjs';
 import type { BundleOptions, DevOptions, GenerateOptions, InitOptions, NewOptions, VovkEnv } from './types.mjs';
 import { getAvailablePort } from './utils/get-available-port.mjs';
@@ -136,11 +136,13 @@ program
   )
   .option('--log-level <level>', 'set the log level')
   .action(async (cliGenerateOptions: GenerateOptions) => {
-    const projectInfo = await getProjectInfo({
-      configPath: cliGenerateOptions.configPath,
-      srcRootRequired: false,
-      logLevel: cliGenerateOptions.logLevel,
-    });
+    const projectInfo = await loadOpenAPIMixins(
+      await getProjectInfo({
+        configPath: cliGenerateOptions.configPath,
+        srcRootRequired: false,
+        logLevel: cliGenerateOptions.logLevel,
+      })
+    );
 
     await new VovkGenerate({
       projectInfo,
@@ -179,11 +181,13 @@ program
   )
   .option('--log-level <level>', 'set the log level')
   .action(async (cliBundleOptions: BundleOptions) => {
-    const projectInfo = await getProjectInfo({
-      configPath: cliBundleOptions.configPath,
-      srcRootRequired: false,
-      logLevel: cliBundleOptions.logLevel,
-    });
+    const projectInfo = await loadOpenAPIMixins(
+      await getProjectInfo({
+        configPath: cliBundleOptions.configPath,
+        srcRootRequired: false,
+        logLevel: cliBundleOptions.logLevel,
+      })
+    );
     const { cwd, config, log, isNextInstalled } = projectInfo;
     const fullSchema = await getProjectFullSchema({
       schemaOutAbsolutePath: path.resolve(cwd, cliBundleOptions?.schemaPath ?? config.schemaOutDir),

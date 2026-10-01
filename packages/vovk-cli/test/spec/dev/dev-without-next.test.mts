@@ -337,4 +337,30 @@ await describe('vovk dev in a project without Next.js', async () => {
     const rootSchema = JSON.parse(await fs.readFile(path.join(projectDir, '.vovk-schema/root.json'), 'utf-8'));
     assert.deepStrictEqual(Object.keys(rootSchema.controllers), ['UserRPC'], dev.getOutput());
   });
+
+  await it('Starts offline with a remote OpenAPI mixin in the config', async () => {
+    const server = await startSchemaServer({ '': makeSegmentSchema('') });
+    const specUrl = `http://127.0.0.1:${await getFreePort()}/openapi.json`;
+    await createProject(projectDir, {
+      'package.json': { name: 'app', version: '1.0.0', type: 'module' },
+      'vovk.config.mjs': `export default ${JSON.stringify({
+        composedClient: { prettifyClient: false },
+        outputConfig: { segments: { petstore: { openAPIMixin: { source: { url: specUrl } } } } },
+      })};`,
+      'src/app/api/[[...vovk]]/route.ts': '',
+    });
+
+    const dev = startCLI(['dev'], { cwd: projectDir, env: { PORT: server.port } });
+    try {
+      await dev.waitForOutput(/Ready in/);
+      // the client needs the spec, so its generation fails and the watcher keeps running
+      await dev.waitForOutput(/Failed to generate the client/);
+    } finally {
+      await dev.stop();
+      await server.close();
+    }
+
+    const rootSchema = JSON.parse(await fs.readFile(path.join(projectDir, '.vovk-schema/root.json'), 'utf-8'));
+    assert.deepStrictEqual(Object.keys(rootSchema.controllers), ['UserRPC'], dev.getOutput());
+  });
 });

@@ -14,7 +14,7 @@ import { ensureClient } from '../generate/ensure-client.mjs';
 import { generate } from '../generate/generate.mjs';
 import { CONFIG_FILE_PATHS } from '../get-project-info/get-config/get-config-absolute-paths.mjs';
 import { getMetaSchema } from '../get-project-info/get-meta-schema.mjs';
-import { getProjectInfo, type ProjectInfo } from '../get-project-info/index.mjs';
+import { getProjectInfo, loadOpenAPIMixins, type ProjectInfo } from '../get-project-info/index.mjs';
 import type { DevOptions, VovkEnv } from '../types.mjs';
 import { chalkHighlightThing } from '../utils/chalk-highlight-thing.mjs';
 import { debounceWithArgs } from '../utils/debounce-with-args.mjs';
@@ -433,7 +433,7 @@ export class VovkDev {
     };
     try {
       await generate({
-        projectInfo: this.#projectInfo,
+        projectInfo: await loadOpenAPIMixins(this.#projectInfo),
         fullSchema,
         locatedSegments: this.#segments,
         cliGenerateOptions: { schemaPath: this.#getCliSchemaPath() },
