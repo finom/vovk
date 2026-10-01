@@ -1,14 +1,13 @@
 import {
-  decodeJSONPointerToken,
   encodeJSONPointerToken,
   isJSONObject,
+  isLocalJSONSchemaRef,
   mapJSONSchemaRefs,
+  parseDefinitionRef,
 } from '../utils/map-json-schema-refs.js';
 
 const DEFS_KEYWORDS = ['$defs', 'definitions'] as const;
 type DefsKeyword = (typeof DEFS_KEYWORDS)[number];
-
-const isLocalRef = (ref: string) => ref === '#' || ref.startsWith('#/');
 
 /**
  * Builds the `{ body, query, params }` object schema of a tool input. A slot's refs point at the slot's own root,
@@ -38,21 +37,13 @@ export function toEnvelopeJSONSchema(slots: [slot: string, schema: unknown][]): 
       definitions: isJSONObject(slotDefinitions) ? slotDefinitions : {},
     };
     const findDef = (ref: string) => {
-      const [keyword, token] = ref.split('/').slice(1);
-      const name = token === undefined ? null : decodeJSONPointerToken(token);
-      if (
-        (keyword !== '$defs' && keyword !== 'definitions') ||
-        name === null ||
-        !Object.hasOwn(slotDefsByKeyword[keyword], name)
-      ) {
-        return null;
-      }
-      return { keyword, name, token, rest: ref.slice(`#/${keyword}/${token}`.length) };
+      const def = parseDefinitionRef(ref);
+      return def && Object.hasOwn(slotDefsByKeyword[def.keyword], def.name) ? def : null;
     };
 
     let refersToRoot = false;
     mapJSONSchemaRefs(schema, (ref) => {
-      if (isLocalRef(ref) && !findDef(ref)) refersToRoot = true;
+      if (isLocalJSONSchemaRef(ref) && !findDef(ref)) refersToRoot = true;
       return ref;
     });
 
@@ -66,7 +57,7 @@ export function toEnvelopeJSONSchema(slots: [slot: string, schema: unknown][]): 
     }
 
     const rewrite = (ref: string) => {
-      if (!isLocalRef(ref)) return ref;
+      if (!isLocalJSONSchemaRef(ref)) return ref;
       const def = findDef(ref);
       // a local ref outside the slot's defs exists only when the slot refers to its own root
       if (!def) return `${rootRef}${ref.slice(1)}`;
