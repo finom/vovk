@@ -25,7 +25,7 @@ type Target = NonNullable<VovkAjvConfig['target']>;
 
 const DEFAULT_OPTIONS: Options = {};
 
-const createAjv = (options: Options, target: Target) => {
+const createAjv = (options: Options, target: Target, isForm: boolean) => {
   const AjvClass = target === 'draft-2020-12' ? Ajv2020 : Ajv;
   const ajv = new AjvClass({
     allErrors: true,
@@ -35,6 +35,8 @@ const createAjv = (options: Options, target: Target) => {
     strict: false,
     // with the u flag a pattern refuses escapes that JavaScript and Zod's regexes allow, such as \- or \_
     unicodeRegExp: false,
+    // a form holds strings, so "5" is checked as the number the server reads it as
+    ...(isForm && { coerceTypes: true }),
     ...options,
   });
   ajvFormats(ajv);
@@ -49,8 +51,8 @@ type AjvInstance = ReturnType<typeof createAjv>;
 // null for a schema Ajv can't compile, which is left to the server
 type CachedAjv = { ajv: AjvInstance; validators: WeakMap<object, ValidateFunction | null> };
 
-// one Ajv per options object and draft, each compiling a schema object once
-const cache = new WeakMap<Options, Partial<Record<Target, CachedAjv>>>();
+// one Ajv per options object, draft and form or not, each compiling a schema object once
+const cache = new WeakMap<Options, Partial<Record<`${Target}${'' | ' form'}`, CachedAjv>>>();
 
 // formats ajv-formats doesn't know, such as Zod's cuid, nanoid or e164, pass instead of failing compilation;
 // Zod emits a pattern for most of them, which is still checked
@@ -99,11 +101,18 @@ const toNumericBounds = (schema: unknown): unknown => {
   return result;
 };
 
-const getValidator = (schema: VovkJSONSchemaBase, options: Options, target: Target, description: string) => {
-  const byTarget = cache.get(options) ?? {};
-  cache.set(options, byTarget);
-  const cached = byTarget[target] ?? { ajv: createAjv(options, target), validators: new WeakMap() };
-  byTarget[target] = cached;
+const getValidator = (
+  schema: VovkJSONSchemaBase,
+  options: Options,
+  target: Target,
+  isForm: boolean,
+  description: string
+) => {
+  const instances = cache.get(options) ?? {};
+  cache.set(options, instances);
+  const key = isForm ? (`${target} form` as const) : target;
+  const cached = instances[key] ?? { ajv: createAjv(options, target, isForm), validators: new WeakMap() };
+  instances[key] = cached;
 
   let validator = cached.validators.get(schema);
   if (validator === undefined) {
@@ -166,11 +175,17 @@ const validate = ({
   // binary data is not validated
   if (!input || !schema || input instanceof Blob) return;
   const schemaTarget = schema.$schema?.includes('://json-schema.org/draft-07/schema') ? 'draft-07' : 'draft-2020-12';
-  const { ajv, validator } = getValidator(schema, options, target ?? schemaTarget, `the ${type} of ${endpoint}`);
+  const isForm = input instanceof FormData || input instanceof URLSearchParams;
+  const { ajv, validator } = getValidator(
+    schema,
+    options,
+    target ?? schemaTarget,
+    isForm,
+    `the ${type} of ${endpoint}`
+  );
   // the server validates the input anyway
   if (!validator) return;
-  const data =
-    input instanceof FormData || input instanceof URLSearchParams ? formToObject(input) : withBinaryPlaceholders(input);
+  const data = isForm ? formToObject(input) : withBinaryPlaceholders(input);
 
   if (!validator(data)) {
     throw new HttpException(

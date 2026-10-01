@@ -1,4 +1,4 @@
-import { rejects, strictEqual } from 'node:assert';
+import { deepStrictEqual, rejects, strictEqual } from 'node:assert';
 import { describe, it } from 'node:test';
 import type { VovkJSONSchemaBase } from 'vovk';
 import { validateOnClient } from '../../../packages/vovk-ajv/index.js';
@@ -73,5 +73,26 @@ describe('vovk-ajv', () => {
     await rejects(validateBody({ price: 11 }, schema), /data\/price must be <= 10/);
     // the schema the client holds stays as it is
     strictEqual(schema.properties.age.exclusiveMinimum, true);
+  });
+
+  it('Validates a FormData body with the types its strings stand for', async () => {
+    const schema = {
+      $schema,
+      type: 'object',
+      properties: { age: { type: 'number' }, tags: { type: 'array', items: { type: 'string' } } },
+      required: ['age'],
+      'x-contentType': ['multipart/form-data'],
+    };
+    const form = new FormData();
+    form.append('age', '5');
+    form.append('tags', 'a');
+    form.append('tags', 'b');
+    const invalid = new FormData();
+    invalid.append('age', 'five');
+
+    await validateBody(form, schema);
+    deepStrictEqual(form.getAll('age'), ['5']);
+    await rejects(validateBody(invalid, schema), /data\/age must be number/);
+    await rejects(validateBody({ age: '5' }, schema), /data\/age must be number/);
   });
 });
