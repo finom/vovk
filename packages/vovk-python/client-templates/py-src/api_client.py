@@ -370,22 +370,22 @@ class ApiClient:
                 for i in range(len(lines) - 1):
                     line = lines[i].strip()
                     if line:
-                        try:
-                            yield json.loads(line)
-                        except json.JSONDecodeError:
-                            # Skip malformed JSON
-                            pass
+                        yield self._parse_jsonl_line(line)
                 
                 # Keep the last (potentially incomplete) line in the buffer
                 buffer = lines[-1]
         
-        # Process any remaining data in buffer
+        # Process any remaining data in buffer, a stream cut inside its last line fails here
         if buffer.strip():
-            try:
-                yield json.loads(buffer)
-            except json.JSONDecodeError:
-                # Skip malformed JSON
-                pass
+            yield self._parse_jsonl_line(buffer.strip())
+
+    @staticmethod
+    def _parse_jsonl_line(line: str) -> Any:
+        # a skipped line would make a broken stream look complete
+        try:
+            return json.loads(line)
+        except json.JSONDecodeError as error:
+            raise ValueError(f'Malformed JSON line in the stream: {line[:200]!r}') from error
             
     def _stream_jsonl(self, response: requests.Response) -> Generator[Dict[str, Any], None, None]:
         """

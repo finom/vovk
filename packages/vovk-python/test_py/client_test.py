@@ -1,7 +1,7 @@
 import json
 import unittest
 from io import BytesIO
-from typing import Any, Dict
+from typing import Any, Dict, List
 from generated_python_client.src.test_generated_python_client import (
     ClientSweepRPC,
     HttpException,
@@ -11,6 +11,7 @@ from generated_python_client.src.test_generated_python_client import (
 from utils import fake_transport, form_fields, json_response
 
 FAKE_ROOT = 'http://fake.test/api'
+JSONL_HEADERS = {'Content-Type': 'application/jsonl; charset=utf-8'}
 
 FORM_BODY: Dict[str, Any] = {'hello': 'world', 'flag': False, 'count': 5, 'tags': ['a', 'b'], 'meta': {'x': 1}, 'nick': None}
 # as the TypeScript client sends it: None left out, one field per list item, booleans as JSON writes them, objects as JSON
@@ -53,6 +54,24 @@ class TestClient(unittest.TestCase):
             ClientSweepRPC.get_empty_error()
         self.assertEqual(context.exception.status_code, 500)
         self.assertEqual(context.exception.message, 'Internal Server Error')
+
+    def test_stream_with_a_malformed_line(self) -> None:
+        body = b'{"i":1}\nnot json at all\n{"i":3}\n'
+        items: List[Any] = []
+        with fake_transport(lambda request: (200, JSONL_HEADERS, body)):
+            with self.assertRaisesRegex(ValueError, 'not json at all'):
+                for item in ClientSweepRPC.get_falsy_items(api_root=FAKE_ROOT):
+                    items.append(item)
+        self.assertEqual(items, [{'i': 1}])
+
+    def test_stream_cut_inside_a_line(self) -> None:
+        chunks = [b'{"i":1}\n{"i"', b':2}\n{"i":3, "tail": "cut of']
+        items: List[Any] = []
+        with fake_transport(lambda request: (200, JSONL_HEADERS, chunks)):
+            with self.assertRaisesRegex(ValueError, 'cut of'):
+                for item in ClientSweepRPC.get_falsy_items(api_root=FAKE_ROOT):
+                    items.append(item)
+        self.assertEqual(items, [{'i': 1}, {'i': 2}])
 
     def test_form_body_without_properties(self) -> None:
         self.assertEqual(ClientSweepRPC.post_form_entries(body={'hello': 'world'}), [['hello', 'world']])
