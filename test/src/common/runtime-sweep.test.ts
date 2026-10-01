@@ -135,11 +135,11 @@ describe('Runtime sweep', () => {
     const errors: string[] = [];
     class FailureController {
       static bigInt() {
-        return { n: 1n };
+        return { n: BigInt(1) };
       }
 
       static bigIntCause() {
-        throw new HttpException(HttpStatus.BAD_REQUEST, 'Bad input', { n: 1n });
+        throw new HttpException(HttpStatus.BAD_REQUEST, 'Bad input', { n: BigInt(1) });
       }
 
       static notModified() {
@@ -719,7 +719,7 @@ describe('Runtime sweep', () => {
       static async *bigIntItem() {
         try {
           yield { n: 1 };
-          yield { n: 2n };
+          yield { n: BigInt(2) };
           yield { n: 3 };
         } finally {
           finalized = true;
