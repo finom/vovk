@@ -44,14 +44,25 @@ export async function writeOneSegmentSchemaFile({
   if (existing === schemaStr) {
     return { isCreated: false, diffResult: null };
   }
+  // parsed before the write, so a corrupt file can't fail the request after the new schema is written
+  const existingControllers = existing ? parseControllers(existing) : null;
   await fs.writeFile(segmentPath, schemaStr);
 
-  if (existing) {
+  if (existingControllers) {
     return {
       isCreated: false,
-      diffResult: diffSegmentSchema(JSON.parse(existing) as VovkSegmentSchema, segmentSchema),
+      diffResult: diffSegmentSchema({ ...segmentSchema, controllers: existingControllers }, segmentSchema),
     };
   }
 
   return { isCreated: true, diffResult: null };
+}
+
+// a corrupt file counts as a schema without controllers
+function parseControllers(json: string): VovkSegmentSchema['controllers'] {
+  try {
+    return (JSON.parse(json) as Partial<VovkSegmentSchema>).controllers ?? {};
+  } catch {
+    return {};
+  }
 }
