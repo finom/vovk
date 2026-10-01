@@ -112,7 +112,7 @@ If one of the module's files already exists, `vovk new` writes none of them, unl
 Template paths are defined via `moduleTemplates` in the [config](/config):
 
 ```js filename="vovk.config.mjs"
-/** @type {import('vovk-cli').VovkConfig} */
+/** @type {import('vovk').VovkConfig} */
 const config = {
   moduleTemplates: {
     controller: 'vovk-cli/module-templates/type/controller.ts.ejs',
