@@ -7,6 +7,7 @@ import { after, describe, it } from 'node:test';
 import { createProject, startCLI, userSegmentSchema } from '../../lib/minimal-project.mts';
 
 const projectDir = path.join(process.cwd(), 'tmp_dev_without_next');
+const exists = (filePath: string) => fs.stat(filePath).then(Boolean, () => false);
 
 after(async () => {
   await fs.rm(projectDir, { recursive: true, force: true });
@@ -66,5 +67,33 @@ await describe('vovk dev in a project without Next.js', async () => {
     } finally {
       await dev.stop();
     }
+  });
+
+  await it('Resolves an absolute modulesDir and --schema-out', async () => {
+    const modulesDir = path.join(projectDir, 'absolute-modules');
+    const schemaOut = path.join(projectDir, 'absolute-schema');
+    await createProject(projectDir, {
+      'package.json': { name: 'app', version: '1.0.0', type: 'module' },
+      'vovk.config.mjs': `export default ${JSON.stringify({ modulesDir, composedClient: { prettifyClient: false } })};`,
+      'src/app/layout.tsx': '',
+      'absolute-modules/.gitkeep': '',
+    });
+
+    const dev = startCLI(['dev', '--schema-out', schemaOut, '--log-level', 'debug'], {
+      cwd: projectDir,
+      env: { PORT: '3314' },
+    });
+
+    try {
+      // the config watcher writes _meta.json once it is ready
+      await dev.waitForOutput(/Meta JSON is up to date at|Unhandled Rejection/);
+    } finally {
+      await dev.stop();
+    }
+
+    const output = dev.getOutput();
+    assert.ok(output.includes(`Meta JSON is up to date at ${path.join(schemaOut, '_meta.json')}`), output);
+    assert.ok(output.includes(`Watching modules at ${modulesDir}`), output);
+    assert.ok(await exists(path.join(schemaOut, '_meta.json')), output);
   });
 });
