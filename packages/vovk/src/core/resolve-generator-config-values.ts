@@ -89,6 +89,7 @@ export function resolveGeneratorConfigValues({
     forceOutputConfigs?.reduce((acc, config) => deepExtend(acc, config.readme), {})
   );
 
+  // the last origin that is set wins, null or '' resets an earlier one to relative URLs
   const origin: string =
     [
       config?.outputConfig?.origin,
@@ -97,7 +98,7 @@ export function resolveGeneratorConfigValues({
       isBundle ? config?.bundle?.outputConfig?.origin : undefined,
       ...(forceOutputConfigs?.map((config) => config.origin) ?? []),
     ]
-      .filter(Boolean)
+      .filter((value) => value !== undefined)
       .at(-1)
       // remove trailing slash if any
       ?.replace(/\/$/, '') ?? '';

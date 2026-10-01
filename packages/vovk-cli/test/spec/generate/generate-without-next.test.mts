@@ -67,6 +67,26 @@ await describe('vovk generate in a project without Next.js', async () => {
     assert.ok(index.includes(`import { schema } from './schema.ts';`), index);
   });
 
+  await it('Resets the root origin to relative URLs with a client origin of null or an empty string', async () => {
+    await createProject(projectDir, {
+      'package.json': { name: 'app', version: '1.0.0', type: 'module' },
+      'vovk.config.mjs': configFile({
+        outputConfig: { origin: 'https://api.example.com' },
+        composedClient: { prettifyClient: false, outputConfig: { origin: null } },
+        segmentedClient: { enabled: true, prettifyClient: false, outputConfig: { origin: '' } },
+      }),
+      'src/app/api/[[...vovk]]/route.ts': '',
+      '.vovk-schema/root.json': userSegmentSchema,
+    });
+
+    await runCLI(['generate'], { cwd: projectDir });
+
+    for (const file of ['src/client/index.ts', 'src/client/root/index.ts']) {
+      const index = await read(file);
+      assert.ok(index.includes(`createRPC<`) && !index.includes('api.example.com'), index);
+    }
+  });
+
   await it('Resolves a relative createRPC import from each segmented client folder', async () => {
     await createProject(projectDir, {
       'package.json': { name: 'app', version: '1.0.0', type: 'module' },
