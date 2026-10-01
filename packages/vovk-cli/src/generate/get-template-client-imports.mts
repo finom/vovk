@@ -2,6 +2,7 @@ import path from 'node:path';
 import type { VovkSchema } from 'vovk';
 import { resolveGeneratorConfigValues, type VovkStrictConfig } from 'vovk/internal';
 import { ROOT_SEGMENT_FILE_NAME } from '../dev/write-one-segment-schema-file.mjs';
+import { toImportPath } from '../utils/to-import-path.mjs';
 
 export type ClientImports = {
   fetcher: string;
@@ -39,7 +40,7 @@ export function getTemplateClientImports({
   };
 
   const getImportPath = (p: string, s = '') =>
-    p.startsWith('.') ? path.relative(path.join(outCwdRelativeDir, s), p) : p;
+    p.startsWith('.') ? toImportPath(path.relative(path.join(outCwdRelativeDir, s), p)) : p;
 
   const clientImports: {
     composedClient: ClientImports;

@@ -42,8 +42,8 @@ export async function getProjectFullSchema({
   try {
     await access(segmentsDir); // Check if directory exists
 
-    // Use glob to get all JSON files recursively
-    const files = await glob(`${segmentsDir}/**/*.json`);
+    // the pattern stays relative: glob reads "\" and brackets in a path as pattern syntax
+    const files = await glob('**/*.json', { cwd: segmentsDir, absolute: true });
     const filePaths = [];
     for await (const filePath of files) {
       if (path.basename(filePath) === `${META_FILE_NAME}.json`) continue; // Skip _meta.json

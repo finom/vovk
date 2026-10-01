@@ -5,6 +5,7 @@ import _ from 'lodash';
 import pluralize from 'pluralize';
 import type { VovkStrictConfig } from 'vovk/internal';
 import type { VovkModuleRenderResult } from '../types.mjs';
+import { toPosixPath } from '../utils/to-import-path.mjs';
 import { addCommonTerms } from './add-common-terms.mjs';
 
 addCommonTerms();
@@ -38,7 +39,7 @@ export async function render(
     .join('/');
 
   const relativePathToSourceRoot =
-    path.relative(path.resolve(cwd, defaultOutDir), path.join(cwd, srcRoot ?? '.')) || '.';
+    toPosixPath(path.relative(path.resolve(cwd, defaultOutDir), path.join(cwd, srcRoot ?? '.'))) || '.';
 
   const theThing = _.camelCase(moduleName);
   const TheThing = _.upperFirst(theThing);
