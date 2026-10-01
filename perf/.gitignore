@@ -45,3 +45,7 @@ tmp*
 /src/modules/
 /src/app/api/
 /bench/generated_coldStartPerfTest.ts
+
+# written by next dev
+/AGENTS.md
+/CLAUDE.md

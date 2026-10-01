@@ -452,17 +452,17 @@ where
 
     let typed_stream = json_stream.map(move |result| {
         result.and_then(|value| {
-            if value.get("isError").is_some() {
-                let message = value["message"]
-                    .as_str()
-                    .unwrap_or("Unknown error")
-                    .to_string();
-                let cause = value.get("cause").cloned();
+            if is_error_line(&value) {
+                let message = match &value["reason"] {
+                    Value::String(reason) => reason.clone(),
+                    reason => reason.to_string(),
+                };
+                let line_status_code = value["statusCode"].as_i64().map(|code| code as i32);
 
                 Err(HttpException {
                     message,
-                    status_code,
-                    cause,
+                    status_code: line_status_code.unwrap_or(status_code),
+                    cause: None,
                 })
             } else {
                 serde_json::from_value::<T>(value).map_err(|e| HttpException {
@@ -475,6 +475,18 @@ where
     });
 
     Ok(Box::pin(typed_stream))
+}
+
+// only the envelope a responder writes ends the stream, not a data item that happens to have these keys
+fn is_error_line(value: &Value) -> bool {
+    match value {
+        Value::Object(map) => {
+            map.get("isError") == Some(&Value::Bool(true))
+                && map.contains_key("reason")
+                && map.keys().all(|key| key == "isError" || key == "reason" || key == "statusCode")
+        }
+        _ => false,
+    }
 }
 
 // Helper function to build query strings from nested JSON

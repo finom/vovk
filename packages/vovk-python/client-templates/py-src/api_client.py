@@ -338,7 +338,20 @@ class ApiClient:
             Each parsed JSON object from the response
         """
         for item in self._stream_jsonl_items(response):
-            if 'isError' in item:
-                # TODO: include cause
-                raise Exception(item['reason'])
+            if self._is_error_line(item):
+                reason = item['reason']
+                status_code = item.get('statusCode')
+                if isinstance(reason, str) and isinstance(status_code, int):
+                    raise HttpException({'message': reason, 'statusCode': status_code, 'isError': True, 'cause': None})
+                raise Exception(reason if isinstance(reason, str) else json.dumps(reason))
             yield item
+
+    @staticmethod
+    def _is_error_line(item: Any) -> bool:
+        # only the envelope a responder writes ends the stream, not a data item that happens to have these keys
+        return (
+            isinstance(item, dict)
+            and item.get('isError') is True
+            and 'reason' in item
+            and set(item.keys()) <= {'isError', 'reason', 'statusCode'}
+        )
