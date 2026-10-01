@@ -413,6 +413,37 @@ describe('Runtime sweep', () => {
       await wait(50);
       strictEqual(finalized, true);
     });
+
+    it('Returns the generator when onSuccess throws', async () => {
+      let isReturned = false;
+      class FailingOnSuccessController {
+        static async *ticks() {
+          try {
+            while (true) {
+              yield { tick: true };
+              await wait(5);
+            }
+          } finally {
+            isReturned = true;
+          }
+        }
+      }
+      get('ticks')(FailingOnSuccessController, 'ticks');
+      const failingHandlers = initSegment({
+        segmentName: 'failing-on-success',
+        controllers: { FailingOnSuccessController },
+        onSuccess: () => {
+          throw new Error('onSuccess failed');
+        },
+      });
+
+      const response = await call(failingHandlers, 'GET', 'ticks');
+
+      strictEqual(response.status, 500);
+      deepStrictEqual(await response.json(), { statusCode: 500, message: 'onSuccess failed', isError: true });
+      await wait(50);
+      strictEqual(isReturned, true);
+    });
   });
 
   describe('JSON Lines streams', () => {

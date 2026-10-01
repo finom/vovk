@@ -420,6 +420,8 @@ class VovkApp {
     if (xMetaHeader) reqMeta(req, { xMetaHeader });
 
     let route: Route | null = null;
+    // the body of a result the catch answers instead, cancelled so what produces it stops
+    let unsentBody: ReadableStream | null = null;
 
     try {
       let { handler, methodParams } = this.#getHandler({ handlers: this.#getHandlers(httpMethod, segmentName), path });
@@ -461,6 +463,7 @@ class VovkApp {
       const result = await (staticMethod._sourceMethod?.wrapper ?? staticMethod).call(controller, req, methodParams);
 
       if (result instanceof Response) {
+        unsentBody = result.body;
         await onSuccess?.(result, req);
         return VovkApp.withHeaders(result, headersFromDecoratorOptions);
       }
@@ -469,6 +472,7 @@ class VovkApp {
         if (result instanceof JSONLinesResponder) {
           result._onError = (error) => void VovkApp.callOnError(onError, error, req);
         }
+        unsentBody = result.response.body;
         await onSuccess?.(result, req);
         return VovkApp.withHeaders(result.response, headersFromDecoratorOptions);
       }
@@ -509,6 +513,7 @@ class VovkApp {
 
           return responder.close();
         })();
+        unsentBody = responder.response.body;
         await onSuccess?.(responder, req);
         return responder.response;
       }
@@ -517,6 +522,7 @@ class VovkApp {
       await onSuccess?.(responseBody, req);
       return this.respond({ req, statusCode: 200, responseBody, options: staticMethod._options });
     } catch (e) {
+      unsentBody?.cancel().catch(() => {});
       const { onError } = this.#getHooks(segmentName, route?.controller);
       await VovkApp.callOnError(onError, e, req);
 
