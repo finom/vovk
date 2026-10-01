@@ -22,6 +22,22 @@ const mixinSpec = {
         },
       },
     },
+    // the same route, with a number and a boolean in the path
+    '/with-zod/x/{n}/{flag}/y': {
+      put: {
+        operationId: 'handleTypedParams',
+        parameters: [
+          { name: 'n', in: 'path', required: true, schema: { type: 'integer' } },
+          { name: 'flag', in: 'path', required: true, schema: { type: 'boolean' } },
+        ],
+        responses: {
+          200: {
+            description: 'ok',
+            content: { 'application/json': { schema: { $ref: '#/components/schemas/Params' } } },
+          },
+        },
+      },
+    },
     '/with-zod/handle-query': {
       get: {
         operationId: 'handleQuery',

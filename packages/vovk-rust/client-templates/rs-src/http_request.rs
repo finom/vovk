@@ -75,6 +75,29 @@ fn validate(schema: &Value, value: &Value, label: &str) -> Result<(), String> {
     }
 }
 
+// a number as JavaScript prints it, so 5.0 stays "5"
+fn number_to_string(number: &serde_json::Number) -> String {
+    match number.as_f64() {
+        Some(float) if number.is_f64() && float.fract() == 0.0 && float.abs() < 9_007_199_254_740_992.0 => {
+            format!("{}", float as i64)
+        }
+        _ => number.to_string(),
+    }
+}
+
+// "", "." and ".." (also percent-encoded) would drop or climb a path segment and so reach another route
+fn is_unsafe_segment(value: &str) -> bool {
+    let mut rest = value.to_ascii_lowercase();
+    for _ in 0..2 {
+        if let Some(stripped) = rest.strip_prefix('.') {
+            rest = stripped.to_string();
+        } else if let Some(stripped) = rest.strip_prefix("%2e") {
+            rest = stripped.to_string();
+        }
+    }
+    rest.is_empty()
+}
+
 // Private helper function for request preparation
 fn prepare_request<B, Q, P>(
     endpoint: &Endpoint,
@@ -179,21 +202,34 @@ where
     }
 
     // Substitute path parameters in the URL
-    if let Some(ref params_val) = params_value {
-        if let Value::Object(map) = params_val {
-            for (key, value) in map {
-                let pattern = format!("{{{}}}", key);
-                if let Value::String(s) = value {
-                    // "." and ".." would leave the handler's path once the URL is normalized
-                    if s == "." || s == ".." {
-                        return Err(format!("Param {} cannot be \"{}\"", key, s).into());
-                    }
-                    url = url.replace(&pattern, &urlencoding::encode(s));
-                } else {
-                    return Err(format!("Param {} must be a string", key).into());
-                }
+    if let Some(Value::Object(map)) = &params_value {
+        for (key, value) in map {
+            let placeholder = format!("{{{}}}", key);
+            if !url.contains(&placeholder) {
+                continue;
             }
+            let segment = match value {
+                Value::String(s) => s.clone(),
+                Value::Number(n) => number_to_string(n),
+                Value::Bool(b) => b.to_string(),
+                // a missing value keeps its placeholder, which is reported below
+                Value::Null => continue,
+                _ => return Err(format!("Param {} must be a string, a number or a boolean", key).into()),
+            };
+            if is_unsafe_segment(&segment) {
+                return Err(format!("Param {} can't be empty, \".\" or \"..\", got {:?}", key, segment).into());
+            }
+            url = url.replace(&placeholder, &urlencoding::encode(&segment));
         }
+    }
+
+    let missing: Vec<&str> = url
+        .split('{')
+        .skip(1)
+        .filter_map(|rest| rest.split_once('}').map(|(name, _)| name))
+        .collect();
+    if !missing.is_empty() {
+        return Err(format!("Missing params: {}", missing.join(", ")).into());
     }
 
     // Append query string if query parameters are provided
