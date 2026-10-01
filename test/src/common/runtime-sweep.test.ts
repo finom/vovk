@@ -1,14 +1,23 @@
-import { deepStrictEqual, ok, rejects, strictEqual } from 'node:assert';
+import { deepStrictEqual, ok, rejects, strictEqual, throws } from 'node:assert';
 import { describe, it } from 'node:test';
+import { setFlagsFromString } from 'node:v8';
+import { runInNewContext } from 'node:vm';
 import { forbidden, redirect, unauthorized } from 'next/dist/client/components/navigation.react-server.js';
 import {
+  cloneControllerMetadata,
+  controllersToStaticParams,
   createDecorator,
+  decorate,
+  del,
   get,
   HttpException,
   HttpStatus,
   initSegment,
+  JSONLinesResponder,
   multitenant,
+  patch,
   post,
+  prefix,
   procedure,
   type VovkRequest,
 } from 'vovk';
@@ -127,6 +136,117 @@ describe('Runtime sweep', () => {
     });
   });
 
+  describe('Error responses', () => {
+    const errors: string[] = [];
+    class FailureController {
+      static bigInt() {
+        return { n: BigInt(1) };
+      }
+
+      static bigIntCause() {
+        throw new HttpException(HttpStatus.BAD_REQUEST, 'Bad input', { n: BigInt(1) });
+      }
+
+      static notModified() {
+        throw new HttpException(HttpStatus.NOT_MODIFIED, '');
+      }
+
+      static noContent() {
+        throw new HttpException(HttpStatus.NO_CONTENT, '');
+      }
+
+      static unknownStatus() {
+        throw new HttpException(999 as HttpStatus, 'Unknown status');
+      }
+
+      static informationalStatus() {
+        throw new HttpException(HttpStatus.CONTINUE, 'Informational status');
+      }
+
+      static throwString() {
+        throw 'Plain string';
+      }
+    }
+    get('big-int', { cors: true })(FailureController, 'bigInt');
+    get('big-int-cause', { cors: true })(FailureController, 'bigIntCause');
+    get('not-modified')(FailureController, 'notModified');
+    get('no-content')(FailureController, 'noContent');
+    get('unknown-status')(FailureController, 'unknownStatus');
+    get('informational-status')(FailureController, 'informationalStatus');
+    get('throw-string')(FailureController, 'throwString');
+    const handlers = initSegment({
+      segmentName: 'failure',
+      controllers: { FailureController },
+      onError: (error) => {
+        errors.push(error.message);
+      },
+    });
+
+    it('Answers a result JSON can not serialize with a JSON 500 that keeps the CORS headers', async () => {
+      errors.length = 0;
+      const response = await call(handlers, 'GET', 'big-int');
+
+      strictEqual(response.status, 500);
+      strictEqual(response.headers.get('access-control-allow-origin'), '*');
+      deepStrictEqual(await response.json(), {
+        statusCode: 500,
+        message: 'Do not know how to serialize a BigInt',
+        isError: true,
+      });
+      deepStrictEqual(errors, ['Do not know how to serialize a BigInt']);
+    });
+
+    it('Hides the serialization error of a result in production', async () => {
+      await withNodeEnv('production', async () => {
+        const response = await call(handlers, 'GET', 'big-int');
+
+        strictEqual(response.status, 500);
+        deepStrictEqual(await response.json(), { statusCode: 500, message: 'Internal server error', isError: true });
+      });
+    });
+
+    it('Falls back to a plain JSON 500 when the cause of an HttpException can not be serialized', async () => {
+      errors.length = 0;
+      const response = await call(handlers, 'GET', 'big-int-cause');
+
+      strictEqual(response.status, 500);
+      strictEqual(response.headers.get('access-control-allow-origin'), '*');
+      deepStrictEqual(await response.json(), {
+        statusCode: 500,
+        message: 'Do not know how to serialize a BigInt',
+        isError: true,
+      });
+      deepStrictEqual(errors, ['Bad input', 'Do not know how to serialize a BigInt']);
+    });
+
+    it('Answers an HttpException with a null body status without a body', async () => {
+      const notModified = await call(handlers, 'GET', 'not-modified');
+      const noContent = await call(handlers, 'GET', 'no-content');
+
+      strictEqual(notModified.status, 304);
+      strictEqual(notModified.body, null);
+      strictEqual(noContent.status, 204);
+      strictEqual(noContent.body, null);
+    });
+
+    it('Answers an HttpException with a status outside 200-599 with 500', async () => {
+      const unknown = await call(handlers, 'GET', 'unknown-status');
+      const informational = await call(handlers, 'GET', 'informational-status');
+
+      strictEqual(unknown.status, 500);
+      deepStrictEqual(await unknown.json(), { statusCode: 500, message: 'Unknown status', isError: true });
+      strictEqual(informational.status, 500);
+      deepStrictEqual(await informational.json(), { statusCode: 500, message: 'Informational status', isError: true });
+    });
+
+    it('Sends a thrown value that is no Error as the message', async () => {
+      const response = await call(handlers, 'GET', 'throw-string');
+
+      strictEqual(response.status, 500);
+      deepStrictEqual(await response.json(), { statusCode: 500, message: 'Plain string', isError: true });
+    });
+  });
+
   describe('Next.js navigation', () => {
     class NavigationController {
       static denied() {
@@ -188,6 +308,188 @@ describe('Runtime sweep', () => {
         isError: true,
       });
       deepStrictEqual(errors, ['Conflicting routes found: hello/{foo}, hello/{bar}']);
+    });
+
+    it('Refuses a second handler for the same method and path in one controller', () => {
+      class DuplicateController {
+        static list() {
+          return [];
+        }
+
+        static listAgain() {
+          return [];
+        }
+      }
+      get('users')(DuplicateController, 'list');
+
+      throws(() => get('users')(DuplicateController, 'listAgain'), {
+        message: "Duplicate route GET 'users' in DuplicateController: list and listAgain",
+      });
+    });
+
+    it('Answers a path two controllers of a segment declare with a JSON error and calls onError', async () => {
+      const errors: string[] = [];
+      class FirstController {
+        static list() {
+          return 'first';
+        }
+      }
+      class SecondController {
+        static list() {
+          return 'second';
+        }
+      }
+      prefix('users')(FirstController);
+      prefix('users')(SecondController);
+      get()(FirstController, 'list');
+      get()(SecondController, 'list');
+      const handlers = initSegment({
+        segmentName: 'duplicate',
+        controllers: { FirstController, SecondController },
+        onError: (error) => {
+          errors.push(error.message);
+        },
+      });
+
+      const response = await call(handlers, 'GET', 'users');
+
+      strictEqual(response.status, 500);
+      deepStrictEqual(await response.json(), {
+        statusCode: 500,
+        message: 'Conflicting routes found: users in FirstController, SecondController',
+        isError: true,
+      });
+      deepStrictEqual(errors, ['Conflicting routes found: users in FirstController, SecondController']);
+    });
+
+    it('Serves a route a child controller inherits on the same path as its parent', async () => {
+      class ParentController {
+        static list() {
+          return 'parent';
+        }
+      }
+      prefix('users')(ParentController);
+      get()(ParentController, 'list');
+      class ChildController extends ParentController {}
+      cloneControllerMetadata()(ChildController);
+      const handlers = initSegment({ segmentName: 'inherited', controllers: { ParentController, ChildController } });
+
+      const response = await call(handlers, 'GET', 'users');
+
+      strictEqual(response.status, 200);
+      deepStrictEqual(await response.json(), 'parent');
+    });
+
+    it('Answers a known path with another method 405 and the allowed methods', async () => {
+      class EchoController {
+        static echo() {
+          return {};
+        }
+
+        static getItem() {
+          return {};
+        }
+
+        static updateItem() {
+          return {};
+        }
+      }
+      post('echo')(EchoController, 'echo');
+      get('items/{id}')(EchoController, 'getItem');
+      patch('items/{id}', { cors: true })(EchoController, 'updateItem');
+      const handlers = initSegment({ segmentName: 'method-not-allowed', controllers: { EchoController } });
+
+      const response = await call(handlers, 'PUT', 'echo');
+
+      strictEqual(response.status, 405);
+      strictEqual(response.headers.get('allow'), 'POST');
+      deepStrictEqual(await response.json(), {
+        statusCode: 405,
+        message: "Method PUT is not allowed for route 'echo' at segment 'method-not-allowed'",
+        isError: true,
+      });
+      // a GET route answers HEAD, a cors route answers the preflight
+      strictEqual((await call(handlers, 'DELETE', 'items/1')).headers.get('allow'), 'GET, HEAD, PATCH, OPTIONS');
+      strictEqual((await call(handlers, 'PUT', 'missing')).status, 404);
+    });
+
+    it('Appends the params of a procedure to an auto path when skipSchemaEmission leaves them out', async () => {
+      class HiddenParamsController {
+        static getHidden = procedure({
+          params: z.object({ id: z.string() }),
+          skipSchemaEmission: ['params'],
+        }).handle(async (_req, params) => params);
+      }
+      get.auto()(HiddenParamsController, 'getHidden');
+      const handlers = initSegment({ segmentName: 'hidden-params', controllers: { HiddenParamsController } });
+
+      const response = await call(handlers, 'GET', 'get-hidden/42');
+
+      strictEqual(response.status, 200);
+      deepStrictEqual(await response.json(), { id: '42' });
+    });
+
+    it('Reads a param whose name has characters outside \\w, as the client substitutes it', async () => {
+      class DashedParamController {
+        static getItem(_req: VovkRequest, params: Record<string, string>) {
+          return params;
+        }
+      }
+      get('items/{user-id}')(DashedParamController, 'getItem');
+      const handlers = initSegment({ segmentName: 'dashed-param', controllers: { DashedParamController } });
+
+      const response = await call(handlers, 'GET', 'items/42');
+
+      strictEqual(response.status, 200);
+      deepStrictEqual(await response.json(), { 'user-id': '42' });
+    });
+
+    it('Serves the routes a decorate() controller inherits over two levels in any controller order', async () => {
+      class GrandparentController {
+        static a = decorate(get('a')).handle(async () => 'a');
+      }
+      class ParentController extends GrandparentController {
+        static b = decorate(get('b')).handle(async () => 'b');
+      }
+      class ChildController extends ParentController {
+        static c = decorate(get('c')).handle(async () => 'c');
+      }
+      prefix('child')(ChildController);
+      // the child comes first
+      const handlers = initSegment({
+        segmentName: 'inheritance',
+        controllers: { ChildController, ParentController, GrandparentController },
+      });
+
+      for (const path of ['child/a', 'child/b', 'child/c']) {
+        strictEqual((await call(handlers, 'GET', path)).status, 200, path);
+      }
+    });
+
+    it('Keeps long paths out of the route match cache', async () => {
+      // the gc() the test runner doesn't expose, to measure what the cache retains
+      setFlagsFromString('--expose-gc');
+      const gc = runInNewContext('gc') as () => void;
+      class LongIdController {
+        static getUser(_req: VovkRequest, params: Record<string, string>) {
+          return { length: params.id.length };
+        }
+      }
+      get('users/{id}')(LongIdController, 'getUser');
+      const handlers = initSegment({ segmentName: 'long-ids', controllers: { LongIdController } });
+
+      gc();
+      const heapBefore = process.memoryUsage().heapUsed;
+      for (let i = 0; i < 1000; i++) {
+        await (await call(handlers, 'GET', `users/${i}-${'x'.repeat(15_000)}`)).text();
+      }
+      gc();
+      const retained = process.memoryUsage().heapUsed - heapBefore;
+
+      ok(
+        retained < 10 * 1024 * 1024,
+        `${(retained / 1024 / 1024).toFixed(1)} MB retained by 1000 requests with 15 KB ids`
+      );
     });
 
     it('Finds the catch-all under a dynamic parent folder', async () => {
@@ -302,6 +604,98 @@ describe('Runtime sweep', () => {
       await wait(50);
       strictEqual(finalized, true);
     });
+
+    it('Returns the generator when onSuccess throws', async () => {
+      let isReturned = false;
+      class FailingOnSuccessController {
+        static async *ticks() {
+          try {
+            while (true) {
+              yield { tick: true };
+              await wait(5);
+            }
+          } finally {
+            isReturned = true;
+          }
+        }
+      }
+      get('ticks')(FailingOnSuccessController, 'ticks');
+      const failingHandlers = initSegment({
+        segmentName: 'failing-on-success',
+        controllers: { FailingOnSuccessController },
+        onSuccess: () => {
+          throw new Error('onSuccess failed');
+        },
+      });
+
+      const response = await call(failingHandlers, 'GET', 'ticks');
+
+      strictEqual(response.status, 500);
+      deepStrictEqual(await response.json(), { statusCode: 500, message: 'onSuccess failed', isError: true });
+      await wait(50);
+      strictEqual(isReturned, true);
+    });
+  });
+
+  describe('CORS', () => {
+    const calls: string[] = [];
+    class UsersController {
+      static list() {
+        return [];
+      }
+
+      static create() {
+        calls.push('create');
+        return {};
+      }
+
+      static remove() {
+        return {};
+      }
+
+      static replace() {
+        return {};
+      }
+
+      static update() {
+        return {};
+      }
+    }
+    get('users', { cors: true })(UsersController, 'list');
+    post('users')(UsersController, 'create');
+    del('users')(UsersController, 'remove');
+    post('users/{id}', { cors: true })(UsersController, 'replace');
+    patch('users/{id}', { cors: true })(UsersController, 'update');
+    const handlers = initSegment({ segmentName: 'cors', controllers: { UsersController } });
+    const preflight = (path: string, method: string) =>
+      call(handlers, 'OPTIONS', path, {
+        headers: { origin: 'https://app.example', 'access-control-request-method': method },
+      });
+
+    it('Answers a preflight for a method whose route has cors', async () => {
+      const response = await preflight('users', 'GET');
+
+      strictEqual(response.status, 200);
+      strictEqual(response.headers.get('access-control-allow-origin'), '*');
+      strictEqual(response.headers.get('access-control-allow-methods'), 'GET, HEAD');
+    });
+
+    it('Refuses a preflight for a method whose route on the same path has no cors', async () => {
+      const response = await preflight('users', 'POST');
+
+      ok(!response.ok, `status ${response.status}`);
+      strictEqual(response.headers.get('access-control-allow-origin'), null);
+      strictEqual(response.headers.get('access-control-allow-methods'), null);
+      deepStrictEqual(calls, []);
+    });
+
+    it('Lists the methods with cors on a templated path', async () => {
+      const response = await preflight('users/1', 'PATCH');
+
+      strictEqual(response.status, 200);
+      strictEqual(response.headers.get('access-control-allow-origin'), '*');
+      strictEqual(response.headers.get('access-control-allow-methods'), 'POST, PATCH');
+    });
   });
 
   describe('JSON Lines streams', () => {
@@ -388,6 +782,127 @@ describe('Runtime sweep', () => {
       await wait(50);
 
       strictEqual(finalized, true);
+    });
+  });
+
+  describe('JSON Lines responder', () => {
+    const errors: string[] = [];
+    let isClosedAfterClose = false;
+    let finalized = false;
+    class ResponderController {
+      static throwAfterSend(req: VovkRequest) {
+        const responder = new JSONLinesResponder<{ n: number | string }>(req);
+        void responder.send({ n: 1 });
+        void responder.throw(new Error('boom'));
+        void responder.send({ n: 'after throw' });
+        return responder;
+      }
+
+      static sendAfterClose(req: VovkRequest) {
+        const responder = new JSONLinesResponder<{ n: number }>(req);
+        void responder.send({ n: 1 });
+        void responder.close();
+        isClosedAfterClose = responder.isClosed;
+        void responder.send({ n: 2 });
+        return responder;
+      }
+
+      static invalidItem = procedure({ iteration: z.object({ n: z.number() }) }).handle(async (req) => {
+        const responder = new JSONLinesResponder<{ n: number }>(req);
+        void (async () => {
+          await responder.send({ n: 'one' } as unknown as { n: number });
+          await responder.send({ n: 2 });
+          await responder.close();
+        })();
+        return responder;
+      });
+
+      static async *bigIntItem() {
+        try {
+          yield { n: 1 };
+          yield { n: BigInt(2) };
+          yield { n: 3 };
+        } finally {
+          finalized = true;
+        }
+      }
+
+      static async *undefinedItem() {
+        yield 1;
+        yield undefined;
+        yield 3;
+      }
+
+      static async *throwCycle() {
+        yield 1;
+        const cycle: Record<string, unknown> = {};
+        cycle.self = cycle;
+        throw cycle;
+      }
+    }
+    get('throw-after-send')(ResponderController, 'throwAfterSend');
+    get('send-after-close')(ResponderController, 'sendAfterClose');
+    get('invalid-item')(ResponderController, 'invalidItem');
+    get('big-int-item')(ResponderController, 'bigIntItem');
+    get('undefined-item')(ResponderController, 'undefinedItem');
+    get('throw-cycle')(ResponderController, 'throwCycle');
+    const handlers = initSegment({
+      segmentName: 'responder',
+      controllers: { ResponderController },
+      onError: (error) => {
+        errors.push(error.message);
+      },
+    });
+    const readLines = async (response: Response) =>
+      (await response.text())
+        .split('\n')
+        .filter(Boolean)
+        .map((line) => JSON.parse(line));
+
+    it('Writes the error line of throw() after the earlier sends and drops the later ones', async () => {
+      const lines = await readLines(await call(handlers, 'GET', 'throw-after-send'));
+
+      deepStrictEqual(lines, [{ n: 1 }, { isError: true, reason: 'boom' }]);
+    });
+
+    it('Drops a send after close()', async () => {
+      const lines = await readLines(await call(handlers, 'GET', 'send-after-close'));
+
+      deepStrictEqual(lines, [{ n: 1 }]);
+      strictEqual(isClosedAfterClose, true);
+    });
+
+    it('Ends the stream and calls onError when a send fails validation', async () => {
+      errors.length = 0;
+      const lines = await readLines(await call(handlers, 'GET', 'invalid-item'));
+
+      strictEqual(lines.length, 1);
+      strictEqual(lines[0].isError, true);
+      ok(lines[0].reason.startsWith('Validation failed. Invalid iteration #0'), lines[0].reason);
+      deepStrictEqual(errors, [lines[0].reason]);
+    });
+
+    it('Ends the stream, calls onError and returns the generator when an item fails to serialize', async () => {
+      errors.length = 0;
+      const lines = await readLines(await call(handlers, 'GET', 'big-int-item'));
+      await wait(10);
+
+      deepStrictEqual(lines, [{ n: 1 }, { isError: true, reason: 'Do not know how to serialize a BigInt' }]);
+      deepStrictEqual(errors, ['Do not know how to serialize a BigInt']);
+      strictEqual(finalized, true);
+    });
+
+    it('Writes an undefined item as null, as the JSON response does', async () => {
+      const response = await call(handlers, 'GET', 'undefined-item');
+
+      strictEqual(await response.text(), '1\nnull\n3\n');
+    });
+
+    // the stream used to stay open, so a regression hangs without the timeout
+    it('Ends the stream when the thrown value can not be serialized', { timeout: 1000 }, async () => {
+      const lines = await readLines(await call(handlers, 'GET', 'throw-cycle'));
+
+      deepStrictEqual(lines, [1, { isError: true, reason: '[object Object]' }]);
     });
   });
 
@@ -716,6 +1231,30 @@ describe('Runtime sweep', () => {
         isError: true,
       });
       deepStrictEqual(errors, ['HttpException']);
+    });
+  });
+
+  describe('controllersToStaticParams', () => {
+    it('Fills the params of the prefix and keeps a value with a slash in one segment', () => {
+      class PostsController {
+        static list() {
+          return [];
+        }
+
+        static getPost() {
+          return {};
+        }
+      }
+      prefix('users/{userId}')(PostsController);
+      get('posts', { staticParams: [{ userId: '1' }, { userId: '2' }] })(PostsController, 'list');
+      get('posts/{postId}', { staticParams: [{ userId: '1', postId: 'a/b' }] })(PostsController, 'getPost');
+
+      const staticParams = controllersToStaticParams({ PostsController });
+
+      deepStrictEqual(
+        staticParams.map(({ vovk }) => vovk),
+        [['_schema_'], ['users', '1', 'posts'], ['users', '2', 'posts'], ['users', '1', 'posts', 'a/b']]
+      );
     });
   });
 

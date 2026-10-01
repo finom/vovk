@@ -14,6 +14,7 @@ describe('Route does not exist', () => {
     strictEqual(getResponse.status, 200);
 
     const response = await request.post(`/post-does-not-exist/hello`);
-    strictEqual(response.status, 404);
+    strictEqual(response.status, 405);
+    strictEqual(response.headers.allow, 'GET, HEAD');
   });
 });
