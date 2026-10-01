@@ -48,7 +48,7 @@ A cleanup release. `vovk-cli` is pre-1.0, so this minor carries breaking changes
 - Absolute `modulesDir`, `--schema-out` and `--out` paths work, circular template `requires` throw, `vovk init` installs on Windows ([#35](https://github.com/finom/vovk/pull/35))
 - Mixin types: quoted property names, `allOf` with sibling properties, `nullable`, names starting with a digit ([#35](https://github.com/finom/vovk/pull/35))
 - A segmented client resolves relative `imports` from its own folder ([#35](https://github.com/finom/vovk/pull/35))
-- `vovk bundle` refuses a prebundle folder that holds other files or overlaps its output: `--prebundle-out src` deleted `src/` ([#40](https://github.com/finom/vovk/pull/40))
+- `vovk bundle` refuses a prebundle folder that overlaps its output, or that holds other files and is not kept: `--prebundle-out src` deleted `src/` ([#40](https://github.com/finom/vovk/pull/40))
 - `devHttps` turns TLS checks off for the local schema request only, not for every fetch in the process ([#40](https://github.com/finom/vovk/pull/40))
 - `vovk dev`: `--exit` and `--next-dev` exit 1 on failure, `-p`/`--port` is read, `--schema-out` reaches the client, a removed segment leaves the client, rapid saves no longer leave schema requests pending, a corrupt schema file is replaced ([#40](https://github.com/finom/vovk/pull/40))
 - The root segment name check ignores case, `--no-segment-update` works, `--watch` generates on start, an invalid schema JSON fails ([#40](https://github.com/finom/vovk/pull/40))

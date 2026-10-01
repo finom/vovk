@@ -103,4 +103,20 @@ await describe('vovk bundle in a project without Next.js', async () => {
     await runCLI(['bundle', '--prebundle-out', 'tmp_prebundle'], { cwd: projectDir });
     assert.ok(await exists('dist/index.js'));
   });
+
+  await it('Shares the composed client folder with a prebundle dir it keeps', async () => {
+    await createApp();
+    // the kitchen-sink example bundles from its composed client folder, so the bundle re-exports use that client
+    const config = configFile({ keepPrebundleDir: true, prebundleOutDir: './src/client' }).replace(
+      'composedClient: { prettifyClient: false }',
+      "composedClient: { prettifyClient: false, outDir: './src/client' }"
+    );
+    await fs.writeFile(path.join(projectDir, 'vovk.config.mjs'), config);
+
+    await runCLI(['generate'], { cwd: projectDir });
+    await runCLI(['bundle'], { cwd: projectDir });
+    assert.ok(await exists('dist/index.js'));
+    assert.ok(await exists('src/client/index.ts'));
+    assert.ok(await exists('src/keep.ts'));
+  });
 });

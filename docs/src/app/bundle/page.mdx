@@ -110,11 +110,11 @@ The `build` function is an asynchronous function that receives an object with `e
 
 The `prebundleOutDir` is the directory in which the TypeScript client will be generated before bundling. It defaults to `tmp_prebundle`.
 
-The directory is deleted after bundling, so it must be a subdirectory of the project, apart from `outDir`, and either missing, empty or kept by an earlier bundle. The command fails before it writes anything if the directory holds other files.
+The directory must be a subdirectory of the project, apart from `outDir`. Unless it is kept, it is deleted after bundling, so it must be missing, empty or kept by an earlier bundle: the command fails before it writes anything if the directory holds other files.
 
 ### `keepPrebundleDir` or `--keep-prebundle-dir` flag
 
-If set to `true`, the `prebundleOutDir` will not be deleted after bundling. This can be useful for debugging or other purposes. The default is `false`.
+If set to `true`, the `prebundleOutDir` will not be deleted after bundling, so it may hold other files, such as the composed client. This can be useful for debugging or other purposes. The default is `false`.
 
 ### `requires`
 

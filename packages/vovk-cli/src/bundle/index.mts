@@ -40,7 +40,7 @@ export async function bundle({
     throw new Error('No output directory specified for bundling');
   }
 
-  await assertPrebundleDir({ projectInfo, prebundleOutDir, outDir });
+  await assertPrebundleDir({ projectInfo, prebundleOutDir, outDir, keepPrebundleDir });
 
   // CLI options win as a pair so config exclude cannot conflict with CLI include
   const [includeSegments, excludeSegments] =
@@ -128,22 +128,22 @@ export async function bundle({
   log.info(`Bundled TypeScript client to ${chalkHighlightThing(outDirAbsolute)}`);
 }
 
-// the prebundle directory is generated into and then removed recursively, so it must hold nothing else
+// the prebundle directory is generated into and, unless kept, removed recursively, so then it must hold nothing else
 async function assertPrebundleDir({
   projectInfo: { cwd, config, log },
   prebundleOutDir,
   outDir,
+  keepPrebundleDir,
 }: {
   projectInfo: ProjectInfo;
   prebundleOutDir: string;
   outDir: string;
+  keepPrebundleDir: boolean;
 }) {
   const prebundleOutDirAbsolute = path.resolve(cwd, prebundleOutDir);
   const outDirAbsolute = path.resolve(cwd, outDir);
   const invalid = (reason: string) =>
-    new Error(
-      `Invalid prebundle output directory ${JSON.stringify(prebundleOutDir)}. It is deleted after bundling, so ${reason}.`
-    );
+    new Error(`Invalid prebundle output directory ${JSON.stringify(prebundleOutDir)}: ${reason}.`);
   // a directory counts as inside itself
   const isInside = (dir: string, parent: string) => {
     const relative = path.relative(parent, dir);
@@ -157,6 +157,9 @@ async function assertPrebundleDir({
   if (isInside(prebundleOutDirAbsolute, outDirAbsolute) || isInside(outDirAbsolute, prebundleOutDirAbsolute)) {
     throw invalid(`it must stay apart from the bundle output directory ${JSON.stringify(outDir)}`);
   }
+
+  // a kept directory is never deleted, so it may share a folder with other files, such as the composed client
+  if (keepPrebundleDir) return;
 
   const stats = await fs.stat(prebundleOutDirAbsolute).catch(() => null);
   if (!stats) return;
@@ -178,6 +181,8 @@ async function assertPrebundleDir({
   );
 
   if ((await getDirectoryOrigin(prebundleOutDirAbsolute, generatedRelPaths)) === 'foreign') {
-    throw invalid('it must be new, empty or kept by an earlier bundle, but it holds files the bundle did not write');
+    throw invalid(
+      'it is deleted after bundling, so it must be new, empty or kept by an earlier bundle, but it holds files the bundle did not write; set keepPrebundleDir to share a folder'
+    );
   }
 }
