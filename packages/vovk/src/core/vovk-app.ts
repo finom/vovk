@@ -202,12 +202,14 @@ class VovkApp {
     message,
     options,
     cause,
+    headers,
   }: {
     req: Request;
     statusCode: HttpStatus;
     message: string;
     options?: DecoratorOptions;
     cause?: unknown;
+    headers?: Record<string, string>;
   }) => {
     return this.respond({
       req,
@@ -219,6 +221,7 @@ class VovkApp {
         isError: true,
       } satisfies VovkErrorResponse,
       options,
+      headers,
     });
   };
 
@@ -392,20 +395,9 @@ class VovkApp {
     return this.#getHandler({ handlers: this.#getHandlers(HttpMethod.GET, segmentName), path });
   };
 
-  // the automatic preflight of the cors option: it approves and lists only the methods whose route on the path has
-  // cors, and it runs no hooks, since a preflight carries no credentials and an auth hook would reject it
-  #respondToPreflight = ({
-    req,
-    requestedMethod,
-    segmentName,
-    path,
-  }: {
-    req: VovkRequest;
-    requestedMethod: string | null | undefined;
-    segmentName: string;
-    path: string[];
-  }) => {
-    const corsRoutes = new Map<string, Route>();
+  // the route of each method on a path, in the order the Allow header lists them
+  #getRoutesByMethod = (segmentName: string, path: string[]) => {
+    const routes = new Map<string, Route>();
     for (const httpMethod of [
       HttpMethod.GET,
       HttpMethod.HEAD,
@@ -413,10 +405,26 @@ class VovkApp {
       HttpMethod.PUT,
       HttpMethod.PATCH,
       HttpMethod.DELETE,
+      HttpMethod.OPTIONS,
     ]) {
       const { handler } = this.#findRoute(httpMethod, segmentName, path);
-      if (handler?.staticMethod._options?.cors) corsRoutes.set(httpMethod, handler);
+      if (handler) routes.set(httpMethod, handler);
     }
+    return routes;
+  };
+
+  // the automatic preflight of the cors option: it approves and lists only the methods whose route on the path has
+  // cors, and it runs no hooks, since a preflight carries no credentials and an auth hook would reject it
+  #respondToPreflight = ({
+    req,
+    requestedMethod,
+    routes,
+  }: {
+    req: VovkRequest;
+    requestedMethod: string | null | undefined;
+    routes: Map<string, Route>;
+  }) => {
+    const corsRoutes = new Map([...routes].filter(([, { staticMethod }]) => staticMethod._options?.cors));
 
     // a request without access-control-request-method is no preflight, it gets the headers of any cors route
     const corsRoute = requestedMethod ? corsRoutes.get(requestedMethod) : corsRoutes.values().next().value;
@@ -475,17 +483,32 @@ class VovkApp {
     try {
       const { handler, methodParams } = this.#findRoute(httpMethod, segmentName, path);
 
-      if (!handler && httpMethod === HttpMethod.OPTIONS) {
-        const requestedMethod = headerList?.get('access-control-request-method');
-        const preflight = this.#respondToPreflight({ req, requestedMethod, segmentName, path });
-        if (preflight) return preflight;
-      }
-
       if (!handler) {
+        const routes = this.#getRoutesByMethod(segmentName, path);
+        if (httpMethod === HttpMethod.OPTIONS) {
+          const requestedMethod = headerList?.get('access-control-request-method');
+          const preflight = this.#respondToPreflight({ req, requestedMethod, routes });
+          if (preflight) return preflight;
+        }
+
+        const at = segmentName === '' ? 'the root segment' : `segment '${segmentName}'`;
+        if (!routes.size) {
+          return this.#respondWithError({
+            req,
+            statusCode: HttpStatus.NOT_FOUND,
+            message: `Route '${path.join('/')}' is not found for ${httpMethod} method at ${at}`,
+          });
+        }
+
+        const allowedMethods = [...routes.keys()];
+        // a cors route answers the preflight
+        const hasCors = [...routes.values()].some(({ staticMethod }) => staticMethod._options?.cors);
+        if (hasCors && !routes.has(HttpMethod.OPTIONS)) allowedMethods.push(HttpMethod.OPTIONS);
         return this.#respondWithError({
           req,
-          statusCode: HttpStatus.NOT_FOUND,
-          message: `Route '${path.join('/')}' is not found for ${httpMethod} method at ${segmentName === '' ? 'the root segment' : `segment '${segmentName}'`}`,
+          statusCode: HttpStatus.METHOD_NOT_ALLOWED,
+          message: `Method ${httpMethod} is not allowed for route '${path.join('/')}' at ${at}`,
+          headers: { allow: allowedMethods.join(', ') },
         });
       }
 

@@ -72,7 +72,7 @@ export default class MediaController {
 
 ### `@get`, `@post`, `@put`, `@patch`, `@del`, `@head`, `@options`
 
-HTTP method decorators define the HTTP method for a handler. A `HEAD` request without its own `@head` route is answered by the `GET` route, with its status and headers and no body. They accept two optional arguments:
+HTTP method decorators define the HTTP method for a handler. A `HEAD` request without its own `@head` route is answered by the `GET` route, with its status and headers and no body. A request to a path that only other methods have routes for is answered with `405` and an `Allow` header that lists them. They accept two optional arguments:
 
 - `path? = ''` – the path segment for the route.
 - `opts?: { cors?: boolean, headers?: Record<string, string>, staticParams?: Record<string, string>[] }` – route options:

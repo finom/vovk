@@ -303,6 +303,39 @@ describe('Runtime sweep', () => {
       deepStrictEqual(errors, ['Conflicting routes found: hello/{foo}, hello/{bar}']);
     });
 
+    it('Answers a known path with another method 405 and the allowed methods', async () => {
+      class EchoController {
+        static echo() {
+          return {};
+        }
+
+        static getItem() {
+          return {};
+        }
+
+        static updateItem() {
+          return {};
+        }
+      }
+      post('echo')(EchoController, 'echo');
+      get('items/{id}')(EchoController, 'getItem');
+      patch('items/{id}', { cors: true })(EchoController, 'updateItem');
+      const handlers = initSegment({ segmentName: 'method-not-allowed', controllers: { EchoController } });
+
+      const response = await call(handlers, 'PUT', 'echo');
+
+      strictEqual(response.status, 405);
+      strictEqual(response.headers.get('allow'), 'POST');
+      deepStrictEqual(await response.json(), {
+        statusCode: 405,
+        message: "Method PUT is not allowed for route 'echo' at segment 'method-not-allowed'",
+        isError: true,
+      });
+      // a GET route answers HEAD, a cors route answers the preflight
+      strictEqual((await call(handlers, 'DELETE', 'items/1')).headers.get('allow'), 'GET, HEAD, PATCH, OPTIONS');
+      strictEqual((await call(handlers, 'PUT', 'missing')).status, 404);
+    });
+
     it('Finds the catch-all under a dynamic parent folder', async () => {
       class LocalizedController {
         static users() {
