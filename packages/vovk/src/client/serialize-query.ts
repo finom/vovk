@@ -1,14 +1,15 @@
 import type { KnownAny } from '../types/utils.js';
 
 // recursively builds "key=value" strings, key grows like 'user', 'user[0]', 'user[0][name]'
-function buildParams(key: string, value: KnownAny): string[] {
+function buildParams(key: string, value: KnownAny, isToJSONResult = false): string[] {
   if (value === null || value === undefined) {
     return []; // skip null/undefined values entirely
   }
 
-  // as JSON.stringify does: an ISO string, or nothing for an invalid date
-  if (value instanceof Date) {
-    return buildParams(key, value.toJSON());
+  // as JSON.stringify does, a value with toJSON is sent as its result, once: a Date as an ISO string or nothing
+  // when invalid, a URL as its href, a dayjs or Temporal value as its string
+  if (!isToJSONResult && typeof value.toJSON === 'function') {
+    return buildParams(key, value.toJSON(), true);
   }
 
   // If value is an object or array, we need to recurse

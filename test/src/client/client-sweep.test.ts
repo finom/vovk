@@ -176,6 +176,29 @@ describe('Client sweep', () => {
       );
     });
 
+    it('Sends a query value with toJSON as its JSON form', async () => {
+      class Money {
+        amount = 5;
+        currency = 'EUR';
+        toJSON() {
+          return `${this.amount} ${this.currency}`;
+        }
+      }
+      const query = {
+        price: new Money(),
+        link: new URL('https://example.com/a?b=c'),
+        since: { $y: 2026, $M: 9, toJSON: () => '2026-10-01' },
+        range: { toJSON: () => ({ from: 1, to: [2, 3] }) },
+      };
+
+      deepStrictEqual(await ClientSweepRPC.getQuery({ query }), {
+        price: '5 EUR',
+        link: 'https://example.com/a?b=c',
+        since: '2026-10-01',
+        range: { from: '1', to: ['2', '3'] },
+      });
+    });
+
     it('Converts an object body to form fields', async () => {
       const result = await ClientSweepRPC.postFormEntries({
         body: {
