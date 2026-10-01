@@ -7,40 +7,154 @@ on:
     paths:
       - 'packages/**'
       - 'test/**'
+      - 'scripts/**'
       - 'package.json'
       - 'package-lock.json'
       - 'turbo.json'
       - 'biome.json'
       - 'tsconfig.json'
       - '.github/workflows/main.yml'
+      - '!**/*.md'
   pull_request:
     branches:
       - main
     paths:
       - 'packages/**'
       - 'test/**'
+      - 'scripts/**'
       - 'package.json'
       - 'package-lock.json'
       - 'turbo.json'
       - 'biome.json'
       - 'tsconfig.json'
       - '.github/workflows/main.yml'
+      - '!**/*.md'
+  schedule:
+    # nightly: every OS and Node version, and the yarn, bun and pnpm init specs
+    - cron: '0 3 * * *'
   workflow_dispatch:
 
-jobs:
-  test:
-    strategy:
-      matrix:
-        os: [ubuntu-24.04, macos-latest]
-        node-version: [22, 24, 26]
-    runs-on: ${{ matrix.os }}
-    timeout-minutes: 45
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
+permissions:
+  contents: read
+
+jobs:
+  matrix:
+    # a pull request runs one OS and one Node version; for the full matrix on a branch, run the workflow by hand
+    runs-on: ubuntu-24.04
+    outputs:
+      os: ${{ steps.pick.outputs.os }}
+      node: ${{ steps.pick.outputs.node }}
     steps:
-      # The CLI init/bundle specs accumulate multiple full Next.js apps under
-      # packages/vovk-cli and yarn copies that directory on every file: install,
-      # which overruns the ~14 GB free on stock ubuntu runners. Drop preinstalled
-      # toolchains we never use to reclaim ~25-30 GB.
+      - id: pick
+        env:
+          FULL: ${{ github.event_name != 'pull_request' }}
+        run: |
+          if [ "$FULL" = true ]; then
+            echo 'os=["ubuntu-24.04","macos-latest"]' >> "$GITHUB_OUTPUT"
+            echo 'node=[22,24,26]' >> "$GITHUB_OUTPUT"
+          else
+            echo 'os=["ubuntu-24.04"]' >> "$GITHUB_OUTPUT"
+            echo 'node=[24]' >> "$GITHUB_OUTPUT"
+          fi
+
+  gate:
+    # lint, types and the fast unit tests, so a broken change fails in minutes
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: |
+            package-lock.json
+            test/package-lock.json
+      - run: npm ci && npm --prefix test ci
+      - run: npm run build
+      - run: npm run lint
+      - run: npx turbo run tsc --dangerously-disable-package-manager-check
+      - run: npm --prefix test run generate && npm --prefix test run build-other-compiled-sources
+      - run: npx tsc --project ./test
+      - run: npm run unit:ts --prefix packages/vovk-python && npm run unit:ts --prefix packages/vovk-rust
+
+  integration:
+    needs: [matrix, gate]
+    env:
+      NODE_OPTIONS: --max-old-space-size=8192
+    strategy:
+      fail-fast: false
+      matrix:
+        os: ${{ fromJSON(needs.matrix.outputs.os) }}
+        node-version: ${{ fromJSON(needs.matrix.outputs.node) }}
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: npm
+          cache-dependency-path: |
+            package-lock.json
+            test/package-lock.json
+      - run: npm ci && npm --prefix test ci
+      - run: npm run build
+      - run: npm --prefix test run generate && npm --prefix test run build-other-compiled-sources
+      - run: npm run unit
+
+  codegen:
+    # the generated Python and Rust clients against the built test app
+    needs: [matrix, gate]
+    env:
+      NODE_OPTIONS: --max-old-space-size=8192
+    strategy:
+      fail-fast: false
+      matrix:
+        os: ${{ fromJSON(needs.matrix.outputs.os) }}
+        node-version: ${{ fromJSON(needs.matrix.outputs.node) }}
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+          cache: pip
+          cache-dependency-path: packages/vovk-python/requirements.txt
+      - run: pip install -r ./packages/vovk-python/requirements.txt
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: packages/vovk-rust/test_rust
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: npm
+          cache-dependency-path: |
+            package-lock.json
+            test/package-lock.json
+      - run: npm ci && npm --prefix test ci
+      - run: npm run build
+      - run: npm --prefix test run generate && npm --prefix test run build-other-compiled-sources
+      - run: npm run test:rs
+      - run: npm run test:py
+
+  cli:
+    needs: [matrix, gate]
+    strategy:
+      fail-fast: false
+      matrix:
+        os: ${{ fromJSON(needs.matrix.outputs.os) }}
+        shard: [init, dev, bundle, rest]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
+    steps:
+      # the init and bundle specs create several Next.js apps, and yarn copies them on every file: install,
+      # which overruns the ~14 GB free on stock ubuntu runners
       - name: Free disk space
         if: runner.os == 'Linux'
         run: |
@@ -53,21 +167,21 @@ jobs:
         with:
           version: 10
           package_json_file: ./test/package.json
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-node@v4
         with:
-          python-version: '3.13'
-          cache: 'pip'
-      - run: pip install -r ./packages/vovk-python/requirements.txt
-
-      - name: Setup Node.js environment
-        uses: actions/setup-node@v2.1.5
-        with:
-          node-version: ${{ matrix.node-version }}
-
-      - name: Install dependencies
+          node-version: 24
+          cache: npm
+          cache-dependency-path: package-lock.json
+      - run: npm ci
+      - run: npm run build
+      - name: Run the ${{ matrix.shard }} specs
+        working-directory: packages/vovk-cli
+        env:
+          NODE_ENV: test
+          VOVK_TEST_ALL_PACKAGE_MANAGERS: ${{ github.event_name == 'schedule' && '1' || '0' }}
         run: |
-          npm ci
-          npm --prefix test ci
-
-      - name: Run tests
-        run: NODE_OPTIONS="--max-old-space-size=8192" npm t
+          case "${{ matrix.shard }}" in
+            rest) specs="test/spec/generate/*.mts test/spec/new/*.mts test/spec/critical-utilities/*.mts" ;;
+            *) specs="test/spec/${{ matrix.shard }}/*.mts" ;;
+          esac
+          node --experimental-strip-types --experimental-vm-modules --test --test-concurrency=1 $specs

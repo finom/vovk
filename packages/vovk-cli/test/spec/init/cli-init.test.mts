@@ -8,6 +8,9 @@ import type { PackageJson } from 'type-fest';
 import getCLIAssertions from '../../lib/get-cli-assertions.mts';
 import { DOWN, ENTER, runScript, SPACE } from '../../lib/run-script.mts';
 
+// yarn, bun and pnpm installs take minutes over the network, so pull requests run the npm cases only
+const skipOtherPackageManagers = process.env.VOVK_TEST_ALL_PACKAGE_MANAGERS !== '1';
+
 const combos = {
   /*
     Answers sequence for prompts:
@@ -618,7 +621,7 @@ await describe('CLI init', async () => {
     await assertTsConfig();
   });
 
-  await describe('Yarn-specific tests (NO --skip-install)', async () => {
+  await describe('Yarn-specific tests (NO --skip-install)', { skip: skipOtherPackageManagers }, async () => {
     await it('Works with prompting and --use-yarn', async () => {
       await createNextApp('--use-yarn');
       // Add packageManager: yarn to package.json
@@ -684,7 +687,7 @@ await describe('CLI init', async () => {
     });
   });
 
-  await describe('Bun-specific tests (NO --skip-install)', async () => {
+  await describe('Bun-specific tests (NO --skip-install)', { skip: skipOtherPackageManagers }, async () => {
     await it('Works with prompting and --use-bun', async () => {
       await createNextApp('--use-bun');
       // Add packageManager: bun to package.json
@@ -749,7 +752,7 @@ await describe('CLI init', async () => {
     });
   });
 
-  await describe('pnpm-specific tests (NO --skip-install)', async () => {
+  await describe('pnpm-specific tests (NO --skip-install)', { skip: skipOtherPackageManagers }, async () => {
     await it('Works with prompting and --use-pnpm', async () => {
       await createNextApp('--use-pnpm');
       // Add packageManager: pnpm to package.json

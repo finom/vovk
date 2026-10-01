@@ -7,6 +7,7 @@ Workspaces: `packages/vovk` (runtime), `packages/vovk-cli`, `packages/vovk-ajv`,
 - `npm run build` builds all packages (turbo) and links the `vovk` bin; the apps need it before they build
 - `npm run build -w <workspace>` builds one app; docs code fences with `source=` sync from the repo files via `npm run update-mdx-github-codeblocks -w vovk.dev`
 - `npm t` runs everything: lint (biome), build, unit and integration suites, CLI specs
+- The yarn, bun and pnpm cases of the `vovk init` spec run only with `VOVK_TEST_ALL_PACKAGE_MANAGERS=1`; CI sets it nightly
 - `npm run test:main` generates the client, typechecks and runs the test app suites
 
 ## Conventions
