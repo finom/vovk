@@ -181,14 +181,18 @@ export async function writeOneClientFile({
           )
         : path.relative(outCwdRelativeDir, cliSchemaPath ?? config.schemaOutDir)
     ),
-    commonImports: getTemplateClientImports({
-      config: projectConfig,
-      fullSchema,
-      isBundle,
-      outCwdRelativeDir,
-      segmentName,
-      outputConfigs: [templateDef.outputConfig ?? {}],
-    }).composedClient,
+    // a segmented client sits one folder deeper, so its relative imports are resolved from there
+    commonImports: (({ composedClient, segmentedClient }) =>
+      typeof segmentName === 'string' ? (segmentedClient[segmentName] ?? composedClient) : composedClient)(
+      getTemplateClientImports({
+        config: projectConfig,
+        fullSchema,
+        isBundle,
+        outCwdRelativeDir,
+        segmentName,
+        outputConfigs: [projectConfig[configKey].outputConfig ?? {}, templateDef.outputConfig ?? {}],
+      })
+    ),
     segmentImports: Object.fromEntries(
       Object.values(fullSchema.segments).map(({ segmentName: sName }) => {
         const clientImports = getTemplateClientImports({

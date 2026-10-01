@@ -31,6 +31,23 @@ await describe('vovk generate in a project without Next.js', async () => {
     assert.ok(index.includes(`from "../app/api/[[...vovk]]/route.ts"`), index);
   });
 
+  await it('Resolves a relative createRPC import from each segmented client folder', async () => {
+    await createProject(projectDir, {
+      'package.json': { name: 'app', version: '1.0.0', type: 'module' },
+      'vovk.config.mjs': configFile({
+        segmentedClient: { enabled: true, prettifyClient: false },
+        outputConfig: { imports: { createRPC: './src/lib/create-rpc' } },
+      }),
+      'src/app/api/[[...vovk]]/route.ts': '',
+      '.vovk-schema/root.json': userSegmentSchema,
+    });
+
+    await runCLI(['generate', '--segmented-only'], { cwd: projectDir });
+
+    const index = await read('src/client/root/index.ts');
+    assert.ok(index.includes(`from '../../lib/create-rpc'`), index);
+  });
+
   await it('Names Python and Rust packages after a scoped package name', async () => {
     await createProject(projectDir, {
       'package.json': { name: '@acme/web-app', version: '1.0.0', type: 'module' },
