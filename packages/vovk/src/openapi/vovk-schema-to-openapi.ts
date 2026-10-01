@@ -59,8 +59,8 @@ function extractComponents(
     if (!isLocalJSONSchemaRef(ref) || ref.startsWith('#/components/')) return ref;
     const def = parseDefinitionRef(ref);
     if (def) {
-      const newName = Object.hasOwn(defs, def.name) ? (newNames.get(def.name) ?? def.name) : def.name;
-      return `#/components/schemas/${newName === def.name ? def.token : encodeJSONPointerToken(newName)}${def.rest}`;
+      const newName = newNames.get(def.name);
+      return `#/components/schemas/${newName ? encodeJSONPointerToken(newName) : def.token}${def.rest}`;
     }
     refersToRoot = true;
     return `#/components/schemas/${encodeJSONPointerToken(rootName)}${ref.slice(1)}`;
