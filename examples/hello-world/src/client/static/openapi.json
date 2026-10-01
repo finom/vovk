@@ -1,0 +1,83 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "\"Hello World\" app API",
+    "description": "API for \"Hello World\" app hosted at https://hello-world.vovk.dev/. Source code is available on Github https://github.com/finom/vovk/tree/main/examples/hello-world. For more information about this app, visit the documentation page https://vovk.dev/hello-world.",
+    "license": {
+      "name": "MIT",
+      "url": "https://opensource.org/licenses/MIT"
+    },
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "https://hello-world.vovk.dev",
+      "description": "Production"
+    },
+    {
+      "url": "http://localhost:3000",
+      "description": "Localhost"
+    }
+  ],
+  "components": {
+    "schemas": {
+      "HttpStatus": {
+        "type": "integer",
+        "description": "HTTP status code",
+        "enum": [
+          100, 101, 102, 103, 200, 201, 202, 203, 204, 205, 206, 300, 301, 302, 303, 304, 307, 308, 400, 401, 402, 403,
+          404, 405, 406, 407, 408, 409, 410, 411, 412, 413, 414, 415, 416, 417, 418, 421, 422, 424, 428, 429, 500, 501,
+          502, 503, 504, 505
+        ]
+      },
+      "VovkErrorResponse": {
+        "type": "object",
+        "description": "Vovk error response",
+        "properties": {
+          "cause": {
+            "description": "Error cause of any shape"
+          },
+          "statusCode": {
+            "$ref": "#/components/schemas/HttpStatus"
+          },
+          "message": {
+            "type": "string",
+            "description": "Error message"
+          },
+          "isError": {
+            "type": "boolean",
+            "const": true,
+            "description": "Indicates that this object represents an error"
+          }
+        },
+        "required": ["statusCode", "message", "isError"],
+        "additionalProperties": false
+      }
+    }
+  },
+  "paths": {
+    "/api/static/openapi.json": {
+      "get": {
+        "summary": "OpenAPI spec",
+        "description": "Get the OpenAPI spec for the \"Hello World\" app API",
+        "x-codeSamples": [
+          {
+            "label": "TypeScript RPC",
+            "lang": "typescript",
+            "source": "import { OpenApiRPC } from 'vovk-hello-world';\n\nconst response = await OpenApiRPC.getSpec();"
+          },
+          {
+            "label": "Python RPC",
+            "lang": "python",
+            "source": "from vovk_hello_world import OpenApiRPC\n\nresponse = OpenApiRPC.get_spec()"
+          },
+          {
+            "label": "Rust RPC",
+            "lang": "rust",
+            "source": "use vovk_hello_world::open_api_rpc;\nuse serde_json::{ \n  from_value, \n  json \n};\n#[tokio::main]\nasync fn main() {\n  let response = open_api_rpc::get_spec(\n    (), /* body */ \n    (), /* query */ \n    (), /* params */ \n    None, /* headers (HashMap) */ \n    None, /* api_root */\n    false, /* disable_client_validation */\n  ).await;\n}"
+          }
+        ]
+      }
+    }
+  }
+}

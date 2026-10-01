@@ -1,0 +1,99 @@
+# vovk init
+
+```sh filename="Quick CLI Ref"
+$ npx vovk init --help
+
+Usage: vovk init [options]
+
+Initialize Vovk.ts in an existing Next.js project
+
+Options:
+  --prefix <prefix>               directory to initialize project in
+  -y, --yes                       skip all prompts and use default values
+  --log-level <level>             set log level (default: "info")
+  --use-npm                       use npm as package manager
+  --use-yarn                      use yarn as package manager
+  --use-pnpm                      use pnpm as package manager
+  --use-bun                       use bun as package manager
+  --skip-install                  skip installing dependencies
+  --update-ts-config              update tsconfig.json
+  --update-scripts <mode>         update package.json scripts ("implicit" or "explicit")
+  --lang <languages...>           generate client for other programming languages by default ("py" for Python and "rs" for Rust are
+                                  supported)
+  --validation-library <library>  validation library to use ("zod", "valibot", "arktype"); set to "none" to skip
+  --channel <channel>             channel to use for fetching packages (default: "latest")
+  --dry-run                       do not write files to disk
+  -h, --help                      display help for command
+```
+
+---
+
+The `init` command sets up Vovk.ts in an existing Next.js project. It applies the required configuration and installs the necessary dependencies.
+
+```sh npm2yarn copy
+npx vovk-cli init
+```
+
+## Available Flags
+
+### `--prefix <prefix>`
+
+Directory to initialize the project in. Defaults to the current directory.
+
+### `-y, --yes`
+
+Skips prompts and uses default values.
+
+### `--log-level <level>`
+
+Sets the log level: `trace`, `debug`, `info`, `warn`, `error`. Default: `info`.
+
+### `--use-npm`, `--use-yarn`, `--use-pnpm`, `--use-bun`
+
+Choose the package manager for installing dependencies to skip auto-detection.
+
+### `--skip-install`
+
+Skips installing dependencies but still updates `package.json`.
+
+### `--update-ts-config`
+
+Updates `tsconfig.json` with settings needed for Vovk.ts, such as `experimentalDecorators`.
+
+### `--update-scripts <mode>`
+
+Updates `package.json` scripts to run Next.js and Vovk.ts together. Modes:
+
+- `implicit` — runs the concurrently API under the hood.
+- `explicit` — uses the `concurrently` CLI.
+  The flag also sets `prebuild` to run `vovk generate` before `next build` to ensure the client is generated before building.
+
+### `--lang <languages...>`
+
+Generates clients for additional languages. Sets [`composedClient.templates`](/composed#templates) to include "py" (Python) and "rs" (Rust).
+
+### `--validation-library <library>`
+
+Selects a validation library: "zod", "valibot", "arktype", or "none" to set up validation later.
+
+### `--channel <channel>`
+
+Specifies the package channel (default: "latest").
+
+- `latest` for stable releases.
+- `beta` for beta releases (tested but might introduce breaking changes without notice).
+- `draft` for draft releases (unstable, may contain experimental features).
+
+In that case, use the corresponding version suffix when running the command:
+
+```sh npm2yarn copy
+npx vovk-cli init@draft --channel draft
+```
+
+### `--dry-run`
+
+Shows actions without writing files.
+
+### `-h, --help`
+
+Displays help.

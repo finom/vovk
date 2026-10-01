@@ -1,0 +1,83 @@
+name: Examples
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'examples/**'
+      - 'perf/**'
+      - 'packages/**'
+      - 'package.json'
+      - 'package-lock.json'
+      - '.github/workflows/examples.yml'
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'examples/**'
+      - 'perf/**'
+      - 'packages/**'
+      - 'package.json'
+      - 'package-lock.json'
+      - '.github/workflows/examples.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: examples-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        workspace: [vovk-hello-world, vovk-examples, vovk-multitenant-example, realtime-kanban]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npm run build
+      - run: npx biome check examples perf
+        if: matrix.workspace == 'vovk-hello-world'
+      - name: Build ${{ matrix.workspace }}
+        env:
+          # the build reads these; nothing connects to them
+          DATABASE_URL: postgresql://user:password@localhost:5432/db
+          DATABASE_URL_UNPOOLED: postgresql://user:password@localhost:5432/db
+          REDIS_URL: redis://localhost:6379
+          OPENAI_API_KEY: ci
+        run: |
+          if [ "${{ matrix.workspace }}" = realtime-kanban ]; then
+            # its build script applies database migrations, which need the production database
+            npm run generate -w realtime-kanban
+            npm exec -w realtime-kanban -- next build
+          else
+            npm run build -w ${{ matrix.workspace }}
+          fi
+
+  hello-world-clients:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - run: npm ci
+      - run: npm run build
+      - run: npm exec -w vovk-hello-world -- vovk generate
+      # TypeScript, Python and Rust clients against a local server, then the published clients
+      - run: npm test -w vovk-hello-world

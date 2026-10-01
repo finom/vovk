@@ -137,6 +137,14 @@ The **Installed** tab should list `vovk`. Skills are namespaced — typing `/vov
 
 Full plugin docs: <https://vovk.dev/claude>.
 
+## Repository
+
+- `packages/`: the npm packages `vovk`, `vovk-cli`, `vovk-ajv`, `vovk-python` and `vovk-rust`
+- `docs/`: the [vovk.dev](https://vovk.dev) site
+- `examples/`: `hello-world` ([hello-world.vovk.dev](https://hello-world.vovk.dev)), `kitchen-sink` ([examples.vovk.dev](https://examples.vovk.dev)), `realtime-kanban` ([kanban.vovk.dev](https://kanban.vovk.dev)) and `multitenant` ([multitenant.vovk.dev](https://multitenant.vovk.dev))
+- `perf/`: the [overhead benchmarks](https://vovk.dev/performance)
+- `test/`: the integration test app
+
 ## Links
 
 - Docs: https://vovk.dev
@@ -145,7 +153,7 @@ Full plugin docs: <https://vovk.dev/claude>.
 - Claude Plugin: https://vovk.dev/claude
 - OpenAPI Mixins: https://vovk.dev/mixins
 - Performance: https://vovk.dev/performance
-- “Hello World” example app: https://github.com/finom/vovk-hello-world
+- “Hello World” example app: https://github.com/finom/vovk/tree/main/examples/hello-world
 
 ---
 

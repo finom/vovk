@@ -1,0 +1,84 @@
+# vovk generate
+
+```sh filename="Quick CLI Ref"
+$ npx vovk generate --help
+
+Usage: vovk generate|g [options]
+
+Generate RPC client from schema
+
+Options:
+  --composed-only                                              generate only composed client even if segmented client is enabled
+  --out, --composed-out <path>                                 path to output directory for composed client
+  --from, --composed-from <templates...>                       client template names for composed client
+  --include, --composed-include-segments <segments...>         include segments in composed client
+  --exclude, --composed-exclude-segments <segments...>         exclude segments in composed client
+  --segmented-only                                             generate only segmented client even if composed client is enabled
+  --segmented-out <path>                                       path to output directory for segmented client
+  --segmented-from <templates...>                              client template names for segmented client
+  --segmented-include-segments <segments...>                   include segments in segmented client
+  --segmented-exclude-segments <segments...>                   exclude segments in segmented client
+  --prettify                                                   prettify output files
+  --schema, --schema-path <path>                               path to schema folder (default: ./.vovk-schema)
+  --config, --config-path <config>                             path to config file
+  --origin <url>                                               set the origin URL for the generated client
+  --watch [s]                                                  watch for changes in schema or openapi spec and regenerate client; accepts a number in seconds to throttle the watcher or
+                                                               make an HTTP request to the OpenAPI spec URLs
+  --openapi, --openapi-spec <openapi_path_or_urls...>          use OpenAPI mixins for client generation
+  --openapi-module-name, --openapi-get-module-name <names...>  module name strategies corresponding to the index of --openapi option
+  --openapi-method-name, --openapi-get-method-name <names...>  method name strategies corresponding to the index of --openapi option
+  --openapi-root-url <urls...>                                 root URLs corresponding to the index of --openapi option
+  --openapi-mixin-name <names...>                              mixin names corresponding to the index of --openapi option
+  --openapi-fallback <paths...>                                save OpenAPI spec corresponding to the index of --openapi option to a local file and use it as a fallback if URL is not
+                                                               available
+  --log-level <level>                                          set the log level
+  -h, --help                                                   display help for command
+```
+
+The `vovk generate` command creates [TypeScript](/typescript), [Rust](/rust), and [Python](/python) clients from existing [schema](/schema) files and from [OpenAPI mixins](/mixins) declared in the [config](/config). Relevant configuration spans several options and documentation pages, including:
+
+- `composedClient`: settings for the [composed client](/composed), including the output directory, included/excluded segments, and [templates](/templates).
+- `segmentedClient`: settings for the [segmented client](/segmented), including the output directory, included/excluded segments, and [templates](/templates).
+- `outputConfig`: options to configure `origin`, [imports](/imports), [OpenAPI mixins](/mixins), and more.
+- `clientTemplateDefs`: definitions of available [templates](/templates).
+
+See the [config](/config) page for details.
+
+## Available Flags
+
+### Composed Client Flags
+
+- `--composed-only` — generate only the composed client, even if the segmented client is enabled.
+- `--out`, `--composed-out <path>` — override `composedClient.outDir`.
+- `--from`, `--composed-from <templates...>` — override `composedClient.templates`.
+- `--include`, `--composed-include-segments <segments...>` — override `composedClient.includeSegments`.
+- `--exclude`, `--composed-exclude-segments <segments...>` — override `composedClient.excludeSegments`.
+
+### Segmented Client Flags
+
+- `--segmented-only` — generate only the segmented client, even if the composed client is enabled.
+- `--segmented-out <path>` — override `segmentedClient.outDir`.
+- `--segmented-from <templates...>` — override `segmentedClient.templates`.
+- `--segmented-include-segments <segments...>` — override `segmentedClient.includeSegments`.
+- `--segmented-exclude-segments <segments...>` — override `segmentedClient.excludeSegments`.
+
+### OpenAPI mixin Flags
+
+Mixins extend the sclient declared in one or more OpenAPI specs. See [OpenAPI mixins](/mixins).
+
+- `--openapi`, `--openapi-spec <openapi_path_or_urls...>` — use one or more OpenAPI specs (local paths or URLs). For URLs, the command fetches the spec via HTTP GET. Mirrors `outputConfig.segments.mixinName.openAPIMixin.source.url` (remote) or `.source.file` (local).
+- `--openapi-module-name`, `--openapi-get-module-name <names...>` — module names aligned by index with `--openapi`. Mirrors `outputConfig.segments.mixinName.openAPIMixin.getModuleName`.
+- `--openapi-method-name`, `--openapi-get-method-name <names...>` — method names aligned by index with `--openapi`. Mirrors `outputConfig.segments.mixinName.openAPIMixin.getMethodName`.
+- `--openapi-root-url <urls...>` — root URLs aligned by index with `--openapi`. Mirrors `outputConfig.segments.mixinName.openAPIMixin.apiRoot`.
+- `--openapi-mixin-name <names...>` — mixin names aligned by index with `--openapi`. In config, serves as the key in `outputConfig.segments` and defines pseudo-segment names for the mixins.
+- `--openapi-fallback <paths...>` — save OpenAPI specs to the specified paths and use them as a fallback if the URL is unavailable. Paths align by index with `--openapi`.
+- `--watch <s>` — watch the schema or OpenAPI spec and regenerate the client. Accepts a throttle interval in seconds. For remote specs, performs an HTTP request every `s` seconds; for local files, regenerates on change.
+
+### Other Flags
+
+- `--prettify` — prettify output files with [Prettier](https://prettier.io/). Mirrors `composedClient.prettifyClient` and `segmentedClient.prettifyClient`.
+- `--schema`, `--schema-path <path>` — override the schema folder defined by `schemaOutDir`.
+- `--config`, `--config-path <config>` — override the config file path. By default, all supported filenames are checked; a warning is shown if multiple are found.
+- `--origin <url>` — override `outputConfig.origin`.
+- `--log-level <level>` — set log level: `trace`, `debug`, `info`, `warn`, `error`, `fatal` (default: `info`).
+- `-h, --help` — show help.

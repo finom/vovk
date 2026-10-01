@@ -1,0 +1,137 @@
+---
+title: Zod Validation Example
+description: Zod validation example with client and server-side validation
+---
+
+import { Tabs } from 'nextra/components';
+import ZodFormExample from './zod-form-example';
+import Example from '@/components/example';
+
+# Zod Validation Example
+
+Form input handling and [Zod](https://zod.dev/) validation. The request input is validated on the client-side with [vovk-ajv](https://www.npmjs.com/package/vovk-ajv) before being sent to the server where it is validated again with Zod.
+
+## Result
+
+<Example>
+  <ZodFormExample />
+</Example>
+
+## Code
+
+<Tabs items={['user-zod-controller.ts', 'zod-form-example.tsx']}>
+  <Tabs.Tab>
+```ts showLineNumbers copy filename="src/modules/zod/user-zod-controller.ts" source="examples/kitchen-sink"
+import { z } from 'zod';
+import { procedure, prefix, post, operation } from 'vovk';
+
+@prefix('users-zod')
+export default class UserZodController {
+  @operation({
+    summary: 'Update user (Zod)',
+    description: 'Update user by ID with Zod validation',
+  })
+  @post('{id}')
+  static updateUser = procedure({
+    body: z
+      .object({
+        name: z.string().meta({ description: 'User full name', example: 'John Doe' }),
+        age: z.number().min(0).max(120).meta({ description: 'User age', example: 30 }),
+        email: z.email().meta({ description: 'User email', example: 'john.doe@example.com' }),
+      })
+      .meta({ description: 'User object' }),
+    params: z.object({
+      id: z.uuid().meta({ description: 'User ID' }),
+    }),
+    query: z.object({
+      notify: z.enum(['email', 'push', 'none']).meta({ description: 'Notification type' }),
+    }),
+    output: z
+      .object({
+        success: z.boolean().meta({ description: 'Success status' }),
+      })
+      .meta({ description: 'Response object' }),
+  }).handle(async (req, { id }) => {
+    const { name, age, email } = await req.json();
+    const notify = req.nextUrl.searchParams.get('notify');
+
+    // do something with the data
+    console.log(`Updating user ${id}:`, { name, age, email, notify });
+    return {
+      success: true,
+    };
+  });
+}
+```
+*[The code above is fetched from GitHub repository.](https://github.com/finom/vovk/blob/main/examples/kitchen-sink/src/modules/zod/user-zod-controller.ts)*
+  </Tabs.Tab>
+  <Tabs.Tab>
+```tsx showLineNumbers copy filename="src/app/zod/zod-form-example.tsx" source="examples/kitchen-sink"
+'use client';
+import { useState, type FormEvent } from 'react';
+import { UserZodRPC } from '@/client';
+import type { VovkReturnType } from 'vovk';
+
+export default function ZodFormExample() {
+  const [response, setResponse] = useState<VovkReturnType<typeof UserZodRPC.updateUser> | null>(null);
+  const [error, setError] = useState<Error | null>(null);
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [age, setAge] = useState(30);
+  const [disableClientValidation, setDisableClientValidation] = useState(false);
+  const onSubmit = async (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    try {
+      setResponse(
+        await UserZodRPC.updateUser({
+          body: { name, email, age },
+          query: { notify: 'push' },
+          params: { id: '5a279068-35d6-4d67-94e0-c21ef4052eea' },
+          disableClientValidation,
+        })
+      );
+      setError(null);
+    } catch (e) {
+      setError(e as Error);
+      setResponse(null);
+    }
+  };
+
+  return (
+    <form onSubmit={onSubmit}>
+      <input type="text" placeholder="Name" value={name} onChange={(e) => setName(e.target.value)} />
+      <input type="text" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} />
+      <label htmlFor="age">Age:</label>
+      <input id="age" type="number" placeholder="Age" value={age} onChange={(e) => setAge(e.target.valueAsNumber)} />
+      <label className="block mb-4">
+        <input
+          type="checkbox"
+          className="mr-2"
+          checked={disableClientValidation}
+          onChange={(e) => setDisableClientValidation(e.target.checked)}
+        />
+        Disable client-side validation
+      </label>
+      <button type="submit">Submit</button>
+
+      {response && (
+        <div className="text-left">
+          <h3>Response:</h3>
+          <pre>{JSON.stringify(response, null, 2)}</pre>
+        </div>
+      )}
+
+      {error && <div className="overflow-auto">❌ {String(error)}</div>}
+    </form>
+  );
+}
+```
+*[The code above is fetched from GitHub repository.](https://github.com/finom/vovk/blob/main/examples/kitchen-sink/src/app/zod/zod-form-example.tsx)*
+  </Tabs.Tab>
+</Tabs>
+
+## Related Documentation
+
+- [TypeScript RPC](https://vovk.dev/typescript)
+- [Controller & Procedure](https://vovk.dev/procedure)
+- [`@operation` Decorator](https://vovk.dev/openapi)

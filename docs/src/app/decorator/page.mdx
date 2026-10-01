@@ -1,0 +1,61 @@
+# Decorators
+
+Decorators extend the functionality of procedures. Use them to implement cross‑cutting concerns such as logging, caching, validation, and authorization. They can also attach custom metadata to the handler for purposes like identifying authorized users.
+
+`createDecorator` is a higher‑order function that produces a decorator factory (a function that returns a decorator) for controller class methods. It accepts a middleware function with the following parameters:
+
+- `request`, which extends `VovkRequest`. It provides [req.vovk.meta](/req-vovk#meta) to get and set metadata for sharing data between decorators and the route handler.
+- `next`, a function you call (and return) to invoke subsequent decorators or the route handler.
+- Additional arguments passed through the decorator factory.
+
+The second argument to `createDecorator` is an optional init handler. It runs each time the decorator is initialized and can populate **.vovk-schema/\*.json** with validation or custom data. It may return an object with optional keys `"validation"`, `"operationObject"`, and `"misc"` (for custom metadata) to merge into the handler schema, or a function returning that object and receiving the existing handler schema for proper merging.
+
+```ts showLineNumbers copy
+import { createDecorator, get, HttpException, HttpStatus } from 'vovk';
+
+export interface ReqMeta {
+  foo: string;
+  a: string;
+  b: number;
+}
+
+const myDecorator = createDecorator(
+  (req, next, a: string, b: number) => {
+    console.log(a, b); // Outputs: "foo", 1
+
+    req.vovk.meta<ReqMeta>({ foo: 'bar', a, b }); // Add metadata to the request object
+
+    if (isSomething) {
+      // override route method behavior and return { hello: 'world' } from the endpoint
+      return { hello: 'world' };
+    }
+
+    if (isSomethingElse) {
+      // throw HTTP error if needed
+      throw new HttpException(HttpStatus.BAD_REQUEST, 'Something went wrong');
+    }
+
+    // Continue to the next decorator or the route handler
+    return next();
+  },
+  (a: string, b: number) => {
+    console.info('Decorator is initialized with', a, b);
+    return {
+      validation: {
+        /* ... */
+      },
+      misc: { a, b }, // adds `a` and `b` to the handler schema
+    };
+  }
+);
+
+export default class MyController {
+  @get.auto()
+  @myDecorator('baz', 1) // Passes 'baz' as 'a' and 1 as 'b'
+  static doSomething(req) {
+    const meta = req.vovk.meta<ReqMeta>();
+    console.log(meta); // { foo: 'bar', a: 'baz', b: 1 }
+    // ...
+  }
+}
+```

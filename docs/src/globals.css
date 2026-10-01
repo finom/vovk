@@ -1,0 +1,284 @@
+@import 'tailwindcss';
+@import 'tw-animate-css';
+@config "../tailwind.config.ts";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+  --background-image-gradient-radial: radial-gradient(var(--tw-gradient-stops));
+  --background-image-gradient-conic: conic-gradient(from 180deg at 50% 50%, var(--tw-gradient-stops));
+}
+
+/*
+  The default border color has changed to `currentColor` in Tailwind CSS v4,
+  so we've added these compatibility styles to make sure everything still
+  looks the same as it did with Tailwind CSS v3.
+
+  If we ever want to remove these styles, we need to add an explicit border
+  color utility to any element that depends on these defaults.
+*/
+@layer base {
+  *,
+  ::after,
+  ::before,
+  ::backdrop,
+  ::file-selector-button {
+    border-color: var(--color-gray-200, currentColor);
+  }
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+.example {
+  @apply mt-4;
+
+  h2 {
+    @apply text-xl font-bold mb-2;
+  }
+
+  button {
+    @apply inline-flex items-center justify-center whitespace-nowrap
+           rounded-md text-sm font-medium
+           ring-offset-background transition-colors
+           focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2
+           disabled:pointer-events-none disabled:opacity-50
+           h-10 px-4 py-2
+           bg-primary text-primary-foreground hover:bg-primary/90;
+  }
+
+  input[type='text'],
+  input[type='number'] {
+    @apply inline-flex items-center justify-center whitespace-nowrap
+           rounded-md text-sm font-medium
+           ring-offset-background transition-colors
+           focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2
+           disabled:pointer-events-none disabled:opacity-50
+           h-10 px-4 py-2
+           border border-neutral-300 bg-white text-neutral-900
+           placeholder:text-neutral-400 hover:border-neutral-400;
+  }
+
+  ul {
+    @apply list-disc pl-5 mb-2;
+
+    li {
+      @apply mb-1;
+    }
+  }
+
+  p {
+    @apply mt-1;
+  }
+}
+
+@theme inline {
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+}
+
+/*
+  ---break---
+*/
+
+:root {
+  /* Route the next/font faces into Nextra's body + code (it reads --x-font-*). */
+  --x-font-sans: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
+  --x-font-mono: var(--font-mono), ui-monospace, SFMono-Regular, Menlo, Monaco, monospace;
+
+  --radius: 0.625rem;
+  /* Warm light palette — cream paper, ink-brown text, clay accent. Chroma is
+     kept low on neutrals (hue ~80) so surfaces read "warm gray", not beige. */
+  --card: oklch(0.995 0.003 83);
+  --card-foreground: oklch(0.26 0.008 65);
+  --popover: oklch(0.995 0.003 83);
+  --popover-foreground: oklch(0.26 0.008 65);
+  --primary: oklch(0.62 0.115 42);
+  --primary-foreground: oklch(0.99 0.004 83);
+  --secondary: oklch(0.955 0.009 84);
+  --secondary-foreground: oklch(0.3 0.01 65);
+  --muted: oklch(0.955 0.009 84);
+  --muted-foreground: oklch(0.55 0.012 70);
+  --accent: oklch(0.93 0.02 70);
+  --accent-foreground: oklch(0.3 0.01 65);
+  --destructive: oklch(0.577 0.245 27.325);
+  --border: oklch(0.9 0.011 80);
+  --input: oklch(0.9 0.011 80);
+  --ring: oklch(0.62 0.115 42);
+  --chart-1: oklch(0.646 0.222 41.116);
+  --chart-2: oklch(0.6 0.118 184.704);
+  --chart-3: oklch(0.398 0.07 227.392);
+  --chart-4: oklch(0.828 0.189 84.429);
+  --chart-5: oklch(0.769 0.188 70.08);
+  --sidebar: oklch(0.975 0.007 83);
+  --sidebar-foreground: oklch(0.26 0.008 65);
+  --sidebar-primary: oklch(0.62 0.115 42);
+  --sidebar-primary-foreground: oklch(0.99 0.004 83);
+  --sidebar-accent: oklch(0.93 0.02 70);
+  --sidebar-accent-foreground: oklch(0.3 0.01 65);
+  --sidebar-border: oklch(0.9 0.011 80);
+  --sidebar-ring: oklch(0.62 0.115 42);
+  --background: oklch(0.972 0.008 83);
+  --foreground: oklch(0.26 0.008 65);
+}
+
+/*
+  ---break---
+*/
+
+.dark {
+  /* Warm charcoal — never pure black; cream text, brighter clay accent so links
+     stay legible on the dark surface. */
+  --background: oklch(0.205 0.006 70);
+  --foreground: oklch(0.92 0.008 83);
+  --card: oklch(0.245 0.006 70);
+  --card-foreground: oklch(0.92 0.008 83);
+  --popover: oklch(0.245 0.006 70);
+  --popover-foreground: oklch(0.92 0.008 83);
+  --primary: oklch(0.7 0.105 45);
+  --primary-foreground: oklch(0.2 0.01 60);
+  --secondary: oklch(0.28 0.007 70);
+  --secondary-foreground: oklch(0.92 0.008 83);
+  --muted: oklch(0.28 0.007 70);
+  --muted-foreground: oklch(0.7 0.01 80);
+  --accent: oklch(0.31 0.009 68);
+  --accent-foreground: oklch(0.92 0.008 83);
+  --destructive: oklch(0.704 0.191 22.216);
+  --border: oklch(0.92 0.02 80 / 10%);
+  --input: oklch(0.92 0.02 80 / 14%);
+  --ring: oklch(0.7 0.105 45);
+  --chart-1: oklch(0.488 0.243 264.376);
+  --chart-2: oklch(0.696 0.17 162.48);
+  --chart-3: oklch(0.769 0.188 70.08);
+  --chart-4: oklch(0.627 0.265 303.9);
+  --chart-5: oklch(0.645 0.246 16.439);
+  --sidebar: oklch(0.225 0.006 70);
+  --sidebar-foreground: oklch(0.92 0.008 83);
+  --sidebar-primary: oklch(0.7 0.105 45);
+  --sidebar-primary-foreground: oklch(0.2 0.01 60);
+  --sidebar-accent: oklch(0.31 0.009 68);
+  --sidebar-accent-foreground: oklch(0.92 0.008 83);
+  --sidebar-border: oklch(0.92 0.02 80 / 10%);
+  --sidebar-ring: oklch(0.7 0.105 45);
+}
+
+/*
+  ---break---
+*/
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+/*
+  Blog comparison master table: full width via Nextra <Bleed>, with a sticky
+  header row while scrolling its long body. Nextra renders the <table> itself
+  as the scroll container (display:block; overflow-x:auto), so a max-height +
+  sticky <th> sticks the header within the table's own viewport. Scoped via
+  .sticky-comparison so other tables on the site are unaffected.
+*/
+.sticky-comparison table {
+  max-height: 80vh;
+  overflow: auto;
+  /* Opaque: where the widened bleed overlaps the right-hand TOC, the table
+     covers it instead of the TOC bleeding through the transparent cells. */
+  background-color: var(--background);
+}
+.sticky-comparison thead th {
+  position: sticky;
+  /* Pin 1px higher so the header's opaque body covers the collapsed-border
+     seam — otherwise a sliver of the scrolled row bleeds above the header. */
+  top: -1px;
+  z-index: 1;
+  background-color: var(--background);
+  box-shadow: inset 0 -1px 0 var(--border);
+}
+
+/*
+  Push this table's bleed ~100px further out on each side than Nextra's default
+  (-mx-24 ≈ 96px at 2xl). max() clamps to the viewport edge — calc(-50vw + 50%)
+  is the full-bleed margin — so narrow screens stop at the edge instead of
+  forcing a page-level horizontal scrollbar. Scoped via :has() to the single
+  bleed wrapping the comparison table.
+*/
+.nextra-bleed:has(> .sticky-comparison) {
+  margin-inline: max(-196px, calc(-50vw + 50%));
+  /* Sit above the TOC (z-auto) but below the sticky navbar (z-30), so the
+     widened table covers the TOC on overlap without ever hiding the top nav. */
+  position: relative;
+  z-index: 10;
+}
+
+/*
+  Editorial display headings: the soft Fraunces serif for the page title,
+  section heads, and sub-section / Steps headings (h1–h3) gives the docs a
+  designed, magazine-like feel while the body stays in a clean grotesque.
+  Scoped to the content <article> (Nextra wraps MDX there) so the navbar,
+  sidebar, and TOC keep the sans; h4–h6 stay sans for a clear hierarchy.
+  Existing weight/size utilities on the hero are left intact — we only swap
+  the family, optical sizing, and tracking.
+*/
+article h1,
+article h2,
+article h3 {
+  font-family: var(--font-display), ui-serif, Georgia, 'Times New Roman', serif;
+  font-optical-sizing: auto;
+  letter-spacing: -0.02em;
+}
+
+/* Smoother rendering for the new sans across the whole document. */
+body {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+/*
+  Nextra's footer uses Tailwind's cool gray text (text-gray-600 / dark:text-gray-400),
+  which reads cold against the warm cream / charcoal palette. Re-tint the footer's
+  inherited text to the warm muted token so it matches the rest of the site; links
+  keep their own accent color. !important wins over Nextra's prefixed utilities
+  without coupling to their internal class names.
+*/
+footer {
+  color: var(--muted-foreground) !important;
+}

@@ -1,0 +1,216 @@
+
+# Content Type
+
+The `contentType` option on a `procedure` controls how the request body is typed on the client, how it is parsed on the server, and which `Content-Type` headers are accepted. When `contentType` is set, the server returns a **415 Unsupported Media Type** error if the incoming request doesn't carry a matching `Content-Type` header.
+
+The following table summarises how each content type family maps to client-side `body` typing and server-side `req.vovk.body()` return type:
+
+| Content Type | Client `body` type | `req.vovk.body()` return type |
+|---|---|---|
+| `application/json`, `*+json` | `TBody \| Blob` | Parsed JSON object |
+| `multipart/form-data` | `TBody \| FormData \| Blob` | Parsed form object |
+| `application/x-www-form-urlencoded` | `TBody \| URLSearchParams \| FormData \| Blob` | Parsed form object |
+| `text/*`, text-like application types, `*+xml`, `*+text`, `*+yaml`, `*+json-seq` | `string \| Blob` | `string` |
+| Everything else (`image/*`, `video/*`, `application/octet-stream`, etc.) | `File \| ArrayBuffer \| Uint8Array \| Blob` | `File` |
+
+> [!NOTE]
+>
+> Standard `Request` methods like `req.json()`, `req.text()`, `req.blob()`, and `req.formData()` remain available and work as usual—`contentType` only affects the typed helper on `req.vovk.body()`.
+
+Wildcard patterns such as `'video/*'{:ts}`, `'image/*'{:ts}`, or `'*/*'{:ts}` are supported and match any subtype within that family.
+
+## JSON (default)
+
+When no `contentType` is specified, or when it is set to `'application/json'`, the body is typed as the schema-inferred type and parsed as JSON.
+
+```ts showLineNumbers copy
+import { z } from 'zod';
+import { procedure, post, prefix } from 'vovk';
+
+@prefix('users')
+export default class UserController {
+  @post()
+  static createUser = procedure({
+    body: z.object({
+      email: z.string().email(),
+      name: z.string(),
+    }),
+  }).handle(async (req) => {
+    const { email, name } = await req.vovk.body(); // { email: string; name: string }
+    // ...
+  });
+}
+```
+
+## Form Data
+
+To accept form data requests, set `contentType` to `'multipart/form-data'`.
+
+```ts showLineNumbers copy {8}
+import { z } from 'zod';
+import { procedure, post, prefix } from 'vovk';
+
+@prefix('users')
+export default class UserController {
+  @post()
+  static createUser = procedure({
+    contentType: 'multipart/form-data',
+    body: z.object({
+      email: z.string().email(),
+      name: z.string().min(2).max(100),
+    }),
+  }).handle(async (req) => {
+    const { email, name } = await req.vovk.body(); // { email: string; name: string }
+    // or use req.formData() for the raw FormData instance
+    // ...
+  });
+}
+```
+
+The RPC method's `body` type is inferred as `TBody | FormData | Blob{:ts}`, where `TBody` is the type inferred from the validation schema (an object is converted to `FormData` on the client side, based on the content type).
+
+```ts showLineNumbers copy
+import { UserRPC } from '@/client';
+
+const formData = new FormData();
+formData.append('email', 'user@example.com');
+formData.append('name', 'John Doe');
+
+await UserRPC.createUser({
+  body: formData,
+});
+```
+
+On the server-side `req.vovk.body()` automatically parses the form data into a plain object (see [`req.vovk` Interface](/req-vovk)). You can also access the raw `FormData{:ts}` instance via `req.formData()`.
+
+If the form data can contain one or more values for the same key, use a union of the value type and an array of the value type, because `FormData` doesn't distinguish between single and multiple values.
+
+```ts showLineNumbers copy {9}
+import { z } from 'zod';
+import { procedure, post } from 'vovk';
+
+export default class UserController {
+  @post()
+  static createUser = procedure({
+    contentType: 'multipart/form-data',
+    body: z.object({
+      tags: z.union([z.array(z.string()), z.string()]),
+    }),
+  }).handle(async (req) => {
+    const { tags } = await req.vovk.body(); // string | string[]
+    // ...
+  });
+}
+```
+
+The same recommendation applies to files:
+
+```ts showLineNumbers copy {9}
+import { z } from 'zod';
+import { procedure, post } from 'vovk';
+
+export default class UserController {
+  @post()
+  static uploadFiles = procedure({
+    contentType: 'multipart/form-data',
+    body: z.object({
+      files: z.union([z.array(z.file()), z.file()]),
+    }),
+  }).handle(async (req) => {
+    const { files } = await req.vovk.body(); // File | File[]
+    // ...
+  });
+}
+```
+
+Note that client-side validation does not fully support the OpenAPI-compatible `format: "binary"`, and file size, type, etc., are not validated on the client side.
+
+## URL-Encoded Form Data
+
+Set `contentType` to `'application/x-www-form-urlencoded'` to accept URL-encoded form submissions. The body is parsed the same way as `multipart/form-data`, but the client `body` type also accepts `URLSearchParams{:ts}`.
+
+```ts showLineNumbers copy {7}
+import { z } from 'zod';
+import { procedure, post } from 'vovk';
+
+export default class UserController {
+  @post()
+  static submitForm = procedure({
+    contentType: 'application/x-www-form-urlencoded',
+    body: z.object({
+      username: z.string(),
+      password: z.string(),
+    }),
+  }).handle(async (req) => {
+    const { username, password } = await req.vovk.body();
+    // ...
+  }); 
+}
+```
+
+## Text
+
+For text-based content types (`text/*`, known text-like application types such as `application/xml` or `application/yaml`, and suffix patterns like `*+xml`, `*+text`, `*+yaml`, `*+json-seq`), the body is parsed as a `string`.
+
+```ts showLineNumbers copy {7}
+import { procedure, post } from 'vovk';
+
+export default class UserController {
+  @post()
+  static importXml = procedure({
+    contentType: 'application/xml',
+  }).handle(async (req) => {
+    const xmlString = await req.vovk.body(); // string
+    // ...
+  });
+}
+```
+
+## Binary / File Uploads
+
+For any content type that doesn't fall into the above categories—such as `application/octet-stream`, `image/*`, `video/*`, `application/pdf`, etc.—the body is parsed into a `File{:ts}` on the server. On the client side, the `body` accepts `File | ArrayBuffer | Uint8Array | Blob{:ts}`.
+
+```ts showLineNumbers copy {7}
+import { procedure, post } from 'vovk';
+
+export default class UserController {
+  @post()
+  static uploadImage = procedure({
+    contentType: 'image/*',
+  }).handle(async (req) => {
+    const file = await req.vovk.body(); // File
+    // or use req.blob() for raw Blob access
+    // ...
+  });
+}
+```
+
+```ts showLineNumbers copy
+import { UserRPC } from '@/client';
+
+const file = document.querySelector('input[type="file"]').files[0];
+
+await UserRPC.uploadImage({
+  body: file,
+});
+```
+
+## Multiple Content Types
+
+`contentType` accepts an array of strings to allow multiple content types. The body type becomes a union of all corresponding types.
+
+```ts showLineNumbers copy {7}
+import { z } from 'zod';
+import { procedure, post } from 'vovk';
+
+export default class UserController {
+  @post()
+  static importData = procedure({
+    contentType: ['application/json', 'text/csv'],
+    body: z.union([z.object({ items: z.array(z.string()) }), z.string()]),
+  }).handle(async (req) => {
+    const body = await req.vovk.body(); // parsed object or string, depending on the request
+    // ...
+  });
+}
+```

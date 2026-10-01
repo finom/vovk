@@ -1,0 +1,474 @@
+import { FileTree, Tabs } from 'nextra/components';
+
+# Python Client
+
+> [!WARNING]
+>
+> The Python client library is experimental and may contain bugs. Use with caution.
+
+The Python client can be generated with `vovk generate` using the [py](/templates#py) or [pySrc](/templates#pysrc) template.
+
+Install the generator package:
+
+```sh npm2yarn copy
+npm install vovk-python --save-dev
+```
+
+Create a Python package with the [CLI](/generate) command:
+
+```sh npm2yarn copy
+npx vovk generate --from py --out ./python_package
+```
+
+This produces:
+
+<FileTree>
+  <FileTree.Folder name="python_package" defaultOpen>
+    <FileTree.Folder name="src/package_name" defaultOpen>
+      <FileTree.File name="__init__.py" />
+      <FileTree.File name="api_client.py" />
+      <FileTree.File name="py.typed" />
+      <FileTree.File name="schema.json" />
+    </FileTree.Folder>
+    <FileTree.File name="pyproject.toml" />
+    <FileTree.File name="setup.cfg" />
+    <FileTree.File name="README.md" />
+  </FileTree.Folder>
+</FileTree>
+
+Publish to [PyPI](https://pypi.org/) with:
+
+```sh
+python3 -m build ./python_package --wheel --sdist && python3 -m twine upload ./python_package/dist/*
+```
+
+If you prefer generating source files to embed in another Python project, use the `pySrc` template:
+
+```sh npm2yarn copy
+npx vovk generate --from pySrc --out ./python_src
+```
+
+This generates:
+
+<FileTree>
+  <FileTree.Folder name="python_src" defaultOpen>
+    <FileTree.File name="__init__.py" />
+    <FileTree.File name="api_client.py" />
+    <FileTree.File name="py.typed" />
+    <FileTree.File name="schema.json" />
+  </FileTree.Folder>
+</FileTree>
+
+## Configuring the Python Client
+
+You can [configure](/config) generation so the client is produced automatically by the default [generate](/generate) command (no flags) and during [vovk dev](/dev), which performs “hot generation” on schema changes. Add the `py` template to the [composed client](/composed) config:
+
+```ts showLineNumbers copy filename="vovk.config.mjs"
+/** @type {import('vovk').VovkConfig} */
+const config = {
+  composedClient: {
+    fromTemplates: ['ts', 'py'], // keeps the default "ts" template
+  },
+};
+export default config;
+```
+
+The [py](/templates#py) template (and others) has a default `outDir` (`./dist_python`) for composed clients. Override it via [template definitions](/templates#defs):
+
+```ts showLineNumbers copy filename="vovk.config.mjs"
+/** @type {import('vovk').VovkConfig} */
+const config = {
+  // ...
+  clientTemplateDefs: {
+    py: {
+      extends: 'py', // extends the built-in "py" template
+      composedClient: {
+        outDir: './my_dist_python', // custom output directory for the composed client
+      },
+    },
+  },
+};
+export default config;
+```
+
+## Generated Python Client Example
+
+### JSON Endpoints
+
+The snippets below are adapted from a real example described on the [Hello World](/hello-world) page.
+
+A controller like this:
+
+<Tabs items={['UserController.ts', 'UserService.ts', 'route.ts']}>
+<Tabs.Tab>
+```ts showLineNumbers copy filename="src/modules/user/user-controller.ts" source="examples/hello-world"
+import { operation, post, prefix, procedure } from 'vovk';
+import { z } from 'zod';
+import UserService from './user-service';
+
+@prefix('users')
+export default class UserController {
+  @operation({
+    summary: 'Update user',
+    description: 'Update user by ID',
+  })
+  @post('{id}')
+  static updateUser = procedure({
+    body: z
+      .object({
+        email: z.email().meta({
+          description: 'User email',
+          examples: ['john@example.com', 'jane@example.com'],
+        }),
+        profile: z
+          .object({
+            name: z
+              .string()
+              .min(2)
+              .meta({
+                description: 'User full name',
+                examples: ['John Doe', 'Jane Smith'],
+              }),
+            age: z
+              .int()
+              .min(16)
+              .max(120)
+              .meta({ description: 'User age', examples: [25, 30] }),
+          })
+          .meta({ description: 'User profile object' }),
+      })
+      .meta({ description: 'User data object' }),
+    params: z
+      .object({
+        id: z.uuid().meta({
+          description: 'User ID',
+          examples: ['123e4567-e89b-12d3-a456-426614174000'],
+        }),
+      })
+      .meta({
+        description: 'Path parameters',
+      }),
+    query: z
+      .object({
+        notify: z
+          .enum(['email', 'push', 'none'])
+          .meta({ description: 'Notification type' }),
+      })
+      .meta({
+        description: 'Query parameters',
+      }),
+    output: z
+      .object({
+        success: z.boolean().meta({ description: 'Success status' }),
+        id: z.uuid().meta({ description: 'User ID' }),
+        notify: z.enum(['email', 'push', 'none']).meta({
+          description: 'Notification type',
+        }),
+      })
+      .meta({ description: 'Response object' }),
+  }).handle(async (req, { id }) => {
+    const body = await req.json();
+    const notify = req.nextUrl.searchParams.get('notify');
+
+    return UserService.updateUser(id, body, notify);
+  });
+}
+```
+*[The code above is fetched from GitHub repository.](https://github.com/finom/vovk/blob/main/examples/hello-world/src/modules/user/user-controller.ts)*
+</Tabs.Tab>
+<Tabs.Tab>
+```ts showLineNumbers copy filename="src/modules/user/user-service.ts" source="examples/hello-world"
+import type { VovkBody, VovkOutput, VovkParams, VovkQuery } from 'vovk';
+import type UserController from './user-controller';
+
+export default class UserService {
+  static updateUser = (
+    id: VovkParams<typeof UserController.updateUser>['id'],
+    body: VovkBody<typeof UserController.updateUser>,
+    notify: VovkQuery<typeof UserController.updateUser>['notify'],
+  ) => {
+    console.log(
+      id satisfies string,
+      body satisfies { email: string; profile: { name: string; age: number } },
+      notify satisfies 'email' | 'push' | 'none',
+    );
+    return {
+      id,
+      notify,
+      success: true,
+    } satisfies VovkOutput<typeof UserController.updateUser>;
+  };
+}
+```
+*[The code above is fetched from GitHub repository.](https://github.com/finom/vovk/blob/main/examples/hello-world/src/modules/user/user-service.ts)*
+
+</Tabs.Tab>
+<Tabs.Tab>
+```ts showLineNumbers copy filename="src/app/api/[[...vovk]]/route.ts" source="examples/hello-world"
+import { initSegment } from 'vovk';
+import StreamController from '../../../modules/stream/stream-controller';
+import UserController from '../../../modules/user/user-controller';
+
+export const runtime = 'edge';
+
+const controllers = {
+  UserRPC: UserController,
+  StreamRPC: StreamController,
+};
+
+export type Controllers = typeof controllers;
+
+export const { GET, POST, PATCH, PUT, HEAD, OPTIONS, DELETE } = initSegment({
+  emitSchema: true,
+  controllers,
+  onError: console.error,
+});
+```
+*[The code above is fetched from GitHub repository.](https://github.com/finom/vovk/blob/main/examples/hello-world/src/app/api/[[...vovk]]/route.ts)*
+</Tabs.Tab>
+</Tabs>
+
+...emits a [Vovk.ts schema](/schema), which is then used to generate the Python client, following Python conventions, adding comments from `description`, and selecting appropriate number types. For example, `age` is generated as `int`, matching the controller definition.
+
+```py filename="./dist_python/src/package_name/__init__.py"
+from __future__ import annotations
+from typing import Any, Dict, List, Literal, Optional, Set, TypedDict, Union, Tuple, Generator # type: ignore
+from .api_client import ApiClient, HttpException
+
+HttpException = HttpException
+
+client = ApiClient('https://hello-world.vovk.dev/api')
+
+class UserRPC:
+    # UserRPC.update_user POST `https://hello-world.vovk.dev/api/users/{id}`
+    class __UpdateUserBody_profile(TypedDict):
+        """
+        User profile object
+        """
+        name: str
+        age: int
+    class UpdateUserBody(TypedDict):
+        """
+        User data object
+        """
+        email: str
+        profile: UserRPC.__UpdateUserBody_profile
+    class UpdateUserQuery(TypedDict):
+        """
+        Query parameters
+        """
+        notify: Literal["email", "push", "none"]
+    class UpdateUserParams(TypedDict):
+        """
+        Path parameters
+        """
+        id: str
+    class UpdateUserOutput(TypedDict):
+        """
+        Response object
+        """
+        success: bool
+    @staticmethod
+    def update_user(
+        body: UpdateUserBody,
+        query: UpdateUserQuery,
+        params: UpdateUserParams,
+        headers: Optional[Dict[str, str]] = None,
+        files: Optional[Dict[str, Any]] = None,
+        api_root: Optional[str] = None,
+        disable_client_validation: bool = False
+    ) -> UpdateUserOutput:
+        """
+        Update user
+        Description: Update user by ID
+        Body: User data object
+        Query: Query parameters
+        Returns: Response object
+        """
+        return client.request( # type: ignore
+            segment_name='',
+            rpc_name='UserRPC',
+            handler_name='updateUser',
+            body=body,
+            query=query,
+            params=params,
+            headers=headers,
+            files=files,
+            api_root=api_root,
+            disable_client_validation=disable_client_validation
+        )
+```
+
+All RPC modules are generated in `__init__.py`, which contains the RPC functions and the associated types. Types for nested structures are emitted as `TypedDict`s.
+
+Types for `body`, `query`, and `params` follow the pattern `[PascalCaseMethodName][InputType]`. For a method `updateUser`, you get `UpdateUserBody`, `UpdateUserQuery`, and `UpdateUserParams`.
+
+```py
+from dist_python.src.vovk_hello_world import UserRPC
+import vovk_hello_world
+
+def main() -> None:
+    body: UserRPC.UpdateUserBody = {
+        "email": "john@example.com",
+        "profile": {
+            "name": "John Doe",
+            "age": 25
+        }
+    }
+    query: UserRPC.UpdateUserQuery = {"notify": "email"}
+    params: UserRPC.UpdateUserParams = {"id": "123e4567-e89b-12d3-a456-426614174000"}
+    update_user_response = UserRPC.update_user(
+        params=params,
+        body=body,
+        query=query
+    )
+    print('UserRPC.update_user:', update_user_response)
+
+if __name__ == "__main__":
+  try:
+      main()
+  except Exception as e:
+      print(f"Error: {e}")
+```
+
+Under the hood, it uses [requests](https://pypi.org/project/requests/) for HTTP, [jsonschema](https://pypi.org/project/jsonschema/) for client-side validation, and other common libraries.
+
+### JSON Lines Endpoints
+
+For continuous streaming with [JSON Lines](/jsonlines) endpoints, the Python client returns a `Generator` you can iterate over.
+
+A controller like this:
+
+<Tabs items={['StreamController.ts', 'StreamService.ts', 'route.ts']}>
+<Tabs.Tab>
+```ts showLineNumbers copy filename="src/modules/stream/stream-controller.ts" source="examples/hello-world"
+import { get, operation, prefix, procedure } from 'vovk';
+import { z } from 'zod';
+import StreamService from './stream-service';
+
+@prefix('streams')
+export default class StreamController {
+  @operation({
+    summary: 'Stream tokens',
+    description: 'Stream tokens to the client',
+  })
+  @get('tokens')
+  static streamTokens = procedure({
+    validateEachIteration: true,
+    iteration: z
+      .object({
+        message: z.string().meta({ description: 'Message from the token' }),
+      })
+      .meta({
+        description: 'Streamed token object',
+      }),
+  }).handle(async function* () {
+    yield* StreamService.streamTokens();
+  });
+}
+```
+*[The code above is fetched from GitHub repository.](https://github.com/finom/vovk/blob/main/examples/hello-world/src/modules/stream/stream-controller.ts)*
+</Tabs.Tab>
+<Tabs.Tab>
+```ts showLineNumbers copy filename="src/modules/stream/stream-service.ts" source="examples/hello-world"
+import type { VovkIteration } from 'vovk';
+import type StreamController from './stream-controller';
+
+export default class StreamService {
+  static async *streamTokens() {
+    const tokens: VovkIteration<typeof StreamController.streamTokens>[] =
+      'Vovk.ts is a RESTful back-end meta-framework with RPC, built on top of the Next.js App Router. This text is a JSONLines stream demo.'
+        .match(/[^\s-]+-?(?:\s+)?/g)
+        ?.map((message) => ({ message })) || [];
+
+    for (const token of tokens) {
+      yield token;
+      await new Promise((resolve) => setTimeout(resolve, 200));
+    }
+  }
+}
+```
+*[The code above is fetched from GitHub repository.](https://github.com/finom/vovk/blob/main/examples/hello-world/src/modules/stream/stream-service.ts)*
+
+</Tabs.Tab>
+<Tabs.Tab>
+```ts showLineNumbers copy filename="src/app/api/[[...vovk]]/route.ts" source="examples/hello-world"
+import { initSegment } from 'vovk';
+import StreamController from '../../../modules/stream/stream-controller';
+import UserController from '../../../modules/user/user-controller';
+
+export const runtime = 'edge';
+
+const controllers = {
+  UserRPC: UserController,
+  StreamRPC: StreamController,
+};
+
+export type Controllers = typeof controllers;
+
+export const { GET, POST, PATCH, PUT, HEAD, OPTIONS, DELETE } = initSegment({
+  emitSchema: true,
+  controllers,
+  onError: console.error,
+});
+```
+*[The code above is fetched from GitHub repository.](https://github.com/finom/vovk/blob/main/examples/hello-world/src/app/api/[[...vovk]]/route.ts)*
+</Tabs.Tab>
+</Tabs>
+
+Compiles to:
+
+```py filename="./dist_python/src/package_name/__init__.py"
+class StreamRPC:
+    # StreamRPC.stream_tokens GET `https://hello-world.vovk.dev/api/streams/tokens`
+    class StreamTokensIteration(TypedDict):
+        """
+        Streamed token object
+        """
+        message: str
+    @staticmethod
+    def stream_tokens(
+
+        headers: Optional[Dict[str, str]] = None,
+        files: Optional[Dict[str, Any]] = None,
+        api_root: Optional[str] = None,
+        disable_client_validation: bool = False
+    ) -> Generator[StreamTokensIteration, None, None]:
+        """
+        Stream tokens
+        Description: Stream tokens to the client
+        """
+        return client.request( # type: ignore
+            segment_name='',
+            rpc_name='StreamRPC',
+            handler_name='streamTokens',
+
+            headers=headers,
+            files=files,
+            api_root=api_root,
+            disable_client_validation=disable_client_validation
+        )
+```
+
+Usage:
+
+```py
+from dist_python.src.vovk_hello_world import StreamRPC
+import vovk_hello_world
+
+def main() -> None:
+    stream_response = StreamRPC.stream_tokens()
+    print("streamTokens:")
+    for item in stream_response:
+        print(item['message'], end='', flush=True)
+
+if __name__ == "__main__":
+    try:
+        main()
+    except Exception as e:
+        print(f"Error: {e}")
+```
+
+## Roadmap/bugs
+
+- ✨ Generate importable types for named schemas defined in `components/schemas`.

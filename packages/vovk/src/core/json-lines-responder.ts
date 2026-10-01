@@ -35,7 +35,6 @@ export class JSONLinesResponder<T> extends Responder {
 
   private controller?: ReadableStreamDefaultController | null;
 
-  // biome-ignore lint/correctness/noUnusedPrivateClassMembers: biome bug
   private readonly encoder: TextEncoder | null;
 
   public readonly readableStream: ReadableStream | null;

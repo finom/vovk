@@ -1,0 +1,174 @@
+# OpenAPI Specification and `@operation` Decorator
+
+Vovk.ts automatically generates an OpenAPI specification from procedures, using validation models to populate operation objects with `parameters`, `requestBody`, and `responses`. The `@operation` decorator lets you enrich operation objects with metadata such as `summary`, `description`, `tags`, and more. It accepts `OperationObject` type from [openapi3-ts/oas31](https://www.npmjs.com/package/openapi3-ts), enhanced with Vovk-specific `x-tool` poperty related to [deriveTools](/tools) function.
+
+```ts showLineNumbers copy filename="src/modules/user/user-controller.ts"
+import { procedure, put, prefix, operation } from 'vovk';
+import { z } from 'zod';
+
+@prefix('users')
+export default class UserController {
+  @operation({
+    summary: 'Update User',
+    description: 'Update user information',
+  })
+  @put('{id}')
+  static updateUser = procedure({
+    // ...
+  });
+}
+```
+
+The validation models, accepted by the [procedure](/procedure) are converted to OpenAPI operation objects according to the following mapping:
+
+- `params` → `parameters` with `in: "path"`
+- `query` → `parameters` with `in: "query"`
+- `body` → `requestBody` with the `application/json` (or custom `contentType`) content type
+- `output` → `responses` with status `200` and `application/json` content type
+- `iteration` → `responses` with status `200` and `application/jsonl` content type
+
+## Configuring the OpenAPI Specification
+
+The OpenAPI specification can be configured in the [vovk.config](/config) file under the [`outputConfig.openAPIObject` option](/config#openapiobject). This object is merged with the generated specification, allowing you to set global properties such as `info`, `servers`, and more.
+
+```ts showLineNumbers copy filename="vovk.config.js"
+// @ts-check
+
+/** @type {import('vovk').VovkConfig} */
+const config = {
+  outputConfig: {
+    openAPIObject: {
+      info: {
+        title: 'My app API',
+        description: 'API for My App hosted at https://myapp.example.com/.',
+        license: {
+          name: 'MIT',
+          url: 'https://opensource.org/licenses/MIT',
+        },
+        version: '1.0.0',
+      },
+      servers: [
+        {
+          url: 'https://myapp.example.com',
+          description: 'Production',
+        },
+        {
+          url: 'http://localhost:3000',
+          description: 'Localhost',
+        },
+      ],
+    },
+  },
+};
+
+module.exports = config;
+```
+
+The `openAPIObject` can also be configured individually for each [segment](/segment) using `outputConfig.segments.[segmentName].openAPIObject`.
+
+```ts showLineNumbers copy filename="vovk.config.js"
+// @ts-check
+/** @type {import('vovk').VovkConfig} */
+const config = {
+  outputConfig: {
+    segments: {
+      admin: {
+        openAPIObject: {
+          info: {
+            title: 'Admin API',
+            description: 'API for Admin segment.',
+            version: '1.0.0',
+          },
+        },
+      },
+    },
+  },
+};
+```
+
+## Utilizing the OpenAPI Specification
+
+The generated RPC client exports an `openapi` object from `openapi` module that contains the full back-end specification for the [composed client](/composed). When using the [segmented client](/segmented), each [segment](/segment) also exports its own specification.
+
+```ts showLineNumbers copy
+import { openapi } from '@/client/openapi'; // composed client
+```
+
+```ts showLineNumbers copy
+import { openapi } from '@/client/admin/openapi.ts'; // segmented client
+```
+
+You can use the specification directly as a variable or expose it via a static segment with a simple controller that serves it as a JSON endpoint.
+
+```ts showLineNumbers copy filename="src/modules/static/openapi/openapi-controller.ts"
+import { get, operation } from 'vovk';
+import { openapi } from '@/client/openapi';
+
+export default class OpenApiController {
+  @get('openapi.json')
+  static getSpec = () => openapi;
+}
+```
+
+If you prefer to skip Vovk entirely for the spec endpoint, a plain Next.js route handler works just as well. This avoids registering a controller and keeps the docs route outside the generated schema:
+
+```ts showLineNumbers copy filename="src/app/openapi.json/route.ts"
+import { openapi } from '@/client/openapi';
+
+export const GET = () => Response.json(openapi);
+```
+
+You can also emit `openapi.json` as a standalone file with the [openapiJson](/templates#openapijson) template, without generating a client. Useful for serving the spec as a static asset or handing it to another tool:
+
+```sh npm2yarn copy
+npx vovk generate --from openapiJson --out ./public
+```
+
+On the client side, you can use any OpenAPI documentation generator. [Scalar](https://www.npmjs.com/package/@scalar/api-reference-react) is a recommended choice as Vovk.ts generates code snippets for the generated RPC modules.
+
+```ts showLineNumbers copy
+import { ApiReferenceReact } from "@scalar/api-reference-react";
+import "@scalar/api-reference-react/style.css";
+
+async function App() {
+  return (
+    <ApiReferenceReact
+      configuration={{
+        url: "/api/static/openapi.json"
+      }}
+    />
+  );
+}
+
+export default App;
+```
+
+<img src="/screenshots/scalar-screenshot-light.png" className='dark:hidden mt-4' />
+<img src="/screenshots/scalar-screenshot-dark.png" className='hidden dark:block mt-4' />
+
+For a live demonstration, see the ["Hello World" application spec](https://hello-world.vovk.dev/openapi). Check ["Hello World"](/hello-world) page for details.
+
+---
+
+The `@operation` decorator also provides `tool` property that defines tool-specific attributes for [deriveTools](/tools) function. It's set under `x-tool` key in the OpenAPI operation object.
+
+```ts showLineNumbers copy filename="src/modules/user/user-controller.ts"
+import { procedure, put, operation } from 'vovk';
+
+export default class UserController {
+  @operation.tool({
+    name: 'update_user',
+    description: 'Update user information in the system',
+  })
+  @operation({
+    summary: 'Update User',
+    description: 'Update user information',
+  })
+  @put('{id}')
+  static updateUser = procedure({
+    // ...
+  });
+}
+```
+
+For more details, see the [deriveTools](/tools) documentation.

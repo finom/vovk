@@ -1,0 +1,214 @@
+
+# MCP (Model Context Protocol) Output Formatting
+
+[Derived tools](/tools) can be used as MCP tools with `ToModelOutput.MCP` formatter. It formats the tool output to meet [MCP tool specification](https://modelcontextprotocol.io/specification/2025-11-25/server/tools), supporting the folowing types of outputs: `text`, `image`, `audio`, alongside with meta information, described with `annotations` object.
+
+```ts
+const tools = deriveTools({
+  modules: { UserController },
+  toModelOutput: ToModelOutput.MCP,
+});
+```
+
+## JSON Content
+
+JSON responses (including ones created with `Response` or `NextResponse`) will be formatted as text content with `structuredContent` field.
+
+```ts showLineNumbers copy
+export default class UserController {
+  @get('{id}')
+  static getUser = procedure().handle(async (req, { id }) => {
+    return { hello: 'world' };
+  });
+}
+```
+
+When the tool is executed with `ToModelOutput.MCP` formatter, the output will be:
+
+```json
+{
+  "content": [
+    {
+      "type": "text",
+      "text": "{\"hello\":\"world\"}",
+    }
+  ],
+  "structuredContent": { "hello": "world" }
+}
+```
+
+## Audio and Image Content
+
+If procedure returns a `Response` with `Content-Type` header set to `audio/*` or `image/*`, the output will be formatted accordingly.
+
+```ts showLineNumbers copy
+export default class MediaController {
+  @get('image')
+  static getImage = procedure().handle(() => {
+    return new Response(buffer, {
+      headers: { 'Content-Type': 'image/png' },
+    });
+  });
+}
+```
+
+When the tool is executed with `ToModelOutput.MCP` formatter, the output will be:
+
+```json
+{
+  "content": [
+    {
+      "type": "image",
+      "data": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAA...",
+      "mimeType": "image/png"
+    }
+  ]
+}
+```
+
+The response can be created with [`toDownloadResponse`](/response#downloads) utility, or using `fetch` to get media from an external source.
+
+```ts showLineNumbers copy
+import { toDownloadResponse } from 'vovk';
+
+export default class MediaController {
+  @get('audio')
+  static getAudio = procedure().handle(() => {
+    return toDownloadResponse(buffer, { contentType: 'audio/mpeg' });
+  });
+}
+```
+
+```ts showLineNumbers copy
+export default class MediaController {
+  @get('from-url')
+  static getAudioFromURL = procedure().handle(() => {
+    return fetch('https://example.com/audio.mp3');
+  });
+}
+```
+
+## Text Content
+
+If procedure returns a `Response` with `Content-Type` header set to `text/*` or other text-based types, such as XML, the output will be formatted as text content.
+
+```ts showLineNumbers copy
+export default class TextController {
+  @get('greeting')
+  static getGreeting = procedure().handle(() => {
+    return new Response('Hello, world!', {
+      headers: { 'Content-Type': 'text/plain' },
+    });
+  });
+}
+```
+
+When the tool is executed with `ToModelOutput.MCP` formatter, the output will be:
+
+```json
+{
+  "content": [
+    {
+      "type": "text",
+      "text": "Hello, world!"
+    }
+  ]
+}
+```
+
+## `annotations`
+
+Annotations can be added to the output by setting a special metadata key `mcpOutput` using [req.vovk.meta](/req-vovk#meta) function. This approach makes sure that if the procedure used as an endpoint, the response will not be affected.
+
+```ts showLineNumbers copy
+export default class AnnotatedController {
+  @get('annotated-image')
+  static getAnnotatedImage = procedure().handle((req) => {
+    req.vovk.meta({
+      mcpOutput: { annotations: { audience: ['user'], priority: 5 } },
+    });
+    return fetch('https://example.com/image.jpg');
+  });
+}
+```
+
+When the tool is executed with `ToModelOutput.MCP` formatter, the output will include the `annotations` object:
+
+```json
+{
+  "content": [
+    {
+      "type": "image",
+      "data": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD...",
+      "mimeType": "image/jpeg"
+    }
+  ],
+  "annotations": {
+    "audience": ["user"],
+    "priority": 5
+  }
+}
+```
+
+Note that `mcpOutput` metadata key can also override other MCP output properties, including `content`, `structuredContent`, and `annotations`. This might be useful if you want to customize the MCP output without changing the actual procedure response.
+
+## MCP Handler Example
+
+With [mcp-handler](https://www.npmjs.com/package/mcp-handler) package, you can create an MCP-compatible API route that is going to control the back-end functionality exposed to MCP clients.
+
+By writing this documentation, **mcp-handler** supports Zod schemas only. The tool's merged `inputSchema` is a single Standard Schema, so we convert its JSON Schema back to a Zod object with [`z.fromJSONSchema()`](https://zod.dev/json-schema?id=zfromjsonschema) and pass its `.shape` — the `body`/`query`/`params` slots — to `registerTool`.
+
+```ts showLineNumbers copy filename="src/app/api/mcp/route.ts"
+import { createMcpHandler } from "mcp-handler";
+import { deriveTools, ToModelOutput } from "vovk";
+import z from "zod";
+import UserController from "@/modules/user/user-controller";
+
+const tools = deriveTools({
+  modules: { UserController },
+  toModelOutput: ToModelOutput.MCP,
+});
+
+const handler = createMcpHandler(
+  (server) => {
+    tools.forEach(({ title, name, execute, description, inputSchema }) => {
+      // `inputSchema` is a single merged Standard Schema; mcp-handler wants a Zod
+      // raw shape, so convert its JSON Schema back to Zod and take the object shape.
+      const shape = inputSchema
+        ? (z.fromJSONSchema(inputSchema["~standard"].jsonSchema.input({ target: "draft-2020-12" })) as z.ZodObject).shape
+        : {};
+      server.registerTool(name, { title, description, inputSchema: shape }, execute);
+    });
+  },
+);
+
+export { handler as GET, handler as POST };
+```
+
+## Standalone Tools with `withFormattedOutput`
+
+`ToModelOutput.MCP` is compatible with the `withFormattedOutput` helper from the [standard-tool](https://www.npmjs.com/package/standard-tool) package: both operate on a result-or-`Error` value. Wrap a [standalone tool](/tools#standalone-tools) with it, passing `null` as the request argument, and its `execute` produces the same MCP output shape as derived tools, so it can be registered on the same MCP server:
+
+```ts showLineNumbers copy
+import { standardTool, withFormattedOutput } from 'standard-tool';
+import { ToModelOutput } from 'vovk';
+import { z } from 'zod';
+
+const sumNumbers = standardTool({
+  name: 'sum_numbers',
+  description: 'Returns the sum of two numbers provided as input.',
+  inputSchema: z.object({ a: z.number(), b: z.number() }),
+  outputSchema: z.number(),
+  execute({ a, b }) {
+    return a + b;
+  },
+});
+
+const sumNumbersMCP = withFormattedOutput(sumNumbers, (result) =>
+  ToModelOutput.MCP(result, sumNumbers, null)
+);
+```
+
+---
+
+See [Realtime Kanban / MCP](/realtime-ui/mcp) for more info.

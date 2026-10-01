@@ -1,0 +1,116 @@
+---
+title: Vercel AI SDK Example
+description: LLM streaming with Vercel AI SDK
+---
+
+import { Tabs } from 'nextra/components';
+import AiSdkExample from './ai-sdk-example';
+import Example from '@/components/example';
+
+# Vercel AI SDK Example
+
+The `toUIMessageStream` and `createUIMessageStreamResponse` helpers turn the result into a `Response` object, which is forwarded directly to the Next.js route handler. On the client side, you can use the `useChat` hook to consume the stream and render chat messages seamlessly, as it's outlined in the [AI SDK](https://github.com/vercel/ai) documentation.
+
+## Result
+
+<Example>
+  <AiSdkExample />
+</Example>
+
+## Code
+
+<Tabs items={['ai-sdk-controller.ts', 'ai-sdk-example.tsx']}>
+  <Tabs.Tab>
+```ts showLineNumbers copy filename="src/modules/ai-sdk/ai-sdk-controller.ts" source="examples/kitchen-sink"
+import { HttpException, HttpStatus, post, prefix, operation, type VovkRequest } from 'vovk';
+import {
+  streamText,
+  convertToModelMessages,
+  createUIMessageStreamResponse,
+  toUIMessageStream,
+  type UIMessage,
+} from 'ai';
+import { openai } from '@ai-sdk/openai';
+
+@prefix('ai-sdk')
+export default class AiSdkController {
+  @operation({
+    summary: 'Vercel AI SDK',
+    description:
+      'Uses [@ai-sdk/openai](https://www.npmjs.com/package/@ai-sdk/openai) and ai packages to chat with an AI model',
+  })
+  @post('chat')
+  static async chat(req: VovkRequest<{ messages: UIMessage[] }>) {
+    const { messages } = await req.json();
+    const LIMIT = 5;
+
+    if (messages.filter(({ role }) => role === 'user').length > LIMIT) {
+      throw new HttpException(HttpStatus.BAD_REQUEST, `You can only send ${LIMIT} messages at a time`);
+    }
+
+    const result = streamText({
+      model: openai('gpt-5-nano'),
+      system: 'You are a helpful assistant.',
+      messages: await convertToModelMessages(messages),
+    });
+
+    return createUIMessageStreamResponse({ stream: toUIMessageStream({ stream: result.stream }) });
+  }
+}
+```
+*[The code above is fetched from GitHub repository.](https://github.com/finom/vovk/blob/main/examples/kitchen-sink/src/modules/ai-sdk/ai-sdk-controller.ts)*
+  </Tabs.Tab>
+  <Tabs.Tab>
+```tsx showLineNumbers copy filename="src/app/ai-sdk/ai-sdk-example.tsx" source="examples/kitchen-sink"
+'use client';
+import { AiSdkRPC } from '@/client/index.ts';
+import { useChat } from '@ai-sdk/react';
+import { DefaultChatTransport } from 'ai';
+import { useState } from 'react';
+
+export default function Page() {
+  const [input, setInput] = useState('');
+
+  const { messages, sendMessage, error } = useChat({
+    transport: new DefaultChatTransport({
+      api: AiSdkRPC.chat.getURL(), // '/api/ai-sdk/chat',
+    }),
+  });
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (input.trim()) {
+      sendMessage({ text: input });
+      setInput('');
+    }
+  };
+
+  return (
+    <form onSubmit={handleSubmit}>
+      {messages.map((message) => (
+        <div key={message.id}>
+          {message.role === 'assistant' ? '🤖' : '👤'}{' '}
+          {message.parts.map((part, partIndex) => (
+            <span key={partIndex}>{part.type === 'text' ? part.text : ''}</span>
+          ))}
+        </div>
+      ))}
+      {error && <div>❌ {error.message}</div>}
+      <div className="input-group">
+        <input type="text" placeholder="Send a message..." value={input} onChange={(e) => setInput(e.target.value)} />
+        <button type="submit">Send</button>
+      </div>
+    </form>
+  );
+}
+```
+*[The code above is fetched from GitHub repository.](https://github.com/finom/vovk/blob/main/examples/kitchen-sink/src/app/ai-sdk/ai-sdk-example.tsx)*
+  </Tabs.Tab>
+</Tabs>
+
+## Related Documentation
+
+- [Deriving AI Tools](https://vovk.dev/tools)
+- [TypeScript RPC](https://vovk.dev/typescript)
+- [Controller & Procedure](https://vovk.dev/procedure)
+- [`@operation` Decorator](https://vovk.dev/openapi)

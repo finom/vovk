@@ -1,0 +1,55 @@
+# Services
+
+A service is part of the Controller–Service–Repository pattern. It separates business logic from request handlers, keeping controllers focused on HTTP concerns while the service encapsulates the actual work and data manipulation.
+
+Like controllers, services are often written as static classes with static methods, but they do not require decorators or any special structure. The static-class style is simply a convention—you can instead use instantiated classes, standalone functions, or plain objects. This pattern also does **not** require dependency injection (DI): services can be plain modules you import and call directly.
+
+Let's say you have the following controller class:
+
+```ts showLineNumbers copy filename="src/modules/user/user-controller.ts" {22}
+import { z } from 'zod';
+import { procedure, prefix, post, operation } from 'vovk';
+import UserService from './user-service';
+
+@prefix('users')
+export default class UserController {
+  @operation({
+    summary: 'Update user',
+    description: 'Update user by ID with Zod validation',
+  })
+  @post('{id}')
+  static updateUser = procedure({
+    body: z.object({ /* ... */ }),
+    params: z.object({ /* ... */ }),
+    query: z.object({ /* ... */ }),
+    output: z.object({ /* ... */ }),
+  }).handle(async (req) => {
+    const body = await req.vovk.body();
+    const query = req.vovk.query();
+    const params = req.vovk.params();
+
+    return UserService.updateUser(body, query, params);
+  });
+}
+```
+
+The `handle` method returns the result of `UserService.updateUser`. That method, in turn, infers its types from the procedure, making the validation models (Zod schemas in this case) the single source of truth for input and output types, with no need to define separate types, thanks to the legendary [Anders Hejlsberg](https://github.com/ahejlsberg) for the fix in [#58616](https://github.com/microsoft/TypeScript/issues/58616)—without this TypeScript change, Vovk.ts would not be possible.
+
+```ts showLineNumbers copy filename="src/modules/user/user-service.ts"
+import type { VovkBody, VovkOutput, VovkParams, VovkQuery } from 'vovk';
+import type UserController from './user-controller';
+
+export default class UserService {
+  static updateUser(
+    body: VovkBody<typeof UserController.updateUser>,
+    query: VovkQuery<typeof UserController.updateUser>,
+    params: VovkParams<typeof UserController.updateUser>
+  ) {
+    // perform DB operations or other business logic here
+    console.log(body, query, params);
+    return { success: true, id: params.id } satisfies VovkOutput<typeof UserController.updateUser>;
+  }
+}
+```
+
+In other words, service methods can infer types from procedures, and procedures can call service methods without self-referencing type issues.

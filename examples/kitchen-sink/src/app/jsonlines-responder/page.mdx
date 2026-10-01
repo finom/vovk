@@ -1,0 +1,127 @@
+---
+title: Streaming with JSONLinesResponder Object
+description: Streaming with JSONLinesResponder instance for more control over the stream
+---
+
+import { Tabs } from 'nextra/components';
+import JSONLinesResponderExample from './json-lines-responder-example';
+import Example from '@/components/example';
+
+# Streaming with JSONLinesResponder Object
+
+This example uses [JSONLinesResponder](https://vovk.dev/jsonlines#jsonlinesresponder) object in order to get more control over the stream logic.
+
+## Result
+
+<Example>
+  <JSONLinesResponderExample />
+</Example>
+
+## Code
+
+<Tabs items={['json-lines-responder-service.ts', 'json-lines-responder-controller.ts', 'json-lines-responder-example.tsx']}>
+  <Tabs.Tab>
+```ts showLineNumbers copy filename="src/modules/jsonlines-responder/json-lines-responder-service.ts" source="examples/kitchen-sink"
+import type { JSONLinesResponder, VovkIteration } from 'vovk';
+import type JSONLinesResponderController from './json-lines-responder-controller.ts';
+
+type Token = VovkIteration<typeof JSONLinesResponderController.streamTokens>;
+
+export default class JSONLinesResponderService {
+  static async streamTokens(responder: JSONLinesResponder<Token>) {
+    const tokens: Token[] = [
+      { message: 'Hello,' },
+      { message: ' World' },
+      { message: ' from' },
+      { message: ' JSONLines' },
+      { message: ' Endpoint' },
+      { message: ' that' },
+      { message: ' uses' },
+      { message: ' JSONLines' },
+      { message: 'Responder' },
+      { message: ' instance' },
+      { message: '!' },
+    ];
+
+    for (const token of tokens) {
+      await responder.send(token);
+      await new Promise((resolve) => setTimeout(resolve, 300));
+    }
+
+    responder.close();
+  }
+}
+```
+*[The code above is fetched from GitHub repository.](https://github.com/finom/vovk/blob/main/examples/kitchen-sink/src/modules/jsonlines-responder/json-lines-responder-service.ts)*
+  </Tabs.Tab>
+  <Tabs.Tab>
+```ts showLineNumbers copy filename="src/modules/jsonlines-responder/json-lines-responder-controller.ts" source="examples/kitchen-sink"
+import { prefix, get, operation, JSONLinesResponder, procedure, type VovkIteration } from 'vovk';
+import JSONLinesResponderService from './json-lines-responder-service.ts';
+import z from 'zod';
+
+@prefix('jsonlines-responder')
+export default class JSONLinesResponderController {
+  @operation({
+    summary: 'Stream tokens using Response object',
+    description: 'Stream tokens to the client using Response object',
+  })
+  @get('tokens', { cors: true })
+  static streamTokens = procedure({
+    iteration: z.object({ message: z.string() }),
+  }).handle(async (req) => {
+    const responder = new JSONLinesResponder<VovkIteration<typeof JSONLinesResponderController.streamTokens>>(req);
+
+    void JSONLinesResponderService.streamTokens(responder);
+
+    return responder;
+  });
+}
+```
+*[The code above is fetched from GitHub repository.](https://github.com/finom/vovk/blob/main/examples/kitchen-sink/src/modules/jsonlines-responder/json-lines-responder-controller.ts)*
+
+  </Tabs.Tab>
+  <Tabs.Tab>
+```tsx showLineNumbers copy filename="src/app/jsonlines-responder/json-lines-responder-example.tsx" source="examples/kitchen-sink"
+'use client';
+import { useState } from 'react';
+import { JSONLinesResponderRPC } from '@/client';
+import type { VovkYieldType } from 'vovk';
+
+export default function StreamExample() {
+  const [tokens, setTokens] = useState<VovkYieldType<typeof JSONLinesResponderRPC.streamTokens>[]>([]);
+  return (
+    <>
+      <button
+        type="button"
+        onClick={async () => {
+          setTokens([]);
+          using stream = await JSONLinesResponderRPC.streamTokens();
+          for await (const token of stream) {
+            setTokens((tokens) => [...tokens, token]);
+          }
+        }}
+      >
+        Get JSON Lines response
+      </button>
+      <div>
+        {tokens.map(({ message }, i) => (
+          <span key={i}>{message}</span>
+        ))}
+      </div>
+    </>
+  );
+}
+```
+*[The code above is fetched from GitHub repository.](https://github.com/finom/vovk/blob/main/examples/kitchen-sink/src/app/jsonlines-responder/json-lines-responder-example.tsx)*
+  </Tabs.Tab>
+</Tabs>
+
+
+## Related Documentation
+
+- [JSONLines](https://vovk.dev/jsonlines)
+- [TypeScript RPC](https://vovk.dev/typescript)
+- [Controller & Procedure](https://vovk.dev/procedure)
+- [`@operation` Decorator](https://vovk.dev/openapi)
+

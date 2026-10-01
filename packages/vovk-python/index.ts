@@ -296,7 +296,7 @@ export function convertJSONSchemaToPythonDataType(options: ConvertOptions): stri
 export function convertJSONSchemaToPythonFilesType(options: ConvertOptions): string {
   const { schema, className, pad } = options;
 
-  if (!schema || schema.type !== 'object') {
+  if (schema?.type !== 'object') {
     // Files must be in an object schema
     return '';
   }

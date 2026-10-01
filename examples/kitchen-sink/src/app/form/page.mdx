@@ -1,0 +1,165 @@
+---
+title: Form with Files Example
+description: Form with Files Example using Zod validation
+---
+
+import { Tabs } from 'nextra/components';
+import ZodFormExample from './zod-form-with-files-example';
+import Example from '@/components/example';
+
+# Form with Files Example
+
+An example of a form with files using Zod validation. Notice that "portfolio samples" can be uploaded as multiple files as well as a single file, and the validation model for this field has to be defined as a union of `z.file()` and `z.array(z.file())`.
+
+## Result
+
+<Example>
+  <ZodFormExample />
+</Example>
+
+## Code
+
+<Tabs items={['form-zod-controller.ts', 'zod-form-with-files-example.tsx']}>
+  <Tabs.Tab>
+```ts showLineNumbers copy filename="src/modules/form/form-zod-controller.ts" source="examples/kitchen-sink"
+import { z } from 'zod';
+import { procedure, prefix, post, operation } from 'vovk';
+
+@prefix('form-zod')
+export default class FormZodController {
+  @operation({
+    summary: 'Submit form (Zod)',
+    description: 'Submit form with Zod validation',
+  })
+  @post('{id}')
+  static submitForm = procedure({
+    contentType: ['multipart/form-data'],
+    body: z
+      .object({
+        email: z.email().meta({ description: 'User email' }),
+        resume: z
+          .file()
+          .min(1)
+          .meta({ description: 'Resume file', examples: ['application/pdf'] }),
+        portfolioSamples: z
+          .union([z.array(z.file().min(1)), z.file().min(1)])
+          .meta({ description: 'Portfolio samples' }),
+      })
+      .meta({ description: 'User object' }),
+    params: z.object({
+      id: z.uuid().meta({ description: 'User ID' }),
+    }),
+    output: z
+      .object({
+        email: z.email().meta({ description: 'User email' }),
+        resume: z.object({
+          name: z.string().meta({ description: 'Resume file name', examples: ['resume.pdf'] }),
+          size: z.number().min(0).meta({ description: 'Resume file size' }),
+          type: z.string().meta({ description: 'Resume file type', examples: ['application/pdf'] }),
+        }),
+        portfolioSamples: z
+          .object({
+            name: z.string().meta({ description: 'Portfolio sample file name', examples: ['portfolio.zip'] }),
+            size: z.number().min(0).meta({ description: 'Portfolio sample file size' }),
+            type: z.string().meta({ description: 'Portfolio sample file type', examples: ['application/zip'] }),
+          })
+          .array()
+          .meta({ description: 'Array of portfolio sample files' }),
+      })
+      .meta({ description: 'Response object' }),
+  }).handle(async (req) => {
+    const { resume, portfolioSamples, email } = await req.vovk.body();
+
+    console.log('portfolioSamples:', portfolioSamples);
+
+    return {
+      email,
+      resume: {
+        name: resume.name,
+        size: resume.size,
+        type: resume.type,
+      },
+      portfolioSamples: (Array.isArray(portfolioSamples) ? portfolioSamples : [portfolioSamples]).map((file) => ({
+        name: file.name,
+        size: file.size,
+        type: file.type,
+      })),
+    };
+  });
+}
+```
+*[The code above is fetched from GitHub repository.](https://github.com/finom/vovk/blob/main/examples/kitchen-sink/src/modules/form/form-zod-controller.ts)*
+  </Tabs.Tab>
+  <Tabs.Tab>
+```tsx showLineNumbers copy filename="src/app/form/zod-form-with-files-example.tsx" source="examples/kitchen-sink"
+'use client';
+import { useRef, useState, type FormEvent } from 'react';
+import { FormZodRPC } from '@/client';
+import type { VovkReturnType } from 'vovk';
+
+export default function ZodFormExample() {
+  const [response, setResponse] = useState<VovkReturnType<typeof FormZodRPC.submitForm> | null>(null);
+  const [error, setError] = useState<Error | null>(null);
+  const ref = useRef<HTMLFormElement>(null);
+  const onSubmit = async (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (!ref.current) return; // TS safeguard, should never happen
+    try {
+      setResponse(
+        await FormZodRPC.submitForm({
+          body: new FormData(ref.current),
+          params: { id: '5a279068-35d6-4d67-94e0-c21ef4052eea' },
+        })
+      );
+      setError(null);
+    } catch (e) {
+      setError(e as Error);
+      setResponse(null);
+    }
+  };
+
+  return (
+    <form onSubmit={onSubmit} ref={ref}>
+      <label htmlFor="email" className="font-bold">
+        Email
+      </label>
+      <input type="text" placeholder="Email" name="email" />
+      <br />
+      <br />
+      <label htmlFor="resume" className="font-bold">
+        Resume
+      </label>
+      <br />
+      <input type="file" placeholder="Resume" name="resume" />
+      <br />
+      <br />
+      <label htmlFor="portfolioSamples" className="font-bold">
+        Portfolio Samples (multiple)
+      </label>
+      <br />
+      <input type="file" multiple placeholder="Portfolio Samples" name="portfolioSamples" />
+      <br />
+      <button type="submit">Submit</button>
+
+      {response && (
+        <div className="text-left">
+          <h3>Response:</h3>
+          <pre>{JSON.stringify(response, null, 2)}</pre>
+        </div>
+      )}
+
+      {error && <div className="overflow-auto">❌ {String(error)}</div>}
+    </form>
+  );
+}
+```
+*[The code above is fetched from GitHub repository.](https://github.com/finom/vovk/blob/main/examples/kitchen-sink/src/app/form/zod-form-with-files-example.tsx)*
+
+  </Tabs.Tab>
+</Tabs>
+
+## Related Documentation
+
+- [Controller & Procedure](https://vovk.dev/procedure)
+- [TypeScript RPC](https://vovk.dev/typescript)
+- [`@operation` Decorator](https://vovk.dev/openapi)

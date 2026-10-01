@@ -1,0 +1,10 @@
+{
+  "mode": "minimal",
+  "pureModels": true,
+  "jsonSchemaCompatible": true,
+  "variants": {
+    "pure": { "enabled": true },
+    "input": { "enabled": false },
+    "result": { "enabled": false }
+  }
+}

@@ -1,0 +1,64 @@
+# Basic Authentication and Authorization for Password Protection
+
+The app implements a simple authentication mechanism with an optional `PASSWORD` stored in the `.env` file. Once the user enters the password, a session cookie is created that authorizes the user for subsequent requests. The `userId` is a hashed version of the password, which allows all sessions to be invalidated by changing the `PASSWORD` env variable in production.
+
+The authentication flow is a simplified version of the solution provided in the official [Next.js authentication documentation](https://nextjs.org/docs/app/guides/authentication). It implements a [login page](https://github.com/finom/vovk/blob/main/examples/realtime-kanban/src/app/login/page.tsx) with a form that invokes a [login server action](https://github.com/finom/vovk/blob/main/examples/realtime-kanban/src/app/actions/auth.ts). The session is created in [src/lib/session.ts](https://github.com/finom/vovk/blob/main/examples/realtime-kanban/src/lib/session.ts), and the Data Access Layer file is defined in [src/lib/dal.ts](https://github.com/finom/vovk/blob/main/examples/realtime-kanban/src/lib/dal.ts).
+
+The DAL file exports the `verifySession` function, which is invoked in [page.tsx](https://github.com/finom/vovk/blob/main/examples/realtime-kanban/src/app/page.tsx) and redirects the user to the login page if the session is invalid.
+
+```ts showLineNumbers copy filename="src/lib/dal.ts" source="examples/realtime-kanban"
+import crypto from 'node:crypto';
+import { cookies } from 'next/headers';
+import { redirect } from 'next/navigation';
+import { cache } from 'react';
+import { decrypt } from './session';
+
+const getSession = async () => {
+  const cookie = (await cookies()).get('session')?.value;
+  const session = await decrypt(cookie);
+
+  return session;
+};
+
+export const isLoggedIn = async () => {
+  if (!process.env.PASSWORD) return true;
+  const session = await getSession();
+  const userId = crypto
+    .createHash('md5')
+    .update(process.env.PASSWORD)
+    .digest('hex');
+  return session?.userId === userId;
+};
+
+export const verifySession = cache(async () => {
+  if (!(await isLoggedIn())) {
+    redirect('/login');
+  }
+});
+```
+*[The code above is fetched from GitHub repository.](https://github.com/finom/vovk/blob/main/examples/realtime-kanban/src/lib/dal.ts)*
+
+```ts showLineNumbers copy filename="src/app/page.tsx"
+import { verifySession } from "@/lib/dal";
+
+export default async function Home() {
+  await verifySession();
+  // ...
+```
+
+It also exports the `isLoggedIn` function, which is used by the `sessionGuard` [decorator](/decorator) to check if the user is logged in when invoking procedures.
+
+```ts showLineNumbers copy filename="src/decorators/session-guard.ts" source="examples/realtime-kanban"
+import { createDecorator, HttpException, HttpStatus } from 'vovk';
+import { isLoggedIn } from '@/lib/dal';
+
+export const sessionGuard = createDecorator(async (req, next) => {
+  if (typeof req.url !== 'undefined' && !(await isLoggedIn())) {
+    throw new HttpException(HttpStatus.UNAUTHORIZED, 'Unauthorized');
+  }
+  return next();
+});
+```
+*[The code above is fetched from GitHub repository.](https://github.com/finom/vovk/blob/main/examples/realtime-kanban/src/decorators/session-guard.ts)*
+
+The `sessionGuard` decorator is applied to all procedures. The `typeof req.url !== 'undefined'{:ts}` check is required to distinguish between HTTP requests and [`fn`](/fn) invocations.

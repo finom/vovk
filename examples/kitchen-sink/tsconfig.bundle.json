@@ -1,0 +1,11 @@
+{
+  "compilerOptions": {
+    "moduleResolution": "bundler",
+    "paths": {
+      "@/*": ["./src/*"],
+      "vovk/*": ["./node_modules/vovk/*"],
+      "next/link.js": ["./src/next-component-workarounds/Link.ts"],
+      "@/client": ["./src/client/index.ts"]
+    }
+  }
+}

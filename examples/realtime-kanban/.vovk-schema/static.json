@@ -1,0 +1,31 @@
+{
+  "$schema": "https://vovk.dev/api/schema/v3/segment.json",
+  "emitSchema": true,
+  "segmentName": "static",
+  "segmentType": "segment",
+  "controllers": {
+    "OpenApiRPC": {
+      "rpcModuleName": "OpenApiRPC",
+      "originalControllerName": "OpenApiController",
+      "prefix": "",
+      "handlers": {
+        "getSpec": {
+          "path": "openapi.json",
+          "httpMethod": "GET",
+          "operationObject": {
+            "summary": "OpenAPI spec",
+            "description": "Get the OpenAPI spec for the app API"
+          }
+        },
+        "helloWorld": {
+          "path": "hello.json",
+          "httpMethod": "GET",
+          "operationObject": {
+            "summary": "Hello World",
+            "description": "Get a hello world message"
+          }
+        }
+      }
+    }
+  }
+}

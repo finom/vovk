@@ -1,0 +1,85 @@
+---
+title: Example of a Controller
+description: Basic Example of Vovk.ts Controller
+---
+
+import { Tabs } from 'nextra/components';
+import BasicExample from './basic-example';
+import Example from '@/components/example';
+
+# Basic Controller Example
+
+A basic example of the Vovk.ts controller with no validation.
+
+## Result
+
+<Example>
+  <BasicExample />
+</Example>
+
+## Code
+
+<Tabs items={['basic-controller.ts', 'basic-example.tsx']}>
+  <Tabs.Tab>
+```ts showLineNumbers copy filename="src/modules/basic/basic-controller.ts" source="examples/kitchen-sink"
+import { get, post, prefix, operation, type VovkRequest } from 'vovk';
+
+@prefix('basic')
+export default class BasicController {
+  @operation({
+    summary: 'Get a greeting',
+    description: 'Get a greeting from the server',
+  })
+  @get('greeting')
+  static getHello() {
+    return { greeting: 'Hello world from a controller!' };
+  }
+
+  @operation({
+    summary: 'Post a greeting',
+    description: 'Post a greeting to the server',
+  })
+  @post('greeting')
+  static async postHello(req: VovkRequest<{ greeting: string }>) {
+    const { greeting } = await req.json();
+    return { greeting };
+  }
+}
+```
+*[The code above is fetched from GitHub repository.](https://github.com/finom/vovk/blob/main/examples/kitchen-sink/src/modules/basic/basic-controller.ts)*
+  </Tabs.Tab>
+  <Tabs.Tab>
+```tsx showLineNumbers copy filename="src/app/basic/basic-example.tsx" source="examples/kitchen-sink"
+'use client';
+import { useState } from 'react';
+import { BasicRPC } from '@/client';
+import type { VovkReturnType } from 'vovk';
+
+export default function BasicExample() {
+  const [serverResponse, setServerResponse] = useState<VovkReturnType<typeof BasicRPC.getHello>>();
+
+  return (
+    <>
+      <button
+        type="button"
+        onClick={async () => {
+          setServerResponse(await BasicRPC.getHello());
+        }}
+      >
+        Get a Greeting from the Server
+      </button>
+      <div>{serverResponse?.greeting}</div>
+    </>
+  );
+}
+```
+*[The code above is fetched from GitHub repository.](https://github.com/finom/vovk/blob/main/examples/kitchen-sink/src/app/basic/basic-example.tsx)*
+
+  </Tabs.Tab>
+</Tabs>
+
+## Related Documentation
+
+- [Controller & Procedure](https://vovk.dev/procedure)
+- [`@operation` Decorator](https://vovk.dev/openapi)
+- [TypeScript RPC](https://vovk.dev/typescript)

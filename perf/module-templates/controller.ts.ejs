@@ -1,0 +1,35 @@
+<% const vars = { 
+  ControllerName: t.TheThing + 'Controller',
+  ServiceName: t.TheThing + 'Service',
+}; %>
+---
+outDir: <%= t.defaultOutDir %>
+fileName: <%= t['the-thing'] + '-controller.ts' %>
+sourceName: <%= vars.ControllerName %>
+compiledName: <%= t.TheThing + 'RPC' %>
+---
+
+import { procedure, prefix, get, post, operation } from 'vovk';
+import z from 'zod';
+
+@prefix('<%= t['the-thing'] %>')
+export default class <%= vars.ControllerName %> {
+    @operation({
+        summary: 'Get <%= t.TheThing %>',
+    })
+    @get()
+    static get<%= t.TheThing %> = procedure().handle(() => {
+        return { get: true };
+    });
+
+    @operation({
+        summary: 'Create <%= t.TheThing %>',
+    })
+    @post('{id}')
+    static create<%= t.TheThing %> = procedure({
+        disableServerSideValidation: ['params'],
+        params: z.object({ id: z.string() }),
+    }).handle((_req, { id }) => {
+        return { post: true, id };
+    });
+}
