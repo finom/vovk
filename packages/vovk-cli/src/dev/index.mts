@@ -48,6 +48,13 @@ export function getSchemaEndpoint({
   return `http${devHttps ? 's' : ''}://localhost:${port}/${rootEntry}/${segmentName ? `${segmentName}/` : ''}_schema_`;
 }
 
+// a file that imports an HTTP decorator from vovk may hold a controller, the segment schemas tell which
+export function getControllerClassNames(code: string) {
+  const httpDecoratorImport = /import\s*{[^}]*\b(get|post|put|patch|del|head|options)\b[^}]*}\s*from\s*['"]vovk['"]/;
+  if (!httpDecoratorImport.test(code)) return [];
+  return [...code.matchAll(/\bclass\s+([A-Za-z_$][\w$]*)/g)].map((match) => match[1]);
+}
+
 export class VovkDev {
   #projectInfo!: ProjectInfo;
 
@@ -294,11 +301,8 @@ export class VovkDev {
       log.error(`Error reading file ${filePath}`);
       return;
     }
-    const nameOfClasReg = /\bclass\s+([A-Za-z_]\w*)(?:\s*<[^>]*>)?\s*\{/g;
-    const namesOfClasses = [...code.matchAll(nameOfClasReg)].map((match) => match[1]);
-
-    const importRegex = /import\s*{[^}]*\b(get|post|put|del|head|options)\b[^}]*}\s*from\s*['"]vovk['"]/;
-    if (importRegex.test(code) && namesOfClasses.length) {
+    const namesOfClasses = getControllerClassNames(code);
+    if (namesOfClasses.length) {
       const affectedSegments = this.#segments.filter((s) => {
         const segmentSchema = this.#schemaSegments[s.segmentName];
         if (!segmentSchema) return false;
