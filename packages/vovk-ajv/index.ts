@@ -27,8 +27,9 @@ const DEFAULT_OPTIONS: Options = {};
 
 const createAjv = (options: Options, target: Target) => {
   const AjvClass = target === 'draft-2020-12' ? Ajv2020 : Ajv;
-  // a schema is not registered by its $id, so two handlers that share one can't collide in a shared instance
-  const ajv = new AjvClass({ allErrors: true, addUsedSchema: false, ...options });
+  // a schema is not registered by its $id, so two handlers that share one can't collide in a shared instance;
+  // strict mode refuses keywords JSON Schema doesn't define, such as Zod's example or OpenAPI's discriminator and x-*
+  const ajv = new AjvClass({ allErrors: true, addUsedSchema: false, strict: false, ...options });
   ajvFormats(ajv);
   ajvErrors(ajv);
   ajv.addKeyword('x-contentType');
@@ -38,7 +39,8 @@ const createAjv = (options: Options, target: Target) => {
 
 type AjvInstance = ReturnType<typeof createAjv>;
 
-type CachedAjv = { ajv: AjvInstance; validators: WeakMap<object, ValidateFunction> };
+// null for a schema Ajv can't compile, which is left to the server
+type CachedAjv = { ajv: AjvInstance; validators: WeakMap<object, ValidateFunction | null> };
 
 // one Ajv per options object and draft, each compiling a schema object once
 const cache = new WeakMap<Options, Partial<Record<Target, CachedAjv>>>();
@@ -56,16 +58,21 @@ const allowUnknownFormats = (ajv: AjvInstance, schema: unknown) => {
   }
 };
 
-const getValidator = (schema: VovkJSONSchemaBase, options: Options, target: Target) => {
+const getValidator = (schema: VovkJSONSchemaBase, options: Options, target: Target, description: string) => {
   const byTarget = cache.get(options) ?? {};
   cache.set(options, byTarget);
   const cached = byTarget[target] ?? { ajv: createAjv(options, target), validators: new WeakMap() };
   byTarget[target] = cached;
 
   let validator = cached.validators.get(schema);
-  if (!validator) {
+  if (validator === undefined) {
     allowUnknownFormats(cached.ajv, schema);
-    validator = cached.ajv.compile(schema);
+    try {
+      validator = cached.ajv.compile(schema);
+    } catch (error) {
+      console.warn(`🐺 Client-side validation of ${description} is skipped, Ajv can't compile its schema:`, error);
+      validator = null;
+    }
     cached.validators.set(schema, validator);
   }
   return { ajv: cached.ajv, validator };
@@ -118,7 +125,9 @@ const validate = ({
   // binary data is not validated
   if (!input || !schema || input instanceof Blob) return;
   const schemaTarget = schema.$schema?.includes('://json-schema.org/draft-07/schema') ? 'draft-07' : 'draft-2020-12';
-  const { ajv, validator } = getValidator(schema, options, target ?? schemaTarget);
+  const { ajv, validator } = getValidator(schema, options, target ?? schemaTarget, `the ${type} of ${endpoint}`);
+  // the server validates the input anyway
+  if (!validator) return;
   const data =
     input instanceof FormData || input instanceof URLSearchParams ? formToObject(input) : withBinaryPlaceholders(input);
 

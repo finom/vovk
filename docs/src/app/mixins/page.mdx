@@ -293,25 +293,7 @@ await GithubReleasesAPI.getLatestRelease({ params: { owner: 'octocat', repo: 'He
 await GithubUsersAPI.getAuthenticated();
 ```
 
-You may also want to loosen `ajv` options, as third-party OAS documents can contain non-standard keywords that cause validation errors.
-
-```ts showLineNumbers copy filename="vovk.config.js"
-// @ts-check
-/** @type {import('vovk').VovkConfig} */
-const config = {
-  // ...
-  libs: {
-    /** @type {import('vovk-ajv').VovkAjvConfig} */
-    ajv: {
-      options: {
-        strict: false,
-      },
-    },
-  },
-};
-
-export default config;
-```
+Third-party OAS documents can contain keywords JSON Schema doesn't define, such as `example`, `discriminator` or `x-*`. [vovk-ajv](/imports#vovk-ajv) ignores them, and a schema Ajv can't compile is left to the server to validate.
 
 ### Filter Operations and Prune Components
 
