@@ -192,10 +192,7 @@ describe('Runtime sweep over HTTP', () => {
 
       strictEqual(preflight.status, 200);
       strictEqual(preflight.headers['access-control-allow-origin'], '*');
-      ok(
-        preflight.headers['access-control-allow-methods'].includes('PATCH'),
-        'a PATCH route can be called cross-origin'
-      );
+      strictEqual(preflight.headers['access-control-allow-methods'], 'POST');
 
       const response = await request.post('/runtime-sweep/secure').send({});
 

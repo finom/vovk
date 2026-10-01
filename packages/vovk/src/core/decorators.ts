@@ -39,15 +39,6 @@ const assignSchema = ({
   const methods: Record<string, RouteHandler> = vovkApp.routes[httpMethod].get(controller) ?? {};
   vovkApp.routes[httpMethod].set(controller, methods);
 
-  if (options?.cors) {
-    const optionsMethods = vovkApp.routes.OPTIONS.get(controller) ?? {};
-    const preflight = (() => {}) as unknown as RouteHandler;
-    preflight._options = options;
-    preflight._isCorsPreflight = true;
-    optionsMethods[path] = preflight;
-    vovkApp.routes.OPTIONS.set(controller, optionsMethods);
-  }
-
   const originalMethod = controller[propertyKey] as ((...args: unknown[]) => unknown) & {
     _controller: VovkController;
     fn?: (req: unknown, params: unknown) => unknown;

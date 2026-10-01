@@ -2,12 +2,14 @@ import { deepStrictEqual, ok, rejects, strictEqual } from 'node:assert';
 import { describe, it } from 'node:test';
 import { forbidden, redirect, unauthorized } from 'next/dist/client/components/navigation.react-server.js';
 import {
+  del,
   get,
   HttpException,
   HttpStatus,
   initSegment,
   JSONLinesResponder,
   multitenant,
+  patch,
   post,
   procedure,
   type VovkRequest,
@@ -443,6 +445,67 @@ describe('Runtime sweep', () => {
       deepStrictEqual(await response.json(), { statusCode: 500, message: 'onSuccess failed', isError: true });
       await wait(50);
       strictEqual(isReturned, true);
+    });
+  });
+
+  describe('CORS', () => {
+    const calls: string[] = [];
+    class UsersController {
+      static list() {
+        return [];
+      }
+
+      static create() {
+        calls.push('create');
+        return {};
+      }
+
+      static remove() {
+        return {};
+      }
+
+      static replace() {
+        return {};
+      }
+
+      static update() {
+        return {};
+      }
+    }
+    get('users', { cors: true })(UsersController, 'list');
+    post('users')(UsersController, 'create');
+    del('users')(UsersController, 'remove');
+    post('users/{id}', { cors: true })(UsersController, 'replace');
+    patch('users/{id}', { cors: true })(UsersController, 'update');
+    const handlers = initSegment({ segmentName: 'cors', controllers: { UsersController } });
+    const preflight = (path: string, method: string) =>
+      call(handlers, 'OPTIONS', path, {
+        headers: { origin: 'https://app.example', 'access-control-request-method': method },
+      });
+
+    it('Answers a preflight for a method whose route has cors', async () => {
+      const response = await preflight('users', 'GET');
+
+      strictEqual(response.status, 200);
+      strictEqual(response.headers.get('access-control-allow-origin'), '*');
+      strictEqual(response.headers.get('access-control-allow-methods'), 'GET, HEAD');
+    });
+
+    it('Refuses a preflight for a method whose route on the same path has no cors', async () => {
+      const response = await preflight('users', 'POST');
+
+      ok(!response.ok, `status ${response.status}`);
+      strictEqual(response.headers.get('access-control-allow-origin'), null);
+      strictEqual(response.headers.get('access-control-allow-methods'), null);
+      deepStrictEqual(calls, []);
+    });
+
+    it('Lists the methods with cors on a templated path', async () => {
+      const response = await preflight('users/1', 'PATCH');
+
+      strictEqual(response.status, 200);
+      strictEqual(response.headers.get('access-control-allow-origin'), '*');
+      strictEqual(response.headers.get('access-control-allow-methods'), 'POST, PATCH');
     });
   });
 

@@ -66,9 +66,9 @@ class VovkApp {
   private static getHeadersFromDecoratorOptions(options?: DecoratorOptions) {
     if (!options) return {};
 
+    // a preflight adds access-control-allow-methods, see #respondToPreflight
     const corsHeaders = {
       'access-control-allow-origin': '*',
-      'access-control-allow-methods': 'GET, POST, PUT, PATCH, DELETE, OPTIONS, HEAD',
       // x-meta is ours, the client sends it whenever meta is set
       'access-control-allow-headers': 'content-type, authorization, x-meta',
     };
@@ -148,11 +148,13 @@ class VovkApp {
     statusCode,
     responseBody,
     options,
+    headers,
   }: {
     req: Request;
     statusCode: HttpStatus;
     responseBody: unknown;
     options?: DecoratorOptions;
+    headers?: Record<string, string>;
   }) => {
     // Response refuses a body with these statuses
     const isNullBodyStatus = statusCode === 204 || statusCode === 205 || statusCode === 304;
@@ -161,6 +163,7 @@ class VovkApp {
       headers: {
         'content-type': 'application/json',
         ...VovkApp.getHeadersFromDecoratorOptions(options),
+        ...headers,
       },
     });
 
@@ -382,6 +385,52 @@ class VovkApp {
     return handlers;
   };
 
+  #findRoute = (httpMethod: HttpMethod, segmentName: string, path: string[]) => {
+    const found = this.#getHandler({ handlers: this.#getHandlers(httpMethod, segmentName), path });
+    if (found.handler || httpMethod !== HttpMethod.HEAD) return found;
+    // route.ts exports HEAD, so Next.js doesn't derive it from GET: a GET route answers it, HEAD drops the body
+    return this.#getHandler({ handlers: this.#getHandlers(HttpMethod.GET, segmentName), path });
+  };
+
+  // the automatic preflight of the cors option: it approves and lists only the methods whose route on the path has
+  // cors, and it runs no hooks, since a preflight carries no credentials and an auth hook would reject it
+  #respondToPreflight = ({
+    req,
+    requestedMethod,
+    segmentName,
+    path,
+  }: {
+    req: VovkRequest;
+    requestedMethod: string | null | undefined;
+    segmentName: string;
+    path: string[];
+  }) => {
+    const corsRoutes = new Map<string, Route>();
+    for (const httpMethod of [
+      HttpMethod.GET,
+      HttpMethod.HEAD,
+      HttpMethod.POST,
+      HttpMethod.PUT,
+      HttpMethod.PATCH,
+      HttpMethod.DELETE,
+    ]) {
+      const { handler } = this.#findRoute(httpMethod, segmentName, path);
+      if (handler?.staticMethod._options?.cors) corsRoutes.set(httpMethod, handler);
+    }
+
+    // a request without access-control-request-method is no preflight, it gets the headers of any cors route
+    const corsRoute = requestedMethod ? corsRoutes.get(requestedMethod) : corsRoutes.values().next().value;
+    if (!corsRoute) return null;
+
+    return this.respond({
+      req,
+      statusCode: HttpStatus.OK,
+      responseBody: null,
+      options: corsRoute.staticMethod._options,
+      headers: { 'access-control-allow-methods': [...corsRoutes.keys()].join(', ') },
+    });
+  };
+
   #callMethod = async ({
     httpMethod,
     req: request,
@@ -424,14 +473,12 @@ class VovkApp {
     let unsentBody: ReadableStream | null = null;
 
     try {
-      let { handler, methodParams } = this.#getHandler({ handlers: this.#getHandlers(httpMethod, segmentName), path });
+      const { handler, methodParams } = this.#findRoute(httpMethod, segmentName, path);
 
-      // route.ts exports HEAD, so Next.js doesn't derive it from GET: a GET route answers it, HEAD drops the body
-      if (!handler && httpMethod === HttpMethod.HEAD) {
-        ({ handler, methodParams } = this.#getHandler({
-          handlers: this.#getHandlers(HttpMethod.GET, segmentName),
-          path,
-        }));
+      if (!handler && httpMethod === HttpMethod.OPTIONS) {
+        const requestedMethod = headerList?.get('access-control-request-method');
+        const preflight = this.#respondToPreflight({ req, requestedMethod, segmentName, path });
+        if (preflight) return preflight;
       }
 
       if (!handler) {
@@ -454,11 +501,8 @@ class VovkApp {
         params: () => methodParams,
       };
 
-      // a preflight carries no credentials, so an auth hook would reject it and the browser would block the call
-      if (!staticMethod._isCorsPreflight) {
-        await staticMethod._options?.before?.call(controller, req);
-        await onBefore?.(req);
-      }
+      await staticMethod._options?.before?.call(controller, req);
+      await onBefore?.(req);
       // dispatch via the latest wrapper so decorators applied above the HTTP decorator still run
       const result = await (staticMethod._sourceMethod?.wrapper ?? staticMethod).call(controller, req, methodParams);
 
