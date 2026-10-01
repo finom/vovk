@@ -104,6 +104,40 @@ describe('Client sweep', () => {
       });
     });
 
+    it('Sends a string body as JSON when the procedure declares no text type', async () => {
+      deepStrictEqual(await ClientSweepRPC.postJsonString({ body: 'hello' }), {
+        body: 'hello',
+        contentType: 'application/json',
+      });
+    });
+
+    it('Sends a binary body as the type the procedure declares', async () => {
+      const bytes = new Uint8Array([37, 80, 68, 70]);
+      const pdf = { type: 'application/pdf', size: 4 };
+
+      deepStrictEqual(await ClientSweepRPC.postPdf({ body: bytes }), pdf);
+      deepStrictEqual(await ClientSweepRPC.postPdf({ body: bytes.buffer }), pdf);
+      deepStrictEqual(await ClientSweepRPC.postPdf({ body: new Blob([bytes]) }), pdf);
+      deepStrictEqual(
+        await ClientSweepRPC.postOctet({ body: new File([bytes], 'a.pdf', { type: 'application/pdf' }) }),
+        {
+          type: 'application/octet-stream',
+          size: 4,
+        }
+      );
+      deepStrictEqual(await ClientSweepRPC.postImage({ body: bytes }), { name: 'file', type: 'image/*', size: 4 });
+      deepStrictEqual(await ClientSweepRPC.postImage({ body: new File([bytes], 'a.png', { type: 'image/png' }) }), {
+        name: 'a.png',
+        type: 'image/png',
+        size: 4,
+      });
+      // a file of another type is not relabelled, the server refuses it
+      await rejects(
+        ClientSweepRPC.postPdf({ body: new File([bytes], 'a.txt', { type: 'text/plain' }) }),
+        isHttpException(415, 'Unsupported media type: text/plain')
+      );
+    });
+
     it('Sends a string body as the text type the procedure declares', async () => {
       deepStrictEqual(await ClientSweepRPC.postLines({ body: '{"a":1}\n{"a":2}\n' }), {
         contentType: 'application/jsonl',

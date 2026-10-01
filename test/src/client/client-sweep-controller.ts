@@ -53,6 +53,24 @@ export default class ClientSweepController {
     return { name: file.name, type: file.type, size: file.size };
   });
 
+  @post('pdf')
+  static postPdf = procedure({ contentType: 'application/pdf' }).handle(async (req) => {
+    const file: File = await req.vovk.body();
+    return { type: file.type, size: file.size };
+  });
+
+  @post('octet')
+  static postOctet = procedure({ contentType: 'application/octet-stream' }).handle(async (req) => {
+    const file: File = await req.vovk.body();
+    return { type: file.type, size: file.size };
+  });
+
+  @post('json-string')
+  static postJsonString = procedure({ body: z.string() }).handle(async (req) => ({
+    body: await req.vovk.body(),
+    contentType: req.headers.get('content-type'),
+  }));
+
   @get('text-error')
   static getTextError() {
     return new Response('Unauthorized', { status: 401 });

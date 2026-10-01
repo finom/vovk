@@ -93,6 +93,38 @@
           "path": "image",
           "httpMethod": "POST"
         },
+        "postPdf": {
+          "validation": {
+            "body": {
+              "x-contentType": [
+                "application/pdf"
+              ]
+            }
+          },
+          "path": "pdf",
+          "httpMethod": "POST"
+        },
+        "postOctet": {
+          "validation": {
+            "body": {
+              "x-contentType": [
+                "application/octet-stream"
+              ]
+            }
+          },
+          "path": "octet",
+          "httpMethod": "POST"
+        },
+        "postJsonString": {
+          "validation": {
+            "body": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "string"
+            }
+          },
+          "path": "json-string",
+          "httpMethod": "POST"
+        },
         "getTextError": {
           "path": "text-error",
           "httpMethod": "GET"

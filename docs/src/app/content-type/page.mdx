@@ -152,6 +152,8 @@ export default class UserController {
 
 For text-based content types (`text/*`, known text-like application types such as `application/xml` or `application/yaml`, and suffix patterns like `*+xml`, `*+text`, `*+yaml`, `*+json-seq`), the body is parsed as a `string`.
 
+The client sends a string body as the text type the procedure declares. A string body to a procedure that takes JSON, such as one with `body: z.string(){:ts}`, is sent as a JSON value.
+
 ```ts showLineNumbers copy {7}
 import { procedure, post } from 'vovk';
 
@@ -169,6 +171,8 @@ export default class UserController {
 ## Binary / File Uploads
 
 For any content type that doesn't fall into the above categories—such as `application/octet-stream`, `image/*`, `video/*`, `application/pdf`, etc.—the body is parsed into a `File{:ts}` on the server. On the client side, the `body` accepts `File | ArrayBuffer | Uint8Array | Blob{:ts}`.
+
+Bytes without a type, such as an `ArrayBuffer{:ts}`, a `Uint8Array{:ts}` or a `Blob{:ts}` with an empty `type`, are sent as the first declared type, so an `image/*` procedure receives them as `image/*`. A `File{:ts}` or a typed `Blob{:ts}` is sent as its own type, and the server refuses a type the procedure doesn't declare, unless it declares `application/octet-stream`, which takes any file.
 
 ```ts showLineNumbers copy {7}
 import { procedure, post } from 'vovk';

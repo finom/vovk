@@ -84,21 +84,34 @@ export type CreateFetcherOnError<T> = (
   }
 ) => void | Promise<void>;
 
+const FORM_MEDIA_TYPES = ['multipart/form-data', 'application/x-www-form-urlencoded'];
+
+// a string goes out raw as the text type the procedure declares, e.g. application/jsonl; with JSON declared, or
+// nothing, it's a JSON value; a wildcard or form type says nothing about it, so it's text/plain
+const getStringBodyContentType = (declared: string[]) =>
+  declared.find((type) => !type.includes('*') && !FORM_MEDIA_TYPES.includes(type) && !isJSONMediaType(type)) ??
+  (!declared.length || declared.some(isJSONMediaType) ? 'application/json' : 'text/plain');
+
+const matchesMediaType = (type: string, pattern: string) =>
+  pattern === '*/*' || (pattern.endsWith('/*') ? type.startsWith(pattern.slice(0, -1)) : type === pattern);
+
+// bytes keep their own type when the procedure takes it; untyped bytes go out as the first type it declares,
+// image/* included, and a typed Blob as application/octet-stream when declared, any other mismatch is refused
+const getBinaryBodyContentType = (ownType: string, declared: string[]) => {
+  const type = ownType || 'application/octet-stream';
+  if (!declared.length || declared.some((pattern) => matchesMediaType(getMediaType(type), pattern))) return type;
+  if (ownType) return declared.includes('application/octet-stream') ? 'application/octet-stream' : type;
+  return (
+    declared.find((declaredType) => !declaredType.includes('*') && declaredType !== 'multipart/form-data') ??
+    declared.find((declaredType) => declaredType !== '*/*' && declaredType.endsWith('/*')) ??
+    type
+  );
+};
+
 /**
  * Creates a customizable fetcher function for client requests.
  * @see https://vovk.dev/imports
  */
-// a string body goes out as the type the procedure declares, e.g. application/jsonl, so the server accepts it;
-// a form, JSON or wildcard type says nothing about a string, so it falls back to text/plain
-const getStringBodyContentType = (schema: VovkHandlerSchema) => {
-  const declared = schema.validation?.body?.['x-contentType'] as string[] | undefined;
-  const isTextLike = (type: string) =>
-    !type.includes('*') &&
-    !['multipart/form-data', 'application/x-www-form-urlencoded', 'application/json'].includes(type) &&
-    !type.endsWith('+json');
-  return declared?.find(isTextLike) ?? 'text/plain';
-};
-
 export function createFetcher<T>({
   prepareRequestInit,
   transformResponse,
@@ -161,7 +174,9 @@ export function createFetcher<T>({
         });
       }
 
+      const declaredContentTypes = ((schema.validation?.body?.['x-contentType'] ?? []) as string[]).map(getMediaType);
       const hasBody = body !== undefined && body !== null;
+      const isBinary = body instanceof Blob || body instanceof ArrayBuffer || ArrayBuffer.isView(body);
       const resolvedContentType = !hasBody
         ? undefined // no body, no content type: a cross-origin GET then needs no preflight
         : body instanceof FormData
@@ -169,12 +184,10 @@ export function createFetcher<T>({
           : body instanceof URLSearchParams
             ? 'application/x-www-form-urlencoded'
             : typeof body === 'string'
-              ? getStringBodyContentType(schema)
-              : body instanceof Blob
-                ? body.type || 'application/octet-stream'
-                : body instanceof ArrayBuffer || body instanceof Uint8Array
-                  ? 'application/octet-stream'
-                  : 'application/json';
+              ? getStringBodyContentType(declaredContentTypes)
+              : isBinary
+                ? getBinaryBodyContentType(body instanceof Blob ? body.type : '', declaredContentTypes)
+                : 'application/json';
       const resolvedFileName = body instanceof File ? body.name : undefined;
 
       // Default headers (lowercase keys)
@@ -194,14 +207,10 @@ export function createFetcher<T>({
         headers: { ...defaultHeaders, ...userHeaders },
       };
 
-      if (body instanceof FormData || body instanceof URLSearchParams) {
-        requestInit.body = body as BodyInit;
-      } else if (body instanceof Blob) {
-        requestInit.body = body as BodyInit;
-      } else if (body instanceof ArrayBuffer || body instanceof Uint8Array) {
+      if (body instanceof FormData || body instanceof URLSearchParams || isBinary) {
         requestInit.body = body as BodyInit;
       } else if (typeof body === 'string') {
-        requestInit.body = body;
+        requestInit.body = resolvedContentType === 'application/json' ? JSON.stringify(body) : body;
       } else if (hasBody) {
         requestInit.body = JSON.stringify(body);
       }
