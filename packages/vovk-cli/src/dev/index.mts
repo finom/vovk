@@ -12,6 +12,7 @@ import type { VovkSchema } from 'vovk';
 import { VovkSchemaIdEnum, type VovkSegmentSchema } from 'vovk/internal';
 import { ensureClient } from '../generate/ensure-client.mjs';
 import { generate } from '../generate/generate.mjs';
+import { CONFIG_FILE_PATHS } from '../get-project-info/get-config/get-config-absolute-paths.mjs';
 import { getMetaSchema } from '../get-project-info/get-meta-schema.mjs';
 import { getProjectInfo, type ProjectInfo } from '../get-project-info/index.mjs';
 import type { DevOptions, VovkEnv } from '../types.mjs';
@@ -245,8 +246,7 @@ export class VovkDev {
     }, 1000);
 
     chokidar
-      // .watch(['vovk.config.{js,mjs}', '.config/vovk.config.{js,mjs}'], {
-      .watch(['vovk.config.js', 'vovk.config.mjs', '.config/vovk.config.js', '.config/vovk.config.mjs'], {
+      .watch(CONFIG_FILE_PATHS, {
         persistent: true,
         cwd,
         ignoreInitial: false,

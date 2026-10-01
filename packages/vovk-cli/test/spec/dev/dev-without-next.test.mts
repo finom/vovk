@@ -46,4 +46,25 @@ await describe('vovk dev in a project without Next.js', async () => {
       server.close();
     }
   });
+
+  await it('Picks up an edit of a .cjs config', async () => {
+    const configPath = path.join(projectDir, 'vovk.config.cjs');
+    await createProject(projectDir, {
+      'package.json': { name: 'app', version: '1.0.0' },
+      'vovk.config.cjs': `module.exports = ${JSON.stringify({ composedClient: { prettifyClient: false } })};`,
+      'src/app/layout.tsx': '',
+    });
+
+    const dev = startCLI(['dev'], { cwd: projectDir, env: { PORT: '3314' } });
+
+    try {
+      await dev.waitForOutput(/Ready in/);
+      // give the file watcher a moment before the edit it has to catch
+      await new Promise((resolve) => setTimeout(resolve, 500));
+      await fs.appendFile(configPath, '\n// edited\n');
+      await dev.waitForOutput(/Config file has been updated/);
+    } finally {
+      await dev.stop();
+    }
+  });
 });

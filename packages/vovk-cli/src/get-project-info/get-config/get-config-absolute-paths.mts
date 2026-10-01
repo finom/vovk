@@ -1,6 +1,12 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
 
+// relative to the project root, in lookup order: the first one that exists is used
+export const CONFIG_FILE_PATHS = ['cjs', 'mjs', 'js'].flatMap((ext) => [
+  path.join('.config', `vovk.config.${ext}`),
+  `vovk.config.${ext}`,
+]);
+
 export async function getConfigAbsolutePaths({
   cwd,
   configPath,
@@ -14,20 +20,15 @@ export async function getConfigAbsolutePaths({
     return [path.resolve(cwd, configPath)];
   }
   const rootDir = path.resolve(cwd, relativePath || '');
-  const baseName = 'vovk.config';
-  const extensions = ['cjs', 'mjs', 'js'];
-  const dirs = [path.join(rootDir, '.config'), rootDir];
   const configs = [];
 
-  for (const ext of extensions) {
-    for (const dir of dirs) {
-      const filePath = path.join(dir, `${baseName}.${ext}`);
-      try {
-        await fs.stat(filePath);
-        configs.push(filePath); // Return the path if the file exists
-      } catch {
-        // Empty
-      }
+  for (const configFilePath of CONFIG_FILE_PATHS) {
+    const filePath = path.join(rootDir, configFilePath);
+    try {
+      await fs.stat(filePath);
+      configs.push(filePath);
+    } catch {
+      // Empty
     }
   }
 
