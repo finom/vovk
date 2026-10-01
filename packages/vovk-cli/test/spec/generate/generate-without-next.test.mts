@@ -177,6 +177,52 @@ await describe('vovk generate in a project without Next.js', async () => {
     assert.ok(index.includes(`from '../../lib/create-rpc'`), index);
   });
 
+  await it('Puts a whole Rust and Python package into each folder of a segmented client', async () => {
+    await createProject(projectDir, {
+      'package.json': { name: 'app', version: '1.0.0', type: 'module' },
+      'vovk.config.mjs': configFile({ segmentedClient: { prettifyClient: false } }),
+      'src/app/api/[[...vovk]]/route.ts': '',
+      'src/app/api/foo/[[...vovk]]/route.ts': '',
+      '.vovk-schema/root.json': userSegmentSchema,
+      '.vovk-schema/foo.json': { ...userSegmentSchema, segmentName: 'foo' },
+    });
+    const generateClients = async () => {
+      const outputs = [];
+      for (const [template, outDir] of [
+        ['rs', 'seg_rust'],
+        ['py', 'seg_py'],
+      ]) {
+        const { stdout, stderr } = await runCLI(
+          ['generate', '--segmented-only', '--segmented-from', template, '--segmented-out', outDir],
+          { cwd: projectDir }
+        );
+        outputs.push(stdout, stderr);
+      }
+      assert.doesNotMatch(outputs.join(''), /not a known segment/);
+    };
+
+    await generateClients();
+
+    for (const [segmentDir, name] of [
+      ['root', 'app_root'],
+      ['foo', 'app_foo'],
+    ]) {
+      assert.match(await read(`seg_rust/${segmentDir}/Cargo.toml`), new RegExp(`^name = "${name}"$`, 'm'));
+      assert.ok(await read(`seg_rust/${segmentDir}/src/lib.rs`));
+      assert.ok(await read(`seg_rust/${segmentDir}/src/schema.json`));
+      assert.match(await read(`seg_py/${segmentDir}/pyproject.toml`), new RegExp(`^name = "${name}"$`, 'm'));
+      assert.ok(await read(`seg_py/${segmentDir}/src/${name}/__init__.py`));
+    }
+
+    // a removed segment takes its whole package along
+    await fs.rm(path.join(projectDir, 'src/app/api/foo'), { recursive: true });
+    await fs.rm(path.join(projectDir, '.vovk-schema/foo.json'));
+    await generateClients();
+
+    assert.deepStrictEqual(await fs.readdir(path.join(projectDir, 'seg_rust')), ['root']);
+    assert.deepStrictEqual(await fs.readdir(path.join(projectDir, 'seg_py')), ['root']);
+  });
+
   await it('Names Python and Rust packages after a scoped package name', async () => {
     await createProject(projectDir, {
       'package.json': { name: '@acme/web-app', version: '1.0.0', type: 'module' },

@@ -11,12 +11,13 @@ import { BuiltInTemplateName } from '../get-project-info/get-config/get-template
 import type { ProjectInfo } from '../get-project-info/index.mjs';
 import type { GenerateOptions } from '../types.mjs';
 import { chalkHighlightThing } from '../utils/chalk-highlight-thing.mjs';
+import { hasGeneratedBanner } from '../utils/generated-banner.mjs';
 import type { Segment } from '../utils/locate-segments.mjs';
 import { normalizeOpenAPIMixin } from '../utils/normalize-openapi-mixin.mjs';
 import { pickSegmentFullSchema } from '../utils/pick-segment-full-schema.mjs';
 import { removeUnlistedDirectories } from '../utils/remove-unlisted-directories.mjs';
 import { getClientTemplateFiles } from './get-client-template-files.mjs';
-import { normalizeOutTemplatePath, writeOneClientFile } from './write-one-client-file.mjs';
+import { normalizeOutTemplatePath, withSegmentPackageName, writeOneClientFile } from './write-one-client-file.mjs';
 
 const getIncludedSegmentNames = (
   config: VovkStrictConfig,
@@ -348,11 +349,6 @@ export async function generate({
       configKey: 'segmentedClient',
     });
 
-    // what a generated file may look like inside a segment directory, used to spare user files when pruning
-    const generatedRelPaths = segmentedClientTemplateFiles.map(({ templateFilePath, relativeDir }) =>
-      path.join(relativeDir, path.basename(templateFilePath).replace(/\.ejs$/, ''))
-    );
-
     const segmentedClientResults = await Promise.all(
       segmentedClientTemplateFiles.map(async (clientTemplateFile) => {
         const { templateFilePath, templateName, templateDef, outCwdRelativeDir } = clientTemplateFile;
@@ -378,7 +374,7 @@ export async function generate({
             }
 
             const {
-              package: packageJson,
+              package: resolvedPackageJson,
               readme,
               origin,
               samples,
@@ -394,8 +390,12 @@ export async function generate({
               isBundle,
               projectPackageJson,
             });
+            // a name set in the segment's own config is used as is
+            const packageJson = config.outputConfig.segments?.[segmentName]?.package?.name
+              ? resolvedPackageJson
+              : withSegmentPackageName(resolvedPackageJson, segmentName);
 
-            const { written } = await writeOneClientFile({
+            const { written, content } = await writeOneClientFile({
               cwd,
               projectInfo,
               clientTemplateFile,
@@ -429,32 +429,42 @@ export async function generate({
               templateName,
               package: packageJson,
               origin,
+              isStamped: hasGeneratedBanner(content),
             };
           })
         );
-        const outAbsoluteDir = path.resolve(cwd, outCwdRelativeDir);
+        const rendered = results.filter((result): result is NonNullable<typeof result> => !!result);
 
-        // Remove unlisted directories in the output directory
-        const skippedDirs = await removeUnlistedDirectories(
-          outAbsoluteDir,
-          segmentNames.map((s) => s || ROOT_SEGMENT_FILE_NAME),
-          generatedRelPaths
-        );
-
-        for (const skippedDir of skippedDirs) {
-          log.warn(
-            `Directory ${chalkHighlightThing(skippedDir)} is not a known segment but holds files or folders the generator did not write, so it is left untouched.`
-          );
-        }
         return {
-          written: results.filter((result): result is GenerationResult => !!result).some(({ written }) => written),
+          written: rendered.some(({ written }) => written),
           templateName,
-          outAbsoluteDir,
-          package: results[0]?.package || {}, // TODO: Might be wrong in Python segmented client (unknown use case)
-          origin: results[0]?.origin || '',
+          outAbsoluteDir: path.resolve(cwd, outCwdRelativeDir),
+          package: rendered[0]?.package || {},
+          origin: rendered[0]?.origin || '',
+          // what the file looks like inside a segment folder, the pruner tells generated files from user files by it
+          relPath: path.join(clientTemplateFile.relativeDir, path.basename(templateFilePath).replace(/\.ejs$/, '')),
+          isStamped: rendered.every(({ isStamped }) => isStamped),
         };
       })
     );
+
+    // once every segment is written, remove the folders of segments that are gone from each output directory
+    for (const [outAbsoluteDir, dirResults] of Object.entries(
+      _.groupBy(segmentedClientResults, ({ outAbsoluteDir }) => outAbsoluteDir)
+    )) {
+      const skippedDirs = await removeUnlistedDirectories(
+        outAbsoluteDir,
+        segmentNames.map((s) => s || ROOT_SEGMENT_FILE_NAME),
+        dirResults.map(({ relPath }) => relPath),
+        { unstampedRelPaths: dirResults.filter(({ isStamped }) => !isStamped).map(({ relPath }) => relPath) }
+      );
+
+      for (const skippedDir of skippedDirs) {
+        log.warn(
+          `Directory ${chalkHighlightThing(skippedDir)} is not a known segment but holds files or folders the generator did not write, so it is left untouched.`
+        );
+      }
+    }
 
     if (segmentedClientTemplateFiles.length) {
       logClientGenerationResults({

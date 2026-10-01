@@ -145,6 +145,50 @@ await describe('removeUnlistedDirectories', async () => {
     assert.deepStrictEqual(skipped, []);
   });
 
+  // what generate passes for segmented fromTemplates ['rs'], the rs-src files besides lib.rs are copied as they are
+  const rsGeneratedRelPaths = [
+    'src/lib.rs',
+    'src/http_request.rs',
+    'src/read_full_schema.rs',
+    'src/schema.json',
+    'Cargo.toml',
+    'README.md',
+  ].map((file) => file.split('/').join(path.sep));
+  const rsUnstampedRelPaths = rsGeneratedRelPaths.filter((file) => /http_request|read_full_schema/.test(file));
+
+  await it('Keeps the subfolders of a kept segment and removes a stale one with files copied as they are', async () => {
+    await writeFiles(['root/Cargo.toml', 'root/src/lib.rs', 'stale/Cargo.toml', 'stale/src/lib.rs']);
+    await writeUserFiles(['root/src/http_request.rs', 'stale/src/http_request.rs']);
+    await write(['root/src/schema.json', 'stale/src/schema.json'], '{}');
+
+    const skipped = await removeUnlistedDirectories(tmpDir, ['root'], rsGeneratedRelPaths, {
+      unstampedRelPaths: rsUnstampedRelPaths,
+    });
+
+    assert.deepStrictEqual(await list(), ['root']);
+    assert.deepStrictEqual(await fs.readdir(path.join(tmpDir, 'root/src')), [
+      'http_request.rs',
+      'lib.rs',
+      'schema.json',
+    ]);
+    assert.deepStrictEqual(skipped, []);
+  });
+
+  await it('Keeps a stale segment whose file copied as is sits apart from the bannered ones', async () => {
+    await writeFiles(['stale/Cargo.toml']);
+    await writeUserFiles(['stale/nested/src/http_request.rs']);
+
+    const skipped = await removeUnlistedDirectories(tmpDir, [], rsGeneratedRelPaths, {
+      unstampedRelPaths: rsUnstampedRelPaths,
+    });
+
+    assert.deepStrictEqual(await list(), ['stale']);
+    assert.deepStrictEqual(
+      skipped.map((dir) => path.relative(tmpDir, dir)),
+      ['stale']
+    );
+  });
+
   await it('Leaves empty directories alone', async () => {
     await writeFiles(['root/index.ts']);
     await fs.mkdir(path.join(tmpDir, 'emptydir', 'sub'), { recursive: true });

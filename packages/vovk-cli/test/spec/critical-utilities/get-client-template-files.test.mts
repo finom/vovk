@@ -43,9 +43,9 @@ await describe('getClientTemplateFiles', async () => {
       ['a']
     );
 
-    assert.deepStrictEqual(templateFiles.map(({ outCwdRelativeDir }) => outCwdRelativeDir).sort(), [
-      path.join('out', 'b', './'),
-      path.join('out', 'c', './'),
-    ]);
+    assert.deepStrictEqual(
+      templateFiles.map(({ outCwdRelativeDir, relativeDir }) => path.join(outCwdRelativeDir, relativeDir)).sort(),
+      [path.join('out', 'b', './'), path.join('out', 'c', './')]
+    );
   });
 });

@@ -175,7 +175,7 @@ import { UserRPC } from '@/client/customer'; // import tree will contain custome
 await UserRPC.getUser({ id: '123' });
 ```
 
-The segmented client also applicable to [Rust](/rust) and [Python](/python) templates, though use cases are less common.
+The segmented client also applicable to [Rust](/rust) and [Python](/python) templates, though use cases are less common. Each segment folder then holds a whole package, `Cargo.toml` or `pyproject.toml` included, named after the project's package and the segment: for a project named `app`, the `foo` segment's package is `app_foo` and the root segment's is `app_root`. A `package.name` set for the segment in [outputConfig.segments](/config#segments) is used as is.
 
 To enable the segmented client, set `segmentedClient.enabled` to `true` in `vovk.config.mjs`, and optionally disable the composed client by setting `composedClient.enabled` to `false`.
 

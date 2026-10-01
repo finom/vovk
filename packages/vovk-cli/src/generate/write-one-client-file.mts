@@ -45,6 +45,12 @@ export function normalizeOutTemplatePath(out: string, packageJson: PackageJson):
   return out.replace('[package_name]', toUnderscoredPackageName(packageJson.name));
 }
 
+// a segmented client puts a package into each segment folder, so each one needs a name of its own
+export function withSegmentPackageName<T extends PackageJson>(packageJson: T, segmentName: string): T {
+  if (!packageJson.name) return packageJson;
+  return { ...packageJson, name: `${packageJson.name}-${(segmentName || ROOT_SEGMENT_FILE_NAME).replace(/\//g, '-')}` };
+}
+
 export async function writeOneClientFile({
   cwd,
   projectInfo,
@@ -111,17 +117,13 @@ export async function writeOneClientFile({
 
   const { templateFilePath, relativeDir } = clientTemplateFile;
   const locatedSegmentsByName = _.keyBy(locatedSegments, 'segmentName');
-
-  const outPath = normalizeOutTemplatePath(
-    path.resolve(
-      cwd,
-      outCwdRelativeDir,
-      typeof segmentName === 'string' ? segmentName || ROOT_SEGMENT_FILE_NAME : '',
-      relativeDir,
-      path.basename(templateFilePath).replace('.ejs', '')
-    ),
-    packageJson
+  // a segmented client renders a whole client into each segment folder, required templates included
+  const segmentDir = typeof segmentName === 'string' ? segmentName || ROOT_SEGMENT_FILE_NAME : '';
+  const outDir = path.resolve(
+    cwd,
+    normalizeOutTemplatePath(path.join(outCwdRelativeDir, segmentDir, relativeDir), packageJson)
   );
+  const outPath = path.join(outDir, path.basename(templateFilePath).replace('.ejs', ''));
 
   let placeholder = templateFilePath.endsWith('.json.ejs')
     ? ''
@@ -145,14 +147,7 @@ export async function writeOneClientFile({
   };
 
   reExports = _.mapValues(reExports ?? {}, (p) =>
-    p.startsWith('.')
-      ? toImportPath(
-          path.relative(
-            path.join(outCwdRelativeDir, typeof segmentName === 'string' ? segmentName || ROOT_SEGMENT_FILE_NAME : '.'),
-            path.resolve(cwd, p)
-          )
-        )
-      : p
+    p.startsWith('.') ? toImportPath(path.relative(outDir, path.resolve(cwd, p))) : p
   );
 
   // Data for the EJS templates:
@@ -183,14 +178,7 @@ export async function writeOneClientFile({
       js: isNodeNextResolution ? '.js' : '',
       mjs: isNodeNextResolution ? '.mjs' : '',
     },
-    schemaOutDir: toPosixPath(
-      typeof segmentName === 'string'
-        ? path.relative(
-            path.join(outCwdRelativeDir, segmentName || ROOT_SEGMENT_FILE_NAME),
-            cliSchemaPath ?? config.schemaOutDir
-          )
-        : path.relative(outCwdRelativeDir, cliSchemaPath ?? config.schemaOutDir)
-    ),
+    schemaOutDir: toPosixPath(path.relative(outDir, path.resolve(cwd, cliSchemaPath ?? config.schemaOutDir))),
     // a segmented client sits one folder deeper, so its relative imports are resolved from there
     commonImports: (({ composedClient, segmentedClient }) =>
       typeof segmentName === 'string' ? (segmentedClient[segmentName] ?? composedClient) : composedClient)(
@@ -199,6 +187,7 @@ export async function writeOneClientFile({
         fullSchema,
         isBundle,
         outCwdRelativeDir,
+        relativeDir,
         segmentName,
         outputConfigs: [projectConfig[configKey].outputConfig ?? {}, templateDef.outputConfig ?? {}],
       })
@@ -211,6 +200,7 @@ export async function writeOneClientFile({
           segmentName: sName,
           isBundle,
           outCwdRelativeDir,
+          relativeDir,
           outputConfigs: [projectConfig[configKey].outputConfig ?? {}, templateDef.outputConfig ?? {}],
         });
         const imports =
@@ -223,16 +213,7 @@ export async function writeOneClientFile({
       Object.values(fullSchema.segments).map(({ segmentName: sName, forceApiRoot }) => {
         const { routeFilePath = null } = locatedSegmentsByName[sName] ?? {};
         const segmentImportPath = routeFilePath
-          ? toImportPath(
-              path.relative(
-                path.resolve(
-                  cwd,
-                  outCwdRelativeDir,
-                  typeof segmentName === 'string' ? segmentName || ROOT_SEGMENT_FILE_NAME : '.'
-                ),
-                path.resolve(cwd, routeFilePath)
-              )
-            )
+          ? toImportPath(path.relative(outDir, path.resolve(cwd, routeFilePath)))
           : null;
         const segmentConfig = {
           ...config.outputConfig.segments?.[sName],
@@ -296,5 +277,5 @@ export async function writeOneClientFile({
     await fs.writeFile(outPath, rendered, 'utf-8');
   }
 
-  return { written: needsWriting };
+  return { written: needsWriting, content: rendered };
 }

@@ -1,7 +1,14 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
-import { GENERATED_BANNER_PREFIX } from './generated-banner.mjs';
+import { hasGeneratedBanner } from './generated-banner.mjs';
 import { FileSystemEntryType, getFileSystemEntryType } from './get-file-system-entry-type.mjs';
+
+type PruneContext = {
+  basePath: string;
+  allowedDirs: string[];
+  generated?: { relPaths: string[]; unstampedRelPaths: string[] };
+  skipped: string[];
+};
 
 // removes all dirs in folderPath that aren't in allowedDirs, supports nested paths like 'foo/bar/baz'
 // generatedRelPaths guards user files: a dir holding anything the generator wouldn't write is kept,
@@ -9,16 +16,22 @@ import { FileSystemEntryType, getFileSystemEntryType } from './get-file-system-e
 export async function removeUnlistedDirectories(
   folderPath: string,
   allowedDirs: string[],
-  generatedRelPaths?: string[]
+  generatedRelPaths?: string[],
+  // generated files besides JSON that carry no banner, such as the files a template copies as they are
+  { unstampedRelPaths = [] }: { unstampedRelPaths?: string[] } = {}
 ): Promise<string[]> {
-  // Normalize all allowed paths to use the system-specific separator
-  const normalizedAllowedDirs = allowedDirs.map((dir) => dir.split('/').join(path.sep));
-  const skipped: string[] = [];
+  const context: PruneContext = {
+    basePath: folderPath,
+    // Normalize all allowed paths to use the system-specific separator
+    allowedDirs: allowedDirs.map((dir) => dir.split('/').join(path.sep)),
+    generated: generatedRelPaths && { relPaths: generatedRelPaths, unstampedRelPaths },
+    skipped: [],
+  };
 
   // Process the directory tree recursively
-  await processDirectory(folderPath, '', normalizedAllowedDirs, generatedRelPaths, skipped);
+  await processDirectory(context, '');
 
-  return skipped;
+  return context.skipped;
 }
 
 // the directories, relative to the scanned one, that hold relPath as a segment's generated file.
@@ -37,10 +50,9 @@ function getSegmentDirs(relPath: string, generatedRelPaths: string[]): string[] 
   });
 }
 
-async function hasGeneratedBanner(absolutePath: string): Promise<boolean> {
+async function isGeneratedFile(absolutePath: string): Promise<boolean> {
   try {
-    const content = await fs.readFile(absolutePath, 'utf-8');
-    return content.slice(0, content.indexOf('\n') + 1 || undefined).includes(GENERATED_BANNER_PREFIX);
+    return hasGeneratedBanner(await fs.readFile(absolutePath, 'utf-8'));
   } catch {
     return false;
   }
@@ -68,7 +80,8 @@ async function listFiles(dirPath: string, relativePath = ''): Promise<{ files: s
 // "generated" only when the generator wrote every file below dirPath, a matching name alone is not enough
 export async function getDirectoryOrigin(
   dirPath: string,
-  generatedRelPaths: string[]
+  generatedRelPaths: string[],
+  unstampedRelPaths: string[] = []
 ): Promise<'generated' | 'foreign' | 'empty'> {
   const { files, hasEmptyDir } = await listFiles(dirPath);
   if (!files.length) return 'empty';
@@ -76,35 +89,49 @@ export async function getDirectoryOrigin(
   if (hasEmptyDir) return 'foreign';
 
   const bannerSegmentDirs = new Set<string>();
-  const jsonSegmentDirs: string[][] = [];
+  const unstampedSegmentDirs: string[][] = [];
 
   for (const file of files) {
     const segmentDirs = getSegmentDirs(file, generatedRelPaths);
     if (!segmentDirs.length) return 'foreign';
 
-    if (path.extname(file) === '.json') {
-      jsonSegmentDirs.push(segmentDirs);
-    } else if (await hasGeneratedBanner(path.join(dirPath, file))) {
+    const unstampedDirs = path.extname(file) === '.json' ? segmentDirs : getSegmentDirs(file, unstampedRelPaths);
+    if (unstampedDirs.length) {
+      unstampedSegmentDirs.push(unstampedDirs);
+    } else if (await isGeneratedFile(path.join(dirPath, file))) {
       for (const segmentDir of segmentDirs) bannerSegmentDirs.add(segmentDir);
     } else {
       return 'foreign';
     }
   }
 
-  // json holds no banner, so it counts only beside a bannered file of the same segment directory
-  return jsonSegmentDirs.every((segmentDirs) => segmentDirs.some((segmentDir) => bannerSegmentDirs.has(segmentDir)))
+  // json and copied files hold no banner, they count only beside a bannered file of the same segment directory
+  return unstampedSegmentDirs.every((segmentDirs) =>
+    segmentDirs.some((segmentDir) => bannerSegmentDirs.has(segmentDir))
+  )
     ? 'generated'
     : 'foreign';
 }
 
+// a folder inside a kept segment directory that holds only that segment's generated files, such as a Rust client's src/
+async function isSegmentContent({ basePath, allowedDirs, generated }: PruneContext, relativePath: string) {
+  const segmentDir = allowedDirs
+    .filter((dir) => relativePath.startsWith(dir + path.sep))
+    .sort((a, b) => b.length - a.length)[0];
+  if (!segmentDir || !generated) return false;
+
+  const { files } = await listFiles(path.join(basePath, relativePath));
+  const dirInSegment = path.relative(segmentDir, relativePath);
+
+  return (
+    files.length > 0 &&
+    files.every((file) => getSegmentDirs(path.join(dirInSegment, file), generated.relPaths).includes(''))
+  );
+}
+
 // recursively decides which dirs to keep or remove
-async function processDirectory(
-  basePath: string,
-  relativePath: string,
-  allowedDirs: string[],
-  generatedRelPaths: string[] | undefined,
-  skipped: string[]
-): Promise<void> {
+async function processDirectory(context: PruneContext, relativePath: string): Promise<void> {
+  const { basePath, allowedDirs, generated, skipped } = context;
   const currentDirPath = path.join(basePath, relativePath);
 
   // check if the current path is a directory
@@ -137,12 +164,14 @@ async function processDirectory(
 
     if (shouldKeep) {
       // Recursively process this directory's contents
-      await processDirectory(basePath, newRelativePath, allowedDirs, generatedRelPaths, skipped);
+      await processDirectory(context, newRelativePath);
     } else {
       const fullPath = path.join(basePath, newRelativePath);
 
-      if (generatedRelPaths) {
-        const origin = await getDirectoryOrigin(fullPath, generatedRelPaths);
+      if (generated) {
+        if (await isSegmentContent(context, newRelativePath)) continue;
+
+        const origin = await getDirectoryOrigin(fullPath, generated.relPaths, generated.unstampedRelPaths);
         // an empty directory is left alone silently, one holding anything else is reported
         if (origin === 'foreign') skipped.push(fullPath);
         if (origin !== 'generated') continue;
