@@ -106,6 +106,13 @@ function compileSchema(schema: JSONSchema7Definition | boolean, name: string, co
     return schema ? 'any' : 'never';
   }
 
+  const type = compileSchemaType(schema, name, context);
+  // OpenAPI 3.0 has no null type, a schema allows null with `nullable: true`
+  const isNullable = (schema as { nullable?: unknown }).nullable === true;
+  return isNullable && type !== 'any' && type !== 'null' ? `${type} | null` : type;
+}
+
+function compileSchemaType(schema: JSONSchema7, name: string, context: CompileContext): string {
   // Handle x-tsType extension
   if ('x-tsType' in schema && typeof schema['x-tsType'] === 'string') {
     return schema['x-tsType'];
@@ -116,15 +123,18 @@ function compileSchema(schema: JSONSchema7Definition | boolean, name: string, co
     return handleRef(schema.$ref, context);
   }
 
-  // Handle combinators
-  if (schema.allOf) {
-    return handleAllOf(schema.allOf, name, context);
-  }
-  if (schema.anyOf) {
-    return handleAnyOf(schema.anyOf, name, context);
-  }
-  if (schema.oneOf) {
-    return handleOneOf(schema.oneOf, name, context);
+  // Handle combinators, properties next to them apply as well
+  const combined = [
+    schema.allOf && handleAllOf(schema.allOf, name, context),
+    schema.anyOf && handleAnyOf(schema.anyOf, name, context),
+    schema.oneOf && handleOneOf(schema.oneOf, name, context),
+  ].filter((type): type is string => typeof type === 'string');
+  if (combined.length > 0) {
+    const hasOwnMembers =
+      !!schema.properties ||
+      !!schema.patternProperties ||
+      (schema.additionalProperties !== undefined && schema.additionalProperties !== false);
+    return intersect(hasOwnMembers ? [...combined, handleObject(schema, name, context)] : combined);
   }
 
   // Handle type-specific compilation
@@ -208,18 +218,14 @@ function handleRef(ref: string, context: CompileContext): string {
 }
 
 function handleAllOf(schemas: JSONSchema7Definition[], name: string, context: CompileContext): string {
-  const types = schemas.map((s, i) => compileSchema(s, sanitizeTypeName(`${name}-all-of-${i}`), context));
+  return intersect(schemas.map((s, i) => compileSchema(s, sanitizeTypeName(`${name}-all-of-${i}`), context)));
+}
 
-  // For allOf, we need to intersect types
-  // If they're all objects, we can merge them properly
-  const objectTypes = types.filter((t) => t.startsWith('{') && t.endsWith('}'));
-  if (objectTypes.length === types.length) {
-    // Merge object types
-    const merged = objectTypes.map((t) => t.slice(1, -1).trim()).filter((t) => t.length > 0);
-    return merged.length > 0 ? `{ ${merged.join('; ')} }` : '{}';
-  }
-
-  return types.join(' & ');
+// `any` would swallow the other members, a member without a type adds no constraint
+function intersect(types: string[]): string {
+  const members = types.filter((type) => type !== 'any');
+  if (members.length === 0) return 'any';
+  return members.length === 1 ? members[0] : members.map(wrapUnionType).join(' & ');
 }
 
 function handleAnyOf(schemas: JSONSchema7Definition[], name: string, context: CompileContext): string {
@@ -270,7 +276,7 @@ function handleObject(schema: JSONSchema7, name: string, context: CompileContext
       // Ensure the generated type name for nested properties is valid
       const nestedTypeName = sanitizeTypeName(`${name}-${propName}`);
       const propType = compileSchema(propSchema, nestedTypeName, context);
-      const safePropName = /^[a-zA-Z_$][a-zA-Z0-9_$]*$/.test(propName) ? propName : `"${propName}"`;
+      const safePropName = /^[a-zA-Z_$][a-zA-Z0-9_$]*$/.test(propName) ? propName : JSON.stringify(propName);
       // Add JSDoc comment if description is present
       const comment = propSchema.description ? `\n/** ${escapeJSDocComment(propSchema.description)} */\n` : '';
       props.push(`${comment}${safePropName}${isRequired ? '' : '?'}: ${propType}`);
@@ -304,18 +310,18 @@ function handleObject(schema: JSONSchema7, name: string, context: CompileContext
 function refToTypeName(ref: string): string {
   // Extract the last part of the reference as the type name
   const parts = ref.split('/');
-  const name = parts[parts.length - 1];
-  // Convert kebab-case to PascalCase
-  return upperFirst(camelCase(name));
+  return sanitizeTypeName(parts[parts.length - 1]);
 }
 
 function wrapUnionType(type: string): string {
-  // Wrap union types in parentheses for array types
+  // Wrap union types in parentheses for array and intersection types
   return type.includes('|') ? `(${type})` : type;
 }
 
+// PascalCase; a name that starts with a digit gets a leading underscore, as in the x-tsType of a mixin component ref
 function sanitizeTypeName(name: string): string {
-  return upperFirst(camelCase(name));
+  const typeName = upperFirst(camelCase(name));
+  return /^[\p{L}_$]/u.test(typeName) ? typeName : `_${typeName}`;
 }
 
 // Utility function to escape JSDoc comment terminators in descriptions
