@@ -9,7 +9,7 @@ const data = {
     name: t.underscoredPackageName,
     version: t.package.version,
     description: t.package.description,
-    "requires-python": ">=3.8",
+    "requires-python": ">=3.9",
     license: { text: t.package.license || 'UNLICENSED' }
   }
 };
@@ -44,11 +44,12 @@ if (t.package.contributors && t.package.contributors.length) {
 }
 
 // Dependencies
+// requests picks its own urllib3; the extra checks formats such as uri and date-time without GPL libraries
 data.project.dependencies = [
   "requests",
-  "jsonschema",
-  "rfc3987",
-  "urllib3==1.26.15"
+  "jsonschema[format-nongpl]",
+  // NotRequired is in typing from 3.11
+  "typing_extensions>=4.0.0; python_version < '3.11'"
 ];
 
 data.project.readme = "README.md";
@@ -91,6 +92,6 @@ where = ["src"]
 "*" = ["py.typed"]
 
 [tool.mypy]
-python_version = "3.8"
+python_version = "3.9"
 warn_return_any = true
 warn_unused_configs = true

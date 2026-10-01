@@ -232,16 +232,24 @@ export const { GET, POST, PATCH, PUT, HEAD, OPTIONS, DELETE } = initSegment({
 
 ```py filename="./dist_python/src/package_name/__init__.py"
 from __future__ import annotations
-from typing import Any, Dict, List, Literal, Optional, Set, TypedDict, Union, Tuple, Generator # type: ignore
+import sys
+from typing import Any, Dict, List, Literal, Optional, Set, TypedDict, Union, Tuple, Generator, BinaryIO # type: ignore
 from .api_client import ApiClient, HttpException
+
+if sys.version_info >= (3, 11):
+    from typing import NotRequired
+else:
+    from typing_extensions import NotRequired
 
 HttpException = HttpException
 
-client = ApiClient('https://hello-world.vovk.dev/api')
+client = ApiClient("https://hello-world.vovk.dev/api", {
+    "": ("https://hello-world.vovk.dev/api", ""),
+})
 
 class UserRPC:
     # UserRPC.update_user POST `https://hello-world.vovk.dev/api/users/{id}`
-    class __UpdateUserBody_profile(TypedDict):
+    class _UpdateUserBody_profile(TypedDict):
         """
         User profile object
         """
@@ -252,7 +260,7 @@ class UserRPC:
         User data object
         """
         email: str
-        profile: UserRPC.__UpdateUserBody_profile
+        profile: UserRPC._UpdateUserBody_profile
     class UpdateUserQuery(TypedDict):
         """
         Query parameters
@@ -268,13 +276,14 @@ class UserRPC:
         Response object
         """
         success: bool
+        id: str
+        notify: Literal["email", "push", "none"]
     @staticmethod
     def update_user(
         body: UpdateUserBody,
         query: UpdateUserQuery,
         params: UpdateUserParams,
         headers: Optional[Dict[str, str]] = None,
-        files: Optional[Dict[str, Any]] = None,
         api_root: Optional[str] = None,
         disable_client_validation: bool = False
     ) -> UpdateUserOutput:
@@ -286,20 +295,19 @@ class UserRPC:
         Returns: Response object
         """
         return client.request( # type: ignore
-            segment_name='',
-            rpc_name='UserRPC',
-            handler_name='updateUser',
+            segment_name="",
+            rpc_name="UserRPC",
+            handler_name="updateUser",
             body=body,
             query=query,
             params=params,
             headers=headers,
-            files=files,
             api_root=api_root,
             disable_client_validation=disable_client_validation
         )
 ```
 
-All RPC modules are generated in `__init__.py`, which contains the RPC functions and the associated types. Types for nested structures are emitted as `TypedDict`s.
+All RPC modules are generated in `__init__.py`, which contains the RPC functions and the associated types. Types for nested structures are emitted as `TypedDict`s. A key the schema doesn't require is `NotRequired`, imported from `typing_extensions` before Python 3.11.
 
 Types for `body`, `query`, and `params` follow the pattern `[PascalCaseMethodName][InputType]`. For a method `updateUser`, you get `UpdateUserBody`, `UpdateUserQuery`, and `UpdateUserParams`.
 
@@ -430,7 +438,6 @@ class StreamRPC:
     def stream_tokens(
 
         headers: Optional[Dict[str, str]] = None,
-        files: Optional[Dict[str, Any]] = None,
         api_root: Optional[str] = None,
         disable_client_validation: bool = False
     ) -> Generator[StreamTokensIteration, None, None]:
@@ -439,12 +446,11 @@ class StreamRPC:
         Description: Stream tokens to the client
         """
         return client.request( # type: ignore
-            segment_name='',
-            rpc_name='StreamRPC',
-            handler_name='streamTokens',
+            segment_name="",
+            rpc_name="StreamRPC",
+            handler_name="streamTokens",
 
             headers=headers,
-            files=files,
             api_root=api_root,
             disable_client_validation=disable_client_validation
         )
@@ -467,6 +473,17 @@ if __name__ == "__main__":
         main()
     except Exception as e:
         print(f"Error: {e}")
+```
+
+### Timeout and Session
+
+All calls share one `requests.Session`, so connections stay open between them. The client waits 10 seconds to connect and 300 seconds for each read. Both are attributes of the module-level `client`:
+
+```py
+from package_name import client
+
+client.timeout = 30  # seconds, or a (connect, read) tuple; None waits forever
+client.session.headers["Authorization"] = "Bearer ..."
 ```
 
 ## Roadmap/bugs

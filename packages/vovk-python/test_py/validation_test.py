@@ -141,9 +141,21 @@ class TestValidation(unittest.TestCase):
         with self.assertRaises(ValueError):
             WithValidationRPC.handle_params(params={"foo": "..", "bar": "x"})
 
+        # an empty segment would reach another route, or a redirect to one
+        with self.assertRaises(ValueError):
+            WithValidationRPC.handle_params(params={"foo": "", "bar": "x"}, disable_client_validation=True)
+
     def test_query_encoding(self) -> None:
         data = WithValidationRPC.handle_query(query={"search": "a&b=c"})
         self.assertEqual(data, {'search': 'a&b=c'})
+
+    def test_query_list_with_none(self) -> None:
+        # None is left out and the next item takes its index: the server reads indexes with a gap as an object
+        iterator = WithValidationRPC.handle_stream(
+            query={"values": [None, "a", None, "b"]},  # type: ignore
+            disable_client_validation=True,
+        )
+        self.assertEqual(list(iterator), [{'value': 'a'}, {'value': 'b'}])
 
     def test_output(self) -> None:
         data: WithValidationRPC.HandleOutputOutput = WithValidationRPC.handle_output(
@@ -158,6 +170,11 @@ class TestValidation(unittest.TestCase):
             )
         self.assertEqual(context.exception.status_code, 500)
         self.assertEqual(str(context.exception), "Internal server error")
+
+    def test_falsy_output(self) -> None:
+        self.assertIs(WithValidationRPC.handle_falsy_output(query={"type": "boolean"}), False)
+        self.assertEqual(WithValidationRPC.handle_falsy_output(query={"type": "number"}), 0)
+        self.assertEqual(WithValidationRPC.handle_falsy_output(query={"type": "string"}), '')
 
     def test_form(self) -> None:
         data: WithValidationRPC.HandleMultipartDataOnlyOutput = WithValidationRPC.handle_multipart_data_only(
@@ -261,6 +278,10 @@ class TestValidation(unittest.TestCase):
                 disable_client_validation=True,
             )
         self.assertRegex(str(context.exception), r"Validation failed\. Invalid body")
+
+    def test_union_body(self) -> None:
+        data = WithValidationRPC.handle_octet_stream_or_json_data(body={"hello": "world"})
+        self.assertEqual(data, {'type': 'none', 'hello': 'world'})
 
     def test_binary_octet_stream(self) -> None:
         binary_content = b"hello binary world"

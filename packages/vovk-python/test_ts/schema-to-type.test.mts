@@ -203,7 +203,7 @@ test('convertJSONSchemaToPythonDataType - simple objects', async (t) => {
 
     const expected = `class Person(TypedDict):
     name: str
-    age: Optional[int]`;
+    age: NotRequired[int]`;
 
     assert.equal(result, expected);
   });
@@ -250,13 +250,13 @@ test('convertJSONSchemaToPythonDataType - complex objects', async (t) => {
       pad: 0,
     });
 
-    const expected = `class __Person_address(TypedDict):
+    const expected = `class _Person_address(TypedDict):
     street: str
     city: str
-    zipCode: Optional[str]
+    zipCode: NotRequired[str]
 class Person(TypedDict):
     name: str
-    address: MyNamespace.__Person_address`;
+    address: MyNamespace._Person_address`;
 
     assert.equal(result, expected);
   });
@@ -290,13 +290,13 @@ class Person(TypedDict):
       pad: 0,
     });
 
-    const expected = `class __Person_friends_items(TypedDict):
+    const expected = `class _Person_friends_items(TypedDict):
     name: str
-    age: Optional[int]
+    age: NotRequired[int]
 class Person(TypedDict):
     name: str
-    tags: Optional[List[str]]
-    friends: Optional[List[MyNamespace.__Person_friends_items]]`;
+    tags: NotRequired[List[str]]
+    friends: NotRequired[List[MyNamespace._Person_friends_items]]`;
 
     assert.equal(result, expected);
   });
@@ -332,8 +332,8 @@ test('convertJSONSchemaToPythonDataType - allOf', async (t) => {
 
     const expected = `class Contact(TypedDict):
     name: str
-    email: Optional[str]
-    age: Optional[int]
+    email: NotRequired[str]
+    age: NotRequired[int]
     phone: str`;
 
     assert.equal(result, expected);
@@ -393,24 +393,24 @@ test('convertJSONSchemaToPythonDataType - complex nesting', async (t) => {
       pad: 2,
     });
 
-    const expected = `  class __Response_user_profile_personal(TypedDict):
+    const expected = `  class _Response_user_profile_personal(TypedDict):
       name: str
-      age: Optional[int]
-  class __Response_user_profile_preferences(TypedDict):
-      theme: Optional[Literal["light", "dark"]]
-      notifications: Optional[bool]
-  class __Response_user_profile(TypedDict):
-      personal: Optional[API.__Response_user_profile_personal]
-      preferences: Optional[API.__Response_user_profile_preferences]
-  class __Response_user_posts_items(TypedDict):
+      age: NotRequired[int]
+  class _Response_user_profile_preferences(TypedDict):
+      theme: NotRequired[Literal["light", "dark"]]
+      notifications: NotRequired[bool]
+  class _Response_user_profile(TypedDict):
+      personal: NotRequired[API._Response_user_profile_personal]
+      preferences: NotRequired[API._Response_user_profile_preferences]
+  class _Response_user_posts_items(TypedDict):
       title: str
       content: str
-      tags: Optional[List[str]]
-  class __Response_user(TypedDict):
-      profile: Optional[API.__Response_user_profile]
-      posts: Optional[List[API.__Response_user_posts_items]]
+      tags: NotRequired[List[str]]
+  class _Response_user(TypedDict):
+      profile: NotRequired[API._Response_user_profile]
+      posts: NotRequired[List[API._Response_user_posts_items]]
   class Response(TypedDict):
-      user: Optional[API.__Response_user]`;
+      user: NotRequired[API._Response_user]`;
 
     assert.equal(result, expected);
   });
@@ -456,8 +456,8 @@ test('convertJSONSchemaToPythonDataType - padding', async (t) => {
     });
 
     const expected = `    class Person(TypedDict):
-        name: Optional[str]
-        age: Optional[int]`;
+        name: NotRequired[str]
+        age: NotRequired[int]`;
 
     assert.equal(result, expected);
   });
@@ -517,30 +517,30 @@ test('convertJSONSchemaToPythonDataType - real-world examples', async (t) => {
       pad: 0,
     });
 
-    const expected = `class __Response_data_users_items_meta(TypedDict):
+    const expected = `class _Response_data_users_items_meta(TypedDict):
     pass
-class __Response_data_users_items(TypedDict):
+class _Response_data_users_items(TypedDict):
     id: str
     name: str
     email: str
-    role: Optional[Literal["admin", "user", "guest"]]
-    meta: Optional[API.__Response_data_users_items_meta]
-class __Response_data_pagination(TypedDict):
+    role: NotRequired[Literal["admin", "user", "guest"]]
+    meta: NotRequired[API._Response_data_users_items_meta]
+class _Response_data_pagination(TypedDict):
     page: int
     totalPages: int
-    nextPage: Optional[Union[int, None]]
-    prevPage: Optional[Union[int, None]]
-class __Response_data(TypedDict):
-    users: List[API.__Response_data_users_items]
-    pagination: Optional[API.__Response_data_pagination]
-class __Response_error(TypedDict):
+    nextPage: NotRequired[Union[int, None]]
+    prevPage: NotRequired[Union[int, None]]
+class _Response_data(TypedDict):
+    users: List[API._Response_data_users_items]
+    pagination: NotRequired[API._Response_data_pagination]
+class _Response_error(TypedDict):
     message: str
-    details: Optional[List[str]]
+    details: NotRequired[List[str]]
 class Response(TypedDict):
     status: Literal["success", "error"]
     code: int
-    data: Optional[API.__Response_data]
-    error: Optional[API.__Response_error]`;
+    data: NotRequired[API._Response_data]
+    error: NotRequired[API._Response_error]`;
 
     assert.equal(result, expected);
   });
@@ -639,42 +639,42 @@ class Response(TypedDict):
       pad: 0,
     });
 
-    const expected = `class __AppConfig_serverConfig_corsOptions_anyOf_1(TypedDict):
-    origin: Optional[Union[str, List[str]]]
-    methods: Optional[List[str]]
-    allowHeaders: Optional[List[str]]
-class __AppConfig_serverConfig(TypedDict):
+    const expected = `class _AppConfig_serverConfig_corsOptions_anyOf_1(TypedDict):
+    origin: NotRequired[Union[str, List[str]]]
+    methods: NotRequired[List[str]]
+    allowHeaders: NotRequired[List[str]]
+class _AppConfig_serverConfig(TypedDict):
     host: str
     port: int
-    ssl: Optional[bool]
-    corsOptions: Optional[Union[bool, Config.__AppConfig_serverConfig_corsOptions_anyOf_1]]
-class __AppConfig_database_credentials(TypedDict):
+    ssl: NotRequired[bool]
+    corsOptions: NotRequired[Union[bool, Config._AppConfig_serverConfig_corsOptions_anyOf_1]]
+class _AppConfig_database_credentials(TypedDict):
     user: str
     password: str
     host: str
-    port: Optional[int]
-class __AppConfig_database(TypedDict):
+    port: NotRequired[int]
+class _AppConfig_database(TypedDict):
     type: Literal["mysql", "postgres", "mongodb"]
     name: str
-    credentials: Config.__AppConfig_database_credentials
-class __AppConfig_features_auth_providers_items_config(TypedDict):
+    credentials: Config._AppConfig_database_credentials
+class _AppConfig_features_auth_providers_items_config(TypedDict):
     pass
-class __AppConfig_features_auth_providers_items(TypedDict):
+class _AppConfig_features_auth_providers_items(TypedDict):
     name: str
-    config: Optional[Config.__AppConfig_features_auth_providers_items_config]
-class __AppConfig_features_auth(TypedDict):
-    enabled: Optional[bool]
-    providers: Optional[List[Config.__AppConfig_features_auth_providers_items]]
-class __AppConfig_features_caching(TypedDict):
-    strategy: Optional[Literal["memory", "redis"]]
-    ttl: Optional[int]
-class __AppConfig_features(TypedDict):
-    auth: Optional[Config.__AppConfig_features_auth]
-    caching: Optional[Config.__AppConfig_features_caching]
+    config: NotRequired[Config._AppConfig_features_auth_providers_items_config]
+class _AppConfig_features_auth(TypedDict):
+    enabled: NotRequired[bool]
+    providers: NotRequired[List[Config._AppConfig_features_auth_providers_items]]
+class _AppConfig_features_caching(TypedDict):
+    strategy: NotRequired[Literal["memory", "redis"]]
+    ttl: NotRequired[int]
+class _AppConfig_features(TypedDict):
+    auth: NotRequired[Config._AppConfig_features_auth]
+    caching: NotRequired[Config._AppConfig_features_caching]
 class AppConfig(TypedDict):
-    serverConfig: Config.__AppConfig_serverConfig
-    database: Config.__AppConfig_database
-    features: Optional[Config.__AppConfig_features]`;
+    serverConfig: Config._AppConfig_serverConfig
+    database: Config._AppConfig_database
+    features: NotRequired[Config._AppConfig_features]`;
 
     assert.equal(result, expected);
   });
@@ -701,10 +701,10 @@ class AppConfig(TypedDict):
     const expected = `class UserRecord(TypedDict):
     id: str
     createdAt: str
-    updatedAt: Optional[str]
+    updatedAt: NotRequired[str]
     email: str
-    website: Optional[str]
-    ipAddress: Optional[str]`;
+    website: NotRequired[str]
+    ipAddress: NotRequired[str]`;
 
     assert.equal(result, expected);
   });
@@ -736,8 +736,8 @@ test('convertJSONSchemaToPythonDataType - $refs', async (t) => {
     });
 
     assert.ok(result.includes('class _Body_User(TypedDict):'), result);
-    assert.ok(result.includes('friend: Optional[Rpc._Body_User]'), result);
-    assert.ok(result.includes('posts: Optional[List[Rpc._Body_Post]]'), result);
+    assert.ok(result.includes('friend: NotRequired[Rpc._Body_User]'), result);
+    assert.ok(result.includes('posts: NotRequired[List[Rpc._Body_Post]]'), result);
     assert.ok(result.includes('user: Rpc._Body_User'), result);
     // the class name must not be mangled by Python's double underscore rule
     assert.ok(!result.includes('class __Body_User'), result);
@@ -805,6 +805,23 @@ test('getBodyKind', async (t) => {
     assert.equal(getBodyKind({ type: 'object', 'x-contentType': ['application/json'] }), 'json');
     assert.equal(getBodyKind({ type: 'object', properties: {} }), 'json');
   });
+
+  await t.test('reads a body that only declares its content type', () => {
+    // a procedure with contentType and no body schema
+    assert.equal(getBodyKind({ 'x-contentType': ['text/plain'] }), 'text');
+    assert.equal(getBodyKind({ 'x-contentType': ['application/octet-stream'] }), 'binary');
+    assert.equal(getBodyKind({ 'x-contentType': ['multipart/form-data'] }), 'form');
+    assert.equal(hasNormalData({ 'x-contentType': ['multipart/form-data'] }), true);
+    assert.equal(
+      convertJSONSchemaToPythonDataType({
+        schema: { 'x-contentType': ['application/json'] },
+        namespace: 'Rpc',
+        className: 'Body',
+        pad: 0,
+      }),
+      'Body = Any'
+    );
+  });
 });
 
 test('schema text never leaves its literal', async (t) => {
@@ -841,7 +858,7 @@ test('schema text never leaves its literal', async (t) => {
 
     assert.equal(
       result,
-      'Body = TypedDict("Body", {"from": "str", "content-type": "Optional[str]", "x\\nimport os": "Optional[str]"})'
+      'Body = TypedDict("Body", {"from": "str", "content-type": "NotRequired[str]", "x\\nimport os": "NotRequired[str]"})'
     );
   });
 
@@ -880,8 +897,8 @@ test('allOf and $ref bodies', async (t) => {
     });
 
     assert.ok(result.includes('    id: int'), result);
-    assert.ok(result.includes('    extra: Optional[str]'), result);
-    assert.ok(result.includes('    own: Optional[bool]'), result);
+    assert.ok(result.includes('    extra: NotRequired[str]'), result);
+    assert.ok(result.includes('    own: NotRequired[bool]'), result);
   });
 
   await t.test('looks through a bare $ref body for its fields', () => {
@@ -903,5 +920,187 @@ test('allOf and $ref bodies', async (t) => {
         'class Files(TypedDict):'
       )
     );
+  });
+});
+
+test('bodies without top-level properties', async (t) => {
+  await t.test('may carry data', () => {
+    assert.equal(hasNormalData({ type: 'array', items: { type: 'string' } }), true);
+    assert.equal(
+      hasNormalData({ anyOf: [{ type: 'object', properties: { a: { type: 'string' } } }, { type: 'string' }] }),
+      true
+    );
+    assert.equal(hasNormalData({ type: 'object', additionalProperties: { type: 'string' } }), true);
+    assert.equal(hasNormalData({ type: 'object', properties: { file: { type: 'string', format: 'binary' } } }), false);
+  });
+
+  await t.test('a record is a Dict of its values', () => {
+    const result = convertJSONSchemaToPythonDataType({
+      schema: { type: 'object', additionalProperties: { type: 'number' } },
+      namespace: 'Rpc',
+      className: 'Body',
+      pad: 0,
+    });
+
+    assert.equal(result, 'Body = Dict[str, float]');
+  });
+
+  await t.test('a record of any values is a Dict of Any', () => {
+    const result = convertJSONSchemaToPythonDataType({
+      schema: {
+        type: 'object',
+        properties: {
+          // as Zod emits z.record(z.string(), z.unknown())
+          meta: { type: 'object', propertyNames: { type: 'string' }, additionalProperties: {} } as VovkJSONSchemaBase,
+        },
+        required: ['meta'],
+      },
+      namespace: 'Rpc',
+      className: 'Body',
+      pad: 0,
+    });
+
+    assert.equal(result, 'class Body(TypedDict):\n    meta: Dict[str, Any]');
+  });
+});
+
+test('recursive definitions', async (t) => {
+  await t.test('an alias that refers to itself has Any there', () => {
+    // as Zod emits z.json()
+    const result = convertJSONSchemaToPythonDataType({
+      schema: {
+        type: 'object',
+        properties: { data: { $ref: '#/$defs/__schema0' } },
+        required: ['data'],
+        $defs: {
+          __schema0: {
+            anyOf: [
+              { type: 'string' },
+              { type: 'number' },
+              { type: 'boolean' },
+              { type: 'null' },
+              { type: 'array', items: { $ref: '#/$defs/__schema0' } },
+              { type: 'object', additionalProperties: { $ref: '#/$defs/__schema0' } },
+            ],
+          },
+        },
+      },
+      namespace: 'Rpc',
+      className: 'Body',
+      pad: 0,
+    });
+
+    assert.equal(
+      result,
+      `_Body___schema0 = Union[str, float, bool, None, List[Any], Dict[str, Any]]
+class Body(TypedDict):
+    data: Rpc._Body___schema0`
+    );
+  });
+
+  await t.test('an alias has Any for a class that is still being built', () => {
+    const result = convertJSONSchemaToPythonDataType({
+      schema: {
+        type: 'object',
+        properties: { tree: { $ref: '#/$defs/Tree' } },
+        required: ['tree'],
+        $defs: {
+          Tree: { type: 'object', properties: { children: { $ref: '#/$defs/Forest' } }, required: ['children'] },
+          Forest: { type: 'array', items: { $ref: '#/$defs/Tree' } },
+        },
+      },
+      namespace: 'Rpc',
+      className: 'Body',
+      pad: 0,
+    });
+
+    assert.equal(
+      result,
+      `_Body_Forest = List[Any]
+class _Body_Tree(TypedDict):
+    children: Rpc._Body_Forest
+class Body(TypedDict):
+    tree: Rpc._Body_Tree`
+    );
+  });
+
+  await t.test('a class may name itself', () => {
+    const result = convertJSONSchemaToPythonDataType({
+      schema: {
+        $ref: '#/$defs/Node',
+        $defs: {
+          Node: {
+            type: 'object',
+            properties: { next: { anyOf: [{ $ref: '#/$defs/Node' }, { type: 'null' }] } },
+            required: ['next'],
+          },
+        },
+      },
+      namespace: 'Rpc',
+      className: 'Body',
+      pad: 0,
+    });
+
+    assert.equal(
+      result,
+      `class _Body_Node(TypedDict):
+    next: Union[Rpc._Body_Node, None]
+Body = _Body_Node`
+    );
+  });
+});
+
+test('names Python resolves', async (t) => {
+  await t.test('a nested class has one leading underscore, so Python does not mangle it', () => {
+    const result = convertJSONSchemaToPythonDataType({
+      schema: {
+        type: 'object',
+        properties: { a: { type: 'object', properties: { b: { type: 'string' } } } },
+        required: ['a'],
+      },
+      namespace: 'Rpc',
+      className: 'Body',
+      pad: 0,
+    });
+
+    assert.equal(
+      result,
+      `class _Body_a(TypedDict):
+    b: NotRequired[str]
+class Body(TypedDict):
+    a: Rpc._Body_a`
+    );
+  });
+
+  await t.test('the functional syntax names a nested class in full', () => {
+    const result = convertJSONSchemaToPythonDataType({
+      schema: { type: 'object', properties: { 'a-b': { type: 'object', properties: {} } }, required: ['a-b'] },
+      namespace: 'Rpc',
+      className: 'Body',
+      pad: 0,
+    });
+
+    assert.equal(result, 'class _Body_a_b(TypedDict):\n    pass\nBody = TypedDict("Body", {"a-b": "Rpc._Body_a_b"})');
+  });
+
+  await t.test('a nested class and a definition do not share a name', () => {
+    const result = convertJSONSchemaToPythonDataType({
+      schema: {
+        type: 'object',
+        properties: {
+          User: { type: 'object', properties: { id: { type: 'string' } }, required: ['id'] },
+          owner: { $ref: '#/$defs/User' },
+        },
+        required: ['User', 'owner'],
+        $defs: { User: { type: 'object', properties: { name: { type: 'string' } }, required: ['name'] } },
+      },
+      namespace: 'Rpc',
+      className: 'Body',
+      pad: 0,
+    });
+
+    assert.ok(result.includes('class _Body_User(TypedDict):\n    id: str'), result);
+    assert.ok(result.includes('class _Body_User_2(TypedDict):\n    name: str'), result);
+    assert.ok(result.includes('    owner: Rpc._Body_User_2'), result);
   });
 });
