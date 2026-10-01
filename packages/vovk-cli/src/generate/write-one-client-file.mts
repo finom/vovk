@@ -26,8 +26,13 @@ import { toImportPath, toPosixPath } from '../utils/to-import-path.mjs';
 import type { ClientTemplateFile } from './get-client-template-files.mjs';
 import { getTemplateClientImports } from './get-template-client-imports.mjs';
 
+// a valid Python import name and Cargo package name: "@acme/web-app" becomes "acme_web_app"
+export function toUnderscoredPackageName(name: string | undefined): string {
+  return name?.replace(/^@/, '').replace(/[^A-Za-z0-9_]/g, '_') || 'my_package_name';
+}
+
 export function normalizeOutTemplatePath(out: string, packageJson: PackageJson): string {
-  return out.replace('[package_name]', packageJson.name?.replace(/-/g, '_') ?? 'my_package_name');
+  return out.replace('[package_name]', toUnderscoredPackageName(packageJson.name));
 }
 
 export async function writeOneClientFile({
@@ -146,6 +151,7 @@ export async function writeOneClientFile({
     hasMixins,
     isVovkProject,
     package: packageJson,
+    underscoredPackageName: toUnderscoredPackageName(packageJson.name),
     readme,
     samples,
     reExports,

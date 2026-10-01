@@ -6,7 +6,7 @@ const data = {
     "build-backend": "hatchling.build"
   },
   project: {
-    name: t.package.name.replace(/-/g, '_'),
+    name: t.underscoredPackageName,
     version: t.package.version,
     description: t.package.description,
     "requires-python": ">=3.8",

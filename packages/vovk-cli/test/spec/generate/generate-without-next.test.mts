@@ -30,4 +30,32 @@ await describe('vovk generate in a project without Next.js', async () => {
     assert.ok(index.includes(`import('./fetcher')`), index);
     assert.ok(index.includes(`from "../app/api/[[...vovk]]/route.ts"`), index);
   });
+
+  await it('Names Python and Rust packages after a scoped package name', async () => {
+    await createProject(projectDir, {
+      'package.json': { name: '@acme/web-app', version: '1.0.0', type: 'module' },
+      'vovk.config.mjs': configFile({ composedClient: { prettifyClient: false } }),
+      '.vovk-schema/root.json': userSegmentSchema,
+    });
+
+    await runCLI(['generate', '--from', 'py', '--out', 'dist_python'], { cwd: projectDir });
+    await runCLI(['generate', '--from', 'rsPkg', '--out', 'dist_rust'], { cwd: projectDir });
+
+    assert.deepStrictEqual(await fs.readdir(path.join(projectDir, 'dist_python/src')), ['acme_web_app']);
+    assert.match(await read('dist_python/pyproject.toml'), /^name = "acme_web_app"$/m);
+    assert.match(await read('dist_rust/Cargo.toml'), /^name = "acme_web_app"$/m);
+  });
+
+  await it('Falls back to a package name when package.json has none', async () => {
+    await createProject(projectDir, {
+      'package.json': { private: true, type: 'module' },
+      'vovk.config.mjs': configFile({ composedClient: { prettifyClient: false } }),
+      '.vovk-schema/root.json': userSegmentSchema,
+    });
+
+    await runCLI(['generate', '--from', 'pyPkg', '--from', 'rsPkg', '--out', 'out'], { cwd: projectDir });
+
+    assert.match(await read('out/pyproject.toml'), /^name = "my_package_name"$/m);
+    assert.match(await read('out/Cargo.toml'), /^name = "my_package_name"$/m);
+  });
 });
