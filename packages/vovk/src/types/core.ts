@@ -113,6 +113,7 @@ export type RouteHandler = ((
   params: Record<string, string>
 ) => Response | Promise<Response> | Responder | Promise<Responder> | Iterable<unknown> | AsyncIterable<unknown>) & {
   _options?: DecoratorOptions;
+  _sourceMethod?: { wrapper?: RouteHandler };
 };
 
 export type ControllerStaticMethod<

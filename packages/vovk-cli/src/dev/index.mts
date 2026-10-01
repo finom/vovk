@@ -41,13 +41,14 @@ export class VovkDev {
 
   #schemaOut: string | null = null;
 
-  #devHttps: boolean;
+  #devHttps: boolean | null;
 
   #logLevel: LogLevelNames;
 
   constructor({ schemaOut, devHttps, logLevel }: Pick<DevOptions, 'schemaOut' | 'devHttps' | 'logLevel'>) {
     this.#schemaOut = schemaOut || null;
-    this.#devHttps = devHttps || false;
+    // null when the flag is omitted so config.devHttps can take effect
+    this.#devHttps = devHttps ?? null;
     this.#logLevel = logLevel || 'info';
   }
 
@@ -370,6 +371,14 @@ export class VovkDev {
 
     log.debug(`Handling received schema from ${formatLoggedSegmentName(segmentName)}`);
 
+    // the write path is built from segmentName, an http response must not name a different segment
+    if ((segmentSchema.segmentName ?? '') !== segmentName) {
+      log.error(
+        `Schema for ${formatLoggedSegmentName(segmentName)} reported a different segment name ${JSON.stringify(segmentSchema.segmentName)}, ignoring it`
+      );
+      return;
+    }
+
     const schemaOutAbsolutePath = path.resolve(cwd, this.#schemaOut ?? config.schemaOutDir);
     const segment = this.#segments.find((s) => s.segmentName === segmentName);
 
@@ -491,7 +500,7 @@ const env = process.env as VovkEnv;
 if (env.__VOVK_START_WATCHER_IN_STANDALONE_MODE__ === 'true') {
   void new VovkDev({
     schemaOut: env.__VOVK_SCHEMA_OUT_FLAG__ || undefined,
-    devHttps: env.__VOVK_DEV_HTTPS_FLAG__ === 'true',
+    devHttps: env.__VOVK_DEV_HTTPS_FLAG__ === 'true' || undefined,
     logLevel: env.__VOVK_LOG_LEVEL__,
   }).start({
     exit: env.__VOVK_EXIT__ === 'true',

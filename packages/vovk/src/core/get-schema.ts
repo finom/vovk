@@ -10,7 +10,6 @@ export async function getControllerSchema(
   const handlers = exposeValidation
     ? (controller._handlers ?? {})
     : Object.fromEntries(
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         Object.entries(controller._handlers ?? {}).map(([key, { validation: _v, ...value }]) => [key, value])
       );
 

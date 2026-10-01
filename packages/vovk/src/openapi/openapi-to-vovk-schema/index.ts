@@ -1,5 +1,6 @@
 import type {
   ComponentsObject,
+  ContentObject,
   OperationObject,
   ParameterObject,
   RequestBodyObject,
@@ -14,6 +15,36 @@ import type { ContentType } from '../../types/validation.js';
 import { applyComponentsSchemas } from './apply-components-schemas.js';
 import { inlineRefs } from './inline-refs.js';
 import { pruneComponentsSchemas } from './prune-components-schemas.js';
+
+// success body: 200/201, then other 2xx, then the 2XX wildcard
+// exact media type first, then +json suffix; `default` is the error shape, skip it
+function makeResponseSchemaPicker(operation: OperationObject) {
+  const responses = operation.responses ?? {};
+  const codes = Object.keys(responses);
+  const successCodes = [
+    ...['200', '201'].filter((code) => code in responses),
+    ...codes.filter((code) => /^2\d\d$/.test(code) && code !== '200' && code !== '201'),
+    ...codes.filter((code) => /^2xx$/i.test(code)),
+  ];
+  const essence = (mediaType: string) => mediaType.split(';')[0].trim().toLowerCase();
+
+  return (exact: string[], suffix?: string): VovkJSONSchemaBase | null => {
+    for (const code of successCodes) {
+      // ResponsesObject indexes to `any`, annotate to get typed media objects
+      const content: ContentObject | undefined = responses[code]?.content;
+      if (!content) continue;
+      for (const [mediaType, media] of Object.entries(content)) {
+        if (exact.includes(essence(mediaType)) && media?.schema) return media.schema as VovkJSONSchemaBase;
+      }
+      if (suffix) {
+        for (const [mediaType, media] of Object.entries(content)) {
+          if (essence(mediaType).endsWith(suffix) && media?.schema) return media.schema as VovkJSONSchemaBase;
+        }
+      }
+    }
+    return null;
+  };
+}
 
 function getTsTypeString(contentType: ContentType[], schema: VovkJSONSchemaBase): string {
   const tsTypes = new Set(
@@ -35,6 +66,18 @@ function getTsTypeString(contentType: ContentType[], schema: VovkJSONSchemaBase)
   return [...tsTypes].join(' | ') || schemaToTsType(schema);
 }
 
+// a spec is third party input, its x-tsType would land in the generated client as raw TS
+function stripXTsType<T>(value: T): T {
+  if (Array.isArray(value)) return value.map(stripXTsType) as T;
+  if (!value || typeof value !== 'object') return value;
+  const result: Record<string, unknown> = {};
+  for (const [key, val] of Object.entries(value)) {
+    if (key === 'x-tsType') continue;
+    result[key] = stripXTsType(val);
+  }
+  return result as T;
+}
+
 export function openAPIToVovkSchema({
   apiRoot,
   source: { object: openAPIObject },
@@ -46,6 +89,8 @@ export function openAPIToVovkSchema({
   segmentName,
 }: VovkOpenAPIMixinNormalized & { segmentName?: string }): VovkSchema {
   segmentName = segmentName ?? '';
+  // x-tsType is emitted verbatim into the generated client, only ours may reach it
+  openAPIObject = stripXTsType(openAPIObject);
   const forceApiRoot =
     apiRoot ||
     (openAPIObject.servers?.[0]?.url ??
@@ -157,16 +202,9 @@ export function openAPIToVovkSchema({
                   { anyOf: bodySchemas } as VovkJSONSchemaBase
                 ),
               };
-        const output =
-          operation.responses?.['200']?.content?.['application/json']?.schema ??
-          operation.responses?.['201']?.content?.['application/json']?.schema ??
-          null;
-        const iteration =
-          operation.responses?.['200']?.content?.['application/jsonl']?.schema ??
-          operation.responses?.['201']?.content?.['application/jsonl']?.schema ??
-          operation.responses?.['200']?.content?.['application/jsonlines']?.schema ??
-          operation.responses?.['201']?.content?.['application/jsonlines']?.schema ??
-          null;
+        const pickResponseSchema = makeResponseSchemaPicker(operation);
+        const output = pickResponseSchema(['application/json'], '+json');
+        const iteration = pickResponseSchema(['application/jsonl', 'application/jsonlines']);
 
         if (errorMessageKey) {
           operation['x-errorMessageKey'] = errorMessageKey;
@@ -207,10 +245,8 @@ export function openAPIToVovkSchema({
   });
 
   if (pruneComponents && noPathsOpenAPIObject.components?.schemas) {
-    // Reassign with fresh objects only — `noPathsOpenAPIObject` shares references with the
-    // caller's spec, so the original `components.schemas` must stay untouched. Walking the
-    // whole controllers tree (validation slots + raw operation objects) keeps every `$ref`
-    // a kept handler carries resolvable against the pruned meta.
+    // reassign with fresh objects only, the caller's spec shares references so its
+    // components.schemas must stay untouched; walking the whole controllers tree keeps every kept $ref resolvable
     segment.meta = {
       openAPIObject: {
         ...noPathsOpenAPIObject,

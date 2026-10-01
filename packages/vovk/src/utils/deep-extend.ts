@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 /*!
  * @description Recursive object extending
  * @author Viacheslav Lotsmanov <lotsmanov89@gmail.com>
@@ -38,6 +37,12 @@ function isSpecificValue(val: KnownAny): val is SpecificValue {
   return val instanceof Buffer || val instanceof Date || val instanceof RegExp;
 }
 
+// class instances like Headers or AbortSignal have no enumerable keys and must not be fake-cloned into {}
+function isPlainObject(val: object): boolean {
+  const proto = Object.getPrototypeOf(val);
+  return proto === Object.prototype || proto === null;
+}
+
 function cloneSpecificValue(val: SpecificValue): SpecificValue {
   if (val instanceof Buffer) {
     const x = Buffer.alloc ? Buffer.alloc(val.length) : Buffer.from(val);
@@ -63,6 +68,8 @@ function deepCloneArray<T = KnownAny>(arr: T[]): T[] {
         clone[index] = deepCloneArray(item) as T;
       } else if (isSpecificValue(item)) {
         clone[index] = cloneSpecificValue(item) as T;
+      } else if (!isPlainObject(item)) {
+        clone[index] = item;
       } else {
         clone[index] = deepExtend({}, item) as T;
       }
@@ -77,15 +84,8 @@ function safeGetProperty<T extends object>(object: T, property: PropertyKey): Kn
   return property === '__proto__' ? undefined : (object as KnownAny)[property];
 }
 
-/**
- * Extending object that entered in first argument.
- *
- * Returns extended object or false if have no target object or incorrect type.
- *
- * If you wish to clone source object (without modify it), just use empty new
- * object as first argument, like this:
- *   deepExtend({}, yourObj_1, [yourObj_N]);
- */
+// deep-extends the first argument in place, returns it (or false if target is not an object)
+// to clone without modifying the source: deepExtend({}, yourObj)
 function deepExtend<T extends object>(...args: [T, ...Partial<T>[]]): T;
 function deepExtend<T extends object, U extends object>(target: T, source: U): T & U;
 function deepExtend<T extends object, U extends object, V extends object>(target: T, source1: U, source2: V): T & U & V;
@@ -140,8 +140,13 @@ function deepExtend(...args: KnownAny[]): KnownAny {
         target[key] = cloneSpecificValue(val);
         return;
       }
-      // overwrite by new value if source isn't object or array
-      else if (typeof src !== 'object' || src === null || Array.isArray(src)) {
+      // pass class instances by reference, cloning by enumerable keys would produce {}
+      else if (!isPlainObject(val)) {
+        target[key] = val;
+        return;
+      }
+      // overwrite by new value if source isn't a plain object or is an array
+      else if (typeof src !== 'object' || src === null || Array.isArray(src) || !isPlainObject(src)) {
         target[key] = deepExtend({}, val);
         return;
       }

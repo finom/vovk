@@ -23,5 +23,5 @@ export const <%= rpcModuleName %> = createRPC<<%= segment.segmentType === 'mixin
 }) %>
 export { schema };
 <% if (t.hasMixins) { %>
-export { Mixins };
+export type { Mixins };
 <% } %>

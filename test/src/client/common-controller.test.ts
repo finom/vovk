@@ -4,16 +4,16 @@ import noop from 'lodash/noop.js';
 import omit from 'lodash/omit.js';
 import { HttpStatus, type VovkBody, type VovkInput, type VovkParams, type VovkQuery, type VovkReturnType } from 'vovk';
 import type { VovkErrorResponse, VovkHandlerSchema } from 'vovk/internal';
-import { CommonControllerDifferentFetcherRPC, CommonControllerRPC } from 'vovk-client';
 import { CommonControllerRPC as BundleClientCommonControllerRPC } from '../../other-compiled-test-sources/bundle/index.mjs';
 import { CommonControllerRPC as SegmentClientCommonControllerRPC } from '../../other-compiled-test-sources/segmented-client/foo/client/index.ts';
+import { CommonControllerDifferentFetcherRPC, CommonControllerRPC } from '../generated-client/index.ts';
 import { fetcher } from '../lib/fetcher.ts';
 import { NESTED_QUERY_EXAMPLE } from '../lib.ts';
 import type CommonController from './common-controller.ts';
 
 const apiRoot = `http://localhost:${process.env.PORT}/api`;
 
-describe('Client with vovk-client', () => {
+describe('Client with composed RPC client', () => {
   it(`Should handle object literals`, async () => {
     const result = await CommonControllerRPC.getHelloWorldObjectLiteral({
       apiRoot,
@@ -174,6 +174,57 @@ describe('Client with vovk-client', () => {
     });
   });
 
+  it('should deep-merge options of chained withDefaults calls', async () => {
+    const rpcWithDefaults = CommonControllerRPC.withDefaults({
+      apiRoot,
+      init: { headers: { 'x-vovk-test': 'world' } },
+    }).withDefaults({
+      init: { headers: { 'x-vovk-another-header': 'another-value' } },
+    });
+
+    const result = await rpcWithDefaults.getHelloWorldHeaders();
+
+    deepStrictEqual(result, {
+      'x-vovk-test': 'world',
+      'x-vovk-another-header': 'another-value',
+    });
+  });
+
+  it('Keeps Headers instances passed via init.headers', async () => {
+    const perCall = await CommonControllerRPC.getHelloWorldHeaders({
+      apiRoot,
+      init: { headers: new Headers({ 'x-vovk-test': 'world' }) },
+    });
+
+    deepStrictEqual(perCall, { 'x-vovk-test': 'world' });
+
+    const viaDefaults = await CommonControllerRPC.withDefaults({
+      apiRoot,
+      init: { headers: new Headers({ 'x-vovk-test': 'world' }) },
+    }).getHelloWorldHeaders();
+
+    deepStrictEqual(viaDefaults, { 'x-vovk-test': 'world' });
+  });
+
+  it('Aborts the request when init.signal is aborted', async () => {
+    const abortController = new AbortController();
+    abortController.abort();
+
+    let error: Error | null = null;
+
+    try {
+      await CommonControllerRPC.getHelloWorldObjectLiteralPromise({
+        apiRoot,
+        init: { signal: abortController.signal },
+      });
+    } catch (e) {
+      error = e as Error;
+    }
+
+    ok(error, 'Expected the request to be aborted');
+    ok(/abort/i.test(error.message));
+  });
+
   it(`Should handle simple requests and use empty generic`, async () => {
     const result = await CommonControllerRPC.getHelloWorldAndEmptyGeneric();
     deepStrictEqual(result satisfies { hello: string | null }, { hello: 'world' });
@@ -182,6 +233,59 @@ describe('Client with vovk-client', () => {
   it(`Should handle simple requests with default options`, async () => {
     const result = await CommonControllerRPC.getHelloWorldObjectLiteralPromise();
     deepStrictEqual(result satisfies { hello: string }, { hello: 'world' });
+  });
+
+  it('Encodes path params so a value cannot escape its segment', () => {
+    const getURL = CommonControllerRPC.getWithParams.getURL as (options: {
+      apiRoot: string;
+      params: Record<string, string>;
+    }) => string;
+
+    strictEqual(
+      getURL({ apiRoot, params: { hello: '../../internal/admin?x=1#y' } }),
+      `${apiRoot}/foo/client/common/with-params/..%2F..%2Finternal%2Fadmin%3Fx%3D1%23y`
+    );
+
+    // "$&" must stay literal instead of acting as a replacement pattern
+    strictEqual(getURL({ apiRoot, params: { hello: '$&' } }), `${apiRoot}/foo/client/common/with-params/%24%26`);
+  });
+
+  it('Does not reuse a route match across http methods', async () => {
+    // GET runs first and used to poison the shared route match cache for the same concrete path
+    const getResult = await CommonControllerRPC.getSameShape({ params: { getParam: 'x' } });
+    deepStrictEqual(getResult, { method: 'GET', params: { getParam: 'x' } });
+
+    const postResult = await CommonControllerRPC.postSameShape({ params: { postParam: 'x' } });
+    deepStrictEqual(postResult, { method: 'POST', params: { postParam: 'x' } });
+  });
+
+  it('Returns 404 for prototype member paths instead of crashing', async () => {
+    for (const path of ['toString', 'constructor', 'valueOf', 'hasOwnProperty']) {
+      const response = await fetch(`${apiRoot}/foo/client/${path}`);
+      strictEqual(response.status, 404, path);
+      const { isError } = (await response.json()) as VovkErrorResponse;
+      strictEqual(isError, true, path);
+    }
+  });
+
+  it('Responds with 400 when the x-meta header is not valid JSON', async () => {
+    const response = await fetch(`${apiRoot}/foo/client/common/get-hello-world-object-literal`, {
+      headers: { 'x-meta': 'not-json' },
+    });
+
+    strictEqual(response.status, 400);
+    const { isError, message } = (await response.json()) as VovkErrorResponse;
+    strictEqual(isError, true);
+    strictEqual(message, 'Invalid x-meta request header');
+  });
+
+  it('Treats an encoded slash as part of the param, not as a separator', async () => {
+    // %2F must not let a 2 segment URL reach the 3 segment route
+    const result = await CommonControllerRPC.getSlashyParam({ params: { name: 'deep/route' } });
+    deepStrictEqual(result, { handler: 'param', params: { name: 'deep/route' } });
+
+    const deep = await CommonControllerRPC.getSlashyDeep();
+    deepStrictEqual(deep, { handler: 'deep' });
   });
 
   it('Should handle requests with params', async () => {
@@ -299,6 +403,18 @@ describe('Client with vovk-client', () => {
     });
   });
 
+  it('Sends non-Latin1 meta values without crashing', async () => {
+    const body = { isBody: true } as const;
+    const query = { simpleQueryParam: 'queryValue', array1: ['foo'], array2: ['bar', 'baz'] } as const;
+    const result = await CommonControllerRPC.postWithBodyAndQueryUsingReqVovk({
+      body,
+      query,
+      meta: { clientMeta: true, note: 'привіт 🐺' },
+    });
+
+    deepStrictEqual(result.meta.xMetaHeader, { clientMeta: true, note: 'привіт 🐺' });
+  });
+
   it('Should handle nested queries', async () => {
     const { query, search } = await CommonControllerRPC.getNestedQuery({ query: NESTED_QUERY_EXAMPLE });
 
@@ -311,6 +427,51 @@ describe('Client with vovk-client', () => {
       search,
       '?x=xx&y[0]=yy&y[1]=uu&z[f]=x&z[u][0]=uu&z[u][1]=xx&z[d][x]=ee&z[d][arrOfObjects][0][foo]=bar&z[d][arrOfObjects][0][nestedArr][0]=one&z[d][arrOfObjects][0][nestedArr][1]=two&z[d][arrOfObjects][0][nestedArr][2]=three&z[d][arrOfObjects][1][foo]=baz&z[d][arrOfObjects][1][nestedObj][deepKey]=deepValue'
     );
+  });
+
+  it('Parses query values that contain unencoded "="', async () => {
+    // raw fetch like curl or an HTML form, the RPC client percent-encodes "=" so it cannot reproduce this
+    const getURL = CommonControllerRPC.getNestedQuery.getURL as (options: { apiRoot: string }) => string;
+    const endpoint = getURL({ apiRoot });
+    const response = await fetch(`${endpoint}?x=YWJjZA==&y[0]=a=b=c&z[f]=eyJhbGciOiJIUzI1NiJ9.payload.sig==`);
+
+    strictEqual(response.status, 200);
+
+    const { query } = (await response.json()) as { query: unknown };
+
+    deepStrictEqual(query, {
+      x: 'YWJjZA==',
+      y: ['a=b=c'],
+      z: { f: 'eyJhbGciOiJIUzI1NiJ9.payload.sig==' },
+    });
+  });
+
+  it('Drops query keys that would reach Object.prototype', async () => {
+    const getURL = CommonControllerRPC.getNestedQuery.getURL as (options: { apiRoot: string }) => string;
+    const endpoint = getURL({ apiRoot });
+    const response = await fetch(`${endpoint}?__proto__[polluted]=yes&constructor[prototype][polluted]=yes&safe=ok`);
+
+    strictEqual(response.status, 200);
+
+    const { query } = (await response.json()) as { query: Record<string, unknown> };
+
+    deepStrictEqual(query, { safe: 'ok' });
+  });
+
+  it('Does not let a query index size a huge array', async () => {
+    const getURL = CommonControllerRPC.getNestedQuery.getURL as (options: { apiRoot: string }) => string;
+    const endpoint = getURL({ apiRoot });
+    // a bare index and an index appended to an existing array both used to allocate millions of holes
+    const response = await fetch(`${endpoint}?big[10000000]=1&mixed[0]=x&mixed[10000000]=y`);
+
+    strictEqual(response.status, 200);
+
+    const { query } = (await response.json()) as { query: Record<string, unknown> };
+
+    deepStrictEqual(query, {
+      big: { '10000000': '1' },
+      mixed: { '0': 'x', '10000000': 'y' },
+    });
   });
 
   it('Handles JSONL response', async () => {

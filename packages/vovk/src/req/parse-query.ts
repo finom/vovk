@@ -1,12 +1,9 @@
 import type { KnownAny } from '../types/utils.js';
 
-/**
- * Parse a bracket-based key (e.g. "z[d][0][x]" or "arr[]")
- * into an array of path segments (strings or special push-markers).
- *
- * Example: "z[d][0][x]" => ["z", "d", "0", "x"]
- * Example: "arr[]"      => ["arr", "" ]  // "" indicates "push" onto array
- */
+// segments that would let a query string reach Object.prototype, such pairs are dropped like qs does
+const FORBIDDEN_KEYS = new Set(['__proto__', 'constructor', 'prototype']);
+
+// bracket key to path segments: "z[d][0][x]" => ["z", "d", "0", "x"], "arr[]" => ["arr", ""] ("" means push)
 function parseKey(key: string): string[] {
   // The first segment is everything up to the first '[' (or the entire key if no '[')
   const segments: string[] = [];
@@ -31,14 +28,35 @@ function parseKey(key: string): string[] {
   return segments;
 }
 
-/**
- * Recursively set a value in a nested object/array, given a path of segments.
- * - If segment is numeric => treat as array index
- * - If segment is empty "" => push to array
- * - Else => object property
- */
+// past this an index becomes an object key, like qs does, so a short query cannot size a huge array
+const ARRAY_LIMIT = 100;
+
+// digits only, Number() would take "-1" and "1e2" and then drop the value on an array
+function isArrayIndex(segment: string): boolean {
+  return /^\d+$/.test(segment) && Number(segment) <= ARRAY_LIMIT;
+}
+
+// which container the next segment needs, "" is a push and so wants an array too
+function wantsArray(segment: unknown): boolean {
+  return typeof segment === 'string' && (segment === '' || isArrayIndex(segment));
+}
+
+// sets a value at a segment path: numeric => array index, "" => array push, else object property
 function setValue(obj: Record<string, unknown>, path: string[], value: unknown): void {
   let current: KnownAny = obj;
+  let parent: KnownAny = null;
+  let parentKey: string | number = '';
+
+  // an array only keeps numeric indices, any other key is dropped on serialization,
+  // so replace the array with an object before setting one
+  const demoteArray = () => {
+    if (!Array.isArray(current)) return;
+    const replacement: Record<string, unknown> = {};
+    const source = current as unknown as Record<string, unknown>;
+    for (const key of Object.keys(source)) replacement[key] = source[key];
+    if (parent) parent[parentKey] = replacement;
+    current = replacement;
+  };
 
   for (let i = 0; i < path.length; i++) {
     const segment = path[i];
@@ -51,7 +69,7 @@ function setValue(obj: Record<string, unknown>, path: string[], value: unknown):
           current = [];
         }
         current.push(value);
-      } else if (!Number.isNaN(Number(segment))) {
+      } else if (isArrayIndex(segment)) {
         // Numeric segment => array index
         const idx = Number(segment);
         if (!Array.isArray(current)) {
@@ -60,6 +78,7 @@ function setValue(obj: Record<string, unknown>, path: string[], value: unknown):
         current[idx] = value;
       } else {
         // Object property
+        demoteArray();
         current[segment] = value;
       }
     } else {
@@ -76,8 +95,8 @@ function setValue(obj: Record<string, unknown>, path: string[], value: unknown):
         // for the next segment. We'll push something and move current to that.
         if (current.length === 0) {
           // nothing in array yet
-          current.push(typeof nextSegment === 'string' && !Number.isNaN(Number(nextSegment)) ? [] : {});
-        } else if (typeof nextSegment === 'string' && !Number.isNaN(Number(nextSegment))) {
+          current.push(wantsArray(nextSegment) ? [] : {});
+        } else if (wantsArray(nextSegment)) {
           // next is numeric => we want an array
           if (!Array.isArray(current[current.length - 1])) {
             current[current.length - 1] = [];
@@ -88,8 +107,10 @@ function setValue(obj: Record<string, unknown>, path: string[], value: unknown):
             current[current.length - 1] = {};
           }
         }
+        parent = current;
+        parentKey = current.length - 1;
         current = current[current.length - 1];
-      } else if (!Number.isNaN(Number(segment))) {
+      } else if (isArrayIndex(segment)) {
         // segment is numeric => array index
         const idx = Number(segment);
         if (!Array.isArray(current)) {
@@ -97,44 +118,28 @@ function setValue(obj: Record<string, unknown>, path: string[], value: unknown):
         }
         if (current[idx] === undefined) {
           // Create placeholder for next segment
-          current[idx] = typeof nextSegment === 'string' && !Number.isNaN(Number(nextSegment)) ? [] : {};
+          current[idx] = wantsArray(nextSegment) ? [] : {};
         }
+        parent = current;
+        parentKey = idx;
         current = current[idx];
       } else {
         // segment is an object key
+        demoteArray();
         if (current[segment] === undefined) {
           // Create placeholder
-          current[segment] = typeof nextSegment === 'string' && !Number.isNaN(Number(nextSegment)) ? [] : {};
+          current[segment] = wantsArray(nextSegment) ? [] : {};
         }
+        parent = current;
+        parentKey = segment;
         current = current[segment];
       }
     }
   }
 }
 
-/**
- * Deserialize a bracket-based query string into an object.
- *
- * Supports:
- *   - Key/value pairs with nested brackets (e.g. "a[b][0]=value")
- *   - Arrays with empty bracket (e.g. "arr[]=1&arr[]=2")
- *   - Mixed arrays of objects, etc.
- *
- * @example
- *   parseQuery("x=xx&y[0]=yy&y[1]=uu&z[f]=x&z[u][0]=uu&z[u][1]=xx&z[d][x]=ee")
- *   => {
- *        x: "xx",
- *        y: ["yy", "uu"],
- *        z: {
- *          f: "x",
- *          u: ["uu", "xx"],
- *          d: { x: "ee" }
- *        }
- *      }
- *
- * @param queryString - The raw query string (e.g. location.search.slice(1))
- * @returns           - A nested object representing the query params
- */
+// bracket query string to a nested object, supports "a[b][0]=value", "arr[]=1&arr[]=2" etc,
+// e.g. "x=xx&y[0]=yy&z[f]=x&z[d][x]=ee" => { x: "xx", y: ["yy"], z: { f: "x", d: { x: "ee" } } }
 export function parseQuery(queryString: string): Record<string, unknown> {
   const result: Record<string, unknown> = {};
 
@@ -146,13 +151,18 @@ export function parseQuery(queryString: string): Record<string, unknown> {
     .split('&');
 
   for (const pair of pairs) {
-    const [rawKey, rawVal = ''] = pair.split('=');
+    // split at the first "=" only, unencoded "=" is legal inside values (base64, JWTs, signatures)
+    const eqIndex = pair.indexOf('=');
+    const rawKey = eqIndex === -1 ? pair : pair.slice(0, eqIndex);
+    const rawVal = eqIndex === -1 ? '' : pair.slice(eqIndex + 1);
 
     const decodedKey = decodeURIComponent(rawKey);
     const decodedVal = decodeURIComponent(rawVal);
 
     // Parse bracket notation
     const pathSegments = parseKey(decodedKey);
+
+    if (pathSegments.some((segment) => FORBIDDEN_KEYS.has(segment))) continue;
 
     // Insert into the result object
     setValue(result, pathSegments, decodedVal);

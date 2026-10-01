@@ -1,6 +1,7 @@
 import { reqMeta } from '../req/req-meta.js';
 import type { VovkRequest } from '../types/request.js';
-import type { VovkTool } from '../types/tools.js';
+import type { StandardToolV0 } from '../types/standard-tool.js';
+import type { KnownAny } from '../types/utils.js';
 
 export type MCPModelOutput = {
   content: [
@@ -61,7 +62,7 @@ async function responseToMCP(res: Response): Promise<MCPModelOutput> {
 
 type ToModelOutputMCPFn = <TOutput>(
   result: TOutput | Error,
-  tool: VovkTool,
+  tool: StandardToolV0<KnownAny, KnownAny, KnownAny>,
   req: Pick<VovkRequest, 'vovk'> | null
 ) => Promise<MCPModelOutput>;
 

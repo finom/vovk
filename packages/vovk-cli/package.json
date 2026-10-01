@@ -1,11 +1,12 @@
 {
   "name": "vovk-cli",
-  "version": "0.2.0",
+  "version": "0.3.0-beta.0",
   "description": "CLI tool for managing Vovk.ts projects",
   "files": [
     "dist",
     "client-templates",
-    "module-templates"
+    "module-templates",
+    "CHANGELOG.md"
   ],
   "bin": {
     "vovk": "./dist/index.mjs"
@@ -18,10 +19,10 @@
     "build": "rm -rf dist tsconfig.build.tsbuildinfo && tsc -P tsconfig.build.json",
     "postbuild": "chmod +x ./dist/index.mjs",
     "pre-test": "npm run build && npm run clear-test-cache",
-    "test-only": "npm run pre-test && NODE_ENV=test node --experimental-transform-types --experimental-strip-types --experimental-vm-modules --test --test-only test/spec/**/*.mts",
-    "test": "npm run pre-test && NODE_ENV=test node --experimental-transform-types --experimental-strip-types --experimental-vm-modules --test --test-concurrency=1 test/spec/**/*.mts",
+    "test-only": "npm run pre-test && NODE_ENV=test node --experimental-strip-types --experimental-vm-modules --test --test-only test/spec/**/*.mts",
+    "test": "npm run pre-test && NODE_ENV=test node --experimental-strip-types --experimental-vm-modules --test --test-concurrency=1 test/spec/**/*.mts",
     "tsc": "tsc --noEmit",
-    "ncu": "npm-check-updates -u -x commander,node-pty,tsdown",
+    "ncu": "npm-check-updates -u -x commander,tsdown",
     "npm-publish": "npm publish",
     "clear-test-cache": "rm -rf ./tmp_*"
   },
@@ -42,37 +43,30 @@
   },
   "homepage": "https://vovk.dev",
   "peerDependencies": {
-    "vovk": ">=3.0.0"
-  },
-  "optionalDependencies": {
-    "@rolldown/binding-linux-x64-gnu": "1.0.0-rc.12"
+    "vovk": ">=3.0.0 || ^4.0.0-beta.0"
   },
   "dependencies": {
     "@iarna/toml": "^2.2.5",
     "@inquirer/prompts": "^8.5.2",
     "@npmcli/package-json": "^8.0.0",
     "@types/json-schema": "^7.0.15",
-    "@types/lodash": "^4.17.24",
-    "chalk": "^5.6.2",
+    "@types/lodash": "^4.17.25",
+    "chalk": "^6.0.0",
     "chokidar": "^5.0.0",
-    "clone-deep": "^4.0.1",
     "commander": "^13.1.0",
-    "concurrently": "^10.0.3",
+    "concurrently": "^10.0.4",
     "dotenv": "^17.4.2",
     "ejs": "^6.0.1",
-    "get-tsconfig": "^4.14.0",
+    "get-tsconfig": "^4.14.1",
     "glob": "^13.0.6",
     "gray-matter": "^4.0.3",
-    "inflection": "^3.0.2",
     "jsonc-parser": "^3.3.1",
     "lodash": "^4.18.1",
     "loglevel": "^1.9.2",
     "pluralize": "^8.0.0",
-    "prettier": "^3.8.4",
-    "tar-stream": "^3.2.0",
     "ts-morph": "^28.0.0",
-    "type-fest": "^5.7.0",
-    "undici": "^8.4.1",
+    "type-fest": "^5.8.0",
+    "undici": "^8.9.0",
     "yaml": "^2.9.0"
   },
   "devDependencies": {
@@ -81,13 +75,12 @@
     "@types/js-yaml": "^4.0.9",
     "@types/npmcli__package-json": "^4.0.4",
     "@types/pluralize": "^0.0.33",
-    "@types/tar-stream": "^3.1.4",
     "concat-stream": "^2.0.0",
-    "create-next-app": "^16.2.9",
+    "create-next-app": "^16.2.12",
     "http-server": "^14.1.1",
-    "node-pty": "0.10.1",
-    "openapi3-ts": "^4.6.0",
-    "tsdown": "0.21.7",
+    "node-pty": "1.1.0",
+    "openapi3-ts": "^4.6.1",
+    "tsdown": "0.22.14",
     "zod": "^4.4.3"
   }
 }

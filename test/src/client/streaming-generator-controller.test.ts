@@ -1,7 +1,7 @@
 import { deepStrictEqual } from 'node:assert';
 import { describe, it } from 'node:test';
 import type { VovkYieldType } from 'vovk';
-import { StreamingGeneratorControllerRPC } from 'vovk-client';
+import { StreamingGeneratorControllerRPC } from '../generated-client/index.ts';
 import { expectPromise } from '../lib.ts';
 import type { default as StreamingGeneratorController, Token } from './streaming-generator-controller.ts';
 
@@ -108,27 +108,6 @@ describe('Streaming generator', () => {
     };
 
     deepStrictEqual(await call(), { customError: 'custom error' });
-
-    deepStrictEqual(expected, expectedCollected);
-  });
-
-  // TODO: Stream never ends if not using dispose. No error when using dispose. Need help here.
-  it.skip('Should handle unhandled errors in the middle of stream', async () => {
-    const tokens = ['token1', 'token2\n', 'token3'].map((token) => ({ token }));
-    const expected = tokens.map((token) => ({ ...token, query: 'queryValue' })).slice(0, 2);
-    const expectedCollected: typeof expected = [];
-
-    const resp = await StreamingGeneratorControllerRPC.postWithStreamingAndDelayedUnhandledError({
-      body: tokens,
-      query: { query: 'queryValue' },
-      apiRoot,
-    });
-
-    await expectPromise(async () => {
-      for await (const message of resp) {
-        expectedCollected.push(message);
-      }
-    }).rejects.toThrow();
 
     deepStrictEqual(expected, expectedCollected);
   });

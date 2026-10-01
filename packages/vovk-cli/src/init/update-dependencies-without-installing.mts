@@ -13,7 +13,6 @@ const packagesRoot = path.resolve(import.meta.dirname, '../../..');
 const localPackageDirs: Record<string, string> = {
   vovk: 'vovk',
   'vovk-cli': 'vovk-cli',
-  'vovk-client': 'vovk-client',
   'vovk-ajv': 'vovk-ajv',
   'vovk-python': 'vovk-python',
   'vovk-rust': 'vovk-rust',

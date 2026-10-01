@@ -2,7 +2,7 @@ import type { VovkErrorResponse } from '../types/core.js';
 import type { HttpStatus } from '../types/enums.js';
 
 /**
- * Represents an HTTP exception with a status code and message.
+ * HTTP exception with a status code and message.
  * @example
  * ```ts
  * throw new HttpException(HttpStatus.BAD_REQUEST, 'Invalid request data');

@@ -45,6 +45,22 @@
           "path": "with-params/{hello}",
           "httpMethod": "GET"
         },
+        "getSameShape": {
+          "path": "same-shape/{getParam}",
+          "httpMethod": "GET"
+        },
+        "postSameShape": {
+          "path": "same-shape/{postParam}",
+          "httpMethod": "POST"
+        },
+        "getSlashyParam": {
+          "path": "slashy/{name}",
+          "httpMethod": "GET"
+        },
+        "getSlashyDeep": {
+          "path": "slashy/deep/route",
+          "httpMethod": "GET"
+        },
         "postWithAll": {
           "path": "with-all/{hello}",
           "httpMethod": "POST"
@@ -86,6 +102,10 @@
         },
         "postWithStreamingAndImmediateError": {
           "path": "post-with-streaming-and-immediate-error",
+          "httpMethod": "POST"
+        },
+        "postWithUnawaitedSends": {
+          "path": "post-with-unawaited-sends",
           "httpMethod": "POST"
         },
         "postWithStreamingAndDelayedError": {
@@ -491,6 +511,43 @@
             }
           },
           "path": "handle-output",
+          "httpMethod": "GET"
+        },
+        "handleFalsyOutput": {
+          "validation": {
+            "query": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "object",
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "enum": [
+                    "boolean",
+                    "number",
+                    "string"
+                  ]
+                }
+              },
+              "required": [
+                "type"
+              ]
+            },
+            "output": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "anyOf": [
+                {
+                  "type": "boolean"
+                },
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "path": "handle-falsy-output",
           "httpMethod": "GET"
         },
         "handleStream": {
@@ -1668,6 +1725,42 @@
             }
           },
           "path": "handle-wildcard-content-type-with-json-body",
+          "httpMethod": "POST"
+        },
+        "handleContentTypeWithoutBody": {
+          "validation": {
+            "output": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "object",
+              "properties": {
+                "ok": {
+                  "type": "boolean"
+                }
+              },
+              "required": [
+                "ok"
+              ]
+            }
+          },
+          "path": "handle-content-type-without-body",
+          "httpMethod": "POST"
+        },
+        "handleContentTypeDisabled": {
+          "validation": {
+            "output": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "object",
+              "properties": {
+                "ok": {
+                  "type": "boolean"
+                }
+              },
+              "required": [
+                "ok"
+              ]
+            }
+          },
+          "path": "handle-content-type-disabled",
           "httpMethod": "POST"
         },
         "handleImageWildcard": {

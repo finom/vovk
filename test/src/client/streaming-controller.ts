@@ -35,6 +35,22 @@ export default class StreamingController {
   }
 
   @post.auto()
+  static async postWithUnawaitedSends(req: VovkRequest<Omit<Token, 'query'>[], { query: 'queryValue' }>) {
+    const body = await req.json();
+    const query = req.nextUrl.searchParams.get('query');
+
+    const response = new JSONLinesResponder<Token>(req);
+
+    // the documented pattern, no awaits before close
+    for (const token of body) {
+      void response.send({ ...token, query });
+    }
+    void response.close();
+
+    return response;
+  }
+
+  @post.auto()
   static async postWithStreamingAndDelayedError(req: VovkRequest<Omit<Token, 'query'>[], { query: 'queryValue' }>) {
     const body = await req.json();
     const query = req.nextUrl.searchParams.get('query');

@@ -99,7 +99,7 @@ export type VovkEnv = {
   VOVK_API_ENTRY_POINT?: string;
   __VOVK_START_WATCHER_IN_STANDALONE_MODE__?: 'true';
   __VOVK_SCHEMA_OUT_FLAG__?: string;
-  __VOVK_DEV_HTTPS_FLAG__?: 'true' | 'false';
+  __VOVK_DEV_HTTPS_FLAG__?: 'true' | '';
   __VOVK_EXIT__?: 'true' | 'false';
   __VOVK_LOG_LEVEL__?: LogLevelNames;
 };

@@ -69,23 +69,7 @@ export function diffControllers<T extends VovkSegmentSchema['controllers']>(oldI
   return { added, removed, handlers: handlersDiff };
 }
 
-/**
-example output:
-{
-  controllers: {
-    added: ["ControllerC"],
-    removed: ["ControllerB"],
-    handlers: [
-      {
-        nameOfClass: "ControllerA",
-        added: ["handlerF"],
-        removed: [],
-        changed: ["handlerD"]
-      }
-    ]
-  }
-}
-*/
+// returns e.g. { controllers: { added: [...], removed: [...], handlers: [{ nameOfClass, added, removed, changed }] } }
 export function diffSegmentSchema(oldJson: VovkSegmentSchema, newJson: VovkSegmentSchema): DiffResult {
   return {
     controllers: diffControllers<VovkSegmentSchema['controllers']>(

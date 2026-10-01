@@ -19,13 +19,10 @@ export function applyComponentsSchemas(
   schema: VovkJSONSchemaBase,
   components: ComponentsObject['schemas'],
   mixinName: string,
-  /**
-   * true (default): embed the ref closure in `$defs` (self-contained — for AJV + Rust).
-   * false: keep `#/components/schemas/X`, emit no `$defs` (response slots, typed via
-   * `x-tsType`) — avoids the per-handler dup that overflows JSON.stringify on big specs.
-   */
+  // true (default): embed the ref closure in `$defs`, self-contained (AJV + Rust);
+  // false: keep `#/components/schemas/X` refs, no `$defs` (avoids the per-handler dup that overflows big specs)
   emitDefs = true
-): VovkJSONSchemaBase | VovkJSONSchemaBase[] {
+): VovkJSONSchemaBase {
   const key = 'components/schemas';
   if (!components || !Object.keys(components).length) return schema;
 
@@ -90,14 +87,12 @@ export function applyComponentsSchemas(
   }
 
   // Process the main schema
-  return processSchema(result);
+  // arrays only come from recursion, the top level is always an object
+  return processSchema(result) as VovkJSONSchemaBase;
 }
 
-/**
- * Re-attach a response slot's `$defs` closure at render time, for generators that
- * resolve `$ref` against a self-contained schema (Rust). Pulls components from the
- * segment's shared meta → identical to the `emitDefs=true` slot. No-op for non-mixin.
- */
+// re-attaches a response slot's `$defs` closure at render time (Rust needs self-contained schemas);
+// pulls components from the segment's shared meta, no-op for non-mixin
 export function reattachMixinDefs(
   slot: VovkJSONSchemaBase | undefined,
   segment: {
@@ -105,7 +100,7 @@ export function reattachMixinDefs(
     segmentName: string;
     meta?: { openAPIObject?: { components?: ComponentsObject } };
   }
-): VovkJSONSchemaBase | VovkJSONSchemaBase[] | undefined {
+): VovkJSONSchemaBase | undefined {
   if (!slot || segment?.segmentType !== 'mixin') return slot;
   const components = segment.meta?.openAPIObject?.components?.schemas;
   if (!components) return slot;
