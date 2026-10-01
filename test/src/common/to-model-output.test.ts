@@ -76,6 +76,11 @@ describe('ToModelOutput error messages in production', () => {
     });
   });
 
+  it('Hides the message of a third-party error that carries a statusCode', async () => {
+    const sdkError = Object.assign(new Error('Invalid API Key provided: sk_live_123'), { statusCode: 401 });
+    deepStrictEqual(await ToModelOutput.DEFAULT(sdkError, tool, null), { error: 'Internal server error' });
+  });
+
   it('Keeps the message of an HttpException', async () => {
     deepStrictEqual(await ToModelOutput.DEFAULT(expected, tool, null), { error: 'Thing 1 is not found' });
     deepStrictEqual(await ToModelOutput.MCP(expected, tool, null), {
