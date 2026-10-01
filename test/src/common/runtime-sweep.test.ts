@@ -2,6 +2,7 @@ import { deepStrictEqual, ok, rejects, strictEqual } from 'node:assert';
 import { describe, it } from 'node:test';
 import { forbidden, redirect, unauthorized } from 'next/dist/client/components/navigation.react-server.js';
 import {
+  decorate,
   del,
   get,
   HttpException,
@@ -11,6 +12,7 @@ import {
   multitenant,
   patch,
   post,
+  prefix,
   procedure,
   type VovkRequest,
 } from 'vovk';
@@ -365,6 +367,28 @@ describe('Runtime sweep', () => {
 
       strictEqual(response.status, 200);
       deepStrictEqual(await response.json(), { 'user-id': '42' });
+    });
+
+    it('Serves the routes a decorate() controller inherits over two levels in any controller order', async () => {
+      class GrandparentController {
+        static a = decorate(get('a')).handle(async () => 'a');
+      }
+      class ParentController extends GrandparentController {
+        static b = decorate(get('b')).handle(async () => 'b');
+      }
+      class ChildController extends ParentController {
+        static c = decorate(get('c')).handle(async () => 'c');
+      }
+      prefix('child')(ChildController);
+      // the child comes first
+      const handlers = initSegment({
+        segmentName: 'inheritance',
+        controllers: { ChildController, ParentController, GrandparentController },
+      });
+
+      for (const path of ['child/a', 'child/b', 'child/c']) {
+        strictEqual((await call(handlers, 'GET', path)).status, 200, path);
+      }
     });
 
     it('Finds the catch-all under a dynamic parent folder', async () => {

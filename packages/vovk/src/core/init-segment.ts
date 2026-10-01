@@ -21,13 +21,13 @@ export const initSegment = (options: {
   const controllerEntries = Object.entries(options.controllers ?? {}) as [string, VovkController][];
   const controllerSet = new Set(controllerEntries.map(([, c]) => c));
 
-  // Sort so parent controllers are initialized before their children
-  controllerEntries.sort(([, a], [, b]) => {
-    return (
-      Number(controllerSet.has(Object.getPrototypeOf(a) as VovkController)) -
-      Number(controllerSet.has(Object.getPrototypeOf(b) as VovkController))
-    );
-  });
+  // ancestors first, so a controller copies the routes of a parent that already has its own parent's
+  const getDepth = (controller: object) => {
+    let depth = 0;
+    for (let parent = Object.getPrototypeOf(controller); parent; parent = Object.getPrototypeOf(parent)) depth++;
+    return depth;
+  };
+  controllerEntries.sort(([, a], [, b]) => getDepth(a) - getDepth(b));
 
   for (const [rpcModuleName, controller] of controllerEntries) {
     controller._segmentName = segmentName;
