@@ -143,7 +143,8 @@ class VovkApp {
   OPTIONS = async (req: Request, data: { params: Promise<Record<string, string[]>> }, segmentName: string) =>
     this.#callMethod({ httpMethod: HttpMethod.OPTIONS, req, params: await data.params, segmentName });
 
-  respond = async ({
+  // synchronous, so a body JSON can't serialize throws where the handler's errors are caught
+  respond = ({
     statusCode,
     responseBody,
     options,
@@ -153,7 +154,9 @@ class VovkApp {
     responseBody: unknown;
     options?: DecoratorOptions;
   }) => {
-    const response = new Response(JSON.stringify(responseBody), {
+    // Response refuses a body with these statuses
+    const isNullBodyStatus = statusCode === 204 || statusCode === 205 || statusCode === 304;
+    const response = new Response(isNullBodyStatus ? null : JSON.stringify(responseBody), {
       status: statusCode,
       headers: {
         'content-type': 'application/json',
@@ -163,6 +166,27 @@ class VovkApp {
 
     return response;
   };
+
+  // the status, message and cause a caught error answers with
+  private static toErrorResponse(e: unknown) {
+    if (isHttpException(e)) {
+      // Response takes a status from 200 to 599 only
+      const isValidStatus = e.statusCode >= 200 && e.statusCode <= 599;
+      return {
+        statusCode: isValidStatus ? e.statusCode : HttpStatus.INTERNAL_SERVER_ERROR,
+        message: e.message,
+        cause: e.cause,
+      };
+    }
+
+    // anything but an HttpException is internal, in production its message and cause stay on the server
+    if (process.env.NODE_ENV === 'production') {
+      console.error('🐺 Unhandled error in a Vovk handler:', e);
+      return { statusCode: HttpStatus.INTERNAL_SERVER_ERROR, message: 'Internal server error' };
+    }
+    const err = e as Error | null | undefined;
+    return { statusCode: HttpStatus.INTERNAL_SERVER_ERROR, message: err?.message as string, cause: err?.cause };
+  }
 
   #respondWithError = ({
     req,
@@ -488,40 +512,20 @@ class VovkApp {
       await onSuccess?.(responseBody, req);
       return this.respond({ req, statusCode: 200, responseBody, options: staticMethod._options });
     } catch (e) {
-      const err = e as Error | null | undefined;
-      await VovkApp.callOnError(this.#getHooks(segmentName, route?.controller).onError, e, req);
+      const { onError } = this.#getHooks(segmentName, route?.controller);
+      await VovkApp.callOnError(onError, e, req);
 
       if (isNextNavigationError(e)) throw e;
 
       const options = route?.staticMethod._options;
 
-      if (isHttpException(e)) {
-        return this.#respondWithError({
-          req,
-          statusCode: e.statusCode || HttpStatus.INTERNAL_SERVER_ERROR,
-          message: e.message,
-          options,
-          cause: e.cause,
-        });
+      try {
+        return this.#respondWithError({ req, options, ...VovkApp.toErrorResponse(e) });
+      } catch (serializationError) {
+        // a cause JSON can't serialize, as a cycle or a BigInt, gives a plain 500
+        await VovkApp.callOnError(onError, serializationError, req);
+        return this.#respondWithError({ req, options, ...VovkApp.toErrorResponse(serializationError) });
       }
-
-      // anything but an HttpException is internal, in production its message and cause stay on the server
-      if (process.env.NODE_ENV === 'production') {
-        console.error('🐺 Unhandled error in a Vovk handler:', e);
-        return this.#respondWithError({
-          req,
-          statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
-          message: 'Internal server error',
-          options,
-        });
-      }
-      return this.#respondWithError({
-        req,
-        statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
-        message: err?.message as string,
-        options,
-        cause: err?.cause,
-      });
     }
   };
 }

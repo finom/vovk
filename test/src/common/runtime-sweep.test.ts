@@ -127,6 +127,105 @@ describe('Runtime sweep', () => {
     });
   });
 
+  describe('Error responses', () => {
+    const errors: string[] = [];
+    class FailureController {
+      static bigInt() {
+        return { n: 1n };
+      }
+
+      static bigIntCause() {
+        throw new HttpException(HttpStatus.BAD_REQUEST, 'Bad input', { n: 1n });
+      }
+
+      static notModified() {
+        throw new HttpException(HttpStatus.NOT_MODIFIED, '');
+      }
+
+      static noContent() {
+        throw new HttpException(HttpStatus.NO_CONTENT, '');
+      }
+
+      static unknownStatus() {
+        throw new HttpException(999 as HttpStatus, 'Unknown status');
+      }
+
+      static informationalStatus() {
+        throw new HttpException(HttpStatus.CONTINUE, 'Informational status');
+      }
+    }
+    get('big-int', { cors: true })(FailureController, 'bigInt');
+    get('big-int-cause', { cors: true })(FailureController, 'bigIntCause');
+    get('not-modified')(FailureController, 'notModified');
+    get('no-content')(FailureController, 'noContent');
+    get('unknown-status')(FailureController, 'unknownStatus');
+    get('informational-status')(FailureController, 'informationalStatus');
+    const handlers = initSegment({
+      segmentName: 'failure',
+      controllers: { FailureController },
+      onError: (error) => {
+        errors.push(error.message);
+      },
+    });
+
+    it('Answers a result JSON can not serialize with a JSON 500 that keeps the CORS headers', async () => {
+      errors.length = 0;
+      const response = await call(handlers, 'GET', 'big-int');
+
+      strictEqual(response.status, 500);
+      strictEqual(response.headers.get('access-control-allow-origin'), '*');
+      deepStrictEqual(await response.json(), {
+        statusCode: 500,
+        message: 'Do not know how to serialize a BigInt',
+        isError: true,
+      });
+      deepStrictEqual(errors, ['Do not know how to serialize a BigInt']);
+    });
+
+    it('Hides the serialization error of a result in production', async () => {
+      await withNodeEnv('production', async () => {
+        const response = await call(handlers, 'GET', 'big-int');
+
+        strictEqual(response.status, 500);
+        deepStrictEqual(await response.json(), { statusCode: 500, message: 'Internal server error', isError: true });
+      });
+    });
+
+    it('Falls back to a plain JSON 500 when the cause of an HttpException can not be serialized', async () => {
+      errors.length = 0;
+      const response = await call(handlers, 'GET', 'big-int-cause');
+
+      strictEqual(response.status, 500);
+      strictEqual(response.headers.get('access-control-allow-origin'), '*');
+      deepStrictEqual(await response.json(), {
+        statusCode: 500,
+        message: 'Do not know how to serialize a BigInt',
+        isError: true,
+      });
+      deepStrictEqual(errors, ['Bad input', 'Do not know how to serialize a BigInt']);
+    });
+
+    it('Answers an HttpException with a null body status without a body', async () => {
+      const notModified = await call(handlers, 'GET', 'not-modified');
+      const noContent = await call(handlers, 'GET', 'no-content');
+
+      strictEqual(notModified.status, 304);
+      strictEqual(notModified.body, null);
+      strictEqual(noContent.status, 204);
+      strictEqual(noContent.body, null);
+    });
+
+    it('Answers an HttpException with a status outside 200-599 with 500', async () => {
+      const unknown = await call(handlers, 'GET', 'unknown-status');
+      const informational = await call(handlers, 'GET', 'informational-status');
+
+      strictEqual(unknown.status, 500);
+      deepStrictEqual(await unknown.json(), { statusCode: 500, message: 'Unknown status', isError: true });
+      strictEqual(informational.status, 500);
+      deepStrictEqual(await informational.json(), { statusCode: 500, message: 'Informational status', isError: true });
+    });
+  });
+
   describe('Next.js navigation', () => {
     class NavigationController {
       static denied() {
