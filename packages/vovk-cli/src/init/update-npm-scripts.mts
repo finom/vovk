@@ -14,6 +14,12 @@ export function getDevScript(pkgJson: NPMCliPackageJson, updateScriptsMode: 'imp
     : `vovk dev --next-dev${nextDevFlags ? ` -- ${nextDevFlags}` : ''}`;
 }
 
+// a script the project already has keeps running, the vovk command runs after it
+function chainScript(script: string | undefined, command: string) {
+  if (!script) return command;
+  return script.includes(command) ? script : `${script} && ${command}`;
+}
+
 export async function updateNPMScripts({
   pkgJson,
   bundle,
@@ -24,12 +30,13 @@ export async function updateNPMScripts({
   bundle?: boolean;
   updateScriptsMode: 'implicit' | 'explicit';
 }) {
+  const scripts = pkgJson.content.scripts;
   pkgJson.update({
     scripts: {
-      ...pkgJson.content.scripts,
+      ...scripts,
       dev: getDevScript(pkgJson, updateScriptsMode),
-      prebuild: 'vovk generate',
-      ...(bundle ? { bundle: 'vovk bundle' } : {}),
+      prebuild: chainScript(scripts?.prebuild, 'vovk generate'),
+      ...(bundle ? { bundle: chainScript(scripts?.bundle, 'vovk bundle') } : {}),
     },
   });
 

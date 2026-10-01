@@ -335,12 +335,12 @@ export class Init {
             {
               name: 'Yes, use "concurrently" implicitly',
               value: 'implicit' as const,
-              description: `The ${chalk.cyanBright.bold(`"dev"`)} script will use concurrently API to run "next dev" and "vovk dev" commands at the same time. It will automatically find an available port, running ${chalk.cyanBright.bold(`"${getDevScript(pkgJson, 'implicit')}"`)}. The ${chalk.cyanBright.bold(`"prebuild"`)} script will be set to ${chalk.cyanBright.bold(`"vovk generate"`)}`,
+              description: `The ${chalk.cyanBright.bold(`"dev"`)} script will use concurrently API to run "next dev" and "vovk dev" commands at the same time. It will automatically find an available port, running ${chalk.cyanBright.bold(`"${getDevScript(pkgJson, 'implicit')}"`)}. The ${chalk.cyanBright.bold(`"prebuild"`)} script will run ${chalk.cyanBright.bold(`"vovk generate"`)}`,
             },
             {
               name: 'Yes, use "concurrently" explicitly',
               value: 'explicit' as const,
-              description: `The ${chalk.cyanBright.bold(`"dev"`)} script will use pre-defined PORT variable to run "next dev" and "vovk dev" as "concurrently" CLI arguments ${chalk.cyanBright.bold(`"${getDevScript(pkgJson, 'explicit')}"`)}. The ${chalk.cyanBright.bold(`"prebuild"`)} script will be set to ${chalk.cyanBright.bold(`"vovk generate"`)}`,
+              description: `The ${chalk.cyanBright.bold(`"dev"`)} script will use pre-defined PORT variable to run "next dev" and "vovk dev" as "concurrently" CLI arguments ${chalk.cyanBright.bold(`"${getDevScript(pkgJson, 'explicit')}"`)}. The ${chalk.cyanBright.bold(`"prebuild"`)} script will run ${chalk.cyanBright.bold(`"vovk generate"`)}`,
             },
             {
               name: 'No',
