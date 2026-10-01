@@ -1,7 +1,8 @@
+import { HttpException } from '../core/http-exception.js';
 import type { VovkHandlerSchema } from '../internal.js';
 import type { ClientMethod, VovkFetcher, VovkFetcherOptions, VovkRPCModule } from '../types/client.js';
 import type { ControllerStaticMethod, VovkSchema } from '../types/core.js';
-import type { HttpMethod } from '../types/enums.js';
+import { type HttpMethod, HttpStatus } from '../types/enums.js';
 import type { VovkControllerParams, VovkControllerQuery } from '../types/inference.js';
 import type { VovkRequest } from '../types/request.js';
 import type { KnownAny } from '../types/utils.js';
@@ -16,6 +17,9 @@ export type { CombinedSpec, VovkHandlerSchema, VovkRequest };
 
 const trimPath = (path: string) => path.trim().replace(/^\/|\/$/g, '');
 
+// "", "." and ".." (also percent-encoded) would drop or climb a path segment and so reach another route
+const isUnsafeSegment = (value: string) => /^(?:\.|%2e){0,2}$/i.test(value);
+
 const getHandlerPath = <T extends ControllerStaticMethod>(
   endpoint: string,
   params?: VovkControllerParams<T>,
@@ -24,10 +28,50 @@ const getHandlerPath = <T extends ControllerStaticMethod>(
   let result = endpoint;
   const queryStr = query ? serializeQuery(query) : null;
   for (const [key, value] of Object.entries(params ?? {})) {
+    const placeholder = `{${key}}`;
+    // a missing value keeps its placeholder, which the fetcher reports
+    if (!result.includes(placeholder) || value === undefined || value === null) continue;
+    const segment = String(value);
+    if (isUnsafeSegment(segment)) {
+      throw new HttpException(
+        HttpStatus.NULL,
+        `Param "${key}" can't be empty, "." or "..", got ${JSON.stringify(segment)} in ${endpoint}`,
+        { params }
+      );
+    }
     // encode so a value stays one path segment, the callback form also keeps $& from being a replacement pattern
-    result = result.replaceAll(`{${key}}`, () => encodeURIComponent(String(value)));
+    result = result.replaceAll(placeholder, () => encodeURIComponent(segment));
   }
   return `${result}${queryStr ? `?${queryStr}` : ''}`;
+};
+
+const FORM_CONTENT_TYPES = ['multipart/form-data', 'application/x-www-form-urlencoded'];
+
+// a form field is text or a file: null and undefined are left out, a Date is sent as ISO and other objects as JSON
+const toFormValue = (value: unknown): string | Blob | null => {
+  if (value === undefined || value === null) return null;
+  if (value instanceof Blob) return value;
+  if (value instanceof Date) return value.toJSON();
+  return typeof value === 'object' ? JSON.stringify(value) : String(value);
+};
+
+const isFormSource = (body: unknown): body is Record<string, unknown> =>
+  typeof body === 'object' &&
+  body !== null &&
+  !(body instanceof FormData || body instanceof URLSearchParams || body instanceof Blob);
+
+// urlencoded when the procedure takes no multipart, since then the server answers multipart with 415
+const toFormBody = (source: Record<string, unknown>, contentTypes: string[]) => {
+  const form = contentTypes.includes('multipart/form-data') ? new FormData() : new URLSearchParams();
+  for (const [key, value] of Object.entries(source)) {
+    for (const item of Array.isArray(value) ? value : [value]) {
+      const formValue = toFormValue(item);
+      if (formValue === null) continue;
+      if (form instanceof FormData) form.append(key, formValue);
+      else form.append(key, String(formValue));
+    }
+  }
+  return form;
 };
 
 /**
@@ -70,8 +114,9 @@ export const createRPC = <T, OPTS extends Record<string, KnownAny> = Record<stri
     const { path, httpMethod, validation } = handlerSchema;
     const getURL = ({ apiRoot, params, query }: { apiRoot?: string; params?: unknown; query?: unknown } = {}) => {
       apiRoot = apiRoot ?? originalApiRoot;
+      // a root without a host is a path on the current origin, so "api" must not become the protocol-relative "//api"
+      const hasHost = /^([a-z][a-z\d+.-]*:)?\/\//i.test(apiRoot);
       const endpoint = [
-        apiRoot.startsWith('http://') || apiRoot.startsWith('https://') || apiRoot.startsWith('/') ? '' : '/',
         apiRoot,
         forceApiRoot ? '' : segmentNamePath,
         getHandlerPath([controllerPrefix, path].filter(Boolean).join('/'), params, query),
@@ -79,7 +124,7 @@ export const createRPC = <T, OPTS extends Record<string, KnownAny> = Record<stri
         .filter(Boolean)
         .join('/')
         .replace(/([^:])\/+/g, '$1/'); // replace // by / but not for protocols (http://, https://)
-      return endpoint;
+      return hasHost ? endpoint : `/${endpoint.replace(/^\/+/, '')}`;
     };
 
     const handler = (async (
@@ -100,6 +145,13 @@ export const createRPC = <T, OPTS extends Record<string, KnownAny> = Record<stri
         givenFetcher instanceof Promise
           ? (await givenFetcher).fetcher
           : (givenFetcher ?? (defaultFetcher as unknown as VovkFetcher<OPTS>));
+
+      const contentTypes: string[] = validation?.body?.['x-contentType'] ?? [];
+      // an object sent as form data is validated as the object, so numbers and arrays keep their types
+      const formSource =
+        contentTypes.some((type) => FORM_CONTENT_TYPES.includes(type)) && isFormSource(input.body) ? input.body : null;
+      const body = formSource ? toFormBody(formSource, contentTypes) : input.body;
+
       const validate: Parameters<typeof fetcher>[0]['validate'] = async (
         validationInput,
         {
@@ -113,10 +165,13 @@ export const createRPC = <T, OPTS extends Record<string, KnownAny> = Record<stri
           if (typeof validateOnClient !== 'function') {
             throw new Error('validateOnClient must be a function');
           }
-          return (
-            (await validateOnClient({ ...validationInput }, validation, { fullSchema: schema, endpoint })) ??
-            validationInput
-          );
+          const validatesFormSource = formSource !== null && validationInput.body === body;
+          const toValidate = validatesFormSource ? { ...validationInput, body: formSource } : { ...validationInput };
+          const validated =
+            (await validateOnClient(toValidate, validation, { fullSchema: schema, endpoint })) ?? toValidate;
+          return validatesFormSource && isFormSource(validated.body)
+            ? { ...validated, body: toFormBody(validated.body, contentTypes) }
+            : validated;
         }
 
         return validationInput;
@@ -132,28 +187,6 @@ export const createRPC = <T, OPTS extends Record<string, KnownAny> = Record<stri
         schema: handlerSchema,
       };
 
-      let processedBody = input.body as FormData;
-
-      if (
-        (validation?.body?.['x-contentType']?.includes('multipart/form-data') ||
-          validation?.body?.['x-contentType']?.includes('application/x-www-form-urlencoded')) &&
-        input.body &&
-        !(input.body instanceof FormData || input.body instanceof URLSearchParams || input.body instanceof Blob)
-      ) {
-        processedBody = new FormData();
-        for (const [key, value] of Object.entries(input.body)) {
-          if (Array.isArray(value)) {
-            value.forEach((item) => {
-              processedBody.append(key, item);
-            });
-          } else {
-            processedBody.append(key, value as string);
-          }
-        }
-      } else {
-        processedBody = input.body as FormData;
-      }
-
       const internalInput = {
         ...(deepExtend(
           {},
@@ -163,7 +196,7 @@ export const createRPC = <T, OPTS extends Record<string, KnownAny> = Record<stri
           },
           input
         ) as OPTS),
-        body: processedBody ?? null,
+        body: body ?? null,
         query: input.query ?? {},
         params: input.params ?? {},
       };
