@@ -1,5 +1,6 @@
 import type { StandardJSONSchemaV1, StandardSchemaV1 } from '../types/standard-schema.js';
 import type { CombinedProps, CombinedSpec } from '../types/validation.js';
+import { toEnvelopeJSONSchema } from './envelope-json-schema.js';
 
 const SLOT_KEYS = ['body', 'query', 'params'] as const;
 type SlotKey = (typeof SLOT_KEYS)[number];
@@ -86,21 +87,13 @@ export function validationSchemasObjectToSingleValidationSchema<TSchemas extends
     return combine(pending as { slot: SlotKey; result: StandardSchemaV1.Result<unknown> }[]);
   };
 
-  const buildJSONSchema = (
-    options: StandardJSONSchemaV1.Options,
-    direction: 'input' | 'output'
-  ): Record<string, unknown> => {
-    const properties: Record<string, Record<string, unknown>> = {};
-    for (const [slot, schema] of definedEntries) {
-      properties[slot] = schema['~standard'].jsonSchema?.[direction](options) ?? {};
-    }
-    return {
-      type: 'object',
-      properties,
-      required: [...definedSlots],
-      additionalProperties: false,
-    };
-  };
+  const buildJSONSchema = (options: StandardJSONSchemaV1.Options, direction: 'input' | 'output') =>
+    toEnvelopeJSONSchema(
+      definedEntries.map(([slot, schema]): [SlotKey, unknown] => [
+        slot,
+        schema['~standard'].jsonSchema?.[direction](options) ?? {},
+      ])
+    );
 
   const standard: CombinedProps = {
     version: 1,
