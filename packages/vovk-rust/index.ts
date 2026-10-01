@@ -651,10 +651,13 @@ function emitStruct(schema: Schema, name: string, mod: Module, ctx: Context): vo
     let type = typeExpr(propSchema, ident, scope, ctx, true);
     if (isOptional && !type.startsWith('Option<')) type = `Option<${type}>`;
 
+    const ind = indent(level + 1, ctx.pad);
     fields += generateDocComment(fieldDocSchema(propSchema, ctx), level + 1, ctx.pad);
+    // an unset optional field is left out, null fails a schema that doesn't allow it
+    if (isOptional) fields += `${ind}#[serde(default, skip_serializing_if = "Option::is_none")]\n`;
     // r#self and r#crate are forbidden, so keywords go through toRustIdent too
-    if (ident !== propName) fields += `${indent(level + 1, ctx.pad)}#[serde(rename = ${toRustString(propName)})]\n`;
-    fields += `${indent(level + 1, ctx.pad)}pub ${ident}: ${type},\n`;
+    if (ident !== propName) fields += `${ind}#[serde(rename = ${toRustString(propName)})]\n`;
+    fields += `${ind}pub ${ident}: ${type},\n`;
   }
 
   mod.code += generateDocComment(schema, level, ctx.pad);

@@ -1,0 +1,61 @@
+{
+  "$schema": "https://vovk.dev/api/schema/v3/segment.json",
+  "emitSchema": true,
+  "segmentName": "rust-sweep",
+  "segmentType": "segment",
+  "controllers": {
+    "RustSweepRPC": {
+      "rpcModuleName": "RustSweepRPC",
+      "originalControllerName": "RustSweepController",
+      "prefix": "rust",
+      "handlers": {
+        "postOptional": {
+          "validation": {
+            "body": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "object",
+              "properties": {
+                "a": {
+                  "type": "string"
+                },
+                "b": {
+                  "type": "string"
+                },
+                "c": {
+                  "anyOf": [
+                    {
+                      "type": "number"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                }
+              },
+              "required": [
+                "a"
+              ]
+            },
+            "query": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "object",
+              "properties": {
+                "q": {
+                  "type": "string"
+                },
+                "page": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "q"
+              ]
+            }
+          },
+          "path": "optional",
+          "httpMethod": "POST"
+        }
+      }
+    }
+  }
+}

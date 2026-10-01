@@ -57,6 +57,7 @@ const vovkConfig = {
     segments: {
       // /api/foo/client again, from a root entry and a segment name override
       'foo/client': { origin, rootEntry: 'api/foo', segmentNameOverride: 'client' },
+      'rust-sweep': { origin },
       mixin: {
         openAPIMixin: {
           source: { object: mixinSpec },

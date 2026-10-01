@@ -122,6 +122,10 @@ describe('convertJSONSchemasToRustTypes', () => {
     assert.ok(output.includes('pub required2: i64,'));
     assert.ok(output.includes('pub optional1: Option<String>,'));
     assert.ok(output.includes('pub optional2: Option<bool>,'));
+    // an unset optional field is left out instead of being sent as null
+    const skip = '#[serde(default, skip_serializing_if = "Option::is_none")]';
+    assert.ok(output.includes(`${skip}\n    pub optional1: Option<String>,`), output);
+    assert.ok(!output.includes(`${skip}\n    pub required1:`), output);
   });
 
   test('enum generation', () => {
