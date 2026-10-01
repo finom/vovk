@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server.js';
-import { createFetcher, procedure, type VovkRequest } from 'vovk';
+import { createFetcher, procedure, type VovkBody, type VovkRequest } from 'vovk';
 import { createRPC } from 'vovk/create-rpc';
 import type { VovkFetcherOptions } from 'vovk/internal';
 // @ts-expect-error a module that isn't installed, as next is for a client bundle used without Next
@@ -181,4 +181,41 @@ export async function unresolvedResponseType() {
   result.hello;
   const fromPromise = await rpc.missingPromise();
   fromPromise.hello;
+}
+
+// ====== Input types: what the schemas accept, not what they output ======
+
+class InputController {
+  static list = procedure({
+    query: z.object({ page: z.coerce.number().default(1), sort: z.enum(['asc', 'desc']).default('asc') }),
+  }).handle(async (req) => req.vovk.query());
+
+  static save = procedure({
+    body: z.object({ tags: z.string().transform((tags) => tags.split(',')) }),
+  }).handle(async (req) => req.vovk.body());
+
+  static getItem = procedure({
+    params: z.object({ id: z.coerce.number() }),
+  }).handle(async (_req, { id }) => ({ id }));
+}
+
+export async function inputTypes() {
+  const rpc = createRPC<typeof InputController>({}, '', 'InputRPC');
+
+  await rpc.list({ query: {} });
+  await rpc.list({ query: { page: '2', sort: 'desc' } });
+  await rpc.save({ body: { tags: 'a,b' } });
+  // @ts-expect-error the server takes the comma-separated string, the transform makes the array
+  await rpc.save({ body: { tags: ['a', 'b'] } });
+  await rpc.getItem({ params: { id: '1' } });
+
+  await InputController.save.fn({ body: { tags: 'a,b' } });
+  await InputController.list.fn({ query: {} });
+  // the handler still gets the output
+  const saved = await InputController.save.fn({ body: { tags: 'a,b' } });
+  saved.tags satisfies string[];
+
+  // the RPC method infers what it sends, the controller method what its handler gets
+  ({ tags: 'a,b' }) satisfies VovkBody<typeof rpc.save>;
+  ({ tags: ['a', 'b'] }) satisfies VovkBody<typeof InputController.save>;
 }

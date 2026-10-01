@@ -17,6 +17,30 @@ type OmitNullable<T> = {
   [K in keyof T as T[K] extends null | undefined ? never : K]: T[K];
 };
 
+type MetaInput = { meta?: { [key: string]: KnownAny } };
+
+type QueryInput<TQuery> = TQuery extends Record<KnownAny, KnownAny> ? { query: TQuery } : unknown;
+
+type ParamsInput<TParams> = TParams extends Record<KnownAny, KnownAny> ? { params: TParams } : unknown;
+
+// a procedure takes the input types of its schemas
+type ProcedureInput<TTypes> = TTypes extends {
+  bodyInput: infer TBody;
+  queryInput: infer TQuery;
+  paramsInput: infer TParams;
+  contentType: infer CT extends ContentType[];
+}
+  ? (unknown extends TBody
+      ? // no body schema: a declared content type other than JSON still takes a body
+        CT[number] extends 'application/json'
+        ? unknown
+        : { body?: BodyTypeFromContentType<CT, unknown> }
+      : { body: BodyTypeFromContentType<CT, TBody> }) &
+      QueryInput<TQuery> &
+      ParamsInput<TParams> &
+      MetaInput
+  : unknown;
+
 export type StaticMethodInput<
   T extends ((req: VovkRequest<KnownAny, KnownAny, KnownAny>, params: KnownAny) => KnownAny) & {
     __types?: {
@@ -25,33 +49,15 @@ export type StaticMethodInput<
     };
   },
 > = OmitNullable<
-  (Parameters<T>[0] extends VovkRequest<infer TBody, infer TQuery, infer TParams>
-    ? (T['__types'] extends { body: infer TSchemaBody; contentType: infer CT extends ContentType[] }
-        ? unknown extends TSchemaBody
-          ? // no body schema: a declared content type other than JSON still takes a body
-            CT[number] extends 'application/json'
-            ? unknown
-            : { body?: BodyTypeFromContentType<CT, unknown> }
-          : {
-              body: BodyTypeFromContentType<CT, TSchemaBody>;
-            }
-        : TBody extends Record<KnownAny, KnownAny>
-          ? {
-              body: TBody;
-            }
-          : unknown) &
-        (TQuery extends Record<KnownAny, KnownAny>
-          ? {
-              query: TQuery;
-            }
-          : unknown) &
-        (TParams extends Record<KnownAny, KnownAny>
-          ? {
-              params: TParams;
-            }
-          : unknown) & { meta?: { [key: string]: KnownAny } }
-    : unknown) &
-    (Parameters<T>[1] extends Record<KnownAny, KnownAny> ? { params: Parameters<T>[1] } : unknown)
+  T extends { __types: { bodyInput: unknown } }
+    ? ProcedureInput<T['__types']>
+    : (Parameters<T>[0] extends VovkRequest<infer TBody, infer TQuery, infer TParams>
+        ? (TBody extends Record<KnownAny, KnownAny> ? { body: TBody } : unknown) &
+            QueryInput<TQuery> &
+            ParamsInput<TParams> &
+            MetaInput
+        : unknown) &
+        (Parameters<T>[1] extends Record<KnownAny, KnownAny> ? { params: Parameters<T>[1] } : unknown)
 >;
 
 type ToPromise<T> = T extends PromiseLike<unknown> ? T : Promise<T>;

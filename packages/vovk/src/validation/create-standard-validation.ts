@@ -119,35 +119,39 @@ export function createStandardValidation({
       output: unknown extends CombinedSpec.InferOutput<TOutput> ? KnownAny : CombinedSpec.InferOutput<TOutput>;
       iteration: TIteration extends CombinedSpec ? CombinedSpec.InferOutput<TIteration> : KnownAny;
       contentType: NormalizeContentType<TContentType>;
+      // what a caller sends: a default, a coercion or a transform makes it differ from what the handler gets
+      bodyInput: CombinedSpec.InferInput<TBody>;
+      queryInput: CombinedSpec.InferInput<TQuery>;
+      paramsInput: CombinedSpec.InferInput<TParams>;
     };
     __handleFn: THandleFn;
     isRPC?: boolean;
     fn: {
       <TTransformed>(input: {
         body?: TBody extends CombinedSpec
-          ? BodyTypeFromContentType<NormalizeContentType<TContentType>, CombinedSpec.InferOutput<TBody>>
+          ? BodyTypeFromContentType<NormalizeContentType<TContentType>, CombinedSpec.InferInput<TBody>>
           : undefined;
-        query?: TQuery extends CombinedSpec ? CombinedSpec.InferOutput<TQuery> : undefined;
-        params?: TParams extends CombinedSpec ? CombinedSpec.InferOutput<TParams> : undefined;
+        query?: TQuery extends CombinedSpec ? CombinedSpec.InferInput<TQuery> : undefined;
+        params?: TParams extends CombinedSpec ? CombinedSpec.InferInput<TParams> : undefined;
         meta?: Record<string, KnownAny>;
         disableClientValidation?: boolean;
         transform: (data: Awaited<ReturnType<THandleFn>>, fakeReq: Pick<TReq, 'vovk'>) => TTransformed;
       }): Promise<TTransformed>;
       <TReturnType = ReturnType<THandleFn>>(input?: {
         body?: TBody extends CombinedSpec
-          ? BodyTypeFromContentType<NormalizeContentType<TContentType>, CombinedSpec.InferOutput<TBody>>
+          ? BodyTypeFromContentType<NormalizeContentType<TContentType>, CombinedSpec.InferInput<TBody>>
           : undefined;
-        query?: TQuery extends CombinedSpec ? CombinedSpec.InferOutput<TQuery> : undefined;
-        params?: TParams extends CombinedSpec ? CombinedSpec.InferOutput<TParams> : undefined;
+        query?: TQuery extends CombinedSpec ? CombinedSpec.InferInput<TQuery> : undefined;
+        params?: TParams extends CombinedSpec ? CombinedSpec.InferInput<TParams> : undefined;
         meta?: Record<string, KnownAny>;
         disableClientValidation?: boolean;
       }): TReturnType;
       (input?: {
         body?: TBody extends CombinedSpec
-          ? BodyTypeFromContentType<NormalizeContentType<TContentType>, CombinedSpec.InferOutput<TBody>>
+          ? BodyTypeFromContentType<NormalizeContentType<TContentType>, CombinedSpec.InferInput<TBody>>
           : undefined;
-        query?: TQuery extends CombinedSpec ? CombinedSpec.InferOutput<TQuery> : undefined;
-        params?: TParams extends CombinedSpec ? CombinedSpec.InferOutput<TParams> : undefined;
+        query?: TQuery extends CombinedSpec ? CombinedSpec.InferInput<TQuery> : undefined;
+        params?: TParams extends CombinedSpec ? CombinedSpec.InferInput<TParams> : undefined;
         meta?: Record<string, KnownAny>;
         disableClientValidation?: boolean;
       }): ReturnType<THandleFn>;

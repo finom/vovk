@@ -125,6 +125,8 @@ type Query = VovkQuery<typeof UserController.updateUser>; // { id: string }
 type Params = VovkParams<typeof UserController.updateUser>; // { param: string }
 ```
 
+For a procedure, the RPC method and [`fn`](/fn) take what the schemas accept (their input types), and the handler gets what the schemas return (their output types). The two differ when a schema has a default, a coercion or a transform. With `body: z.object({ tags: z.string().transform((s) => s.split(',')) }){:ts}`, `VovkBody` of the RPC method is `{ tags: string }{:ts}`, and `VovkBody` of the controller method is `{ tags: string[] }{:ts}`.
+
 ## Combined Input Type
 
 `VovkInput<T>` extracts all three input types (`params`, `query`, `body`) into a single object.
