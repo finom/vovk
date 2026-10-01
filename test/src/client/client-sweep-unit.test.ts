@@ -195,6 +195,73 @@ describe('Client sweep, pure functions', () => {
       deepStrictEqual(await iterable.asPromise(), [{ n: 1 }, { n: 2 }]);
     });
 
+    it('Ends the stream with an error at a line that is not JSON', async () => {
+      const iterable = readableStreamToAsyncIterable({
+        readableStream: streamOf([new TextEncoder().encode('{"a":1}\nnot json\n{"a":2}\n')]),
+        abortController: new AbortController(),
+      });
+      const items: unknown[] = [];
+
+      await rejects(
+        async () => {
+          for await (const item of iterable) items.push(item);
+        },
+        (error: unknown) => {
+          ok(error instanceof Error && error.cause instanceof SyntaxError);
+          ok(error.message.startsWith('JSONLines stream error.'));
+          return true;
+        }
+      );
+      deepStrictEqual(items, [{ a: 1 }]);
+    });
+
+    it('Ends the stream with an error at a truncated last line', async () => {
+      const iterable = readableStreamToAsyncIterable({
+        readableStream: streamOf([new TextEncoder().encode('{"a":1}\n{"a":2')]),
+        abortController: new AbortController(),
+      });
+
+      await rejects(iterable.asPromise(), /JSONLines stream error/);
+    });
+
+    it('Skips blank lines', async () => {
+      const iterable = readableStreamToAsyncIterable({
+        readableStream: streamOf([new TextEncoder().encode('\n\n{"a":1}\r\n   \n\n{"a":2}\n')]),
+        abortController: new AbortController(),
+      });
+
+      deepStrictEqual(await iterable.asPromise(), [{ a: 1 }, { a: 2 }]);
+    });
+
+    it('Throws for an error line whose reason is null or 0', async () => {
+      const iterableOf = (line: string) =>
+        readableStreamToAsyncIterable({
+          readableStream: streamOf([new TextEncoder().encode(`{"n":1}\n${line}\n`)]),
+          abortController: new AbortController(),
+        });
+
+      await rejects(iterableOf('{"isError":true,"reason":null}').asPromise(), Error);
+      await rejects(iterableOf('{"isError":true,"reason":0}').asPromise(), (error: unknown) => error === 0);
+    });
+
+    it('Gives the items read before an early break to a later consumer', async () => {
+      const abortController = new AbortController();
+      const readableStream = new ReadableStream<Uint8Array>({
+        start(controller) {
+          // stays open, so only the iteration ends it
+          controller.enqueue(new TextEncoder().encode('{"n":1}\n{"n":2}\n{"n":3}\n'));
+        },
+      });
+      const iterable = readableStreamToAsyncIterable<{ n: number }>({ readableStream, abortController });
+
+      for await (const item of iterable) {
+        if (item.n === 1) break;
+      }
+
+      ok(abortController.signal.aborted);
+      deepStrictEqual(await iterable.asPromise(), [{ n: 2 }, { n: 3 }]);
+    });
+
     it('Throws a plain Error for an error line without a status', async () => {
       const iterable = readableStreamToAsyncIterable({
         readableStream: streamOf([new TextEncoder().encode('{"n":1}\n{"isError":true,"reason":"oh no"}\n')]),

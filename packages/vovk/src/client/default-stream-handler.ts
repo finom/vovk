@@ -18,9 +18,17 @@ const isErrorLine = (data: unknown): data is StreamErrorLine =>
   'reason' in data &&
   Object.keys(data).every((key) => ERROR_LINE_KEYS.has(key));
 
+// a thrown value that isn't a string is rethrown as is, a missing one becomes an Error
 const toStreamError = ({ reason, statusCode }: StreamErrorLine) => {
-  if (typeof reason !== 'string') return reason;
-  return typeof statusCode === 'number' ? new HttpException(statusCode, reason) : new Error(reason);
+  if (reason !== null && reason !== undefined && typeof reason !== 'string') return reason;
+  const message = reason ?? DEFAULT_ERROR_MESSAGE;
+  return typeof statusCode === 'number' ? new HttpException(statusCode, message) : new Error(message);
+};
+
+const toJSONLinesError = (cause: unknown) => {
+  const error = new Error(`JSONLines stream error. ${String(cause)}`);
+  error.cause = cause;
+  return error;
 };
 
 /** ReadableStream of JSON Lines to VovkStreamAsyncIterable, reusable outside HTTP contexts. @see https://vovk.dev/jsonlines */
@@ -45,6 +53,8 @@ export const readableStreamToAsyncIterable = <T = unknown>({
 
   let exhausted = false; // nothing more is read
   let stopped = false; // aborted silently or disposed, iterations end at once
+  // a thrown value may be falsy, as 0
+  let hasStreamError = false;
   let streamError: unknown = null;
   let errorIndex = -1;
   let reading: Promise<void> | null = null;
@@ -60,6 +70,7 @@ export const readableStreamToAsyncIterable = <T = unknown>({
   };
 
   const fail = (error: unknown) => {
+    hasStreamError = true;
     streamError = error;
     errorIndex = keptFrom + kept.length;
     exhausted = true;
@@ -81,18 +92,20 @@ export const readableStreamToAsyncIterable = <T = unknown>({
 
   // false when the stream ends at this line
   const handleLine = (line: string): boolean => {
-    if (!line) return true;
+    if (!line.trim()) return true;
     let data: T;
     try {
       data = JSON.parse(line) as T;
-    } catch {
-      return true;
+    } catch (error) {
+      fail(toJSONLinesError(error));
+      release(error);
+      return false;
     }
 
     // the error envelope is a control message, not data, subscribers must not see it
     if (isErrorLine(data)) {
-      abortController?.abort(data.reason);
       fail(toStreamError(data));
+      release(data.reason);
       return false;
     }
 
@@ -127,13 +140,11 @@ export const readableStreamToAsyncIterable = <T = unknown>({
     try {
       result = await reader.read();
     } catch (error) {
-      if (stopped) return;
-      const err = new Error(`JSONLines stream error. ${String(error)}`);
-      err.cause = error;
-      fail(err);
+      if (!exhausted) fail(toJSONLinesError(error));
       return;
     }
-    if (stopped) return;
+    // the stream ended, failed or was released while this chunk was on its way
+    if (exhausted) return;
     const { done, value } = result;
     text += done
       ? decoder.decode()
@@ -174,7 +185,7 @@ export const readableStreamToAsyncIterable = <T = unknown>({
           cursor.index++;
           dropPassed();
           yield item;
-        } else if (streamError && cursor.index >= errorIndex) {
+        } else if (hasStreamError && cursor.index >= errorIndex) {
           throw streamError;
         } else if (exhausted) {
           return;
@@ -185,8 +196,8 @@ export const readableStreamToAsyncIterable = <T = unknown>({
     } finally {
       cursors.delete(cursor);
       dropPassed(cursor.index);
-      // a consumer that stopped early must release the connection, same as dispose does
-      if (!cursors.size && !exhausted) stop('Stream iteration stopped');
+      // a consumer that stopped early releases the connection; the items already read stay for a later one
+      if (!cursors.size && !exhausted) release('Stream iteration stopped');
     }
   }
 
