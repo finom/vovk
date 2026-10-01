@@ -1,6 +1,8 @@
 import assert from 'node:assert';
+import { execFileSync, spawnSync } from 'node:child_process';
 import fs from 'node:fs/promises';
 import http from 'node:http';
+import https from 'node:https';
 import type { AddressInfo } from 'node:net';
 import path from 'node:path';
 import { after, describe, it } from 'node:test';
@@ -14,6 +16,7 @@ import {
 
 const projectDir = path.join(process.cwd(), 'tmp_dev_without_next');
 const exists = (filePath: string) => fs.stat(filePath).then(Boolean, () => false);
+const hasOpenSSL = spawnSync('openssl', ['version']).status === 0;
 
 after(async () => {
   await fs.rm(projectDir, { recursive: true, force: true });
@@ -182,5 +185,82 @@ await describe('vovk dev in a project without Next.js', async () => {
     assert.match(schemaTs, /from '\.\/\.\.\/\.\.\/custom-schema\/root\.json'/, schemaTs);
     assert.match(schemaTs, /from '\.\/\.\.\/\.\.\/custom-schema\/_meta\.json'/, schemaTs);
     assert.ok(!(await exists(path.join(projectDir, '.vovk-schema'))), dev.getOutput());
+  });
+
+  await it('Turns TLS checks off for the dev server schema request only', { skip: !hasOpenSSL }, async () => {
+    const certDir = path.join(projectDir, 'cert');
+    await fs.mkdir(certDir, { recursive: true });
+    // a self-signed certificate, like the one next dev --experimental-https makes
+    execFileSync(
+      'openssl',
+      ['req', '-x509', '-newkey', 'rsa:2048', '-nodes', '-keyout', 'key.pem', '-out', 'cert.pem', '-days', '2'].concat([
+        '-subj',
+        '/CN=localhost',
+      ]),
+      { cwd: certDir, stdio: 'ignore' }
+    );
+    const pathsServed: string[] = [];
+    const vendorSpec = (operationId: string) => ({
+      openapi: '3.1.0',
+      info: { title: 'vendor', version: '1' },
+      servers: [{ url: 'https://api.vendor.example' }],
+      paths: { '/pets': { get: { operationId, responses: { 200: { description: 'ok' } } } } },
+    });
+    // stands for the dev server and for a third-party OpenAPI spec host someone intercepts
+    const server = https.createServer(
+      {
+        key: await fs.readFile(path.join(certDir, 'key.pem')),
+        cert: await fs.readFile(path.join(certDir, 'cert.pem')),
+      },
+      (req, res) => {
+        pathsServed.push(req.url ?? '');
+        res.writeHead(200, { 'content-type': 'application/json' });
+        res.end(
+          JSON.stringify(req.url === '/api/_schema_' ? { schema: makeSegmentSchema('') } : vendorSpec('injected'))
+        );
+      }
+    );
+    await new Promise<void>((resolve) => server.listen(0, resolve));
+    const port = (server.address() as AddressInfo).port;
+    const fallbackPath = path.join(projectDir, 'vendor.json');
+    await fs.writeFile(fallbackPath, JSON.stringify(vendorSpec('listPets')));
+    await fs.writeFile(
+      path.join(projectDir, 'package.json'),
+      JSON.stringify({ name: 'app', version: '1.0.0', type: 'module' })
+    );
+    await fs.writeFile(
+      path.join(projectDir, 'vovk.config.mjs'),
+      `export default ${JSON.stringify({
+        devHttps: true,
+        composedClient: { prettifyClient: false },
+        outputConfig: {
+          segments: {
+            vendor: {
+              openAPIMixin: { source: { url: `https://127.0.0.1:${port}/openapi.json`, fallback: './vendor.json' } },
+            },
+          },
+        },
+      })};`
+    );
+    await fs.mkdir(path.join(projectDir, 'src/app/api/[[...vovk]]'), { recursive: true });
+    await fs.writeFile(path.join(projectDir, 'src/app/api/[[...vovk]]/route.ts'), '');
+
+    const dev = startCLI(['dev'], { cwd: projectDir, env: { PORT: String(port) } });
+    try {
+      await dev.waitForOutput(/Composed client is generated/);
+    } finally {
+      await dev.stop();
+      server.closeAllConnections();
+      server.close();
+    }
+
+    const rootSchema = JSON.parse(await fs.readFile(path.join(projectDir, '.vovk-schema/root.json'), 'utf-8'));
+    assert.deepStrictEqual(Object.keys(rootSchema.controllers), ['UserRPC'], dev.getOutput());
+    assert.deepStrictEqual(
+      pathsServed.filter((servedPath) => servedPath !== '/api/_schema_'),
+      [],
+      dev.getOutput()
+    );
+    assert.deepStrictEqual(JSON.parse(await fs.readFile(fallbackPath, 'utf-8')), vendorSpec('listPets'));
   });
 });

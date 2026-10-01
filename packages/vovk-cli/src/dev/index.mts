@@ -7,7 +7,7 @@ import isEmpty from 'lodash/isEmpty.js';
 import keyBy from 'lodash/keyBy.js';
 import once from 'lodash/once.js';
 import type { LogLevelNames } from 'loglevel';
-import { Agent, setGlobalDispatcher } from 'undici';
+import { Agent, fetch } from 'undici';
 import type { VovkSchema } from 'vovk';
 import { VovkSchemaIdEnum, type VovkSegmentSchema } from 'vovk/internal';
 import { ensureClient } from '../generate/ensure-client.mjs';
@@ -75,6 +75,9 @@ export class VovkDev {
   #devHttps: boolean | null;
 
   #logLevel: LogLevelNames;
+
+  // accepts the self-signed certificate of next dev --experimental-https; used for the schema requests only
+  #selfSignedDispatcher: Agent | null = null;
 
   constructor({ schemaOut, devHttps, logLevel }: Pick<DevOptions, 'schemaOut' | 'devHttps' | 'logLevel'>) {
     this.#schemaOut = schemaOut || null;
@@ -356,19 +359,25 @@ export class VovkDev {
     }
   };
 
+  #getSelfSignedDispatcher() {
+    this.#selfSignedDispatcher ??= new Agent({ connect: { rejectUnauthorized: false } });
+    return this.#selfSignedDispatcher;
+  }
+
   #requestSchema = debounceWithArgs(async (segmentName: string) => {
     const { log, port, config } = this.#projectInfo;
+    const devHttps = this.#devHttps ?? config.devHttps;
     const endpoint = getSchemaEndpoint({
       port,
       rootEntry: config.rootEntry,
-      devHttps: this.#devHttps ?? config.devHttps,
+      devHttps,
       segmentName,
     });
 
     log.debug(`Requesting schema for ${formatLoggedSegmentName(segmentName)} at ${endpoint}`);
 
     try {
-      const resp = await fetch(endpoint);
+      const resp = await fetch(endpoint, { dispatcher: devHttps ? this.#getSelfSignedDispatcher() : undefined });
       const text = await resp.text();
       let json: { schema: VovkSegmentSchema | null };
       try {
@@ -494,18 +503,6 @@ export class VovkDev {
       this.#onFirstTimeGenerate = once(() => {
         log.info('The schemas and the RPC client have been generated. Exiting...');
       });
-    }
-
-    const devHttps = this.#devHttps ?? config.devHttps;
-
-    if (devHttps) {
-      const agent = new Agent({
-        connect: {
-          rejectUnauthorized: false,
-        },
-      });
-
-      setGlobalDispatcher(agent);
     }
 
     process.on('uncaughtException', (err) => {
