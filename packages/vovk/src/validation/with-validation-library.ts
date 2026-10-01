@@ -124,11 +124,16 @@ export function withValidationLibrary<
     }
 
     if (iteration && !disableServerSideValidationKeys.includes('iteration')) {
-      // We assume `data` is an async iterable here; you might want to check that:
-      if (!data || (typeof data[Symbol.asyncIterator] !== 'function' && !(data instanceof JSONLinesResponder))) {
+      // a sync or an async iterable streams, as it does without an iteration schema; an array is sent as JSON
+      const isIterable =
+        typeof data === 'object' &&
+        data !== null &&
+        !Array.isArray(data) &&
+        (typeof data[Symbol.asyncIterator] === 'function' || typeof data[Symbol.iterator] === 'function');
+      if (!isIterable && !(data instanceof JSONLinesResponder)) {
         throw new HttpException(
           HttpStatus.INTERNAL_SERVER_ERROR,
-          'Data is not an async iterable, neither JSONLinesResponder but iteration validation is defined.'
+          'Data is neither an iterable nor a JSONLinesResponder, but iteration validation is defined.'
         );
       }
 

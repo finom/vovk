@@ -545,6 +545,38 @@ describe('Runtime sweep', () => {
         'Validation failed. Invalid body: Invalid input: expected object, received undefined'
       );
     });
+
+    it('Validates the items of a sync generator', async () => {
+      class CountController {
+        static count = procedure({ iteration: z.object({ n: z.number() }) }).handle(function* () {
+          yield { n: 1 };
+          yield { n: 2 };
+        });
+
+        static wrong = procedure({ iteration: z.object({ n: z.number() }) }).handle(function* () {
+          yield { n: 'one' };
+        });
+      }
+      get('count')(CountController, 'count');
+      get('wrong')(CountController, 'wrong');
+      const handlers = initSegment({ segmentName: 'count', controllers: { CountController } });
+      const readLines = async (response: Response) =>
+        (await response.text())
+          .split('\n')
+          .filter(Boolean)
+          .map((line) => JSON.parse(line));
+
+      const response = await call(handlers, 'GET', 'count');
+
+      strictEqual(response.status, 200);
+      deepStrictEqual(await readLines(response), [{ n: 1 }, { n: 2 }]);
+      deepStrictEqual(await readLines(await call(handlers, 'GET', 'wrong')), [
+        {
+          isError: true,
+          reason: 'Validation failed. Invalid iteration #0: Invalid input: expected number, received string at n',
+        },
+      ]);
+    });
   });
 
   describe('Query', () => {
