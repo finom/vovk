@@ -1,0 +1,26 @@
+import Image from "next/image";
+
+# Deploying to Vercel
+
+You can use any hosting provider that supports Node.js applications, but for simplicity we’re going to use [Vercel](https://vercel.com/), as it requires minimal effort to deploy the app for a quick demo. We’re going to set up two Vercel integrations: [Neon](https://vercel.com/integrations/neon) for Postgres/PGVector database hosting and [Redis](https://vercel.com/integrations/redis) for Redis hosting. Neon is used as the main database, while Redis is used as a database event bus for real-time features described in the [Polling](./polling) article, and as temporary storage for messages consumed by the demo [Telegram bot](./telegram).
+
+**Note:** Vovk.ts is not affiliated with Vercel, Telegram, or Neon in any way.
+
+To deploy the app with this setup, create a new project in Vercel, link it to a fork of the GitHub repository, and add the integrations mentioned above (both are available on the free plan).
+
+<Image
+  src="/screenshots/vercel-ai-demo-integrations.png"
+  alt="Vercel integrations for AI demo"
+  width={2916 / 2}
+  height={1826 / 2}
+/>
+
+Add `OPENAI_API_KEY` to the project environment variables. Other variables such as `DATABASE_URL` and `REDIS_URL` are created automatically by the integrations. 
+
+It’s also recommended to add a `PASSWORD` variable to enable simple (and free) password protection for the app. You can set it to any desired value.
+
+For MCP protection, you can also add the `MCP_ACCESS_KEY` variable to enable basic authorization for the MCP server using the `?mcp_access_key=your_key` query param. If this variable is not set, no authorization is required.
+
+Finally, for Telegram bot integration, you can add the `TELEGRAM_BOT_TOKEN` variable if you want to use the Telegram bot feature. See the [Telegram integration](./telegram) article for more details.
+
+If you run into issues, check the [.env.template](https://github.com/finom/vovk/blob/main/examples/realtime-kanban/.env.template) file for reference.

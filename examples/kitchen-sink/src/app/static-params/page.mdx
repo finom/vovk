@@ -1,0 +1,139 @@
+---
+title: Static Params Example
+description: Static params example with "staticParams" decorator option
+---
+
+import { Tabs } from 'nextra/components';
+import StaticParamsExample from './static-params-example';
+import Example from '@/components/example';
+
+# Static Params Example
+
+This example demonstrates a [static API](https://vovk.dev/segment#static) represented by a single handler that renders 6 sets of static parameters: section (`a | b`) and page (`1 | 2 | 3`).
+
+## Result
+
+<Example>
+  <StaticParamsExample />
+</Example>
+
+## Code
+
+<Tabs items={['static-params-controller.ts', 'static-params-example.tsx', 'route.ts']}>
+  <Tabs.Tab>
+```ts showLineNumbers copy filename="src/modules/static/static-params/static-params-controller.ts" source="examples/kitchen-sink"
+import { z } from 'zod';
+import { procedure, prefix, get, operation } from 'vovk';
+
+@prefix('static-params')
+export default class StaticParamsController {
+  @operation({
+    summary: 'Static Params',
+    description: 'Get the static params: section and page',
+  })
+  @get('{section}/page{page}.json', {
+    staticParams: [
+      { section: 'a', page: '1' },
+      { section: 'a', page: '2' },
+      { section: 'a', page: '3' },
+      { section: 'b', page: '1' },
+      { section: 'b', page: '2' },
+      { section: 'b', page: '3' },
+    ],
+  })
+  static getStaticParams = procedure({
+    params: z.object({
+      section: z.enum(['a', 'b']),
+      page: z.enum(['1', '2', '3']),
+    }),
+  }).handle(async (_req, { section, page }) => {
+    return { section, page };
+  });
+}
+```
+*[The code above is fetched from GitHub repository.](https://github.com/finom/vovk/blob/main/examples/kitchen-sink/src/modules/static/static-params/static-params-controller.ts)*
+  </Tabs.Tab>
+  <Tabs.Tab>
+```tsx showLineNumbers copy filename="src/app/static-params/static-params-example.tsx" source="examples/kitchen-sink"
+'use client';
+import { useState } from 'react';
+import { StaticParamsRPC } from '@/client';
+import type { VovkParams, VovkReturnType } from 'vovk';
+
+export default function StaticParamsExample() {
+  const [serverResponse, setServerResponse] = useState<VovkReturnType<typeof StaticParamsRPC.getStaticParams>>();
+  const [section, setSection] = useState<VovkParams<typeof StaticParamsRPC.getStaticParams>['section']>('a');
+  const [page, setPage] = useState<VovkParams<typeof StaticParamsRPC.getStaticParams>['page']>('1');
+
+  return (
+    <>
+      <label htmlFor="section">Section:</label>
+      <select id="section" value={section} onChange={(e) => setSection(e.target.value as typeof section)}>
+        {['a', 'b'].map((key: string) => (
+          <option key={key} value={key}>
+            {key}
+          </option>
+        ))}
+      </select>
+      <br />
+      <label htmlFor="page">Page:</label>
+      <select id="page" value={page} onChange={(e) => setPage(e.target.value as typeof page)}>
+        {['1', '2', '3'].map((key: string) => (
+          <option key={key} value={key}>
+            {key}
+          </option>
+        ))}
+      </select>
+      <br />
+      <button
+        type="button"
+        onClick={async () => {
+          setServerResponse(await StaticParamsRPC.getStaticParams({ params: { section, page } }));
+        }}
+      >
+        Get Static Params Response
+      </button>
+      <div>{serverResponse ? JSON.stringify(serverResponse) : ''}</div>
+    </>
+  );
+}
+```
+*[The code above is fetched from GitHub repository.](https://github.com/finom/vovk/blob/main/examples/kitchen-sink/src/app/static-params/static-params-example.tsx)*
+  </Tabs.Tab>
+  <Tabs.Tab>
+```ts showLineNumbers copy filename="src/app/api/static/[[...vovk]]/route.ts" source="examples/kitchen-sink"
+import { controllersToStaticParams, initSegment } from 'vovk';
+import OpenApiController from '../../../../modules/static/openapi/openapi-controller.ts';
+import StaticParamsController from '../../../../modules/static/static-params/static-params-controller.ts';
+
+const controllers = {
+  OpenApiRPC: OpenApiController,
+  StaticParamsRPC: StaticParamsController,
+};
+
+export type Controllers = typeof controllers;
+
+export function generateStaticParams() {
+  return controllersToStaticParams(controllers);
+}
+
+export const { GET } = initSegment({
+  segmentName: 'static',
+  emitSchema: true,
+  controllers,
+  onError: (error) => {
+    console.error(error);
+  },
+});
+```
+*[The code above is fetched from GitHub repository.](https://github.com/finom/vovk/blob/main/examples/kitchen-sink/src/app/api/static/[[...vovk]]/route.ts)*
+  </Tabs.Tab>
+</Tabs>
+
+## Related Documentation
+
+- [Segment](https://vovk.dev/segment)
+- [Controller & Procedure](https://vovk.dev/procedure)
+- [`@operation` Decorator](https://vovk.dev/openapi)
+- [TypeScript RPC](https://vovk.dev/typescript)
+

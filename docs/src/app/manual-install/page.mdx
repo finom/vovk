@@ -1,0 +1,234 @@
+import { Steps, Tabs, Callout } from 'nextra/components';
+
+# Manual Install
+
+<Steps>
+
+## Create a Next.js project (App Router + TypeScript)
+
+```bash npm2yarn copy
+npx create-next-app my-app --ts --app --src-dir
+```
+
+```bash
+cd my-app
+```
+
+## Install vovk and vovk-cli
+
+- `vovk` is the core/runtime library.
+- `vovk-cli` is the command-line interface for Vovk.ts (development dependency). 
+
+```sh npm2yarn copy
+npm i vovk
+```
+
+```sh npm2yarn copy
+npm i -D vovk-cli
+```
+
+**More info:**
+
+- [Packages](/packages)
+
+## Create the config file
+
+Create **vovk.config.mjs** at the project root with the following content:
+
+```ts showLineNumbers copy filename="vovk.config.mjs"
+// @ts-check
+/** @type {import('vovk').VovkConfig} */
+const vovkConfig = {};
+
+export default vovkConfig;
+```
+
+**More info:**
+
+- [Config](/config)
+
+## Install a validation library and enable client-side validation
+
+For Zod validation on the server and Ajv on the client, install:
+
+```sh npm2yarn copy
+npm i zod vovk-ajv
+```
+
+Configure `validateOnClient` in your config file to enable client-side validation:
+
+```ts showLineNumbers copy filename="vovk.config.mjs"
+// @ts-check
+/** @type {import('vovk').VovkConfig} */
+const vovkConfig = {
+  outputConfig: {
+    imports: {
+      validateOnClient: 'vovk-ajv',
+    },
+  },
+};
+
+export default vovkConfig;
+```
+
+**More info:**
+
+- [Controller & Procedure](/procedure)
+- [Customization](/imports)
+
+## Update the dev script and add a prebuild script
+
+There are two ways to run Vovk.ts and the Next.js server together: explicitly and implicitly. The explicit option uses the `concurrently` package to run both processes (you must set `PORT`). The implicit option lets the Vovk.ts CLI start Next.js for you; in that case, **vovk-cli** assigns the port automatically.
+
+The `prebuild` script runs `vovk generate` before `next build` so the client library is generated ahead of the Next.js build.
+
+<Tabs items={['Explicit', 'Implicit']} >
+  <Tabs.Tab>
+    Install concurrently:
+```sh npm2yarn copy
+npm i -D concurrently
+```
+
+    Update the "dev" script in **package.json**:
+
+    ```json
+    "scripts": {
+        "build": "next build",
+        "dev": "PORT=3000 concurrently 'vovk dev' 'next dev' --kill-others",
+        "prebuild": "vovk generate"
+    }
+    ```
+
+  </Tabs.Tab>
+  <Tabs.Tab>
+    Update the "dev" script in **package.json**:
+
+    ```json
+    "scripts": {
+        "build": "next build",
+        "dev": "npx vovk dev --next-dev",
+        "prebuild": "vovk generate"
+    }
+    ```
+
+  </Tabs.Tab>
+</Tabs>
+
+**More info:**
+
+- [vovk dev](/dev)
+- [vovk generate](/generate)
+
+## Enable decorators (optional)
+
+In your **tsconfig.json**, set `"experimentalDecorators"` to `true`.
+
+```json
+{
+  "compilerOptions": {
+    "experimentalDecorators": true
+    // ...
+  }
+}
+```
+
+This is required only if you want to use decorators in your controllers and procedures. As an alternative you can use `decorate(...)` from the library to achieve the same result without enabling decorators. See [Decorators Overview](/decorator-overview) for details.
+
+## Create a controller
+
+Create **hello-controller.ts** in **/src/modules/hello/** with a `HelloController` class.
+
+```ts showLineNumbers copy filename="src/modules/hello/hello-controller.ts"
+import { get, prefix } from 'vovk';
+
+@prefix('greetings') // prefix is optional
+export default class HelloController {
+  @get('greeting')
+  static getHello() {
+    return { greeting: 'Hello, World!' };
+  }
+}
+```
+
+**More info:**
+
+- [Procedure](/procedure)
+
+## Create a root segment
+
+Create the root [segment](/segment) **/src/app/api/[[...vovk]]/route.ts**, where **[[...vovk]]** is an ["Optional Catch-all Segment"](https://nextjs.org/docs/app/api-reference/file-conventions/dynamic-routes#optional-catch-all-segments). The slug can be any valid name, such as <nobr>**[[...mySlug]]**</nobr>.
+
+In the code below, `HelloRPC` is the name of the generated RPC module, and `HelloController` is the controller created above.
+
+```ts showLineNumbers copy filename="src/app/api/[[...vovk]]/route.ts"
+import { initSegment } from 'vovk';
+import HelloController from '../../../modules/hello/hello-controller';
+
+const controllers = { HelloRPC: HelloController };
+
+// export types that are inferred by the client
+export type Controllers = typeof controllers;
+
+// export Next.js route handlers
+export const { GET, POST, PUT, DELETE } = initSegment({ controllers });
+```
+
+**More info:**
+
+- [Segment](/segment)
+
+## Run the dev server
+
+Run `npm run dev` to start Vovk.ts and Next.js concurrently.
+
+```sh npm2yarn copy
+npm run dev
+```
+
+Navigate to [http://localhost:3000/api/greetings/greeting](http://localhost:3000/api/greetings/greeting) to see the result.
+
+## Create a React component
+
+Once the client is generated to `src/client`, you can import it as **@/client** (or with a relative path if your project doesn't define the `@/*` alias).
+
+```ts showLineNumbers copy filename="src/app/page.tsx"
+'use client';
+import { useState } from 'react';
+import { HelloRPC } from '@/client';
+import type { VovkReturnType } from 'vovk';
+
+export default function MyComponent() {
+  const [serverResponse, setServerResponse] = useState<VovkReturnType<typeof HelloRPC.getHello>>();
+
+  return (
+    <>
+      <button
+        onClick={async () => {
+          const response = await HelloRPC.getHello();
+          setServerResponse(response);
+        }}
+      >
+        Get Greeting from Server
+      </button>
+      <div>{serverResponse?.greeting}</div>
+    </>
+  );
+}
+```
+
+Open [http://localhost:3000](http://localhost:3000) to see the result.
+
+<Callout type="info" emoji="ℹ️">
+  If you're using VSCode, you may need to
+  <a href="https://stackoverflow.com/questions/64454845/where-is-vscodes-restart-ts-server">restart the TS server</a>
+  when you add a new controller class. This is the only time a manual restart is typically required; other changes—like
+  adding methods or updating validation—are picked up automatically.
+</Callout>
+
+**More info:**
+
+- [TypeScript Client](/typescript)
+- [Composed Mode](/composed)
+- [Segmented Mode](/segmented)
+
+</Steps>

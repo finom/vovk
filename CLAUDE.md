@@ -1,10 +1,11 @@
 # vovk monorepo
 
-Workspaces: `packages/vovk` (runtime), `packages/vovk-cli`, `packages/vovk-ajv`, `packages/vovk-python`, `packages/vovk-rust`. `test/` is a separate Next.js app with its own lockfile that consumes all packages and holds the integration tests. Docs live in the separate vovk.dev repo; `skills/` holds the in-repo task guides.
+Workspaces: `packages/vovk` (runtime), `packages/vovk-cli`, `packages/vovk-ajv`, `packages/vovk-python`, `packages/vovk-rust`, plus `docs/` (vovk.dev), `examples/*` (hello-world, kitchen-sink, realtime-kanban, multitenant; each deploys to Vercel) and `perf/`, which run the packages from this repo. `test/` is a separate Next.js app with its own lockfile that consumes all packages and holds the integration tests. `skills/` holds the in-repo task guides.
 
 ## Commands
 
-- `npm run build` builds all packages (turbo)
+- `npm run build` builds all packages (turbo) and links the `vovk` bin; the apps need it before they build
+- `npm run build -w <workspace>` builds one app; docs code fences with `source=` sync from the repo files via `npm run update-mdx-github-codeblocks -w vovk.dev`
 - `npm t` runs everything: lint (biome), build, unit and integration suites, CLI specs
 - `npm run test:main` generates the client, typechecks and runs the test app suites
 

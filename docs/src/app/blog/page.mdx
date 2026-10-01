@@ -1,0 +1,43 @@
+---
+title: 'Index'
+description: 'Blog'
+---
+
+import BlogIndexArticle from '../../components/blog-index-article';
+
+import { metadata as comparisonMetadata } from './backend-framework-comparison/page.mdx';
+import { metadata as v3Metadata } from './announcement/page.mdx';
+import { metadata as v4Metadata } from './v4/page.mdx';
+
+<BlogIndexArticle
+  title={v4Metadata.title}
+  description={v4Metadata.description}
+  date={v4Metadata.date}
+  href="/blog/v4"
+/>
+
+<BlogIndexArticle
+  title={comparisonMetadata.title}
+  description={comparisonMetadata.description}
+  date={comparisonMetadata.date}
+  href="/blog/backend-framework-comparison"
+/>
+
+<div className="hidden">
+<BlogIndexArticle
+  title="Stop Prop-Drilling API Responses: A Zustand Registry Pattern That Auto-Updates Every Component"
+  description="Entity-driven state normalization with Zustand — a registry pattern that extracts, normalizes, and syncs entities across your entire React app automatically."
+  date="March 28, 2026"
+  href="https://dev.to/finom/stop-duplicating-api-state-a-zustand-registry-that-auto-updates-every-component-45f1-temp-slug-3687034"
+  badge="dev.to"
+/>
+</div>
+
+<BlogIndexArticle
+  title={v3Metadata.title}
+  description={v3Metadata.description}
+  date={v3Metadata.date}
+  href="/blog/announcement"
+/>
+
+

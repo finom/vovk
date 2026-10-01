@@ -1,0 +1,47 @@
+{
+  "name": "vovk-perf-test",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vovk dev --next-dev -- --turbopack",
+    "dev-exit": "vovk dev --next-dev --exit -- --turbopack",
+    "build": "next build --turbopack",
+    "start": "next start",
+    "lint": "biome check",
+    "format": "biome format --write",
+    "prebuild": "npm run create-modules && vovk generate",
+    "create-modules": "tsx ./scripts/createModules.ts",
+    "perf-one": "tsx ./bench/requestOverheadPerfTests/one.ts",
+    "perf-ten": "tsx ./bench/requestOverheadPerfTests/ten.ts",
+    "perf-hundred": "tsx ./bench/requestOverheadPerfTests/hundred.ts",
+    "perf-thousand": "tsx ./bench/requestOverheadPerfTests/thousand.ts",
+    "perf-ten-thousand": "tsx ./bench/requestOverheadPerfTests/tenThousand.ts",
+    "preperf-test": "npm run create-modules",
+    "perf-test": "npm run perf-one && npm run perf-ten && npm run perf-hundred && npm run perf-thousand && npm run perf-ten-thousand && npm run create-cold-start-tests && npm run cold-start-perf-test",
+    "create-cold-start-tests": "tsx ./scripts/createColdStartTests.ts",
+    "cold-start-perf-test": "tsx ./bench/generated_coldStartPerfTest.ts",
+    "predev": "npm run create-modules",
+    "ncu": "npm-check-updates -u"
+  },
+  "dependencies": {
+    "next": "^16.3.6",
+    "prettier": "^3.9.6",
+    "react": "19.2.8",
+    "react-dom": "19.2.8",
+    "tinybench": "^6.1.2",
+    "vovk": "^4.0.0-beta.0",
+    "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^2.5.14",
+    "@tailwindcss/postcss": "^4",
+    "@types/node": "^26",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "tailwindcss": "^4",
+    "tsx": "^4.23.7",
+    "typescript": "^5.9.3",
+    "vovk-cli": "^0.3.0-beta.0"
+  }
+}

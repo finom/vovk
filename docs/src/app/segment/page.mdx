@@ -1,0 +1,133 @@
+import { Callout } from 'nextra/components';
+import Image from 'next/image';
+
+# Segment
+
+## Overview
+
+Vovk.ts introduces an additional hierarchy level in backend architecture called **segments**, where controllers are initialized, implemented using [Next.js Optional Catch-All Segments](https://nextjs.org/docs/pages/building-your-application/routing/dynamic-routes#optional-catch-all-segments). Segments allow you to split your backend into smaller, focused serverless functions with different configurations (exported Next.js constants, such as `runtime` or `maxDuration`), improving maintainability and performance.
+
+
+<Image
+  src="/draw/segment-concept.svg"
+  alt="Segment"
+  width={1874.4446105957031}
+  height={745.1328125}
+  className="mt-4 dark:invert"
+/>
+
+
+Each segment owns a specific path, such as `/api/foo` or `/api/bar` as focused “mini backends,” similar to how frontend code is split into pages in Next.js. Segments are initialized by calling `initSegment` in the **route.ts** file located in **[[...slug]]** folders, that returns Next.js route handlers (`GET`, `POST`, etc.) for that segment. Vovk.ts uses `vovk` as the slug name, but any valid name works.
+
+When `NODE_ENV` is set to `"development"` (by using `next dev`), each segment exposes a `_schema_` endpoint that serves the segment schema. The [dev CLI](/dev) calls this endpoint to retrieve the schema and build JSON files in **.vovk-schema/**. This avoids importing Node.js modules in Next.js code, allows `export const runtime = 'edge'` in **route.ts**, but also simplifies schema retrieval tooling.
+
+Optional Catch-All Segments are used insted of [Catch-All Segments](https://nextjs.org/docs/pages/building-your-application/routing/dynamic-routes#catch-all-segments) in order to be able to easily implement a root endpoint for that segment.
+
+## Creating Segments
+
+Initialize a segment by calling `initSegment` in **route.ts** and export the returned route handlers (`GET`, `POST`, etc.). The function accepts:
+
+- `controllers` — an object with controllers used by the segment. Object keys define generated RPC module names (use a random name if `emitSchema` is `false`); values are the controllers.
+- `segmentName` — the segment name. Defaults to an empty string for the root segment.
+- `emitSchema` — whether to emit the schema for the segment. Defaults to `true`.
+- `exposeValidation` — whether to expose validation data. Defaults to `true`.
+- `onError` — a callback invoked on errors with:
+  - `error: HttpError` — the error instance.
+  - `request: NextRequest` — the incoming request (headers, URL, etc.).
+
+The segment file (**route.ts**) should also export `type Controllers = typeof controllers{:ts}` to enable type inference in the [RPC client](/typescript).
+
+### The Root Segment
+
+```sh npm2yarn copy
+npx vovk new segment
+```
+
+See [`vovk new` documentation](/new)
+
+For simple single-page apps, a single root segment is sufficient. In this setup, the backend is bundled into one serverless function when deployed.
+
+Example **route.ts** for a single-segment app:
+
+```ts showLineNumbers copy filename="src/app/api/[[...vovk]]/route.ts"
+import { initSegment } from 'vovk';
+import UserController from '../../modules/user/user-controller';
+import PostController from '../../modules/post/post-controller';
+
+export const maxDuration = 300; // Next.js route handler option
+
+const controllers = {
+  UserRPC: UserController,
+  PostRPC: PostController,
+};
+
+// export the controllers type to be used in the client code
+export type Controllers = typeof controllers;
+
+// export the Next.js route handlers
+export const { GET, POST, PUT, DELETE } = initSegment({
+  controllers,
+});
+```
+
+The [schema](/schema) for the root segment is stored at **.vovk-schema/root.json**.
+
+<Callout type="info" emoji="ℹ️">
+  The name **root** is used only for file naming. In configuration and elsewhere, the root segment name is an empty string.
+</Callout>
+
+### Multiple Segments
+
+Create multiple segments to split your backend into separate serverless functions. Reasons include:
+
+- Using different Next.js route handler options or `initSegment` configurations.
+- Reducing bundle size by splitting code.
+- Separating app areas (e.g., root, `admin`, `customer`, `customer/public`).
+- Supporting multiple API versions (e.g., `v1`, `v2`).
+- Creating a [static segment](/static-segment) for OpenAPI specs, historical data, etc.
+
+Each segment’s nested folder determines both the API path and the segment name. For example, **/src/app/api/`segment-name`/[[...slug]]/** is served at **/api/`segment-name`**. Nesting is unlimited.
+
+For non-root segments, provide `segmentName` to `initSegment`:
+
+```ts showLineNumbers copy filename="src/app/api/foo/[[...vovk]]/route.ts"
+// ...
+
+export const { GET, POST, PUT, DELETE } = initSegment({
+  segmentName: 'foo',
+  controllers,
+});
+```
+
+The schema for `foo` is stored at **.vovk-schema/`foo`.json**.
+
+For deeper nesting, e.g., **/src/app/api/`foo/bar/baz`/[[...slug]]/**, set `segmentName` to `"foo/bar/baz"`. The schema is stored at **.vovk-schema/`foo/bar/baz`.json**.
+
+## Segment Priority
+
+With multiple segments, the most specific (deepest) one takes priority. For example:
+
+- **/src/app/api/[[...slug]]/** — the root segment
+- **/src/app/api/foo/[[...slug]]/** — `foo` segment
+- **/src/app/api/foo/bar/[[...slug]]/** — `foo/bar` segment
+
+A request to **/api/foo/bar** is handled by the `foo/bar` segment. If it doesn’t match, but the `foo` segment does, `foo` handles it. Otherwise, the root segment handles it.
+
+<Callout type="info" emoji="ℹ️">
+  You can change the API folder name from `api` to anything else via the `rootEntry` [config](/config) option, including setting it to an empty to serve the API from the app root.
+</Callout>
+
+## RPC Client
+
+Whether the API is [static](/static-segment) or dynamic, you can call it with the same RPC client, including client-side validation and type inference.
+
+```ts showLineNumbers copy
+const resp = await StaticParamsRPC.getStaticParams({
+  params: {
+    section: 'a',
+    page: '1',
+  },
+});
+
+console.log(resp); // { section: 'a', page: '1' }
+```

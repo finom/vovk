@@ -1,0 +1,177 @@
+# Telegram Bot with OpenAPI Mixins
+
+A combination of three features—[State Normalization](./state), [Database Polling](./polling), and [Tool derivation](/tools)—enables real-time database and UI updates from any third-party source of changes: API calls, MCP clients, bots, interactions by other users, and so on.
+
+<img src="/diagrams/telegram_bot_flow.svg" alt="Telegram Bot Flow" className="mt-4 dark:invert" />
+
+
+As a proof of concept, this article briefly describes the Telegram bot integration, which allows users to create tasks and assign them to team members by sending text or voice messages to the bot.
+
+## Telegram API Mixin
+
+The Telegram API library is implemented with [OpenAPI mixins](/mixins) and used as a module with a hard-coded name `TelegramAPI` in the `telegram` pseudo-segment.
+
+```ts showLineNumbers copy filename="vovk.config.mjs"
+// @ts-check
+/** @type {import('vovk').VovkConfig} */
+const config = {
+  // ...
+  outputConfig: {
+    // ...
+    segments: {
+      telegram: {
+        openAPIMixin: {
+          source: {
+            url: 'https://raw.githubusercontent.com/sys-001/telegram-bot-api-versions/refs/heads/main/files/openapi/yaml/v183.yaml',
+            fallback: '.openapi-cache/telegram.yaml',
+          },
+          getModuleName: 'TelegramAPI',
+          getMethodName: ({ path }) => path.replace(/^\//, ''),
+          errorMessageKey: 'description',
+        },
+      },
+    },
+  },
+};
+
+export default config;
+```
+
+After running `vovk dev` or `vovk generate`, the `TelegramAPI` module is available for import from the generated client library.
+
+```ts
+import { TelegramAPI } from 'vovk-client';
+
+await TelegramAPI.sendMessage({
+  body: {
+    chat_id: 123456789,
+    text: 'Hello from Realtime Kanban Telegram bot!',
+  },
+  apiRoot: 'https://api.telegram.org/bot<YOUR_BOT_TOKEN>',
+});
+```
+
+Because the Telegram Bot API requires authentication via the bot token in the URL, the API module can be recreated with the `withDefaults` method to set the `apiRoot` permanently.
+
+```ts
+import { TelegramAPI as TelegramRawAPI } from 'vovk-client';
+
+const TelegramAPI = TelegramRawAPI.withDefaults({
+  apiRoot: 'https://api.telegram.org/bot<YOUR_BOT_TOKEN>',
+});
+```
+
+## Segment, Controller and Procedure
+
+We’re going to create a new segment called `bots` that contains a `TelegramController` under the `TelegramBot` key. The segment isn’t going to emit any schema, as it’s not needed on the client side; this is configured by setting `emitSchema: false` in the `initSegment` call. Because the schema is not emitted, the controller key name can be any string.
+
+```ts showLineNumbers copy filename="src/app/api/bots/[[...vovk]]/route.ts" source="examples/realtime-kanban"
+import { initSegment } from 'vovk';
+import TelegramController from '../../../../modules/telegram/telegram-controller';
+
+const controllers = {
+  TelegramBot: TelegramController,
+};
+
+export type Controllers = typeof controllers;
+
+export const { GET, POST, PATCH, PUT, HEAD, OPTIONS, DELETE } = initSegment({
+  segmentName: 'bots',
+  emitSchema: false, // Disable schema emission for bot endpoints
+  controllers,
+});
+```
+*[The code above is fetched from GitHub repository.](https://github.com/finom/vovk/blob/main/examples/realtime-kanban/src/app/api/bots/[[...vovk]]/route.ts)*
+
+The `TelegramController` class contains a single `handle` procedure, implementing the `/api/bots/telegram/bot` endpoint, which is called by the Telegram webhook for each incoming message.
+
+```ts showLineNumbers copy filename="src/modules/telegram/telegram-controller.ts" source="examples/realtime-kanban"
+import { post, prefix } from 'vovk';
+import TelegramService from './telegram-service';
+
+@prefix('telegram')
+export default class TelegramController {
+  @post('bot')
+  static handle = TelegramService.handle.bind(TelegramService);
+}
+```
+*[The code above is fetched from GitHub repository.](https://github.com/finom/vovk/blob/main/examples/realtime-kanban/src/modules/telegram/telegram-controller.ts)*
+
+## Service
+
+The `TelegramService` class contains the main logic for handling incoming messages, generating AI responses with the Vercel AI SDK, updating the database via derived tools, and sending text or voice messages back to the user.
+
+```ts showLineNumbers copy filename="src/modules/telegram/telegram-service.ts"
+// ...
+export default class TelegramService {
+  // ...
+  private static async generateAIResponse(
+    chatId: number,
+    userMessage: string,
+    systemPrompt: string
+  ): Promise<{ botResponse: string; messages: ModelMessage[] }> {
+    // Get chat history
+    const history = await this.getChatHistory(chatId);
+    const messages = [...this.formatHistoryForVercelAI(history), { role: 'user', content: userMessage } as const];
+    const { tools } = deriveTools({
+      modules: {
+        UserController,
+        TaskController,
+      },
+    });
+
+    // Generate a response using Vercel AI SDK
+    const { text } = await generateText({
+      model: vercelOpenAI('gpt-5'),
+      system: systemPrompt,
+      messages,
+      stopWhen: stepCountIs(16),
+      tools: {
+        ...Object.fromEntries(
+          tools.map(({ name, execute, description, parameters }) => [
+            name,
+            tool({
+              execute,
+              description,
+              inputSchema: jsonSchema(parameters as JSONSchema7),
+            }),
+          ])
+        ),
+      },
+    });
+
+    const botResponse = text || "I couldn't generate a response.";
+
+    // Add user message to history
+    await this.addToHistory(chatId, 'user', userMessage);
+    // Add assistant response to history
+    await this.addToHistory(chatId, 'assistant', botResponse);
+
+    messages.push({
+      role: 'assistant',
+      content: botResponse,
+    });
+
+    return { botResponse, messages };
+  }
+
+  private static async sendTextMessage(chatId: number, text: string): Promise<void> {
+    await TelegramAPI.sendMessage({
+      body: {
+        chat_id: chatId,
+        text: text,
+        parse_mode: 'html',
+      },
+    });
+  }
+
+  private static async sendVoiceMessage(chatId: number, text: string): Promise<void> {
+    // ...
+  }
+  // ...
+}
+```
+
+You can explore the full implementation of `TelegramService` in the [GitHub repository](https://github.com/finom/vovk/blob/main/examples/realtime-kanban/src/modules/telegram/TelegramService.ts), as it’s too long to fit here.
+
+Now the app is ready to receive incoming messages from Telegram users, process them with AI, update the database and UI, and respond back to users.

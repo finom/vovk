@@ -1,0 +1,29 @@
+services:
+  postgres:
+    image: "ankane/pgvector:latest"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: realtime-kanban-db
+    ports:
+      - "5432:5432"
+  pg_proxy:
+    image: ghcr.io/neondatabase/wsproxy:latest
+    environment:
+      APPEND_PORT: "postgres:5432"
+      ALLOW_ADDR_REGEX: ".*"
+      LOG_TRAFFIC: "true"
+    ports:
+      - "5433:80"
+    depends_on:
+      - postgres
+  redis:
+    image: "redis:7.2-alpine"
+    ports:
+      - "6379:6379"
+    command: redis-server --appendonly yes
+    volumes:
+      - redis_data:/data
+
+volumes:
+  redis_data:

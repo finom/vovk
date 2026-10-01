@@ -1,0 +1,159 @@
+import { ProgressiveExample } from '../../components/vovk-examples';
+
+# Progressive Responses with `progressive` Function
+
+<div className="example">
+  <ProgressiveExample />
+  [View Progressive example on examples.vovk.dev »](https://examples.vovk.dev/progressive)
+</div>
+
+A common use of the [JSON Lines](/jsonlines) format is to sequentially send multiple data chunks in response to a single request. This is useful for long‑running operations, such as LLM completions, where you want to deliver partial results as they become available.
+
+But what if you don’t know which chunk will arrive first, second, and so on? In this case, you can use an experimental feature called “progressive response,” inspired by Dan Abramov’s proposal [Progressive JSON](https://overreacted.io/progressive-json/), from which the “progressive” name originates.
+
+Let's say you have two functions that return data after some random delay: `getUsers` and `getTasks`, implemented as static methods of a service class. In a real application, these could be API calls or queries to different databases.
+
+With the help of the [JSONLinesResponder class](#jsonlinesresponder), we can create a simple service method that looks like this:
+
+```ts showLineNumbers copy
+// ...
+void Promise.all([
+  this.getUsers().then((users) => resp.send({ users })),
+  this.getTasks().then((tasks) => resp.send({ tasks })),
+])
+  .then(resp.close)
+  .catch(resp.throw);
+// ...
+```
+
+- Once `getUsers()` or `getTasks()` resolves, `resp.send` sends a JSON line to the client.
+- When all promises resolve, `resp.close` closes the response stream.
+- If any promise rejects, `resp.throw` sends an error response to the client.
+
+The full implementation of the service module looks like this:
+
+```ts showLineNumbers copy filename="src/modules/progressive/progressive-service.ts" source="examples/kitchen-sink"
+import type { JSONLinesResponder, VovkIteration } from 'vovk';
+import type ProgressiveController from './progressive-controller.ts';
+
+export default class ProgressiveService {
+  static async getUsers() {
+    await new Promise((resolve) => setTimeout(resolve, Math.random() * 10_000));
+    return [
+      { id: 1, name: 'John Doe' },
+      { id: 2, name: 'Jane Smith' },
+      { id: 3, name: 'Alice Johnson' },
+      { id: 4, name: 'Bob Brown' },
+      { id: 5, name: 'Charlie White' },
+    ];
+  }
+
+  static async getTasks() {
+    await new Promise((resolve) => setTimeout(resolve, Math.random() * 10_000));
+    return [
+      { id: 1, title: 'Task One', completed: false },
+      { id: 2, title: 'Task Two', completed: true },
+      { id: 3, title: 'Task Three', completed: false },
+      { id: 4, title: 'Task Four', completed: true },
+      { id: 5, title: 'Task Five', completed: false },
+    ];
+  }
+
+  static streamProgressiveResponse(
+    responder: JSONLinesResponder<VovkIteration<typeof ProgressiveController.streamProgressiveResponse>>
+  ) {
+    return Promise.all([
+      ProgressiveService.getUsers().then((users) => responder.send({ users })),
+      ProgressiveService.getTasks().then((tasks) => responder.send({ tasks })),
+    ])
+      .then(responder.close)
+      .catch(responder.throw);
+  }
+}
+```
+*[The code above is fetched from GitHub repository.](https://github.com/finom/vovk/blob/main/examples/kitchen-sink/src/modules/progressive/progressive-service.ts)*
+
+On the controller side, instantiate `JSONLinesResponder`, pass it to the service method, and return it as the response.
+
+```ts showLineNumbers copy
+// ...
+const responder = new JSONLinesResponder<IterationType>(req);
+void ProgressiveService.streamProgressiveResponse(responder);
+return responder;
+// ...
+```
+
+The full controller implementation with typing and validation looks like this:
+
+```ts showLineNumbers copy filename="src/modules/progressive/progressive-controller.ts" source="examples/kitchen-sink"
+import { procedure, get, JSONLinesResponder, prefix, type VovkIteration } from 'vovk';
+import { z } from 'zod';
+import ProgressiveService from './progressive-service.ts';
+
+@prefix('progressive')
+export default class ProgressiveController {
+  @get('', { cors: true })
+  static streamProgressiveResponse = procedure({
+    validateEachIteration: true,
+    iteration: z.union([
+      z.strictObject({
+        users: z.array(
+          z.strictObject({
+            id: z.number(),
+            name: z.string(),
+          })
+        ),
+      }),
+      z.strictObject({
+        tasks: z.array(
+          z.strictObject({
+            id: z.number(),
+            title: z.string(),
+            completed: z.boolean(),
+          })
+        ),
+      }),
+    ]),
+  }).handle(async (req) => {
+    const responder = new JSONLinesResponder<VovkIteration<typeof ProgressiveController.streamProgressiveResponse>>(
+      req
+    );
+
+    void ProgressiveService.streamProgressiveResponse(responder);
+
+    return responder;
+  });
+}
+```
+*[The code above is fetched from GitHub repository.](https://github.com/finom/vovk/blob/main/examples/kitchen-sink/src/modules/progressive/progressive-controller.ts)*
+
+For the client-side, we will use the `progressive` function from the `vovk` package, which creates a promise for each property of the resulting object. It accepts the RPC method to call (e.g., `ProgressiveRPC.streamProgressiveResponse`) and optional input parameters. The function returns an object with promises per property, which can be awaited separately.
+
+```ts showLineNumbers copy
+const { users: usersPromise, tasks: tasksPromise } = progressive(ProgressiveRPC.streamProgressiveResponse);
+```
+
+If the RPC method requires input parameters, you can pass them as the second argument:
+
+```ts showLineNumbers copy
+const { users: usersPromise, tasks: tasksPromise } = progressive(ProgressiveRPC.streamProgressiveResponse, {
+  params: { id: '123' },
+  body: { hello: 'world' },
+});
+```
+
+After that, the promises can be awaited separately, and the data will be available as soon as the corresponding JSON line is received from the server:
+
+```ts showLineNumbers copy
+usersPromise.then(console.log).catch(console.error);
+tasksPromise.then(console.log).catch(console.error);
+```
+
+---
+
+Behind the scenes, `progressive` returns a [Proxy](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Proxy) that implements a `get` trap to return a promise for each accessed property.
+
+- When a new JSON line arrives, the corresponding promise resolves with that data.
+- If a JSON line arrives for a property without an existing promise, the promise is created and resolved (so it can be retrieved later).
+- When the response closes, all unsettled promises are rejected with an error indicating that the connection closed before sending a value for that property.
+- If the response errors, all unsettled promises are rejected with that error.

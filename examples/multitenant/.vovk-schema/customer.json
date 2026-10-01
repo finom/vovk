@@ -1,0 +1,19 @@
+{
+  "$schema": "https://vovk.dev/api/schema/v3/segment.json",
+  "emitSchema": true,
+  "segmentName": "customer",
+  "segmentType": "segment",
+  "controllers": {
+    "CustomerRPC": {
+      "rpcModuleName": "CustomerRPC",
+      "originalControllerName": "CustomerController",
+      "prefix": "",
+      "handlers": {
+        "getMessage": {
+          "path": "",
+          "httpMethod": "GET"
+        }
+      }
+    }
+  }
+}

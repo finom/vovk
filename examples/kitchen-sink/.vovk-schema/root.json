@@ -1,0 +1,890 @@
+{
+  "$schema": "https://vovk.dev/api/schema/v3/segment.json",
+  "emitSchema": true,
+  "segmentName": "",
+  "segmentType": "segment",
+  "controllers": {
+    "UserZodRPC": {
+      "rpcModuleName": "UserZodRPC",
+      "originalControllerName": "UserZodController",
+      "prefix": "users-zod",
+      "handlers": {
+        "updateUser": {
+          "validation": {
+            "body": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string",
+                  "description": "User full name",
+                  "example": "John Doe"
+                },
+                "age": {
+                  "type": "number",
+                  "minimum": 0,
+                  "maximum": 120,
+                  "description": "User age",
+                  "example": 30
+                },
+                "email": {
+                  "type": "string",
+                  "format": "email",
+                  "pattern": "^(?!\\.)(?!.*\\.\\.)([A-Za-z0-9_'+\\-\\.]*)[A-Za-z0-9_+-]@([A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$",
+                  "description": "User email",
+                  "example": "john.doe@example.com"
+                }
+              },
+              "required": [
+                "name",
+                "age",
+                "email"
+              ],
+              "description": "User object"
+            },
+            "query": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "object",
+              "properties": {
+                "notify": {
+                  "type": "string",
+                  "enum": [
+                    "email",
+                    "push",
+                    "none"
+                  ],
+                  "description": "Notification type"
+                }
+              },
+              "required": [
+                "notify"
+              ]
+            },
+            "params": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                  "description": "User ID"
+                }
+              },
+              "required": [
+                "id"
+              ]
+            },
+            "output": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "object",
+              "properties": {
+                "success": {
+                  "type": "boolean",
+                  "description": "Success status"
+                }
+              },
+              "required": [
+                "success"
+              ],
+              "description": "Response object"
+            }
+          },
+          "operationObject": {
+            "summary": "Update user (Zod)",
+            "description": "Update user by ID with Zod validation"
+          },
+          "path": "{id}",
+          "httpMethod": "POST"
+        }
+      }
+    },
+    "UserZodWithServiceRPC": {
+      "rpcModuleName": "UserZodWithServiceRPC",
+      "originalControllerName": "UserZodWithServiceController",
+      "prefix": "users-zod-with-service",
+      "handlers": {
+        "updateUser": {
+          "validation": {
+            "body": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string",
+                  "description": "User full name",
+                  "example": "John Doe"
+                },
+                "age": {
+                  "type": "number",
+                  "minimum": 0,
+                  "maximum": 120,
+                  "description": "User age",
+                  "example": 30
+                },
+                "email": {
+                  "type": "string",
+                  "format": "email",
+                  "pattern": "^(?!\\.)(?!.*\\.\\.)([A-Za-z0-9_'+\\-\\.]*)[A-Za-z0-9_+-]@([A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$",
+                  "description": "User email",
+                  "example": "john.doe@example.com"
+                }
+              },
+              "required": [
+                "name",
+                "age",
+                "email"
+              ],
+              "description": "User object"
+            },
+            "query": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "object",
+              "properties": {
+                "notify": {
+                  "type": "string",
+                  "enum": [
+                    "email",
+                    "push",
+                    "none"
+                  ],
+                  "description": "Notification type"
+                }
+              },
+              "required": [
+                "notify"
+              ]
+            },
+            "params": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                  "description": "User ID"
+                }
+              },
+              "required": [
+                "id"
+              ]
+            },
+            "output": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "object",
+              "properties": {
+                "success": {
+                  "type": "boolean",
+                  "description": "Success status"
+                },
+                "id": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                  "description": "User ID"
+                }
+              },
+              "required": [
+                "success",
+                "id"
+              ],
+              "description": "Response object"
+            }
+          },
+          "operationObject": {
+            "summary": "Update user (Zod with service)",
+            "description": "Update user by ID with Zod validation"
+          },
+          "path": "{id}",
+          "httpMethod": "POST"
+        }
+      }
+    },
+    "UserArktypeRPC": {
+      "rpcModuleName": "UserArktypeRPC",
+      "originalControllerName": "UserArktypeController",
+      "prefix": "users-arktype",
+      "handlers": {
+        "updateUser": {
+          "validation": {
+            "body": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "object",
+              "description": "User object",
+              "properties": {
+                "age": {
+                  "type": "number",
+                  "description": "User age",
+                  "exclusiveMaximum": 120,
+                  "exclusiveMinimum": 0
+                },
+                "email": {
+                  "type": "string",
+                  "description": "User email",
+                  "pattern": "^[\\w%+.-]+@[\\d.A-Za-z-]+\\.[A-Za-z]{2,}$",
+                  "format": "email"
+                },
+                "name": {
+                  "type": "string",
+                  "description": "User full name"
+                }
+              },
+              "required": [
+                "age",
+                "email",
+                "name"
+              ]
+            },
+            "query": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "object",
+              "properties": {
+                "notify": {
+                  "anyOf": [
+                    {
+                      "const": "email",
+                      "description": "Notification type"
+                    },
+                    {
+                      "const": "none",
+                      "description": "Notification type"
+                    },
+                    {
+                      "const": "push",
+                      "description": "Notification type"
+                    }
+                  ],
+                  "description": "Notification type"
+                }
+              },
+              "required": [
+                "notify"
+              ]
+            },
+            "params": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "object",
+              "properties": {
+                "id": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "description": "User ID",
+                      "format": "uuid",
+                      "pattern": "[\\da-f]{8}-[\\da-f]{4}-[1-8][\\da-f]{3}-[89ab][\\da-f]{3}-[\\da-f]{12}"
+                    },
+                    {
+                      "const": "00000000-0000-0000-0000-000000000000",
+                      "description": "User ID",
+                      "format": "uuid"
+                    },
+                    {
+                      "const": "ffffffff-ffff-ffff-ffff-ffffffffffff",
+                      "description": "User ID",
+                      "format": "uuid"
+                    }
+                  ],
+                  "description": "User ID",
+                  "format": "uuid"
+                }
+              },
+              "required": [
+                "id"
+              ]
+            },
+            "output": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "object",
+              "properties": {
+                "success": {
+                  "type": "boolean",
+                  "description": "Success status"
+                }
+              },
+              "required": [
+                "success"
+              ]
+            }
+          },
+          "operationObject": {
+            "summary": "Update user (Arktype)",
+            "description": "Update user by ID with Arktype validation"
+          },
+          "path": "{id}",
+          "httpMethod": "POST"
+        }
+      }
+    },
+    "UserValibotRPC": {
+      "rpcModuleName": "UserValibotRPC",
+      "originalControllerName": "UserValibotController",
+      "prefix": "users-valibot",
+      "handlers": {
+        "updateUser": {
+          "validation": {
+            "body": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string",
+                  "description": "User full name"
+                },
+                "age": {
+                  "type": "number",
+                  "minimum": 0,
+                  "maximum": 120,
+                  "description": "User age"
+                },
+                "email": {
+                  "type": "string",
+                  "format": "email",
+                  "description": "User email"
+                }
+              },
+              "required": [
+                "name",
+                "age",
+                "email"
+              ],
+              "description": "User object",
+              "$schema": "https://json-schema.org/draft/2020-12/schema"
+            },
+            "query": {
+              "type": "object",
+              "properties": {
+                "notify": {
+                  "enum": [
+                    "email",
+                    "push",
+                    "none"
+                  ],
+                  "type": "string",
+                  "description": "Notification type"
+                }
+              },
+              "required": [
+                "notify"
+              ],
+              "$schema": "https://json-schema.org/draft/2020-12/schema"
+            },
+            "params": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "format": "uuid",
+                  "description": "User ID"
+                }
+              },
+              "required": [
+                "id"
+              ],
+              "$schema": "https://json-schema.org/draft/2020-12/schema"
+            },
+            "output": {
+              "type": "object",
+              "properties": {
+                "success": {
+                  "type": "boolean",
+                  "description": "Success status"
+                }
+              },
+              "required": [
+                "success"
+              ],
+              "description": "Response object",
+              "$schema": "https://json-schema.org/draft/2020-12/schema"
+            }
+          },
+          "operationObject": {
+            "summary": "Update user (Valibot)",
+            "description": "Update user by ID with Valibot validation"
+          },
+          "path": "{id}",
+          "httpMethod": "POST"
+        }
+      }
+    },
+    "BasicRPC": {
+      "rpcModuleName": "BasicRPC",
+      "originalControllerName": "BasicController",
+      "prefix": "basic",
+      "handlers": {
+        "getHello": {
+          "path": "greeting",
+          "httpMethod": "GET",
+          "operationObject": {
+            "summary": "Get a greeting",
+            "description": "Get a greeting from the server"
+          }
+        },
+        "postHello": {
+          "path": "greeting",
+          "httpMethod": "POST",
+          "operationObject": {
+            "summary": "Post a greeting",
+            "description": "Post a greeting to the server"
+          }
+        }
+      }
+    },
+    "BasicRPCWithService": {
+      "rpcModuleName": "BasicRPCWithService",
+      "originalControllerName": "BasicControllerWithService",
+      "prefix": "basic-with-service",
+      "handlers": {
+        "getHello": {
+          "path": "greeting",
+          "httpMethod": "GET",
+          "operationObject": {
+            "summary": "Get a greeting using a service",
+            "description": "Get a greeting from the server using a service"
+          }
+        }
+      }
+    },
+    "JSONLinesRPC": {
+      "rpcModuleName": "JSONLinesRPC",
+      "originalControllerName": "JSONLinesController",
+      "prefix": "jsonlines",
+      "handlers": {
+        "streamTokens": {
+          "validation": {
+            "iteration": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "object",
+              "properties": {
+                "message": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "message"
+              ]
+            }
+          },
+          "operationObject": {
+            "summary": "Stream tokens",
+            "description": "Stream tokens to the client"
+          },
+          "path": "tokens",
+          "httpMethod": "GET"
+        }
+      }
+    },
+    "JSONLinesResponderRPC": {
+      "rpcModuleName": "JSONLinesResponderRPC",
+      "originalControllerName": "JSONLinesResponderController",
+      "prefix": "jsonlines-responder",
+      "handlers": {
+        "streamTokens": {
+          "validation": {
+            "iteration": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "object",
+              "properties": {
+                "message": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "message"
+              ]
+            }
+          },
+          "operationObject": {
+            "summary": "Stream tokens using Response object",
+            "description": "Stream tokens to the client using Response object"
+          },
+          "path": "tokens",
+          "httpMethod": "GET"
+        }
+      }
+    },
+    "OpenAiRPC": {
+      "rpcModuleName": "OpenAiRPC",
+      "originalControllerName": "OpenAiController",
+      "prefix": "openai",
+      "handlers": {
+        "createChatCompletion": {
+          "path": "chat",
+          "httpMethod": "POST",
+          "operationObject": {
+            "summary": "Create a chat completion",
+            "description": "Create a chat completion using OpenAI and yield the response"
+          }
+        }
+      }
+    },
+    "AiSdkRPC": {
+      "rpcModuleName": "AiSdkRPC",
+      "originalControllerName": "AiSdkController",
+      "prefix": "ai-sdk",
+      "handlers": {
+        "chat": {
+          "path": "chat",
+          "httpMethod": "POST",
+          "operationObject": {
+            "summary": "Vercel AI SDK",
+            "description": "Uses [@ai-sdk/openai](https://www.npmjs.com/package/@ai-sdk/openai) and ai packages to chat with an AI model"
+          }
+        }
+      }
+    },
+    "ProxyRPC": {
+      "rpcModuleName": "ProxyRPC",
+      "originalControllerName": "ProxyController",
+      "prefix": "proxy",
+      "handlers": {
+        "getHello": {
+          "path": "greeting",
+          "httpMethod": "GET",
+          "operationObject": {
+            "summary": "Proxy procedure",
+            "description": "Get a greeting from vovk.dev"
+          }
+        }
+      }
+    },
+    "PollRPC": {
+      "rpcModuleName": "PollRPC",
+      "originalControllerName": "PollController",
+      "prefix": "polling",
+      "handlers": {
+        "streamPollResponse": {
+          "validation": {
+            "query": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "object",
+              "properties": {
+                "i": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "i"
+              ]
+            },
+            "iteration": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "object",
+              "properties": {
+                "i": {
+                  "type": "number"
+                }
+              },
+              "required": [
+                "i"
+              ]
+            }
+          },
+          "path": "",
+          "httpMethod": "GET"
+        }
+      }
+    },
+    "EventsRPC": {
+      "rpcModuleName": "EventsRPC",
+      "originalControllerName": "EventsController",
+      "prefix": "events",
+      "handlers": {
+        "streamEvents": {
+          "validation": {
+            "iteration": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "object",
+              "properties": {
+                "event": {
+                  "type": "string",
+                  "enum": [
+                    "foo",
+                    "bar",
+                    "baz",
+                    "qux",
+                    "quux",
+                    "corge",
+                    "grault",
+                    "garply",
+                    "waldo",
+                    "fred",
+                    "plugh",
+                    "xyzzy",
+                    "thud"
+                  ],
+                  "description": "Event name"
+                },
+                "payload": {
+                  "type": "object",
+                  "properties": {
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time",
+                      "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$",
+                      "description": "Event timestamp"
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "Event message"
+                    }
+                  },
+                  "required": [
+                    "timestamp",
+                    "message"
+                  ]
+                }
+              },
+              "required": [
+                "event",
+                "payload"
+              ]
+            }
+          },
+          "path": "",
+          "httpMethod": "GET"
+        }
+      }
+    },
+    "ProgressiveRPC": {
+      "rpcModuleName": "ProgressiveRPC",
+      "originalControllerName": "ProgressiveController",
+      "prefix": "progressive",
+      "handlers": {
+        "streamProgressiveResponse": {
+          "validation": {
+            "iteration": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "anyOf": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "users": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "number"
+                          },
+                          "name": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "id",
+                          "name"
+                        ],
+                        "additionalProperties": false
+                      }
+                    }
+                  },
+                  "required": [
+                    "users"
+                  ],
+                  "additionalProperties": false
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "tasks": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "number"
+                          },
+                          "title": {
+                            "type": "string"
+                          },
+                          "completed": {
+                            "type": "boolean"
+                          }
+                        },
+                        "required": [
+                          "id",
+                          "title",
+                          "completed"
+                        ],
+                        "additionalProperties": false
+                      }
+                    }
+                  },
+                  "required": [
+                    "tasks"
+                  ],
+                  "additionalProperties": false
+                }
+              ]
+            }
+          },
+          "path": "",
+          "httpMethod": "GET"
+        }
+      }
+    },
+    "FormZodRPC": {
+      "rpcModuleName": "FormZodRPC",
+      "originalControllerName": "FormZodController",
+      "prefix": "form-zod",
+      "handlers": {
+        "submitForm": {
+          "validation": {
+            "body": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "object",
+              "properties": {
+                "email": {
+                  "type": "string",
+                  "format": "email",
+                  "pattern": "^(?!\\.)(?!.*\\.\\.)([A-Za-z0-9_'+\\-\\.]*)[A-Za-z0-9_+-]@([A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$",
+                  "description": "User email"
+                },
+                "resume": {
+                  "type": "string",
+                  "format": "binary",
+                  "contentEncoding": "binary",
+                  "minLength": 1,
+                  "description": "Resume file",
+                  "examples": [
+                    "application/pdf"
+                  ]
+                },
+                "portfolioSamples": {
+                  "anyOf": [
+                    {
+                      "type": "array",
+                      "items": {
+                        "type": "string",
+                        "format": "binary",
+                        "contentEncoding": "binary",
+                        "minLength": 1
+                      }
+                    },
+                    {
+                      "type": "string",
+                      "format": "binary",
+                      "contentEncoding": "binary",
+                      "minLength": 1
+                    }
+                  ],
+                  "description": "Portfolio samples"
+                }
+              },
+              "required": [
+                "email",
+                "resume",
+                "portfolioSamples"
+              ],
+              "description": "User object",
+              "x-contentType": [
+                "multipart/form-data"
+              ]
+            },
+            "params": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                  "description": "User ID"
+                }
+              },
+              "required": [
+                "id"
+              ]
+            },
+            "output": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "object",
+              "properties": {
+                "email": {
+                  "type": "string",
+                  "format": "email",
+                  "pattern": "^(?!\\.)(?!.*\\.\\.)([A-Za-z0-9_'+\\-\\.]*)[A-Za-z0-9_+-]@([A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$",
+                  "description": "User email"
+                },
+                "resume": {
+                  "type": "object",
+                  "properties": {
+                    "name": {
+                      "type": "string",
+                      "description": "Resume file name",
+                      "examples": [
+                        "resume.pdf"
+                      ]
+                    },
+                    "size": {
+                      "type": "number",
+                      "minimum": 0,
+                      "description": "Resume file size"
+                    },
+                    "type": {
+                      "type": "string",
+                      "description": "Resume file type",
+                      "examples": [
+                        "application/pdf"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "name",
+                    "size",
+                    "type"
+                  ]
+                },
+                "portfolioSamples": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "name": {
+                        "type": "string",
+                        "description": "Portfolio sample file name",
+                        "examples": [
+                          "portfolio.zip"
+                        ]
+                      },
+                      "size": {
+                        "type": "number",
+                        "minimum": 0,
+                        "description": "Portfolio sample file size"
+                      },
+                      "type": {
+                        "type": "string",
+                        "description": "Portfolio sample file type",
+                        "examples": [
+                          "application/zip"
+                        ]
+                      }
+                    },
+                    "required": [
+                      "name",
+                      "size",
+                      "type"
+                    ]
+                  },
+                  "description": "Array of portfolio sample files"
+                }
+              },
+              "required": [
+                "email",
+                "resume",
+                "portfolioSamples"
+              ],
+              "description": "Response object"
+            }
+          },
+          "operationObject": {
+            "summary": "Submit form (Zod)",
+            "description": "Submit form with Zod validation"
+          },
+          "path": "{id}",
+          "httpMethod": "POST"
+        }
+      }
+    }
+  }
+}

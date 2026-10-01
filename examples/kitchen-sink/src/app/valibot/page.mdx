@@ -1,0 +1,149 @@
+---
+title: Valibot Validation Example
+description: Valibot validation example with client and server-side validation
+---
+
+import { Tabs } from 'nextra/components';
+import ValibotFormExample from './valibot-form-example';
+import Example from '@/components/example';
+
+# Valibot Validation Example
+
+Form input handling and [Valibot](https://valibot.dev/) validation. The request input is validated on the client-side with [vovk-ajv](https://www.npmjs.com/package/vovk-ajv) before being sent to the server where it is validated again with Valibot.
+
+## Result
+
+<Example>
+  <ValibotFormExample />
+</Example>
+
+## Code
+
+<Tabs items={['user-valibot-controller.ts', 'valibot-form-example.tsx']}>
+  <Tabs.Tab>
+```ts showLineNumbers copy filename="src/modules/valibot/user-valibot-controller.ts" source="examples/kitchen-sink"
+import { procedure, prefix, post, operation } from 'vovk';
+import { toStandardJsonSchema } from '@valibot/to-json-schema';
+import * as v from 'valibot';
+
+@prefix('users-valibot')
+export default class UserValibotController {
+  @operation({
+    summary: 'Update user (Valibot)',
+    description: 'Update user by ID with Valibot validation',
+  })
+  @post('{id}')
+  static updateUser = procedure({
+    body: toStandardJsonSchema(
+      v.pipe(
+        v.object({
+          name: v.pipe(v.string(), v.description('User full name')),
+          age: v.pipe(v.number(), v.minValue(0), v.maxValue(120), v.description('User age')),
+          email: v.pipe(v.string(), v.email(), v.description('User email')),
+        }),
+        v.description('User object')
+      )
+    ),
+    params: toStandardJsonSchema(
+      v.object({
+        id: v.pipe(v.string(), v.uuid(), v.description('User ID')),
+      })
+    ),
+    query: toStandardJsonSchema(
+      v.object({
+        notify: v.pipe(v.picklist(['email', 'push', 'none']), v.description('Notification type')),
+      })
+    ),
+    output: toStandardJsonSchema(
+      v.pipe(
+        v.object({
+          success: v.pipe(v.boolean(), v.description('Success status')),
+        }),
+        v.description('Response object')
+      )
+    ),
+  }).handle(async (req, { id }) => {
+    const { name, age, email } = await req.json();
+    const notify = req.nextUrl.searchParams.get('notify');
+
+    // do something with the data
+    console.log(`Updating user ${id}:`, { name, age, email, notify });
+    return {
+      success: true,
+    };
+  });
+}
+```
+*[The code above is fetched from GitHub repository.](https://github.com/finom/vovk/blob/main/examples/kitchen-sink/src/modules/valibot/user-valibot-controller.ts)*
+  </Tabs.Tab>
+  <Tabs.Tab>
+```tsx showLineNumbers copy filename="src/app/valibot/valibot-form-example.tsx" source="examples/kitchen-sink"
+'use client';
+import { useState, type FormEvent } from 'react';
+import { UserValibotRPC } from '@/client';
+import type { VovkReturnType } from 'vovk';
+
+export default function ValibotFormExample() {
+  const [response, setResponse] = useState<VovkReturnType<typeof UserValibotRPC.updateUser> | null>(null);
+  const [error, setError] = useState<Error | null>(null);
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [age, setAge] = useState(30);
+  const [disableClientValidation, setDisableClientValidation] = useState(false);
+  const onSubmit = async (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    try {
+      setResponse(
+        await UserValibotRPC.updateUser({
+          body: { name, email, age },
+          query: { notify: 'push' },
+          params: { id: '5a279068-35d6-4d67-94e0-c21ef4052eea' },
+          disableClientValidation,
+        })
+      );
+      setError(null);
+    } catch (e) {
+      setError(e as Error);
+      setResponse(null);
+    }
+  };
+
+  return (
+    <form onSubmit={onSubmit}>
+      <input type="text" placeholder="Name" value={name} onChange={(e) => setName(e.target.value)} />
+      <input type="text" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} />
+      <label htmlFor="age">Age:</label>
+      <input id="age" type="number" placeholder="Age" value={age} onChange={(e) => setAge(e.target.valueAsNumber)} />
+      <label className="block mb-4">
+        <input
+          type="checkbox"
+          className="mr-2"
+          checked={disableClientValidation}
+          onChange={(e) => setDisableClientValidation(e.target.checked)}
+        />
+        Disable client-side validation
+      </label>
+      <button type="submit">Submit</button>
+
+      {response && (
+        <div className="text-left">
+          <h3>Response:</h3>
+          <pre>{JSON.stringify(response, null, 2)}</pre>
+        </div>
+      )}
+
+      {error && <div className="overflow-auto">❌ {String(error)}</div>}
+    </form>
+  );
+}
+```
+*[The code above is fetched from GitHub repository.](https://github.com/finom/vovk/blob/main/examples/kitchen-sink/src/app/valibot/valibot-form-example.tsx)*
+
+  </Tabs.Tab>
+</Tabs>
+
+## Related Documentation
+
+- [TypeScript RPC](https://vovk.dev/typescript)
+- [Controller & Procedure](https://vovk.dev/procedure)
+- [`@operation` Decorator](https://vovk.dev/openapi)

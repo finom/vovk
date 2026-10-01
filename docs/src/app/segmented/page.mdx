@@ -1,0 +1,210 @@
+import { FileTree } from 'nextra/components';
+
+# Segmented Client Mode
+
+The [Composed Client Mode](/composed) works well for single-page applications, but in larger apps exposing the entire schema through a single client may be undesirable. With a small configuration change, you can instruct Vovk.ts to generate separate RPC clients for each segment. This approach—called the **Segmented Client**—splits the client into smaller per-segment TypeScript modules that can be imported independently, keeping RPC modules and their schemas hidden from unrelated pages. For example, “customer” pages won’t import “admin” RPC modules, keeping admin details out of customer code.
+
+By default, the segmented client is generated in the `./src/client` folder (or `./client` if you don’t use a `src` folder) from the [ts](/templates#ts) template. For an app with multiple segments, the generated structure may look like this:
+
+<FileTree>
+  <FileTree.Folder name="src/client" defaultOpen>
+    <FileTree.Folder name="root" defaultOpen>
+      <FileTree.File
+        name={
+          <span>
+            index.ts{' '}
+            <span className="text-gray-500">
+              (imports <code>./schema.ts</code>)
+            </span>
+          </span>
+        }
+      />
+      <FileTree.File
+        name={
+          <span>
+            schema.ts{' '}
+            <span className="text-gray-500">
+              (imports <code>.vovk-schema/root.json</code>)
+            </span>
+          </span>
+        }
+      />
+      <FileTree.File
+        name={
+          <span>
+            openapi.json <span className="text-gray-500">(root segment OpenAPI schema)</span>
+          </span>
+        }
+      />
+      <FileTree.File
+        name={
+          <span>
+            openapi.ts{' '}
+            <span className="text-gray-500">
+              (imports <code>./openapi.json</code>)
+            </span>
+          </span>
+        }
+      />
+    </FileTree.Folder>
+    <FileTree.Folder name="admin" defaultOpen>
+      <FileTree.File
+        name={
+          <span>
+            index.ts{' '}
+            <span className="text-gray-500">
+              (imports <code>./schema.ts</code>)
+            </span>
+          </span>
+        }
+      />
+      <FileTree.File
+        name={
+          <span>
+            schema.ts{' '}
+            <span className="text-gray-500">
+              (imports <code>.vovk-schema/admin.json</code>)
+            </span>
+          </span>
+        }
+      />
+      <FileTree.File
+        name={
+          <span>
+            openapi.json <span className="text-gray-500">(admin segment OpenAPI schema)</span>
+          </span>
+        }
+      />
+      <FileTree.File
+        name={
+          <span>
+            openapi.ts{' '}
+            <span className="text-gray-500">
+              (imports <code>./openapi.json</code>)
+            </span>
+          </span>
+        }
+      />
+    </FileTree.Folder>
+    <FileTree.Folder name="customer" defaultOpen>
+      <FileTree.File
+        name={
+          <span>
+            index.ts{' '}
+            <span className="text-gray-500">
+              (imports <code>./schema.ts</code>)
+            </span>
+          </span>
+        }
+      />
+      <FileTree.File
+        name={
+          <span>
+            schema.ts{' '}
+            <span className="text-gray-500">
+              (imports <code>.vovk-schema/customer.json</code>)
+            </span>
+          </span>
+        }
+      />
+      <FileTree.File
+        name={
+          <span>
+            openapi.json <span className="text-gray-500">(customer segment OpenAPI schema)</span>
+          </span>
+        }
+      />
+      <FileTree.File
+        name={
+          <span>
+            openapi.ts{' '}
+            <span className="text-gray-500">
+              (imports <code>./openapi.json</code>)
+            </span>
+          </span>
+        }
+      />
+      <FileTree.Folder name="static" defaultOpen>
+        <FileTree.File
+          name={
+            <span>
+              index.ts{' '}
+              <span className="text-gray-500">
+                (imports <code>./schema.ts</code>)
+              </span>
+            </span>
+          }
+        />
+        <FileTree.File
+          name={
+            <span>
+              schema.ts{' '}
+              <span className="text-gray-500">
+                (imports <code>.vovk-schema/customer/static.json</code>)
+              </span>
+            </span>
+          }
+        />
+        <FileTree.File
+          name={
+            <span>
+              openapi.json <span className="text-gray-500">(customer static sub-segment OpenAPI schema)</span>
+            </span>
+          }
+        />
+        <FileTree.File
+          name={
+            <span>
+              openapi.ts{' '}
+              <span className="text-gray-500">
+                (imports <code>./openapi.json</code>)
+              </span>
+            </span>
+          }
+        />
+      </FileTree.Folder>
+    </FileTree.Folder>
+  </FileTree.Folder>
+</FileTree>
+
+When you import an RPC module from one of the `.ts` files, the import tree includes only the schema and RPC modules for that segment. For example, importing `UserRPC` from the `customer` segment pulls in `.vovk-schema/customer.json` only; `.vovk-schema/admin.json` and other segment files are not included.
+
+```ts showLineNumbers copy filename="src/client/customer/index.ts"
+import { UserRPC } from '@/client/customer'; // import tree will contain customer.json
+
+await UserRPC.getUser({ id: '123' });
+```
+
+The segmented client also applicable to [Rust](/rust) and [Python](/python) templates, though use cases are less common.
+
+To enable the segmented client, set `segmentedClient.enabled` to `true` in `vovk.config.mjs`, and optionally disable the composed client by setting `composedClient.enabled` to `false`.
+
+```ts showLineNumbers copy filename="vovk.config.mjs"
+/** @type {import('vovk').VovkConfig} */
+const config = {
+  segmentedClient: {
+    enabled: true,
+  },
+  composedClient: {
+    enabled: false,
+  },
+};
+export default config;
+```
+
+In this case, the composed client files are not generated.
+
+The settings are the same as the settings for the [composed client](/composed).
+
+```ts showLineNumbers copy filename="vovk.config.mjs"
+/** @type {import('vovk').VovkConfig} */
+const config = {
+  segmentedClient: {
+    enabled: false, // default
+    fromTemplates: ['ts'], // default
+    outDir: './src/client', // default
+    includeSegments: ['foo'], // exclusive with `excludeSegments`
+    excludeSegments: ['bar'], // exclusive with `includeSegments`
+  },
+};
+```

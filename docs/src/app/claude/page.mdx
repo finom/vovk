@@ -1,0 +1,93 @@
+import { Steps, Callout, Tabs } from 'nextra/components';
+
+# Claude Plugin
+
+The official **Claude Code plugin for Vovk.ts** ships topic-based skills that teach the coding agent how to use the framework when you describe what you want to build. Skills load only when relevant — typing "scaffold a new tenant" pulls in the multitenant skill, "stream chat tokens" pulls in JSON Lines, and so on.
+
+The plugin lives in the same repo as Vovk.ts itself — <a href="https://github.com/finom/vovk/tree/main/skills">skills at the repo root</a> — and ships alongside the framework on every release.
+
+## Why Vovk.ts is built for AI-assisted coding
+
+Vovk.ts's structure *is* the prompt — the AI mind model is built into the framework:
+
+- **Logic groups under `src/modules/<name>/`** — Controller + Service per feature, not scattered across `lib/`.
+- **Controller / Service split** — Controllers define procedures (decorated). Services hold business logic (plain classes). Clean separation between *what the endpoint is* and *what it does*.
+- **Methods on a service class, not loose helpers** — fewer files, predictable layout. The assistant finds the right file on the first try.
+- **Single source of truth** — same `procedure().handle()` powers the HTTP endpoint, the [SSR call](/fn) (`.fn()`), and the [AI tool](/tools) (`deriveTools`). No duplication. Less for the model to reconcile.
+- **Plain REST under the hood** — `curl` works. `fetch` works. Types flow end-to-end without locking you into a custom protocol.
+- **[Multitenancy](/multitenant) baked in** — `multitenant()` proxy + segment-per-tenant; one Next.js app hosts many tenants on subdomains without re-architecting.
+- **[OpenAPI native](/openapi), AI tools native** — schema generated from procedures, Scalar docs auto-mounted, every procedure can become an LLM tool with one line.
+
+## Why use the plugin?
+
+Without it, asking Claude to *"scaffold a Vovk procedure with Zod validation"* tends to go one of two ways: the model hallucinates (training data is months stale and Vovk's API has moved on), or it fetches `vovk.dev` mid-task — slow, hits rate limits, and the wrong page often loads first.
+
+With the plugin, the framework's idioms are loaded as topic-scoped skills the agent already understands:
+
+- **Topic-scoped, not all-or-nothing.** Skills load only when relevant — *"stream chat tokens"* pulls in JSON Lines; *"scaffold a tenant"* pulls in multitenant. Claude doesn't drown in thousands of lines of docs to answer a focused question.
+- **Self-contained.** A directive at the top of every skill tells the agent *don't fetch vovk.dev mid-task* — the plugin is the source of truth. Works offline; predictable cost; no rate-limit surprises.
+- **Cross-skill handoffs.** Skills know to escalate. The mixins skill points at the tools skill for LLM exposure; the procedure skill points at jsonlines for streaming. The agent loads the right context, not adjacent context.
+- **Caveman-optimized prose** — skill markdown is token-tightened (~10% fewer tokens per load, no loss of substance).
+
+## Install
+
+Pick your agent. One command. Done.
+
+| Agent | Install |
+|-------|---------|
+| **Claude Code** (CLI) | `claude plugin marketplace add finom/vovk && claude plugin install vovk@vovk` |
+| **Claude Code** (interactive) | Inside the session, run `/plugin marketplace add finom/vovk` then `/plugin install vovk@vovk` |
+| **Cursor** | `npx skills add finom/vovk -a cursor` |
+| **Windsurf** | `npx skills add finom/vovk -a windsurf` |
+| **Copilot** | `npx skills add finom/vovk -a github-copilot` |
+| **Cline** | `npx skills add finom/vovk -a cline` |
+| **Any other** | `npx skills add finom/vovk` |
+
+`finom/vovk` resolves to the GitHub repo's `.claude-plugin/marketplace.json`. The plugin name is `vovk`; the marketplace name is also `vovk` — `vovk@vovk` is `<plugin-name>@<marketplace-name>`, the symmetry is coincidence.
+
+For a local checkout (development), substitute the path: `claude plugin marketplace add /path/to/vovk` (point at the repo root).
+
+### Verify
+
+In Claude Code, run `/plugin` — the **Installed** tab should list `vovk`. Skills are namespaced; typing `/vovk:` (with the trailing colon) lists all 15 skills available to the agent. In other agents, the skill files appear under that agent's skill directory (e.g. `.cursor/skills/`).
+
+## Skills
+
+The plugin ships fourteen topic-based skills covering every layer of Vovk.ts:
+
+- **`vovk:init`** — initialize Vovk.ts in a Next.js App Router project, or scaffold a fresh Next.js app and run `vovk init` on top.
+- **`vovk:base`** — foundational rules loaded alongside any other vovk:* skill: commit policy for `.vovk-schema/`, runtime requirements, template names, `_schema_` endpoint, brief API + type-inference surface (`VovkBody`, `VovkOutput`, …).
+- **`vovk:config`** — `vovk.config.{mjs,js,ts,cjs}` shape, every config key + default (`rootEntry`, `schemaOutDir`, `composedClient`, `segmentedClient`, `clientTemplateDefs`, `outputConfig`, `bundle`, …), `tsconfig.json` setup, and the `decorate()` alternative for projects without `experimentalDecorators`.
+- **`vovk:segment`** — segments (root, named, static), `initSegment`, segment priority, `generateStaticParams`.
+- **`vovk:multitenant`** — multi-tenant routing via subdomains: `multitenant()` proxy, `overrides` shape, per-tenant segments and frontend pages, wildcard DNS.
+- **`vovk:procedure`** — procedures, validation (Zod / Valibot / ArkType), controllers, HTTP decorators, `req.vovk`, error handling, content types, `.fn()` for SSR / server components / server actions.
+- **`vovk:decorators`** — built-in and custom decorators (`createDecorator`), authorization patterns, `req.vovk.meta()`, stacking order, `decorate()` for projects without `experimentalDecorators`.
+- **`vovk:rpc`** — generated RPC client (`@/client`), composed vs segmented clients, call shape, `customFetcher`, error rethrow, type inference from client methods.
+- **`vovk:jsonlines`** — JSON Lines streaming: generator handlers, `JSONLinesResponder`, `progressive()`, client async iteration, `using`, `asPromise`, abort.
+- **`vovk:openapi`** — OpenAPI 3.x generation: `@operation` metadata, `outputConfig.openAPIObject`, per-segment overrides, Scalar docs, `_schema_` endpoint.
+- **`vovk:mixins`** — import third-party OpenAPI 3.x schemas as typed client modules, call them identically to native RPC modules.
+- **`vovk:tools`** — expose procedures as LLM tools via `deriveTools()`, MCP-compatible output, `@operation`, controllers vs RPC modules, OpenAI / Anthropic / MCP wiring.
+- **`vovk:bundle`** — `vovk bundle` CLI for publishable TypeScript SDKs.
+- **`vovk:python`** — generate a typed Python client (`vovk-python`), `py` / `pySrc` templates, `TypedDict` shapes, JSON Lines via Python generators, PyPI publishing.
+- **`vovk:rust`** — generate a typed Rust crate (`vovk-rust`), `rs` / `rsSrc` templates, async `reqwest` call shape, `futures::Stream` consumption, crates.io publishing.
+
+## First prompts to try
+
+The skills trigger automatically when you describe what you want to build. Pick the type of project you're starting:
+
+- **Greenfield** — *"Set up Vovk.ts in a new Next.js project. I want a `/api/tasks` CRUD endpoint with Zod validation, and a Next.js page that consumes it through the typed client."*
+- **Existing Next.js project** — *"Add Vovk.ts to my existing Next.js app and scaffold a UserController with `getUser` / `createUser`."*
+- **Stream-heavy work** — *"Add a `/api/chat` JSON Lines streaming endpoint that proxies OpenAI completions, plus a Python script that consumes the stream."*
+
+<Callout type="info" emoji="💡">
+  Short prompts like *"create a backend for Next.js"* don't always trigger skill consultation — Claude treats them as too generic. Mention "Vovk" or "vovk-cli" once and the routing reliably catches.
+</Callout>
+
+## Reporting bugs
+
+If a skill produces wrong code or contradicts itself, that's a plugin bug — open an issue at <a href="https://github.com/finom/vovk/issues">github.com/finom/vovk/issues</a> with the prompt you used and the skill that loaded.
+
+**More info:**
+
+- [Skills source](https://github.com/finom/vovk/tree/main/skills)
+- [Claude Code docs — Plugins](https://docs.claude.com/en/docs/claude-code/plugins)

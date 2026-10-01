@@ -1,0 +1,19 @@
+{
+  "$schema": "https://vovk.dev/api/schema/v3/segment.json",
+  "emitSchema": true,
+  "segmentName": "admin",
+  "segmentType": "segment",
+  "controllers": {
+    "AdminRPC": {
+      "rpcModuleName": "AdminRPC",
+      "originalControllerName": "AdminController",
+      "prefix": "",
+      "handlers": {
+        "getMessage": {
+          "path": "",
+          "httpMethod": "GET"
+        }
+      }
+    }
+  }
+}

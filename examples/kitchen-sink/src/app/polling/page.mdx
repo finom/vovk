@@ -1,0 +1,92 @@
+---
+title: Polling Example
+description: Polling Ticker Example
+---
+
+import { Tabs } from 'nextra/components';
+import PollExample from './poll-example';
+import Example from '@/components/example';
+
+# Polling Ticker Example
+
+Demonstrates infinite server polling ticker in a `while(true){:ts}` loop that's used to reconnect when the connection is safely closed by the server. The client-side sends `i` parameter to the server-side in a query, the server increments it and streams the result back to the client. After 10 iterations, the server ends the response and the client starts polling again. Open devtools to see network requests.
+
+## Result
+
+<Example>
+  <PollExample />
+</Example>
+
+## Code
+
+<Tabs items={['poll-controller.ts', 'poll-example.tsx']}>
+  <Tabs.Tab>
+```ts showLineNumbers copy filename="src/modules/polling/poll-controller.ts" source="examples/kitchen-sink"
+import { procedure, get, prefix } from 'vovk';
+import { z } from 'zod';
+
+@prefix('polling')
+export default class PollController {
+  @get('', { cors: true })
+  static streamPollResponse = procedure({
+    query: z.object({
+      i: z.string(),
+    }),
+    iteration: z.object({
+      i: z.number(),
+    }),
+  }).handle(async function* (req) {
+    let i = parseInt(req.vovk.query().i, 10);
+    while (true) {
+      yield { i: ++i };
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+      if (!(i % 10)) {
+        break;
+      }
+    }
+  });
+}
+```
+*[The code above is fetched from GitHub repository.](https://github.com/finom/vovk/blob/main/examples/kitchen-sink/src/modules/polling/poll-controller.ts)*
+  </Tabs.Tab>
+  <Tabs.Tab>
+```tsx showLineNumbers copy filename="src/app/polling/poll-example.tsx" source="examples/kitchen-sink"
+'use client';
+import { useEffect, useState } from 'react';
+import { PollRPC } from '@/client';
+
+export default function PollExample() {
+  const [tick, setTick] = useState(0);
+  useEffect(() => {
+    void (async () => {
+      let i = 0;
+      while (true) {
+        using iterable = await PollRPC.streamPollResponse({
+          query: { i: i.toString() },
+        });
+
+        for await ({ i } of iterable) {
+          setTick(i);
+        }
+      }
+    })();
+  }, []);
+
+  return (
+    <div>
+      <p>Poll Ticker</p>
+      <h2>{tick}</h2>
+    </div>
+  );
+}
+```
+*[The code above is fetched from GitHub repository.](https://github.com/finom/vovk/blob/main/examples/kitchen-sink/src/app/polling/poll-example.tsx)*
+
+  </Tabs.Tab>
+</Tabs>
+
+## Related Documentation
+
+- [TypeScript RPC](https://vovk.dev/typescript)
+- [Controller & Procedure](https://vovk.dev/procedure)
+- [`@operation` Decorator](https://vovk.dev/openapi)

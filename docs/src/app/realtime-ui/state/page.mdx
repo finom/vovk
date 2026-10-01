@@ -1,0 +1,484 @@
+import AppAlike from './app-alike';
+
+# Entity-driven state normalization with Zustand registry
+
+Entity-driven state normalization is the most efficient way to manage application state in complex apps that deal with a lot of interconnected data. Instead of passing raw data to components or storing responses as-is in state, extracting entities and storing them in a centralized registry gives you a single source of truth, O(1) lookups by ID, and automatic updates everywhere an entity is referenced. Components subscribe to specific entities by their IDs; when an entity is updated, all components that use it re-render automatically.
+
+<AppAlike />
+
+The demo above shows the same user entity rendered in four different places: the header greeting, the sidebar, the page title, and the form input. When you update the name and hit Save, every component reflects the change instantly — because they all read from the same entity in the registry.
+
+Here's how this works under the hood: raw API responses are passed through a `parse` method that recursively extracts entities, normalizes them into flat dictionaries keyed by ID, and merges them into a Zustand store. Components subscribe to specific entities by ID and re-render only when their data changes.
+
+<img src="/diagrams/entity_registry_pattern.svg" alt="Entity Registry Pattern" className="mt-4 dark:invert" />
+
+An item in the registry can be used in any component as follows:
+
+```ts showLineNumbers copy
+export const UserProfile = ({ userId }: { userId: User['id'] }) => {
+    const userProfile = useRegistry(useShallow(state => state.user[userId]));
+    return <div>{userProfile.fullName}</div>
+}
+```
+
+Arrays of entities can be derived by mapping over the IDs:
+
+```ts showLineNumbers copy
+export const UserList = ({ userIds }: { userIds: User['id'][] }) => {
+    const users = useRegistry(
+      useShallow((state) => userIds.map((id) => state.user[id])),
+    );
+    return <ul>{users.map((u) => <li key={u.id}>{u.fullName}</li>)}</ul>
+}
+```
+
+The implementation explained below also considers soft deletions, where deleted entities are marked as non-enumerable without actually removing them from the state. This prevents errors in components that might still reference them.
+
+```ts showLineNumbers copy
+export const UserList = ({ userIds }: { userIds: User['id'][] }) => {
+    const users = useRegistry(
+      useShallow(({ user: { ...userReg } }) => userIds.filter((id) => id in userReg).map((id) => userReg[id]))
+    );
+    return <ul>{users.map((u) => <li key={u.id}>{u.fullName}</li>)}</ul>
+}
+```
+
+## Prior art and portability
+
+The idea of normalizing front-end state into flat entity maps originates from the Redux ecosystem. [`normalizr`](https://github.com/paularmstrong/normalizr) (originally created by Dan Abramov) introduced declarative schema-based normalization of nested JSON, and Redux Toolkit's [`createEntityAdapter`](https://redux-toolkit.js.org/api/createEntityAdapter) later provided built-in CRUD reducers and selectors for normalized state. The approach described here applies the same core principle — flat entity dictionaries keyed by ID — but relies on convention (`id` + `entityType`) instead of upfront schema definitions.
+
+While this article uses [Zustand](https://github.com/pmndrs/zustand), the pattern itself is not tied to it. The core requirements from a state library are: a centralized store that holds plain objects, the ability to update state and trigger selective re-renders, and a subscription mechanism so components only re-render when their specific entity changes. Any library that provides these can host the same registry. Compatible alternatives include [Jotai](https://jotai.org/) (where each entity map could be an atom) and [Valtio](https://valtio.dev/) (using proxy-based reactivity for automatic fine-grained subscriptions). The `getEntitiesFromData` extraction function and the `parse` logic are completely library-agnostic — only the store creation and subscription wiring need to be adapted.
+
+## Defining entity types
+
+The pattern relies on a simple contract: every entity in your data has an `id` field and an `entityType` field that identifies what kind of entity it is. In a real project, `EntityType` can be pulled from `@prisma/client`, generated from your schema, or imported from wherever your source of truth lives. Here we list it explicitly for documentation purposes:
+
+```ts showLineNumbers copy filename="src/types.ts"
+enum EntityType {
+  user = 'user',
+  task = 'task',
+}
+
+interface BaseEntity {
+  id: string;
+  entityType: EntityType;
+}
+```
+
+Entity IDs should be **branded strings** rather than plain `string` types. This prevents accidentally passing a user ID where a task ID is expected — a common source of bugs in apps with many entity types. With Zod, you can define a branded ID schema per entity:
+
+```ts showLineNumbers copy
+import { z } from 'zod';
+
+const UserIdSchema = z.string().brand<'user'>();
+const TaskIdSchema = z.string().brand<'task'>();
+
+type UserId = z.infer<typeof UserIdSchema>;   // string & { __brand: 'user' }
+type TaskId = z.infer<typeof TaskIdSchema>;   // string & { __brand: 'task' }
+```
+
+Without Zod, you can achieve the same with a simple TypeScript utility type:
+
+```ts showLineNumbers copy
+type BrandedId<T extends string> = string & { readonly __brand: T };
+
+type UserId = BrandedId<'user'>;
+type TaskId = BrandedId<'task'>;
+```
+
+Either way, your entity interfaces then use the branded type for `id` instead of bare `string`, making it a compile-time error to mix up IDs across entity types.
+
+> In the Realtime Kanban project, `EntityType` is imported from `@prisma/client` and the entity types (including branded IDs) are generated via a Zod generator, as described in the [Database](./database) article.
+
+## Setting up the fetcher
+
+Before diving into the registry implementation, let's set up the [fetcher](/imports#fetcher) — a function that all generated RPC methods use to make HTTP requests. The fetcher exposes an `onSuccess` event that lets external code hook into every successful response. The registry will subscribe to this event to automatically parse all incoming data.
+
+```ts showLineNumbers copy filename="src/lib/fetcher.ts"
+export const fetcher = createFetcher<{ bypassRegistry?: boolean }>({
+  onError: (error) => {
+    if (error.statusCode === HttpStatus.UNAUTHORIZED) {
+      document.location.href = '/login';
+    }
+  },
+});
+```
+
+The `onError` handler redirects to the login page on authentication failures. The `bypassRegistry` generic parameter adds a type-safe option that callers can pass (e.g. `await UserRPC.getUsers({ bypassRegistry: true }){:ts}`) to skip registry processing for specific requests — useful for cases where you only need the raw response.
+
+Declare the fetcher in the [config](/config) so that it replaces the default one imported by the generated [client](/typescript):
+
+```ts showLineNumbers copy filename="vovk.config.mjs"
+// @ts-check
+/** @type {import('vovk').VovkConfig} */
+const config = {
+  outputConfig: {
+    imports: {
+      // ...
+      fetcher: './src/lib/fetcher.ts',
+    },
+  },
+};
+
+export default config;
+```
+
+## Implementing the registry
+
+The registry hook is built on Zustand. It defines a `Registry` interface describing the shape of the state — entity maps keyed by `EntityType` and a `parse` method — and exports a `RegistryProvider`, a `useRegistry` selector hook, and a `useRegistryStore` hook for imperative access.
+
+```ts showLineNumbers copy filename="src/hooks/use-registry.tsx" source="examples/realtime-kanban"
+'use client';
+import { EntityType } from '@prisma/client';
+import type { TaskType } from '@schemas/models/Task.schema';
+import type { UserType } from '@schemas/models/User.schema';
+import fastDeepEqual from 'fast-deep-equal';
+import { type ReactNode, createContext, useContext, useRef } from 'react';
+import { type StoreApi, createStore, useStore } from 'zustand';
+import { fetcher } from '@/lib/fetcher';
+import type { BaseEntity } from '../types';
+
+interface Registry {
+  [EntityType.user]: Record<UserType['id'], UserType>;
+  [EntityType.task]: Record<TaskType['id'], TaskType>;
+  parse: (data: unknown) => void;
+}
+
+const MAX_DEPTH = 10;
+
+export function getEntitiesFromData(
+  data: unknown,
+  entities: Partial<{
+    [key in EntityType]: Record<BaseEntity['id'], BaseEntity>;
+  }> = {},
+  depth = 0,
+) {
+  if (depth > MAX_DEPTH) return entities as Partial<Omit<Registry, 'parse'>>;
+
+  if (Array.isArray(data)) {
+    data.forEach((item) => {
+      getEntitiesFromData(item, entities, depth + 1);
+    });
+  } else if (typeof data === 'object' && data !== null) {
+    Object.values(data).forEach((value) => {
+      getEntitiesFromData(value, entities, depth + 1);
+    });
+    if ('entityType' in data && 'id' in data) {
+      const entityType = data.entityType as EntityType;
+      const id = (data as BaseEntity).id;
+      entities[entityType] ??= {};
+      entities[entityType][id] = data as BaseEntity;
+    }
+  }
+  return entities as Partial<Omit<Registry, 'parse'>>;
+}
+
+function createRegistryStore(initialData: {
+  users?: UserType[];
+  tasks?: TaskType[];
+}) {
+  const initialEntities = getEntitiesFromData(initialData);
+
+  return createStore<Registry>((set) => ({
+    [EntityType.user]: (initialEntities.user ?? {}) as Record<
+      UserType['id'],
+      UserType
+    >,
+    [EntityType.task]: (initialEntities.task ?? {}) as Record<
+      TaskType['id'],
+      TaskType
+    >,
+    parse: (data) => {
+      const entities = getEntitiesFromData(data);
+      set((state) => {
+        const newState: Record<string, unknown> = {};
+        let isChanged = false;
+        Object.entries(entities).forEach(([entityType, entityMap]) => {
+          const type = entityType as EntityType;
+          const descriptors = Object.getOwnPropertyDescriptors(
+            state[type] ?? {},
+          );
+          let areDescriptorsChanged = false;
+          Object.values(entityMap).forEach((entity) => {
+            const descriptorValue = descriptors[entity.id]?.value;
+            const value = { ...descriptorValue, ...entity };
+            const isCurrentChanged = !fastDeepEqual(descriptorValue, value);
+            descriptors[entity.id] = isCurrentChanged
+              ? ({
+                  value,
+                  configurable: true,
+                  writable: false,
+                  enumerable: !('__isDeleted' in entity),
+                } satisfies PropertyDescriptor)
+              : descriptors[entity.id];
+            areDescriptorsChanged ||= isCurrentChanged;
+          });
+          newState[type] = areDescriptorsChanged
+            ? Object.defineProperties({}, descriptors)
+            : state[type];
+          isChanged ||= areDescriptorsChanged;
+        });
+        return isChanged ? { ...state, ...newState } : state;
+      });
+    },
+  }));
+}
+
+const RegistryContext = createContext<StoreApi<Registry> | null>(null);
+
+export function RegistryProvider({
+  initialData,
+  children,
+}: {
+  initialData: { users?: UserType[]; tasks?: TaskType[] };
+  children: ReactNode;
+}) {
+  const storeRef = useRef<StoreApi<Registry> | null>(null);
+  if (!storeRef.current) {
+    storeRef.current = createRegistryStore(initialData);
+    const { parse } = storeRef.current.getState();
+
+    fetcher.onSuccess((data, { bypassRegistry }) => {
+      if (bypassRegistry) return;
+
+      if (
+        data &&
+        typeof data === 'object' &&
+        Symbol.asyncIterator in data &&
+        'onIterate' in data &&
+        typeof data.onIterate === 'function'
+      ) {
+        data.onIterate(parse);
+      }
+
+      parse(data);
+    });
+  }
+
+  return (
+    <RegistryContext.Provider value={storeRef.current}>
+      {children}
+    </RegistryContext.Provider>
+  );
+}
+
+export function useRegistryStore() {
+  const store = useContext(RegistryContext);
+  if (!store)
+    throw new Error('useRegistry must be used within RegistryProvider');
+  return store;
+}
+
+export function useRegistry<T>(selector: (state: Registry) => T): T {
+  return useStore(useRegistryStore(), selector);
+}
+```
+*[The code above is fetched from GitHub repository.](https://github.com/finom/vovk/blob/main/examples/realtime-kanban/src/hooks/use-registry.tsx)*
+
+Let's break this down piece by piece.
+
+### `getEntitiesFromData` function
+
+`getEntitiesFromData` is a recursive function that extracts entities from any data structure based on the presence of `entityType` and `id` properties. For each discovered `entityType`, it builds a record whose keys are entity IDs and whose values are the entity objects themselves. Nested entities (like `user` inside `task`) are extracted alongside their parents in a single pass, so one call normalizes the entire response. Let's say the server returns the following response:
+
+```json {6,10,16,20}
+{
+  "tasks": [
+    {
+      "id": "task-1",
+      "title": "Task 1",
+      "entityType": "task",
+      "user": {
+        "id": "user-1",
+        "fullName": "John Doe",
+        "entityType": "user"
+      }
+    },
+    {
+      "id": "task-2",
+      "title": "Task 2",
+      "entityType": "task",
+      "user": {
+        "id": "user-2",
+        "fullName": "Jane Doe",
+        "entityType": "user"
+      }
+    }
+  ]
+}
+```
+
+The function walks through the entire structure and produces a normalized intermediate shape (without mutating the original objects):
+
+```ts showLineNumbers copy
+{
+  "task": {
+    "task-1": { "id": "task-1", "title": "Task 1", "entityType": "task", "user": { /* unchanged */ } },
+    "task-2": { "id": "task-2", "title": "Task 2", "entityType": "task", "user": { /* unchanged */ } }
+  },
+  "user": {
+    "user-1": { "id": "user-1", "fullName": "John Doe", "entityType": "user" },
+    "user-2": { "id": "user-2", "fullName": "Jane Doe", "entityType": "user" }
+  }
+}
+```
+
+### `createRegistryStore` factory
+
+The `createRegistryStore` function accepts initial data (the arrays fetched during SSR) and returns a vanilla Zustand store pre-populated with that data. It uses `getEntitiesFromData` to normalize the initial arrays into entity maps, then passes them directly as the initial state of the store:
+
+```ts showLineNumbers copy
+function createRegistryStore(initialData: {
+  users?: UserType[];
+  tasks?: TaskType[];
+}) {
+  const initialEntities = getEntitiesFromData(initialData);
+
+  return createStore<Registry>((set) => ({
+    [EntityType.user]: (initialEntities.user ?? {}) as Record<UserType['id'], UserType>,
+    [EntityType.task]: (initialEntities.task ?? {}) as Record<TaskType['id'], TaskType>,
+    parse: (data) => {
+      // ...
+    },
+  }));
+}
+```
+
+The key detail here is that the initial data is passed **inline to `createStore`** rather than populated after creation via `parse`. This matters for SSR: Zustand's `useStore` hook relies on `useSyncExternalStore`, which calls `getInitialState()` during server-side rendering. `getInitialState()` returns the state as it was at store creation time — so if you create the store empty and call `parse` afterward, the server render sees empty state and produces empty HTML. By passing the data inline, `getInitialState()` returns the populated state, and SSR produces the correct HTML from the start.
+
+### `parse` method
+
+The `parse` method accepts any data, extracts entities from it, and stores them in the registry. Instead of simply extending the state with new entities, it uses `Object.getOwnPropertyDescriptors` to get the property descriptors of the existing entities. This allows us to check whether an entity already exists in state and, if it does, compare it with the new entity using the [fast-deep-equal](https://www.npmjs.com/package/fast-deep-equal) library. If the entities are equal, we don't update state; otherwise, we create a new property descriptor with the updated entity. This helps avoid unnecessary re-renders of components that consume this entity.
+
+#### Soft deletions via `__isDeleted` property
+
+The `__isDeleted` property is used to mark entities as deleted without actually removing them from the state, which avoids errors in components that might still reference them.
+
+The key mechanism here is JavaScript property descriptors. When a property is defined with `enumerable: false`, it becomes invisible to `Object.values`, `Object.keys`, and `{ ...spread }` operations — but it can still be accessed directly by key. This means consumers iterating over entities won't see deleted ones, while components that still hold a reference to the ID won't crash:
+
+```ts showLineNumbers copy
+const obj = Object.defineProperties({}, {
+  'task-1': { value: { id: 'task-1', title: 'Task 1' }, enumerable: true, configurable: true },
+  'task-2': { value: { id: 'task-2', title: 'Task 2' }, enumerable: false, configurable: true },
+});
+
+Object.keys(obj);  // ['task-1'] — task-2 is invisible to iteration
+obj['task-2'];     // { id: 'task-2', title: 'Task 2' } — but still accessible by ID
+```
+
+This approach was chosen over alternatives like maintaining a separate `deletedIds` Set or filtering on a boolean flag because it requires zero awareness from consuming components — they don't need to add any filter logic, the deleted entities simply disappear from enumeration.
+
+Once `__isDeleted` is received as part of an entity, the property descriptor is marked as non-enumerable automatically. To soft-delete an entity, the server needs to send an object like this:
+
+```json
+{
+  "id": "task-1",
+  "entityType": "task",
+  "__isDeleted": true
+}
+```
+
+### `RegistryProvider` and SSR
+
+The `RegistryProvider` is the glue between the Zustand store, the fetcher, and the React component tree. It creates the store once (via `useRef`), pre-populated with server-fetched data, and wires up the fetcher's `onSuccess` event so that every subsequent RPC response is automatically parsed into the registry.
+
+```ts showLineNumbers copy
+export function RegistryProvider({ initialData, children }) {
+  const storeRef = useRef(null);
+  if (!storeRef.current) {
+    storeRef.current = createRegistryStore(initialData);
+    const { parse } = storeRef.current.getState();
+
+    fetcher.onSuccess((data, { bypassRegistry }) => {
+      if (bypassRegistry) return;
+
+      if (/* data is an async iterable (JSONLines stream) */) {
+        data.onIterate(parse);
+      }
+
+      parse(data);
+    });
+  }
+
+  return (
+    <RegistryContext.Provider value={storeRef.current}>
+      {children}
+    </RegistryContext.Provider>
+  );
+}
+```
+
+The `fetcher.onSuccess` handler does two things: for regular JSON responses, it calls `parse` directly; for [JSONLines](/jsonlines) streaming responses (async iterables), it also registers `parse` as the `onIterate` callback so each streamed chunk is parsed into the registry as it arrives. If `bypassRegistry` was passed as an option to the RPC call, the handler returns early without processing.
+
+`fetcher.onSuccess` (and `fetcher.onError`) return an unsubscribe function that removes the callback. Since the `RegistryProvider` typically wraps the entire app and never unmounts, unsubscribing isn't needed here — but in other contexts (e.g. a component that conditionally listens) you can call the returned function to clean up.
+
+The store creation and the `onSuccess` registration happen synchronously inside the `useRef` initialization — not in `useEffect`. This is safe because `useQuery` and other client-side fetches only fire after mount (in effects), so the handler is guaranteed to be registered before any response arrives.
+
+### `useRegistry` and `useRegistryStore` hooks
+
+The `useRegistry` hook reads the store from context and applies a selector, providing the same API that components would get from a standard Zustand `create` hook:
+
+```ts showLineNumbers copy
+export function useRegistry<T>(selector: (state: Registry) => T): T {
+  return useStore(useRegistryStore(), selector);
+}
+```
+
+For imperative access outside of selectors (for example, calling `parse` from an effect), `useRegistryStore` returns the raw store:
+
+```ts showLineNumbers copy
+const store = useRegistryStore();
+store.getState().parse(data);
+```
+
+## Using the registry with SSR
+
+The server component fetches data using the controller's `.fn()` method (a direct server-side call that bypasses HTTP) and passes it to `RegistryProvider`. Child components select data from the store — no `initialData` props needed:
+
+```tsx showLineNumbers copy filename="src/app/page.tsx"
+export default async function Home() {
+  const [users, tasks] = await Promise.all([
+    UserController.getUsers.fn<UserType[]>(),
+    TaskController.getTasks.fn<TaskType[]>(),
+  ]);
+
+  return (
+    <RegistryProvider initialData={{ users, tasks }}>
+      <AppHeader />
+      <UserList />
+      <UserKanban />
+    </RegistryProvider>
+  );
+}
+```
+
+Components are clean — they select from the registry and fire a `useQuery` to refresh the data on the client:
+
+```tsx showLineNumbers copy filename="src/components/user-list.tsx"
+const UserList = () => {
+  const users = useRegistry(useShallow((state) => Object.values(state.user)));
+
+  useQuery({
+    queryKey: UserRPC.getUsers.queryKey(),
+    queryFn: () => UserRPC.getUsers(),
+  });
+
+  return <ul>{users.map((u) => <li key={u.id}>{u.fullName}</li>)}</ul>;
+};
+```
+
+The data flow is:
+
+1. **SSR**: The server fetches data via `.fn()`, `RegistryProvider` creates a store with that data inline, components render with it — the HTML sent to the client already contains the full UI.
+2. **Hydration**: React hydrates on the client. The store is recreated with the same initial data, producing identical output — no hydration mismatch.
+3. **Client refresh**: `useQuery` fires after mount, calls the RPC method via the fetcher, the `onSuccess` handler calls `parse`, the store updates, and components re-render with fresh data.
+
+This gives you two renders total (SSR data, then fresh data) with no empty-state flicker and no workarounds.
+
+---
+
+## Summary
+
+With this pattern in place you get: centralized entity storage with automatic extraction from any response shape, zero-config normalization via `parse` that deduplicates and diff-checks all incoming data, soft deletes that hide entities from iteration without breaking components that still reference them by ID, and SSR support where the store is pre-populated with server-fetched data so the first render already contains the full UI.
+
+Each time data is received from any source — whether from `useQuery`, a streaming JSONLines connection, or an AI tool call — it flows through the registry's `parse` method, and all components that reference that data by ID are updated automatically.

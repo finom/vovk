@@ -1,0 +1,458 @@
+import Image from 'next/image';
+import { Tabs } from 'nextra/components';
+import newModuleSvg from '../../excalidraw/vovk-new-module.svg';
+import newSegmentSvg from '../../excalidraw/vovk-new-segment.svg';
+
+# vovk new
+
+```sh filename="Quick CLI Ref"
+npx vovk-cli new --help
+Usage: vovk new|n [options] [components...]
+
+Create new components. "vovk new [...components] [segmentName/]moduleName" to create a new module or "vovk
+new segment [segmentName]" to create a new segment
+
+Options:
+  -o, --overwrite                         overwrite existing files
+  --static                                (new segment only) if the segment is static
+  --template, --templates <templates...>  (new module only) override config template; accepts an array of
+                                          strings that correspond to the order of the components
+  --out, --out-dir <dirname>              (new module only) override outDir in template file; relative to the
+                                          root of the project
+  --no-segment-update                     (new module only) do not update segment files when creating a new
+                                          module
+  --empty                                 (new module only) create an empty module
+  --dry-run                               do not write files to disk
+  --log-level <level>                     set the log level
+  -h, --help                              display help for command
+```
+
+The `vovk new` command creates [segments](/segment) and modules (such as controllers, services, or custom modules). It uses the `moduleTemplates` option from the [config](/config) and can be extended with your own templates. It combines two workflows in one: `vovk new segment [segment_name]` and <nobr>`vovk new [module] [module_name_singular]`</nobr>.
+
+## vovk new segment
+
+<Image src={newSegmentSvg} alt="vovk new segment" className="dark:invert lg:max-w-[50%]" />
+
+### Root Segment
+
+```sh npm2yarn copy
+npx vovk new segment
+```
+
+If you run `vovk new segment` without an argument, it creates a root segment at **/src/app/api/[[...vovk]]/route.ts** (formatted with [Prettier](https://www.npmjs.com/package/prettier)). The `segmentName` option of `initSegment` is an empty string and can be omitted. The generated file contains:
+
+```ts showLineNumbers copy
+import { initSegment } from 'vovk';
+
+const controllers = {};
+
+export type Controllers = typeof controllers;
+
+export const { GET, POST, PATCH, PUT, HEAD, OPTIONS, DELETE } = initSegment({
+  emitSchema: true,
+  controllers,
+});
+```
+
+When you run `vovk dev`, the segment emits a schema at **.vovk-schema/root.json**.
+
+The segment exposes an API at **/api/...**.
+
+Root segments can be used alongside nested segments of any depth.
+
+### Nested Segment
+
+```sh npm2yarn copy
+npx vovk new segment foo
+```
+
+Running `vovk new segment foo` creates **/src/app/api/foo/[[...vovk]]/route.ts** (formatted with Prettier). The generated file includes:
+
+```ts showLineNumbers copy
+// ...
+export const { GET, POST, PATCH, PUT, HEAD, OPTIONS, DELETE } = initSegment({
+  segmentName: 'foo',
+  emitSchema: true,
+  controllers,
+});
+```
+
+When you run `vovk dev`, the segment emits a schema at **.vovk-schema/foo.json**.
+
+The segment exposes an API at **/api/foo/...**.
+
+---
+
+`vovk new segment foo/bar/baz` creates a nested segment at **/src/app/api/foo/bar/baz/[[...vovk]]/route.ts**, available at **/api/foo/bar/baz/...**. Here, `segmentName` is `"foo/bar/baz"`.
+
+## vovk new [module] [name]
+
+<Image src={newModuleSvg} alt="vovk new module" className="dark:invert" />
+
+```sh npm2yarn copy
+npx vovk new controller service foo/user
+```
+
+`vovk new` (with anything other than `segment`) creates new modules in **/src/modules** (formatted with Prettier).
+
+Command structure:
+
+- `npx vovk new` — the command.
+- Components — the module types to create (`controller`, `service`, or a custom module).
+- Module name (singular) with optional segment prefix: `foo/user` creates a module in **/src/modules/foo/user/** and updates the `foo` segment. Omit the segment to target the root:
+
+```sh npm2yarn copy
+npx vovk new controller service user
+```
+
+When you create a controller with `vovk new`, the script updates the `controllers` list in the segment file and modifies `route.ts` using [AST](https://www.npmjs.com/package/ts-morph).
+
+Template paths are defined via `moduleTemplates` in the [config](/config):
+
+```js filename="vovk.config.mjs"
+/** @type {import('vovk-cli').VovkConfig} */
+const config = {
+  moduleTemplates: {
+    controller: 'vovk-cli/module-templates/type/controller.ts.ejs',
+    service: 'vovk-cli/module-templates/type/service.ts.ejs',
+    state: './my-templates/state.ts.ejs',
+  },
+};
+
+export default config;
+```
+
+`npx vovk new controller state user` creates **user-controller.ts** and **user-state.ts** in **/src/modules/user** and updates the root segment with the new controller.
+
+### Built-in Module Templates
+
+The built-in templates cover standard CRUD operations for controllers and services, including methods like `get`, `list`, `create`, `update`, and `delete`.
+
+[vovk init](/init) sets up a Vovk.ts project with the corresponding templates defined in the [config](/config). More specifically:
+
+- Zod controller template: [vovk-cli/module-templates/zod/controller.ts.ejs](https://github.com/finom/vovk/blob/main/packages/vovk-cli/module-templates/zod/controller.ts.ejs)
+- Arktype controller template: [vovk-cli/module-templates/arktype/controller.ts.ejs](https://github.com/finom/vovk/blob/main/packages/vovk-cli/module-templates/arktype/controller.ts.ejs)
+- Valibot controller template: [vovk-cli/module-templates/valibot/controller.ts.ejs](https://github.com/finom/vovk/tree/main/packages/vovk-cli/module-templates/valibot/controller.ts.ejs)
+- When no library is selected, it uses the validation-agnostic template [vovk-cli/module-templates/type/controller.ts.ejs](https://github.com/finom/vovk/blob/main/packages/vovk-cli/module-templates/type/controller.ts.ejs).
+- Service template is used regardless of the validation library: [vovk-cli/module-templates/type/service.ts.ejs](https://github.com/finom/vovk/blob/main/packages/vovk-cli/module-templates/type/service.ts.ejs).
+
+### Shortcuts
+
+Controllers and services can be created with shortcuts:
+
+```sh
+npx vovk n c s user
+```
+
+Which is equivalent to:
+
+```sh
+npx vovk new controller service user
+```
+
+### Custom Module Templates
+
+A module template is created with `.ts.ejs` extension. It uses [EJS](https://ejs.co/) syntax to generate code and [gray-matter](https://www.npmjs.com/package/gray-matter) frontmatter to define metadata in YAML format. 
+
+#### Module Template Metadata
+
+The metadata supports the following fields:
+
+- `outDir: string` — output directory relative to the project root. A ejs variable `t.defaultOutDir` is available, which points to **/src/modules/[segmentName/]moduleName/**.
+- `fileName: string` — output file name. 
+- `sourceName: string` — a controller name (applicable to controllers only); used to update the `controllers` list in the segment file
+- `compiledName: string` — an RPC module name (applicable to controllers only); used to define the name of the compiled module in the generated client.
+
+#### Module Template Variables
+
+Available variables are passed to the EJS template via the `t` object:
+
+- `t.defaultOutDir: string` — default output directory for the module.
+- `t.config: VovkConfig` — the Vovk.ts config.
+- `t.segmentName: string` — the segment name (empty string for the root segment).
+- `t.withService: boolean` — whether a service module is being created alongside the controller.
+- `t.nodeNextResolutionExt: { ts: string; js: string; mjs: string; cjs: string }` — file extension based on the `moduleResolution` in `tsconfig.json`. The object will contain extension values corresponding to the keys, such as `.ts`/`.js`/`.mjs`/`.cjs` for `'node16'` and `'nodenext'` and empty strings for other cases.
+- `t.TheThing`, `t.TheThings` — module name and pluralized module name in PascalCase (e.g., `UserCart`, `UserCarts`).
+- `t.theThing`, `t.theThings` — module name and pluralized module name in camelCase (e.g., `userCart`, `userCarts`).
+- `t['the-thing']`, `t['the-things']` — module name and pluralized module name in kebab-case (e.g., `user-cart`, `user-carts`).
+- `r.THE_THING`, `r.THE_THINGS` — module name and pluralized module name in SCREAMING_SNAKE_CASE (e.g., `USER_CART`, `USER_CARTS`).
+- `t._` - Lodash library instance for utility functions.
+- `t.pluralize` - Pluralize function from the `pluralize` package.
+
+#### Controller & Service Template Example
+
+Here is an example of a module template for an Arktype-based controller and service. For code clarity, internal variables are defined in `vars` object.
+
+<Tabs items={['controller.ts.ejs', 'service.ts.ejs']}>
+<Tabs.Tab>
+```ejs filename="packages/vovk-cli/module-templates/arktype/controller.ts.ejs" source=".">
+<% const vars = { 
+  ModuleName: t.TheThing + 'Controller',
+  ServiceName: t.TheThing + 'Service',
+}; %>
+---
+outDir: <%= t.defaultOutDir %>
+fileName: <%= t['the-thing'] + '-controller.ts' %>
+sourceName: <%= vars.ModuleName %>
+compiledName: <%= t.TheThing + 'RPC' %>
+---
+
+import { procedure, prefix, get, put, post, del, operation } from 'vovk';
+import { type } from 'arktype';
+<% if(t.withService) { %>
+import <%= vars.ServiceName %> from './<%= t['the-thing'] %>-service<%= t.nodeNextResolutionExt.ts %>';
+<% } %>
+
+@prefix('<%= t['the-things'] %>')
+export default class <%= vars.ModuleName %> {
+    @operation({
+      summary: 'Get <%= t.theThings %>',
+    })
+    @get()
+    static get<%= t.TheThings %> = procedure().handle(() => {
+        <% if(t.withService) { %>
+        return <%= vars.ServiceName %>.get<%= t.TheThings %>();
+        <% } else { %>
+        return { message: 'TODO: get <%= t.theThings %>' };
+        <% } %>
+    });
+
+    @operation({
+      summary: 'Get single <%= t.theThing %>',
+    })
+    @get('{id}')
+    static getSingle<%= t.TheThing %> = procedure({
+        params: type({ id: type('string') }),
+    }).handle((_req, { id }) => {
+        <% if(t.withService) { %>
+        return <%= vars.ServiceName %>.getSingle<%= t.TheThing %>(id);
+        <% } else { %>
+        return { message: 'TODO: get single <%= t.theThing %>', id };
+        <% } %>
+    });
+
+    @operation({
+        summary: 'Update <%= t.theThing %>',
+    })
+    @put('{id}')
+    static update<%= t.TheThing %> = procedure({
+        body: type({ todo: type('true') }),
+        params: type({ id: type('string') }),
+    }).handle(async (req, { id }) => {
+        const body = await req.json();
+        <% if(t.withService) { %>
+        return <%= vars.ServiceName %>.update<%= t.TheThing %>(id, body);
+        <% } else { %>
+        return { message: `TODO: update <%= t.theThing %>`, id, body };
+        <% } %>
+    });
+
+    @operation({
+      summary: 'Create <%= t.theThing %>',
+    })
+    @post()
+    static create<%= t.TheThing %> = procedure({
+        body: type({ todo: type('true') }),
+    }).handle(async (req) => {
+        const body = await req.json();
+        <% if(t.withService) { %>
+        return <%= vars.ServiceName %>.create<%= t.TheThing %>(body);
+        <% } else { %>
+        return { message: `TODO: create <%= t.theThing %>`, body };
+        <% } %>
+    });
+
+    @operation({
+      summary: 'Delete <%= t.theThing %>',
+    })
+    @del('{id}')
+    static delete<%= t.TheThing %> = procedure({
+        params: type({ id: type('string') }),
+    }).handle((_req, { id }) => {
+        <% if(t.withService) { %>
+        return <%= vars.ServiceName %>.delete<%= t.TheThing %>(id);
+        <% } else { %>
+        return { message: `TODO: delete <%= t.theThing %>`, id };
+        <% } %>
+    });
+}
+```
+*[The code above is fetched from GitHub repository.](https://github.com/finom/vovk/blob/main/packages/vovk-cli/module-templates/arktype/controller.ts.ejs)*
+
+</Tabs.Tab>
+
+<Tabs.Tab>
+
+```ejs filename="packages/vovk-cli/module-templates/type/service.ts.ejs" source=".">
+<% const vars = {
+  ControllerName: t.TheThing + 'Controller',
+  ServiceName: t.TheThing + 'Service',
+}; %>
+---
+outDir: <%= t.defaultOutDir %>
+fileName: <%= t['the-thing'] + '-service.ts' %>
+sourceName: <%= vars.ServiceName %>
+---
+
+import type { VovkBody, VovkParams } from 'vovk';
+import type <%= vars.ControllerName %> from './<%= t['the-thing'] %>-controller<%= t.nodeNextResolutionExt.ts %>';
+
+export default class <%= vars.ServiceName %> {
+  static get<%= t.TheThings %> = () => {
+    return { message: 'TODO: get <%= t.theThings %>' };
+  };
+
+  static getSingle<%= t.TheThing %> = (
+    id: VovkParams<typeof <%= vars.ControllerName %>.getSingle<%= t.TheThing %>>['id']
+  ) => {
+    return { message: 'TODO: get single <%= t.theThing %>', id };
+  }
+
+  static update<%= t.TheThing %> = (
+    id: VovkParams<typeof <%= vars.ControllerName %>.update<%= t.TheThing %>>['id'],
+    body: VovkBody<typeof <%= vars.ControllerName %>.update<%= t.TheThing %>>
+  ) => {
+    return { message: `TODO: update <%= t.theThing %>`, id, body };
+  };
+
+  static create<%= t.TheThing %> = (
+    body: VovkBody<typeof <%= vars.ControllerName %>.create<%= t.TheThing %>>
+  ) => {
+    return { message: `TODO: create <%= t.theThing %>`, body };
+  };
+
+  static delete<%= t.TheThing %> = (
+    id: VovkParams<typeof <%= vars.ControllerName %>.delete<%= t.TheThing %>>['id']
+  ) => {
+    return { message: `TODO: delete <%= t.theThing %>`, id };
+  };
+}
+```
+*[The code above is fetched from GitHub repository.](https://github.com/finom/vovk/blob/main/packages/vovk-cli/module-templates/type/service.ts.ejs)*
+
+</Tabs.Tab>
+</Tabs>
+
+
+When you run:
+
+```sh npm2yarn copy
+npx vovk new controller service userCart
+```
+
+It creates **user-cart-controller.ts** and **user-cart-service.ts** in **/src/modules/user-cart/** and updates the root segment with the new controller.
+
+<Tabs items={['UserCartController.ts', 'UserCartService.ts', 'route.ts']}>
+<Tabs.Tab>
+
+```ts showLineNumbers copy filename="src/modules/user-cart/user-cart-controller.ts"
+import { procedure, prefix, get, put, post, del, operation } from 'vovk';
+import { type } from 'arktype';
+import UserCartService from './user-cart-service.ts';
+
+@prefix('user-carts')
+export default class UserCartController {
+  @operation({
+    summary: 'Get userCarts',
+  })
+  @get()
+  static getUserCarts = procedure().handle(() => {
+    return UserCartService.getUserCarts();
+  });
+  @operation({
+    summary: 'Get single userCart',
+  })
+  @get('{id}')
+  static getSingleUserCart = procedure({
+    params: type({ id: type('string') }),
+  }).handle((_req, { id }) => {
+    return UserCartService.getSingleUserCart(id);
+  });
+  @operation({
+    summary: 'Update userCart',
+  })
+  @put('{id}')
+  static updateUserCart = procedure({
+    body: type({ todo: type('true') }),
+    params: type({ id: type('string') }),
+  }).handle(async (req, { id }) => {
+    const body = await req.json();
+    return UserCartService.updateUserCart(id, body);
+  });
+  @operation({
+    summary: 'Create userCart',
+  })
+  @post()
+  static createUserCart = procedure({
+    body: type({ todo: type('true') }),
+  }).handle(async (req) => {
+    const body = await req.json();
+    return UserCartService.createUserCart(body);
+  });
+  @operation({
+    summary: 'Delete userCart',
+  })
+  @del('{id}')
+  static deleteUserCart = procedure({
+    params: type({ id: type('string') }),
+  }).handle((_req, { id }) => {
+    return UserCartService.deleteUserCart(id);
+  });
+}
+```
+</Tabs.Tab>
+
+<Tabs.Tab>
+```ts showLineNumbers copy filename="src/modules/user-cart/user-cart-service.ts"
+import type { VovkBody, VovkParams } from 'vovk';
+import type UserCartController from './user-cart-controller.ts';
+
+export default class UserCartService {
+  static getUserCarts = () => {
+    return { message: 'TODO: get userCarts' };
+  };
+
+  static getSingleUserCart = (
+    id: VovkParams<typeof UserCartController.getSingleUserCart>['id']
+  ) => {
+    return { message: 'TODO: get single userCart', id };
+  };
+
+  static updateUserCart = (
+    id: VovkParams<typeof UserCartController.updateUserCart>['id'],
+    body: VovkBody<typeof UserCartController.updateUserCart>
+  ) => {
+    return { message: `TODO: update userCart`, id, body };
+  };
+
+  static createUserCart = (
+    body: VovkBody<typeof UserCartController.createUserCart>
+  ) => {
+    return { message: `TODO: create userCart`, body };
+  };
+
+  static deleteUserCart = (
+    id: VovkParams<typeof UserCartController.deleteUserCart>['id']
+  ) => {
+    return { message: `TODO: delete userCart`, id };
+  };
+}
+```
+</Tabs.Tab>
+<Tabs.Tab>
+The updated segment file:
+
+```ts showLineNumbers copy filename="src/app/api/[[...vovk]]/route.ts"
+import { initSegment } from 'vovk';
+import UserCartController from '../../../modules/user-cart/user-cart-controller.ts';
+const controllers = {
+  UserCartRPC: UserCartController,
+};
+export type Controllers = typeof controllers;
+export const { GET, POST, PATCH, PUT, HEAD, OPTIONS, DELETE } = initSegment({
+  emitSchema: true,
+  controllers,
+});
+```
+</Tabs.Tab>
+</Tabs>

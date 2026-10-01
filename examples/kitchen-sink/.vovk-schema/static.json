@@ -1,0 +1,65 @@
+{
+  "$schema": "https://vovk.dev/api/schema/v3/segment.json",
+  "emitSchema": true,
+  "segmentName": "static",
+  "segmentType": "segment",
+  "controllers": {
+    "OpenApiRPC": {
+      "rpcModuleName": "OpenApiRPC",
+      "originalControllerName": "OpenApiController",
+      "prefix": "",
+      "handlers": {
+        "getSpec": {
+          "path": "openapi.json",
+          "httpMethod": "GET",
+          "operationObject": {
+            "summary": "OpenAPI spec",
+            "description": "Get the OpenAPI spec for the examples API"
+          }
+        }
+      }
+    },
+    "StaticParamsRPC": {
+      "rpcModuleName": "StaticParamsRPC",
+      "originalControllerName": "StaticParamsController",
+      "prefix": "static-params",
+      "handlers": {
+        "getStaticParams": {
+          "validation": {
+            "params": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "object",
+              "properties": {
+                "section": {
+                  "type": "string",
+                  "enum": [
+                    "a",
+                    "b"
+                  ]
+                },
+                "page": {
+                  "type": "string",
+                  "enum": [
+                    "1",
+                    "2",
+                    "3"
+                  ]
+                }
+              },
+              "required": [
+                "section",
+                "page"
+              ]
+            }
+          },
+          "operationObject": {
+            "summary": "Static Params",
+            "description": "Get the static params: section and page"
+          },
+          "path": "{section}/page{page}.json",
+          "httpMethod": "GET"
+        }
+      }
+    }
+  }
+}

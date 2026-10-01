@@ -1,0 +1,125 @@
+---
+title: Zod + React Hook Form example
+description: Zod + React Hook Form example
+---
+
+import { Tabs } from 'nextra/components';
+import ZodHookFormExample from './zod-hook-form-example';
+import Example from '@/components/example';
+
+# Zod + React Hook Form example
+
+Form input handling with [react-hook-form](https://react-hook-form.com/) and [Zod](https://zod.dev/) validation. The form is validated using RPC method schema with [Ajv](https://ajv.js.org/), [Ajv formats](https://www.npmjs.com/package/ajv-formats) and [Ajv resolver](https://www.npmjs.com/package/@hookform/resolvers#ajv). When the form is submitted, the request input is validated with the generic `validateOnClient` and, when the request is sent to the server, it is validated again with the original Zod schema.
+
+## Result
+
+<Example>
+  <ZodHookFormExample />
+</Example>
+
+## Code
+
+<Tabs items={['user-zod-controller.ts', 'zod-hook-form-example.tsx']}>
+  <Tabs.Tab>
+```ts showLineNumbers copy filename="src/modules/zod/user-zod-controller.ts" source="examples/kitchen-sink"
+import { z } from 'zod';
+import { procedure, prefix, post, operation } from 'vovk';
+
+@prefix('users-zod')
+export default class UserZodController {
+  @operation({
+    summary: 'Update user (Zod)',
+    description: 'Update user by ID with Zod validation',
+  })
+  @post('{id}')
+  static updateUser = procedure({
+    body: z
+      .object({
+        name: z.string().meta({ description: 'User full name', example: 'John Doe' }),
+        age: z.number().min(0).max(120).meta({ description: 'User age', example: 30 }),
+        email: z.email().meta({ description: 'User email', example: 'john.doe@example.com' }),
+      })
+      .meta({ description: 'User object' }),
+    params: z.object({
+      id: z.uuid().meta({ description: 'User ID' }),
+    }),
+    query: z.object({
+      notify: z.enum(['email', 'push', 'none']).meta({ description: 'Notification type' }),
+    }),
+    output: z
+      .object({
+        success: z.boolean().meta({ description: 'Success status' }),
+      })
+      .meta({ description: 'Response object' }),
+  }).handle(async (req, { id }) => {
+    const { name, age, email } = await req.json();
+    const notify = req.nextUrl.searchParams.get('notify');
+
+    // do something with the data
+    console.log(`Updating user ${id}:`, { name, age, email, notify });
+    return {
+      success: true,
+    };
+  });
+}
+```
+*[The code above is fetched from GitHub repository.](https://github.com/finom/vovk/blob/main/examples/kitchen-sink/src/modules/zod/user-zod-controller.ts)*
+  </Tabs.Tab>
+  <Tabs.Tab>
+```tsx showLineNumbers copy filename="src/app/zod-hook-form/zod-hook-form-example.tsx" source="examples/kitchen-sink"
+'use client';
+import { useState } from 'react';
+import { UserZodRPC } from '@/client';
+import { useForm } from 'react-hook-form';
+import type { VovkBody, VovkReturnType } from 'vovk';
+import { ajvResolver } from '@hookform/resolvers/ajv';
+import { fastFormats } from 'ajv-formats/dist/formats.js';
+
+export default function ZodHookFormExample() {
+  const [response, setResponse] = useState<VovkReturnType<typeof UserZodRPC.updateUser> | null>(null);
+  const {
+    register,
+    handleSubmit,
+    getValues,
+    formState: { errors },
+  } = useForm<VovkBody<typeof UserZodRPC.updateUser>>({
+    // @ts-expect-error This example isn't working as vovk-examples uses newer version of JSON Schema
+    resolver: ajvResolver(UserZodRPC.updateUser.schema.validation.body, {
+      formats: fastFormats,
+    }),
+  });
+
+  const onSubmit = async () => {
+    setResponse(
+      await UserZodRPC.updateUser({
+        body: getValues(),
+        query: { notify: 'push' },
+        params: { id: '5a279068-35d6-4d67-94e0-c21ef4052eea' },
+      })
+    );
+  };
+
+  return (
+    <form onSubmit={handleSubmit(onSubmit)}>
+      <input type="text" placeholder="Name" {...register('name')} />
+      {errors.name && <p>❌ {errors.name.message}</p>}
+      <input type="text" placeholder="Email" {...register('email')} />
+      {errors.email && <p>❌ {errors.email.message}</p>}
+      <label htmlFor="age">Age:</label>
+      <input type="number" id="age" placeholder="Age" {...register('age', { valueAsNumber: true })} />
+      {errors.age && <p>❌ {errors.age.message}</p>}
+      <button type="submit">Submit</button>
+
+      {response && (
+        <div>
+          <h3>Response</h3>
+          <pre className="text-left">{JSON.stringify(response, null, 2)}</pre>
+        </div>
+      )}
+    </form>
+  );
+}
+```
+*[The code above is fetched from GitHub repository.](https://github.com/finom/vovk/blob/main/examples/kitchen-sink/src/app/zod-hook-form/zod-hook-form-example.tsx)*
+  </Tabs.Tab>
+</Tabs>

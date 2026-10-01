@@ -1,0 +1,242 @@
+# Type Inference
+
+Input and output inference is provided by universal types that work for both RPC modules and controller procedures.
+
+Client-side inference:
+
+```ts showLineNumbers copy
+import type { VovkBody, VovkQuery, VovkParams, VovkInput, VovkOutput, VovkIteration, VovkReturnType, VovkYieldType } from 'vovk';
+import { UserRPC, StreamRPC } from '@/client';
+
+// infer input
+type Body = VovkBody<typeof UserRPC.updateUser>;
+type Query = VovkQuery<typeof UserRPC.updateUser>;
+type Params = VovkParams<typeof UserRPC.updateUser>;
+type Input = VovkInput<typeof UserRPC.updateUser>; // { params, query, body }
+
+// infer output
+type Output = VovkOutput<typeof UserRPC.updateUser>;
+type Iteration = VovkIteration<typeof StreamRPC.streamTokens>;
+
+// see below
+type Return = VovkReturnType<typeof UserRPC.updateUser>;
+type Yield = VovkYieldType<typeof StreamRPC.streamTokens>;
+```
+
+Server-side inference:
+
+```ts showLineNumbers copy
+import type { VovkBody, VovkQuery, VovkParams, VovkInput, VovkOutput, VovkIteration, VovkReturnType, VovkYieldType } from 'vovk';
+import type UserController from './user-controller';
+import type StreamController from './stream-controller';
+
+// infer input
+type Body = VovkBody<typeof UserController.updateUser>;
+type Query = VovkQuery<typeof UserController.updateUser>;
+type Params = VovkParams<typeof UserController.updateUser>;
+type Input = VovkInput<typeof UserController.updateUser>; // { params, query, body }
+
+// infer output
+type Output = VovkOutput<typeof UserController.updateUser>;
+type Iteration = VovkIteration<typeof StreamController.streamTokens>;
+
+// see below
+type Return = VovkReturnType<typeof UserController.updateUser>;
+type Yield = VovkYieldType<typeof StreamController.streamTokens>;
+```
+
+## Input Inference
+
+Source types for `body`, `query`, and `params` are defined via `VovkRequest<TBody, TQuery, ?TParams>{:ts}`, which specifies the type of the `req` argument in procedures. In other words, both raw and validated method definitions determine the input types.
+
+Raw method definition with `params` as a generic argument:
+
+```ts showLineNumbers copy
+import type { VovkRequest } from 'vovk';
+
+export default class UserController {
+  @get()
+  static async updateUser(req: VovkRequest<{ email: string }, { id: string }, { param: string }>) {
+    // ...
+  }
+}
+```
+
+Raw method definition with `params` as a separate argument:
+
+```ts showLineNumbers copy
+import type { VovkRequest } from 'vovk';
+
+export default class UserController {
+  @get()
+  static async updateUser(req: VovkRequest<{ email: string }, { id: string }>, params: { param: string }) {
+    // ...
+  }
+}
+```
+
+Validated [procedures](/procedure) infer input types automatically:
+
+```ts showLineNumbers copy
+import { procedure } from 'vovk';
+import { z } from 'zod';
+
+export default class UserController {
+  @get()
+  static updateUser = procedure({
+    query: z.object({ id: z.string() }),
+    params: z.object({ param: z.string() }),
+    body: z.object({ email: z.string().email() }),
+  }).handle((req, params) => {
+    // ...
+  });
+}
+```
+
+All three cases result the same RPC method:
+
+```ts showLineNumbers copy
+import { UserRPC } from '@/client';
+
+await UserRPC.updateUser({
+  params: { param: 'value' },
+  query: { id: 'value' },
+  body: { email: 'value' },
+});
+```
+
+And they allow to infer input types identically:
+
+```ts showLineNumbers copy
+import type { VovkBody, VovkQuery, VovkParams } from 'vovk';
+import { UserRPC } from '@/client';
+
+type Body = VovkBody<typeof UserRPC.updateUser>; // { email: string }
+type Query = VovkQuery<typeof UserRPC.updateUser>; // { id: string }
+type Params = VovkParams<typeof UserRPC.updateUser>; // { param: string }
+```
+
+```ts showLineNumbers copy
+import type { VovkBody, VovkQuery, VovkParams } from 'vovk';
+import type UserController from './user-controller';
+
+type Body = VovkBody<typeof UserController.updateUser>; // { email: string }
+type Query = VovkQuery<typeof UserController.updateUser>; // { id: string }
+type Params = VovkParams<typeof UserController.updateUser>; // { param: string }
+```
+
+## Combined Input Type
+
+`VovkInput<T>` extracts all three input types (`params`, `query`, `body`) into a single object.
+
+```ts showLineNumbers copy
+import type { VovkInput } from 'vovk';
+import type UserController from './user-controller';
+
+type Input = VovkInput<typeof UserController.updateUser>;
+// { params: { param: string }; query: { id: string }; body: { email: string } }
+```
+
+It works the same way with RPC modules:
+
+```ts showLineNumbers copy
+import type { VovkInput } from 'vovk';
+import { UserRPC } from '@/client';
+
+type Input = VovkInput<typeof UserRPC.updateUser>;
+// { params: { param: string }; query: { id: string }; body: { email: string } }
+```
+
+## Output/Iteration Inference
+
+Output and iteration types are set only when using [procedure](/procedure) function.
+
+For output:
+
+```ts showLineNumbers copy
+import { procedure } from 'vovk';
+import { z } from 'zod';
+
+export default class UserController {
+  @get()
+  static updateUser = procedure({
+    output: z.object({ success: z.boolean() }),
+  }).handle(async (req, params) => {
+    return { success: true };
+  });
+}
+```
+
+For [JSON Lines](/jsonlines) responses:
+
+```ts showLineNumbers copy
+import { procedure } from 'vovk';
+import { z } from 'zod';
+
+export default class StreamController {
+  @get()
+  static streamItems = procedure({
+    iteration: z.object({ item: z.boolean() }),
+  }).handle(function *(req, params) {
+    yield { item: true };
+    yield { item: true };
+  });
+}
+```
+
+```ts showLineNumbers copy
+import type { VovkOutput, VovkIteration } from 'vovk';
+import { UserRPC } from '@/client';
+
+type Output = VovkOutput<typeof UserRPC.updateUser>; // { success: boolean }
+type Iteration = VovkIteration<typeof StreamRPC.streamItems>; // { item: boolean }
+```
+
+```ts showLineNumbers copy
+import type { VovkOutput, VovkIteration } from 'vovk';
+import type UserController from './user-controller';
+import type StreamController from './stream-controller';
+
+type Output = VovkOutput<typeof UserController.updateUser>; // { success: boolean }
+type Iteration = VovkIteration<typeof StreamController.streamItems>; // { item: boolean }
+```
+
+## Return/Yield Inference
+
+`VovkReturnType<T>` and `VovkYieldType<T>` infer the actual return or yield type of methods when input is not validated. These types cannot be used for self-references in services, as they cause “implicit any” TypeScript errors.
+
+```ts showLineNumbers copy
+export default class UserController {
+  @get()
+  static updateUser = () => {
+    return { success: true };
+  };
+}
+```
+
+```ts showLineNumbers copy
+export default class StreamController {
+  @get()
+  static async *streamItems() {
+    yield { item: true };
+    yield { item: true };
+  }
+}
+```
+
+```ts showLineNumbers copy
+import type { VovkReturnType, VovkYieldType } from 'vovk';
+import { UserRPC, StreamRPC } from '@/client';
+
+type Return = VovkReturnType<typeof UserRPC.updateUser>; // { success: boolean }
+type Yield = VovkYieldType<typeof StreamRPC.streamItems>; // { item: boolean }
+```
+
+```ts showLineNumbers copy
+import type { VovkReturnType, VovkYieldType } from 'vovk';
+import type UserController from './user-controller';
+import type StreamController from './stream-controller';
+
+type Return = VovkReturnType<typeof UserController.updateUser>; // { success: boolean }
+type Yield = VovkYieldType<typeof StreamController.streamItems>; // { item: boolean }
+```
