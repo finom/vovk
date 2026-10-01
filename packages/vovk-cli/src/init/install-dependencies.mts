@@ -1,4 +1,6 @@
 import { spawn } from 'node:child_process';
+import fs from 'node:fs';
+import path from 'node:path';
 import type NPMCliPackageJson from '@npmcli/package-json';
 import type { InitOptions } from '../types.mjs';
 import { chalkHighlightThing } from '../utils/chalk-highlight-thing.mjs';
@@ -8,10 +10,29 @@ export type PackageManager = 'npm' | 'yarn' | 'pnpm' | 'bun';
 
 const KNOWN_PACKAGE_MANAGERS: PackageManager[] = ['npm', 'yarn', 'pnpm', 'bun'];
 
+const LOCKFILES: [string, PackageManager][] = [
+  ['pnpm-lock.yaml', 'pnpm'],
+  ['yarn.lock', 'yarn'],
+  ['bun.lock', 'bun'],
+  ['bun.lockb', 'bun'],
+  ['package-lock.json', 'npm'],
+];
+
+// the project's lockfile, then the package manager that runs vovk init
+function getPackageManagerInUse({ root, userAgent }: { root?: string; userAgent?: string }): PackageManager {
+  const lockfile = root ? LOCKFILES.find(([fileName]) => fs.existsSync(path.join(root, fileName))) : undefined;
+  if (lockfile) return lockfile[1];
+  // npm_config_user_agent looks like "pnpm/10.4.1 npm/? node/v24.1.0 darwin arm64"
+  const runner = userAgent?.split('/')[0];
+  return KNOWN_PACKAGE_MANAGERS.find((name) => name === runner) ?? 'npm';
+}
+
 export function getPackageManager(
   options: Pick<InitOptions, 'useNpm' | 'useYarn' | 'usePnpm' | 'useBun'> & {
     pkgJson: NPMCliPackageJson;
     log?: ReturnType<typeof getLogger>;
+    root?: string;
+    userAgent?: string;
   }
 ): PackageManager {
   if (options.useNpm) return 'npm';
@@ -19,7 +40,7 @@ export function getPackageManager(
   if (options.usePnpm) return 'pnpm';
   if (options.useBun) return 'bun';
   const packageManager = options.pkgJson.content?.packageManager?.split('@')[0];
-  if (!packageManager) return 'npm'; // Default to npm if no options are true
+  if (!packageManager) return getPackageManagerInUse(options);
   // this name gets spawned, so an unknown one from package.json is not executed
   if (!KNOWN_PACKAGE_MANAGERS.includes(packageManager as PackageManager)) {
     options.log?.warn(

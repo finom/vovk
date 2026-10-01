@@ -50,7 +50,7 @@ Sets the log level: `trace`, `debug`, `info`, `warn`, `error`. Default: `info`.
 
 ### `--use-npm`, `--use-yarn`, `--use-pnpm`, `--use-bun`
 
-Choose the package manager for installing dependencies to skip auto-detection.
+Choose the package manager for installing dependencies to skip auto-detection. Without these flags, `init` takes the `packageManager` field of **package.json**, then the project's lockfile (**pnpm-lock.yaml**, **yarn.lock**, **bun.lock**, **package-lock.json**), then the package manager that runs it (`pnpm dlx`, `yarn dlx`, `bunx`), and npm otherwise.
 
 ### `--skip-install`
 

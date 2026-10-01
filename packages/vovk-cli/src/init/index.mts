@@ -116,7 +116,16 @@ export class Init {
 
     if (!dryRun && pkgJson) {
       let depsUpdated = false;
-      const packageManager = getPackageManager({ useNpm, useYarn, usePnpm, useBun, pkgJson, log });
+      const packageManager = getPackageManager({
+        useNpm,
+        useYarn,
+        usePnpm,
+        useBun,
+        pkgJson,
+        log,
+        root,
+        userAgent: process.env.npm_config_user_agent,
+      });
       try {
         await updateDependenciesWithoutInstalling({
           log,
