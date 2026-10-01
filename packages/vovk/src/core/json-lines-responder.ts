@@ -167,11 +167,17 @@ export class JSONLinesResponder<T> extends Responder {
       return JSON.stringify({ isError: true, reason: 'Internal server error' } satisfies StreamAbortMessage);
     }
     // the client takes a line for an error only with these keys, and statusCode only as a number
-    return JSON.stringify({
+    const errorLine: StreamAbortMessage = {
       isError: true,
       reason: e instanceof Error ? e.message : e,
       ...(isHttpException(e) && typeof e.statusCode === 'number' ? { statusCode: e.statusCode } : {}),
-    } satisfies StreamAbortMessage);
+    };
+    try {
+      return JSON.stringify(errorLine);
+    } catch {
+      // a thrown value JSON can't serialize, as a cycle or a BigInt
+      return JSON.stringify({ ...errorLine, reason: String(e) });
+    }
   }
 
   private end(errorLine?: string) {

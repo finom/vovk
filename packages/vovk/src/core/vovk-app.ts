@@ -184,8 +184,13 @@ class VovkApp {
       console.error('🐺 Unhandled error in a Vovk handler:', e);
       return { statusCode: HttpStatus.INTERNAL_SERVER_ERROR, message: 'Internal server error' };
     }
-    const err = e as Error | null | undefined;
-    return { statusCode: HttpStatus.INTERNAL_SERVER_ERROR, message: err?.message as string, cause: err?.cause };
+    const { message, cause } = (e ?? {}) as { message?: unknown; cause?: unknown };
+    // a thrown value that is no Error, as a string, is the message itself
+    return {
+      statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+      message: typeof message === 'string' ? message : String(e),
+      cause,
+    };
   }
 
   #respondWithError = ({

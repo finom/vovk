@@ -153,6 +153,10 @@ describe('Runtime sweep', () => {
       static informationalStatus() {
         throw new HttpException(HttpStatus.CONTINUE, 'Informational status');
       }
+
+      static throwString() {
+        throw 'Plain string';
+      }
     }
     get('big-int', { cors: true })(FailureController, 'bigInt');
     get('big-int-cause', { cors: true })(FailureController, 'bigIntCause');
@@ -160,6 +164,7 @@ describe('Runtime sweep', () => {
     get('no-content')(FailureController, 'noContent');
     get('unknown-status')(FailureController, 'unknownStatus');
     get('informational-status')(FailureController, 'informationalStatus');
+    get('throw-string')(FailureController, 'throwString');
     const handlers = initSegment({
       segmentName: 'failure',
       controllers: { FailureController },
@@ -223,6 +228,13 @@ describe('Runtime sweep', () => {
       deepStrictEqual(await unknown.json(), { statusCode: 500, message: 'Unknown status', isError: true });
       strictEqual(informational.status, 500);
       deepStrictEqual(await informational.json(), { statusCode: 500, message: 'Informational status', isError: true });
+    });
+
+    it('Sends a thrown value that is no Error as the message', async () => {
+      const response = await call(handlers, 'GET', 'throw-string');
+
+      strictEqual(response.status, 500);
+      deepStrictEqual(await response.json(), { statusCode: 500, message: 'Plain string', isError: true });
     });
   });
 
@@ -537,12 +549,20 @@ describe('Runtime sweep', () => {
         yield undefined;
         yield 3;
       }
+
+      static async *throwCycle() {
+        yield 1;
+        const cycle: Record<string, unknown> = {};
+        cycle.self = cycle;
+        throw cycle;
+      }
     }
     get('throw-after-send')(ResponderController, 'throwAfterSend');
     get('send-after-close')(ResponderController, 'sendAfterClose');
     get('invalid-item')(ResponderController, 'invalidItem');
     get('big-int-item')(ResponderController, 'bigIntItem');
     get('undefined-item')(ResponderController, 'undefinedItem');
+    get('throw-cycle')(ResponderController, 'throwCycle');
     const handlers = initSegment({
       segmentName: 'responder',
       controllers: { ResponderController },
@@ -593,6 +613,13 @@ describe('Runtime sweep', () => {
       const response = await call(handlers, 'GET', 'undefined-item');
 
       strictEqual(await response.text(), '1\nnull\n3\n');
+    });
+
+    // the stream used to stay open, so a regression hangs without the timeout
+    it('Ends the stream when the thrown value can not be serialized', { timeout: 1000 }, async () => {
+      const lines = await readLines(await call(handlers, 'GET', 'throw-cycle'));
+
+      deepStrictEqual(lines, [1, { isError: true, reason: '[object Object]' }]);
     });
   });
 
