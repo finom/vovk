@@ -38,7 +38,8 @@
   "description": "Back-end Framework for Next.js App Router",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/finom/vovk.git"
+    "url": "git+https://github.com/finom/vovk.git",
+    "directory": "packages/vovk"
   },
   "scripts": {
     "postbuild": "chmod +x ./bin/index.mjs",
