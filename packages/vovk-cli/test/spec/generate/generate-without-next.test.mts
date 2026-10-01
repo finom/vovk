@@ -223,6 +223,53 @@ await describe('vovk generate in a project without Next.js', async () => {
     assert.deepStrictEqual(await fs.readdir(path.join(projectDir, 'seg_py')), ['root']);
   });
 
+  await it('Keeps a composed client that sits inside the segmented client folder', async () => {
+    await createProject(projectDir, {
+      'package.json': { name: 'app', version: '1.0.0', type: 'module' },
+      'vovk.config.mjs': configFile({
+        composedClient: { outDir: './src/client/all', prettifyClient: false },
+        segmentedClient: { enabled: true, outDir: './src/client', prettifyClient: false },
+      }),
+      'src/app/api/[[...vovk]]/route.ts': '',
+      'src/app/api/foo/[[...vovk]]/route.ts': '',
+      '.vovk-schema/root.json': userSegmentSchema,
+      '.vovk-schema/foo.json': { ...userSegmentSchema, segmentName: 'foo' },
+    });
+
+    for (const args of [['generate'], ['generate'], ['generate', '--segmented-only']]) {
+      await runCLI(args, { cwd: projectDir });
+      assert.ok((await read('src/client/all/index.ts')).includes('UserRPC'), args.join(' '));
+    }
+    assert.deepStrictEqual((await fs.readdir(path.join(projectDir, 'src/client'))).sort(), ['all', 'foo', 'root']);
+  });
+
+  await it('Keeps the client of a segment renamed in letter case only', async () => {
+    const adminSchema = (segmentName: string) => ({
+      ...userSegmentSchema,
+      segmentName,
+      controllers: { AdminRPC: { ...userSegmentSchema.controllers.UserRPC, rpcModuleName: 'AdminRPC' } },
+    });
+    await createProject(projectDir, {
+      'package.json': { name: 'app', version: '1.0.0', type: 'module' },
+      'vovk.config.mjs': configFile({
+        composedClient: { enabled: false },
+        segmentedClient: { enabled: true, prettifyClient: false },
+      }),
+      'src/app/api/[[...vovk]]/route.ts': '',
+      'src/app/api/admin/[[...vovk]]/route.ts': '',
+      '.vovk-schema/root.json': userSegmentSchema,
+      '.vovk-schema/admin.json': adminSchema('admin'),
+    });
+    await runCLI(['generate'], { cwd: projectDir });
+
+    await fs.rename(path.join(projectDir, 'src/app/api/admin'), path.join(projectDir, 'src/app/api/Admin'));
+    await fs.rm(path.join(projectDir, '.vovk-schema/admin.json'));
+    await fs.writeFile(path.join(projectDir, '.vovk-schema/Admin.json'), JSON.stringify(adminSchema('Admin')));
+    await runCLI(['generate'], { cwd: projectDir });
+
+    assert.ok((await read('src/client/Admin/index.ts')).includes('AdminRPC'));
+  });
+
   await it('Names Python and Rust packages after a scoped package name', async () => {
     await createProject(projectDir, {
       'package.json': { name: '@acme/web-app', version: '1.0.0', type: 'module' },

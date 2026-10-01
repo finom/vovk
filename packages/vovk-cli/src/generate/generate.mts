@@ -448,6 +448,20 @@ export async function generate({
       })
     );
 
+    // another configured output directory may sit inside a segmented one, it holds no segment
+    const configuredOutDirs = [
+      config.composedClient.outDir,
+      config.segmentedClient.outDir,
+      cliGenerateOptions?.composedOut,
+      cliGenerateOptions?.segmentedOut,
+      ...Object.values(config.clientTemplateDefs).flatMap((def) => [
+        def.composedClient?.outDir,
+        def.segmentedClient?.outDir,
+      ]),
+      config.bundle.outDir,
+      config.bundle.prebundleOutDir,
+    ].flatMap((dir) => (dir ? [path.resolve(cwd, dir)] : []));
+
     // once every segment is written, remove the folders of segments that are gone from each output directory
     for (const [outAbsoluteDir, dirResults] of Object.entries(
       _.groupBy(segmentedClientResults, ({ outAbsoluteDir }) => outAbsoluteDir)
@@ -456,7 +470,10 @@ export async function generate({
         outAbsoluteDir,
         segmentNames.map((s) => s || ROOT_SEGMENT_FILE_NAME),
         dirResults.map(({ relPath }) => relPath),
-        { unstampedRelPaths: dirResults.filter(({ isStamped }) => !isStamped).map(({ relPath }) => relPath) }
+        {
+          unstampedRelPaths: dirResults.filter(({ isStamped }) => !isStamped).map(({ relPath }) => relPath),
+          excludedDirs: configuredOutDirs.filter((dir) => dir !== outAbsoluteDir),
+        }
       );
 
       for (const skippedDir of skippedDirs) {

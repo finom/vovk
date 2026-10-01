@@ -7,6 +7,7 @@ type PruneContext = {
   basePath: string;
   allowedDirs: string[];
   generated?: { relPaths: string[]; unstampedRelPaths: string[] };
+  excludedDirs: string[];
   skipped: string[];
 };
 
@@ -17,14 +18,22 @@ export async function removeUnlistedDirectories(
   folderPath: string,
   allowedDirs: string[],
   generatedRelPaths?: string[],
-  // generated files besides JSON that carry no banner, such as the files a template copies as they are
-  { unstampedRelPaths = [] }: { unstampedRelPaths?: string[] } = {}
+  {
+    unstampedRelPaths = [],
+    excludedDirs = [],
+  }: {
+    // generated files besides JSON that carry no banner, such as the files a template copies as they are
+    unstampedRelPaths?: string[];
+    // absolute paths of directories to leave alone, such as the output directory of another client
+    excludedDirs?: string[];
+  } = {}
 ): Promise<string[]> {
   const context: PruneContext = {
     basePath: folderPath,
     // Normalize all allowed paths to use the system-specific separator
     allowedDirs: allowedDirs.map((dir) => dir.split('/').join(path.sep)),
     generated: generatedRelPaths && { relPaths: generatedRelPaths, unstampedRelPaths },
+    excludedDirs: excludedDirs.map((dir) => path.resolve(dir)),
     skipped: [],
   };
 
@@ -59,7 +68,8 @@ async function isGeneratedFile(absolutePath: string): Promise<boolean> {
 }
 
 async function listFiles(dirPath: string, relativePath = ''): Promise<{ files: string[]; hasEmptyDir: boolean }> {
-  const entries = await fs.readdir(path.join(dirPath, relativePath), { withFileTypes: true });
+  // a directory removed meanwhile lists as empty
+  const entries = await fs.readdir(path.join(dirPath, relativePath), { withFileTypes: true }).catch(() => []);
   const result = { files: [] as string[], hasEmptyDir: !entries.length };
 
   for (const entry of entries) {
@@ -129,9 +139,30 @@ async function isSegmentContent({ basePath, allowedDirs, generated }: PruneConte
   );
 }
 
+// a case-insensitive file system keeps the old folder name when a segment is renamed in letter case only,
+// so a folder that is the same one as an allowed path stands for it
+async function findAllowedAlias({ basePath, allowedDirs }: PruneContext, relativePath: string) {
+  const depth = relativePath.split(path.sep).length;
+  const fold = (dir: string) => dir.normalize('NFC').toLowerCase();
+  const candidates = new Set(
+    allowedDirs
+      .map((dir) => dir.split(path.sep).slice(0, depth).join(path.sep))
+      .filter((dir) => dir !== relativePath && fold(dir) === fold(relativePath))
+  );
+  const stat = (dir: string) => fs.stat(path.join(basePath, dir)).catch(() => null);
+  const dirStats = await stat(relativePath);
+
+  for (const candidate of candidates) {
+    const candidateStats = await stat(candidate);
+    if (dirStats && candidateStats?.ino === dirStats.ino && candidateStats.dev === dirStats.dev) return candidate;
+  }
+
+  return null;
+}
+
 // recursively decides which dirs to keep or remove
 async function processDirectory(context: PruneContext, relativePath: string): Promise<void> {
-  const { basePath, allowedDirs, generated, skipped } = context;
+  const { basePath, allowedDirs, generated, excludedDirs, skipped } = context;
   const currentDirPath = path.join(basePath, relativePath);
 
   // check if the current path is a directory
@@ -142,31 +173,40 @@ async function processDirectory(context: PruneContext, relativePath: string): Pr
   }
 
   // Read all entries in the current directory
-  const entries = await fs.readdir(currentDirPath, { withFileTypes: true });
+  const entries = await fs.readdir(currentDirPath, { withFileTypes: true }).catch(() => []);
 
   // Process only directories
   const dirEntries = entries.filter((entry) => entry.isDirectory());
 
-  // Check each directory
-  for (const dir of dirEntries) {
-    // Calculate the new relative path
-    const newRelativePath = relativePath ? path.join(relativePath, dir.name) : dir.name;
-
-    // Check if this directory or any of its subdirectories should be kept
-    const shouldKeep = allowedDirs.some((allowedDir) => {
+  // Check if this directory or any of its subdirectories should be kept
+  const isAllowed = (dir: string) =>
+    allowedDirs.some((allowedDir) => {
       // Direct match
-      if (allowedDir === newRelativePath) return true;
+      if (allowedDir === dir) return true;
 
       // Check if it's a parent path of an allowed directory
       // e.g. "foo" is a parent of "foo/bar/baz"
-      return allowedDir.startsWith(newRelativePath + path.sep);
+      return allowedDir.startsWith(dir + path.sep);
     });
 
-    if (shouldKeep) {
+  // Check each directory
+  for (const dir of dirEntries) {
+    // Calculate the new relative path
+    let newRelativePath = relativePath ? path.join(relativePath, dir.name) : dir.name;
+
+    if (!isAllowed(newRelativePath))
+      newRelativePath = (await findAllowedAlias(context, newRelativePath)) ?? newRelativePath;
+
+    if (isAllowed(newRelativePath)) {
       // Recursively process this directory's contents
       await processDirectory(context, newRelativePath);
     } else {
       const fullPath = path.join(basePath, newRelativePath);
+
+      // another client's output directory, or one holding it
+      if (excludedDirs.some((excludedDir) => excludedDir === fullPath || excludedDir.startsWith(fullPath + path.sep))) {
+        continue;
+      }
 
       if (generated) {
         if (await isSegmentContent(context, newRelativePath)) continue;

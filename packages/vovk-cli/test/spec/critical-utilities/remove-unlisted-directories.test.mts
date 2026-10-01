@@ -189,6 +189,17 @@ await describe('removeUnlistedDirectories', async () => {
     );
   });
 
+  await it('Leaves the output directory of another client alone', async () => {
+    await writeFiles(['root/index.ts', 'all/index.ts', 'nested/all/index.ts', 'stale/index.ts']);
+
+    const skipped = await removeUnlistedDirectories(tmpDir, ['root'], ['index.ts'], {
+      excludedDirs: [path.join(tmpDir, 'all'), path.join(tmpDir, 'nested/all')],
+    });
+
+    assert.deepStrictEqual(await list(), ['all', 'nested', 'root']);
+    assert.deepStrictEqual(skipped, []);
+  });
+
   await it('Leaves empty directories alone', async () => {
     await writeFiles(['root/index.ts']);
     await fs.mkdir(path.join(tmpDir, 'emptydir', 'sub'), { recursive: true });
