@@ -1,6 +1,6 @@
 import type { VovkRequest } from '../types/request.js';
 import type { StandardToolV0 } from '../types/standard-tool.js';
-import { toModelErrorMessage } from './to-model-error-message.js';
+import { responseErrorMessage, toModelErrorMessage } from './to-model-error-message.js';
 
 export type DefaultModelOutput<T> = T | { error: string };
 
@@ -36,6 +36,8 @@ export const toModelOutputDefault: ToModelOutputDefaultFn = async <TInput, TOutp
   _req: Pick<VovkRequest, 'vovk'> | null
 ): Promise<DefaultModelOutput<TOutput>> => {
   if (result instanceof Error) return { error: toModelErrorMessage(result) };
-  if (result instanceof Response) return (await responseToData(result)) as TOutput;
+  if (result instanceof Response) {
+    return result.ok ? ((await responseToData(result)) as TOutput) : { error: await responseErrorMessage(result) };
+  }
   return result;
 };

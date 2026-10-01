@@ -1,6 +1,14 @@
 import assert from 'node:assert';
 import { describe, it } from 'node:test';
-import { deriveTools, JSONLinesResponder, procedure, ToModelOutput, toDownloadResponse, type VovkOutput } from 'vovk';
+import {
+  deriveTools,
+  HttpException,
+  JSONLinesResponder,
+  procedure,
+  ToModelOutput,
+  toDownloadResponse,
+  type VovkOutput,
+} from 'vovk';
 import { createRPC } from 'vovk/create-rpc';
 import type { MCPModelOutput, StandardToolV0 } from 'vovk/internal';
 import { z } from 'zod';
@@ -584,6 +592,47 @@ describe('deriveTools', () => {
 
     it('Collects the items of a generator handler', async () => {
       assert.deepStrictEqual(await generatorTool.execute({}), [{ n: 1 }, { n: 2 }]);
+    });
+  });
+
+  describe('Error responses', () => {
+    const notFound = procedure({ operationObject: { description: 'd' } }).handle(async () =>
+      Response.json({ message: 'User not found' }, { status: 404 })
+    );
+    const forbidden = procedure({ operationObject: { description: 'd' } }).handle(
+      async () => new Response('Forbidden', { status: 403 })
+    );
+
+    it('Gives the model the error of an error status and calls onError', async () => {
+      const calls: string[] = [];
+      const [notFoundTool, forbiddenTool] = deriveTools({
+        modules: { MyModule: { notFound, forbidden } },
+        onExecute: () => calls.push('onExecute'),
+        onError: (error) => {
+          assert.ok(error instanceof HttpException);
+          calls.push(`onError ${error.statusCode} ${error.message}`);
+        },
+      });
+
+      assert.deepStrictEqual(await notFoundTool.execute({}), { error: 'User not found' });
+      assert.deepStrictEqual(await forbiddenTool.execute({}), { error: 'Forbidden' });
+      assert.deepStrictEqual(calls, ['onError 404 User not found', 'onError 403 Forbidden']);
+    });
+
+    it('Marks the MCP output of an error status as an error and calls onError', async () => {
+      const calls: string[] = [];
+      const [tool] = deriveTools({
+        modules: { MyModule: { notFound } },
+        toModelOutput: ToModelOutput.MCP,
+        onExecute: () => calls.push('onExecute'),
+        onError: () => calls.push('onError'),
+      });
+
+      assert.deepStrictEqual(await tool.execute({}), {
+        content: [{ type: 'text', text: '{"message":"User not found"}' }],
+        isError: true,
+      });
+      assert.deepStrictEqual(calls, ['onError']);
     });
   });
 

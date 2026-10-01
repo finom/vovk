@@ -1,4 +1,5 @@
 import { readableStreamToAsyncIterable } from '../client/default-stream-handler.js';
+import { HttpException } from '../core/http-exception.js';
 import { JSONLinesResponder } from '../core/json-lines-responder.js';
 import type { VovkHandlerSchema, VovkSegmentSchema } from '../types/core.js';
 import type { VovkRequest } from '../types/request.js';
@@ -11,6 +12,7 @@ import {
 } from '../validation/json-schema-only-spec.js';
 import type { procedure } from '../validation/procedure.js';
 import { validationSchemasObjectToSingleValidationSchema } from '../validation/validation-schemas-object-to-single-validation-schema.js';
+import { responseErrorMessage } from './to-model-error-message.js';
 import { ToModelOutput } from './to-model-output.js';
 import type { DefaultModelOutput } from './to-model-output-default.js';
 
@@ -72,6 +74,16 @@ async function caller<TOutput, TFormattedOutput>(
       throw new Error(
         `Unable to call handler "${handlerName}". It's neither RPC nor controller method with "fn" interface.`
       );
+    }
+
+    // an error status fails the call, the formatter still gets the Response to show its body
+    if (result instanceof Response && !result.ok) {
+      const error = new HttpException(result.status, await responseErrorMessage(result.clone()));
+      return [
+        await toModelOutput(result as TOutput, tool as StandardToolV0<unknown, TOutput, TFormattedOutput>, req),
+        req,
+        error,
+      ];
     }
 
     // a responder streams the lines a client would read

@@ -40,7 +40,7 @@ The `deriveTools` function accepts an options object with the following properti
 
 - `modules: Record<string, object>{:ts}` - a record of modules (RPC/API modules or controllers) to derive tools from.
 - `onExecute?: (result: unknown, tool: StandardToolV0) => void{:ts}` - optional callback invoked when a tool's `execute` function completes successfully.
-- `onError?: (error: Error, tool: StandardToolV0) => void{:ts}` - optional callback invoked when a tool's `execute` function throws an error.
+- `onError?: (error: Error, tool: StandardToolV0) => void{:ts}` - optional callback invoked when a tool's `execute` function throws an error, or when a controller returns a `Response` with an error status. The error for a `Response` is an `HttpException` with its status and the message from the body: the `message`, `detail` or `title` of a JSON body, else its text. `ToModelOutput.DEFAULT` gives the model `{ error: message }{:ts}` for both.
 - `toModelOutput?: ToModelOutputFn<TInput, TOutput, TFormattedOutput>{:ts}` - optional function to format the output returned to the LLM. Can be set to a custom function or one of the built-in formatters, defined in `ToModelOutput` object, exported from `vovk`, such as 
   - `ToModelOutput.MCP` for MCP formatting.
   - `ToModelOutput.DEFAULT` that's used by default when `toModelOutput` is not provided.
