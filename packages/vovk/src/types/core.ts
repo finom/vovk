@@ -83,6 +83,8 @@ export type VovkErrorResponse = {
 export type StreamAbortMessage = {
   isError: true;
   reason: KnownAny;
+  // set when the stream ends with an HttpException
+  statusCode?: HttpStatus;
 };
 
 export type VovkControllerInternal = {
