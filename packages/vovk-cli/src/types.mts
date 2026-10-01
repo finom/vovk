@@ -85,7 +85,8 @@ export interface NewOptions {
   templates?: string[];
   outDir?: string;
   overwrite?: boolean;
-  noSegmentUpdate?: boolean;
+  // false with --no-segment-update
+  segmentUpdate?: boolean;
   empty?: boolean;
   static?: boolean;
   logLevel?: LogLevelNames;

@@ -34,7 +34,7 @@ export async function newModule({
   dryRun,
   outDir: outDirFlag,
   templates: templatesFlag,
-  noSegmentUpdate,
+  segmentUpdate = true,
   overwrite,
   empty,
 }: {
@@ -44,7 +44,7 @@ export async function newModule({
   dryRun?: boolean;
   outDir?: string;
   templates?: string[];
-  noSegmentUpdate?: boolean;
+  segmentUpdate?: boolean;
   overwrite?: boolean;
   empty?: boolean;
 }) {
@@ -170,7 +170,7 @@ export async function newModule({
 
       importPath += isNodeNextResolution ? '.ts' : '';
 
-      if (!noSegmentUpdate) {
+      if (segmentUpdate) {
         const newSegmentCode = await prettify(
           addClassToSegmentCode(segmentSourceCode, {
             sourceName,

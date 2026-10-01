@@ -34,6 +34,16 @@ await describe('vovk new in a project without Next.js', async () => {
     );
   });
 
+  await it('Leaves the segment as it is with --no-segment-update', async () => {
+    await runCLI(['new', 'segment'], { cwd: projectDir });
+    const route = await read('src/app/api/[[...vovk]]/route.ts');
+
+    await runCLI(['new', 'controller', 'user', '--no-segment-update'], { cwd: projectDir });
+
+    assert.match(await read('src/modules/user/user-controller.ts'), /export default class UserController/);
+    assert.strictEqual(await read('src/app/api/[[...vovk]]/route.ts'), route);
+  });
+
   await it('Refuses a segment named "root" in any letter case', async () => {
     for (const segmentName of ['root', 'Root']) {
       await assert.rejects(
