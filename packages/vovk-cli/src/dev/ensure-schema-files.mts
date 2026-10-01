@@ -80,11 +80,11 @@ export async function ensureSchemaFiles(
           }
         } else if (entry.isFile() && entry.name.endsWith('.json')) {
           const relativePath = path.relative(schemaOutAbsolutePath, absolutePath);
-          const segmentName = relativePath.replace(/\\/g, '/').slice(0, -5); // Remove '.json' extension
+          const fileSegmentName = relativePath.replace(/\\/g, '/').slice(0, -5); // Remove '.json' extension
+          const segmentName = fileSegmentName === ROOT_SEGMENT_FILE_NAME ? '' : fileSegmentName;
 
           if (
             !segmentNames.includes(segmentName) &&
-            !segmentNames.includes(segmentName.replace(ROOT_SEGMENT_FILE_NAME, '')) &&
             !allow.includes(entry.name) &&
             // never delete a json file vovk did not write, schemaOutDir may point at user dirs
             (await isVovkSchemaFile(absolutePath))

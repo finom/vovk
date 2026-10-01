@@ -243,11 +243,11 @@ await describe('CLI init', async () => {
 
     await assertDeps({
       dependencies: ['vovk', 'vovk-ajv', 'zod'],
-      devDependencies: ['vovk-cli'],
+      devDependencies: ['vovk-cli', 'concurrently', 'cross-env'],
     });
 
     await assertScripts({
-      dev: "PORT=3000 concurrently 'next dev' 'vovk dev' --kill-others",
+      dev: 'cross-env PORT=3000 concurrently "next dev" "vovk dev" --kill-others',
       build: 'next build',
       prebuild: 'vovk generate',
     });
@@ -269,7 +269,7 @@ await describe('CLI init', async () => {
     await vovkInit('--yes --update-scripts=explicit');
 
     await assertScripts({
-      dev: "PORT=3000 concurrently 'next dev' 'vovk dev' --kill-others",
+      dev: 'cross-env PORT=3000 concurrently "next dev" "vovk dev" --kill-others',
     });
   });
 

@@ -72,6 +72,22 @@ await describe('ensureSchemaFiles', async () => {
     }
   });
 
+  await it('Deletes a stale schema whose name starts with "root"', async () => {
+    const SEGMENT_ID = 'https://vovk.dev/api/schema/v3/segment.json';
+    for (const segmentName of ['rootfoo', 'foo/rootbar']) {
+      await fs.mkdir(path.dirname(path.join(tmpDir, segmentName)), { recursive: true });
+      await fs.writeFile(
+        path.join(tmpDir, `${segmentName}.json`),
+        JSON.stringify({ $schema: SEGMENT_ID, segmentName })
+      );
+    }
+
+    await ensureSchemaFiles(projectInfo, tmpDir, ['', 'foo', 'foo/bar']);
+
+    const files = glob.sync('**/*.json', { cwd: tmpDir });
+    assert.deepStrictEqual(files.sort(), ['_meta.json', 'foo.json', 'foo/bar.json', 'root.json'].sort());
+  });
+
   await it('Leaves json files it did not write and pre-existing empty dirs alone', async () => {
     const SEGMENT_ID = 'https://vovk.dev/api/schema/v3/segment.json';
 
@@ -88,7 +104,7 @@ await describe('ensureSchemaFiles', async () => {
       JSON.stringify({ $schema: SEGMENT_ID, segmentName: 'folder/old' })
     );
 
-    await ensureSchemaFiles(projectInfo, tmpDir, ['root']);
+    await ensureSchemaFiles(projectInfo, tmpDir, ['']);
 
     const files = glob.sync('**/*.json', { cwd: tmpDir });
     assert.deepStrictEqual(files.sort(), ['_meta.json', 'package.json', 'root.json', 'src/data/config.json'].sort());

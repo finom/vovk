@@ -7,14 +7,14 @@ import isEmpty from 'lodash/isEmpty.js';
 import keyBy from 'lodash/keyBy.js';
 import once from 'lodash/once.js';
 import type { LogLevelNames } from 'loglevel';
-import { Agent, setGlobalDispatcher } from 'undici';
+import { Agent, fetch } from 'undici';
 import type { VovkSchema } from 'vovk';
 import { VovkSchemaIdEnum, type VovkSegmentSchema } from 'vovk/internal';
 import { ensureClient } from '../generate/ensure-client.mjs';
 import { generate } from '../generate/generate.mjs';
 import { CONFIG_FILE_PATHS } from '../get-project-info/get-config/get-config-absolute-paths.mjs';
 import { getMetaSchema } from '../get-project-info/get-meta-schema.mjs';
-import { getProjectInfo, type ProjectInfo } from '../get-project-info/index.mjs';
+import { getProjectInfo, loadOpenAPIMixins, type ProjectInfo } from '../get-project-info/index.mjs';
 import type { DevOptions, VovkEnv } from '../types.mjs';
 import { chalkHighlightThing } from '../utils/chalk-highlight-thing.mjs';
 import { debounceWithArgs } from '../utils/debounce-with-args.mjs';
@@ -24,7 +24,7 @@ import { toPosixPath } from '../utils/to-import-path.mjs';
 import { debouncedEnsureSchemaFiles, ensureSchemaFiles } from './ensure-schema-files.mjs';
 import { logDiffResult } from './log-diff-result.mjs';
 import { writeMetaJson } from './write-meta-json.mjs';
-import { writeOneSegmentSchemaFile } from './write-one-segment-schema-file.mjs';
+import { assertSegmentName, writeOneSegmentSchemaFile } from './write-one-segment-schema-file.mjs';
 
 // chokidar reports native paths, so both separators are accepted
 export const SEGMENT_ROUTE_FILE_REGEX = /[\\/]?\[\[\.\.\.[a-zA-Z-_]+\]\][\\/]route\.ts$/;
@@ -48,6 +48,13 @@ export function getSchemaEndpoint({
   return `http${devHttps ? 's' : ''}://localhost:${port}/${rootEntry}/${segmentName ? `${segmentName}/` : ''}_schema_`;
 }
 
+// a file that imports an HTTP decorator from vovk may hold a controller, the segment schemas tell which
+export function getControllerClassNames(code: string) {
+  const httpDecoratorImport = /import\s*{[^}]*\b(get|post|put|patch|del|head|options)\b[^}]*}\s*from\s*['"]vovk['"]/;
+  if (!httpDecoratorImport.test(code)) return [];
+  return [...code.matchAll(/\bclass\s+([A-Za-z_$][\w$]*)/g)].map((match) => match[1]);
+}
+
 export class VovkDev {
   #projectInfo!: ProjectInfo;
 
@@ -63,17 +70,28 @@ export class VovkDev {
 
   #onFirstTimeGenerate: (() => void) | null = null;
 
+  // with --exit a failure ends the run with code 1, a watching run waits for the next change instead
+  #exit = false;
+
   #schemaOut: string | null = null;
 
   #devHttps: boolean | null;
 
   #logLevel: LogLevelNames;
 
+  // accepts the self-signed certificate of next dev --experimental-https; used for the schema requests only
+  #selfSignedDispatcher: Agent | null = null;
+
   constructor({ schemaOut, devHttps, logLevel }: Pick<DevOptions, 'schemaOut' | 'devHttps' | 'logLevel'>) {
     this.#schemaOut = schemaOut || null;
     // null when the flag is omitted so config.devHttps can take effect
     this.#devHttps = devHttps ?? null;
     this.#logLevel = logLevel || 'info';
+  }
+
+  // the client imports the schema from --schema-out when it's given
+  #getCliSchemaPath() {
+    return this.#schemaOut ? path.resolve(this.#projectInfo.cwd, this.#schemaOut) : undefined;
   }
 
   #watchSegments = (callback: () => void) => {
@@ -94,6 +112,12 @@ export class VovkDev {
         log.debug(`File ${filePath} has been added to segments folder`);
         if (SEGMENT_ROUTE_FILE_REGEX.test(filePath)) {
           const segmentName = getSegmentName(filePath);
+          try {
+            assertSegmentName(segmentName, path.dirname(path.dirname(filePath)));
+          } catch (error) {
+            log.error((error as Error).message);
+            return;
+          }
 
           this.#segments = this.#segments.find((s) => s.segmentName === segmentName)
             ? this.#segments
@@ -123,11 +147,7 @@ export class VovkDev {
 
       .on('addDir', async (dirPath: string) => {
         log.debug(`Directory ${dirPath} has been added to segments folder`);
-        this.#segments = await locateSegments({
-          dir: apiDirAbsolutePath,
-          config,
-          log: this.#projectInfo.log,
-        });
+        await this.#locateSegments();
         for (const { segmentName } of this.#segments) {
           void this.#requestSchema(segmentName);
         }
@@ -135,11 +155,7 @@ export class VovkDev {
 
       .on('unlinkDir', async (dirPath: string) => {
         log.debug(`Directory ${dirPath} has been removed from segments folder`);
-        this.#segments = await locateSegments({
-          dir: apiDirAbsolutePath,
-          config,
-          log: this.#projectInfo.log,
-        });
+        await this.#locateSegments();
         for (const { segmentName } of this.#segments) {
           void this.#requestSchema(segmentName);
         }
@@ -151,6 +167,7 @@ export class VovkDev {
           this.#segments = this.#segments.filter((s) => s.segmentName !== segmentName);
           log.info(`${formatLoggedSegmentName(segmentName, { upperFirst: true })} has been removed`);
           log.debug(`Full list of segments: ${this.#segments.map((s) => s.segmentName).join(', ')}`);
+          this.#dropRemovedSegments();
 
           void debouncedEnsureSchemaFiles(
             this.#projectInfo,
@@ -216,8 +233,7 @@ export class VovkDev {
 
     const handle = debounce(async () => {
       this.#projectInfo = await getProjectInfo({ logLevel: this.#logLevel });
-      const { config, apiDirAbsolutePath } = this.#projectInfo;
-      this.#segments = await locateSegments({ dir: apiDirAbsolutePath, config, log });
+      await this.#locateSegments();
       await this.#modulesWatcher?.close();
       await this.#segmentWatcher?.close();
 
@@ -268,6 +284,38 @@ export class VovkDev {
     void handle();
   };
 
+  // a folder renamed to "root" while the watcher runs is reported, the watcher keeps the segments it knows
+  async #locateSegments() {
+    const { log, config, apiDirAbsolutePath } = this.#projectInfo;
+    try {
+      this.#segments = await locateSegments({ dir: apiDirAbsolutePath, config, log });
+    } catch (error) {
+      log.error((error as Error).message);
+    }
+    this.#dropRemovedSegments();
+  }
+
+  // a removed or renamed segment leaves the generated client
+  #dropRemovedSegments() {
+    const removedNames = Object.keys(this.#schemaSegments).filter(
+      (name) => !this.#segments.some((s) => s.segmentName === name)
+    );
+    for (const name of removedNames) {
+      delete this.#schemaSegments[name];
+    }
+    if (removedNames.length) {
+      this.#generateIfComplete();
+    }
+  }
+
+  // a client generated before every segment sent its schema would lack the others
+  #generateIfComplete() {
+    if (this.#segments.every((s) => this.#schemaSegments[s.segmentName])) {
+      this.#projectInfo.log.debug(`All segments with "emitSchema" have schema.`);
+      this.#generate();
+    }
+  }
+
   async #watch(callback: () => void) {
     if (this.#isWatching) throw new Error('Already watching');
     const { log } = this.#projectInfo;
@@ -287,11 +335,8 @@ export class VovkDev {
       log.error(`Error reading file ${filePath}`);
       return;
     }
-    const nameOfClasReg = /\bclass\s+([A-Za-z_]\w*)(?:\s*<[^>]*>)?\s*\{/g;
-    const namesOfClasses = [...code.matchAll(nameOfClasReg)].map((match) => match[1]);
-
-    const importRegex = /import\s*{[^}]*\b(get|post|put|del|head|options)\b[^}]*}\s*from\s*['"]vovk['"]/;
-    if (importRegex.test(code) && namesOfClasses.length) {
+    const namesOfClasses = getControllerClassNames(code);
+    if (namesOfClasses.length) {
       const affectedSegments = this.#segments.filter((s) => {
         const segmentSchema = this.#schemaSegments[s.segmentName];
         if (!segmentSchema) return false;
@@ -308,9 +353,7 @@ export class VovkDev {
           `A file with controller ${namesOfClasses.join(', ')} have been modified at path "${filePath}". Segment(s) affected: ${JSON.stringify(affectedSegments.map((s) => s.segmentName))}`
         );
 
-        for (const segment of affectedSegments) {
-          await this.#requestSchema(segment.segmentName);
-        }
+        await Promise.all(affectedSegments.map((segment) => this.#requestSchema(segment.segmentName)));
       } else {
         log.debug(`The class ${namesOfClasses.join(', ')} does not belong to any segment`);
       }
@@ -319,19 +362,25 @@ export class VovkDev {
     }
   };
 
+  #getSelfSignedDispatcher() {
+    this.#selfSignedDispatcher ??= new Agent({ connect: { rejectUnauthorized: false } });
+    return this.#selfSignedDispatcher;
+  }
+
   #requestSchema = debounceWithArgs(async (segmentName: string) => {
     const { log, port, config } = this.#projectInfo;
+    const devHttps = this.#devHttps ?? config.devHttps;
     const endpoint = getSchemaEndpoint({
       port,
       rootEntry: config.rootEntry,
-      devHttps: this.#devHttps ?? config.devHttps,
+      devHttps,
       segmentName,
     });
 
     log.debug(`Requesting schema for ${formatLoggedSegmentName(segmentName)} at ${endpoint}`);
 
     try {
-      const resp = await fetch(endpoint);
+      const resp = await fetch(endpoint, { dispatcher: devHttps ? this.#getSelfSignedDispatcher() : undefined });
       const text = await resp.text();
       let json: { schema: VovkSegmentSchema | null };
       try {
@@ -374,7 +423,7 @@ export class VovkDev {
     return { isError: false };
   }, 500);
 
-  #generate = debounce(() => {
+  #generate = debounce(async () => {
     const fullSchema = {
       $schema: VovkSchemaIdEnum.SCHEMA,
       segments: this.#schemaSegments,
@@ -382,12 +431,23 @@ export class VovkDev {
         config: this.#projectInfo.config,
       }),
     };
-    return generate({
-      projectInfo: this.#projectInfo,
-      fullSchema,
-      locatedSegments: this.#segments,
-    }).then(this.#onFirstTimeGenerate);
+    try {
+      await generate({
+        projectInfo: await loadOpenAPIMixins(this.#projectInfo),
+        fullSchema,
+        locatedSegments: this.#segments,
+        cliGenerateOptions: { schemaPath: this.#getCliSchemaPath() },
+      });
+      this.#onFirstTimeGenerate?.();
+    } catch (error) {
+      this.#projectInfo.log.error(`Failed to generate the client: ${(error as Error)?.message ?? error}`);
+      this.#failExitRun();
+    }
   }, 1000);
+
+  #failExitRun() {
+    if (this.#exit) process.exitCode = 1;
+  }
 
   async #handleSegmentSchema(segmentName: string, segmentSchema: VovkSegmentSchema | null) {
     const { log, config, cwd } = this.#projectInfo;
@@ -397,6 +457,13 @@ export class VovkDev {
     }
 
     log.debug(`Handling received schema from ${formatLoggedSegmentName(segmentName)}`);
+
+    try {
+      assertSegmentName(segmentName);
+    } catch (error) {
+      log.error((error as Error).message);
+      return;
+    }
 
     // the write path is built from segmentName, an http response must not name a different segment
     if ((segmentSchema.segmentName ?? '') !== segmentName) {
@@ -435,10 +502,7 @@ export class VovkDev {
       );
     }
 
-    if (this.#segments.every((s) => this.#schemaSegments[s.segmentName])) {
-      log.debug(`All segments with "emitSchema" have schema.`);
-      this.#generate();
-    }
+    this.#generateIfComplete();
   }
 
   async start({ exit }: { exit: boolean }) {
@@ -447,6 +511,7 @@ export class VovkDev {
     const { log, config, cwd, apiDirAbsolutePath } = this.#projectInfo;
     this.#segments = await locateSegments({ dir: apiDirAbsolutePath, config, log });
     log.info('Starting...');
+    this.#exit = exit;
 
     if (exit) {
       this.#onFirstTimeGenerate = once(() => {
@@ -454,24 +519,14 @@ export class VovkDev {
       });
     }
 
-    const devHttps = this.#devHttps ?? config.devHttps;
-
-    if (devHttps) {
-      const agent = new Agent({
-        connect: {
-          rejectUnauthorized: false,
-        },
-      });
-
-      setGlobalDispatcher(agent);
-    }
-
     process.on('uncaughtException', (err) => {
       log.error(`Uncaught Exception: ${err.message}`);
+      this.#failExitRun();
     });
 
     process.on('unhandledRejection', (reason) => {
       log.error(`Unhandled Rejection: ${String(reason)}`);
+      this.#failExitRun();
     });
 
     const schemaOutAbsolutePath = path.resolve(cwd, this.#schemaOut ?? config.schemaOutDir);
@@ -480,7 +535,7 @@ export class VovkDev {
 
     await ensureSchemaFiles(this.#projectInfo, schemaOutAbsolutePath, segmentNames);
 
-    await ensureClient(this.#projectInfo, this.#segments);
+    await ensureClient(this.#projectInfo, this.#segments, this.#getCliSchemaPath());
 
     const MAX_ATTEMPTS = 5;
     const DELAY = 5000;
@@ -498,6 +553,7 @@ export class VovkDev {
                 log.error(
                   `Failed to request schema for ${formatLoggedSegmentName(segmentName)} after ${MAX_ATTEMPTS} attempts`
                 );
+                this.#failExitRun();
                 return;
               }
               void this.#requestSchema(segmentName).then(({ isError: isError2 }) => {
@@ -525,11 +581,17 @@ export class VovkDev {
 }
 const env = process.env as VovkEnv;
 if (env.__VOVK_START_WATCHER_IN_STANDALONE_MODE__ === 'true') {
-  void new VovkDev({
+  new VovkDev({
     schemaOut: env.__VOVK_SCHEMA_OUT_FLAG__ || undefined,
     devHttps: env.__VOVK_DEV_HTTPS_FLAG__ === 'true' || undefined,
     logLevel: env.__VOVK_LOG_LEVEL__,
-  }).start({
-    exit: env.__VOVK_EXIT__ === 'true',
-  });
+  })
+    .start({
+      exit: env.__VOVK_EXIT__ === 'true',
+    })
+    // exit code 1 makes vovk dev --next-dev stop next dev and fail too
+    .catch((error: unknown) => {
+      console.error(`🐺 ❌ ${error instanceof Error ? error.message : String(error)}`);
+      process.exit(1);
+    });
 }

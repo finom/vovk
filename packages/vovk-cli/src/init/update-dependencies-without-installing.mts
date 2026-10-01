@@ -77,10 +77,22 @@ async function updateDeps({
         return;
       }
       const isVovk = name.startsWith('vovk');
+      const tag = isVovk ? (channel ?? 'latest') : 'latest';
+      const channelVersion = metadata['dist-tags'][tag];
+      // not every package is published to every channel, vovk-ajv has no beta
+      const publishedVersion = channelVersion ?? metadata['dist-tags'].latest;
 
-      const latestVersion = metadata['dist-tags'][isVovk ? (channel ?? 'latest') : 'latest'];
+      if (!publishedVersion) {
+        log.error(`Package ${name} has no "${tag}" or "latest" version on npm`);
+        return;
+      }
+
+      if (!channelVersion) {
+        log.info(`Package ${name} has no "${tag}" version, using the latest one, ${publishedVersion}`);
+      }
+
       packageJson[key] ??= {};
-      packageJson[key][name] = `^${latestVersion}`;
+      packageJson[key][name] = `^${publishedVersion}`;
     })
   );
 }

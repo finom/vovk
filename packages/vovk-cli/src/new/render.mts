@@ -43,6 +43,13 @@ export async function render(
 
   const theThing = _.camelCase(moduleName);
   const TheThing = _.upperFirst(theThing);
+
+  // the templates build class and method names from it: "2fa" would give "class 2FaController"
+  if (!/^[\p{ID_Start}$_][\p{ID_Continue}$\u200C\u200D]*$/u.test(TheThing)) {
+    throw new Error(
+      `Invalid module name "${moduleName}": the generated names would start with "${TheThing}", which isn't a valid identifier.`
+    );
+  }
   const the_thing = _.snakeCase(moduleName);
   const THE_THING = _.toUpper(the_thing);
   const the__thing = _.kebabCase(moduleName);

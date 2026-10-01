@@ -26,6 +26,17 @@ await describe('locateSegment', async () => {
     });
 
     await fs.rm(path.join(tmpDir, 'root'), { recursive: true });
+
+    // root.json and Root.json are one file where the file system ignores case
+    const upperCaseRouteFilePath = path.join(tmpDir, 'Root', '[[...vovk]]', 'route.ts');
+    await fs.mkdir(path.dirname(upperCaseRouteFilePath), { recursive: true });
+    await fs.writeFile(upperCaseRouteFilePath, '');
+    await assert.rejects(
+      locateSegments({ dir: tmpDir, config: null, log: getLogger('warn') }),
+      /A segment can't be named "Root"/
+    );
+
+    await fs.rm(path.join(tmpDir, 'Root'), { recursive: true });
     const results = await locateSegments({ dir: tmpDir, config: null, log: getLogger('warn') });
     assert.deepStrictEqual(
       results.map(({ segmentName }) => segmentName),

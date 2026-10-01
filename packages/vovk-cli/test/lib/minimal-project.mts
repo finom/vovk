@@ -1,5 +1,7 @@
 import { execFile, spawn } from 'node:child_process';
 import fs from 'node:fs/promises';
+import http from 'node:http';
+import type { AddressInfo } from 'node:net';
 import path from 'node:path';
 import { promisify } from 'node:util';
 
@@ -35,14 +37,15 @@ export function startCLI(args: string[], { cwd, env }: { cwd: string; env?: Node
   return {
     getOutput: () => output,
     exitCode,
-    waitForOutput(pattern: RegExp, timeoutMs = 20_000) {
+    // since: an output length, to wait for output printed after that point
+    waitForOutput(pattern: RegExp, timeoutMs = 20_000, since = 0) {
       return new Promise<void>((resolve, reject) => {
         const timer = setTimeout(() => {
           listeners.delete(check);
           reject(new Error(`Timed out waiting for ${pattern}. Output:\n${output}`));
         }, timeoutMs);
         const check = () => {
-          if (!pattern.test(output)) return;
+          if (!pattern.test(output.slice(since))) return;
           clearTimeout(timer);
           listeners.delete(check);
           resolve();
@@ -74,3 +77,60 @@ export const userSegmentSchema = {
     },
   },
 };
+
+export const makeSegmentSchema = (segmentName: string, rpcModuleName = 'UserRPC') => ({
+  ...userSegmentSchema,
+  segmentName,
+  controllers: { [rpcModuleName]: { ...userSegmentSchema.controllers.UserRPC, rpcModuleName } },
+});
+
+// answers GET /api/<segment>/_schema_ the way a Next.js dev server with vovk segments does
+export async function startSchemaServer(schemas: Record<string, object>) {
+  const requests: string[] = [];
+  const server = http.createServer((req, res) => {
+    requests.push(req.url ?? '');
+    const match = req.url?.match(/^\/api\/(?:(.+)\/)?_schema_$/);
+    const schema = match ? schemas[match[1] ?? ''] : undefined;
+    res.writeHead(schema ? 200 : 404, { 'content-type': 'application/json' });
+    res.end(JSON.stringify(schema ? { schema } : { error: 'Not found' }));
+  });
+  await new Promise<void>((resolve) => server.listen(0, resolve));
+
+  return {
+    port: String((server.address() as AddressInfo).port),
+    requests,
+    close: () => {
+      server.closeAllConnections();
+      return new Promise((resolve) => server.close(resolve));
+    },
+  };
+}
+
+// a port nothing listens on
+export async function getFreePort() {
+  const server = http.createServer();
+  await new Promise<void>((resolve) => server.listen(0, resolve));
+  const { port } = server.address() as AddressInfo;
+  await new Promise((resolve) => server.close(resolve));
+  return String(port);
+}
+
+// node_modules/.bin/next for a project without Next.js: `next dev` answers the schema requests on -p, --port or PORT
+export function getFakeNextBin(schemas: Record<string, object>) {
+  return `#!/usr/bin/env node
+import('node:http').then(({ default: http }) => {
+  const args = process.argv.slice(2);
+  const portIndex = args.findIndex((arg) => arg === '-p' || arg === '--port');
+  const port = portIndex === -1 ? process.env.PORT : args[portIndex + 1];
+  const schemas = ${JSON.stringify(schemas)};
+  http
+    .createServer((req, res) => {
+      const match = req.url.match(/^\\/api\\/(?:(.+)\\/)?_schema_$/);
+      const schema = match ? schemas[match[1] ?? ''] : undefined;
+      res.writeHead(schema ? 200 : 404, { 'content-type': 'application/json' });
+      res.end(JSON.stringify(schema ? { schema } : { error: 'Not found' }));
+    })
+    .listen(Number(port), () => console.log('next dev listens on ' + port));
+});
+`;
+}
