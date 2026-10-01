@@ -352,6 +352,21 @@ describe('Runtime sweep', () => {
       deepStrictEqual(await response.json(), { id: '42' });
     });
 
+    it('Reads a param whose name has characters outside \\w, as the client substitutes it', async () => {
+      class DashedParamController {
+        static getItem(_req: VovkRequest, params: Record<string, string>) {
+          return params;
+        }
+      }
+      get('items/{user-id}')(DashedParamController, 'getItem');
+      const handlers = initSegment({ segmentName: 'dashed-param', controllers: { DashedParamController } });
+
+      const response = await call(handlers, 'GET', 'items/42');
+
+      strictEqual(response.status, 200);
+      deepStrictEqual(await response.json(), { 'user-id': '42' });
+    });
+
     it('Finds the catch-all under a dynamic parent folder', async () => {
       class LocalizedController {
         static users() {

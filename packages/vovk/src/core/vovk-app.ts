@@ -258,8 +258,9 @@ class VovkApp {
       const segments = route.split('/');
       const paramSegments = new Map<number, ParamSegment>();
       segments.forEach((segment, index) => {
-        // split keeps the captured names at the odd indexes, the literals around them at the even ones
-        const parts = segment.split(/\{(\w+)\}/);
+        // split keeps the captured names at the odd indexes, the literals around them at the even ones; a name is
+        // anything but braces, as the clients and OpenAPI substitute any {name}
+        const parts = segment.split(/\{([^{}]+)\}/);
         if (parts.length === 1) return;
         paramSegments.set(index, {
           literals: parts.filter((_, i) => i % 2 === 0),
