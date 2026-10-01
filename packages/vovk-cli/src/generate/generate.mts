@@ -5,7 +5,13 @@ import matter from 'gray-matter';
 import _ from 'lodash';
 import type { PackageJson } from 'type-fest';
 import type { VovkSchema } from 'vovk';
-import { openAPIToVovkSchema, type VovkOpenAPIMixin, type VovkStrictConfig, vovkSchemaToOpenAPI } from 'vovk/internal';
+import {
+  openAPIToVovkSchema,
+  toIdentifier,
+  type VovkOpenAPIMixin,
+  type VovkStrictConfig,
+  vovkSchemaToOpenAPI,
+} from 'vovk/internal';
 import { ROOT_SEGMENT_FILE_NAME } from '../dev/write-one-segment-schema-file.mjs';
 import { BuiltInTemplateName } from '../get-project-info/get-config/get-template-defs.mjs';
 import type { ProjectInfo } from '../get-project-info/index.mjs';
@@ -16,6 +22,7 @@ import { normalizeOpenAPIMixin } from '../utils/normalize-openapi-mixin.mjs';
 import { pickSegmentFullSchema } from '../utils/pick-segment-full-schema.mjs';
 import { removeUnlistedDirectories } from '../utils/remove-unlisted-directories.mjs';
 import { getClientTemplateFiles } from './get-client-template-files.mjs';
+import { validateComposedModuleNames, validateMixinModuleNames, validateMixinNames } from './validate-client-names.mjs';
 import { normalizeOutTemplatePath, writeOneClientFile } from './write-one-client-file.mjs';
 
 const getIncludedSegmentNames = (
@@ -123,6 +130,14 @@ function logClientGenerationResults({
   }
 }
 
+// a module is named after its mixin; mixins named by default, mixin and mixin2, give api and api2
+const toDefaultModuleName = (mixinName: string | undefined, i: number) =>
+  mixinName === undefined
+    ? `api${i > 0 ? i + 1 : ''}`
+    : /^[\p{ID_Start}$_][\p{ID_Continue}$]*$/u.test(mixinName)
+      ? mixinName
+      : toIdentifier(mixinName);
+
 const cliOptionsToOpenAPIMixins = ({
   openapiGetMethodName,
   openapiGetModuleName,
@@ -130,33 +145,23 @@ const cliOptionsToOpenAPIMixins = ({
   openapiSpec,
   openapiFallback,
   openapiMixinName,
-}: GenerateOptions): Record<string, NonNullable<VovkOpenAPIMixin>> => {
-  return Object.fromEntries(
-    (
-      openapiSpec?.map((spec, i) => {
-        return {
-          source:
-            spec.startsWith('http://') || spec.startsWith('https://')
-              ? { url: spec, fallback: openapiFallback?.[i] }
-              : { file: spec },
-          apiRoot: openapiRootUrl?.[i] ?? '',
-          getModuleName: openapiGetModuleName?.[i] ?? 'api',
-          getMethodName: (openapiGetMethodName?.[i] as 'auto') ?? 'auto',
-          mixinName: openapiMixinName?.[i] ?? `mixin${i > 0 ? i + 1 : ''}`,
-        };
-      }) || []
-    ).map(({ source, apiRoot, getModuleName, getMethodName, mixinName }) => [
+}: GenerateOptions): [string, NonNullable<VovkOpenAPIMixin>][] =>
+  (openapiSpec ?? []).map((spec, i) => {
+    const mixinName = openapiMixinName?.[i] ?? `mixin${i > 0 ? i + 1 : ''}`;
+    return [
       mixinName,
       {
-        source,
-        apiRoot,
-        getModuleName,
-        getMethodName,
+        source:
+          spec.startsWith('http://') || spec.startsWith('https://')
+            ? { url: spec, fallback: openapiFallback?.[i] }
+            : { file: spec },
+        apiRoot: openapiRootUrl?.[i] ?? '',
+        getModuleName: openapiGetModuleName?.[i] ?? toDefaultModuleName(openapiMixinName?.[i], i),
+        getMethodName: (openapiGetMethodName?.[i] as 'auto') ?? 'auto',
         mixinName,
       },
-    ])
-  );
-};
+    ];
+  });
 
 export async function generate({
   isEnsuringClient = false,
@@ -187,23 +192,28 @@ export async function generate({
   };
   const { config, cwd, log, srcRoot, vovkCliPackage, packageJson: projectPackageJson } = projectInfo;
 
-  Object.entries(config.outputConfig.segments ?? {})
-    .filter(([, segmentConfig]) => segmentConfig.openAPIMixin)
-    .forEach(([segmentName, segmentConfig]) => {
-      fullSchema.segments = {
-        ...fullSchema.segments,
-        // biome-ignore lint/style/noNonNullAssertion: TODO
-        [segmentName]: openAPIToVovkSchema({ ...segmentConfig.openAPIMixin!, segmentName }).segments[segmentName],
-      };
-    });
-
+  const configMixins = Object.entries(config.outputConfig.segments ?? {}).filter(
+    ([, segmentConfig]) => segmentConfig.openAPIMixin
+  );
   const cliMixins = cliOptionsToOpenAPIMixins(cliGenerateOptions ?? {});
+  validateMixinNames(
+    Object.keys(fullSchema.segments),
+    [...configMixins, ...cliMixins].map(([mixinName]) => mixinName)
+  );
+
+  configMixins.forEach(([segmentName, segmentConfig]) => {
+    fullSchema.segments = {
+      ...fullSchema.segments,
+      // biome-ignore lint/style/noNonNullAssertion: TODO
+      [segmentName]: openAPIToVovkSchema({ ...segmentConfig.openAPIMixin!, segmentName }).segments[segmentName],
+    };
+  });
 
   fullSchema.segments = {
     ...fullSchema.segments,
     ...Object.fromEntries(
       await Promise.all(
-        Object.entries(cliMixins).map(async ([mixinName, mixinModule]) => {
+        cliMixins.map(async ([mixinName, mixinModule]) => {
           return [
             mixinName,
             openAPIToVovkSchema({
@@ -215,6 +225,9 @@ export async function generate({
       )
     ),
   };
+  for (const [mixinName] of [...configMixins, ...cliMixins]) {
+    validateMixinModuleNames(mixinName, fullSchema.segments[mixinName]);
+  }
 
   const moduleResolution = await getTsconfig(cwd)?.config?.compilerOptions?.moduleResolution?.toLowerCase();
 
@@ -235,6 +248,7 @@ export async function generate({
   if (isComposedEnabled) {
     const now = Date.now();
     const segmentNames = getIncludedSegmentNames(config, fullSchema, 'composedClient', cliGenerateOptions);
+    validateComposedModuleNames(fullSchema, segmentNames);
     const { templateFiles: composedClientTemplateFiles, fromTemplates } = await getClientTemplateFiles({
       config,
       cwd,

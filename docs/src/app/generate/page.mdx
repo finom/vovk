@@ -67,10 +67,10 @@ See the [config](/config) page for details.
 Mixins extend the sclient declared in one or more OpenAPI specs. See [OpenAPI mixins](/mixins).
 
 - `--openapi`, `--openapi-spec <openapi_path_or_urls...>` — use one or more OpenAPI specs (local paths or URLs). For URLs, the command fetches the spec via HTTP GET. Mirrors `outputConfig.segments.mixinName.openAPIMixin.source.url` (remote) or `.source.file` (local).
-- `--openapi-module-name`, `--openapi-get-module-name <names...>` — module names aligned by index with `--openapi`. Mirrors `outputConfig.segments.mixinName.openAPIMixin.getModuleName`.
+- `--openapi-module-name`, `--openapi-get-module-name <names...>` — module names aligned by index with `--openapi`. Mirrors `outputConfig.segments.mixinName.openAPIMixin.getModuleName`. Without it, a module is named after its mixin (`--openapi-mixin-name petstore` gives `petstore`), and mixins without a name give `api`, `api2`, …
 - `--openapi-method-name`, `--openapi-get-method-name <names...>` — method names aligned by index with `--openapi`. Mirrors `outputConfig.segments.mixinName.openAPIMixin.getMethodName`.
 - `--openapi-root-url <urls...>` — root URLs aligned by index with `--openapi`. Mirrors `outputConfig.segments.mixinName.openAPIMixin.apiRoot`.
-- `--openapi-mixin-name <names...>` — mixin names aligned by index with `--openapi`. In config, serves as the key in `outputConfig.segments` and defines pseudo-segment names for the mixins.
+- `--openapi-mixin-name <names...>` — mixin names aligned by index with `--openapi`, `mixin`, `mixin2`, … by default. In config, serves as the key in `outputConfig.segments` and defines pseudo-segment names for the mixins.
 - `--openapi-fallback <paths...>` — save OpenAPI specs to the specified paths and use them as a fallback if the URL is unavailable. Paths align by index with `--openapi`.
 - `--watch <s>` — watch the schema or OpenAPI spec and regenerate the client. Accepts a throttle interval in seconds. For remote specs, performs an HTTP request every `s` seconds; for local files, regenerates on change.
 

@@ -7,6 +7,7 @@ import { Project, ts } from 'ts-morph';
 import { HttpMethod, type VovkSchema } from 'vovk';
 import * as YAML from 'yaml';
 import { importFresh } from '../../lib/import-fresh.mts';
+import { createProject, runCLI, userSegmentSchema } from '../../lib/minimal-project.mts';
 import { runScript } from '../../lib/run-script.mts';
 
 const PORT = 3021;
@@ -644,5 +645,92 @@ export async function check() {
 
     deepStrictEqual(typecheck(consumer, generatedClientDir), []);
     await fs.rm(generatedClientDir, { recursive: true, force: true });
+  });
+});
+
+await describe('Mixin and module names', async () => {
+  const projectDir = path.join(path.resolve(import.meta.dirname, '../../..'), 'tmp_openapi_names');
+  const segment = (segmentName: string, rpcModuleName: string) => ({
+    ...userSegmentSchema,
+    segmentName,
+    controllers: { [rpcModuleName]: { ...userSegmentSchema.controllers.UserRPC, rpcModuleName } },
+  });
+  const project = (files: Record<string, string | object> = {}) =>
+    createProject(projectDir, {
+      'package.json': { name: 'app', version: '1.0.0', type: 'module' },
+      'vovk.config.mjs': 'export default { composedClient: { prettifyClient: false } };',
+      'spec.json': getSpec(),
+      '.vovk-schema/root.json': segment('', 'UserRPC'),
+      ...files,
+    });
+  const generate = (args: string[]) => runCLI(['generate', ...args], { cwd: projectDir });
+  const failure = async (args: string[]) => {
+    const error = await generate(args).then(
+      () => null,
+      (e: { stderr: string; stdout: string }) => e
+    );
+    ok(error, `generate ${args.join(' ')} succeeded`);
+    return `${error.stdout}${error.stderr}`;
+  };
+
+  await it('refuses a mixin named root, in any case', async () => {
+    await project();
+    for (const name of ['root', 'Root']) {
+      const output = await failure(['--openapi', 'spec.json', '--openapi-mixin-name', name]);
+      ok(output.includes(`Mixin "${name}"`), output);
+    }
+  });
+
+  await it('refuses a mixin named like a segment', async () => {
+    await project({ '.vovk-schema/foo.json': segment('foo', 'FooRPC') });
+    const output = await failure(['--openapi', 'spec.json', '--openapi-mixin-name', 'Foo']);
+    ok(output.includes('segment "foo"'), output);
+  });
+
+  await it('refuses two mixins with one name', async () => {
+    await project({
+      'vovk.config.mjs': `export default { outputConfig: { segments: { petstore: { openAPIMixin: { source: { file: './spec.json' }, getModuleName: 'PetstoreAPI' } } } } };`,
+    });
+    const output = await failure(['--openapi', 'spec.json', '--openapi-mixin-name', 'petstore']);
+    ok(output.includes('mixin "petstore"'), output);
+  });
+
+  await it('refuses two mixins whose types share a namespace', async () => {
+    await project();
+    const output = await failure([
+      ...['--openapi', 'spec.json', '--openapi', 'spec.json'],
+      ...['--openapi-mixin-name', 'my-api', '--openapi-mixin-name', 'myApi'],
+    ]);
+    ok(output.includes('Mixins.MyApi'), output);
+  });
+
+  await it('refuses a mixin module name that is not an identifier', async () => {
+    await project();
+    const output = await failure(['--openapi', 'spec.json', '--openapi-module-name', 'my-api']);
+    ok(output.includes('"my-api"'), output);
+  });
+
+  await it('refuses two segments that give the composed client one module name', async () => {
+    await project({ '.vovk-schema/tenant.json': segment('tenant', 'UserRPC') });
+    const output = await failure([]);
+    ok(output.includes('UserRPC'), output);
+    // a segmented client keeps each segment in its own folder
+    await generate(['--segmented-only']);
+  });
+
+  await it('names the module of a CLI mixin after it', async () => {
+    await project();
+    await generate([
+      ...['--openapi', 'spec.json', '--openapi', 'spec.json', '--openapi', 'spec.json', '--openapi', 'spec.json'],
+      ...['--openapi-mixin-name', 'petstore', '--openapi-mixin-name', 'my-store'],
+    ]);
+    const { schema } = await import(path.join(projectDir, 'client/schema.ts'));
+    deepStrictEqual(
+      ['petstore', 'my-store', 'mixin3', 'mixin4'].map((mixinName) =>
+        Object.keys(schema.segments[mixinName].controllers)
+      ),
+      [['petstore'], ['myStore'], ['api3'], ['api4']]
+    );
+    await fs.rm(projectDir, { recursive: true, force: true });
   });
 });
