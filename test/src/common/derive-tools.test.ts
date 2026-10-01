@@ -595,6 +595,34 @@ describe('deriveTools', () => {
     });
   });
 
+  describe('Tool names', () => {
+    const returnsOne = procedure({ operationObject: { description: 'd' } }).handle(async () => 1);
+
+    it('Replaces the characters a model API refuses', () => {
+      const [tool] = deriveTools({ modules: { $Store: { $get: returnsOne } } });
+
+      assert.strictEqual(tool.name, '_Store__get');
+    });
+
+    it('Cuts a name to 64 characters, ending with a hash of the whole name', () => {
+      const moduleName = 'AdministrationBackOfficeControllerForTheInternalTeamRPC';
+      const [first, second] = deriveTools({
+        modules: { [moduleName]: { getUsersWithTheirRoles: returnsOne, getUsersWithTheirGroups: returnsOne } },
+      }).map(({ name }) => name);
+
+      assert.strictEqual(first.length, 64);
+      assert.match(first, /^AdministrationBackOfficeControllerForTheInternalTeamRPC_[0-9a-f]{8}$/);
+      assert.notStrictEqual(first, second);
+    });
+
+    it('Throws when two tools get the same name', () => {
+      assert.throws(
+        () => deriveTools({ modules: { A_B: { c: returnsOne }, A: { B_c: returnsOne } } }),
+        /"A_B_c".*A_B\.c.*A\.B_c/
+      );
+    });
+  });
+
   describe('Error responses', () => {
     const notFound = procedure({ operationObject: { description: 'd' } }).handle(async () =>
       Response.json({ message: 'User not found' }, { status: 404 })

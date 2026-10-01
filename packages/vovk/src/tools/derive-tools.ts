@@ -39,6 +39,26 @@ type CallerInput<TOutput, TFormattedOutput> = {
   toModelOutput: ToModelOutputFn<unknown, TOutput, TFormattedOutput>;
 };
 
+const MAX_TOOL_NAME_LENGTH = 64;
+
+// FNV-1a, tells apart two names cut to the same prefix
+const hashName = (name: string) => {
+  let hash = 0x811c9dc5;
+  for (let i = 0; i < name.length; i++) {
+    hash ^= name.charCodeAt(i);
+    hash = Math.imul(hash, 0x01000193);
+  }
+  return (hash >>> 0).toString(16).padStart(8, '0');
+};
+
+// model APIs take a name of up to 64 characters from A-Z, a-z, 0-9, _ and -
+const toToolName = (name: string) => {
+  const safeName = name.replace(/[^A-Za-z0-9_-]/g, '_');
+  return safeName.length > MAX_TOOL_NAME_LENGTH
+    ? `${safeName.slice(0, MAX_TOOL_NAME_LENGTH - 9)}_${hashName(name)}`
+    : safeName;
+};
+
 function isAsyncIterable(value: unknown): value is AsyncIterable<unknown> {
   return typeof (value as AsyncIterable<unknown>)?.[Symbol.asyncIterator] === 'function';
 }
@@ -148,7 +168,7 @@ const makeTool = <TOutput, TFormattedOutput>({
   }
   const { schema, definition } = handler;
 
-  const name = schema?.operationObject?.['x-tool']?.name ?? `${moduleName}_${handlerName}`;
+  const name = toToolName(schema?.operationObject?.['x-tool']?.name ?? `${moduleName}_${handlerName}`);
 
   const inputSchemas = Object.fromEntries(
     (['body', 'query', 'params'] as const).map((key) => [key, definition?.[key]]).filter(([, value]) => Boolean(value))
@@ -287,6 +307,9 @@ export function deriveTools<TOutput = unknown, TFormattedOutput = unknown>(optio
     onError = () => {},
   } = options;
 
+  // tool name to the module and handler it came from
+  const sources = new Map<string, string>();
+
   return Object.entries(
     (modules as Record<string, Record<string, Handler & { schema?: VovkHandlerSchema }>>) ?? {}
   ).flatMap(([moduleName, module]) => {
@@ -294,8 +317,8 @@ export function deriveTools<TOutput = unknown, TFormattedOutput = unknown>(optio
       .filter(
         ([, handler]) => handler?.schema?.operationObject && !handler?.schema?.operationObject?.['x-tool']?.hidden
       )
-      .map(([handlerName]) =>
-        makeTool<TOutput, TFormattedOutput>({
+      .map(([handlerName]) => {
+        const tool = makeTool<TOutput, TFormattedOutput>({
           moduleName,
           handlerName,
           module,
@@ -303,7 +326,16 @@ export function deriveTools<TOutput = unknown, TFormattedOutput = unknown>(optio
           toModelOutput,
           onExecute,
           onError,
-        })
-      );
+        });
+        const source = `${moduleName}.${handlerName}`;
+        const taken = sources.get(tool.name);
+        if (taken) {
+          throw new Error(
+            `Tool name "${tool.name}" is derived for both ${taken} and ${source}. Set another one with x-tool.name.`
+          );
+        }
+        sources.set(tool.name, source);
+        return tool;
+      });
   });
 }

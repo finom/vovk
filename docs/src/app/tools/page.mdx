@@ -24,7 +24,7 @@ console.log('Derived tools:', tools); // [{ name, description, inputSchema, exec
 
 The function returns an array of tools. Each tool satisfies the `StandardToolV0` interface from the [standard-tool](https://standard-tool.js.org/) convention:
 
-- `name: string{:ts}` - the name of the tool, derived from the module and method names as `${moduleName}_${handlerName}` (can be overridden with `x-tool.name`, see below).
+- `name: string{:ts}` - the name of the tool, derived from the module and method names as `${moduleName}_${handlerName}` (can be overridden with `x-tool.name`, see below). As model APIs require, a character other than `A-Z`, `a-z`, `0-9`, `_` and `-` becomes `_`, and a name longer than 64 characters is cut to 64, ending with a hash of the whole name. Two tools with the same name make `deriveTools` throw.
 - `title?: string{:ts}` - optional title for the tool. Used mainly for MCPs, derived from OpenAPI `summary` or `x-tool.title` if available.
 - `description: string{:ts}` - the description of the tool, derived concatenating `summary` and `description` from OpenAPI operation (can be overridden with `x-tool.description`, see below).
 - `inputSchema?: StandardSchemaV1 & StandardJSONSchemaV1{:ts}` - a single merged Standard Schema of the procedure's `body`, `query`, and `params`, when available.
