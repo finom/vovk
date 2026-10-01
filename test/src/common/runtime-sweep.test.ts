@@ -577,6 +577,34 @@ describe('Runtime sweep', () => {
         },
       ]);
     });
+
+    it('Names the file of a binary body after filename* first', async () => {
+      class FileController {
+        static upload = procedure({ contentType: 'application/octet-stream', body: z.file() }).handle(async (req) => ({
+          name: (await req.vovk.body()).name,
+        }));
+      }
+      post('upload')(FileController, 'upload');
+      const handlers = initSegment({ segmentName: 'files', controllers: { FileController } });
+      const upload = async (disposition: string) => {
+        const response = await call(handlers, 'POST', 'upload', {
+          body: new Uint8Array([37, 80, 68, 70]),
+          headers: { 'content-type': 'application/octet-stream', 'content-disposition': disposition },
+        });
+        return (await response.json()).name;
+      };
+
+      // what the TypeScript client sends for a File named résumé.pdf
+      strictEqual(
+        await upload(`attachment; filename="r_sum_.pdf"; filename*=UTF-8''r%C3%A9sum%C3%A9.pdf`),
+        'résumé.pdf'
+      );
+      strictEqual(await upload('attachment; filename="say \\"hi\\".pdf"'), 'say "hi".pdf');
+      strictEqual(await upload('attachment; FILENAME=report.pdf'), 'report.pdf');
+      strictEqual(await upload(`attachment; filename*=UTF-8''%E0%A4%A; filename="fallback.pdf"`), 'fallback.pdf');
+      strictEqual(await upload('attachment; filename=""'), 'file');
+      strictEqual(await upload('attachment'), 'file');
+    });
   });
 
   describe('Query', () => {

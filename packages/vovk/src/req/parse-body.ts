@@ -27,6 +27,21 @@ export const textTypes = [
 
 export const textSuffixPattern = /\+(xml|text|yaml|json-seq)$/;
 
+// the name in a Content-Disposition header: filename* (RFC 8187) holds it in UTF-8, filename an ASCII fallback,
+// which is what fileNameToDisposition() writes
+function getFileName(disposition: string): string | undefined {
+  const encoded = disposition.match(/(?:^|;)\s*filename\*\s*=\s*utf-8'[^';]*'([^;\s]+)/i)?.[1];
+  if (encoded) {
+    try {
+      return decodeURIComponent(encoded);
+    } catch {
+      // a malformed escape, the fallback follows
+    }
+  }
+  const [, quoted, token] = disposition.match(/(?:^|;)\s*filename\s*=\s*(?:"((?:[^"\\]|\\.)*)"|([^;\s]+))/i) ?? [];
+  return quoted?.replace(/\\(.)/g, '$1') ?? token;
+}
+
 export async function parseBody(
   req: Request
 ): Promise<Record<string, unknown> | FormData | URLSearchParams | string | File> {
@@ -79,8 +94,7 @@ export async function parseBody(
   }
 
   // Everything else (octet-stream, image/*, video/*, application/pdf, etc.) → File
-  const disposition = req.headers?.get('content-disposition');
-  const fileName = disposition?.match(/filename="(.+?)"/)?.[1] ?? 'file';
+  const fileName = getFileName(req.headers?.get('content-disposition') ?? '') || 'file';
   const body = await req.blob();
   req.blob = () => Promise.resolve(body);
   return new File([body], fileName, { type: contentType ?? undefined });
