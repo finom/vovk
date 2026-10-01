@@ -336,6 +336,22 @@ describe('Runtime sweep', () => {
       strictEqual((await call(handlers, 'PUT', 'missing')).status, 404);
     });
 
+    it('Appends the params of a procedure to an auto path when skipSchemaEmission leaves them out', async () => {
+      class HiddenParamsController {
+        static getHidden = procedure({
+          params: z.object({ id: z.string() }),
+          skipSchemaEmission: ['params'],
+        }).handle(async (_req, params) => params);
+      }
+      get.auto()(HiddenParamsController, 'getHidden');
+      const handlers = initSegment({ segmentName: 'hidden-params', controllers: { HiddenParamsController } });
+
+      const response = await call(handlers, 'GET', 'get-hidden/42');
+
+      strictEqual(response.status, 200);
+      deepStrictEqual(await response.json(), { id: '42' });
+    });
+
     it('Finds the catch-all under a dynamic parent folder', async () => {
       class LocalizedController {
         static users() {

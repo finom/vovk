@@ -102,13 +102,17 @@ function createHTTPDecorator<T extends HttpMethod>(httpMethod: T) {
   const auto = (options?: DecoratorOptions) => {
     function decorator(givenTarget: unknown, propertyKeyOrContext?: unknown): KnownAny {
       return applyDecoratorAdapter(givenTarget, propertyKeyOrContext, (controller, propertyKey) => {
+        type Source = { schema?: VovkHandlerSchema; definition?: Record<string, KnownAny> };
         // a procedure's schema reaches _handlers only once the HTTP decorator is applied, read it from the source method
-        const method = controller[propertyKey] as
-          | { schema?: VovkHandlerSchema; _sourceMethod?: { schema?: VovkHandlerSchema } }
-          | undefined;
-        const validation =
-          controller._handlers?.[propertyKey]?.validation ?? (method?._sourceMethod ?? method)?.schema?.validation;
-        const properties = Object.keys(validation?.params?.properties ?? {});
+        const method = controller[propertyKey] as (Source & { _sourceMethod?: Source }) | undefined;
+        const source = method?._sourceMethod ?? method;
+        const validation = controller._handlers?.[propertyKey]?.validation ?? source?.schema?.validation;
+        const definition = source?.definition;
+        // skipSchemaEmission leaves the params out of the schema, the path still needs them
+        const paramsSchema =
+          validation?.params ??
+          (definition?.params && definition.toJSONSchema?.(definition.params, { validationType: 'params' }));
+        const properties = Object.keys(paramsSchema?.properties ?? {});
         const kebabCasePath = toKebabCase(propertyKey);
         const path = properties.length
           ? `${kebabCasePath}/${properties.map((prop) => `{${prop}}`).join('/')}`
