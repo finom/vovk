@@ -30,52 +30,55 @@ export async function getProjectFullSchema({
 
   // Handle config.json
   const metaPath = path.join(schemaOutAbsolutePath, `${META_FILE_NAME}.json`);
-  try {
-    const metaContent = await readFile(metaPath, 'utf-8');
-    const fromFileMeta = JSON.parse(metaContent);
-    result.meta = deepExtend({} as VovkMetaSchema, result.meta, fromFileMeta);
-  } catch {
+  const metaContent = await readFile(metaPath, 'utf-8').catch(() => null);
+  if (metaContent === null) {
     isEmptyLogOrWarn(`${META_FILE_NAME}.json not found at ${metaPath}. Using empty meta as fallback.`);
+  } else {
+    result.meta = deepExtend({} as VovkMetaSchema, result.meta, parseSchemaFile(metaPath, metaContent));
   }
   // Handle segments directory
   const segmentsDir = path.join(schemaOutAbsolutePath);
   try {
     await access(segmentsDir); // Check if directory exists
-
-    // the pattern stays relative: glob reads "\" and brackets in a path as pattern syntax
-    const files = await glob('**/*.json', { cwd: segmentsDir, absolute: true });
-    const filePaths = [];
-    for await (const filePath of files) {
-      if (path.basename(filePath) === `${META_FILE_NAME}.json`) continue; // Skip _meta.json
-      filePaths.push(filePath);
-    }
-
-    // Process each JSON file
-    for (const filePath of filePaths.toSorted()) {
-      try {
-        const content = await readFile(filePath, 'utf-8');
-        const jsonData = JSON.parse(content);
-
-        // Get relative path from segments directory and convert to key
-        let relativePath = path
-          .relative(segmentsDir, filePath)
-          .replace(/\.json$/, '') // Remove .json extension
-          .replace(/\\/g, '/'); // Normalize to forward slashes
-
-        // Special case for _root.json
-        if (path.basename(filePath) === `${ROOT_SEGMENT_FILE_NAME}.json` && path.dirname(filePath) === segmentsDir) {
-          relativePath = '';
-        }
-
-        result.segments[relativePath] = jsonData;
-      } catch (error) {
-        log.warn(`Failed to process file ${filePath}: ${error}`);
-      }
-    }
   } catch {
     isEmptyLogOrWarn(`Segments directory not found at ${segmentsDir}. Using empty segments as fallback.`);
-    result.segments = {};
+    return result;
+  }
+
+  // the pattern stays relative: glob reads "\" and brackets in a path as pattern syntax
+  const files = await glob('**/*.json', { cwd: segmentsDir, absolute: true });
+  const filePaths = [];
+  for await (const filePath of files) {
+    if (path.basename(filePath) === `${META_FILE_NAME}.json`) continue; // Skip _meta.json
+    filePaths.push(filePath);
+  }
+
+  // Process each JSON file
+  for (const filePath of filePaths.toSorted()) {
+    const jsonData = parseSchemaFile(filePath, await readFile(filePath, 'utf-8'));
+
+    // Get relative path from segments directory and convert to key
+    let relativePath = path
+      .relative(segmentsDir, filePath)
+      .replace(/\.json$/, '') // Remove .json extension
+      .replace(/\\/g, '/'); // Normalize to forward slashes
+
+    // Special case for _root.json
+    if (path.basename(filePath) === `${ROOT_SEGMENT_FILE_NAME}.json` && path.dirname(filePath) === segmentsDir) {
+      relativePath = '';
+    }
+
+    result.segments[relativePath] = jsonData;
   }
 
   return result;
+}
+
+// a merge conflict leaves a schema file unparseable, skipping it would quietly drop it from the client
+function parseSchemaFile(filePath: string, content: string) {
+  try {
+    return JSON.parse(content);
+  } catch (error) {
+    throw new Error(`Failed to parse schema file ${filePath}: ${(error as Error).message}`);
+  }
 }

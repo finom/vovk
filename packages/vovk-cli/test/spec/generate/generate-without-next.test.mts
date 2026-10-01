@@ -87,6 +87,28 @@ await describe('vovk generate in a project without Next.js', async () => {
     }
   });
 
+  await it('Fails on a schema file that is not valid JSON', async () => {
+    const conflicted = JSON.stringify({ ...userSegmentSchema, segmentName: 'foo' }, null, 2).replace(
+      '"emitSchema": true,',
+      '<<<<<<< HEAD\n  "emitSchema": true,\n=======\n  "emitSchema": false,\n>>>>>>> feature'
+    );
+    for (const file of ['.vovk-schema/foo.json', '.vovk-schema/_meta.json']) {
+      await createProject(projectDir, {
+        'package.json': { name: 'app', version: '1.0.0', type: 'module' },
+        'vovk.config.mjs': configFile({ composedClient: { prettifyClient: false } }),
+        'src/app/api/[[...vovk]]/route.ts': '',
+        'src/app/api/foo/[[...vovk]]/route.ts': '',
+        '.vovk-schema/root.json': userSegmentSchema,
+        '.vovk-schema/foo.json': { ...userSegmentSchema, segmentName: 'foo' },
+        [file]: conflicted,
+      });
+
+      await assert.rejects(runCLI(['generate'], { cwd: projectDir }), (error: Error) =>
+        error.message.includes(path.join(projectDir, file))
+      );
+    }
+  });
+
   await it('Resolves a relative createRPC import from each segmented client folder', async () => {
     await createProject(projectDir, {
       'package.json': { name: 'app', version: '1.0.0', type: 'module' },
