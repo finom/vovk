@@ -1,29 +1,33 @@
-// Convert any value to string
-function valToString(value: unknown): string {
-  return value == null ? '' : String(value);
-}
+// lodash's word rules over Unicode letter classes: an ASCII name splits as lodash splits it, a letter of any script is kept
+const UPPER = '[\\p{Lu}\\p{Lt}]';
+const LOWER = '\\p{Ll}';
+// letters without case, like CJK, and combining marks join the word around them
+const MISC = '[\\p{Lo}\\p{Lm}\\p{Nl}\\p{Mn}\\p{Mc}]';
+const BREAK = '[^\\p{L}\\p{Nl}\\p{Mn}\\p{Mc}\\p{Nd}]';
 
-// Regex to match words (including Unicode letters & digits)
-const reUnicodeWord = /[\p{Lu}]{2,}(?=[\p{Lu}][\p{Ll}]+[0-9]*|\b)|[\p{Lu}]?[\p{Ll}]+[0-9]*|[\p{Lu}]|[0-9]+/gu;
+const reWord = new RegExp(
+  [
+    // an uppercase run before a break, the end or a capitalized word: "HTTP" in "HTTPResponse"
+    `(?:${UPPER}|${MISC})+(?=${BREAK}|${UPPER}(?:${LOWER}|${MISC})|$)`,
+    `${UPPER}?(?:${LOWER}|${MISC})+`,
+    `${UPPER}+`,
+    // an English ordinal is one word: "1st"
+    '\\d*(?:1ST|2ND|3RD|(?![123])\\dTH)(?=\\b|[a-z_])',
+    '\\d*(?:1st|2nd|3rd|(?![123])\\dth)(?=\\b|[A-Z_])',
+    '\\p{Nd}+',
+  ].join('|'),
+  'gu'
+);
 
-// splits string into words based on Unicode word boundaries
-function unicodeWords(str: string) {
-  return str.match(reUnicodeWord) || [];
-}
+const capitalize = (word: string) => {
+  const [first = '', ...rest] = word.toLowerCase();
+  return first.toUpperCase() + rest.join('');
+};
 
-// converts string to camel case
+// converts string to camel case, words split at separators, case changes and digits
 export function camelCase(input: string) {
-  const str = valToString(input);
-  // replace separators with space
-  const sanitized = str.replace(/[\s_-]+/g, ' ').trim();
-  const words = unicodeWords(sanitized);
-  return words
-    .map((word, index) => {
-      const lower = word.toLowerCase();
-      if (index === 0) {
-        return lower;
-      }
-      return lower.charAt(0).toUpperCase() + lower.slice(1);
-    })
-    .join('');
+  const words = String(input ?? '')
+    .replace(/['’]/g, '')
+    .match(reWord);
+  return (words ?? []).map((word, index) => (index === 0 ? word.toLowerCase() : capitalize(word))).join('');
 }

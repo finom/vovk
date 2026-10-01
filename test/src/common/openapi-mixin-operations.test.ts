@@ -24,7 +24,8 @@ function convert(spec: Partial<OpenAPIObject>, options: Obj = {}) {
     segmentName: 'api',
     ...options,
   });
-  return schema.segments.api as Obj;
+  // the one segment, named by options.segmentName
+  return Object.values(schema.segments)[0] as Obj;
 }
 
 const handlersOf = (spec: Partial<OpenAPIObject>) => convert(spec).controllers.TestAPI.handlers as Obj;
@@ -174,6 +175,95 @@ describe('openAPIToVovkSchema — request body types', () => {
       'application/json': { schema: { $ref: '#/components/schemas/Thing' } },
     });
     strictEqual(body?.$ref, '#/$defs/Thing');
+  });
+});
+
+describe('openAPIToVovkSchema — Mixins type names', () => {
+  // the x-tsType of a ref to each component, in the order of the components
+  const typesOf = (componentNames: string[], options: Obj = {}) => {
+    const segment = convert(
+      {
+        components: { schemas: Object.fromEntries(componentNames.map((name) => [name, thing])) },
+        paths: {
+          '/things': {
+            get: {
+              operationId: 'getThings',
+              responses: {
+                '200': {
+                  content: {
+                    'application/json': {
+                      schema: {
+                        type: 'object',
+                        properties: Object.fromEntries(
+                          componentNames.map((name) => [name, { $ref: `#/components/schemas/${name}` }])
+                        ),
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+      options
+    );
+    const { properties } = segment.controllers.TestAPI.handlers.getThings.validation.output;
+    return componentNames.map((name) => properties[name]['x-tsType']);
+  };
+
+  it('Keeps the letters of any script', () => {
+    deepStrictEqual(typesOf(['Grüße', '用户', 'café-au-lait']), [
+      'Mixins.Api.Grüße',
+      'Mixins.Api.用户',
+      'Mixins.Api.CaféAuLait',
+    ]);
+  });
+
+  it('Names a component as lodash names an ASCII name', () => {
+    deepStrictEqual(typesOf(['ABC1', 'HTTP2Server', '1st', 'user_ID']), [
+      'Mixins.Api.Abc1',
+      'Mixins.Api.Http2Server',
+      'Mixins.Api._1st',
+      'Mixins.Api.UserId',
+    ]);
+  });
+
+  it('Gives a name without letters or digits a type name', () => {
+    deepStrictEqual(typesOf(['!!!']), ['Mixins.Api._']);
+  });
+
+  it('Numbers a component whose type name an earlier one took', () => {
+    deepStrictEqual(typesOf(['user-profile', 'UserProfile', 'UserProfile2']), [
+      'Mixins.Api.UserProfile',
+      'Mixins.Api.UserProfile3',
+      'Mixins.Api.UserProfile2',
+    ]);
+  });
+
+  it('Names the types from the components a pruned segment keeps', () => {
+    const segment = convert(
+      {
+        components: { schemas: { 'user-profile': thing, UserProfile: thing } },
+        paths: {
+          '/me': {
+            get: {
+              operationId: 'getMe',
+              responses: {
+                '200': { content: { 'application/json': { schema: { $ref: '#/components/schemas/UserProfile' } } } },
+              },
+            },
+          },
+        },
+      },
+      { pruneComponents: true }
+    );
+    deepStrictEqual(Object.keys(segment.meta.openAPIObject.components.schemas), ['UserProfile']);
+    strictEqual(segment.controllers.TestAPI.handlers.getMe.validation.output['x-tsType'], 'Mixins.Api.UserProfile');
+  });
+
+  it('Names the namespace after the mixin', () => {
+    deepStrictEqual(typesOf(['Thing'], { segmentName: 'café-api' }), ['Mixins.CaféApi.Thing']);
   });
 });
 

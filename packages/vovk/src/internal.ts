@@ -38,5 +38,6 @@ export type { StandardToolV0 } from './types/standard-tool.js';
 export type { IsAny, IsNotAny } from './types/utils.js';
 export type { VovkTypedProcedure } from './types/validation.js';
 export { deepExtend } from './utils/deep-extend.js';
+export { toIdentifier, toTypeName, toTypeNames } from './utils/to-identifier.js';
 export { validationSchemasObjectToSingleValidationSchema } from './validation/validation-schemas-object-to-single-validation-schema.js';
 export { withValidationLibrary } from './validation/with-validation-library.js';

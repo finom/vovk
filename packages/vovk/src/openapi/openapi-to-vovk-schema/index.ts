@@ -9,7 +9,7 @@ import type {
 } from 'openapi3-ts/oas31';
 import { schemaToTsType } from '../../samples/schema-to-ts-type.js';
 import type { VovkOpenAPIMixinNormalized } from '../../types/config.js';
-import type { VovkSchema } from '../../types/core.js';
+import type { VovkHandlerSchema, VovkSchema } from '../../types/core.js';
 import { type HttpMethod, VovkSchemaIdEnum } from '../../types/enums.js';
 import type { VovkJSONSchemaBase } from '../../types/json-schema.js';
 import type { ContentType } from '../../types/validation.js';
@@ -163,6 +163,11 @@ export function openAPIToVovkSchema({
   const componentsSchemas =
     openAPIObject.components?.schemas ??
     ('definitions' in openAPIObject ? (openAPIObject.definitions as ComponentsObject['schemas']) : {});
+  const operations: {
+    handler: VovkHandlerSchema;
+    slots: Record<'query' | 'params' | 'body' | 'output' | 'iteration', VovkJSONSchemaBase | null>;
+    bodyContentTypes: ContentType[];
+  }[] = [];
 
   for (const [path, pathItemOrRef] of Object.entries(paths ?? {})) {
     const pathItem = inlineRefs<PathItemObject>(pathItemOrRef, openAPIObject) ?? {};
@@ -229,7 +234,7 @@ export function openAPIToVovkSchema({
         operation['x-errorMessageKey'] = errorMessageKey;
       }
 
-      handlers[handlerName] = {
+      const handler: VovkHandlerSchema = {
         httpMethod: method,
         path,
         operationObject: operation,
@@ -237,38 +242,53 @@ export function openAPIToVovkSchema({
           isOpenAPIMixin: true,
           originalPath: path,
         },
-        validation: {
-          ...(query && {
-            query: applyComponentsSchemas(query, componentsSchemas, segmentName),
-          }),
-          ...(params && {
-            params: applyComponentsSchemas(params, componentsSchemas, segmentName),
-          }),
-          ...(body && {
-            // after applyComponentsSchemas, so component refs carry their Mixins type
-            body: withBodyTsType(applyComponentsSchemas(body, componentsSchemas, segmentName), bodyContentTypes),
-          }),
-          ...(output && {
-            // Response slot: not validated + typed via x-tsType → skip $defs (dedup).
-            output: applyComponentsSchemas(output, componentsSchemas, segmentName, false),
-          }),
-          ...(iteration && {
-            iteration: applyComponentsSchemas(iteration, componentsSchemas, segmentName, false),
-          }),
-        },
       };
+      handlers[handlerName] = handler;
+      operations.push({ handler, slots: { query, params, body, output, iteration }, bodyContentTypes });
     }
   }
 
-  if (pruneComponents && noPathsOpenAPIObject.components?.schemas) {
-    // reassign with fresh objects only, the caller's spec shares references so its
-    // components.schemas must stay untouched; walking the whole controllers tree keeps every kept $ref resolvable
+  // Mixins types are named from the components the segment keeps, as vovk-cli declares them;
+  // the closure of every operation and slot keeps each $ref resolvable
+  const keptSchemas =
+    pruneComponents && noPathsOpenAPIObject.components?.schemas
+      ? pruneComponentsSchemas(
+          operations.map(({ handler, slots }) => [handler.operationObject, slots]),
+          noPathsOpenAPIObject.components.schemas
+        )
+      : componentsSchemas;
+
+  for (const { handler, slots, bodyContentTypes } of operations) {
+    const { query, params, body, output, iteration } = slots;
+    handler.validation = {
+      ...(query && {
+        query: applyComponentsSchemas(query, keptSchemas, segmentName),
+      }),
+      ...(params && {
+        params: applyComponentsSchemas(params, keptSchemas, segmentName),
+      }),
+      ...(body && {
+        // after applyComponentsSchemas, so component refs carry their Mixins type
+        body: withBodyTsType(applyComponentsSchemas(body, keptSchemas, segmentName), bodyContentTypes),
+      }),
+      ...(output && {
+        // Response slot: not validated + typed via x-tsType → skip $defs (dedup).
+        output: applyComponentsSchemas(output, keptSchemas, segmentName, false),
+      }),
+      ...(iteration && {
+        iteration: applyComponentsSchemas(iteration, keptSchemas, segmentName, false),
+      }),
+    };
+  }
+
+  if (keptSchemas !== componentsSchemas) {
+    // reassign with fresh objects only, the caller's spec shares references so its components.schemas must stay untouched
     segment.meta = {
       openAPIObject: {
         ...noPathsOpenAPIObject,
         components: {
           ...noPathsOpenAPIObject.components,
-          schemas: pruneComponentsSchemas(segment.controllers, noPathsOpenAPIObject.components.schemas),
+          schemas: keptSchemas,
         },
       },
     };

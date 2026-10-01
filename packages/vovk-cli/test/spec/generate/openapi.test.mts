@@ -584,4 +584,65 @@ export async function check() {
     deepStrictEqual(typecheck(consumer, generatedClientDir), []);
     await fs.rm(generatedClientDir, { recursive: true, force: true });
   });
+
+  await it('declares every Mixins type its methods refer to, whatever the names', async () => {
+    const names = ['Grüße', '用户', '1st', 'ABC1', 'user-profile', 'UserProfile', 'Pet', 'pet'];
+    const spec: OpenAPIObject = {
+      openapi: '3.1.0',
+      info: { title: 'Names', version: '1.0.0' },
+      servers: [{ url: 'https://example.com/api' }],
+      paths: {
+        '/2fa': {
+          post: {
+            operationId: '2fa_verify',
+            requestBody: { content: { 'application/json': { schema: { $ref: '#/components/schemas/pet' } } } },
+            responses: {
+              '200': {
+                description: 'ok',
+                content: {
+                  'application/json': {
+                    schema: {
+                      type: 'object',
+                      properties: Object.fromEntries(
+                        names.map((name, i) => [`p${i}`, { $ref: `#/components/schemas/${name}` }])
+                      ),
+                      required: names.map((_, i) => `p${i}`),
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+      components: {
+        schemas: Object.fromEntries(
+          names.map((name, i) => [name, { type: 'object', properties: { [`n${i}`]: { type: 'number' } } }])
+        ),
+      },
+    };
+    await fs.mkdir(artifactsDir, { recursive: true });
+    await fs.writeFile(path.join(artifactsDir, 'named-spec.json'), JSON.stringify(spec));
+    const generatedClientDir = path.join(artifactsDir, `generated-client${Date.now()}`);
+
+    await runAtProjectDir(
+      `../dist/index.mjs generate --openapi named-spec.json --openapi-mixin-name café-api --openapi-module-name NamesAPI --openapi-get-method-name camel-case-operation-id --out ${generatedClientDir} --from ts`
+    );
+
+    const consumer = path.join(generatedClientDir, 'consumer.ts');
+    await fs.writeFile(
+      consumer,
+      `import { NamesAPI } from './index.ts';
+type IsAny<T> = 0 extends 1 & T ? true : false;
+export async function check() {
+  const output = await NamesAPI._2FaVerify({ body: {} });
+  const typed: false[] = [${names.map((_, i) => `false as IsAny<typeof output.p${i}>`).join(', ')}];
+  return typed;
+}
+`
+    );
+
+    deepStrictEqual(typecheck(consumer, generatedClientDir), []);
+    await fs.rm(generatedClientDir, { recursive: true, force: true });
+  });
 });

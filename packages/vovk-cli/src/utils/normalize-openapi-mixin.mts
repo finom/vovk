@@ -1,9 +1,8 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
-import camelCase from 'lodash/camelCase.js';
 import type { OpenAPIObject } from 'openapi3-ts/oas31';
 import type { HttpMethod, VovkConfig } from 'vovk';
-import type { VovkOperationObject, VovkStrictConfig } from 'vovk/internal';
+import { toIdentifier, type VovkOperationObject, type VovkStrictConfig } from 'vovk/internal';
 import * as YAML from 'yaml';
 import type { ProjectInfo } from '../get-project-info/index.mjs';
 import { chalkHighlightThing } from './chalk-highlight-thing.mjs';
@@ -44,7 +43,7 @@ const normalizeGetMethodName = (getMethodName: OpenAPIMixin['getMethodName']) =>
       if (!operationId) {
         throw new Error('Operation ID is required for camel-case method name generation');
       }
-      return camelCase(operationId);
+      return toIdentifier(operationId);
     };
   } else if (getMethodName === 'auto') {
     getMethodName = ({ operationObject, method, path }: Parameters<GetOpenAPINameFn>[0]) => {
@@ -52,7 +51,7 @@ const normalizeGetMethodName = (getMethodName: OpenAPIMixin['getMethodName']) =>
       const isCamelCase = operationId && /^[a-z][a-zA-Z0-9]*$/.test(operationId);
       const isSnakeCase = operationId && /^[a-z][a-z0-9_]+$/.test(operationId);
 
-      return isCamelCase ? operationId : isSnakeCase ? camelCase(operationId) : generateFnName(method, path);
+      return isCamelCase ? operationId : isSnakeCase ? toIdentifier(operationId) : generateFnName(method, path);
     };
   } else if (typeof getMethodName !== 'function') {
     throw new Error('getMethodName must be a function or one of the predefined strings');

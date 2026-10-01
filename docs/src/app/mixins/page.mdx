@@ -187,7 +187,7 @@ Define a mixin as a pseudo-[segment](/segment) in `outputConfig.segments` by set
 
 - `source`: an object with either `url` (remote specs), `file` (local specs), or `object` (inline specs). The `url` variant may include a `fallback` file path used if the remote URL is unreachable.
 - `getModuleName`: a string or function to name generated API modules. The string can be any custom string for hard-coded module names.
-- `getMethodName`: a string or function to generate method names. Supported strings: `camel-case-operation-id` (converts `operationId` like `get_users` to `getUsers`), or `auto` (generates from `operationId` or from HTTP method + path if `operationId` is unsuitable or missing). From the path, `auto` names `GET /users` `listUsers`, `GET /users/{id}` `getUsersById` and `PATCH /users/{userId}/profile` `patchUsersProfileByUserId`. When two operations get the same name, the later one in the document gets a `_2` suffix, and the CLI warns.
+- `getMethodName`: a string or function to generate method names. Supported strings: `camel-case-operation-id` (converts `operationId` like `get_users` to `getUsers`; one that starts with a digit gets a leading underscore, `2fa_verify` becomes `_2FaVerify`), or `auto` (generates from `operationId` or from HTTP method + path if `operationId` is unsuitable or missing). From the path, `auto` names `GET /users` `listUsers`, `GET /users/{id}` `getUsersById` and `PATCH /users/{userId}/profile` `patchUsersProfileByUserId`. When two operations get the same name, the later one in the document gets a `_2` suffix, and the CLI warns.
 - `apiRoot` (optional): the API root URL, overridable per call via the `apiRoot` option. Required if the OAS document has no `servers` property.
 - `filterOperations` (optional): a predicate that keeps only the operations it returns `true` for. See [Filter Operations and Prune Components](#filter-operations-and-prune-components).
 - `pruneComponents` (optional, default `false`): removes components the kept operations don't reference from the generated schema. See [Filter Operations and Prune Components](#filter-operations-and-prune-components).
@@ -382,12 +382,12 @@ await PetstoreAPI.getPets({ query: { limit: 10 } });
 await GithubIssuesAPI.listForOrg({ params: { org: 'finom' } });
 ```
 
-The `Mixins` namespace contains types generated from `components/schemas` across all mixed OpenAPI specifications, providing an alternative to the inference.
+The `Mixins` namespace contains types generated from `components/schemas` across all mixed OpenAPI specifications, providing an alternative to the inference. Each mixin gets a namespace, and each component a type, both named in PascalCase: the `petstore` mixin's `Pet` component is `Mixins.Petstore.Pet`. Letters of any script are kept, a name that would start with a digit gets a leading underscore (`2FAConfig` becomes `_2FaConfig`), and when two components get the same name, the later one in the document takes a number: `user-profile` and `UserProfile` become `UserProfile` and `UserProfile2`.
 
 ```ts showLineNumbers copy
 import { PetstoreAPI, type Mixins } from '@/client';
 
-const pet: Mixins.Pet = { id: 1, name: 'Doggo' };
+const pet: Mixins.Petstore.Pet = { id: 1, name: 'Doggo' };
 // Alternatively:
 const pet2: VovkOutput<typeof PetstoreAPI.getPet> = { id: 1, name: 'Doggo' };
 ```
