@@ -4,8 +4,8 @@ description: "Full documentation for the Vovk.ts framework, excluding the Realti
 see_also:
   label: "Realtime Kanban Context"
   url: https://vovk.dev/context/realtime-ui.md
-chars: 396871
-est_tokens: 99218
+chars: 397006
+est_tokens: 99252
 ---
 
 Page: https://vovk.dev
@@ -7335,11 +7335,11 @@ The `build` function is an asynchronous function that receives an object with `e
 
 The `prebundleOutDir` is the directory in which the TypeScript client will be generated before bundling. It defaults to `tmp_prebundle`.
 
-The directory is deleted after bundling, so it must be a subdirectory of the project, apart from `outDir`, and either missing, empty or kept by an earlier bundle. The command fails before it writes anything if the directory holds other files.
+The directory must be a subdirectory of the project, apart from `outDir`. Unless it is kept, it is deleted after bundling, so it must be missing, empty or kept by an earlier bundle: the command fails before it writes anything if the directory holds other files.
 
 ### `keepPrebundleDir` or `--keep-prebundle-dir` flag
 
-If set to `true`, the `prebundleOutDir` will not be deleted after bundling. This can be useful for debugging or other purposes. The default is `false`.
+If set to `true`, the `prebundleOutDir` will not be deleted after bundling, so it may hold other files, such as the composed client. This can be useful for debugging or other purposes. The default is `false`.
 
 ### `requires`
 
@@ -7646,7 +7646,7 @@ Mixins extend the sclient declared in one or more OpenAPI specs. See [OpenAPI mi
 - `--openapi-root-url <urls...>` — root URLs aligned by index with `--openapi`. Mirrors `outputConfig.segments.mixinName.openAPIMixin.apiRoot`.
 - `--openapi-mixin-name <names...>` — mixin names aligned by index with `--openapi`, `mixin`, `mixin2`, … by default. In config, serves as the key in `outputConfig.segments` and defines pseudo-segment names for the mixins.
 - `--openapi-fallback <paths...>` — save OpenAPI specs to the specified paths and use them as a fallback if the URL is unavailable. Paths align by index with `--openapi`.
-- `--watch ` — generate the client on start, then watch the schema or OpenAPI spec and regenerate it. Accepts a throttle interval in seconds. For remote specs, performs an HTTP request every `s` seconds; for local files, regenerates on change.
+- `--watch ` — generate the client on start, then watch the schema or OpenAPI spec and regenerate it. Accepts a throttle interval in seconds. For remote specs, performs an HTTP request every `s` seconds; for local files, regenerates on change, once the changed file has stayed the same size for 300 ms.
 
 ### Other Flags
 
