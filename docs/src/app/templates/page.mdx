@@ -211,7 +211,7 @@ Renders the `README.md` file for the Rust client. Works similarly to the [readme
 
 Renders the Python client package that includes both source code and setup files.
 
-- `requires` [pySrc](#pysrc) (rendered to `./src/[package_name]/`), [pyPkg](#pypkg) and [pyReadme](#pyreadme) templates. `[package_name]` is the package name without `@`, with `/`, `-` and other characters a Python name can't hold turned into `_`: `@acme/web-app` becomes `acme_web_app`.
+- `requires` [pySrc](#pysrc) (rendered to `./src/[package_name]/`), [pyPkg](#pypkg) and [pyReadme](#pyreadme) templates. `[package_name]` is the package name without `@`, with `/`, `-` and other characters a Python name can't hold turned into `_`: `@acme/web-app` becomes `acme_web_app`. A name that starts with a digit gets a `pkg_` prefix and a Python or Rust keyword a `_pkg` suffix: `3d-viewer` becomes `pkg_3d_viewer`, `class` becomes `class_pkg`. The Rust client's `Cargo.toml` uses the same name.
 - Defines a `composedClient` option to set the output directory to `dist_python`.
 
 ### `pySrc`
