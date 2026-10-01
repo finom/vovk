@@ -805,6 +805,23 @@ test('getBodyKind', async (t) => {
     assert.equal(getBodyKind({ type: 'object', 'x-contentType': ['application/json'] }), 'json');
     assert.equal(getBodyKind({ type: 'object', properties: {} }), 'json');
   });
+
+  await t.test('reads a body that only declares its content type', () => {
+    // a procedure with contentType and no body schema
+    assert.equal(getBodyKind({ 'x-contentType': ['text/plain'] }), 'text');
+    assert.equal(getBodyKind({ 'x-contentType': ['application/octet-stream'] }), 'binary');
+    assert.equal(getBodyKind({ 'x-contentType': ['multipart/form-data'] }), 'form');
+    assert.equal(hasNormalData({ 'x-contentType': ['multipart/form-data'] }), true);
+    assert.equal(
+      convertJSONSchemaToPythonDataType({
+        schema: { 'x-contentType': ['application/json'] },
+        namespace: 'Rpc',
+        className: 'Body',
+        pad: 0,
+      }),
+      'Body = Any'
+    );
+  });
 });
 
 test('schema text never leaves its literal', async (t) => {
