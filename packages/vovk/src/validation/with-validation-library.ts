@@ -312,6 +312,9 @@ export function withValidationLibrary<
         enumerable: true,
         get: () => (bodyJSONSchema ??= getJSONSchema(body, 'body')),
       });
+    } else if (contentType && !skipSchemaEmissionKeys.includes('body')) {
+      // the declared types alone, so every client sends a body the server accepts
+      validation.body = { 'x-contentType': contentType };
     }
     if (query && !skipSchemaEmissionKeys.includes('query')) {
       let queryJSONSchema: unknown;

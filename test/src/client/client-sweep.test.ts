@@ -94,6 +94,16 @@ describe('Client sweep', () => {
       });
     });
 
+    it('Sends a body to a procedure that declares a content type but no body schema', async () => {
+      deepStrictEqual(ClientSweepRPC.postXml.schema.validation, { body: { 'x-contentType': ['application/xml'] } });
+      deepStrictEqual(await ClientSweepRPC.postXml({ body: '<a/>' }), { xml: '<a/>', contentType: 'application/xml' });
+      deepStrictEqual(await ClientSweepRPC.postImage({ body: new File(['png'], 'a.png', { type: 'image/png' }) }), {
+        name: 'a.png',
+        type: 'image/png',
+        size: 3,
+      });
+    });
+
     it('Sends a string body as the text type the procedure declares', async () => {
       deepStrictEqual(await ClientSweepRPC.postLines({ body: '{"a":1}\n{"a":2}\n' }), {
         contentType: 'application/jsonl',

@@ -1729,6 +1729,11 @@
         },
         "handleContentTypeWithoutBody": {
           "validation": {
+            "body": {
+              "x-contentType": [
+                "text/plain"
+              ]
+            },
             "output": {
               "$schema": "https://json-schema.org/draft/2020-12/schema",
               "type": "object",
@@ -1747,6 +1752,11 @@
         },
         "handleContentTypeDisabled": {
           "validation": {
+            "body": {
+              "x-contentType": [
+                "text/plain"
+              ]
+            },
             "output": {
               "$schema": "https://json-schema.org/draft/2020-12/schema",
               "type": "object",

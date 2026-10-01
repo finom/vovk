@@ -3,7 +3,13 @@ import type { VovkValidationType } from '../types/core.js';
 import type { VovkOperationObject } from '../types/operation.js';
 import type { VovkRequest } from '../types/request.js';
 import type { KnownAny } from '../types/utils.js';
-import type { BodyTypeFromContentType, CombinedSpec, ContentType, NormalizeContentType } from '../types/validation.js';
+import type {
+  BodyTypeFromContentType,
+  CombinedSpec,
+  ContentType,
+  NormalizeContentType,
+  ParsedBodyTypeFromContentType,
+} from '../types/validation.js';
 import { HttpStatus } from './create-validate-on-client.js';
 import { withValidationLibrary } from './with-validation-library.js';
 
@@ -157,12 +163,15 @@ export function createStandardValidation({
     TParams extends CombinedSpec,
     TOutput extends CombinedSpec,
     TIteration extends CombinedSpec,
+    TContentType extends ContentType | ContentType[] = ['application/json'],
     TReq extends VovkRequest<KnownAny, KnownAny, KnownAny> = VovkRequest<
-      TBody extends CombinedSpec ? CombinedSpec.InferOutput<TBody> : undefined,
+      // without a body schema, the declared content type says what req.vovk.body() parses the body into
+      unknown extends CombinedSpec.InferOutput<TBody>
+        ? ParsedBodyTypeFromContentType<NormalizeContentType<TContentType>>
+        : CombinedSpec.InferOutput<TBody>,
       TQuery extends CombinedSpec ? CombinedSpec.InferOutput<TQuery> : undefined,
       TParams extends CombinedSpec ? CombinedSpec.InferOutput<TParams> : undefined
     >,
-    TContentType extends ContentType | ContentType[] = ['application/json'],
   >(
     options?: ProcedureOptions<TBody, TQuery, TParams, TOutput, TIteration, TContentType>
   ): BuilderHandleReturn<TBody, TQuery, TParams, TOutput, TIteration, TContentType, TReq> & {

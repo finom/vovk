@@ -21,16 +21,20 @@ type OmitNullable<T> = {
 export type StaticMethodInput<
   T extends ((req: VovkRequest<KnownAny, KnownAny, KnownAny>, params: KnownAny) => KnownAny) & {
     __types?: {
+      body: unknown;
       contentType: ContentType[];
     };
   },
 > = OmitNullable<
   (Parameters<T>[0] extends VovkRequest<infer TBody, infer TQuery, infer TParams>
-    ? (T['__types'] extends { contentType: infer CT extends ContentType[] }
-        ? unknown extends TBody
-          ? unknown
+    ? (T['__types'] extends { body: infer TSchemaBody; contentType: infer CT extends ContentType[] }
+        ? unknown extends TSchemaBody
+          ? // no body schema: a declared content type other than JSON still takes a body
+            CT[number] extends 'application/json'
+            ? unknown
+            : { body?: BodyTypeFromContentType<CT, unknown> }
           : {
-              body: BodyTypeFromContentType<CT, TBody>;
+              body: BodyTypeFromContentType<CT, TSchemaBody>;
             }
         : TBody extends Record<KnownAny, KnownAny>
           ? {
@@ -148,7 +152,7 @@ export type ClientMethod<
   TStreamIteration extends KnownAny = unknown,
 > = (IsEmptyObject<StaticMethodInput<T>> extends true
   ? <R, F extends VovkFetcherOptions<KnownAny> = VovkFetcherOptions<TFetcherOptions>>(
-      options?: Prettify<StaticMethodOptions<T, TFetcherOptions, TStreamIteration, R, F>>
+      options?: Prettify<StaticMethodInput<T> & StaticMethodOptions<T, TFetcherOptions, TStreamIteration, R, F>>
     ) => ClientMethodReturn<T, TStreamIteration, R>
   : <R, F extends VovkFetcherOptions<KnownAny> = VovkFetcherOptions<TFetcherOptions>>(
       options: Prettify<StaticMethodInput<T> & StaticMethodOptions<T, TFetcherOptions, TStreamIteration, R, F>>

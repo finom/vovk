@@ -71,6 +71,28 @@
           "path": "content-type",
           "httpMethod": "POST"
         },
+        "postXml": {
+          "validation": {
+            "body": {
+              "x-contentType": [
+                "application/xml"
+              ]
+            }
+          },
+          "path": "xml",
+          "httpMethod": "POST"
+        },
+        "postImage": {
+          "validation": {
+            "body": {
+              "x-contentType": [
+                "image/*"
+              ]
+            }
+          },
+          "path": "image",
+          "httpMethod": "POST"
+        },
         "getTextError": {
           "path": "text-error",
           "httpMethod": "GET"

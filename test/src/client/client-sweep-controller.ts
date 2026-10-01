@@ -40,6 +40,19 @@ export default class ClientSweepController {
     return { contentType: req.headers.get('content-type') };
   }
 
+  // a declared content type without a body schema, as on the /content-type docs page
+  @post('xml')
+  static postXml = procedure({ contentType: 'application/xml' }).handle(async (req) => {
+    const xml: string = await req.vovk.body();
+    return { xml, contentType: req.headers.get('content-type') };
+  });
+
+  @post('image')
+  static postImage = procedure({ contentType: 'image/*' }).handle(async (req) => {
+    const file: File = await req.vovk.body();
+    return { name: file.name, type: file.type, size: file.size };
+  });
+
   @get('text-error')
   static getTextError() {
     return new Response('Unauthorized', { status: 401 });
