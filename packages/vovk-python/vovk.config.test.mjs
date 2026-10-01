@@ -7,6 +7,28 @@ const petstore = {
   // the trailing slash must not end up doubled in the URL
   servers: [{ url: 'https://petstore.test/v1/' }],
   paths: {
+    '/pets': {
+      post: {
+        operationId: 'createPets',
+        requestBody: {
+          required: true,
+          content: { 'application/json': { schema: { type: 'array', items: { $ref: '#/components/schemas/Pet' } } } },
+        },
+        responses: { 200: { description: 'ok' } },
+      },
+      // two content types make the body an anyOf without top-level properties
+      put: {
+        operationId: 'updatePet',
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': { schema: { $ref: '#/components/schemas/Pet' } },
+            'application/x-www-form-urlencoded': { schema: { $ref: '#/components/schemas/Pet' } },
+          },
+        },
+        responses: { 200: { description: 'ok' } },
+      },
+    },
     '/pets/{petId}': {
       get: {
         operationId: 'getPet',

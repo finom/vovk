@@ -1,6 +1,7 @@
+import json
 import unittest
 from typing import Any
-from generated_python_client.src.test_generated_python_client import ClientSweepRPC, HttpException
+from generated_python_client.src.test_generated_python_client import ClientSweepRPC, HttpException, PetstoreAPI
 from utils import fake_transport, json_response
 
 FAKE_ROOT = 'http://fake.test/api'
@@ -42,6 +43,20 @@ class TestClient(unittest.TestCase):
             ClientSweepRPC.get_empty_error()
         self.assertEqual(context.exception.status_code, 500)
         self.assertEqual(context.exception.message, 'Internal Server Error')
+
+    def test_form_body_without_properties(self) -> None:
+        self.assertEqual(ClientSweepRPC.post_form_entries(body={'hello': 'world'}), [['hello', 'world']])
+
+    def test_array_body(self) -> None:
+        with fake_transport(json_response(None)) as sent:
+            PetstoreAPI.create_pets(body=[{'name': 'Rex'}, {'name': 'Tom'}])
+        self.assertEqual(json.loads(sent[0].request.body or ''), [{'name': 'Rex'}, {'name': 'Tom'}])
+
+    def test_body_of_two_content_types(self) -> None:
+        with fake_transport(json_response(None)) as sent:
+            PetstoreAPI.update_pet(body={'name': 'Rex'})
+        self.assertEqual(sent[0].request.headers['Content-Type'], 'application/json')
+        self.assertEqual(json.loads(sent[0].request.body or ''), {'name': 'Rex'})
 
 
 if __name__ == "__main__":

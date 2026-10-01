@@ -52,8 +52,7 @@ class <%- pyModuleName %>: <% Object.entries(controllerSchema.handlers).forEach(
     def <%= handlerName %>(
 <%= [
             bodyKind === 'text' ? 'body: str,' : bodyKind === 'binary' ? 'body: bytes,' : '',
-            bodyKind === 'json' && validation?.body && vars.hasNormalData(validation.body) ? `body: ${handlerNameOriginalCapitalized}Body,` : '',
-            bodyKind === 'form' && validation?.body && vars.hasNormalData(validation.body) ? `body: ${handlerNameOriginalCapitalized}Body,` : '',
+            bodyKind === 'json' || (bodyKind === 'form' && vars.hasNormalData(validation.body)) ? `body: ${handlerNameOriginalCapitalized}Body,` : '',
             validation?.body && vars.hasFiles(validation.body) ? `files: ${handlerNameOriginalCapitalized}Files,` : '',
             validation?.query ? `query: ${handlerNameOriginalCapitalized}Query,` : '',
             validation?.params ? `params: ${handlerNameOriginalCapitalized}Params,` : ''
@@ -77,7 +76,7 @@ class <%- pyModuleName %>: <% Object.entries(controllerSchema.handlers).forEach(
             handler_name=<%- vars.toPythonString(handlerNameOriginal) %>,
 <%- [
                 bodyKind === 'text' || bodyKind === 'binary' ? 'body=body,' : '',
-                (bodyKind === 'json' || bodyKind === 'form') && validation?.body && vars.hasNormalData(validation.body) ? 'body=body,' : '',
+                bodyKind === 'json' || (bodyKind === 'form' && vars.hasNormalData(validation.body)) ? 'body=body,' : '',
                 validation?.body && vars.hasFiles(validation.body) ? 'files=files,' : '',
                 bodyKind === 'text' || bodyKind === 'binary' ? `body_content_type=${vars.toPythonString(firstContentType)},` : '',
                 validation?.query ? 'query=query,' : '',

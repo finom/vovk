@@ -905,3 +905,44 @@ test('allOf and $ref bodies', async (t) => {
     );
   });
 });
+
+test('bodies without top-level properties', async (t) => {
+  await t.test('may carry data', () => {
+    assert.equal(hasNormalData({ type: 'array', items: { type: 'string' } }), true);
+    assert.equal(
+      hasNormalData({ anyOf: [{ type: 'object', properties: { a: { type: 'string' } } }, { type: 'string' }] }),
+      true
+    );
+    assert.equal(hasNormalData({ type: 'object', additionalProperties: { type: 'string' } }), true);
+    assert.equal(hasNormalData({ type: 'object', properties: { file: { type: 'string', format: 'binary' } } }), false);
+  });
+
+  await t.test('a record is a Dict of its values', () => {
+    const result = convertJSONSchemaToPythonDataType({
+      schema: { type: 'object', additionalProperties: { type: 'number' } },
+      namespace: 'Rpc',
+      className: 'Body',
+      pad: 0,
+    });
+
+    assert.equal(result, 'Body = Dict[str, float]');
+  });
+
+  await t.test('a record of any values is a Dict of Any', () => {
+    const result = convertJSONSchemaToPythonDataType({
+      schema: {
+        type: 'object',
+        properties: {
+          // as Zod emits z.record(z.string(), z.unknown())
+          meta: { type: 'object', propertyNames: { type: 'string' }, additionalProperties: {} } as VovkJSONSchemaBase,
+        },
+        required: ['meta'],
+      },
+      namespace: 'Rpc',
+      className: 'Body',
+      pad: 0,
+    });
+
+    assert.equal(result, 'class Body(TypedDict):\n    meta: Dict[str, Any]');
+  });
+});

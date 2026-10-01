@@ -267,6 +267,10 @@ class TestValidation(unittest.TestCase):
             )
         self.assertRegex(str(context.exception), r"Validation failed\. Invalid body")
 
+    def test_union_body(self) -> None:
+        data = WithValidationRPC.handle_octet_stream_or_json_data(body={"hello": "world"})
+        self.assertEqual(data, {'type': 'none', 'hello': 'world'})
+
     def test_binary_octet_stream(self) -> None:
         binary_content = b"hello binary world"
         data: WithValidationRPC.HandleBinaryOctetStreamOutput = WithValidationRPC.handle_binary_octet_stream(

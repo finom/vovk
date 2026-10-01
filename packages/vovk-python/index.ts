@@ -96,7 +96,9 @@ export function hasFiles(schema: VovkJSONSchemaBase): boolean {
 }
 
 export function hasNormalData(schema: VovkJSONSchemaBase): boolean {
-  return Object.values(resolveTopLevelRef(schema).properties ?? {}).some((prop) => !isFileUploadSchema(prop));
+  const { properties } = resolveTopLevelRef(schema);
+  // without listed properties, as in an array, a union or a record, any of it may be data
+  return !properties || Object.values(properties).some((prop) => !isFileUploadSchema(prop));
 }
 
 /**
@@ -274,6 +276,12 @@ export function convertJSONSchemaToPythonDataType(options: ConvertOptions): stri
           }
 
         case 'object': {
+          // a record: no listed keys, every value matches one schema
+          const values = s.additionalProperties;
+          if (!s.properties && ('propertyNames' in s || (values !== undefined && values !== false))) {
+            return `Dict[str, ${typeof values === 'object' ? buildType(values, `${propNameForParent}_values`) : 'Any'}]`;
+          }
+
           if (seenObjects.has(s)) {
             // biome-ignore lint/style/noNonNullAssertion: TODO
             return seenObjects.get(s)!;
