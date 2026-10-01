@@ -39,7 +39,7 @@ export const createRPC = <T, OPTS extends Record<string, KnownAny> = Record<stri
   segmentName: string,
   rpcModuleName: string,
   givenFetcher?: VovkFetcher<OPTS> | Promise<{ fetcher: VovkFetcher<OPTS> }>,
-  options?: VovkFetcherOptions<OPTS>
+  options?: VovkFetcherOptions<OPTS> & { segmentNameOverride?: string }
 ): VovkRPCModule<T, OPTS> => {
   const schema = givenSchema as VovkSchema; // fixes incompatibilities with JSON module
   // fetcher ??= defaultFetcher as NonNullable<typeof fetcher>;
