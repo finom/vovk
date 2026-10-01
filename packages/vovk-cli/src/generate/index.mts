@@ -11,6 +11,9 @@ import { omitRoutelessSegments } from './omit-routeless-segments.mjs';
 
 const THROTTLE_DELAY = 5000;
 
+// a writer that is not atomic truncates a file before writing it, so a change is read once the size stays the same
+const AWAIT_WRITE_FINISH = { stabilityThreshold: 300, pollInterval: 50 };
+
 export class VovkGenerate {
   #cliGenerateOptions: GenerateOptions;
   #projectInfo: ProjectInfo;
@@ -117,6 +120,7 @@ export class VovkGenerate {
       .watch(schemaPath, {
         persistent: true,
         ignoreInitial: true,
+        awaitWriteFinish: AWAIT_WRITE_FINISH,
       })
       // "ready" never reaches the "all" listener, and ignoreInitial skips the files already there
       .on('ready', scheduleGeneration)
@@ -168,6 +172,7 @@ export class VovkGenerate {
         cwd,
         persistent: true,
         ignoreInitial: false,
+        awaitWriteFinish: AWAIT_WRITE_FINISH,
       })
       .on('all', (event, path) => {
         if (event === 'change' || event === 'add' || event === 'ready' || event === 'unlink') {

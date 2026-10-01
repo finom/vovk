@@ -51,7 +51,7 @@ A cleanup release. `vovk-cli` is pre-1.0, so this minor carries breaking changes
 - `vovk bundle` refuses a prebundle folder that overlaps its output, or that holds other files and is not kept: `--prebundle-out src` deleted `src/` ([#40](https://github.com/finom/vovk/pull/40))
 - `devHttps` turns TLS checks off for the local schema request only, not for every fetch in the process ([#40](https://github.com/finom/vovk/pull/40))
 - `vovk dev`: `--exit` and `--next-dev` exit 1 on failure, `-p`/`--port` is read, `--schema-out` reaches the client, a removed segment leaves the client, rapid saves no longer leave schema requests pending, a corrupt schema file is replaced ([#40](https://github.com/finom/vovk/pull/40))
-- The root segment name check ignores case, `--no-segment-update` works, `--watch` generates on start, an invalid schema JSON fails ([#40](https://github.com/finom/vovk/pull/40))
+- The root segment name check ignores case, `--no-segment-update` works, `--watch` generates on start and reads a changed file once it is written in full, an invalid schema JSON fails ([#40](https://github.com/finom/vovk/pull/40))
 - Pruning runs once after all writes and keeps other output folders and case-only renames ([#40](https://github.com/finom/vovk/pull/40))
 - The bundle README follows the include/exclude and mixin flags; Python and Rust package names stay valid for a leading digit or a keyword ([#40](https://github.com/finom/vovk/pull/40))
 - `vovk init --channel` falls back to `latest` for packages without that channel; the `.gitignore` entry and scripts work on Windows ([#40](https://github.com/finom/vovk/pull/40))

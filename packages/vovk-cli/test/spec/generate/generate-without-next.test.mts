@@ -161,6 +161,68 @@ await describe('vovk generate in a project without Next.js', async () => {
     }
   });
 
+  await it('Regenerates with --watch once a changed file is written in full', async () => {
+    const petsSpec = (operationId: string) => ({
+      openapi: '3.1.0',
+      info: { title: 'Pets', version: '1.0.0' },
+      paths: { '/pets': { get: { operationId, responses: { 200: { description: 'OK' } } } } },
+    });
+    const clientSchema = {
+      ...userSegmentSchema,
+      controllers: { ClientRPC: { ...userSegmentSchema.controllers.UserRPC, rpcModuleName: 'ClientRPC' } },
+    };
+    const openapiFlags = ['--openapi', 'pets.json', '--openapi-root-url', 'https://pets.example.com'];
+    openapiFlags.push('--openapi-module-name', 'PetsRPC', '--openapi-mixin-name', 'pets');
+    const runs = [
+      {
+        flags: [],
+        file: '.vovk-schema/root.json',
+        content: clientSchema,
+        clientFile: 'index.ts',
+        expected: 'ClientRPC',
+      },
+      {
+        flags: openapiFlags,
+        file: 'pets.json',
+        content: petsSpec('listAllPets'),
+        clientFile: 'mixins.json',
+        expected: 'listAllPets',
+      },
+    ];
+
+    for (const { flags, file, content, clientFile, expected } of runs) {
+      await createProject(projectDir, {
+        'package.json': { name: 'app', version: '1.0.0', type: 'module' },
+        'vovk.config.mjs': configFile({ composedClient: { prettifyClient: false } }),
+        'src/app/api/[[...vovk]]/route.ts': '',
+        '.vovk-schema/root.json': userSegmentSchema,
+        'pets.json': petsSpec('listPets'),
+      });
+
+      const cli = startCLI(['generate', '--watch', '1', ...flags], { cwd: projectDir });
+      try {
+        await cli.waitForOutput(/Composed client is generated/, 10_000);
+        // past the 1 second throttle, so the change is read at once
+        await new Promise((resolve) => setTimeout(resolve, 1500));
+        const since = cli.getOutput().length;
+        // a writer that is not atomic: the file is truncated, then written in parts
+        const text = JSON.stringify(content, null, 2);
+        const handle = await fs.open(path.join(projectDir, file), 'w');
+        await handle.write(text.slice(0, 50));
+        await new Promise((resolve) => setTimeout(resolve, 50));
+        await handle.write(text.slice(50));
+        await handle.close();
+
+        await cli.waitForOutput(/Composed client is generated/, 10_000, since);
+        assert.ok(!cli.getOutput().slice(since).includes('Failed to regenerate'), cli.getOutput());
+        const client = await read(`src/client/${clientFile}`);
+        assert.ok(client.includes(expected), client);
+      } finally {
+        await cli.stop();
+      }
+    }
+  });
+
   await it('Resolves a relative createRPC import from each segmented client folder', async () => {
     await createProject(projectDir, {
       'package.json': { name: 'app', version: '1.0.0', type: 'module' },
