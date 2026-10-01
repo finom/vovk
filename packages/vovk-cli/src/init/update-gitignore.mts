@@ -1,11 +1,13 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { getRelativeSrcRoot } from '../get-project-info/get-config/get-relative-src-root.mjs';
+import { toPosixPath } from '../utils/to-import-path.mjs';
 
 /** Adds the default composed client outDir to .gitignore. Returns the added entry or null if already present. */
 export async function updateGitignore(root: string) {
   const srcRoot = await getRelativeSrcRoot({ cwd: root });
-  const outDir = path.join(srcRoot ?? '.', 'client');
+  // git reads "\" in .gitignore as an escape, so the entry keeps forward slashes on Windows
+  const outDir = toPosixPath(path.join(srcRoot ?? '.', 'client'));
   const entry = `/${outDir}`;
   const gitignorePath = path.join(root, '.gitignore');
   const content = await fs.readFile(gitignorePath, 'utf-8').catch(() => '');

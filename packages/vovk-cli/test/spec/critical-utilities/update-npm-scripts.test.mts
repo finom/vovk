@@ -32,6 +32,18 @@ await describe('getDevScript', async () => {
     assert.strictEqual(getDevScript(withDevScript('next dev -p 4000'), 'implicit'), 'vovk dev --next-dev -- -p 4000');
   });
 
+  await it('Writes an explicit script that cmd.exe runs too', () => {
+    // cmd.exe has no VAR=value prefix and no single quotes
+    assert.strictEqual(
+      getDevScript(withDevScript('next dev'), 'explicit'),
+      'cross-env PORT=3000 concurrently "next dev" "vovk dev" --kill-others'
+    );
+    assert.strictEqual(
+      getDevScript(withDevScript('next dev --hostname "0.0.0.0"'), 'explicit'),
+      'cross-env PORT=3000 concurrently "next dev --hostname \\"0.0.0.0\\"" "vovk dev" --kill-others'
+    );
+  });
+
   await it('Sets PORT to the port next dev listens on in the explicit script', () => {
     assert.match(getDevScript(withDevScript('next dev -p 4000'), 'explicit'), /PORT=4000 /);
     assert.match(getDevScript(withDevScript('next dev --turbopack'), 'explicit'), /PORT=3000 /);

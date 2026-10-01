@@ -93,7 +93,7 @@ export class Init {
         log.error(`Failed to update scripts at package.json: ${(error as Error).message}`);
       }
       if (updateScripts === 'explicit') {
-        devDependencies.push('concurrently');
+        devDependencies.push('concurrently', 'cross-env');
       }
     }
 

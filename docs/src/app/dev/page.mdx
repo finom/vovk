@@ -87,7 +87,7 @@ For convenience, add a dedicated script in `package.json`:
     // ...
     "dev-exit": "vovk dev --next-dev --exit",
     // or
-    "dev-exit": "PORT=3000 concurrently 'vovk dev --exit' 'next dev' --kill-others"
+    "dev-exit": "cross-env PORT=3000 concurrently \"vovk dev --exit\" \"next dev\" --kill-others"
   }
 }
 ```
