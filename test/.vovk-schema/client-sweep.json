@@ -1,0 +1,227 @@
+{
+  "$schema": "https://vovk.dev/api/schema/v3/segment.json",
+  "emitSchema": true,
+  "segmentName": "client-sweep",
+  "segmentType": "segment",
+  "controllers": {
+    "ClientSweepRPC": {
+      "rpcModuleName": "ClientSweepRPC",
+      "originalControllerName": "ClientSweepController",
+      "prefix": "sweep",
+      "handlers": {
+        "getUserPosts": {
+          "path": "users/{id}/posts",
+          "httpMethod": "GET"
+        },
+        "getEcho": {
+          "validation": {
+            "query": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "object",
+              "properties": {
+                "q": {
+                  "type": "string"
+                },
+                "page": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "q"
+              ]
+            },
+            "params": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "id"
+              ]
+            }
+          },
+          "path": "echo/{id}",
+          "httpMethod": "GET"
+        },
+        "getQueryEcho": {
+          "path": "query-echo",
+          "httpMethod": "GET"
+        },
+        "getContentType": {
+          "path": "content-type",
+          "httpMethod": "GET"
+        },
+        "postContentType": {
+          "path": "content-type",
+          "httpMethod": "POST"
+        },
+        "getTextError": {
+          "path": "text-error",
+          "httpMethod": "GET"
+        },
+        "getHtmlError": {
+          "path": "html-error",
+          "httpMethod": "GET"
+        },
+        "getEmptyError": {
+          "path": "empty-error",
+          "httpMethod": "GET"
+        },
+        "getFalsyItems": {
+          "path": "falsy-items",
+          "httpMethod": "GET"
+        },
+        "getErrorLikeItems": {
+          "path": "error-like-items",
+          "httpMethod": "GET"
+        },
+        "getErrorLineWithStatus": {
+          "path": "error-line-with-status",
+          "httpMethod": "GET"
+        },
+        "postFormEntries": {
+          "validation": {
+            "body": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "object",
+              "propertyNames": {
+                "type": "string"
+              },
+              "additionalProperties": {},
+              "x-contentType": [
+                "multipart/form-data"
+              ]
+            }
+          },
+          "path": "form-entries",
+          "httpMethod": "POST"
+        },
+        "postUrlEncoded": {
+          "validation": {
+            "body": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "object",
+              "properties": {
+                "hello": {
+                  "type": "string"
+                },
+                "tags": {
+                  "anyOf": [
+                    {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    {
+                      "type": "string"
+                    }
+                  ]
+                }
+              },
+              "required": [
+                "hello",
+                "tags"
+              ],
+              "x-contentType": [
+                "application/x-www-form-urlencoded"
+              ]
+            }
+          },
+          "path": "url-encoded",
+          "httpMethod": "POST"
+        },
+        "postMultipartTyped": {
+          "validation": {
+            "body": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "object",
+              "properties": {
+                "age": {
+                  "type": "number"
+                },
+                "files": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "format": "binary",
+                    "contentEncoding": "binary"
+                  }
+                }
+              },
+              "required": [
+                "age",
+                "files"
+              ],
+              "x-contentType": [
+                "multipart/form-data"
+              ]
+            }
+          },
+          "path": "multipart-typed",
+          "httpMethod": "POST"
+        },
+        "getByCuid": {
+          "validation": {
+            "params": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "format": "cuid",
+                  "pattern": "^[cC][0-9a-z]{6,}$"
+                }
+              },
+              "required": [
+                "id"
+              ]
+            }
+          },
+          "path": "cuid/{id}",
+          "httpMethod": "GET"
+        },
+        "postFormats": {
+          "validation": {
+            "body": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "format": "nanoid",
+                  "pattern": "^[a-zA-Z0-9_-]{21}$"
+                },
+                "phone": {
+                  "type": "string",
+                  "format": "e164",
+                  "pattern": "^\\+[1-9]\\d{6,14}$"
+                },
+                "token": {
+                  "type": "string",
+                  "format": "jwt"
+                },
+                "color": {
+                  "type": "string",
+                  "format": "hex",
+                  "pattern": "^[0-9a-fA-F]*$"
+                }
+              },
+              "required": [
+                "id",
+                "phone",
+                "token",
+                "color"
+              ]
+            }
+          },
+          "path": "formats",
+          "httpMethod": "POST"
+        }
+      }
+    }
+  }
+}

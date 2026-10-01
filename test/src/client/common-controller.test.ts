@@ -138,7 +138,6 @@ describe('Client with composed RPC client', () => {
     ok(result.response instanceof Response, 'Response is instance of Response');
     deepStrictEqual(result.init.headers, {
       accept: 'application/jsonl, application/json',
-      'content-type': 'application/json',
       'x-vovk-test': 'world',
       'x-vovk-fetcher-header': 'my-header-value',
       'x-success-message': 'Success',
