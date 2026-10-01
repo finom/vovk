@@ -8,6 +8,7 @@ on:
       - 'packages/vovk/**'
       - 'perf/**'
       - '.github/workflows/perf.yml'
+      - '!**/*.md'
   workflow_dispatch:
 
 permissions:
