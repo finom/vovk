@@ -1,0 +1,1885 @@
+{
+  "$schema": "https://vovk.dev/api/schema/v3/segment.json",
+  "emitSchema": true,
+  "segmentName": "shapes",
+  "segmentType": "segment",
+  "controllers": {
+    "ShapesRPC": {
+      "rpcModuleName": "ShapesRPC",
+      "originalControllerName": "ShapesController",
+      "prefix": "shapes",
+      "handlers": {
+        "arrOfEnums": {
+          "path": "arr-of-enums",
+          "httpMethod": "POST",
+          "validation": {
+            "body": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "object",
+              "properties": {
+                "a": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "enum": [
+                      "x",
+                      "y"
+                    ]
+                  }
+                }
+              },
+              "required": [
+                "a"
+              ]
+            }
+          }
+        },
+        "unionWithEnum": {
+          "path": "union-with-enum",
+          "httpMethod": "POST",
+          "validation": {
+            "body": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "object",
+              "properties": {
+                "u": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "enum": [
+                        "p",
+                        "q"
+                      ]
+                    },
+                    {
+                      "type": "number"
+                    }
+                  ]
+                }
+              },
+              "required": [
+                "u"
+              ]
+            }
+          }
+        },
+        "emptyObjProp": {
+          "path": "empty-obj-prop",
+          "httpMethod": "POST",
+          "validation": {
+            "body": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "object",
+              "properties": {
+                "e": {
+                  "type": "object",
+                  "properties": {}
+                }
+              },
+              "required": [
+                "e"
+              ]
+            }
+          }
+        },
+        "looseObjProp": {
+          "path": "loose-obj-prop",
+          "httpMethod": "POST",
+          "validation": {
+            "body": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "object",
+              "properties": {
+                "e": {
+                  "type": "object",
+                  "properties": {},
+                  "additionalProperties": {}
+                }
+              },
+              "required": [
+                "e"
+              ]
+            }
+          }
+        },
+        "namedArrayDef": {
+          "path": "named-array-def",
+          "httpMethod": "POST",
+          "validation": {
+            "body": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "object",
+              "properties": {
+                "tags": {
+                  "$ref": "#/$defs/Tags"
+                }
+              },
+              "required": [
+                "tags"
+              ],
+              "$defs": {
+                "Tags": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "namedRecordDef": {
+          "path": "named-record-def",
+          "httpMethod": "POST",
+          "validation": {
+            "body": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "object",
+              "properties": {
+                "meta": {
+                  "$ref": "#/$defs/Meta"
+                }
+              },
+              "required": [
+                "meta"
+              ],
+              "$defs": {
+                "Meta": {
+                  "type": "object",
+                  "propertyNames": {
+                    "type": "string"
+                  },
+                  "additionalProperties": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "namedNullableDef": {
+          "path": "named-nullable-def",
+          "httpMethod": "POST",
+          "validation": {
+            "body": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "object",
+              "properties": {
+                "n": {
+                  "$ref": "#/$defs/NullableName"
+                }
+              },
+              "required": [
+                "n"
+              ],
+              "$defs": {
+                "NullableName": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "namedEnumDef": {
+          "path": "named-enum-def",
+          "httpMethod": "POST",
+          "validation": {
+            "body": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "object",
+              "properties": {
+                "s": {
+                  "$ref": "#/$defs/Status"
+                },
+                "list": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/$defs/Status"
+                  }
+                }
+              },
+              "required": [
+                "s",
+                "list"
+              ],
+              "$defs": {
+                "Status": {
+                  "type": "string",
+                  "enum": [
+                    "on",
+                    "off"
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "namedUnionDef": {
+          "path": "named-union-def",
+          "httpMethod": "POST",
+          "validation": {
+            "body": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "object",
+              "properties": {
+                "shape": {
+                  "$ref": "#/$defs/Shape"
+                }
+              },
+              "required": [
+                "shape"
+              ],
+              "$defs": {
+                "Shape": {
+                  "oneOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "kind": {
+                          "type": "string",
+                          "const": "c"
+                        },
+                        "r": {
+                          "type": "number"
+                        }
+                      },
+                      "required": [
+                        "kind",
+                        "r"
+                      ]
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "kind": {
+                          "type": "string",
+                          "const": "s"
+                        },
+                        "a": {
+                          "type": "number"
+                        }
+                      },
+                      "required": [
+                        "kind",
+                        "a"
+                      ]
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "recordOutput": {
+          "path": "record-output",
+          "httpMethod": "GET",
+          "validation": {
+            "output": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "object",
+              "propertyNames": {
+                "type": "string"
+              },
+              "additionalProperties": {
+                "type": "number"
+              }
+            }
+          }
+        },
+        "unknownOutput": {
+          "path": "unknown-output",
+          "httpMethod": "GET",
+          "validation": {
+            "output": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema"
+            }
+          }
+        },
+        "anyBody": {
+          "path": "any-body",
+          "httpMethod": "POST",
+          "validation": {
+            "body": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema"
+            }
+          }
+        },
+        "arrayOfDashedRefOutput": {
+          "path": "array-of-dashed-ref-output",
+          "httpMethod": "GET",
+          "validation": {
+            "output": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/user-profile"
+              },
+              "$defs": {
+                "user-profile": {
+                  "type": "object",
+                  "properties": {
+                    "name": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "name"
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "bareRefArrayOutput": {
+          "path": "bare-ref-array-output",
+          "httpMethod": "GET",
+          "validation": {
+            "output": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "$ref": "#/$defs/Tags",
+              "$defs": {
+                "Tags": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "nestedArrOfObj": {
+          "path": "nested-arr-of-obj",
+          "httpMethod": "POST",
+          "validation": {
+            "body": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "object",
+              "properties": {
+                "m": {
+                  "type": "array",
+                  "items": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "x": {
+                          "type": "number"
+                        }
+                      },
+                      "required": [
+                        "x"
+                      ]
+                    }
+                  }
+                }
+              },
+              "required": [
+                "m"
+              ]
+            }
+          }
+        },
+        "nestedArrOfNum": {
+          "path": "nested-arr-of-num",
+          "httpMethod": "POST",
+          "validation": {
+            "body": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "object",
+              "properties": {
+                "m": {
+                  "type": "array",
+                  "items": {
+                    "type": "array",
+                    "items": {
+                      "type": "number"
+                    }
+                  }
+                }
+              },
+              "required": [
+                "m"
+              ]
+            }
+          }
+        },
+        "unionWithArrOfObj": {
+          "path": "union-with-arr-of-obj",
+          "httpMethod": "POST",
+          "validation": {
+            "body": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "object",
+              "properties": {
+                "u": {
+                  "anyOf": [
+                    {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "w": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "w"
+                        ]
+                      }
+                    },
+                    {
+                      "type": "string"
+                    }
+                  ]
+                }
+              },
+              "required": [
+                "u"
+              ]
+            }
+          }
+        },
+        "unionOfObjects": {
+          "path": "union-of-objects",
+          "httpMethod": "POST",
+          "validation": {
+            "body": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "object",
+              "properties": {
+                "u": {
+                  "anyOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "a": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "a"
+                      ]
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "b": {
+                          "type": "number"
+                        }
+                      },
+                      "required": [
+                        "b"
+                      ]
+                    }
+                  ]
+                }
+              },
+              "required": [
+                "u"
+              ]
+            }
+          }
+        },
+        "unionNested": {
+          "path": "union-nested",
+          "httpMethod": "POST",
+          "validation": {
+            "body": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "object",
+              "properties": {
+                "u": {
+                  "type": [
+                    "string",
+                    "number",
+                    "boolean"
+                  ]
+                }
+              },
+              "required": [
+                "u"
+              ]
+            }
+          }
+        },
+        "unionWithNamedRef": {
+          "path": "union-with-named-ref",
+          "httpMethod": "POST",
+          "validation": {
+            "body": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "object",
+              "properties": {
+                "u": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/$defs/user-profile"
+                    },
+                    {
+                      "type": "string"
+                    }
+                  ]
+                }
+              },
+              "required": [
+                "u"
+              ],
+              "$defs": {
+                "user-profile": {
+                  "type": "object",
+                  "properties": {
+                    "name": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "name"
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "tuple": {
+          "path": "tuple",
+          "httpMethod": "POST",
+          "validation": {
+            "body": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "object",
+              "properties": {
+                "t": {
+                  "type": "array",
+                  "prefixItems": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "number"
+                    }
+                  ],
+                  "items": false,
+                  "minItems": 2,
+                  "maxItems": 2
+                }
+              },
+              "required": [
+                "t"
+              ]
+            }
+          }
+        },
+        "mixedLiteral": {
+          "path": "mixed-literal",
+          "httpMethod": "GET",
+          "validation": {
+            "output": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "object",
+              "properties": {
+                "m": {
+                  "enum": [
+                    "a",
+                    1,
+                    true
+                  ]
+                }
+              },
+              "required": [
+                "m"
+              ]
+            }
+          }
+        },
+        "numLiteral": {
+          "path": "num-literal",
+          "httpMethod": "POST",
+          "validation": {
+            "body": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "object",
+              "properties": {
+                "m": {
+                  "type": "number",
+                  "enum": [
+                    1,
+                    2
+                  ]
+                }
+              },
+              "required": [
+                "m"
+              ]
+            }
+          }
+        },
+        "nullableEnum": {
+          "path": "nullable-enum",
+          "httpMethod": "POST",
+          "validation": {
+            "body": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "object",
+              "properties": {
+                "e": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "enum": [
+                        "a",
+                        "b"
+                      ]
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                }
+              },
+              "required": [
+                "e"
+              ]
+            }
+          }
+        },
+        "nullableObject": {
+          "path": "nullable-object",
+          "httpMethod": "POST",
+          "validation": {
+            "body": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "object",
+              "properties": {
+                "o": {
+                  "anyOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "x": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "x"
+                      ]
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                }
+              },
+              "required": [
+                "o"
+              ]
+            }
+          }
+        },
+        "nullableArray": {
+          "path": "nullable-array",
+          "httpMethod": "POST",
+          "validation": {
+            "body": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "object",
+              "properties": {
+                "arr": {
+                  "anyOf": [
+                    {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "x": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "x"
+                        ]
+                      }
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                }
+              },
+              "required": [
+                "arr"
+              ]
+            }
+          }
+        },
+        "nullableOutput": {
+          "path": "nullable-output",
+          "httpMethod": "GET",
+          "validation": {
+            "output": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "anyOf": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "a": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "a"
+                  ]
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          }
+        },
+        "arrayOutputOfEnums": {
+          "path": "array-output-of-enums",
+          "httpMethod": "GET",
+          "validation": {
+            "output": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": [
+                  "a",
+                  "b"
+                ]
+              }
+            }
+          }
+        },
+        "arrayOutputOfArrays": {
+          "path": "array-output-of-arrays",
+          "httpMethod": "GET",
+          "validation": {
+            "output": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "array",
+              "items": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "deepNamedRef": {
+          "path": "deep-named-ref",
+          "httpMethod": "POST",
+          "validation": {
+            "body": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "object",
+              "properties": {
+                "outer": {
+                  "type": "object",
+                  "properties": {
+                    "inner": {
+                      "type": "object",
+                      "properties": {
+                        "prof": {
+                          "$ref": "#/$defs/user-profile"
+                        }
+                      },
+                      "required": [
+                        "prof"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "inner"
+                  ]
+                }
+              },
+              "required": [
+                "outer"
+              ],
+              "$defs": {
+                "user-profile": {
+                  "type": "object",
+                  "properties": {
+                    "name": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "name"
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "namedRefInArrayItem": {
+          "path": "named-ref-in-array-item",
+          "httpMethod": "POST",
+          "validation": {
+            "body": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "object",
+              "properties": {
+                "list": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "prof": {
+                        "$ref": "#/$defs/user-profile"
+                      }
+                    },
+                    "required": [
+                      "prof"
+                    ]
+                  }
+                }
+              },
+              "required": [
+                "list"
+              ],
+              "$defs": {
+                "user-profile": {
+                  "type": "object",
+                  "properties": {
+                    "name": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "name"
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "mutualRecursion": {
+          "path": "mutual-recursion",
+          "httpMethod": "POST",
+          "validation": {
+            "body": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "object",
+              "properties": {
+                "a": {
+                  "$ref": "#/$defs/A"
+                }
+              },
+              "required": [
+                "a"
+              ],
+              "$defs": {
+                "A": {
+                  "type": "object",
+                  "properties": {
+                    "name": {
+                      "type": "string"
+                    },
+                    "b": {
+                      "$ref": "#/$defs/B"
+                    }
+                  },
+                  "required": [
+                    "name"
+                  ]
+                },
+                "B": {
+                  "type": "object",
+                  "properties": {
+                    "a": {
+                      "$ref": "#/$defs/A"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tree": {
+          "path": "tree",
+          "httpMethod": "GET",
+          "validation": {
+            "output": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "$ref": "#/$defs/TreeNode",
+              "$defs": {
+                "TreeNode": {
+                  "type": "object",
+                  "properties": {
+                    "value": {
+                      "type": "string"
+                    },
+                    "children": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/$defs/TreeNode"
+                      }
+                    }
+                  },
+                  "required": [
+                    "value",
+                    "children"
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "collidingProps": {
+          "path": "colliding-props",
+          "httpMethod": "POST",
+          "validation": {
+            "body": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "object",
+              "properties": {
+                "a-b": {
+                  "type": "object",
+                  "properties": {
+                    "x": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "x"
+                  ]
+                },
+                "a_b": {
+                  "type": "object",
+                  "properties": {
+                    "y": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "y"
+                  ]
+                }
+              },
+              "required": [
+                "a-b",
+                "a_b"
+              ]
+            }
+          }
+        },
+        "propAndUnderscoreProp": {
+          "path": "prop-and-underscore-prop",
+          "httpMethod": "POST",
+          "validation": {
+            "body": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "object",
+              "properties": {
+                "a": {
+                  "type": "object",
+                  "properties": {
+                    "inner": {
+                      "type": "object",
+                      "properties": {
+                        "z": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "z"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "inner"
+                  ]
+                },
+                "a_": {
+                  "type": "object",
+                  "properties": {
+                    "y": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "y"
+                  ]
+                }
+              },
+              "required": [
+                "a",
+                "a_"
+              ]
+            }
+          }
+        },
+        "propNamedString": {
+          "path": "prop-named-string",
+          "httpMethod": "POST",
+          "validation": {
+            "body": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "object",
+              "properties": {
+                "String": {
+                  "type": "object",
+                  "properties": {
+                    "x": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "x"
+                  ]
+                },
+                "name": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "String",
+                "name"
+              ]
+            }
+          }
+        },
+        "propNamedOption": {
+          "path": "prop-named-option",
+          "httpMethod": "POST",
+          "validation": {
+            "body": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "object",
+              "properties": {
+                "Option": {
+                  "type": "object",
+                  "properties": {
+                    "x": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "x"
+                  ]
+                },
+                "maybe": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "Option"
+              ]
+            }
+          }
+        },
+        "propNamedBody": {
+          "path": "prop-named-body",
+          "httpMethod": "POST",
+          "validation": {
+            "body": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "object",
+              "properties": {
+                "body": {
+                  "type": "object",
+                  "properties": {
+                    "x": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "x"
+                  ]
+                }
+              },
+              "required": [
+                "body"
+              ]
+            }
+          }
+        },
+        "enumWithCR": {
+          "path": "enum-with-c-r",
+          "httpMethod": "POST",
+          "validation": {
+            "body": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "object",
+              "properties": {
+                "e": {
+                  "type": "string",
+                  "enum": [
+                    "a\rb",
+                    "c"
+                  ]
+                }
+              },
+              "required": [
+                "e"
+              ]
+            }
+          }
+        },
+        "propWithCR": {
+          "path": "prop-with-c-r",
+          "httpMethod": "POST",
+          "validation": {
+            "body": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "object",
+              "properties": {
+                "a\rb": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "a\rb"
+              ]
+            }
+          }
+        },
+        "intersectionOfStrings": {
+          "path": "intersection-of-strings",
+          "httpMethod": "POST",
+          "validation": {
+            "body": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "object",
+              "properties": {
+                "s": {
+                  "allOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "string",
+                      "minLength": 1
+                    }
+                  ]
+                }
+              },
+              "required": [
+                "s"
+              ]
+            }
+          }
+        },
+        "allOfWithRef": {
+          "path": "all-of-with-ref",
+          "httpMethod": "POST",
+          "validation": {
+            "body": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "object",
+              "properties": {
+                "s": {
+                  "allOf": [
+                    {
+                      "$ref": "#/$defs/user-profile"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "extra": {
+                          "type": "number"
+                        }
+                      },
+                      "required": [
+                        "extra"
+                      ]
+                    }
+                  ]
+                }
+              },
+              "required": [
+                "s"
+              ],
+              "$defs": {
+                "user-profile": {
+                  "type": "object",
+                  "properties": {
+                    "name": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "name"
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "defNamedOutput": {
+          "path": "def-named-output",
+          "httpMethod": "GET",
+          "validation": {
+            "output": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "$ref": "#/$defs/output",
+              "$defs": {
+                "output": {
+                  "type": "object",
+                  "properties": {
+                    "x": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "x"
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "defNamedBody": {
+          "path": "def-named-body",
+          "httpMethod": "POST",
+          "validation": {
+            "body": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "object",
+              "properties": {
+                "x": {
+                  "$ref": "#/$defs/body"
+                }
+              },
+              "required": [
+                "x"
+              ],
+              "$defs": {
+                "body": {
+                  "type": "object",
+                  "properties": {
+                    "y": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "y"
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "optionalRecord": {
+          "path": "optional-record",
+          "httpMethod": "GET",
+          "validation": {
+            "query": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "object",
+              "properties": {
+                "r": {
+                  "type": "object",
+                  "propertyNames": {
+                    "type": "string"
+                  },
+                  "additionalProperties": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "queryArrOfObjects": {
+          "path": "query-arr-of-objects",
+          "httpMethod": "GET",
+          "validation": {
+            "query": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "object",
+              "properties": {
+                "list": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "a": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "a"
+                    ]
+                  }
+                }
+              },
+              "required": [
+                "list"
+              ]
+            }
+          }
+        },
+        "bodyArrayRoot": {
+          "path": "body-array-root",
+          "httpMethod": "POST",
+          "validation": {
+            "body": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "x": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "x"
+                ]
+              }
+            }
+          }
+        },
+        "bodyArrayOfEnumsRoot": {
+          "path": "body-array-of-enums-root",
+          "httpMethod": "POST",
+          "validation": {
+            "body": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": [
+                  "a",
+                  "b"
+                ]
+              }
+            }
+          }
+        },
+        "bodyUnionRoot": {
+          "path": "body-union-root",
+          "httpMethod": "POST",
+          "validation": {
+            "body": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "anyOf": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "a": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "a"
+                  ]
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "b": {
+                      "type": "number"
+                    }
+                  },
+                  "required": [
+                    "b"
+                  ]
+                }
+              ]
+            }
+          }
+        },
+        "iterationUnion": {
+          "path": "iteration-union",
+          "httpMethod": "GET",
+          "validation": {
+            "iteration": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "anyOf": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "a": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "a"
+                  ]
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "b": {
+                      "type": "number"
+                    }
+                  },
+                  "required": [
+                    "b"
+                  ]
+                }
+              ]
+            }
+          }
+        },
+        "iterationEnum": {
+          "path": "iteration-enum",
+          "httpMethod": "GET",
+          "validation": {
+            "iteration": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "string",
+              "enum": [
+                "a",
+                "b"
+              ]
+            }
+          }
+        },
+        "numberDefaults": {
+          "path": "number-defaults",
+          "httpMethod": "POST",
+          "validation": {
+            "body": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "object",
+              "properties": {
+                "n": {
+                  "default": 1,
+                  "type": "number"
+                },
+                "b": {
+                  "default": false,
+                  "type": "boolean"
+                }
+              }
+            }
+          }
+        },
+        "floats": {
+          "path": "floats",
+          "httpMethod": "GET",
+          "validation": {
+            "output": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "object",
+              "properties": {
+                "ratio": {
+                  "type": "number",
+                  "minimum": 0,
+                  "maximum": 1
+                },
+                "price": {
+                  "type": "number",
+                  "minimum": 0,
+                  "maximum": 1000000000
+                }
+              },
+              "required": [
+                "ratio",
+                "price"
+              ]
+            }
+          }
+        },
+        "anyFields": {
+          "path": "any-fields",
+          "httpMethod": "GET",
+          "validation": {
+            "output": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "object",
+              "properties": {
+                "meta": {},
+                "extra": {}
+              },
+              "required": [
+                "meta",
+                "extra"
+              ]
+            }
+          }
+        },
+        "recursiveJson": {
+          "path": "recursive-json",
+          "httpMethod": "POST",
+          "validation": {
+            "body": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "object",
+              "properties": {
+                "data": {
+                  "$ref": "#/$defs/Json"
+                }
+              },
+              "required": [
+                "data"
+              ],
+              "$defs": {
+                "Json": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "number"
+                    },
+                    {
+                      "type": "boolean"
+                    },
+                    {
+                      "type": "null"
+                    },
+                    {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/$defs/Json"
+                      }
+                    },
+                    {
+                      "type": "object",
+                      "propertyNames": {
+                        "type": "string"
+                      },
+                      "additionalProperties": {
+                        "$ref": "#/$defs/Json"
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "zJson": {
+          "path": "z-json",
+          "httpMethod": "POST",
+          "validation": {
+            "body": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "object",
+              "properties": {
+                "data": {
+                  "$ref": "#/$defs/__schema0"
+                }
+              },
+              "required": [
+                "data"
+              ],
+              "$defs": {
+                "__schema0": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "number"
+                    },
+                    {
+                      "type": "boolean"
+                    },
+                    {
+                      "type": "null"
+                    },
+                    {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/$defs/__schema0"
+                      }
+                    },
+                    {
+                      "type": "object",
+                      "propertyNames": {
+                        "type": "string"
+                      },
+                      "additionalProperties": {
+                        "$ref": "#/$defs/__schema0"
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "recursiveUnion": {
+          "path": "recursive-union",
+          "httpMethod": "POST",
+          "validation": {
+            "body": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "object",
+              "properties": {
+                "expr": {
+                  "$ref": "#/$defs/Expr"
+                }
+              },
+              "required": [
+                "expr"
+              ],
+              "$defs": {
+                "Expr": {
+                  "anyOf": [
+                    {
+                      "type": "number"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "op": {
+                          "type": "string"
+                        },
+                        "args": {
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/$defs/Expr"
+                          }
+                        }
+                      },
+                      "required": [
+                        "op",
+                        "args"
+                      ]
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "numericPathParam": {
+          "path": "numeric/{id}",
+          "httpMethod": "GET",
+          "validation": {
+            "params": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "number"
+                }
+              },
+              "required": [
+                "id"
+              ]
+            }
+          }
+        },
+        "textBody": {
+          "path": "text-body",
+          "httpMethod": "POST",
+          "validation": {
+            "body": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "string",
+              "x-contentType": [
+                "text/plain"
+              ]
+            }
+          }
+        },
+        "jsonlBody": {
+          "path": "jsonl-body",
+          "httpMethod": "POST",
+          "validation": {
+            "body": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "string",
+              "x-contentType": [
+                "application/jsonl"
+              ]
+            }
+          }
+        },
+        "binaryFile": {
+          "path": "binary-file",
+          "httpMethod": "POST",
+          "validation": {
+            "body": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "string",
+              "format": "binary",
+              "contentEncoding": "binary",
+              "x-contentType": [
+                "application/octet-stream"
+              ]
+            }
+          }
+        },
+        "formWithFiles": {
+          "path": "form-with-files",
+          "httpMethod": "POST",
+          "validation": {
+            "body": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "object",
+              "properties": {
+                "f": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "format": "binary",
+                    "contentEncoding": "binary"
+                  }
+                },
+                "name": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "f",
+                "name"
+              ],
+              "x-contentType": [
+                "multipart/form-data"
+              ]
+            }
+          }
+        },
+        "urlencodedOnly": {
+          "path": "urlencoded-only",
+          "httpMethod": "POST",
+          "validation": {
+            "body": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "object",
+              "properties": {
+                "a": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "a"
+              ],
+              "x-contentType": [
+                "application/x-www-form-urlencoded"
+              ]
+            }
+          }
+        },
+        "bidi": {
+          "path": "bidi",
+          "httpMethod": "POST",
+          "operationObject": {
+            "summary": "Name \u202eevil"
+          },
+          "validation": {
+            "body": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "object",
+              "properties": {
+                "e": {
+                  "type": "string",
+                  "enum": [
+                    "a\u202eb"
+                  ]
+                }
+              },
+              "required": [
+                "e"
+              ]
+            }
+          }
+        },
+        "dependentRequired": {
+          "path": "dependent-required",
+          "httpMethod": "POST",
+          "validation": {
+            "body": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "object",
+              "dependentRequired": {
+                "a": [
+                  "b"
+                ]
+              }
+            }
+          }
+        },
+        "unevaluatedProperties": {
+          "path": "unevaluated-properties",
+          "httpMethod": "POST",
+          "validation": {
+            "body": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "unevaluatedProperties": false
+            }
+          }
+        },
+        "declaredTextOnly": {
+          "path": "declared-text-only",
+          "httpMethod": "POST",
+          "validation": {
+            "body": {
+              "x-contentType": [
+                "text/plain"
+              ]
+            }
+          }
+        },
+        "declaredXmlOnly": {
+          "path": "declared-xml-only",
+          "httpMethod": "POST",
+          "validation": {
+            "body": {
+              "x-contentType": [
+                "application/xml"
+              ]
+            }
+          }
+        },
+        "declaredImageOnly": {
+          "path": "declared-image-only",
+          "httpMethod": "POST",
+          "validation": {
+            "body": {
+              "x-contentType": [
+                "image/*"
+              ]
+            }
+          }
+        },
+        "textEnum": {
+          "path": "text-enum",
+          "httpMethod": "POST",
+          "validation": {
+            "body": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "string",
+              "enum": [
+                "a",
+                "b"
+              ],
+              "x-contentType": [
+                "text/plain"
+              ]
+            }
+          }
+        },
+        "objectAsJsonOrText": {
+          "path": "object-as-json-or-text",
+          "httpMethod": "POST",
+          "validation": {
+            "body": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "object",
+              "properties": {
+                "a": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "a"
+              ],
+              "x-contentType": [
+                "application/json",
+                "text/plain"
+              ]
+            }
+          }
+        }
+      }
+    }
+  }
+}

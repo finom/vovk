@@ -11,6 +11,9 @@
 ```
 
 <% Object.entries(t.schema.segments).forEach(([segmentName, segment]) => {
+    const segmentMeta = t.segmentMeta?.[segmentName] ?? {};
+    const apiRoot = segmentMeta.forceApiRoot ?? t.apiRoot ?? '';
+    const segmentPath = segment.forceApiRoot ? '' : typeof segmentMeta.segmentNameOverride === 'string' ? segmentMeta.segmentNameOverride : segmentName;
     Object.values(segment.controllers).forEach((controllerSchema) => { %>
 
 ## mod <%= t._.snakeCase(controllerSchema.rpcModuleName) %>
@@ -20,8 +23,7 @@
 
 <%- handlerSchema.operationObject?.description ? `${handlerSchema.operationObject.description}` : '' %>
 
-<% const forceApiRoot = t.segmentMeta[segment.segmentName].forceApiRoot ?? controllerSchema.forceApiRoot; %>
-`<%= handlerSchema.httpMethod %> <%= [...(forceApiRoot ? [forceApiRoot] : [t.apiRoot, segmentName]), controllerSchema.prefix, handlerSchema.path].map((part, i) => i > 0 ? t._.trim(part, '/') : part).filter(Boolean).join('/') %>`
+`<%= handlerSchema.httpMethod %> <%= [apiRoot.replace(/\/+$/, ''), ...[segmentPath, controllerSchema.prefix ?? '', handlerSchema.path].map((part) => t._.trim(part, '/'))].filter(Boolean).join('/') %>`
 
 ```rust
 <%- t.createCodeSamples({

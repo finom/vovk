@@ -1,0 +1,144 @@
+{
+  "$schema": "https://vovk.dev/api/schema/v3/segment.json",
+  "emitSchema": true,
+  "segmentName": "rust-sweep",
+  "segmentType": "segment",
+  "controllers": {
+    "RustSweepRPC": {
+      "rpcModuleName": "RustSweepRPC",
+      "originalControllerName": "RustSweepController",
+      "prefix": "rust",
+      "handlers": {
+        "postOptional": {
+          "validation": {
+            "body": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "object",
+              "properties": {
+                "a": {
+                  "type": "string"
+                },
+                "b": {
+                  "type": "string"
+                },
+                "c": {
+                  "anyOf": [
+                    {
+                      "type": "number"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                }
+              },
+              "required": [
+                "a"
+              ]
+            },
+            "query": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "object",
+              "properties": {
+                "q": {
+                  "type": "string"
+                },
+                "page": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "q"
+              ]
+            }
+          },
+          "path": "optional",
+          "httpMethod": "POST"
+        },
+        "getNumeric": {
+          "validation": {
+            "params": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "number"
+                }
+              },
+              "required": [
+                "id"
+              ]
+            },
+            "output": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "number"
+                }
+              },
+              "required": [
+                "id"
+              ]
+            }
+          },
+          "path": "numeric/{id}",
+          "httpMethod": "GET"
+        },
+        "postCsv": {
+          "validation": {
+            "body": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "string",
+              "x-contentType": [
+                "text/csv"
+              ]
+            }
+          },
+          "path": "csv",
+          "httpMethod": "POST"
+        },
+        "getNoContent": {
+          "path": "no-content",
+          "httpMethod": "GET"
+        },
+        "getText": {
+          "path": "text",
+          "httpMethod": "GET"
+        },
+        "getIsErrorData": {
+          "path": "is-error-data",
+          "httpMethod": "GET"
+        },
+        "getQueryArray": {
+          "validation": {
+            "query": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "object",
+              "properties": {
+                "items": {
+                  "type": "array",
+                  "items": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  }
+                }
+              },
+              "required": [
+                "items"
+              ]
+            }
+          },
+          "path": "query-array",
+          "httpMethod": "GET"
+        }
+      }
+    }
+  }
+}
