@@ -10,3 +10,8 @@ This package is experimental and its generated output may still shift between re
 
 - Generated identifiers are valid Rust for free-form schema names: `user-profile`, keywords like `self`, and names that sanitize alike no longer emit broken or colliding code; serde keeps the wire name ([76138f6](https://github.com/finom/vovk/commit/76138f66), [ff201fa](https://github.com/finom/vovk/commit/ff201fa3))
 - Circular `$ref`s terminate, with cyclic named references boxed so types stay finite ([ff201fa](https://github.com/finom/vovk/commit/ff201fa3))
+- Schema text can no longer break out of doc comments, comments or string literals into code ([#35](https://github.com/finom/vovk/pull/35))
+- `["T", "null"]` maps to `Option<T>`, a bare `$ref` slot aliases its type, handler names avoid keywords ([#35](https://github.com/finom/vovk/pull/35))
+- Path params and query keys are percent-encoded and `..` is refused ([#35](https://github.com/finom/vovk/pull/35))
+- Stream error lines report their reason and status code; the client read a key the server never writes ([#35](https://github.com/finom/vovk/pull/35))
+- The package ships its MIT license ([#35](https://github.com/finom/vovk/pull/35))
