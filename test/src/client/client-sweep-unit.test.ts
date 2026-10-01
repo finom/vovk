@@ -1,7 +1,9 @@
 import { deepStrictEqual, ok, rejects, strictEqual } from 'node:assert';
 import { createRequire } from 'node:module';
 import { describe, it } from 'node:test';
+import { fileURLToPath } from 'node:url';
 import vm from 'node:vm';
+import ts from 'typescript';
 import { createFetcher, HttpException, progressive } from 'vovk';
 import { createRPC } from 'vovk/create-rpc';
 import { deepExtend, readableStreamToAsyncIterable, type VovkStreamAsyncIterable } from 'vovk/internal';
@@ -463,6 +465,42 @@ describe('Client sweep, pure functions', () => {
       )) as VovkStreamAsyncIterable<unknown>;
 
       deepStrictEqual(await stream.asPromise(), [{ n: 1 }, { n: 2 }]);
+    });
+  });
+
+  describe('shipped types', () => {
+    it('Type-check the client entry points in a project without Node types or lib esnext', () => {
+      // a front-end project: no @types/node, ES2022 and DOM libs, library declarations checked
+      const fileName = fileURLToPath(new URL('./front-end-consumer.mts', import.meta.url));
+      const source = [
+        "import { createRPC } from 'vovk/create-rpc';",
+        "import { createFetcher, fetcher } from 'vovk/fetcher';",
+        "export const rpc = createRPC({}, '', 'UserRPC', fetcher);",
+        'export const custom = createFetcher<{ token?: string }>();',
+      ].join('\n');
+      const options: ts.CompilerOptions = {
+        strict: true,
+        noEmit: true,
+        skipLibCheck: false,
+        target: ts.ScriptTarget.ES2022,
+        lib: ['lib.es2022.d.ts', 'lib.dom.d.ts', 'lib.dom.iterable.d.ts'],
+        types: [],
+        module: ts.ModuleKind.Node16,
+        moduleResolution: ts.ModuleResolutionKind.Node16,
+      };
+      const host = ts.createCompilerHost(options);
+      const { fileExists, readFile, getSourceFile } = host;
+      host.fileExists = (name) => name === fileName || fileExists(name);
+      host.readFile = (name) => (name === fileName ? source : readFile(name));
+      host.getSourceFile = (name, ...rest) =>
+        name === fileName ? ts.createSourceFile(name, source, ts.ScriptTarget.ES2022) : getSourceFile(name, ...rest);
+      const program = ts.createProgram([fileName], options, host);
+      const diagnostics = ts.getPreEmitDiagnostics(program).map((diagnostic) => {
+        const message = ts.flattenDiagnosticMessageText(diagnostic.messageText, ' ');
+        return `${diagnostic.file?.fileName.split('/dist/').pop() ?? ''}: ${message}`;
+      });
+
+      deepStrictEqual(diagnostics, []);
     });
   });
 });

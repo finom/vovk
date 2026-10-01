@@ -1,7 +1,6 @@
 import { HttpException } from '../core/http-exception.js';
-import type { VovkHandlerSchema } from '../internal.js';
 import type { ClientMethod, VovkFetcher, VovkFetcherOptions, VovkRPCModule } from '../types/client.js';
-import type { ControllerStaticMethod, VovkSchema } from '../types/core.js';
+import type { ControllerStaticMethod, VovkHandlerSchema, VovkSchema } from '../types/core.js';
 import { type HttpMethod, HttpStatus } from '../types/enums.js';
 import type { VovkControllerParams } from '../types/inference.js';
 import type { VovkRequest } from '../types/request.js';

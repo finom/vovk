@@ -112,6 +112,12 @@ const getBinaryBodyContentType = (ownType: string, declared: string[]) => {
  * Creates a customizable fetcher function for client requests.
  * @see https://vovk.dev/imports
  */
+// spelled out, so the declaration a client bundle ships imports nothing from the server side of the package
+type CreatedFetcher<T> = VovkFetcher<VovkFetcherOptions<T>> & {
+  onSuccess(cb: CreateFetcherOnSuccess<T>): () => void;
+  onError(cb: CreateFetcherOnError<T>): () => void;
+};
+
 export function createFetcher<T>({
   prepareRequestInit,
   transformResponse,
@@ -126,7 +132,7 @@ export function createFetcher<T>({
   ) => unknown | Promise<unknown>;
   onSuccess?: CreateFetcherOnSuccess<T>;
   onError?: CreateFetcherOnError<T>;
-} = {}) {
+} = {}): CreatedFetcher<T> {
   const onSuccessCallbacks: CreateFetcherOnSuccess<T>[] = onSuccessInit ? [onSuccessInit] : [];
   const onErrorCallbacks: CreateFetcherOnError<T>[] = onErrorInit ? [onErrorInit] : [];
   // fetcher uses HttpException class to throw errors of fake HTTP status 0 if client-side error occurs
@@ -292,4 +298,4 @@ export function createFetcher<T>({
  * Default fetcher implementation for client requests.
  * @see https://vovk.dev/imports
  */
-export const fetcher = createFetcher();
+export const fetcher: CreatedFetcher<unknown> = createFetcher();

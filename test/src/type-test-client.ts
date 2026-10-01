@@ -130,6 +130,14 @@ export async function generatorWithoutIterationSchema() {
   stream.next;
 }
 
+export async function disposableStream() {
+  const rpc = createRPC<typeof GeneratorController>({}, '', 'GeneratorRPC');
+
+  using stream = await rpc.noIteration({ query: { q: 'x' } });
+  await using asyncStream = await rpc.noIteration({ query: { q: 'y' } });
+  void [stream, asyncStream];
+}
+
 // ====== Response bodies ======
 
 class ResponseController {

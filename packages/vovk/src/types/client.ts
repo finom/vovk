@@ -56,16 +56,18 @@ export type StaticMethodInput<
 
 type ToPromise<T> = T extends PromiseLike<unknown> ? T : Promise<T>;
 
+// the dispose symbols where the lib has them (esnext.disposable), so a project on an older lib still compiles
+type DisposeSymbol = SymbolConstructor extends { readonly dispose: infer S extends symbol } ? S : never;
+type AsyncDisposeSymbol = SymbolConstructor extends { readonly asyncDispose: infer S extends symbol } ? S : never;
+
 export type VovkStreamAsyncIterable<T> = {
   status: number;
   asPromise: () => Promise<T[]>;
-  [Symbol.dispose](): Promise<void> | void;
-  [Symbol.asyncDispose](): Promise<void> | void;
   [Symbol.asyncIterator](): AsyncIterator<T>;
   abortSilently: () => void;
   onIterate: (cb: (data: T, i: number) => void) => () => void;
   abortController: AbortController;
-};
+} & { [K in DisposeSymbol | AsyncDisposeSymbol]: () => Promise<void> | void };
 
 // a Next.js response keeps its body type in a symbol-keyed property, read without importing next
 type NextResponseBody<R> = {
