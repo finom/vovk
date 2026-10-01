@@ -21,8 +21,14 @@ const segmentBases = Object.fromEntries(Object.entries(t.schema.segments).map(([
 }));
 const joinURL = (root, ...parts) => [root.replace(/\/+$/, ''), ...parts.map((part) => t._.trim(part ?? '', '/'))].filter(Boolean).join('/'); %>
 from __future__ import annotations
+import sys
 from typing import Any, Dict, List, Literal, Optional, Set, TypedDict, Union, Tuple, Generator, BinaryIO # type: ignore
 from .api_client import ApiClient, HttpException
+
+if sys.version_info >= (3, 11):
+    from typing import NotRequired
+else:
+    from typing_extensions import NotRequired
 
 HttpException = HttpException
 

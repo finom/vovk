@@ -141,25 +141,17 @@ export function convertJSONSchemaToPythonDataType(options: ConvertOptions): stri
     ...schema.$defs,
   };
   const namedTypeNames = new Map<string, string>();
-  // a spec may name a schema "google.protobuf.Timestamp", python identifiers hold no dots or dashes
-  const usedRefIdents = new Set<string>();
-  function toPyIdent(name: string): string {
-    const base = name.replace(/[^A-Za-z0-9_]/g, '_').replace(/^(?=[0-9])/, '_') || 'Empty';
-    let ident = base;
-    let i = 2;
-    while (usedRefIdents.has(ident)) ident = `${base}_${i++}`;
-    usedRefIdents.add(ident);
-    return ident;
-  }
 
-  // nested classes are named after their property path, and "a-b" and "a_b" must not land on one name
-  const usedNestedNames = new Set<string>();
-  function uniqueNestedName(path: string): string {
-    const base = path.replace(/[^A-Za-z0-9_]/g, '_');
-    let name = base;
+  // the classes and aliases of one call share the class body of the namespace, so their names are unique together;
+  // a property path or a schema name such as "google.protobuf.Timestamp" may hold characters a name can't;
+  // one leading underscore, as Python mangles __names inside a class body
+  const usedNames = new Set<string>([className]);
+  function uniqueName(base: string): string {
+    const ident = base.replace(/[^A-Za-z0-9_]/g, '_');
+    let name = ident;
     let i = 2;
-    while (usedNestedNames.has(name)) name = `${base}_${i++}`;
-    usedNestedNames.add(name);
+    while (usedNames.has(name)) name = `${ident}_${i++}`;
+    usedNames.add(name);
     return name;
   }
 
@@ -167,16 +159,21 @@ export function convertJSONSchemaToPythonDataType(options: ConvertOptions): stri
     return ref.startsWith('#/') ? ref.split('/').pop() : undefined;
   }
 
-  // a $ref whose definition is still being built is marked: a TypedDict annotation is evaluated later
-  // and may name it, an alias is evaluated at once and gets Any there instead
+  // a name is marked in the expressions buildType returns and written where it lands: a TypedDict annotation is
+  // evaluated later and names it in full, an alias is evaluated at once in the class body, so it names it as a local,
+  // or as Any while its definition is still being built
   const unfinished = new Set<string>();
   // a NUL never reaches a type expression: identifiers are sanitized and literals are JSON-escaped
   const MARK = '\u0000';
-  const markUnfinished = (name: string) => `${MARK}${name}${MARK}`;
+  const reference = (name: string) => `${MARK}${name}${MARK}`;
   const settle = (code: string, isEager: boolean) =>
     code
       .split(MARK)
-      .map((part, i) => (i % 2 && isEager ? 'Any' : part))
+      .map((part, i) => {
+        if (i % 2 === 0) return part;
+        if (!isEager) return `${namespace}.${part}`;
+        return unfinished.has(part) ? 'Any' : part;
+      })
       .join('');
 
   /**
@@ -194,23 +191,20 @@ export function convertJSONSchemaToPythonDataType(options: ConvertOptions): stri
       if (!refName || !namedSchemas[refName]) return 'Any';
 
       const known = namedTypeNames.get(refName);
-      if (known) return unfinished.has(known) ? markUnfinished(known) : known;
+      if (known) return reference(known);
 
-      // single underscore on purpose, Python mangles __names inside a class body
-      const safeRefName = toPyIdent(refName);
-      const localName = `_${className}_${safeRefName}`;
-      const qualifiedName = `${namespace}.${localName}`;
-      namedTypeNames.set(refName, qualifiedName);
+      const localName = uniqueName(`_${className}_${refName}`);
+      namedTypeNames.set(refName, localName);
 
-      unfinished.add(qualifiedName);
-      const built = buildType(namedSchemas[refName], `${className}_${safeRefName}`, localName);
-      unfinished.delete(qualifiedName);
+      unfinished.add(localName);
+      const built = buildType(namedSchemas[refName], localName.slice(1), localName);
       // non-object definitions (enums, primitives) need an alias to keep the reference valid
-      if (built !== qualifiedName) {
+      if (built !== reference(localName)) {
         classDefinitions.push(`${localName} = ${settle(built, true)}`);
       }
+      unfinished.delete(localName);
 
-      return qualifiedName;
+      return reference(localName);
     }
 
     // For convenience, handle arrays of type or single type
@@ -302,18 +296,18 @@ export function convertJSONSchemaToPythonDataType(options: ConvertOptions): stri
           }
 
           const isTopLevel = propNameForParent === className;
-          const newClassName = forcedClassName ?? (isTopLevel ? className : `__${propNameForParent}`);
-          const fullyQualifiedName = `${namespace}.${newClassName}`;
+          const newClassName = forcedClassName ?? (isTopLevel ? className : uniqueName(`_${propNameForParent}`));
 
-          seenObjects.set(s, fullyQualifiedName);
+          seenObjects.set(s, reference(newClassName));
 
           const required = new Set(s.required || []);
           // file upload properties go to the Files type
           const fields = Object.entries(s.properties || {})
             .filter(([, propSchema]) => !isFileUploadSchema(propSchema))
             .map(([propName, propSchema]) => {
-              const childType = buildType(propSchema, uniqueNestedName(`${propNameForParent}_${propName}`));
-              return [propName, required.has(propName) ? childType : `Optional[${childType}]`] as const;
+              const childType = buildType(propSchema, `${propNameForParent}_${propName}`);
+              // a key that may be missing, not one that may be None
+              return [propName, required.has(propName) ? childType : `NotRequired[${childType}]`] as const;
             });
           const docLines = [
             ...(s.title ? toPythonDocstringLines(s.title) : []),
@@ -336,7 +330,7 @@ export function convertJSONSchemaToPythonDataType(options: ConvertOptions): stri
           }
 
           classDefinitions.push(lines.join('\n'));
-          return fullyQualifiedName;
+          return reference(newClassName);
         }
         default:
           return 'Any';
@@ -349,7 +343,7 @@ export function convertJSONSchemaToPythonDataType(options: ConvertOptions): stri
   const topLevelTypeName = buildType(schema, className);
 
   const isTypedDictTop =
-    topLevelTypeName === `${namespace}.${className}` &&
+    topLevelTypeName === reference(className) &&
     classDefinitions.some(
       (def) => def.startsWith(`class ${className}(`) || def.startsWith(`${className} = TypedDict(`)
     );
@@ -363,22 +357,10 @@ export function convertJSONSchemaToPythonDataType(options: ConvertOptions): stri
     classDefinitions.push(`class ${className}(TypedDict):\n    pass`);
   }
 
-  // Strip the namespace prefix from class references for class-level assignments.
-  // Inner classes are in the same scope, so they don't need the fully-qualified name.
-  // Type annotations with `from __future__ import annotations` are lazily evaluated,
-  // but class-level assignments (e.g. type aliases) are eagerly evaluated.
-  const namespacePrefix = `${namespace}.`;
-
   return classDefinitions
     .join('\n')
     .split('\n')
-    .map((line) => {
-      // For class-level type alias assignments (not TypedDict fields), strip namespace prefix
-      if (!line.startsWith('    ') || line.match(/^\s+\w+\s*=/)) {
-        line = line.replaceAll(namespacePrefix, '');
-      }
-      return `${' '.repeat(pad)}${line}`;
-    })
+    .map((line) => `${' '.repeat(pad)}${line}`)
     .join('\n');
 }
 

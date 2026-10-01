@@ -48,7 +48,9 @@ data.project.dependencies = [
   "requests",
   "jsonschema",
   "rfc3987",
-  "urllib3==1.26.15"
+  "urllib3==1.26.15",
+  // NotRequired is in typing from 3.11
+  "typing_extensions>=4.0.0; python_version < '3.11'"
 ];
 
 data.project.readme = "README.md";
