@@ -6,6 +6,11 @@ function buildParams(key: string, value: KnownAny): string[] {
     return []; // skip null/undefined values entirely
   }
 
+  // as JSON.stringify does: an ISO string, or nothing for an invalid date
+  if (value instanceof Date) {
+    return buildParams(key, value.toJSON());
+  }
+
   // If value is an object or array, we need to recurse
   if (typeof value === 'object') {
     // Array case
