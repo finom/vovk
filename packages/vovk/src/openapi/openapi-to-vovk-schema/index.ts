@@ -3,8 +3,9 @@ import type {
   ContentObject,
   OperationObject,
   ParameterObject,
+  PathItemObject,
   RequestBodyObject,
-  SchemaObject,
+  ServerObject,
 } from 'openapi3-ts/oas31';
 import { schemaToTsType } from '../../samples/schema-to-ts-type.js';
 import type { VovkOpenAPIMixinNormalized } from '../../types/config.js';
@@ -16,6 +17,19 @@ import { applyComponentsSchemas } from './apply-components-schemas.js';
 import { inlineRefs } from './inline-refs.js';
 import { pruneComponentsSchemas } from './prune-components-schemas.js';
 
+// the Path Item fields that hold an operation; fetch refuses TRACE, so it has no client method
+const OPERATION_METHODS = new Set(['get', 'put', 'post', 'delete', 'options', 'head', 'patch']);
+
+const BODY_CONTENT_TYPES: ContentType[] = [
+  'application/json',
+  'multipart/form-data',
+  'application/x-www-form-urlencoded',
+  'text/plain',
+  'application/octet-stream',
+];
+
+const mediaTypeEssence = (mediaType: string) => mediaType.split(';')[0].trim().toLowerCase();
+
 // success body: 200/201, then other 2xx, then the 2XX wildcard
 // exact media type first, then +json suffix; `default` is the error shape, skip it
 function makeResponseSchemaPicker(operation: OperationObject) {
@@ -26,7 +40,6 @@ function makeResponseSchemaPicker(operation: OperationObject) {
     ...codes.filter((code) => /^2\d\d$/.test(code) && code !== '200' && code !== '201'),
     ...codes.filter((code) => /^2xx$/i.test(code)),
   ];
-  const essence = (mediaType: string) => mediaType.split(';')[0].trim().toLowerCase();
 
   return (exact: string[], suffix?: string): VovkJSONSchemaBase | null => {
     for (const code of successCodes) {
@@ -34,16 +47,29 @@ function makeResponseSchemaPicker(operation: OperationObject) {
       const content: ContentObject | undefined = responses[code]?.content;
       if (!content) continue;
       for (const [mediaType, media] of Object.entries(content)) {
-        if (exact.includes(essence(mediaType)) && media?.schema) return media.schema as VovkJSONSchemaBase;
+        if (exact.includes(mediaTypeEssence(mediaType)) && media?.schema) return media.schema as VovkJSONSchemaBase;
       }
       if (suffix) {
         for (const [mediaType, media] of Object.entries(content)) {
-          if (essence(mediaType).endsWith(suffix) && media?.schema) return media.schema as VovkJSONSchemaBase;
+          if (mediaTypeEssence(mediaType).endsWith(suffix) && media?.schema) return media.schema as VovkJSONSchemaBase;
         }
       }
     }
     return null;
   };
+}
+
+// one schema per body content type; media type parameters are ignored and a `+json` media type is sent as JSON
+function pickBodySchemas(content: ContentObject): VovkJSONSchemaBase[] {
+  const media = Object.entries(content).flatMap(([mediaType, mediaTypeObject]) =>
+    mediaTypeObject?.schema ? [{ essence: mediaTypeEssence(mediaType), schema: mediaTypeObject.schema }] : []
+  );
+  return BODY_CONTENT_TYPES.flatMap((contentType) => {
+    const match =
+      media.find(({ essence }) => essence === contentType) ??
+      (contentType === 'application/json' ? media.find(({ essence }) => essence.endsWith('+json')) : undefined);
+    return match ? [{ ...(match.schema as VovkJSONSchemaBase), 'x-contentType': [contentType] }] : [];
+  });
 }
 
 function getTsTypeString(contentType: ContentType[], schema: VovkJSONSchemaBase): string {
@@ -64,6 +90,20 @@ function getTsTypeString(contentType: ContentType[], schema: VovkJSONSchemaBase)
     })
   );
   return [...tsTypes].join(' | ') || schemaToTsType(schema);
+}
+
+// a JSON body is typed from its schema like any other slot; a form, text or binary body also accepts the JS types the client sends
+function withBodyTsType(body: VovkJSONSchemaBase, contentTypes: ContentType[]): VovkJSONSchemaBase {
+  if (contentTypes.every((contentType) => contentType === 'application/json')) return body;
+  return { ...body, 'x-tsType': getTsTypeString(contentTypes, body) };
+}
+
+// a server URL may hold `{name}` variables, each declares a default
+function resolveServerURL(server: ServerObject | undefined): string | undefined {
+  return server?.url?.replace(/\{([^}]+)\}/g, (variable, name: string) => {
+    const value = server.variables?.[name]?.default;
+    return value === undefined ? variable : String(value);
+  });
 }
 
 // a spec is third party input, its x-tsType would land in the generated client as raw TS
@@ -93,7 +133,7 @@ export function openAPIToVovkSchema({
   openAPIObject = stripXTsType(openAPIObject);
   const forceApiRoot =
     apiRoot ||
-    (openAPIObject.servers?.[0]?.url ??
+    (resolveServerURL(openAPIObject.servers?.[0]) ??
       ('host' in openAPIObject
         ? `https://${openAPIObject.host}${'basePath' in openAPIObject ? openAPIObject.basePath : ''}`
         : null));
@@ -120,129 +160,102 @@ export function openAPIToVovkSchema({
     },
   };
   const segment = schema.segments[segmentName];
+  const componentsSchemas =
+    openAPIObject.components?.schemas ??
+    ('definitions' in openAPIObject ? (openAPIObject.definitions as ComponentsObject['schemas']) : {});
 
-  Object.entries(paths ?? {}).forEach(([path, operations]) => {
-    Object.entries(operations ?? {})
-      .filter(([, operation]) => operation && typeof operation === 'object')
-      .forEach(([method, operation]: [string, OperationObject]) => {
-        if (
-          filterOperations &&
-          !filterOperations({
-            method: method.toUpperCase() as HttpMethod,
-            path,
-            openAPIObject,
-            operationObject: operation,
-          })
-        ) {
-          return;
-        }
+  for (const [path, pathItemOrRef] of Object.entries(paths ?? {})) {
+    const pathItem = inlineRefs<PathItemObject>(pathItemOrRef, openAPIObject) ?? {};
+    const pathParameters = inlineRefs<ParameterObject[]>(pathItem.parameters ?? [], openAPIObject) ?? [];
 
-        const rpcModuleName = getModuleName({
-          method: method.toUpperCase() as HttpMethod,
-          path,
-          openAPIObject,
-          operationObject: operation,
-        });
+    for (const [methodKey, operation] of Object.entries(pathItem) as [string, OperationObject][]) {
+      if (!OPERATION_METHODS.has(methodKey.toLowerCase()) || !operation || typeof operation !== 'object') continue;
+      const method = methodKey.toUpperCase() as HttpMethod;
+      const nameInput = { method, path, openAPIObject, operationObject: operation };
 
-        const handlerName = getMethodName({
-          method: method.toUpperCase() as HttpMethod,
-          path,
-          openAPIObject,
-          operationObject: operation,
-        });
-        segment.controllers[rpcModuleName] ??= {
-          rpcModuleName,
-          handlers: {},
-        };
-        const parameters = inlineRefs<ParameterObject[]>(operation.parameters ?? [], openAPIObject);
-        const queryProperties = parameters?.filter((p) => p.in === 'query') ?? null;
-        const pathProperties = parameters?.filter((p) => p.in === 'path') ?? null;
-        const query: VovkJSONSchemaBase | null = queryProperties?.length
-          ? {
-              type: 'object',
-              properties: Object.fromEntries(queryProperties.map((p) => [p.name, p.schema as VovkJSONSchemaBase])),
-              required: queryProperties.filter((p) => p.required).map((p) => p.name),
-            }
-          : null;
-        const params: VovkJSONSchemaBase | null = pathProperties?.length
-          ? {
-              type: 'object',
-              properties: Object.fromEntries(pathProperties.map((p) => [p.name, p.schema as VovkJSONSchemaBase])),
-              required: pathProperties.filter((p) => p.required).map((p) => p.name),
-            }
-          : null;
+      if (filterOperations && !filterOperations(nameInput)) continue;
 
-        const requestBodyContent = inlineRefs<RequestBodyObject>(operation.requestBody, openAPIObject)?.content ?? {};
-        const contentTypes: ContentType[] = [
-          'application/json',
-          'multipart/form-data',
-          'application/x-www-form-urlencoded',
-          'text/plain',
-          'application/octet-stream',
-        ];
+      const rpcModuleName = getModuleName(nameInput);
+      const methodName = getMethodName(nameInput);
+      segment.controllers[rpcModuleName] ??= {
+        rpcModuleName,
+        handlers: {},
+      };
+      const { handlers } = segment.controllers[rpcModuleName];
+      // two operations with one name would overwrite each other, the later one gets a numbered name
+      let handlerName = methodName;
+      for (let i = 2; Object.hasOwn(handlers, handlerName); i++) handlerName = `${methodName}_${i}`;
+      if (handlerName !== methodName) {
+        const taken = handlers[methodName];
+        console.warn(
+          `🐺 ${rpcModuleName}.${methodName} already calls ${taken.httpMethod} ${taken.path}, so ${method} ${path} is named ${handlerName}`
+        );
+      }
 
-        const bodySchemas = contentTypes
-          .map((contentType) =>
-            requestBodyContent[contentType]?.schema
-              ? { ...requestBodyContent[contentType].schema, 'x-contentType': [contentType] }
-              : null
-          )
-          .filter(Boolean) as SchemaObject[];
-        const body: VovkJSONSchemaBase | null = !bodySchemas.length
-          ? null
-          : bodySchemas.length === 1
-            ? ({
-                ...bodySchemas[0],
-                'x-tsType': getTsTypeString(bodySchemas[0]['x-contentType'] ?? [], bodySchemas[0]),
-              } as VovkJSONSchemaBase)
-            : {
-                anyOf: bodySchemas,
-                'x-tsType': getTsTypeString(
-                  bodySchemas.flatMap((s) => s['x-contentType'] ?? []),
-                  { anyOf: bodySchemas } as VovkJSONSchemaBase
-                ),
-              };
-        const pickResponseSchema = makeResponseSchemaPicker(operation);
-        const output = pickResponseSchema(['application/json'], '+json');
-        const iteration = pickResponseSchema(['application/jsonl', 'application/jsonlines']);
+      const operationParameters = inlineRefs<ParameterObject[]>(operation.parameters ?? [], openAPIObject) ?? [];
+      const isRedefined = (p: ParameterObject) => operationParameters.some((o) => o.name === p.name && o.in === p.in);
+      // a path-level parameter applies to every operation of the path unless the operation redefines it
+      const parameters = [...pathParameters.filter((p) => !isRedefined(p)), ...operationParameters];
+      const queryProperties = parameters.filter((p) => p.in === 'query');
+      const pathProperties = parameters.filter((p) => p.in === 'path');
+      const query: VovkJSONSchemaBase | null = queryProperties.length
+        ? {
+            type: 'object',
+            properties: Object.fromEntries(queryProperties.map((p) => [p.name, p.schema as VovkJSONSchemaBase])),
+            required: queryProperties.filter((p) => p.required).map((p) => p.name),
+          }
+        : null;
+      const params: VovkJSONSchemaBase | null = pathProperties.length
+        ? {
+            type: 'object',
+            properties: Object.fromEntries(pathProperties.map((p) => [p.name, p.schema as VovkJSONSchemaBase])),
+            required: pathProperties.filter((p) => p.required).map((p) => p.name),
+          }
+        : null;
 
-        if (errorMessageKey) {
-          operation['x-errorMessageKey'] = errorMessageKey;
-        }
+      const requestBodyContent = inlineRefs<RequestBodyObject>(operation.requestBody, openAPIObject)?.content ?? {};
+      const bodySchemas = pickBodySchemas(requestBodyContent);
+      const body: VovkJSONSchemaBase | null =
+        bodySchemas.length > 1 ? { anyOf: bodySchemas } : (bodySchemas[0] ?? null);
+      const bodyContentTypes = bodySchemas.flatMap((s) => s['x-contentType'] ?? []);
+      const pickResponseSchema = makeResponseSchemaPicker(operation);
+      const output = pickResponseSchema(['application/json'], '+json');
+      const iteration = pickResponseSchema(['application/jsonl', 'application/jsonlines']);
 
-        const componentsSchemas =
-          openAPIObject.components?.schemas ??
-          ('definitions' in openAPIObject ? (openAPIObject.definitions as ComponentsObject['schemas']) : {});
+      if (errorMessageKey) {
+        operation['x-errorMessageKey'] = errorMessageKey;
+      }
 
-        segment.controllers[rpcModuleName].handlers[handlerName] = {
-          httpMethod: method.toUpperCase(),
-          path,
-          operationObject: operation,
-          misc: {
-            isOpenAPIMixin: true,
-            originalPath: path,
-          },
-          validation: {
-            ...(query && {
-              query: applyComponentsSchemas(query, componentsSchemas, segmentName),
-            }),
-            ...(params && {
-              params: applyComponentsSchemas(params, componentsSchemas, segmentName),
-            }),
-            ...(body && {
-              body: applyComponentsSchemas(body, componentsSchemas, segmentName),
-            }),
-            ...(output && {
-              // Response slot: not validated + typed via x-tsType → skip $defs (dedup).
-              output: applyComponentsSchemas(output, componentsSchemas, segmentName, false),
-            }),
-            ...(iteration && {
-              iteration: applyComponentsSchemas(iteration, componentsSchemas, segmentName, false),
-            }),
-          },
-        };
-      });
-  });
+      handlers[handlerName] = {
+        httpMethod: method,
+        path,
+        operationObject: operation,
+        misc: {
+          isOpenAPIMixin: true,
+          originalPath: path,
+        },
+        validation: {
+          ...(query && {
+            query: applyComponentsSchemas(query, componentsSchemas, segmentName),
+          }),
+          ...(params && {
+            params: applyComponentsSchemas(params, componentsSchemas, segmentName),
+          }),
+          ...(body && {
+            // after applyComponentsSchemas, so component refs carry their Mixins type
+            body: withBodyTsType(applyComponentsSchemas(body, componentsSchemas, segmentName), bodyContentTypes),
+          }),
+          ...(output && {
+            // Response slot: not validated + typed via x-tsType → skip $defs (dedup).
+            output: applyComponentsSchemas(output, componentsSchemas, segmentName, false),
+          }),
+          ...(iteration && {
+            iteration: applyComponentsSchemas(iteration, componentsSchemas, segmentName, false),
+          }),
+        },
+      };
+    }
+  }
 
   if (pruneComponents && noPathsOpenAPIObject.components?.schemas) {
     // reassign with fresh objects only, the caller's spec shares references so its
