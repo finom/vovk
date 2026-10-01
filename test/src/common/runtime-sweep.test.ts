@@ -432,11 +432,18 @@ describe('Runtime sweep', () => {
           finalized = true;
         }
       }
+
+      static async *undefinedItem() {
+        yield 1;
+        yield undefined;
+        yield 3;
+      }
     }
     get('throw-after-send')(ResponderController, 'throwAfterSend');
     get('send-after-close')(ResponderController, 'sendAfterClose');
     get('invalid-item')(ResponderController, 'invalidItem');
     get('big-int-item')(ResponderController, 'bigIntItem');
+    get('undefined-item')(ResponderController, 'undefinedItem');
     const handlers = initSegment({
       segmentName: 'responder',
       controllers: { ResponderController },
@@ -481,6 +488,12 @@ describe('Runtime sweep', () => {
       deepStrictEqual(lines, [{ n: 1 }, { isError: true, reason: 'Do not know how to serialize a BigInt' }]);
       deepStrictEqual(errors, ['Do not know how to serialize a BigInt']);
       strictEqual(finalized, true);
+    });
+
+    it('Writes an undefined item as null, as the JSON response does', async () => {
+      const response = await call(handlers, 'GET', 'undefined-item');
+
+      strictEqual(await response.text(), '1\nnull\n3\n');
     });
   });
 

@@ -156,7 +156,8 @@ export class JSONLinesResponder<T> extends Responder {
 
   private writeLine(data: unknown) {
     if (this.closed) return;
-    this.controller?.enqueue(this.encoder?.encode(`${JSON.stringify(data)}\n`));
+    // JSON.stringify gives undefined for undefined, a line the client can't parse, so it is null as in a JSON response
+    this.controller?.enqueue(this.encoder?.encode(`${JSON.stringify(data) ?? 'null'}\n`));
   }
 
   private toErrorLine(e: unknown) {
