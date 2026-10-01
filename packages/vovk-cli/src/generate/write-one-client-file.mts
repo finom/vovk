@@ -116,7 +116,8 @@ export async function writeOneClientFile({
   placeholder = outPath.endsWith('.py') ? placeholder.replace(/\/\//g, '#') : placeholder;
 
   const getFirstLineBanner = (type: 'html' | 'sh' | 'c' = 'c') => {
-    const text = `${GENERATED_BANNER_PREFIX} v${vovkCliPackage.version} at ${new Date().toISOString()}`;
+    // no timestamp: regenerating unchanged sources must not change committed files
+    const text = `${GENERATED_BANNER_PREFIX} v${vovkCliPackage.version}`;
     switch (type) {
       case 'html':
         return `<!-- ${text} -->`;
