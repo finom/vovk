@@ -5,13 +5,13 @@ const terms = [
   ['entity', 'entities'],
   ['entry', 'entries'],
   ['regex', 'regexes'],
-  ['index', 'indices'],
+  ['index', 'indexes'],
   ['matrix', 'matrices'],
   ['axis', 'axes'],
-  ['schema', 'schemas'],
+  ['schema', 'schemata'],
   ['criterion', 'criteria'],
   ['datum', 'data'],
-  ['formula', 'formulas'],
+  ['formula', 'formulae'],
   ['appendix', 'appendices'],
   ['vertex', 'vertices'],
   ['leaf', 'leaves'],
@@ -38,7 +38,7 @@ const terms = [
   ['diagnosis', 'diagnoses'],
   ['oasis', 'oases'],
   ['crisis', 'crises'],
-  ['antenna', 'antennae'],
+  ['antenna', 'antennas'],
   ['chateau', 'chateaux'],
   ['tableau', 'tableaux'],
   ['penny', 'pence'],
@@ -63,13 +63,9 @@ const terms = [
   ['ox', 'oxen'],
   ['die', 'dice'],
   ['brother', 'brethren'],
-  ['stimulus', 'stimuli'],
   ['larva', 'larvae'],
   ['nebula', 'nebulae'],
-  ['formula', 'formulae'],
-  ['antenna', 'antennas'],
   ['vertebra', 'vertebrae'],
-  ['index', 'indexes'],
   ['addendum', 'addenda'],
   ['aquarium', 'aquaria'],
   ['stadium', 'stadia'],
@@ -77,8 +73,6 @@ const terms = [
   ['minimum', 'minima'],
   ['referendum', 'referenda'],
   ['forum', 'fora'],
-  ['schema', 'schemata'],
-  ['leaf', 'leaves'],
   ['knife', 'knives'],
   ['wolf', 'wolves'],
   ['elf', 'elves'],
@@ -86,9 +80,9 @@ const terms = [
   ['scarf', 'scarves'],
 ];
 
+// whole words only: a suffix rule for "ox" would turn "inbox" into "inboxen"
 export function addCommonTerms() {
-  terms.forEach(([singular, plural]) => {
-    const regex = new RegExp(`${singular}$`, 'i');
-    pluralize.addPluralRule(regex, plural);
-  });
+  for (const [singular, plural] of terms) {
+    pluralize.addIrregularRule(singular, plural);
+  }
 }
