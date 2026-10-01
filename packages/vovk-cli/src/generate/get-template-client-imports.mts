@@ -14,6 +14,7 @@ export function getTemplateClientImports({
   config,
   fullSchema,
   outCwdRelativeDir,
+  relativeDir = '',
   segmentName,
   isBundle,
   outputConfigs,
@@ -21,6 +22,8 @@ export function getTemplateClientImports({
   config: VovkStrictConfig;
   fullSchema: VovkSchema;
   outCwdRelativeDir: string;
+  // where the file goes inside the client, a segmented client puts the segment folder before it
+  relativeDir?: string;
   segmentName: string | null;
   isBundle: boolean;
   outputConfigs: VovkStrictConfig['outputConfig'][];
@@ -40,7 +43,7 @@ export function getTemplateClientImports({
   };
 
   const getImportPath = (p: string, s = '') =>
-    p.startsWith('.') ? toImportPath(path.relative(path.join(outCwdRelativeDir, s), p)) : p;
+    p.startsWith('.') ? toImportPath(path.relative(path.join(outCwdRelativeDir, s, relativeDir), p)) : p;
 
   const clientImports: {
     composedClient: ClientImports;

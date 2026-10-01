@@ -10,6 +10,16 @@ await describe('toUnderscoredPackageName', async () => {
     assert.strictEqual(toUnderscoredPackageName('vovk_hello_world'), 'vovk_hello_world');
   });
 
+  await it('Keeps a name that starts with a digit or is a keyword valid in Python and Rust', () => {
+    assert.strictEqual(toUnderscoredPackageName('3d-viewer'), 'pkg_3d_viewer');
+    assert.strictEqual(toUnderscoredPackageName('@3d/viewer'), 'pkg_3d_viewer');
+    assert.strictEqual(toUnderscoredPackageName('class'), 'class_pkg');
+    assert.strictEqual(toUnderscoredPackageName('import'), 'import_pkg');
+    assert.strictEqual(toUnderscoredPackageName('fn'), 'fn_pkg');
+    assert.strictEqual(toUnderscoredPackageName('crate'), 'crate_pkg');
+    assert.strictEqual(toUnderscoredPackageName('classes'), 'classes');
+  });
+
   await it('Falls back when package.json has no name', () => {
     assert.strictEqual(toUnderscoredPackageName(undefined), 'my_package_name');
     assert.strictEqual(toUnderscoredPackageName(''), 'my_package_name');

@@ -3,7 +3,7 @@ import type { VovkFetcher } from 'vovk/fetcher';
 import { createRPC } from '<%= t.commonImports.createRPC %>';
 import { schema } from './schema<%= t.nodeNextResolutionExt.ts %>';
 <% Object.values(t.schema.segments).filter((segment) => segment.emitSchema).forEach((segment, i) => { if(segment.segmentType !== 'mixin') { %>
-import type { Controllers as Controllers<%= i %> } from "<%= t.segmentMeta[segment.segmentName].segmentImportPath %>";
+<% if (t.segmentMeta[segment.segmentName].segmentImportPath) { %>import type { Controllers as Controllers<%= i %> } from "<%= t.segmentMeta[segment.segmentName].segmentImportPath %>";<% } else { %>type Controllers<%= i %> = any; // no route file to take the types from<% } %>
 <% }
 });
 if (t.hasMixins) { %>

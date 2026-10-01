@@ -21,6 +21,7 @@ export interface DevOptions {
 
 export interface GenerateOptions {
   prettify?: boolean;
+  force?: boolean;
   configPath?: string;
   schemaPath?: string;
   origin?: string;

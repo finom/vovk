@@ -7,13 +7,13 @@ $ npx vovk bundle --help
 
 Usage: vovk bundle|b [options]
 
-Generate TypeScript Client and bundle it
+Generate TypeScript RPC and bundle it
 
 Options:
   --out, --out-dir <path>                                      path to output directory for bundle
   --include, --include-segments <segments...>                  include segments
   --exclude, --exclude-segments <segments...>                  exclude segments
-  --prebundle-out-dir, --prebundle-out <path>                  path to output directory for prebundle
+  --prebundle-out, --prebundle-out-dir <path>                  path to output directory for prebundle
   --keep-prebundle-dir                                         do not delete prebundle directory after bundling
   --schema, --schema-path <path>                               path to schema folder (default: .vovk-schema)
   --config, --config-path <config>                             path to config file
@@ -30,7 +30,7 @@ Options:
 
 ---
 
-The [composed](/composed) [TypeScript Client](/typescript) library can be bundled and published to NPM as a zero-dependency package with pre-filled `package.json` and `README.md` files by using the `bundle` command after you configure the `bundle.build` function in the [config](/config) file.
+The [composed](/composed) [TypeScript Client](/typescript) library can be bundled and published to NPM as a package with pre-filled `package.json` and `README.md` files by using the `bundle` command after you configure the `bundle.build` function in the [config](/config) file.
 
 Check the ["Hello World" page](/hello-world) for a complete bundling example.
 
@@ -40,7 +40,7 @@ Internally, bundling runs the following steps:
 
 1. It generates a client into the `tmp_prebundle` directory (configured with `bundle.prebundleOutDir: string{:ts}`) using the [tsBase](/templates#tsbase) template.
 2. Calls `bundle.build` function to bundle the generated client to the `dist` directory (configured with `bundle.outDir: string{:ts}`).
-3. Generates `package.json` and `README.md` files from the [packageJson](/templates#packagejson) and [readme](/templates#readme) templates.
+3. Generates `package.json` and `README.md` files from the [packageJson](/templates#packagejson) and [readme](/templates#readme) templates, for the same segments and [OpenAPI mixins](/mixins) as the bundled code.
 4. Deletes the `tmp_prebundle` directory (configured with `bundle.keepPrebundleDir: boolean{:ts}`).
 
 ```sh npm2yarn copy
@@ -67,15 +67,14 @@ const config = {
     prebundleOutDir: 'tmp_prebundle', // default
     keepPrebundleDir: false, // default
     outDir: 'dist', // default
+    requires: {
+      readme: '.', // default
+      packageJson: '.', // default
+      myTemplate: './foo', // custom template
+    },
+    excludeSegments: ['admin'], // or includeSegments, not both
     outputConfig: {
       origin: 'https://example.com',
-      requires: {
-        readme: '.', // default
-        packageJson: '.', // default
-        myTemplate: './foo', // custom template
-      },
-      excludeSegments: [],
-      includeSegments: [],
       package: {
         // modifies package.json content
         // by default uses values from the root package.json
@@ -86,8 +85,8 @@ const config = {
         types: './index.d.ts',
         exports: {
           '.': {
-            default: './index.js',
             types: './index.d.ts',
+            default: './index.js',
           },
         },
       },
@@ -111,9 +110,19 @@ The `build` function is an asynchronous function that receives an object with `e
 
 The `prebundleOutDir` is the directory in which the TypeScript client will be generated before bundling. It defaults to `tmp_prebundle`.
 
+The directory is deleted after bundling, so it must be a subdirectory of the project, apart from `outDir`, and either missing, empty or kept by an earlier bundle. The command fails before it writes anything if the directory holds other files.
+
 ### `keepPrebundleDir` or `--keep-prebundle-dir` flag
 
 If set to `true`, the `prebundleOutDir` will not be deleted after bundling. This can be useful for debugging or other purposes. The default is `false`.
+
+### `requires`
+
+The templates rendered into `outDir` after the build, keyed by [template](/templates) name, with the path relative to `outDir`. The default is `{ readme: '.', packageJson: '.' }`. A `requires` object in the config replaces the default, so list `readme` and `packageJson` along with your own templates to keep them.
+
+### `includeSegments` and `excludeSegments` or `--include` and `--exclude` flags
+
+The segments to bundle. Use one of the two. Without either, the bundle follows the `includeSegments` or `excludeSegments` of the [composed client](/composed).
 
 ### `outputConfig`
 
@@ -132,8 +141,8 @@ const config = {
         types: './index.d.ts',
         exports: {
           '.': {
-            default: './index.js',
             types: './index.d.ts',
+            default: './index.js',
           },
         },
       },
@@ -267,8 +276,8 @@ const config = {
         types: './index.d.ts',
         exports: {
           '.': {
-            default: './index.js',
             types: './index.d.ts',
+            default: './index.js',
           },
         },
       },

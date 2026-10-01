@@ -12,7 +12,9 @@ import { resolveAbsoluteModulePath } from '../utils/resolve-absolute-module-path
 export interface ClientTemplateFile {
   templateName: string;
   templateFilePath: string;
-  relativeDir: string; // may include patterns such as "[package_name]"
+  // where the file goes inside the client, the path a "requires" entry gives included; may hold "[package_name]"
+  relativeDir: string;
+  // the client's output directory, a segmented client puts a folder per segment into it
   outCwdRelativeDir: string;
   templateDef: VovkStrictConfig['clientTemplateDefs'][string];
 }
@@ -56,16 +58,17 @@ export async function getClientTemplateFiles({
   }
 
   const templateFiles: ClientTemplateFile[] = [];
-  // the last item lists the templates whose "requires" led here
+  // the third item places a required template inside its parent's client,
+  // the last one lists the templates whose "requires" led here
   const entries = Object.entries(usedTemplateDefs) as [] as [
     string,
     VovkStrictConfig['clientTemplateDefs'][string],
-    string | undefined,
+    { outCwdRelativeDir: string; relativeDir: string } | undefined,
     string[] | undefined,
   ][];
 
   for (let i = 0; i < entries.length; i++) {
-    const [templateName, templateDef, forceOutCwdRelativeDir, requiredBy = []] = entries[i];
+    const [templateName, templateDef, requiredAt, requiredBy = []] = entries[i];
     const templateAbsolutePath = templateDef.templatePath
       ? resolveAbsoluteModulePath(templateDef.templatePath, cwd)
       : null;
@@ -86,7 +89,8 @@ export async function getClientTemplateFiles({
 
     let files: { filePath: string; isSingleFileTemplate: boolean }[];
 
-    const outCwdRelativeDir = forceOutCwdRelativeDir ?? cliOutDir ?? defOutDir ?? configOutDir;
+    const outCwdRelativeDir = requiredAt?.outCwdRelativeDir ?? cliOutDir ?? defOutDir ?? configOutDir;
+    const templateRelativeDir = requiredAt?.relativeDir ?? '';
 
     if (templateAbsolutePath) {
       if (entryType === FileSystemEntryType.FILE) {
@@ -108,9 +112,12 @@ export async function getClientTemplateFiles({
         templateFiles.push({
           templateName,
           templateFilePath: filePath,
-          relativeDir: path.relative(
-            isSingleFileTemplate ? path.dirname(templateAbsolutePath) : templateAbsolutePath,
-            `${path.dirname(filePath)}/`
+          relativeDir: path.join(
+            templateRelativeDir,
+            path.relative(
+              isSingleFileTemplate ? path.dirname(templateAbsolutePath) : templateAbsolutePath,
+              `${path.dirname(filePath)}/`
+            )
           ),
           outCwdRelativeDir,
           templateDef,
@@ -139,7 +146,12 @@ export async function getClientTemplateFiles({
           segmentedClient: merge(omit(templateDef?.segmentedClient ?? {}, ['outDir']), def.segmentedClient),
         };
 
-        entries.push([tName, def, path.join(outCwdRelativeDir, reqRelativeDir), chain]);
+        entries.push([
+          tName,
+          def,
+          { outCwdRelativeDir, relativeDir: path.join(templateRelativeDir, reqRelativeDir) },
+          chain,
+        ]);
       }
     }
   }
