@@ -24,7 +24,7 @@ import { toPosixPath } from '../utils/to-import-path.mjs';
 import { debouncedEnsureSchemaFiles, ensureSchemaFiles } from './ensure-schema-files.mjs';
 import { logDiffResult } from './log-diff-result.mjs';
 import { writeMetaJson } from './write-meta-json.mjs';
-import { writeOneSegmentSchemaFile } from './write-one-segment-schema-file.mjs';
+import { assertSegmentName, writeOneSegmentSchemaFile } from './write-one-segment-schema-file.mjs';
 
 // chokidar reports native paths, so both separators are accepted
 export const SEGMENT_ROUTE_FILE_REGEX = /[\\/]?\[\[\.\.\.[a-zA-Z-_]+\]\][\\/]route\.ts$/;
@@ -94,6 +94,12 @@ export class VovkDev {
         log.debug(`File ${filePath} has been added to segments folder`);
         if (SEGMENT_ROUTE_FILE_REGEX.test(filePath)) {
           const segmentName = getSegmentName(filePath);
+          try {
+            assertSegmentName(segmentName, path.dirname(path.dirname(filePath)));
+          } catch (error) {
+            log.error((error as Error).message);
+            return;
+          }
 
           this.#segments = this.#segments.find((s) => s.segmentName === segmentName)
             ? this.#segments
@@ -123,11 +129,7 @@ export class VovkDev {
 
       .on('addDir', async (dirPath: string) => {
         log.debug(`Directory ${dirPath} has been added to segments folder`);
-        this.#segments = await locateSegments({
-          dir: apiDirAbsolutePath,
-          config,
-          log: this.#projectInfo.log,
-        });
+        await this.#locateSegments();
         for (const { segmentName } of this.#segments) {
           void this.#requestSchema(segmentName);
         }
@@ -135,11 +137,7 @@ export class VovkDev {
 
       .on('unlinkDir', async (dirPath: string) => {
         log.debug(`Directory ${dirPath} has been removed from segments folder`);
-        this.#segments = await locateSegments({
-          dir: apiDirAbsolutePath,
-          config,
-          log: this.#projectInfo.log,
-        });
+        await this.#locateSegments();
         for (const { segmentName } of this.#segments) {
           void this.#requestSchema(segmentName);
         }
@@ -216,8 +214,7 @@ export class VovkDev {
 
     const handle = debounce(async () => {
       this.#projectInfo = await getProjectInfo({ logLevel: this.#logLevel });
-      const { config, apiDirAbsolutePath } = this.#projectInfo;
-      this.#segments = await locateSegments({ dir: apiDirAbsolutePath, config, log });
+      await this.#locateSegments();
       await this.#modulesWatcher?.close();
       await this.#segmentWatcher?.close();
 
@@ -267,6 +264,16 @@ export class VovkDev {
 
     void handle();
   };
+
+  // a folder renamed to "root" while the watcher runs is reported, the watcher keeps the segments it knows
+  async #locateSegments() {
+    const { log, config, apiDirAbsolutePath } = this.#projectInfo;
+    try {
+      this.#segments = await locateSegments({ dir: apiDirAbsolutePath, config, log });
+    } catch (error) {
+      log.error((error as Error).message);
+    }
+  }
 
   async #watch(callback: () => void) {
     if (this.#isWatching) throw new Error('Already watching');
@@ -395,6 +402,13 @@ export class VovkDev {
     }
 
     log.debug(`Handling received schema from ${formatLoggedSegmentName(segmentName)}`);
+
+    try {
+      assertSegmentName(segmentName);
+    } catch (error) {
+      log.error((error as Error).message);
+      return;
+    }
 
     // the write path is built from segmentName, an http response must not name a different segment
     if ((segmentSchema.segmentName ?? '') !== segmentName) {

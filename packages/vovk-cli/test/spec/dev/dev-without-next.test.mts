@@ -4,7 +4,13 @@ import http from 'node:http';
 import type { AddressInfo } from 'node:net';
 import path from 'node:path';
 import { after, describe, it } from 'node:test';
-import { createProject, startCLI, userSegmentSchema } from '../../lib/minimal-project.mts';
+import {
+  createProject,
+  makeSegmentSchema,
+  startCLI,
+  startSchemaServer,
+  userSegmentSchema,
+} from '../../lib/minimal-project.mts';
 
 const projectDir = path.join(process.cwd(), 'tmp_dev_without_next');
 const exists = (filePath: string) => fs.stat(filePath).then(Boolean, () => false);
@@ -95,5 +101,37 @@ await describe('vovk dev in a project without Next.js', async () => {
     assert.ok(output.includes(`Meta JSON is up to date at ${path.join(schemaOut, '_meta.json')}`), output);
     assert.ok(output.includes(`Watching modules at ${modulesDir}`), output);
     assert.ok(await exists(path.join(schemaOut, '_meta.json')), output);
+  });
+
+  await it('Ignores a segment named "root" added while it runs', async () => {
+    const server = await startSchemaServer({
+      '': makeSegmentSchema(''),
+      root: makeSegmentSchema('root', 'InternalRPC'),
+    });
+    await createProject(projectDir, {
+      'package.json': { name: 'app', version: '1.0.0', type: 'module' },
+      'vovk.config.mjs': `export default ${JSON.stringify({ composedClient: { prettifyClient: false } })};`,
+      'src/app/api/[[...vovk]]/route.ts': '',
+    });
+    const rootRouteFile = path.join(projectDir, 'src/app/api/root/[[...vovk]]/route.ts');
+    const dev = startCLI(['dev'], { cwd: projectDir, env: { PORT: server.port } });
+
+    try {
+      await dev.waitForOutput(/Composed client is generated/);
+      await fs.mkdir(path.dirname(rootRouteFile), { recursive: true });
+      await fs.writeFile(rootRouteFile, '');
+      await dev.waitForOutput(/can't be named "root"|Segment "root" has been added/);
+      // an edit makes the watcher request the schema of the segment the file belongs to
+      await fs.appendFile(rootRouteFile, '// edited\n');
+      await new Promise((resolve) => setTimeout(resolve, 2000));
+    } finally {
+      await dev.stop();
+      await server.close();
+    }
+
+    const rootSchema = JSON.parse(await fs.readFile(path.join(projectDir, '.vovk-schema/root.json'), 'utf-8'));
+    assert.strictEqual(rootSchema.segmentName, '', dev.getOutput());
+    assert.deepStrictEqual(Object.keys(rootSchema.controllers), ['UserRPC'], dev.getOutput());
+    assert.match(dev.getOutput(), /A segment can't be named "root"/);
   });
 });

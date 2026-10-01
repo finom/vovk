@@ -1,5 +1,7 @@
 import { execFile, spawn } from 'node:child_process';
 import fs from 'node:fs/promises';
+import http from 'node:http';
+import type { AddressInfo } from 'node:net';
 import path from 'node:path';
 import { promisify } from 'node:util';
 
@@ -74,3 +76,31 @@ export const userSegmentSchema = {
     },
   },
 };
+
+export const makeSegmentSchema = (segmentName: string, rpcModuleName = 'UserRPC') => ({
+  ...userSegmentSchema,
+  segmentName,
+  controllers: { [rpcModuleName]: { ...userSegmentSchema.controllers.UserRPC, rpcModuleName } },
+});
+
+// answers GET /api/<segment>/_schema_ the way a Next.js dev server with vovk segments does
+export async function startSchemaServer(schemas: Record<string, object>) {
+  const requests: string[] = [];
+  const server = http.createServer((req, res) => {
+    requests.push(req.url ?? '');
+    const match = req.url?.match(/^\/api\/(?:(.+)\/)?_schema_$/);
+    const schema = match ? schemas[match[1] ?? ''] : undefined;
+    res.writeHead(schema ? 200 : 404, { 'content-type': 'application/json' });
+    res.end(JSON.stringify(schema ? { schema } : { error: 'Not found' }));
+  });
+  await new Promise<void>((resolve) => server.listen(0, resolve));
+
+  return {
+    port: String((server.address() as AddressInfo).port),
+    requests,
+    close: () => {
+      server.closeAllConnections();
+      return new Promise((resolve) => server.close(resolve));
+    },
+  };
+}

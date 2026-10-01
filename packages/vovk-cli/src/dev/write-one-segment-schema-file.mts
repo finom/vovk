@@ -7,6 +7,16 @@ import { type DiffResult, diffSegmentSchema } from './diff-segment-schema.mjs';
 export const ROOT_SEGMENT_FILE_NAME = 'root';
 export const META_FILE_NAME = '_meta';
 
+// the root segment writes root.json and a root/ client folder, a segment named "root" would share them,
+// and so would "Root" on a file system that ignores case
+export function assertSegmentName(segmentName: string, segmentDir?: string) {
+  if (segmentName.toLowerCase() === ROOT_SEGMENT_FILE_NAME) {
+    throw new Error(
+      `A segment can't be named "${segmentName}": the root segment's schema file and client folder use that name.${segmentDir ? ` Rename ${segmentDir}.` : ''}`
+    );
+  }
+}
+
 export async function writeOneSegmentSchemaFile({
   schemaOutAbsolutePath,
   segmentSchema,
@@ -19,6 +29,7 @@ export async function writeOneSegmentSchemaFile({
   isCreated: boolean;
   diffResult: DiffResult | null;
 }> {
+  assertSegmentName(segmentSchema.segmentName ?? '');
   const segmentPath = path.join(schemaOutAbsolutePath, `${segmentSchema.segmentName || ROOT_SEGMENT_FILE_NAME}.json`);
 
   // segmentName may come from an http response, keep the write inside the schema out dir

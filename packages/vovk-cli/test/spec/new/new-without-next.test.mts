@@ -34,15 +34,17 @@ await describe('vovk new in a project without Next.js', async () => {
     );
   });
 
-  await it('Refuses a segment named "root"', async () => {
-    await assert.rejects(
-      runCLI(['new', 'segment', 'root'], { cwd: projectDir }),
-      (error: Error & { stderr: string }) => {
-        assert.match(error.stderr, /A segment can't be named "root"/);
-        return true;
-      }
-    );
+  await it('Refuses a segment named "root" in any letter case', async () => {
+    for (const segmentName of ['root', 'Root']) {
+      await assert.rejects(
+        runCLI(['new', 'segment', segmentName], { cwd: projectDir }),
+        (error: Error & { stderr: string }) => {
+          assert.match(error.stderr, new RegExp(`A segment can't be named "${segmentName}"`));
+          return true;
+        }
+      );
 
-    await assert.rejects(fs.stat(path.join(projectDir, 'src/app/api/root')), { code: 'ENOENT' });
+      await assert.rejects(fs.stat(path.join(projectDir, 'src/app/api', segmentName)), { code: 'ENOENT' });
+    }
   });
 });
