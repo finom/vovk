@@ -69,9 +69,11 @@ export default config;
 
 The `fetcher` prepares handlers, performs client-side validation, issues HTTP requests, differentiates content types (JSON, [JSON Lines](/streaming), or other `Response` types), and returns data in the appropriate format.
 
-- For `application/json`, it returns the parsed JSON.
+- For `application/json` and any `+json` type, such as `application/problem+json`, it returns the parsed JSON, or `null` for a response without a body, such as a `204` or the answer to a `HEAD` request. An error status throws an `HttpException{:ts}` with the body's `message`, or with the `detail` or `title` of a problem details document.
 - For `application/jsonl` or `application/jsonlines`, it returns a disposable async iterable.
 - For other content types, it returns the `Response` object as-is, letting you access text or binary data. A status of 400 or above throws an `HttpException{:ts}` with the response text as its message instead.
+
+The content type is compared without its parameters and in any case, so `Application/JSON; charset=utf-8` is JSON.
 
 It can also process custom per-call options passed to RPC methods.
 

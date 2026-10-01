@@ -27,11 +27,13 @@ export const defaultHandler = async ({ response, schema }: { response: Response;
         ? (schema.operationObject['x-errorMessageKey'] as string)
         : 'message';
     // handle server errors
-    const errorResponse = result as Record<string, unknown>;
+    const errorResponse = (result ?? {}) as Record<string, unknown>;
+    // a problem details document (RFC 9457) has no message, its detail or title says what went wrong
+    const message = getNestedValue(errorResponse, errorKey) ?? errorResponse.detail ?? errorResponse.title;
     throw new HttpException(
       response.status,
-      (getNestedValue(errorResponse, errorKey) as string) ?? DEFAULT_ERROR_MESSAGE,
-      errorResponse?.cause ?? JSON.stringify(result)
+      (message as string) ?? DEFAULT_ERROR_MESSAGE,
+      errorResponse.cause ?? JSON.stringify(result)
     );
   }
 

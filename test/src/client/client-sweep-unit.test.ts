@@ -318,5 +318,51 @@ describe('Client sweep, pure functions', () => {
         await rejects(rpc.missing(), (error) => error instanceof HttpException && error.statusCode === 404);
       });
     });
+
+    it('Parses any JSON media type in any case', async () => {
+      const contentTypes = [
+        'application/vnd.api+json',
+        'Application/JSON',
+        'APPLICATION/JSON; charset=UTF-8',
+        'application/problem+json',
+      ];
+
+      for (const contentType of contentTypes) {
+        const result = await withFetch(
+          () => new Response('{"a":1}', { headers: { 'content-type': contentType } }),
+          () => rpcOf(handlers).get()
+        );
+
+        deepStrictEqual(result, { a: 1 }, contentType);
+      }
+    });
+
+    it('Reads the message of a problem+json error', async () => {
+      const problem = { type: 'about:blank', title: 'Bad thing', detail: 'The thing is bad', status: 400 };
+
+      await withFetch(
+        () =>
+          new Response(JSON.stringify(problem), {
+            status: 400,
+            headers: { 'content-type': 'application/problem+json' },
+          }),
+        () =>
+          rejects(rpcOf(handlers).get(), (error: unknown) => {
+            ok(error instanceof HttpException);
+            strictEqual(error.statusCode, 400);
+            strictEqual(error.message, 'The thing is bad');
+            return true;
+          })
+      );
+    });
+
+    it('Streams JSON Lines whatever the case of the media type', async () => {
+      const stream = (await withFetch(
+        () => new Response('{"n":1}\n{"n":2}\n', { headers: { 'content-type': 'Application/JSONL; charset=utf-8' } }),
+        () => rpcOf(handlers).get()
+      )) as VovkStreamAsyncIterable<unknown>;
+
+      deepStrictEqual(await stream.asPromise(), [{ n: 1 }, { n: 2 }]);
+    });
   });
 });

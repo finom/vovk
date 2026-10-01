@@ -50,6 +50,13 @@ function wrapStreamErrors(
   });
 }
 
+// "Application/JSON; charset=utf-8" is "application/json"
+const getMediaType = (contentType: string | null | undefined) => contentType?.split(';')[0].trim().toLowerCase() ?? '';
+
+const isJSONMediaType = (mediaType: string) => mediaType === 'application/json' || mediaType.endsWith('+json');
+
+const JSON_LINES_MEDIA_TYPES = ['application/jsonl', 'application/jsonlines'];
+
 // AbortSignal.any is missing in React Native and Safari before 17.4, where the given signal aborts the controller
 function anySignal(controller: AbortController, signal: AbortSignal): AbortSignal {
   if (typeof AbortSignal.any === 'function') return AbortSignal.any([controller.signal, signal]);
@@ -214,8 +221,8 @@ export function createFetcher<T>({
         throw new HttpException(HttpStatus.NULL, `${(e as Error)?.message ?? DEFAULT_ERROR_MESSAGE} ${endpoint}`, e);
       }
 
-      const contentType = interpretAs ?? response.headers.get('content-type');
-      const isJSONLines = !!contentType?.startsWith('application/jsonl');
+      const mediaType = getMediaType(interpretAs ?? response.headers.get('content-type'));
+      const isJSONLines = JSON_LINES_MEDIA_TYPES.includes(mediaType);
 
       // a HEAD answer or a 204 has no body to stream, whatever the content type says
       if (isJSONLines && response.body) {
@@ -225,7 +232,7 @@ export function createFetcher<T>({
             await cb(error as HttpException, inputOptions, { response, init: requestInit, respData, schema });
           }
         });
-      } else if (isJSONLines || contentType?.startsWith('application/json')) {
+      } else if (isJSONLines || isJSONMediaType(mediaType)) {
         respData = await defaultHandler({ response, schema });
       } else if (response.status >= 400) {
         // a proxy's error page or a plain text error; a lower non-ok status comes from redirect: 'manual' or no-cors
