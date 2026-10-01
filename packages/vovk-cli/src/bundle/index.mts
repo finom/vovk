@@ -5,7 +5,7 @@ import type { VovkSchema } from 'vovk';
 import { generate } from '../generate/generate.mjs';
 import { BuiltInTemplateName } from '../get-project-info/get-config/get-template-defs.mjs';
 import type { ProjectInfo } from '../get-project-info/index.mjs';
-import type { BundleOptions } from '../types.mjs';
+import type { BundleOptions, GenerateOptions } from '../types.mjs';
 import { chalkHighlightThing } from '../utils/chalk-highlight-thing.mjs';
 import { locateSegments } from '../utils/locate-segments.mjs';
 
@@ -57,6 +57,21 @@ export async function bundle({
 
   const outDirAbsolute = path.resolve(cwd, outDir);
 
+  // README.md and package.json describe the bundled code, so they are generated from the same segments and mixins
+  const generateOptions = {
+    schemaPath: cliBundleOptions?.schemaPath,
+    origin: cliBundleOptions?.origin,
+    openapiSpec: cliBundleOptions?.openapiSpec,
+    openapiGetModuleName: cliBundleOptions?.openapiGetModuleName,
+    openapiGetMethodName: cliBundleOptions?.openapiGetMethodName,
+    openapiRootUrl: cliBundleOptions?.openapiRootUrl,
+    openapiMixinName: cliBundleOptions?.openapiMixinName,
+    openapiFallback: cliBundleOptions?.openapiFallback,
+    composedOnly: true,
+    composedIncludeSegments: includeSegments,
+    composedExcludeSegments: excludeSegments,
+  } satisfies GenerateOptions;
+
   try {
     await generate({
       isEnsuringClient: false,
@@ -66,19 +81,9 @@ export async function bundle({
       fullSchema,
       locatedSegments,
       cliGenerateOptions: {
-        schemaPath: cliBundleOptions?.schemaPath,
-        origin: cliBundleOptions?.origin,
-        openapiSpec: cliBundleOptions?.openapiSpec,
-        openapiGetModuleName: cliBundleOptions?.openapiGetModuleName,
-        openapiGetMethodName: cliBundleOptions?.openapiGetMethodName,
-        openapiRootUrl: cliBundleOptions?.openapiRootUrl,
-        openapiMixinName: cliBundleOptions?.openapiMixinName,
-        openapiFallback: cliBundleOptions?.openapiFallback,
+        ...generateOptions,
         composedFrom: [BuiltInTemplateName.tsBase],
         composedOut: prebundleOutDirAbsolute,
-        composedOnly: true,
-        composedIncludeSegments: includeSegments,
-        composedExcludeSegments: excludeSegments,
       },
     });
 
@@ -103,11 +108,9 @@ export async function bundle({
         fullSchema,
         locatedSegments,
         cliGenerateOptions: {
-          schemaPath: cliBundleOptions?.schemaPath,
-          origin: cliBundleOptions?.origin,
+          ...generateOptions,
           composedFrom: group.map(([templateName]) => templateName),
           composedOut: path.resolve(outDirAbsolute, relativePath),
-          composedOnly: true,
         },
       });
     }

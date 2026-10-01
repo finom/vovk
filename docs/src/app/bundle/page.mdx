@@ -40,7 +40,7 @@ Internally, bundling runs the following steps:
 
 1. It generates a client into the `tmp_prebundle` directory (configured with `bundle.prebundleOutDir: string{:ts}`) using the [tsBase](/templates#tsbase) template.
 2. Calls `bundle.build` function to bundle the generated client to the `dist` directory (configured with `bundle.outDir: string{:ts}`).
-3. Generates `package.json` and `README.md` files from the [packageJson](/templates#packagejson) and [readme](/templates#readme) templates.
+3. Generates `package.json` and `README.md` files from the [packageJson](/templates#packagejson) and [readme](/templates#readme) templates, for the same segments and [OpenAPI mixins](/mixins) as the bundled code.
 4. Deletes the `tmp_prebundle` directory (configured with `bundle.keepPrebundleDir: boolean{:ts}`).
 
 ```sh npm2yarn copy
