@@ -199,15 +199,18 @@ Generated `Cargo.toml` brings (per hello-world):
 
 ```toml
 [dependencies]
-serde_json    = "1.0"
+serde_json    = "1.0.143"
 futures-util  = "0.3"
-jsonschema    = "0.17"
 urlencoding   = "2.1"
 once_cell     = "1.17"
 
 [dependencies.serde]
-version  = "1.0"
+version  = "1.0.164"
 features = ["derive"]
+
+[dependencies.jsonschema]
+version          = "0.57"
+default-features = false
 
 [dependencies.reqwest]
 version  = "0.12"
@@ -227,7 +230,7 @@ features = ["codec"]
 - **`tokio-util` (`codec`)** — line-delimited framing for JSON Lines decoding.
 - **`serde` (`derive`) + `serde_json`** — (de)serialization.
 - **`futures-util`** — streaming combinators (`StreamExt::next` etc).
-- **`jsonschema 0.17`** — client-side validation against `schema.json`.
+- **`jsonschema 0.57`** — client-side validation against `schema.json`: JSON Schema 2020-12 (draft 7 when a schema declares it), formats checked. Needs Rust 1.85+.
 - **`urlencoding`** + **`once_cell`** — internal utilities.
 
 ## Auth + base URL

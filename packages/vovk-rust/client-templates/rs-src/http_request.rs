@@ -5,7 +5,7 @@ use std::collections::HashMap;
 use std::error::Error;
 use std::fmt;
 use std::pin::Pin;
-use jsonschema::JSONSchema;
+use jsonschema::{Draft, Validator};
 use serde_json::Value;
 use urlencoding;
 use crate::read_full_schema;
@@ -47,6 +47,33 @@ static FULL_SCHEMA: Lazy<Result<Value, String>> = Lazy::new(|| {
         .map(|schema| serde_json::to_value(schema).expect("Failed to convert schema to Value"))
         .map_err(|e| format!("Failed to read schema: {}", e))
 });
+
+// draft 7 only when the schema declares it, any other schema is read as 2020-12, as vovk-ajv does
+fn compile_schema(schema: &Value) -> Result<Validator, String> {
+    let is_draft7 = schema
+        .get("$schema")
+        .and_then(Value::as_str)
+        .map_or(false, |uri| uri.contains("://json-schema.org/draft-07/schema"));
+    jsonschema::options()
+        .with_draft(if is_draft7 { Draft::Draft7 } else { Draft::Draft202012 })
+        .should_validate_formats(true)
+        .offline()
+        .build(schema)
+        .map_err(|e| e.to_string())
+}
+
+fn validate(schema: &Value, value: &Value, label: &str) -> Result<(), String> {
+    let validator = compile_schema(schema).map_err(|e| format!("Invalid {} schema: {}", label.to_lowercase(), e))?;
+    let errors: Vec<String> = validator
+        .iter_errors(value)
+        .map(|err| format!("{}: {}", err.instance_path(), err))
+        .collect();
+    if errors.is_empty() {
+        Ok(())
+    } else {
+        Err(format!("{} validation failed: {}", label, errors.join(", ")))
+    }
+}
 
 // Private helper function for request preparation
 fn prepare_request<B, Q, P>(
@@ -128,14 +155,7 @@ where
     if !disable_client_validation && form.is_none() && text_body.is_none() && binary_body.is_none() {
         if let Some(body_schema) = validation.get("body") {
             if let Some(ref body_val) = body_value {
-                let schema =
-                    JSONSchema::compile(body_schema).map_err(|e| format!("Invalid body schema: {}", e))?;
-                schema
-                    .validate(body_val)
-                    .map_err(|e| {
-                        let error_msgs: Vec<String> = e.map(|err| format!("{}: {}", err.instance_path, err.to_string())).collect();
-                        format!("Body validation failed: {}", error_msgs.join(", "))
-                    })?;
+                validate(body_schema, body_val, "Body")?;
             } else if http_method != "GET" {
                 return Err("Body is required for validation but not provided".into());
             }
@@ -143,14 +163,7 @@ where
         
         if let Some(query_schema) = validation.get("query") {
             if let Some(ref query_val) = query_value {
-                let schema =
-                    JSONSchema::compile(query_schema).map_err(|e| format!("Invalid query schema: {}", e))?;
-                schema
-                    .validate(query_val)
-                    .map_err(|e| {
-                        let error_msgs: Vec<String> = e.map(|err| format!("{}: {}", err.instance_path, err.to_string())).collect();
-                        format!("Query validation failed: {}", error_msgs.join(", "))
-                    })?;
+                validate(query_schema, query_val, "Query")?;
             } else {
                 return Err("Query is required for validation but not provided".into());
             }
@@ -158,14 +171,7 @@ where
         
         if let Some(params_schema) = validation.get("params") {
             if let Some(ref params_val) = params_value {
-                let schema = JSONSchema::compile(params_schema)
-                    .map_err(|e| format!("Invalid params schema: {}", e))?;
-                schema
-                    .validate(params_val)
-                    .map_err(|e| {
-                        let error_msgs: Vec<String> = e.map(|err| format!("{}: {}", err.instance_path, err.to_string())).collect();
-                        format!("Params validation failed: {}", error_msgs.join(", "))
-                    })?;
+                validate(params_schema, params_val, "Params")?;
             } else {
                 return Err("Params are required for validation but not provided".into());
             }

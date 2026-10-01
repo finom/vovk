@@ -111,3 +111,29 @@ pub mod test_shapes {
         assert_round_trip::<shapes_rpc::bidi_::body>(json!({"e": "a\u{202e}b"}));
     }
 }
+
+// client-side validation runs before the request, which can't connect: only a refused value fails with a validation error
+#[cfg(test)]
+pub mod test_client_validation {
+    use generated_shapes_client::{shapes_rpc, HttpException};
+    use serde_json::json;
+
+    async fn is_refused<T>(call: impl std::future::Future<Output = Result<T, HttpException>>) -> bool {
+        match call.await {
+            Err(error) => error.to_string().contains("validation failed"),
+            Ok(_) => false,
+        }
+    }
+
+    #[tokio::test]
+    async fn test_schemas_are_read_as_2020_12() {
+        let tuple = shapes_rpc::tuple_::body { t: ("a".to_string(), 1.5) };
+        assert!(!is_refused(shapes_rpc::tuple(tuple, (), (), None, None, false)).await);
+
+        assert!(is_refused(shapes_rpc::dependent_required(json!({"a": 1}), (), (), None, None, false)).await);
+        assert!(!is_refused(shapes_rpc::dependent_required(json!({"a": 1, "b": 2}), (), (), None, None, false)).await);
+
+        assert!(is_refused(shapes_rpc::unevaluated_properties(json!({"x": 1}), (), (), None, None, false)).await);
+        assert!(!is_refused(shapes_rpc::unevaluated_properties(json!({}), (), (), None, None, false)).await);
+    }
+}

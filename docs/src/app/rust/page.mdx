@@ -420,7 +420,7 @@ pub fn main() {
 }
 ```
 
-Under the hood, it uses [reqwest](https://docs.rs/reqwest/latest/reqwest/) for HTTP, [jsonschema](https://docs.rs/jsonschema/latest/jsonschema/) for client-side validation, and other common crates.
+Under the hood, it uses [reqwest](https://docs.rs/reqwest/latest/reqwest/) for HTTP, [jsonschema](https://docs.rs/jsonschema/latest/jsonschema/) for client-side validation, and other common crates. Client-side validation reads a schema as JSON Schema 2020-12, or draft 7 when the schema declares it, and checks formats such as `email` and `uuid`. The crate needs Rust 1.85 or newer.
 
 ### JSON Lines Endpoints
 
