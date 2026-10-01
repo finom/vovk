@@ -19,7 +19,7 @@ import { ROOT_SEGMENT_FILE_NAME } from '../dev/write-one-segment-schema-file.mjs
 import type { ProjectInfo } from '../get-project-info/index.mjs';
 import { chalkHighlightThing } from '../utils/chalk-highlight-thing.mjs';
 import { compileJSONSchemaToTypeScriptType } from '../utils/compile-json-schema-to-typescript-type.mjs';
-import { GENERATED_BANNER_PREFIX } from '../utils/generated-banner.mjs';
+import { GENERATED_BANNER_PREFIX, hasGeneratedBanner } from '../utils/generated-banner.mjs';
 import type { Segment } from '../utils/locate-segments.mjs';
 import { prettify, warnIfPrettierMissing } from '../utils/prettify.mjs';
 import { toImportPath, toPosixPath } from '../utils/to-import-path.mjs';
@@ -51,7 +51,16 @@ export function withSegmentPackageName<T extends PackageJson>(packageJson: T, se
   return { ...packageJson, name: `${packageJson.name}-${(segmentName || ROOT_SEGMENT_FILE_NAME).replace(/\//g, '-')}` };
 }
 
-export async function writeOneClientFile({
+export interface ClientFile {
+  outPath: string;
+  content: string;
+  // null when there is no file yet
+  existingContent: string | null;
+  needsWriting: boolean;
+}
+
+// renders a file without writing it, writeClientFiles writes them all once none would replace a file vovk-cli didn't write
+export async function renderOneClientFile({
   cwd,
   projectInfo,
   clientTemplateFile,
@@ -271,11 +280,50 @@ export async function writeOneClientFile({
   // a placeholder never replaces a generated file
   const needsWriting = isEnsuringClient ? !existingContent : existingContent !== rendered;
 
-  if (needsWriting) {
-    log.debug(`Writing file: ${chalkHighlightThing(outPath)} ${existingContent ? '(updated)' : '(new)'}`);
-    await fs.mkdir(path.dirname(outPath), { recursive: true });
-    await fs.writeFile(outPath, rendered, 'utf-8');
+  return { outPath, content: rendered, existingContent, needsWriting } satisfies ClientFile;
+}
+
+// the files that would replace one vovk-cli can't tell it generated: it stamps every file that can hold a comment,
+// and JSON counts as generated beside a file that carried the stamp before this run
+export function findForeignClientFiles(clientFiles: ClientFile[]): string[] {
+  const dirsWithStampedFiles = new Set<string>();
+  const dirsStampedBefore = new Set<string>();
+  for (const { outPath, content, existingContent } of clientFiles) {
+    if (hasGeneratedBanner(content)) dirsWithStampedFiles.add(path.dirname(outPath));
+    if (existingContent && hasGeneratedBanner(existingContent)) dirsStampedBefore.add(path.dirname(outPath));
   }
 
-  return { written: needsWriting, content: rendered };
+  return clientFiles
+    .filter(({ outPath, content, existingContent, needsWriting }) => {
+      if (!needsWriting || !existingContent?.trim() || hasGeneratedBanner(existingContent)) return false;
+      if (hasGeneratedBanner(content)) return true;
+      // a file copied as is, or from a custom template without the stamp, leaves nothing to check
+      const dir = path.dirname(outPath);
+      return path.extname(outPath) === '.json' && dirsWithStampedFiles.has(dir) && !dirsStampedBefore.has(dir);
+    })
+    .map(({ outPath }) => outPath);
+}
+
+export async function writeClientFiles(
+  clientFiles: ClientFile[],
+  { cwd, log, force = false }: { cwd: string; log: ProjectInfo['log']; force?: boolean }
+) {
+  const foreignFiles = force ? [] : findForeignClientFiles(clientFiles);
+
+  if (foreignFiles.length) {
+    const them = foreignFiles.length === 1 ? 'it' : 'them';
+    throw new Error(
+      `Refusing to overwrite ${foreignFiles.length === 1 ? 'a file' : 'files'} that vovk-cli did not generate: ${foreignFiles.map((file) => path.relative(cwd, file)).join(', ')}. Move or delete ${them}, or run "vovk generate --force" to replace ${them}.`
+    );
+  }
+
+  await Promise.all(
+    clientFiles
+      .filter(({ needsWriting }) => needsWriting)
+      .map(async ({ outPath, content, existingContent }) => {
+        log.debug(`Writing file: ${chalkHighlightThing(outPath)} ${existingContent ? '(updated)' : '(new)'}`);
+        await fs.mkdir(path.dirname(outPath), { recursive: true });
+        await fs.writeFile(outPath, content, 'utf-8');
+      })
+  );
 }

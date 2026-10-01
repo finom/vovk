@@ -17,7 +17,13 @@ import { normalizeOpenAPIMixin } from '../utils/normalize-openapi-mixin.mjs';
 import { pickSegmentFullSchema } from '../utils/pick-segment-full-schema.mjs';
 import { removeUnlistedDirectories } from '../utils/remove-unlisted-directories.mjs';
 import { getClientTemplateFiles } from './get-client-template-files.mjs';
-import { normalizeOutTemplatePath, withSegmentPackageName, writeOneClientFile } from './write-one-client-file.mjs';
+import {
+  type ClientFile,
+  normalizeOutTemplatePath,
+  renderOneClientFile,
+  withSegmentPackageName,
+  writeClientFiles,
+} from './write-one-client-file.mjs';
 
 const getIncludedSegmentNames = (
   config: VovkStrictConfig,
@@ -233,6 +239,11 @@ export async function generate({
     !!cliGenerateOptions?.segmentedOut ||
     (config.segmentedClient?.enabled && !cliGenerateOptions?.composedOnly);
 
+  // nothing is written until every client is rendered, so a refused file leaves all of them as they were
+  const clientFiles: ClientFile[] = [];
+  // pruning and logging follow the writes
+  const afterWrite: (() => Promise<void>)[] = [];
+
   if (isComposedEnabled) {
     const now = Date.now();
     const segmentNames = getIncludedSegmentNames(config, fullSchema, 'composedClient', cliGenerateOptions);
@@ -282,7 +293,7 @@ export async function generate({
           return null;
         }
 
-        const { written } = await writeOneClientFile({
+        const clientFile = await renderOneClientFile({
           cwd,
           projectInfo,
           clientTemplateFile,
@@ -311,12 +322,12 @@ export async function generate({
           projectConfig: config,
         });
 
-        const outAbsoluteDir = path.resolve(cwd, outCwdRelativeDir);
+        clientFiles.push(clientFile);
 
         return {
-          written,
+          written: clientFile.needsWriting,
           templateName,
-          outAbsoluteDir,
+          outAbsoluteDir: path.resolve(cwd, outCwdRelativeDir),
           package: packageJson,
           origin,
         };
@@ -324,15 +335,17 @@ export async function generate({
     );
 
     if (composedClientTemplateFiles.length) {
-      logClientGenerationResults({
-        results: composedClientResults.filter((result): result is GenerationResult => !!result),
-        log,
-        isEnsuringClient,
-        forceNothingWrittenLog,
-        clientType: 'Composed',
-        startTime: now,
-        fromTemplates,
-      });
+      afterWrite.push(async () =>
+        logClientGenerationResults({
+          results: composedClientResults.filter((result): result is GenerationResult => !!result),
+          log,
+          isEnsuringClient,
+          forceNothingWrittenLog,
+          clientType: 'Composed',
+          startTime: now,
+          fromTemplates,
+        })
+      );
     } else {
       log.warn('No composed client template files found. Skipping composed client generation.');
     }
@@ -395,7 +408,7 @@ export async function generate({
               ? resolvedPackageJson
               : withSegmentPackageName(resolvedPackageJson, segmentName);
 
-            const { written, content } = await writeOneClientFile({
+            const clientFile = await renderOneClientFile({
               cwd,
               projectInfo,
               clientTemplateFile,
@@ -424,12 +437,14 @@ export async function generate({
               projectConfig: config,
             });
 
+            clientFiles.push(clientFile);
+
             return {
-              written,
+              written: clientFile.needsWriting,
               templateName,
               package: packageJson,
               origin,
-              isStamped: hasGeneratedBanner(content),
+              isStamped: hasGeneratedBanner(clientFile.content),
             };
           })
         );
@@ -463,38 +478,45 @@ export async function generate({
     ].flatMap((dir) => (dir ? [path.resolve(cwd, dir)] : []));
 
     // once every segment is written, remove the folders of segments that are gone from each output directory
-    for (const [outAbsoluteDir, dirResults] of Object.entries(
-      _.groupBy(segmentedClientResults, ({ outAbsoluteDir }) => outAbsoluteDir)
-    )) {
-      const skippedDirs = await removeUnlistedDirectories(
-        outAbsoluteDir,
-        segmentNames.map((s) => s || ROOT_SEGMENT_FILE_NAME),
-        dirResults.map(({ relPath }) => relPath),
-        {
-          unstampedRelPaths: dirResults.filter(({ isStamped }) => !isStamped).map(({ relPath }) => relPath),
-          excludedDirs: configuredOutDirs.filter((dir) => dir !== outAbsoluteDir),
-        }
-      );
-
-      for (const skippedDir of skippedDirs) {
-        log.warn(
-          `Directory ${chalkHighlightThing(skippedDir)} is not a known segment but holds files or folders the generator did not write, so it is left untouched.`
+    afterWrite.push(async () => {
+      for (const [outAbsoluteDir, dirResults] of Object.entries(
+        _.groupBy(segmentedClientResults, ({ outAbsoluteDir }) => outAbsoluteDir)
+      )) {
+        const skippedDirs = await removeUnlistedDirectories(
+          outAbsoluteDir,
+          segmentNames.map((s) => s || ROOT_SEGMENT_FILE_NAME),
+          dirResults.map(({ relPath }) => relPath),
+          {
+            unstampedRelPaths: dirResults.filter(({ isStamped }) => !isStamped).map(({ relPath }) => relPath),
+            excludedDirs: configuredOutDirs.filter((dir) => dir !== outAbsoluteDir),
+          }
         );
-      }
-    }
 
-    if (segmentedClientTemplateFiles.length) {
-      logClientGenerationResults({
-        results: segmentedClientResults,
-        log,
-        isEnsuringClient,
-        forceNothingWrittenLog,
-        clientType: 'Segmented',
-        startTime: now,
-        fromTemplates,
-      });
-    } else {
+        for (const skippedDir of skippedDirs) {
+          log.warn(
+            `Directory ${chalkHighlightThing(skippedDir)} is not a known segment but holds files or folders the generator did not write, so it is left untouched.`
+          );
+        }
+      }
+
+      if (segmentedClientTemplateFiles.length) {
+        logClientGenerationResults({
+          results: segmentedClientResults,
+          log,
+          isEnsuringClient,
+          forceNothingWrittenLog,
+          clientType: 'Segmented',
+          startTime: now,
+          fromTemplates,
+        });
+      }
+    });
+
+    if (!segmentedClientTemplateFiles.length) {
       log.warn('No segmented client template files found. Skipping segmented client generation.');
     }
   }
+
+  await writeClientFiles(clientFiles, { cwd, log, force: cliGenerateOptions?.force });
+  for (const step of afterWrite) await step();
 }

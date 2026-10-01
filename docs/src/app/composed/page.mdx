@@ -51,7 +51,7 @@ An array of templates used to generate the composed client. By default, `["ts"]`
 
 ### `outDir`
 
-The path where the composed client is generated. Defaults to `./src/client` when the project has a `src` folder, or `./client` otherwise. The path is relative to the current working directory (CWD).
+The path where the composed client is generated. Defaults to `./src/client` when the project has a `src` folder, or `./client` otherwise. The path is relative to the current working directory (CWD). If the folder already holds files under the generated names, such as a hand-written `index.ts`, generation stops and names them; see [`--force`](/generate#other-flags).
 
 ### `includeSegments`
 

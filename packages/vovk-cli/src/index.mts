@@ -110,6 +110,7 @@ program
   .option('--segmented-include-segments <segments...>', 'include segments in segmented client')
   .option('--segmented-exclude-segments <segments...>', 'exclude segments in segmented client')
   .option('--prettify', 'prettify output files')
+  .option('--force', 'replace files at the output paths that vovk-cli did not generate')
   .option('--schema, --schema-path <path>', 'path to schema folder (default: ./.vovk-schema)')
   .option('--config, --config-path <config>', 'path to config file')
   .option('--origin <url>', 'set the origin URL for the generated client')

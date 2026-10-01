@@ -7,6 +7,7 @@ import { createProject, runCLI, startCLI, userSegmentSchema } from '../../lib/mi
 
 const projectDir = path.join(process.cwd(), 'tmp_generate_without_next');
 const read = (file: string) => fs.readFile(path.join(projectDir, file), 'utf-8');
+const exists = async (file: string) => !!(await fs.stat(path.join(projectDir, file)).catch(() => null));
 const configFile = (config: object) => `export default ${JSON.stringify(config)};`;
 
 after(async () => {
@@ -268,6 +269,74 @@ await describe('vovk generate in a project without Next.js', async () => {
     await runCLI(['generate'], { cwd: projectDir });
 
     assert.ok((await read('src/client/Admin/index.ts')).includes('AdminRPC'));
+  });
+
+  await it('Refuses to replace files it did not generate unless --force is passed', async () => {
+    const userIndex = 'export const mine = 1;\n';
+    const userSpec = JSON.stringify({ openapi: '3.1.0', info: { title: 'Mine', version: '1.0.0' }, paths: {} });
+    await createProject(projectDir, {
+      'package.json': { name: 'app', version: '1.0.0', type: 'module' },
+      'vovk.config.mjs': configFile({ composedClient: { prettifyClient: false } }),
+      'src/app/api/[[...vovk]]/route.ts': '',
+      '.vovk-schema/root.json': userSegmentSchema,
+      'src/client/index.ts': userIndex,
+      'src/client/openapi.json': userSpec,
+    });
+
+    await assert.rejects(
+      runCLI(['generate'], { cwd: projectDir }),
+      (error: Error) =>
+        error.message.includes(path.join('src', 'client', 'index.ts')) &&
+        error.message.includes(path.join('src', 'client', 'openapi.json'))
+    );
+    assert.strictEqual(await read('src/client/index.ts'), userIndex);
+    assert.strictEqual(await read('src/client/openapi.json'), userSpec);
+    assert.ok(!(await exists('src/client/schema.ts')), 'nothing is written');
+
+    await runCLI(['generate', '--force'], { cwd: projectDir });
+    assert.ok((await read('src/client/index.ts')).includes('UserRPC'));
+    assert.notStrictEqual(await read('src/client/openapi.json'), userSpec);
+  });
+
+  await it('Replaces the files it generated before', async () => {
+    const schemaWith = (handlerName: string) => ({
+      ...userSegmentSchema,
+      controllers: {
+        UserRPC: {
+          ...userSegmentSchema.controllers.UserRPC,
+          handlers: {
+            [handlerName]: {
+              httpMethod: 'GET',
+              path: '{id}',
+              validation: {},
+              operationObject: { summary: handlerName },
+            },
+          },
+        },
+      },
+    });
+    await createProject(projectDir, {
+      'package.json': { name: 'app', version: '1.0.0', type: 'module' },
+      'vovk.config.mjs': configFile({ composedClient: { prettifyClient: false } }),
+      'src/app/api/[[...vovk]]/route.ts': '',
+      '.vovk-schema/root.json': schemaWith('getUser'),
+    });
+    const generateAll = async () => {
+      await runCLI(['generate'], { cwd: projectDir });
+      await runCLI(['generate', '--from', 'openapiJson', '--out', 'public'], { cwd: projectDir });
+      await runCLI(['generate', '--from', 'py', '--out', 'dist_python'], { cwd: projectDir });
+    };
+
+    await generateAll();
+    // a file an earlier vovk-cli copied as is
+    await fs.writeFile(path.join(projectDir, 'dist_python/src/app/api_client.py'), '# an older version\n');
+    await fs.writeFile(path.join(projectDir, '.vovk-schema/root.json'), JSON.stringify(schemaWith('findUser')));
+    await generateAll();
+
+    for (const file of ['src/client/openapi.json', 'public/openapi.json', 'dist_python/src/app/schema.json']) {
+      assert.ok((await read(file)).includes('findUser'), file);
+    }
+    assert.notStrictEqual(await read('dist_python/src/app/api_client.py'), '# an older version\n');
   });
 
   await it('Names Python and Rust packages after a scoped package name', async () => {
