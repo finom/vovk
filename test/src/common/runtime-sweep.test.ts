@@ -497,6 +497,31 @@ describe('Runtime sweep', () => {
       deepStrictEqual(await response.json(), { body: { ownerId: 'me', title: 'Hello' }, text });
       deepStrictEqual(bodiesBefore, [{ ownerId: 'me', title: 'Hello' }]);
     });
+
+    it('Validates a missing body as undefined, so an optional body can be left out', async () => {
+      class DraftController {
+        static optional = procedure({ body: z.object({ title: z.string() }).optional() }).handle(async (req) => ({
+          body: (await req.vovk.body()) ?? 'none',
+        }));
+
+        static required = procedure({ body: z.object({ title: z.string() }) }).handle(async () => ({ ok: true }));
+      }
+      post('optional')(DraftController, 'optional');
+      post('required')(DraftController, 'required');
+      const handlers = initSegment({ segmentName: 'drafts', controllers: { DraftController } });
+
+      const optional = await call(handlers, 'POST', 'optional');
+      strictEqual(optional.status, 200);
+      deepStrictEqual(await optional.json(), { body: 'none' });
+      deepStrictEqual(await DraftController.optional.fn(), { body: 'none' });
+
+      const required = await call(handlers, 'POST', 'required');
+      strictEqual(required.status, 400);
+      strictEqual(
+        (await required.json()).message,
+        'Validation failed. Invalid body: Invalid input: expected object, received undefined'
+      );
+    });
   });
 
   describe('Query', () => {

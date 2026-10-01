@@ -25,6 +25,9 @@ const hasBody = (req: VovkRequestAny) => {
   return !!req.headers?.get('content-type') || (!!contentLength && contentLength !== '0');
 };
 
+// fn() calls made without a body, the local counterpart of a request without one
+const callsWithoutBody = new WeakSet<object>();
+
 export function withValidationLibrary<
   THandle extends VovkTypedProcedure<
     (req: KnownAny, params: KnownAny) => KnownAny,
@@ -175,10 +178,16 @@ export function withValidationLibrary<
       }
 
       if (body && !disableServerSideValidationKeys.includes('body')) {
-        // a wrong content type gets its 415 before the body is read
-        validateContentType(req, contentType ?? ['application/json']);
-        if (typeof req.url === 'string') await bufferBody(req); // buffer the body to make it replayable for validation and actual parsing
-        const data = await req.vovk.body();
+        const isRequest = typeof req.url === 'string';
+        // a missing body has no content type to check and is validated as undefined, which an optional schema accepts
+        const hasNoBody = isRequest ? !hasBody(req) : callsWithoutBody.has(req);
+        let data: unknown;
+        if (!hasNoBody) {
+          // a wrong content type gets its 415 before the body is read
+          validateContentType(req, contentType ?? ['application/json']);
+          if (isRequest) await bufferBody(req); // buffer the body to make it replayable for validation and actual parsing
+          data = await req.vovk.body();
+        }
         const parsed = (await validate(data, body, { validationType: 'body', req })) ?? data;
         const instance = preferTransformed ? parsed : data;
         req.vovk.body = () => Promise.resolve(instance);
@@ -264,6 +273,7 @@ export function withValidationLibrary<
     };
 
     fakeReq.vovk.meta<Meta>({ __disableClientValidation: input?.disableClientValidation, ...input?.meta });
+    if (input?.body === undefined) callsWithoutBody.add(fakeReq);
 
     const result = (resultHandler.wrapper ?? resultHandler)(
       fakeReq as VovkRequestAny,
