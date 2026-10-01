@@ -58,4 +58,45 @@ await describe('vovk generate in a project without Next.js', async () => {
     assert.match(await read('out/pyproject.toml'), /^name = "my_package_name"$/m);
     assert.match(await read('out/Cargo.toml'), /^name = "my_package_name"$/m);
   });
+
+  await it('Rewrites a one-line file when its content changes', async () => {
+    const packageJson = { name: 'app', version: '1.0.0', type: 'module' };
+    await createProject(projectDir, {
+      'package.json': packageJson,
+      'vovk.config.mjs': configFile({
+        clientTemplateDefs: { version: { templatePath: './templates/version' } },
+        composedClient: { fromTemplates: ['version'], outDir: 'out', prettifyClient: false },
+      }),
+      'templates/version/version.txt.ejs': '<%= t.package.version %>',
+      '.vovk-schema/root.json': userSegmentSchema,
+    });
+
+    await runCLI(['generate'], { cwd: projectDir });
+    assert.strictEqual(await read('out/version.txt'), '1.0.0');
+
+    await fs.writeFile(path.join(projectDir, 'package.json'), JSON.stringify({ ...packageJson, version: '1.1.0' }));
+    await runCLI(['generate'], { cwd: projectDir });
+    assert.strictEqual(await read('out/version.txt'), '1.1.0');
+  });
+
+  await it('Keeps every module listed in the template front matter imports', async () => {
+    await createProject(projectDir, {
+      'package.json': { name: 'app', version: '1.0.0', type: 'module' },
+      'vovk.config.mjs': configFile({
+        clientTemplateDefs: { imports: { templatePath: './templates/imports' } },
+        composedClient: { fromTemplates: ['imports'], outDir: 'out', prettifyClient: false },
+      }),
+      'templates/imports/imports.txt.ejs': `---
+imports:
+  - node:path
+  - node:os
+---
+<%= typeof t.imports['node:path'].join %> <%= typeof t.imports['node:os'].platform %>`,
+      '.vovk-schema/root.json': userSegmentSchema,
+    });
+
+    await runCLI(['generate'], { cwd: projectDir });
+
+    assert.strictEqual(await read('out/imports.txt'), 'function function');
+  });
 });

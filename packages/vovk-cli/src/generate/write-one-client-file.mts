@@ -158,7 +158,7 @@ export async function writeOneClientFile({
     openapi: openAPIObject,
     ROOT_SEGMENT_FILE_NAME,
     apiRoot: origin ? `${origin}/${config.rootEntry}` : undefined,
-    imports: {},
+    imports: {} as Record<string, unknown>,
     schema: fullSchema,
     config: projectConfig,
     VovkSchemaIdEnum,
@@ -245,9 +245,7 @@ export async function writeOneClientFile({
 
   if (Array.isArray(data.imports)) {
     for (const imp of data.imports) {
-      t.imports = {
-        [imp]: await import(imp),
-      };
+      t.imports[imp] = await import(imp);
     }
   }
 
@@ -273,14 +271,10 @@ export async function writeOneClientFile({
     rendered = `${rendered}\n\n${placeholder}`;
   }
 
-  // Read existing file content to compare
   const existingContent = await fs.readFile(outPath, 'utf-8').catch(() => null);
 
-  // Determine if we need to rewrite the file, ignore 1st line
-  const needsWriting = isEnsuringClient
-    ? !existingContent
-    : !existingContent ||
-      existingContent.trim().split('\n').slice(1).join('\n') !== rendered.trim().split('\n').slice(1).join('\n');
+  // a placeholder never replaces a generated file
+  const needsWriting = isEnsuringClient ? !existingContent : existingContent !== rendered;
 
   if (needsWriting) {
     log.debug(`Writing file: ${chalkHighlightThing(outPath)} ${existingContent ? '(updated)' : '(new)'}`);
