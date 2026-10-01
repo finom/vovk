@@ -124,6 +124,21 @@ export default class ClientSweepController {
     return Array.from(form.entries(), ([key, value]) => [key, describeEntry(value)]);
   });
 
+  @post('json-or-form')
+  static postJsonOrForm = procedure({
+    contentType: ['application/json', 'multipart/form-data'],
+    body: z.union([
+      z.object({ n: z.number(), tags: z.array(z.string()), nested: z.object({ a: z.boolean() }) }),
+      z.object({ file: z.file() }),
+    ]),
+  }).handle(async (req) => {
+    const body = await req.vovk.body();
+    return {
+      body: 'file' in body ? { file: describeEntry(body.file) } : body,
+      contentType: req.headers.get('content-type')?.split(';')[0],
+    };
+  });
+
   @post('url-encoded')
   static postUrlEncoded = procedure({
     contentType: 'application/x-www-form-urlencoded',

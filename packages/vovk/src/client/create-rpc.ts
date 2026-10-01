@@ -60,6 +60,12 @@ const isFormSource = (body: unknown): body is Record<string, unknown> =>
   body !== null &&
   !(body instanceof FormData || body instanceof URLSearchParams || body instanceof Blob);
 
+const isJSONContentType = (type: string) => type === 'application/json' || type.endsWith('+json');
+
+// a form field holds a file, JSON can't
+const holdsBlob = (source: Record<string, unknown>) =>
+  Object.values(source).some((value) => [value].flat().some((item) => item instanceof Blob));
+
 // urlencoded when the procedure takes no multipart, since then the server answers multipart with 415
 const toFormBody = (source: Record<string, unknown>, contentTypes: string[]) => {
   const form = contentTypes.includes('multipart/form-data') ? new FormData() : new URLSearchParams();
@@ -147,9 +153,14 @@ export const createRPC = <T, OPTS extends Record<string, KnownAny> = Record<stri
           : (givenFetcher ?? (defaultFetcher as unknown as VovkFetcher<OPTS>));
 
       const contentTypes: string[] = validation?.body?.['x-contentType'] ?? [];
-      // an object sent as form data is validated as the object, so numbers and arrays keep their types
+      // an object goes out as a form only when JSON can't carry it: no JSON declared, or a file inside;
+      // it's validated as the object, so numbers and arrays keep their types
       const formSource =
-        contentTypes.some((type) => FORM_CONTENT_TYPES.includes(type)) && isFormSource(input.body) ? input.body : null;
+        contentTypes.some((type) => FORM_CONTENT_TYPES.includes(type)) &&
+        isFormSource(input.body) &&
+        (!contentTypes.some(isJSONContentType) || holdsBlob(input.body))
+          ? input.body
+          : null;
       const body = formSource ? toFormBody(formSource, contentTypes) : input.body;
 
       const validate: Parameters<typeof fetcher>[0]['validate'] = async (

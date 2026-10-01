@@ -166,6 +166,64 @@
           "path": "form-entries",
           "httpMethod": "POST"
         },
+        "postJsonOrForm": {
+          "validation": {
+            "body": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "anyOf": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "n": {
+                      "type": "number"
+                    },
+                    "tags": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "nested": {
+                      "type": "object",
+                      "properties": {
+                        "a": {
+                          "type": "boolean"
+                        }
+                      },
+                      "required": [
+                        "a"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "n",
+                    "tags",
+                    "nested"
+                  ]
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "file": {
+                      "type": "string",
+                      "format": "binary",
+                      "contentEncoding": "binary"
+                    }
+                  },
+                  "required": [
+                    "file"
+                  ]
+                }
+              ],
+              "x-contentType": [
+                "application/json",
+                "multipart/form-data"
+              ]
+            }
+          },
+          "path": "json-or-form",
+          "httpMethod": "POST"
+        },
         "postUrlEncoded": {
           "validation": {
             "body": {

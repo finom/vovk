@@ -180,6 +180,17 @@ describe('Client sweep', () => {
       ]);
     });
 
+    it('Sends an object body as JSON when the procedure also takes JSON, and as a form when it holds a file', async () => {
+      deepStrictEqual(await ClientSweepRPC.postJsonOrForm({ body: { n: 1, tags: ['a'], nested: { a: true } } }), {
+        body: { n: 1, tags: ['a'], nested: { a: true } },
+        contentType: 'application/json',
+      });
+      deepStrictEqual(await ClientSweepRPC.postJsonOrForm({ body: { file: new File(['x'], 'a.txt') } }), {
+        body: { file: 'file:a.txt' },
+        contentType: 'multipart/form-data',
+      });
+    });
+
     it('Sends an object body urlencoded when the procedure takes only urlencoded', async () => {
       const result = await ClientSweepRPC.postUrlEncoded({ body: { hello: 'world', tags: ['a', 'b'] } });
 
