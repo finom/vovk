@@ -40,3 +40,7 @@ tmp*
 
 public/_pagefind
 .claude
+
+# written by next dev
+/AGENTS.md
+/CLAUDE.md
