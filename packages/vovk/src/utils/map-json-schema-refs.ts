@@ -64,3 +64,15 @@ export function decodeJSONPointerToken(token: string): string | null {
 export function encodeJSONPointerToken(name: string): string {
   return encodeURIComponent(name.replace(/~/g, '~0').replace(/\//g, '~1'));
 }
+
+export const isLocalJSONSchemaRef = (ref: string) => ref === '#' || ref.startsWith('#/');
+
+// splits `#/$defs/Name/rest` (or `#/definitions/...`) into the definition name, its raw pointer token and the rest
+export function parseDefinitionRef(
+  ref: string
+): { keyword: '$defs' | 'definitions'; name: string; token: string; rest: string } | null {
+  const [keyword, token] = ref.split('/').slice(1);
+  const name = token === undefined ? null : decodeJSONPointerToken(token);
+  if (!ref.startsWith('#/') || (keyword !== '$defs' && keyword !== 'definitions') || name === null) return null;
+  return { keyword, name, token, rest: ref.slice(`#/${keyword}/${token}`.length) };
+}
