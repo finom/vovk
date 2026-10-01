@@ -201,7 +201,7 @@ export const validateOnClient = createValidateOnClient({
 
 [vovk-ajv](https://www.npmjs.com/package/vovk-ajv) is the primary library for client-side validation, built on top of [Ajv](https://www.npmjs.com/package/ajv). It’s installed and configured automatically when you run `npx vovk-cli init`. **vovk-ajv** supports additional configuration under `config.libs.ajv` in [vovk.config](/config), including Ajv options and the target JSON Schema draft.
 
-Ajv runs with `strict: false` unless the options say otherwise, so keywords JSON Schema doesn't define, such as Zod's `example` or OpenAPI's `discriminator` and `x-*`, are ignored. When Ajv can't compile a schema, the client skips validation for it and logs a warning; the server still validates the request.
+Ajv runs with `strict: false` and `unicodeRegExp: false` unless the options say otherwise. So keywords JSON Schema doesn't define, such as Zod's `example` or OpenAPI's `discriminator` and `x-*`, are ignored, and a `pattern` is read the way JavaScript reads a regular expression without the `u` flag, as Zod does. When Ajv can't compile a schema, the client skips validation for it and logs a warning; the server still validates the request.
 
 ```bash npm2yarn copy
 npm install vovk-ajv

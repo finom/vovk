@@ -27,9 +27,16 @@ const DEFAULT_OPTIONS: Options = {};
 
 const createAjv = (options: Options, target: Target) => {
   const AjvClass = target === 'draft-2020-12' ? Ajv2020 : Ajv;
-  // a schema is not registered by its $id, so two handlers that share one can't collide in a shared instance;
-  // strict mode refuses keywords JSON Schema doesn't define, such as Zod's example or OpenAPI's discriminator and x-*
-  const ajv = new AjvClass({ allErrors: true, addUsedSchema: false, strict: false, ...options });
+  const ajv = new AjvClass({
+    allErrors: true,
+    // a schema is not registered by its $id, so two handlers that share one can't collide in a shared instance
+    addUsedSchema: false,
+    // strict mode refuses keywords JSON Schema doesn't define, such as Zod's example or OpenAPI's discriminator and x-*
+    strict: false,
+    // with the u flag a pattern refuses escapes that JavaScript and Zod's regexes allow, such as \- or \_
+    unicodeRegExp: false,
+    ...options,
+  });
   ajvFormats(ajv);
   ajvErrors(ajv);
   ajv.addKeyword('x-contentType');

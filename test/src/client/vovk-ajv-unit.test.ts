@@ -42,4 +42,19 @@ describe('vovk-ajv', () => {
 
     strictEqual(warn.mock.callCount(), 1);
   });
+
+  it('Reads a pattern the way JavaScript does', async () => {
+    // escapes Zod's regexes keep, which the u flag refuses
+    const cases = [
+      ['^\\d{3}\\-\\d{4}$', '555-1234', '5551234'],
+      ['^[\\w-.]+$', 'a.b-c', 'a b'],
+      ['^[a-z\\_]+$', 'a_b', 'A'],
+      ['^\\#[0-9a-f]{6}$', '#ff00aa', 'ff00aa'],
+    ];
+    for (const [pattern, valid, invalid] of cases) {
+      const schema = { $schema, type: 'object', properties: { v: { type: 'string', pattern } }, required: ['v'] };
+      await validateBody({ v: valid }, schema);
+      await rejects(validateBody({ v: invalid }, schema), /data\/v must match pattern/);
+    }
+  });
 });
