@@ -62,10 +62,16 @@ describe('Runtime sweep', () => {
         yield { n: 1 };
         throw new HttpException(HttpStatus.FORBIDDEN, 'Not yours');
       }
+
+      static async *streamThirdParty() {
+        yield { n: 1 };
+        throw Object.assign(new Error('Upstream refused'), { statusCode: 401 });
+      }
     }
     get('third-party')(ErrorBrandController, 'thirdParty');
     get('foreign')(ErrorBrandController, 'foreign');
     get('stream-expected')(ErrorBrandController, 'streamExpected');
+    get('stream-third-party')(ErrorBrandController, 'streamThirdParty');
     const handlers = initSegment({ segmentName: 'error-brand', controllers: { ErrorBrandController } });
 
     it('Hides an error with a numeric statusCode that is no HttpException in production', async () => {
@@ -95,6 +101,18 @@ describe('Runtime sweep', () => {
           .map((line) => JSON.parse(line));
 
         deepStrictEqual(lines, [{ n: 1 }, { isError: true, reason: 'Not yours', statusCode: 403 }]);
+      });
+    });
+
+    it('Sends no status code on the error line of an error that is no HttpException', async () => {
+      await withNodeEnv('development', async () => {
+        const response = await call(handlers, 'GET', 'stream-third-party');
+        const lines = (await response.text())
+          .split('\n')
+          .filter(Boolean)
+          .map((line) => JSON.parse(line));
+
+        deepStrictEqual(lines, [{ n: 1 }, { isError: true, reason: 'Upstream refused' }]);
       });
     });
   });
@@ -279,12 +297,20 @@ describe('Runtime sweep', () => {
   describe('JSON Lines streams', () => {
     let blobsProduced = 0;
     let ticksProduced = 0;
+    let largeBlobsProduced = 0;
     let finalized = false;
     class StreamController {
       static async *blobs() {
         while (true) {
           blobsProduced++;
           yield { blob: 'x'.repeat(100_000) };
+        }
+      }
+
+      static async *largeBlobs() {
+        while (true) {
+          largeBlobsProduced++;
+          yield { blob: 'x'.repeat(1_000_000) };
         }
       }
 
@@ -301,14 +327,26 @@ describe('Runtime sweep', () => {
       }
     }
     get('blobs')(StreamController, 'blobs');
+    get('large-blobs')(StreamController, 'largeBlobs');
     get('ticks')(StreamController, 'ticks');
     const handlers = initSegment({ segmentName: 'streams', controllers: { StreamController } });
 
-    it('Stops pulling from a generator while the client does not read', async () => {
+    it('Stops pulling from a generator while the client reads slower than it yields', async () => {
       const response = await call(handlers, 'GET', 'blobs');
+      // the server piping the body holds a reader, a slow client keeps it from reading
+      const reader = response.body?.getReader();
+      ok(reader);
       await wait(300);
 
       ok(blobsProduced <= 3, `${blobsProduced} items of 100 KB produced for a client that read nothing`);
+      await reader.cancel();
+    });
+
+    it('Bounds what a generator queues for a response that nothing reads', async () => {
+      const response = await call(handlers, 'GET', 'large-blobs');
+      await wait(300);
+
+      ok(largeBlobsProduced <= 20, `${largeBlobsProduced} items of 1 MB queued for a response nothing reads`);
       await response.body?.cancel();
     });
 
@@ -371,6 +409,20 @@ describe('Runtime sweep', () => {
 
       strictEqual(response.status, 415);
       strictEqual(isBodyRead, false);
+    });
+
+    it('Skips the declared content type of a procedure without a body schema for a request without a body', async () => {
+      class PingController {
+        static ping = procedure({ contentType: 'text/plain' }).handle(async () => ({ ok: true }));
+      }
+      post('ping')(PingController, 'ping');
+      const handlers = initSegment({ segmentName: 'typed-ping', controllers: { PingController } });
+
+      strictEqual((await call(handlers, 'POST', 'ping')).status, 200);
+      strictEqual(
+        (await call(handlers, 'POST', 'ping', { headers: { 'content-type': 'application/json' }, body: '{}' })).status,
+        415
+      );
     });
 
     it('Passes the validated params to the handler through fn()', async () => {

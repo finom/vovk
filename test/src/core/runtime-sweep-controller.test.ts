@@ -45,6 +45,21 @@ describe('Runtime sweep over HTTP', () => {
       deepStrictEqual(response.body, { body: sequence });
     });
 
+    it('Skips the declared content type of a procedure without a body schema for a request without a body', async () => {
+      const response = await fetch(`${apiUrl}/runtime-sweep/typed-without-body`, { method: 'POST' });
+
+      strictEqual(response.status, 200);
+      deepStrictEqual(await response.json(), { ok: true });
+
+      const wrong = await fetch(`${apiUrl}/runtime-sweep/typed-without-body`, {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: '{}',
+      });
+
+      strictEqual(wrong.status, 415);
+    });
+
     it('Answers a malformed JSON body with 400', async () => {
       const response = await request
         .post('/runtime-sweep/transfer')
