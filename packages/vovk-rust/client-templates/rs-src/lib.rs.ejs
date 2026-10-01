@@ -4,6 +4,7 @@ imports: ['vovk-rust']
 <%- t.getFirstLineBanner() %>
 <% const vars = {
     convertJSONSchemasToRustTypes: t.imports['vovk-rust'].convertJSONSchemasToRustTypes,
+    getBodyKind: t.imports['vovk-rust'].getBodyKind,
 }; %>
 mod http_request;
 mod read_full_schema;
@@ -48,14 +49,7 @@ vars.convertJSONSchemasToRustTypes({
 ]).filter(Boolean).map((s) => s.split('\n')).flat().map((s) => ' '.repeat(4) + '/// ' + s).join('\n') %>
 <%
     // Determine body kind: 'none', 'form', 'binary', 'text', or 'json'
-    const bodyKind = (() => {
-        if (!validation?.body) return 'none';
-        const ct = validation.body['x-contentType'];
-        if (ct?.includes('multipart/form-data') || ct?.includes('application/x-www-form-urlencoded')) return 'form';
-        if (validation.body.format === 'binary' || validation.body.contentEncoding === 'binary') return 'binary';
-        if (ct?.some(c => c.startsWith('text/'))) return 'text';
-        return 'json';
-    })();
+    const bodyKind = vars.getBodyKind(validation?.body);
     const firstContentType = validation?.body?.['x-contentType']?.[0] || 'application/octet-stream';
 %>
     pub async fn <%= handlerName %>( 

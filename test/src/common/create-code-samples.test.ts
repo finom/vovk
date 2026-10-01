@@ -1066,4 +1066,68 @@ const response = await MixedFormRPC.uploadProfile({
       assert.ok(result.rs.includes('reqwest::multipart::Part::text("text_content")'));
     });
   });
+
+  describe('Circular $refs', () => {
+    const controllerSchema: VovkControllerSchema = {
+      rpcModuleName: 'NodeRPC',
+      prefix: '',
+      handlers: {},
+    };
+
+    const makeHandlerSchema = (body: Record<string, unknown>): VovkHandlerSchema => ({
+      httpMethod: 'POST',
+      path: 'nodes',
+      validation: { body },
+    });
+
+    test('self referential $ref terminates instead of overflowing', () => {
+      const result = createCodeSamples({
+        handlerName: 'createNode',
+        handlerSchema: makeHandlerSchema({
+          $ref: '#/$defs/Node',
+          $defs: {
+            Node: { type: 'object', properties: { name: { type: 'string' }, child: { $ref: '#/$defs/Node' } } },
+          },
+        }),
+        controllerSchema,
+        config: { apiRoot: '/api' },
+      });
+
+      assert.ok(result.ts.includes('name: "string"'));
+      assert.ok(result.ts.includes('child: null'));
+    });
+
+    test('mutually referential $refs terminate', () => {
+      const result = createCodeSamples({
+        handlerName: 'createNode',
+        handlerSchema: makeHandlerSchema({
+          $ref: '#/$defs/A',
+          $defs: {
+            A: { type: 'object', properties: { b: { $ref: '#/$defs/B' } } },
+            B: { type: 'object', properties: { a: { $ref: '#/$defs/A' } } },
+          },
+        }),
+        controllerSchema,
+        config: { apiRoot: '/api' },
+      });
+
+      assert.ok(result.ts.includes('NodeRPC.createNode'));
+    });
+
+    test('self referential array items terminate', () => {
+      const result = createCodeSamples({
+        handlerName: 'createNode',
+        handlerSchema: makeHandlerSchema({
+          $ref: '#/$defs/Tree',
+          $defs: {
+            Tree: { type: 'object', properties: { kids: { type: 'array', items: { $ref: '#/$defs/Tree' } } } },
+          },
+        }),
+        controllerSchema,
+        config: { apiRoot: '/api' },
+      });
+
+      assert.ok(result.ts.includes('NodeRPC.createNode'));
+    });
+  });
 });

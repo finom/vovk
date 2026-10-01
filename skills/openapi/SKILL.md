@@ -1,6 +1,6 @@
 ---
 name: openapi
-description: Vovk.ts OpenAPI generation — how the OpenAPI 3.x spec is derived from procedures + validation schemas, the `@operation` decorator family (`@operation({...})` for summary/description/tags/security/deprecated, `@operation.error(status, message)` for error responses, `@operation.tool({...})` for AI tool metadata), top-level `outputConfig.openAPIObject` configuration (info, servers, license, tags, security, components), per-segment overrides, accessing the spec from code (`vovk-client/openapi`), serving the spec JSON from a controller, and rendering it with **Scalar** (the primary / recommended docs UI — picks up the TypeScript / Python / Rust code samples that Vovk generates via `x-codeSamples`) or alternatives like Redoc / Swagger UI. Use whenever the user asks for "API docs", "Scalar docs", "Swagger", "OpenAPI spec", "document my API", "generate OpenAPI from my controllers", "add an info/title/servers block", "segment-specific docs", "expose OpenAPI at /api/docs", "bearer auth in the spec", "document possible errors", "deprecate an endpoint". Does NOT cover procedure authoring → hand off to `procedure` skill. Does NOT cover AI tool derivation via `deriveTools` → hand off to `tools` skill (though `@operation.tool` is mentioned here since it's part of the decorator family). Does NOT cover third-party OpenAPI imports → hand off to `mixins` skill.
+description: Vovk.ts OpenAPI generation — how the OpenAPI 3.x spec is derived from procedures + validation schemas, the `@operation` decorator family (`@operation({...})` for summary/description/tags/security/deprecated, `@operation.error(status, message)` for error responses, `@operation.tool({...})` for AI tool metadata), top-level `outputConfig.openAPIObject` configuration (info, servers, license, tags, security, components), per-segment overrides, accessing the spec from code (`@/client/openapi`), serving the spec JSON from a controller, and rendering it with **Scalar** (the primary / recommended docs UI — picks up the TypeScript / Python / Rust code samples that Vovk generates via `x-codeSamples`) or alternatives like Redoc / Swagger UI. Use whenever the user asks for "API docs", "Scalar docs", "Swagger", "OpenAPI spec", "document my API", "generate OpenAPI from my controllers", "add an info/title/servers block", "segment-specific docs", "expose OpenAPI at /api/docs", "bearer auth in the spec", "document possible errors", "deprecate an endpoint". Does NOT cover procedure authoring → hand off to `procedure` skill. Does NOT cover AI tool derivation via `deriveTools` → hand off to `tools` skill (though `@operation.tool` is mentioned here since it's part of the decorator family). Does NOT cover third-party OpenAPI imports → hand off to `mixins` skill.
 ---
 
 # Vovk.ts OpenAPI
@@ -17,13 +17,13 @@ Covers:
 - `@operation.tool({...})` — AI-tool metadata (`x-tool`). Read by `deriveTools`; full usage in **`tools` skill**.
 - Global OpenAPI object (`outputConfig.openAPIObject`).
 - Per-segment overrides (`outputConfig.segments.<name>.openAPIObject`).
-- Accessing the spec: `import { openapi } from 'vovk-client/openapi'`.
+- Accessing the spec: `import { openapi } from '@/client/openapi'`.
 - Serving spec JSON from controller so any OpenAPI viewer (Scalar, Redoc, Swagger UI) can point at it.
 
 Out of scope:
 
 - Writing procedures / schemas → **`procedure` skill**.
-- `deriveTools()` / `createTool()` / MCP wiring → **`tools` skill**.
+- `deriveTools()` / standalone tools / MCP wiring → **`tools` skill**.
 - Third-party OpenAPI codegen → **`mixins` skill**.
 
 ## How procedures map to OpenAPI
@@ -47,7 +47,7 @@ Three decorators, same namespace, all attached to `operation`:
 |---|---|---|
 | `@operation({...})` | `operationObject` | Standard OpenAPI metadata (`summary`, `description`, `tags`, `deprecated`, `security`, …). Accepts any field from OpenAPI 3.1's `OperationObject`. |
 | `@operation.error(status, message)` | `operationObject.responses[status]` | Document a known error shape. Generates response referencing `#/components/schemas/VovkErrorResponse` with `message` pinned to a literal. |
-| `@operation.tool({...})` | `operationObject['x-tool']` | AI-tool metadata read by `deriveTools` — `name`, `description`, `title`, `hidden`. See **`tools` skill** for full usage. |
+| `@operation.tool({...})` | `operationObject['x-tool']` | AI-tool metadata read by `deriveTools` — `name`, `description`, `title`, `hidden`, `meta`. See **`tools` skill** for full usage. |
 
 ### `@operation({...})`
 
@@ -168,35 +168,27 @@ Key (`admin`) is `segmentName` from `initSegment` (root segment uses `""`). Each
 
 ## Accessing the spec from code
 
-Import path depends on which client layout the project uses — same matrix as generated RPC modules (see **`rpc` skill** for full picture).
+Import path follows the client layout; same rules as generated RPC modules (see **`rpc` skill** for full picture).
 
-### Composed, default JS template — via the `vovk-client` barrel
-
-```ts
-import { openapi } from 'vovk-client/openapi';
-// Full OpenAPI 3.x object merged from all segments
-```
-
-This is what `vovk init` scaffolds. The `vovk-client` npm package re-exports generated `.vovk-client/openapi.js` file; nothing lands inside source tree.
-
-### Composed, TS template — via source-tree `outDir` alias
-
-If project uses TypeScript client template and emits into the repo (e.g. `composedClient.outDir: './src/client'`), `vovk-client` barrel isn't involved at all. Import from whatever alias your `tsconfig` `paths` resolves that directory to:
+### Composed (one merged spec)
 
 ```ts
 import { openapi } from '@/client/openapi';
+// Full OpenAPI 3.x object merged from all segments
 ```
 
-### Segmented — one spec per segment, always via local alias
+This is what `vovk init` scaffolds. Composed client generates into `composedClient.outDir` (default `src/client`, or `client/` without a `src` folder); `@/client` is the standard Next.js alias for that dir. Custom `outDir` shifts the path; projects without the alias use a relative import.
 
-When `segmentedClient.enabled: true`, each segment writes its own `openapi.(ts|js|json)` under `<segmentedClient.outDir>/<segmentName>/`. Import from alias — `vovk-client` barrel is never the entry point here:
+### Segmented (one spec per segment)
+
+When `segmentedClient.enabled: true`, each segment writes its own `openapi.(ts|json)` under `<segmentedClient.outDir>/<segmentName>/`:
 
 ```ts
 import { openapi as adminOpenAPI } from '@/client/admin/openapi';
-import { openapi as rootOpenAPI }  from '@/client/openapi'; // root segment lives at the outDir root
+import { openapi as rootOpenAPI }  from '@/client/root/openapi'; // root segment folder is named "root"
 ```
 
-If `segmentedClient.outDir` is `./sdk` the path becomes `@/sdk/admin/openapi`, etc. There is **no** `vovk-client/admin/openapi` or `vovk-client/<segmentName>/openapi` — that path does not exist.
+If `segmentedClient.outDir` is `./sdk` the path becomes `@/sdk/admin/openapi`, etc. Per-segment spec files exist **only** under segmented client dirs; composed client emits just the merged `@/client/openapi`. Both clients enabled share the dir: composed files at the root, segments in subdirs.
 
 Use these exports directly — no fetch required at runtime.
 
@@ -207,7 +199,7 @@ Cleanest Vovk-idiomatic way is plain controller method returning imported `opena
 ```ts
 // src/modules/openapi/openapi-controller.ts
 import { get, prefix, operation } from 'vovk';
-import { openapi } from 'vovk-client/openapi';
+import { openapi } from '@/client/openapi';
 
 @prefix('openapi')
 export default class OpenApiController {
@@ -225,14 +217,14 @@ For just raw JSON without going through controller, Next.js route handler works 
 
 ```ts
 // src/app/api/openapi/route.ts
-import { openapi } from 'vovk-client/openapi';
+import { openapi } from '@/client/openapi';
 
 export const GET = () => Response.json(openapi);
 ```
 
 ### Rendering it with a UI
 
-**Scalar is the recommended renderer.** Vovk emits per-operation `x-codeSamples` (TypeScript via `vovk-client`, Python via `vovk-python`, Rust via `vovk-rust`), and Scalar renders them inline next to each endpoint — resulting docs look like real SDK reference, not stripped-down Swagger page.
+**Scalar is the recommended renderer.** Vovk emits per-operation `x-codeSamples` (TypeScript via the generated TS client, Python via `vovk-python`, Rust via `vovk-rust`), and Scalar renders them inline next to each endpoint — resulting docs look like real SDK reference, not stripped-down Swagger page.
 
 Install `@scalar/api-reference-react` and point at URL exposed above:
 
@@ -316,7 +308,7 @@ Per-operation `security` lives on `@operation` if you want to override.
 
 ### "Admin API should have its own docs and server URL"
 
-Per-segment override under `outputConfig.segments.admin.openAPIObject`. Import per-segment spec from segmented client's local alias — `import { openapi } from '@/client/admin/openapi'` (path follows `segmentedClient.outDir`). There is no `vovk-client/admin/openapi` barrel.
+Per-segment override under `outputConfig.segments.admin.openAPIObject`. Import per-segment spec from the segmented client dir: `import { openapi } from '@/client/admin/openapi'` (path follows `segmentedClient.outDir`). Requires `segmentedClient.enabled: true`; composed client emits only the merged `@/client/openapi`.
 
 ### "Deprecate an endpoint"
 

@@ -2,7 +2,7 @@ import { HttpException } from '../core/http-exception.js';
 import { HttpStatus } from '../types/enums.js';
 
 export function validateContentType(request: Request | undefined, allowed: string[]): Response | null {
-  // Wildcard — skip validation
+  // wildcard, skip validation
   if (!request?.headers || allowed.includes('*/*')) return null;
 
   const raw = request.headers.get('content-type');

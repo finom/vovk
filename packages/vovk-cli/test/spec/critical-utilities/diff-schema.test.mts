@@ -5,15 +5,15 @@ import { VovkSchemaIdEnum, type VovkSegmentSchema } from 'vovk/internal';
 import { diffSegmentSchema } from '../../../dist/dev/diff-segment-schema.mjs';
 
 // got some problems importing it from "vovk"
-enum _HttpMethod {
-  GET = 'GET',
-  POST = 'POST',
-  PUT = 'PUT',
-  PATCH = 'PATCH',
-  DELETE = 'DELETE',
-  HEAD = 'HEAD',
-  OPTIONS = 'OPTIONS',
-}
+const _HttpMethod = {
+  GET: 'GET',
+  POST: 'POST',
+  PUT: 'PUT',
+  PATCH: 'PATCH',
+  DELETE: 'DELETE',
+  HEAD: 'HEAD',
+  OPTIONS: 'OPTIONS',
+} as const;
 
 const HttpMethod = _HttpMethod as unknown as typeof VovkHttpMethod;
 

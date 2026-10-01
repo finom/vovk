@@ -1,14 +1,14 @@
 ---
 name: rpc
-description: Vovk.ts RPC client — how `vovk generate` turns controllers into type-safe client modules, composed `vovk-client` vs segmented clients, call shape (`apiRoot`, `params`, `body`, `query`, `meta`, `init`, `disableClientValidation`, `validateOnClient`, `interpretAs`, `transform`, `fetcher`), customizing generation via `outputConfig.imports.fetcher` + `createFetcher` (auth headers, retries, tracing, dynamic `onSuccess` / `onError` subscribers), configuring clients in `vovk.config.mjs` (`composedClient` / `segmentedClient`), error rethrow (`HttpException`, `HttpStatus.NULL`), `VovkInput`/`VovkOutput` against RPC modules, React Query integration (`queryKey`, `streamedQuery`), RPC method surface (`.withDefaults`, `.getURL`, `.queryKey`, `.schema`, `.isRPC`). Use whenever user asks to call API from browser / mobile / other server ("fetch users from the client", "call the API from Next.js client component", "typed API client", "why is my RPC call failing", "add auth token to every request", "custom headers on RPC calls", "retry on 401", "why is the client stale"), regenerate client (`vovk generate`), choose between composed vs segmented clients, or wire up `vovk-client` imports. Does NOT cover writing procedures / handlers → hand off to `procedure` skill. Does NOT cover segment registration / `initSegment` → hand off to `segment` skill. Does NOT cover JSON Lines streaming clients → hand off to `jsonlines` skill.
+description: Vovk.ts RPC client — how `vovk generate` turns controllers into type-safe client modules, composed vs segmented clients, call shape (`apiRoot`, `params`, `body`, `query`, `meta`, `init`, `disableClientValidation`, `validateOnClient`, `interpretAs`, `transform`, `fetcher`), customizing generation via `outputConfig.imports.fetcher` + `createFetcher` (auth headers, retries, tracing, dynamic `onSuccess` / `onError` subscribers), configuring clients in `vovk.config.mjs` (`composedClient` / `segmentedClient`), error rethrow (`HttpException`, `HttpStatus.NULL`), `VovkInput`/`VovkOutput` against RPC modules, React Query integration (`queryKey`, `streamedQuery`), RPC method surface (`.withDefaults`, `.getURL`, `.queryKey`, `.schema`, `.isRPC`). Use whenever user asks to call API from browser / mobile / other server ("fetch users from the client", "call the API from Next.js client component", "typed API client", "why is my RPC call failing", "add auth token to every request", "custom headers on RPC calls", "retry on 401", "why is the client stale"), regenerate client (`vovk generate`), choose between composed vs segmented clients, or wire up `@/client` imports. Does NOT cover writing procedures / handlers → hand off to `procedure` skill. Does NOT cover segment registration / `initSegment` → hand off to `segment` skill. Does NOT cover JSON Lines streaming clients → hand off to `jsonlines` skill.
 ---
 
 # Vovk.ts RPC client
 
-Every controller procedure with HTTP decorator automatically gets typed client counterpart. `vovk generate` produces these client modules from segment schemas. Import path depends on config:
+Every controller procedure with HTTP decorator automatically gets typed client counterpart. `vovk generate` produces these client modules from segment schemas, emitting TypeScript into the project:
 
-- **Default setup only** (composed client + JS template + default `outDir: './node_modules/.vovk-client'`) → `vovk-client` npm package barrel re-exports emitted `.js` / `.d.ts`. Import from `'vovk-client'`.
-- **Any other config** — TS template, segmented client, custom source-tree `outDir` — `vovk-client` package *not* used. Generated files live in source tree, import through local path alias (e.g. `'@/client'`, `'@/client/<segment>'`).
+- **Composed client** (default): one client for all segments at `composedClient.outDir` (default `./src/client`, or `./client` without a `src` folder). Import from `'@/client'` (standard Next.js alias; alias-less projects use a relative path).
+- **Segmented client**: per-segment subdirs of `segmentedClient.outDir` (same default dir). Import from `'@/client/<segment>'`.
 
 **Key identity**: client module name = **key** used in `initSegment`'s `controllers` map, regardless of import path.
 
@@ -16,8 +16,8 @@ Every controller procedure with HTTP decorator automatically gets typed client c
 // server
 initSegment({ controllers: { UserRPC: UserController } });
 
-// client (default setup shown — composed + JS template)
-import { UserRPC } from 'vovk-client';
+// client (composed)
+import { UserRPC } from '@/client';
 await UserRPC.getUser({ params: { id: '42' } });
 ```
 
@@ -55,12 +55,12 @@ npx vovk generate
 What it does:
 
 - Reads `.vovk-schema/**/*.json` for every segment (nested segments live in subdirectories, e.g. `.vovk-schema/customer/static.json`).
-- Emits generated code into configured `outDir` using selected `fromTemplates` preset.
-- Default composed setup — `fromTemplates: ['js']` + `outDir: './node_modules/.vovk-client'` — emits `.js` / `.d.ts` files; `vovk-client` npm package re-exports via `export * from '../.vovk-client/index.js'`. **Only** config where you import from `'vovk-client'`.
-- Alternate (recommended for pnpm) — `fromTemplates: ['ts']` + `outDir: './src/client'` — emits `.ts` files directly into source tree. `vovk-client` package not used; users import from local alias like `'@/client'`, own tsc handles files.
-- Segmented client (any template) — always vendors per-segment modules into source tree (default `./src/client/<segment>`). `vovk-client` not used regardless of template.
+- Emits generated code into configured `outDir` using selected `fromTemplates` preset (default `['ts']`).
+- Composed client (default): emits `index.ts`, `schema.ts`, `openapi.ts`, `openapi.json` at `outDir` root (default `./src/client`, or `./client` without a `src` folder). Project's own tsc handles the files; import from `'@/client'`.
+- Segmented client: same four files per segment under `<outDir>/<segment>/`; import from `'@/client/<segment>'`.
+- Generated dir is gitignored by `vovk init` and rebuilt by the `prebuild` script (`vovk generate`); no need to commit it.
 
-See "Import path depends on template + outDir" below for why these pair up.
+See "Client layout and import paths" below.
 
 **`vovk generate` does NOT rebuild schemas from controller source.** Schema emission = separate step: `vovk dev` runs alongside Next.js dev server, hits each segment's `_schema_` endpoint (only available when `NODE_ENV === 'development'`), writes JSON into `.vovk-schema/`. `vovk generate` reads whatever's there.
 
@@ -149,34 +149,37 @@ Forces fetcher's content-type dispatch. Useful when server returns JSON Lines bu
 
 Two top-level config keys — `composedClient` and `segmentedClient` — = **independent toggles**; enable one, the other, or both. Defaults differ because they target different workflows:
 
-| Key               | Default `enabled` | Default `fromTemplates` | Default `outDir`                         | Default import            |
-|-------------------|-------------------|--------------------------|-------------------------------------------|---------------------------|
-| `composedClient`  | `true`            | `['js']`                 | `./node_modules/.vovk-client`             | `'vovk-client'`           |
-| `segmentedClient` | `false`           | `['ts']`                 | `./src/client` (or `./client` if no `src`) | `'@/client/<segment>'`    |
+| Key               | Default `enabled` | Default `fromTemplates` | Default `outDir`                           | Default import            |
+|-------------------|-------------------|--------------------------|---------------------------------------------|---------------------------|
+| `composedClient`  | `true`            | `['ts']`                 | `./src/client` (or `./client` if no `src`)  | `'@/client'`              |
+| `segmentedClient` | `false`           | `['ts']`                 | same dir, per-segment subdirs               | `'@/client/<segment>'`    |
 
-Only composed client's *default* wires up `vovk-client` npm barrel (re-exports `.js`/`.d.ts` from `node_modules/.vovk-client`). Deviating from that exact combo — switching composed to TS template, source-tree `outDir`, or enabling segmented — bypasses `vovk-client` entirely; import from local alias.
+Both emit into the project source tree. When both are enabled they share `outDir`: composed files at the root, segments in subdirs.
 
 ```ts
 // vovk.config.mjs
 const config = {
   composedClient: {
-    enabled: true, outDir: './node_modules/.vovk-client', fromTemplates: ['js'],  // all defaults
-    prettifyClient: false,                    // true → run Prettier on emitted files
+    enabled: true, outDir: './src/client', fromTemplates: ['ts'],  // all defaults
+    prettifyClient: true,                     // default; formats emitted files
     includeSegments: ['public'],              // mutually exclusive with excludeSegments
   },
   segmentedClient: { enabled: true, outDir: './src/client', fromTemplates: ['ts'] },
 };
 ```
 
+`prettifyClient: true` uses the project-installed prettier; if it's not installed, CLI warns once per run and writes unformatted output.
+
 Both keys can carry nested `outputConfig` overriding top-level for that specific output (e.g. segmented SDKs with different OpenAPI block).
 
-**Composed** — one client module re-exports every RPC across every segment. Default case for most projects: `import { UserRPC, PostRPC } from 'vovk-client'`. With source-tree `outDir` (TS template), import from `'@/client'`.
+**Composed** — one client module re-exports every RPC across every segment. Default case for most projects: `import { UserRPC, PostRPC } from '@/client'`.
 
 **Segmented** — per-segment entries; importing `@/client/admin` keeps other segments out of bundle. Useful when segment boundaries map to independent deploys, versioning, or SDK consumers.
 
 ```
 src/client/
-├── root/     (index.ts, schema.ts, openapi.json, openapi.ts)
+├── index.ts, schema.ts, openapi.ts, openapi.json    (composed, at the root)
+├── root/     (same four files; root segment folder is named "root")
 ├── admin/    ...
 └── customer/
     └── static/    (nested sub-segment)
@@ -187,23 +190,14 @@ import { UserRPC } from '@/client/customer';
 import { AdminRPC } from '@/client/admin';
 ```
 
-### Import path depends on template + outDir (composed client)
+### Client layout and import paths
 
-Composed's import path follows from `fromTemplates` × `outDir`. `vovk-client`'s barrel = `export * from '../.vovk-client/index.js'` — only resolves `.js`/`.d.ts` at default location.
+| Client | Location | Import from |
+|--------|----------|-------------|
+| Composed (default) | `outDir` root (default `./src/client`, or `./client` without a `src` folder) | `'@/client'` |
+| Segmented | `<outDir>/<segment>` subdirs | `'@/client/<segment>'` |
 
-| `fromTemplates` | `outDir`                                  | Import from               | Notes |
-|-----------------|-------------------------------------------|---------------------------|-------|
-| `['js']`        | `./node_modules/.vovk-client` (default)   | `'vovk-client'`           | Default — only combo that actually uses `vovk-client`. |
-| `['ts']`        | source tree (e.g. `./src/client`)          | `'@/client'`              | Recommended for pnpm; your tsc handles `.ts` directly. |
-| `['js']`        | custom source-tree path                    | local path                | Valid but unusual. |
-| `['ts']`        | default `node_modules/.vovk-client`        | broken                    | Barrel can't find `.js` to re-export. |
-
-Segmented has no equivalent table — always vendors per-segment modules into configured `outDir`; always import from local alias.
-
-**Why switch to TS template / source-tree `outDir`?**
-- **pnpm** — strict non-hoisted `node_modules` breaks `vovk-client` → `.vovk-client` sibling hop.
-- **Commit client** — review, CI reproducibility, offline builds.
-- **TS integration** — source maps, go-to-definition, type narrowing align with project's `tsconfig`.
+`@/client` is the standard Next.js `@/*` alias. Custom `outDir` shifts the path; projects without the alias use a relative import. Both layouts work with any package manager, pnpm included.
 
 Step-by-step setup → **`init` skill**.
 
@@ -390,7 +384,7 @@ import type {
   VovkYieldType,    // actual yielded type even when input isn't validated
   VovkReturnType,   // actual return type even when input isn't validated
 } from 'vovk';
-import { UserRPC } from 'vovk-client';
+import { UserRPC } from '@/client';
 
 type Body   = VovkBody<typeof UserRPC.updateUser>;
 type Query  = VovkQuery<typeof UserRPC.updateUser>;
@@ -452,17 +446,15 @@ useMutation({ mutationFn: UserRPC.updateUser });
 
 ## `openapi` and `schema` payloads from client
 
-Composed (default JS setup — via `vovk-client` barrel):
+Composed:
 
 ```ts
-import { openapi } from 'vovk-client/openapi';   // OpenAPI 3.x, derived from procedures + @operation metadata
-import { schema }  from 'vovk-client/schema';    // Raw VovkSchema — all segments
-import { schema }  from 'vovk-client';           // Same thing, re-exported from the root
+import { openapi } from '@/client/openapi';   // OpenAPI 3.x, derived from procedures + @operation metadata
+import { schema }  from '@/client/schema';    // Raw VovkSchema — all segments
+import { schema }  from '@/client';           // Same thing, re-exported from the root
 ```
 
-Composed with TS template + source-tree `outDir` bypasses `vovk-client` entirely — import from local alias (`'@/client/openapi'`, `'@/client/schema'`).
-
-Segmented (one OpenAPI + schema per segment — always via local alias, `vovk-client` not involved):
+Segmented (one OpenAPI + schema per segment, inside each segment's subdir):
 
 ```ts
 import { openapi } from '@/client/admin/openapi';
@@ -470,7 +462,7 @@ import { schema }  from '@/client/admin/schema';
 import { schema }  from '@/client/admin';          // Same thing, re-exported from the segment root
 ```
 
-Import path follows segmented client's `outDir` — if you changed `segmentedClient.outDir` to something else (e.g. `./sdk`), path = `@/sdk/admin/openapi` etc.
+Import path follows the client's `outDir` — if you changed `segmentedClient.outDir` to something else (e.g. `./sdk`), path = `@/sdk/admin/openapi` etc. Per-segment files exist only when segmented client is enabled.
 
 See `openapi` skill for how spec is built.
 
@@ -479,7 +471,7 @@ See `openapi` skill for how spec is built.
 **"Fetch users on page load (client component)"** — ensure procedure has HTTP decorator, then:
 ```tsx
 'use client';
-import { UserRPC } from 'vovk-client';
+import { UserRPC } from '@/client';
 useEffect(() => { UserRPC.list().then(setUsers); }, []);
 ```
 

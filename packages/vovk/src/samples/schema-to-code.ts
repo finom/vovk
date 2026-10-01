@@ -40,7 +40,8 @@ export function schemaToCode(
 export function getSampleValue(
   schema: VovkJSONSchemaBase,
   rootSchema?: VovkJSONSchemaBase,
-  ignoreBinary?: boolean
+  ignoreBinary?: boolean,
+  seen: Set<string> = new Set()
 ): unknown {
   if (!schema || typeof schema !== 'object') return null;
   rootSchema = rootSchema || schema;
@@ -67,7 +68,7 @@ export function getSampleValue(
 
   // Handle $ref if present
   if (schema.$ref) {
-    return handleRef(schema.$ref, rootSchema, ignoreBinary);
+    return handleRef(schema.$ref, rootSchema, ignoreBinary, seen);
   }
 
   // Handle enum if present
@@ -77,11 +78,11 @@ export function getSampleValue(
 
   // Handle oneOf, anyOf, allOf
   if (schema.oneOf && schema.oneOf.length > 0) {
-    return getSampleValue(schema.oneOf[0], rootSchema, ignoreBinary);
+    return getSampleValue(schema.oneOf[0], rootSchema, ignoreBinary, seen);
   }
 
   if (schema.anyOf && schema.anyOf.length > 0) {
-    return getSampleValue(schema.anyOf[0], rootSchema, ignoreBinary);
+    return getSampleValue(schema.anyOf[0], rootSchema, ignoreBinary, seen);
   }
 
   if (schema.allOf && schema.allOf.length > 0) {
@@ -90,7 +91,7 @@ export function getSampleValue(
       (acc: VovkJSONSchemaBase, s: VovkJSONSchemaBase) => Object.assign(acc, s),
       {}
     );
-    return getSampleValue(mergedSchema, rootSchema, ignoreBinary);
+    return getSampleValue(mergedSchema, rootSchema, ignoreBinary, seen);
   }
 
   // Handle different types
@@ -104,9 +105,9 @@ export function getSampleValue(
       case 'boolean':
         return handleBoolean();
       case 'object':
-        return handleObject(schema, rootSchema, ignoreBinary);
+        return handleObject(schema, rootSchema, ignoreBinary, seen);
       case 'array':
-        return handleArray(schema, rootSchema, ignoreBinary);
+        return handleArray(schema, rootSchema, ignoreBinary, seen);
       case 'null':
         return null;
       default:
@@ -116,7 +117,7 @@ export function getSampleValue(
 
   // If type is not specified but properties are, treat it as an object
   if (schema.properties) {
-    return handleObject(schema, rootSchema, ignoreBinary);
+    return handleObject(schema, rootSchema, ignoreBinary, seen);
   }
 
   // Default fallback
@@ -248,9 +249,16 @@ function resolveRef(ref: string, rootSchema: VovkJSONSchemaBase): VovkJSONSchema
   return current;
 }
 
-function handleRef(ref: string, rootSchema: VovkJSONSchemaBase, ignoreBinary?: boolean): unknown {
+function handleRef(
+  ref: string,
+  rootSchema: VovkJSONSchemaBase,
+  ignoreBinary: boolean | undefined,
+  seen: Set<string>
+): unknown {
+  // a ref already being expanded means the schema is circular, stop instead of recursing forever
+  if (seen.has(ref)) return null;
   const resolved = resolveRef(ref, rootSchema);
-  return getSampleValue(resolved, rootSchema, ignoreBinary);
+  return getSampleValue(resolved, rootSchema, ignoreBinary, new Set(seen).add(ref));
 }
 
 function handleString(schema: VovkJSONSchemaBase): string {
@@ -316,7 +324,12 @@ function handleBoolean(): boolean {
   return true;
 }
 
-function handleObject(schema: VovkJSONSchemaBase, rootSchema: VovkJSONSchemaBase, ignoreBinary?: boolean): object {
+function handleObject(
+  schema: VovkJSONSchemaBase,
+  rootSchema: VovkJSONSchemaBase,
+  ignoreBinary: boolean | undefined,
+  seen: Set<string>
+): object {
   const result: Record<string, unknown> = {};
 
   if (schema.properties) {
@@ -324,7 +337,7 @@ function handleObject(schema: VovkJSONSchemaBase, rootSchema: VovkJSONSchemaBase
 
     for (const [key, propSchema] of Object.entries<VovkJSONSchemaBase>(schema.properties)) {
       if (required.includes(key) || required.length === 0) {
-        const value = getSampleValue(propSchema, rootSchema, ignoreBinary);
+        const value = getSampleValue(propSchema, rootSchema, ignoreBinary, seen);
         // Only add the property if it's not undefined (which happens when ignoreBinary is true and it's a binary field)
         if (value !== undefined) {
           result[key] = value;
@@ -334,7 +347,7 @@ function handleObject(schema: VovkJSONSchemaBase, rootSchema: VovkJSONSchemaBase
   }
 
   if (schema.additionalProperties && typeof schema.additionalProperties === 'object') {
-    const value = getSampleValue(schema.additionalProperties, rootSchema, ignoreBinary);
+    const value = getSampleValue(schema.additionalProperties, rootSchema, ignoreBinary, seen);
     if (value !== undefined) {
       result.additionalProp = value;
     }
@@ -343,7 +356,12 @@ function handleObject(schema: VovkJSONSchemaBase, rootSchema: VovkJSONSchemaBase
   return result;
 }
 
-function handleArray(schema: VovkJSONSchemaBase, rootSchema: VovkJSONSchemaBase, ignoreBinary?: boolean) {
+function handleArray(
+  schema: VovkJSONSchemaBase,
+  rootSchema: VovkJSONSchemaBase,
+  ignoreBinary: boolean | undefined,
+  seen: Set<string>
+) {
   if (schema.items) {
     // If items is a boolean, return empty array (true means any items allowed, false means no items)
     if (typeof schema.items === 'boolean') {
@@ -360,9 +378,9 @@ function handleArray(schema: VovkJSONSchemaBase, rootSchema: VovkJSONSchemaBase,
     const minItems = schema.minItems || 1;
     const numItems = Math.min(minItems, 3);
 
-    const items = Array.from({ length: numItems }, () => getSampleValue(itemSchema, rootSchema, ignoreBinary)).filter(
-      (item) => item !== undefined
-    ); // Filter out undefined values from ignored binary items
+    const items = Array.from({ length: numItems }, () =>
+      getSampleValue(itemSchema, rootSchema, ignoreBinary, seen)
+    ).filter((item) => item !== undefined); // Filter out undefined values from ignored binary items
 
     // If all items were filtered out (e.g., all were binary), return undefined instead of empty array
     if (items.length === 0 && numItems > 0) {

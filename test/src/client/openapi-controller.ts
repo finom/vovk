@@ -1,5 +1,5 @@
 import { get, HttpStatus, operation, prefix } from 'vovk';
-import { openapi } from 'vovk-client/openapi';
+import { openapi } from '../generated-client/openapi.ts';
 
 @prefix('openapi')
 export default class OpenApiController {

@@ -45,6 +45,22 @@
           "path": "with-params/{hello}",
           "httpMethod": "GET"
         },
+        "getSameShape": {
+          "path": "same-shape/{getParam}",
+          "httpMethod": "GET"
+        },
+        "postSameShape": {
+          "path": "same-shape/{postParam}",
+          "httpMethod": "POST"
+        },
+        "getSlashyParam": {
+          "path": "slashy/{name}",
+          "httpMethod": "GET"
+        },
+        "getSlashyDeep": {
+          "path": "slashy/deep/route",
+          "httpMethod": "GET"
+        },
         "postWithAll": {
           "path": "with-all/{hello}",
           "httpMethod": "POST"

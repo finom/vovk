@@ -102,12 +102,10 @@ export interface VovkOpenAPIMixin {
       };
   apiRoot?: string;
   getModuleName?: // if not provided, will use 'api' by default
-    | 'nestjs-operation-id' // UserController from 'UserController_getUser' operation ID
     | (string & {}) // literal module name, like MedusaRPC, GithubReposRPC, etc.
     | 'api' // declared for documentation purposes as default
     | GetOpenAPINameFn;
   getMethodName?: // if not provided, will use 'camel-case-operation-id' if operationId is snake_case, in other cases will use 'auto' strategy
-    | 'nestjs-operation-id' // getUser from 'UserController_getUser' operation ID
     | 'camel-case-operation-id' // operation ID to camelCase
     | 'auto' // auto-detect based on operationObject method and path
     | GetOpenAPINameFn;
@@ -117,9 +115,8 @@ export interface VovkOpenAPIMixin {
    */
   filterOperations?: (config: Parameters<GetOpenAPINameFn>[0]) => boolean;
   /**
-   * Prune `meta.openAPIObject.components.schemas` to the transitive `$ref` closure of the kept operations,
-   * shrinking the generated schema for large specs. Removes `Mixins.<Segment>.<Component>` types for
-   * components nothing kept references — keep `false` (default) if you import such types directly.
+   * Prune `meta.openAPIObject.components.schemas` to the `$ref` closure of kept operations (shrinks big
+   * specs); removes unreferenced `Mixins.*` types, keep `false` (default) if you import those directly.
    */
   pruneComponents?: boolean;
   errorMessageKey?: string;

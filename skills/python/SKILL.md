@@ -71,7 +71,7 @@ Wire Python into `vovk generate` → runs alongside TS:
 // vovk.config.mjs
 const config = {
   composedClient: {
-    fromTemplates: ['js', 'py'],
+    fromTemplates: ['ts', 'py'],
   },
 };
 export default config;
@@ -84,7 +84,7 @@ export default config;
 const PROD_ORIGIN = 'https://hello-world.vovk.dev';
 
 const config = {
-  composedClient: { fromTemplates: ['js', 'py'] },
+  composedClient: { fromTemplates: ['ts', 'py'] },
   clientTemplateDefs: {
     py: {
       extends: 'py',
@@ -287,7 +287,7 @@ Override via `clientTemplateDefs.py.outputConfig.package.name` (same field shape
 ```js
 // vovk.config.mjs
 const config = {
-  composedClient: { fromTemplates: ['js', 'py'] },
+  composedClient: { fromTemplates: ['ts', 'py'] },
   clientTemplateDefs: {
     py: {
       extends: 'py',

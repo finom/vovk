@@ -3,11 +3,12 @@
   "type": "module",
   "files": [
     "dist",
-    "bin"
+    "bin",
+    "CHANGELOG.md"
   ],
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
-  "version": "3.7.0",
+  "version": "4.0.0-beta.0",
   "bin": {
     "vovk-cli-npx": "./bin/index.mjs"
   },
@@ -29,14 +30,6 @@
       "default": "./dist/client/create-rpc.js"
     },
     "./create-validate-on-client": {
-      "types": "./dist/validation/create-validate-on-client.d.ts",
-      "default": "./dist/validation/create-validate-on-client.js"
-    },
-    "./createRPC": {
-      "types": "./dist/client/create-rpc.d.ts",
-      "default": "./dist/client/create-rpc.js"
-    },
-    "./createValidateOnClient": {
       "types": "./dist/validation/create-validate-on-client.d.ts",
       "default": "./dist/validation/create-validate-on-client.js"
     }

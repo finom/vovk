@@ -1,11 +1,6 @@
 import net from 'node:net';
 
-// Created with AI
-/**
- * Checks if a port is available.
- * @param {number} port - The port to check.
- * @param {(isAvailable: boolean) => void} callback - The callback function.
- */
+// checks if a port is free
 function checkPort(port: number, callback: (isAvailable: boolean) => void): void {
   const server = net.createServer();
 
@@ -20,14 +15,7 @@ function checkPort(port: number, callback: (isAvailable: boolean) => void): void
   });
 }
 
-/**
- * Finds an available port starting from a given port.
- * @param {number} startPort - The port to start checking from.
- * @param {number} maxAttempts - The maximum number of attempts to find an available port.
- * @param {number} attempt - The current attempt number.
- * @param {(failedPort: number, tryingPort: number) => void} onWarning - The callback function for warnings.
- * @returns {Promise<string>}
- */
+// finds a free port starting from startPort, up to maxAttempts
 export function getAvailablePort(
   startPort: number,
   maxAttempts: number,

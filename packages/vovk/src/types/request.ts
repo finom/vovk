@@ -10,11 +10,7 @@ export type VovkRequestCookie = {
 };
 
 /**
- * The Vovk.ts request object, extending Next.js's NextRequest
- * Accepts three generic parameters:
- * - TBody: the expected shape of the request body (default: unknown)
- * - TQuery: the expected shape of the query parameters (default: unknown)
- * - TParams: the expected shape of the route parameters (default: unknown)
+ * The Vovk.ts request object extending Next.js's NextRequest, generics: TBody, TQuery, TParams.
  * @see https://vovk.dev/procedure
  */
 export interface VovkRequest<TBody = unknown, TQuery = unknown, TParams = unknown> extends Request {
