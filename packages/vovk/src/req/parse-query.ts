@@ -41,6 +41,14 @@ function wantsArray(segment: unknown): boolean {
   return typeof segment === 'string' && (segment === '' || isArrayIndex(segment));
 }
 
+// the existing container under a key, or null; never an inherited member such as valueOf, which every object
+// shares with the whole process, and never a scalar, which cannot take a nested key
+function ownContainer(node: KnownAny, key: string | number): object | null {
+  if (!Object.hasOwn(node, key)) return null;
+  const value = node[key];
+  return value !== null && typeof value === 'object' ? value : null;
+}
+
 // sets a value at a segment path: numeric => array index, "" => array push, else object property
 function setValue(obj: Record<string, unknown>, path: string[], value: unknown): void {
   let current: KnownAny = obj;
@@ -116,7 +124,7 @@ function setValue(obj: Record<string, unknown>, path: string[], value: unknown):
         if (!Array.isArray(current)) {
           current = [];
         }
-        if (current[idx] === undefined) {
+        if (!ownContainer(current, idx)) {
           // Create placeholder for next segment
           current[idx] = wantsArray(nextSegment) ? [] : {};
         }
@@ -126,7 +134,7 @@ function setValue(obj: Record<string, unknown>, path: string[], value: unknown):
       } else {
         // segment is an object key
         demoteArray();
-        if (current[segment] === undefined) {
+        if (!ownContainer(current, segment)) {
           // Create placeholder
           current[segment] = wantsArray(nextSegment) ? [] : {};
         }

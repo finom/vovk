@@ -2,22 +2,19 @@ export async function parseForm<T>(body: FormData): Promise<T> {
   const formData: Record<string, string | string[] | File | File[]> = {};
 
   for (const [key, value] of body.entries()) {
-    const existing = formData[key];
+    // assigning "__proto__" would replace the object's prototype; the query parser drops it too
+    if (key === '__proto__') continue;
 
-    if (value instanceof File) {
-      if (existing) {
-        formData[key] = Array.isArray(existing) ? ([...existing, value] as File[]) : [existing as File, value];
-      } else {
-        formData[key] = value;
-      }
-    } else {
-      const str = value.toString();
-      if (existing) {
-        formData[key] = Array.isArray(existing) ? ([...existing, str] as string[]) : [existing as string, str];
-      } else {
-        formData[key] = str;
-      }
+    const entry = value instanceof File ? value : value.toString();
+
+    // own keys only: an inherited name such as toString is not an earlier value, and "" is one
+    if (!Object.hasOwn(formData, key)) {
+      formData[key] = entry;
+      continue;
     }
+
+    const existing = formData[key];
+    formData[key] = (Array.isArray(existing) ? [...existing, entry] : [existing, entry]) as string[] | File[];
   }
 
   return formData as T;

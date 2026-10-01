@@ -57,16 +57,19 @@ export function createStandardValidation({
       validate: async (data, model: KnownAny, { validationType, i }) => {
         const result = await model['~standard'].validate(data);
         if (result.issues?.length) {
-          throw new HttpException(
-            HttpStatus.BAD_REQUEST,
-            `Validation failed. Invalid ${validationType === 'iteration' ? `${validationType} #${i}` : validationType}: ${result.issues
-              .map(
-                ({ message, path }: { message: string; path?: string[] }) =>
-                  `${message}${path ? ` at ${path.join('.')}` : ''}`
-              )
-              .join(', ')}`,
-            { issues: result.issues }
-          );
+          const message = `Validation failed. Invalid ${validationType === 'iteration' ? `${validationType} #${i}` : validationType}: ${result.issues
+            .map(
+              // a path segment is a key or, in valibot and others, an object that holds the key
+              ({ message, path }: { message: string; path?: readonly (PropertyKey | { key: PropertyKey })[] }) =>
+                `${message}${path?.length ? ` at ${path.map((segment) => String(typeof segment === 'object' ? segment.key : segment)).join('.')}` : ''}`
+            )
+            .join(', ')}`;
+          // output and iterations are the handler's own data, and some libraries copy it into the issues:
+          // without a status code the error is internal, so production answers 500 and keeps the issues on the server
+          if (validationType === 'output' || validationType === 'iteration') {
+            throw new Error(message, { cause: { issues: result.issues } });
+          }
+          throw new HttpException(HttpStatus.BAD_REQUEST, message, { issues: result.issues });
         }
 
         return (result as CombinedSpec.SuccessResult<typeof model>).value;
