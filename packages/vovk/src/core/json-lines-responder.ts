@@ -1,9 +1,13 @@
 import type { StreamAbortMessage } from '../types/core.js';
+import { isHttpException } from './http-exception.js';
 import '../utils/shim.js';
 
 export abstract class Responder {
   public response!: Response;
 }
+
+// bytes queued for a slow client before send() waits for it to read
+const HIGH_WATER_MARK = 64 * 1024;
 
 /**
  * Responder subclass for streaming JSON Lines. @see https://vovk.dev/jsonlines
@@ -22,7 +26,7 @@ export abstract class Responder {
  * ```
  */
 export class JSONLinesResponder<T> extends Responder {
-  private isClosed = false;
+  private closed = false;
 
   private i = 0;
 
@@ -32,6 +36,9 @@ export class JSONLinesResponder<T> extends Responder {
   private sendQueue: Promise<void> = Promise.resolve();
 
   private hasSent = false;
+
+  // resolves the send that waits for the client to read, see waitForRoom()
+  private resumeSend: (() => void) | null = null;
 
   private controller?: ReadableStreamDefaultController | null;
 
@@ -48,14 +55,18 @@ export class JSONLinesResponder<T> extends Responder {
     const encoder = new TextEncoder();
     let readableController: ReadableStreamDefaultController;
 
-    const readableStream = new ReadableStream({
-      cancel: () => {
-        this.isClosed = true;
+    const readableStream = new ReadableStream(
+      {
+        start: (controller) => {
+          readableController = controller;
+        },
+        // the client read enough of the queue for more lines
+        pull: () => this.resume(),
+        // the client stopped reading
+        cancel: () => this.stop(),
       },
-      start: (controller) => {
-        readableController = controller;
-      },
-    });
+      { highWaterMark: HIGH_WATER_MARK, size: (chunk: Uint8Array) => chunk.byteLength }
+    );
 
     const accept = request?.headers?.get('accept');
 
@@ -72,15 +83,22 @@ export class JSONLinesResponder<T> extends Responder {
     this.controller = readableController!;
     this.response = getResponse?.(this) ?? new Response(readableStream, { headers });
 
-    request?.signal?.addEventListener('abort', this.close, { once: true });
-
     // this will make promise on the client-side to resolve immediately, before sending the first JSON line
     this.controller?.enqueue(encoder?.encode(''));
+
+    if (request?.signal?.aborted) this.abort();
+    else request?.signal?.addEventListener('abort', this.abort, { once: true });
+  }
+
+  /** Whether the stream is closed: by close() or throw(), or because the client went away. Later lines are dropped. */
+  public get isClosed() {
+    return this.closed;
   }
 
   public readonly send = async (item: T) => {
     // chaining keeps lines in call order even when send() is not awaited
     const promise = this.sendQueue.then(async () => {
+      if (this.closed) return;
       try {
         if (!this.hasSent) {
           this.hasSent = true;
@@ -88,7 +106,9 @@ export class JSONLinesResponder<T> extends Responder {
           // otherwise immediate streaming would skip the first iteration validation
           await new Promise((resolve) => setTimeout(resolve, 0));
         }
-        this.sendLineOrError(await this.onBeforeSend(item, this.i++));
+        const line = await this.onBeforeSend(item, this.i++);
+        await this.waitForRoom();
+        this.sendLineOrError(line);
       } catch (e) {
         this.throw(e);
       }
@@ -104,31 +124,61 @@ export class JSONLinesResponder<T> extends Responder {
 
   public sendLineOrError = (data: T | StreamAbortMessage) => {
     const { controller, encoder } = this;
-    if (this.isClosed) return;
+    if (this.closed) return;
 
     controller?.enqueue(encoder?.encode(`${JSON.stringify(data)}\n`));
   };
 
   public readonly close = async () => {
-    if (this.isClosed) return;
+    if (this.closed) return;
     // let unawaited send() calls finish first, per the documented send-then-close pattern
     while (this.pendingSends.size) {
       await Promise.allSettled([...this.pendingSends]);
     }
-    if (this.isClosed) return;
-    this.isClosed = true;
+    if (this.closed) return;
+    this.closed = true;
     this.controller?.close();
   };
 
   public readonly throw = (e: unknown) => {
-    // same rule as a non streaming handler, an error without a statusCode is internal
-    const isExpected = typeof (e as { statusCode?: unknown })?.statusCode === 'number';
-    if (!isExpected && process.env.NODE_ENV === 'production') {
+    // same rule as a non streaming handler, an error other than an HttpException is internal
+    if (!isHttpException(e) && process.env.NODE_ENV === 'production') {
       console.error('🐺 Unhandled error in a Vovk stream:', e);
       this.sendLineOrError({ isError: true, reason: 'Internal server error' });
       return this.close();
     }
-    this.sendLineOrError({ isError: true, reason: e instanceof Error ? e.message : e });
+    this.sendLineOrError({
+      isError: true,
+      reason: e instanceof Error ? e.message : e,
+      ...(isHttpException(e) ? { statusCode: e.statusCode } : {}),
+    });
     return this.close();
+  };
+
+  // a full queue means the client reads slower than the lines come
+  private async waitForRoom() {
+    while (!this.closed && (this.controller?.desiredSize ?? 1) <= 0) {
+      await new Promise<void>((resolve) => {
+        this.resumeSend = resolve;
+      });
+    }
+  }
+
+  private resume() {
+    const { resumeSend } = this;
+    this.resumeSend = null;
+    resumeSend?.();
+  }
+
+  // the client went away, nothing more is sent and a send waiting for room returns
+  private stop() {
+    this.closed = true;
+    this.resume();
+  }
+
+  private readonly abort = () => {
+    if (this.closed) return;
+    this.stop();
+    this.controller?.close();
   };
 }
