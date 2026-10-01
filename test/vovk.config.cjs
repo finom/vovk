@@ -41,6 +41,10 @@ const vovkConfig = {
           fetcher: './src/lib/fetcher.ts',
         },
       },
+      // same name as the segment, so routes stay put while the generated client passes the option
+      'foo/client': {
+        segmentNameOverride: 'foo/client',
+      },
     },
   },
   bundle: {
