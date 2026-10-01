@@ -1,6 +1,7 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import type { VovkStrictConfig } from 'vovk/internal';
+import { ROOT_SEGMENT_FILE_NAME } from '../dev/write-one-segment-schema-file.mjs';
 import type { ProjectInfo } from '../get-project-info/index.mjs';
 import { getFileSystemEntryType } from './get-file-system-entry-type.mjs';
 
@@ -8,6 +9,15 @@ export type Segment = {
   routeFilePath: string;
   segmentName: string;
 };
+
+// the root segment writes root.json and a root/ client folder, a segment named "root" would share them
+export function assertSegmentName(segmentName: string, segmentDir: string) {
+  if (segmentName === ROOT_SEGMENT_FILE_NAME) {
+    throw new Error(
+      `A segment can't be named "${ROOT_SEGMENT_FILE_NAME}": the root segment's schema file and client folder use that name. Rename ${segmentDir}.`
+    );
+  }
+}
 
 export async function locateSegments({
   dir,
@@ -48,6 +58,7 @@ export async function locateSegments({
         if (await getFileSystemEntryType(routeFilePath)) {
           // Calculate the basePath relative to the root directory
           const segmentName = path.relative(rootDir, dir).replace(/\\/g, '/'); // windows fix
+          assertSegmentName(segmentName, dir);
           results.push({ routeFilePath, segmentName });
         }
       }
