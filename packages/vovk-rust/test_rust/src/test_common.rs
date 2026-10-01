@@ -23,4 +23,14 @@ pub mod test_common {
             serde_json::json!({"x-vovk-test": "world"})
         );
     }
+
+    // a caller can branch on the status code and read the cause the server sent
+    #[tokio::test]
+    async fn test_http_exception_fields() {
+        let error = common_controller_rpc::get_error_response((), (), (), None, None, false).await.unwrap_err();
+
+        assert_eq!(error.status_code(), 400);
+        assert_eq!(error.message(), "This is an error");
+        assert_eq!(error.cause(), Some(&serde_json::json!({"theCause": "This is the cause"})));
+    }
 }

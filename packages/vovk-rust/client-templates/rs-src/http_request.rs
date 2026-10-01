@@ -19,13 +19,27 @@ use tokio_util::io::StreamReader;
 pub struct HttpException {
     message: String,
     status_code: i32,
-    #[allow(dead_code)]
     cause: Option<Value>,
 }
 
 impl HttpException {
     fn new(message: impl Into<String>, status_code: i32, cause: Option<Value>) -> Self {
         HttpException { message: message.into(), status_code, cause }
+    }
+
+    /// The error message
+    pub fn message(&self) -> &str {
+        &self.message
+    }
+
+    /// The HTTP status code, 0 when the call failed before a response came
+    pub fn status_code(&self) -> i32 {
+        self.status_code
+    }
+
+    /// The cause the server sent with the error
+    pub fn cause(&self) -> Option<&Value> {
+        self.cause.as_ref()
     }
 }
 

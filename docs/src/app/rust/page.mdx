@@ -419,6 +419,8 @@ pub fn main() {
 
 Under the hood, it uses [reqwest](https://docs.rs/reqwest/latest/reqwest/) for HTTP, [jsonschema](https://docs.rs/jsonschema/latest/jsonschema/) for client-side validation, and other common crates. Client-side validation reads a schema as JSON Schema 2020-12, or draft 7 when the schema declares it, and checks formats such as `email` and `uuid`. The crate needs Rust 1.85 or newer.
 
+A failed call returns an `HttpException`. Its `status_code()` is the response status, or 0 when the call failed before a response came, for example on client-side validation; `message()` and `cause()` hold the error the server sent.
+
 ### JSON Lines Endpoints
 
 For continuous streaming with [JSON Lines](/jsonlines) endpoints, the client implements the `Iterator` trait to return an async-capable iterator for streamed data.
