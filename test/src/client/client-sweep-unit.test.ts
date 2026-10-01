@@ -293,6 +293,42 @@ describe('Client sweep, pure functions', () => {
       strictEqual(requestSignal?.reason, 'stop');
     });
 
+    it('Merges default and per-call headers by name, whatever their shape', async () => {
+      type WithDefaults = { withDefaults: (options: object) => WithDefaults } & Record<string, TestCall>;
+      const rpc = rpcOf(handlers) as unknown as WithDefaults;
+      const plainDefaults = rpc.withDefaults({ init: { headers: { Authorization: 'Bearer A' } } });
+      const headersDefaults = rpc.withDefaults({ init: { headers: new Headers({ authorization: 'Bearer A' }) } });
+      const chained = plainDefaults.withDefaults({ init: { headers: [['x-tenant', 't']] } });
+      const seen: { authorization?: string; requestId?: string; tenant?: string }[] = [];
+
+      await withFetch(
+        (_url, init) => {
+          const headers = new Headers(init.headers);
+          seen.push({
+            authorization: headers.get('authorization') ?? undefined,
+            requestId: headers.get('x-request-id') ?? undefined,
+            tenant: headers.get('x-tenant') ?? undefined,
+          });
+          return Response.json({});
+        },
+        async () => {
+          await plainDefaults.get({ init: { headers: { authorization: 'Bearer B' } } });
+          await plainDefaults.get({ init: { headers: new Headers({ 'x-request-id': '1' }) } });
+          await plainDefaults.get({ init: { headers: [['x-request-id', '1']] } });
+          await headersDefaults.get({ init: { headers: { 'x-request-id': '1' } } });
+          await chained.get({ init: { headers: { 'X-Tenant': 'u' } } });
+        }
+      );
+
+      deepStrictEqual(seen, [
+        { authorization: 'Bearer B', requestId: undefined, tenant: undefined },
+        { authorization: 'Bearer A', requestId: '1', tenant: undefined },
+        { authorization: 'Bearer A', requestId: '1', tenant: undefined },
+        { authorization: 'Bearer A', requestId: '1', tenant: undefined },
+        { authorization: 'Bearer A', requestId: undefined, tenant: 'u' },
+      ]);
+    });
+
     it('Gives null for a JSON response without a body', async () => {
       const rpc = rpcOf({
         exists: { path: '', httpMethod: 'HEAD' },

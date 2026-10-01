@@ -198,7 +198,7 @@ Overrides the `validateOnClient` setting from [imports](/imports#validateonclien
 
 ## `withDefaults`
 
-An RPC module can be wrapped with default options using the `withDefaults` method. It returns a new RPC module with the specified deeply-merged defaults applied to every method call.
+An RPC module can be wrapped with default options using the `withDefaults` method. It returns a new RPC module with the specified deeply-merged defaults applied to every method call. Headers merge by name, case-insensitively, whether a layer gives them as an object, a `Headers{:ts}` instance or entries, and a per-call header replaces a default one.
 
 ```ts showLineNumbers copy
 import { UserRPC } from '@/client';

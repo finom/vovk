@@ -80,6 +80,20 @@ const toFormBody = (source: Record<string, unknown>, contentTypes: string[]) => 
   return form;
 };
 
+// deep merge, as per-call options and chained defaults merge; the headers of every layer, an object, a Headers
+// instance or entries, merge by name with the later layer winning
+const mergeOptions = <T>(...layers: unknown[]): T => {
+  const merged = deepExtend({}, ...layers) as T & { init?: RequestInit };
+  const headerLayers = layers.map((layer) => (layer as { init?: RequestInit } | undefined)?.init?.headers);
+  if (!headerLayers.some(Boolean)) return merged;
+  const headers = new Headers();
+  for (const layer of headerLayers) {
+    for (const [key, value] of new Headers(layer)) headers.set(key, value);
+  }
+  merged.init = { ...merged.init, headers: Object.fromEntries(headers.entries()) };
+  return merged;
+};
+
 /**
  * Creates a client-side RPC module for interacting with server-side controllers.
  * @see https://vovk.dev/typescript
@@ -199,14 +213,7 @@ export const createRPC = <T, OPTS extends Record<string, KnownAny> = Record<stri
       };
 
       const internalInput = {
-        ...(deepExtend(
-          {},
-          options,
-          {
-            validateOnClient: optionsResolvedValidateOnClient,
-          },
-          input
-        ) as OPTS),
+        ...mergeOptions<OPTS>(options, { validateOnClient: optionsResolvedValidateOnClient }, input),
         body: body ?? null,
         query: input.query ?? {},
         params: input.params ?? {},
@@ -242,13 +249,13 @@ export const createRPC = <T, OPTS extends Record<string, KnownAny> = Record<stri
 
   Object.defineProperty(client, 'withDefaults', {
     value: (newOptions?: VovkFetcherOptions<OPTS>) => {
-      // deep merge to match per-call option merging, so chained defaults don't clobber nested keys
+      // merged as per-call options are, so chained defaults don't clobber nested keys
       return createRPC<T, OPTS>(
         schema,
         segmentName,
         rpcModuleName,
         givenFetcher,
-        deepExtend({}, options, newOptions) as VovkFetcherOptions<OPTS>
+        mergeOptions<VovkFetcherOptions<OPTS>>(options, newOptions)
       );
     },
     enumerable: false,
