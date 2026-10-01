@@ -23,6 +23,11 @@ export default class RuntimeSweepController {
     body: z.string(),
   }).handle(async (req) => ({ body: await req.vovk.body() }));
 
+  @post('typed-without-body')
+  static typedWithoutBody = procedure({
+    contentType: 'text/plain',
+  }).handle(async () => ({ ok: true }));
+
   @get('docs/{id}')
   static readDocs(req: VovkRequest, params: Record<string, string>) {
     const seenBefore = { ...params };
