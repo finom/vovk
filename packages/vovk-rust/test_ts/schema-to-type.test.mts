@@ -1,7 +1,13 @@
 import assert from 'node:assert';
 import { describe, test } from 'node:test';
 import type { VovkJSONSchemaBase } from '../../vovk/src/index.js';
-import { convertJSONSchemasToRustTypes, getBodyKind } from '../index.js';
+import {
+  convertJSONSchemasToRustTypes,
+  getBodyKind,
+  toRustCommentText,
+  toRustDocLines,
+  toRustString,
+} from '../index.js';
 
 describe('convertJSONSchemasToRustTypes', () => {
   test('basic primitive types', () => {
@@ -403,5 +409,71 @@ describe('convertJSONSchemasToRustTypes', () => {
       output.includes('User') || output.includes('users') || output.includes('name:') || output.includes('name: ');
 
     assert.ok(userRelatedOutput, 'Expected User-related content not found in the output');
+  });
+});
+
+describe('schema text never leaves its literal', () => {
+  test('doc comments keep every line of a title or description behind ///', () => {
+    const output = convertJSONSchemasToRustTypes({
+      schemas: {
+        body: {
+          type: 'object',
+          title: 'Thing\nfn injected() {}',
+          description: 'a\r\nb\rc',
+          properties: { a: { type: 'string' } },
+        },
+      },
+      rootName: 'test',
+    });
+
+    assert.ok(output.includes('/// Thing\n'), output);
+    assert.ok(output.includes('/// fn injected() {}\n'), output);
+    assert.ok(output.includes('/// a\n') && output.includes('/// b\n') && output.includes('/// c\n'), output);
+    assert.ok(!/^\s*fn injected/m.test(output), output);
+  });
+
+  test('helpers for templates', () => {
+    assert.deepEqual(toRustDocLines('a\r\nb\u0000'), ['a', 'b ']);
+    assert.equal(toRustCommentText('a\nfn x() {}'), 'a fn x() {}');
+    assert.equal(toRustString('text/plain"; x \\ \n'), '"text/plain\\"; x \\\\ \\u{a}"');
+  });
+});
+
+describe('type arrays', () => {
+  test('["T", "null"] is an optional T, and several types stay untyped', () => {
+    const output = convertJSONSchemasToRustTypes({
+      schemas: {
+        output: {
+          type: 'object',
+          properties: {
+            n: { type: ['integer', 'null'] },
+            s: { type: ['string', 'null'], enum: ['a', null] },
+            mixed: { type: ['string', 'number'] },
+            list: { type: ['array', 'null'], items: { type: 'string' } },
+            objects: { type: ['array', 'null'], items: { type: 'object', properties: { x: { type: 'string' } } } },
+          },
+          required: ['n', 's', 'mixed', 'list', 'objects'],
+        },
+      },
+      rootName: 'test',
+    });
+
+    assert.ok(output.includes('pub n: Option<i64>,'), output);
+    assert.ok(output.includes('pub s: Option<String>,'), output);
+    assert.ok(output.includes('pub mixed: serde_json::Value,'), output);
+    assert.ok(output.includes('pub list: Option<Vec<String>>,'), output);
+    assert.ok(output.includes('pub objects: Option<serde_json::Value>,'), output);
+  });
+
+  test('a bare $ref slot names the referenced type', () => {
+    const output = convertJSONSchemasToRustTypes({
+      schemas: {
+        body: { $ref: '#/$defs/Thing', $defs: { Thing: { type: 'object', properties: { a: { type: 'string' } } } } },
+      },
+      rootName: 'test',
+    });
+
+    assert.ok(output.includes('pub struct Thing'), output);
+    assert.ok(output.includes('pub type body = Thing;'), output);
   });
 });
