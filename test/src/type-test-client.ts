@@ -1,6 +1,7 @@
 import { createFetcher, procedure, type VovkRequest } from 'vovk';
 import { createRPC } from 'vovk/create-rpc';
 import type { VovkFetcherOptions } from 'vovk/internal';
+import { z } from 'zod';
 
 // Type checks for RPC modules: the test app's tsc run fails if a line without @ts-expect-error doesn't compile
 
@@ -83,4 +84,25 @@ export async function perCallOptionsAndHelpers() {
   await rpc.ping();
   // @ts-expect-error a static that takes no request is not a handler, the RPC module has no such method
   rpc.formatName;
+}
+
+// ====== transform ======
+
+class OutputController {
+  static withOutput = procedure({ output: z.object({ n: z.number() }) }).handle(async () => ({ n: 1 }));
+}
+
+export async function transformToPrimitive() {
+  const rpc = createRPC<typeof OutputController>({}, '', 'OutputRPC');
+
+  const output = await rpc.withOutput();
+  output.n satisfies number;
+  const doubled = await rpc.withOutput({ transform: (data) => data.n * 2 });
+  doubled satisfies number;
+  const status = await rpc.withOutput({ transform: (_data, response) => response.status });
+  status satisfies number;
+  const label = await rpc.withOutput({ transform: () => 'label' as const });
+  label satisfies 'label';
+  const pair = await rpc.withOutput({ transform: (data, response) => [data, response] as const });
+  pair[0].n satisfies number;
 }

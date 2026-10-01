@@ -11,7 +11,7 @@ import type {
 } from './core.js';
 import type { HttpMethod } from './enums.js';
 import type { VovkRequest } from './request.js';
-import type { IsEmptyObject, KnownAny, Prettify } from './utils.js';
+import type { IsAny, IsEmptyObject, KnownAny, Prettify } from './utils.js';
 import type { BodyTypeFromContentType, ContentType, VovkValidateOnClient } from './validation.js';
 
 type OmitNullable<T> = {
@@ -120,19 +120,22 @@ export type ClientMethodReturn<
   ) => undefined | object | JSONLinesResponder<TStreamIteration> | Promise<JSONLinesResponder<TStreamIteration>>,
   TStreamIteration,
   R,
-> = R extends object
-  ? Promise<Awaited<R>>
-  : T extends { __types: { iteration: infer U } }
-    ? unknown extends U
-      ? StaticMethodReturnPromise<T>
-      : Promise<VovkStreamAsyncIterable<U>>
-    : ActualReturnType<T> extends
-          | Promise<JSONLinesResponder<infer U>>
-          | JSONLinesResponder<infer U>
-          | Iterator<infer U>
-          | AsyncIterator<infer U>
-      ? Promise<VovkStreamAsyncIterable<U>>
-      : StaticMethodReturnPromise<T>;
+> =
+  IsAny<R> extends true
+    ? Promise<R>
+    : unknown extends R // no transform, or one that returns unknown
+      ? T extends { __types: { iteration: infer U } }
+        ? unknown extends U
+          ? StaticMethodReturnPromise<T>
+          : Promise<VovkStreamAsyncIterable<U>>
+        : ActualReturnType<T> extends
+              | Promise<JSONLinesResponder<infer U>>
+              | JSONLinesResponder<infer U>
+              | Iterator<infer U>
+              | AsyncIterator<infer U>
+          ? Promise<VovkStreamAsyncIterable<U>>
+          : StaticMethodReturnPromise<T>
+      : Promise<Awaited<R>>;
 
 export type ClientMethod<
   T extends ((
