@@ -1,11 +1,66 @@
 import { parseBody } from '../req/parse-body.js';
 import { reqMeta } from '../req/req-meta.js';
 import { reqQuery } from '../req/req-query.js';
-import type { DecoratorOptions, RouteHandler, VovkController, VovkErrorResponse } from '../types/core.js';
+import type {
+  DecoratorOptions,
+  RouteHandler,
+  VovkController,
+  VovkControllerInternal,
+  VovkErrorResponse,
+} from '../types/core.js';
 import { HttpMethod, HttpStatus } from '../types/enums.js';
 import type { VovkRequest } from '../types/request.js';
-import { HttpException } from './http-exception.js';
+import { HttpException, isHttpException } from './http-exception.js';
 import { JSONLinesResponder, Responder } from './json-lines-responder.js';
+
+type Route = { staticMethod: RouteHandler; controller: VovkController };
+
+// a route segment as the literals around its params: "{from}-{to}.json" is ['', '-', '.json'] around ['from', 'to']
+type ParamSegment = { literals: string[]; paramNames: string[] };
+
+// the param values of a path segment in paramNames order, each as long as possible from the left, as a greedy
+// regex would take it; the literals are found from the right with lastIndexOf, so a long segment costs linear time
+// where a regex could backtrack for seconds
+function matchParamSegment(pathSegment: string, { literals }: ParamSegment) {
+  const prefix = literals[0];
+  const suffix = literals[literals.length - 1];
+  if (!pathSegment.startsWith(prefix) || !pathSegment.endsWith(suffix)) return null;
+
+  const values: string[] = [];
+  let end = pathSegment.length - suffix.length;
+  for (let i = literals.length - 2; i > 0; i--) {
+    const literal = literals[i];
+    const at = pathSegment.lastIndexOf(literal, end - literal.length - 1);
+    if (at === -1 || at + literal.length >= end) return null;
+    values[i] = pathSegment.slice(at + literal.length, end);
+    end = at;
+  }
+  if (end <= prefix.length) return null;
+  values[0] = pathSegment.slice(prefix.length, end);
+
+  return values;
+}
+
+type SegmentHooks = {
+  onError?: VovkControllerInternal['_onError'];
+  onSuccess?: VovkControllerInternal['_onSuccess'];
+  onBefore?: VovkControllerInternal['_onBefore'];
+};
+
+// the catch-all is the one array param, a dynamic parent folder such as [lang] adds string params
+export const getCatchAllPath = (params: Record<string, string[] | string | undefined>) =>
+  Object.values(params).find((value): value is string[] => Array.isArray(value)) ?? [];
+
+// redirect(), notFound(), forbidden() and unauthorized() from next/navigation throw these for Next.js to answer
+const isNextNavigationError = (error: unknown) => {
+  const { digest, message } = (error ?? {}) as { digest?: unknown; message?: unknown };
+  return (
+    (typeof digest === 'string' &&
+      (digest.startsWith('NEXT_REDIRECT') || digest.startsWith('NEXT_HTTP_ERROR_FALLBACK'))) ||
+    message === 'NEXT_REDIRECT' ||
+    message === 'NEXT_NOT_FOUND'
+  );
+};
 
 class VovkApp {
   private static getHeadersFromDecoratorOptions(options?: DecoratorOptions) {
@@ -24,6 +79,27 @@ class VovkApp {
     };
 
     return headers;
+  }
+
+  // fetch() and Response.redirect() responses have immutable headers, a copy takes the extra headers then
+  private static withHeaders(response: Response, headers: Record<string, string>) {
+    const missing = Object.entries(headers).filter(([key]) => !response.headers.has(key));
+    if (!missing.length) return response;
+    try {
+      for (const [key, value] of missing) response.headers.set(key, value);
+      return response;
+    } catch {
+      const copy = new Response(response.body, response);
+      for (const [key, value] of missing) copy.headers.set(key, value);
+      return copy;
+    }
+  }
+
+  // HEAD answers with the status and headers only, a stream behind the dropped body is cancelled
+  private static withoutBody(response: Response) {
+    if (!response.body) return response;
+    response.body.cancel().catch(() => {});
+    return new Response(null, { status: response.status, statusText: response.statusText, headers: response.headers });
   }
 
   routes: Record<HttpMethod, Map<VovkController, Record<string, RouteHandler>>> = {
@@ -51,7 +127,9 @@ class VovkApp {
     this.#callMethod({ httpMethod: HttpMethod.DELETE, req, params: await data.params, segmentName });
 
   HEAD = async (req: Request, data: { params: Promise<Record<string, string[]>> }, segmentName: string) =>
-    this.#callMethod({ httpMethod: HttpMethod.HEAD, req, params: await data.params, segmentName });
+    VovkApp.withoutBody(
+      await this.#callMethod({ httpMethod: HttpMethod.HEAD, req, params: await data.params, segmentName })
+    );
 
   OPTIONS = async (req: Request, data: { params: Promise<Record<string, string[]>> }, segmentName: string) =>
     this.#callMethod({ httpMethod: HttpMethod.OPTIONS, req, params: await data.params, segmentName });
@@ -103,27 +181,80 @@ class VovkApp {
     });
   };
 
-  #routeRegexCache = new Map<string, RegExp>();
-  #routeSegmentsCache = new Map<string, string[]>();
-  #routeParamPositionsCache = new Map<string, { index: number; paramName: string }[]>();
+  // set by initSegment: one controller may serve several segments, each with its own hooks
+  #segments = new Map<string, SegmentHooks & { controllers: Set<VovkController> }>();
+
+  setSegment = (segmentName: string, segment: SegmentHooks & { controllers: Set<VovkController> }) => {
+    this.#segments.set(segmentName, segment);
+    // a segment initialized again, as on a dev reload, collects its handlers again
+    delete this.#allHandlers[segmentName];
+  };
+
+  // a segment set up without initSegment keeps its hooks on the controller
+  #getHooks = (segmentName: string, controller?: VovkController): SegmentHooks =>
+    this.#segments.get(segmentName) ?? {
+      onError: controller?._onError,
+      onSuccess: controller?._onSuccess,
+      onBefore: controller?._onBefore,
+    };
+
+  // per route: its path segments, the ones holding params by index, and a param named twice
+  #routeShapeCache = new Map<
+    string,
+    { segments: string[]; paramSegments: Map<number, ParamSegment>; duplicateParam: string | undefined }
+  >();
   // matches are only valid for the handlers map they were resolved against, so scope by its identity
   #routeMatchCache = new WeakMap<object, Map<string, { route: string; params: Record<string, string> }>>();
   // concrete paths come from the URL, cap the per handlers map cache so it can't grow forever
   static #ROUTE_MATCH_CACHE_LIMIT = 1000;
 
-  #getHandler = ({
-    handlers,
-    path,
-    params,
-  }: {
-    handlers: Record<string, { staticMethod: RouteHandler; controller: VovkController }>;
-    path: string[];
-    params: Record<string, string[]>;
-  }) => {
-    let methodParams: Record<string, string> = {};
+  #getRouteShape = (route: string) => {
+    let shape = this.#routeShapeCache.get(route);
+    if (!shape) {
+      const segments = route.split('/');
+      const paramSegments = new Map<number, ParamSegment>();
+      segments.forEach((segment, index) => {
+        // split keeps the captured names at the odd indexes, the literals around them at the even ones
+        const parts = segment.split(/\{(\w+)\}/);
+        if (parts.length === 1) return;
+        paramSegments.set(index, {
+          literals: parts.filter((_, i) => i % 2 === 0),
+          paramNames: parts.filter((_, i) => i % 2 === 1),
+        });
+      });
+      const paramNames = [...paramSegments.values()].flatMap((paramSegment) => paramSegment.paramNames);
+      const duplicateParam = paramNames.find((paramName, i) => paramNames.indexOf(paramName) !== i);
+      shape = { segments, paramSegments, duplicateParam };
+      this.#routeShapeCache.set(route, shape);
+    }
+    return shape;
+  };
 
-    if (Object.keys(params).length === 0) {
-      return { handler: handlers[''], methodParams };
+  // the params of a route for a path, or null when the path doesn't match the route
+  #matchRoute = (route: string, path: string[]) => {
+    const { segments, paramSegments, duplicateParam } = this.#getRouteShape(route);
+    if (segments.length !== path.length) return null;
+    if (segments.some((segment, i) => !paramSegments.has(i) && segment !== path[i])) return null;
+    if (duplicateParam) {
+      throw new HttpException(HttpStatus.INTERNAL_SERVER_ERROR, `Duplicate parameter "${duplicateParam}" at ${route}`);
+    }
+
+    const params: Record<string, string> = {};
+    for (const [index, paramSegment] of paramSegments) {
+      // matched per segment, so a decoded "/" from %2F belongs to the value
+      const values = matchParamSegment(path[index], paramSegment);
+      if (!values) return null;
+      paramSegment.paramNames.forEach((paramName, i) => {
+        params[paramName] = values[i];
+      });
+    }
+
+    return params;
+  };
+
+  #getHandler = ({ handlers, path }: { handlers: Record<string, Route>; path: string[] }) => {
+    if (path.length === 0) {
+      return { handler: Object.hasOwn(handlers, '') ? handlers[''] : null, methodParams: {} };
     }
 
     // a decoded "/" inside one segment makes the joined path ambiguous, /files/a%2Fb vs /files/a/b
@@ -134,121 +265,26 @@ class VovkApp {
     let matchCache = hasEncodedSlash ? undefined : this.#routeMatchCache.get(handlers);
     const cachedMatch = matchCache?.get(pathStr);
     if (cachedMatch) {
-      return {
-        handler: handlers[cachedMatch.route],
-        methodParams: cachedMatch.params,
-      };
+      // a copy per request, a handler may change its params
+      return { handler: handlers[cachedMatch.route], methodParams: { ...cachedMatch.params } };
     }
 
-    // Check for direct static route match, hasOwn so /toString doesn't resolve a prototype member
-    let methodKey = !hasEncodedSlash && Object.hasOwn(handlers, pathStr) ? pathStr : null;
+    // a static route by its literal path, hasOwn so /toString doesn't resolve a prototype member;
+    // a template is matched below, so /users/%7Bid%7D gets users/{id} with id "{id}"
+    let methodKey =
+      !hasEncodedSlash && Object.hasOwn(handlers, pathStr) && !this.#getRouteShape(pathStr).paramSegments.size
+        ? pathStr
+        : null;
+    let methodParams: Record<string, string> = {};
 
     if (!methodKey) {
       const methodKeys: string[] = [];
-      const pathLength = path.length;
 
-      // First pass: group routes by length for quick filtering
-      const routesByLength = new Map<number, string[]>();
-
-      for (const p of Object.keys(handlers)) {
-        let routeSegments = this.#routeSegmentsCache.get(p);
-        if (!routeSegments) {
-          routeSegments = p.split('/');
-          this.#routeSegmentsCache.set(p, routeSegments);
-
-          // Pre-compute parameter positions for routes with parameters
-          if (p.includes('{')) {
-            const paramPositions: { index: number; paramName: string }[] = [];
-            for (let i = 0; i < routeSegments.length; i++) {
-              const segment = routeSegments[i];
-              if (segment.includes('{')) {
-                const paramMatch = segment.match(/\{(\w+)\}/);
-                if (paramMatch) {
-                  paramPositions.push({ index: i, paramName: paramMatch[1] });
-                }
-              }
-            }
-            this.#routeParamPositionsCache.set(p, paramPositions);
-          }
-        }
-
-        const segmentLength = routeSegments.length;
-        if (segmentLength !== pathLength) continue;
-
-        const lengthRoutes = routesByLength.get(segmentLength) || [];
-        lengthRoutes.push(p);
-        routesByLength.set(segmentLength, lengthRoutes);
-      }
-
-      // Only process routes with matching segment count
-      const candidateRoutes = routesByLength.get(pathLength) || [];
-
-      for (const p of candidateRoutes) {
-        const routeSegments = this.#routeSegmentsCache.get(p);
-        if (!routeSegments) continue; // This should never happen, fix TS error
-        const params: Record<string, string> = {};
-
-        // Fast path for routes with parameters
-        const paramPositions = this.#routeParamPositionsCache.get(p);
-        if (paramPositions) {
-          let isMatch = true;
-
-          // First check all non-parameter segments for a quick fail
-          for (let i = 0; i < routeSegments.length; i++) {
-            const routeSegment = routeSegments[i];
-            if (!routeSegment.includes('{') && routeSegment !== path[i]) {
-              isMatch = false;
-              break;
-            }
-          }
-
-          if (!isMatch) continue;
-
-          // Now process parameter segments
-          for (const { index, paramName } of paramPositions) {
-            const routeSegment = routeSegments[index];
-            const pathSegment = path[index];
-
-            let regex = this.#routeRegexCache.get(routeSegment);
-            if (!regex) {
-              const regexPattern = routeSegment
-                .replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
-                // matched per segment, so a decoded "/" from %2F belongs to the value
-                .replace(/\\{(\w+)\\}/g, '(?<$1>[\\s\\S]+)');
-              regex = new RegExp(`^${regexPattern}$`);
-              this.#routeRegexCache.set(routeSegment, regex);
-            }
-
-            const values = pathSegment.match(regex)?.groups;
-            if (!values) {
-              isMatch = false;
-              break;
-            }
-
-            if (paramName in params) {
-              throw new HttpException(HttpStatus.INTERNAL_SERVER_ERROR, `Duplicate parameter "${paramName}" at ${p}`);
-            }
-
-            params[paramName] = values[paramName];
-          }
-
-          if (isMatch) {
-            methodParams = params;
-            methodKeys.push(p);
-          }
-        } else {
-          // Static route - simple equality comparison for all segments
-          let isMatch = true;
-          for (let i = 0; i < routeSegments.length; i++) {
-            if (routeSegments[i] !== path[i]) {
-              isMatch = false;
-              break;
-            }
-          }
-
-          if (isMatch) {
-            methodKeys.push(p);
-          }
+      for (const route of Object.keys(handlers)) {
+        const params = this.#matchRoute(route, path);
+        if (params) {
+          methodParams = params;
+          methodKeys.push(route);
         }
       }
 
@@ -272,24 +308,24 @@ class VovkApp {
     }
 
     if (methodKey) {
-      return { handler: handlers[methodKey], methodParams };
+      return { handler: handlers[methodKey], methodParams: { ...methodParams } };
     }
 
     return { handler: null, methodParams };
   };
 
-  #allHandlers: Record<
-    string,
-    Partial<Record<HttpMethod, Record<string, { staticMethod: RouteHandler; controller: VovkController }>>>
-  > = {};
+  #allHandlers: Record<string, Partial<Record<HttpMethod, Record<string, Route>>>> = {};
 
   #collectHandlers = (httpMethod: HttpMethod, segmentName: string) => {
     const controllers = this.routes[httpMethod];
+    const segment = this.#segments.get(segmentName);
 
-    const handlers: Record<string, { staticMethod: RouteHandler; controller: VovkController }> = {};
+    const handlers: Record<string, Route> = {};
 
     controllers.forEach((staticMethods, controller) => {
-      if (segmentName !== controller._segmentName) return;
+      // a segment set up without initSegment names its controllers by _segmentName
+      const isInSegment = segment ? segment.controllers.has(controller) : controller._segmentName === segmentName;
+      if (!isInSegment) return;
       const prefix = controller.prefix ?? '';
 
       Object.entries(staticMethods ?? {}).forEach(([path, staticMethod]) => {
@@ -298,6 +334,13 @@ class VovkApp {
       });
     });
 
+    return handlers;
+  };
+
+  #getHandlers = (httpMethod: HttpMethod, segmentName: string) => {
+    const handlers = this.#allHandlers[segmentName]?.[httpMethod] ?? this.#collectHandlers(httpMethod, segmentName);
+    this.#allHandlers[segmentName] ??= {};
+    this.#allHandlers[segmentName][httpMethod] = handlers;
     return handlers;
   };
 
@@ -313,10 +356,7 @@ class VovkApp {
     segmentName: string;
   }) => {
     const req = request as VovkRequest;
-    const path = params[Object.keys(params)[0]] ?? [];
-    const handlers = this.#allHandlers[segmentName]?.[httpMethod] ?? this.#collectHandlers(httpMethod, segmentName);
-    this.#allHandlers[segmentName] ??= {};
-    this.#allHandlers[segmentName][httpMethod] = handlers;
+    const path = getCatchAllPath(params);
     let headerList: typeof request.headers | null;
     try {
       headerList = request.headers;
@@ -341,54 +381,55 @@ class VovkApp {
 
     if (xMetaHeader) reqMeta(req, { xMetaHeader });
 
-    const { handler, methodParams } = this.#getHandler({ handlers, path, params });
-
-    if (!handler) {
-      return this.#respondWithError({
-        req,
-        statusCode: HttpStatus.NOT_FOUND,
-        message: `Route '${path.join('/')}' is not found for ${httpMethod} method at ${segmentName === '' ? 'the root segment' : `segment '${segmentName}'`}`,
-      });
-    }
-
-    const { staticMethod, controller } = handler;
-    const headersFromDecoratorOptions = VovkApp.getHeadersFromDecoratorOptions(staticMethod._options);
-
-    const { _onSuccess: onSuccess, _onBefore: onBefore } = controller;
-
-    req.vovk = {
-      body: () => parseBody(req),
-      query: () => reqQuery(req as VovkRequest<unknown, object>),
-      meta: <T = unknown>(meta?: T | null) => reqMeta<T>(req, meta),
-      params: () => methodParams,
-    };
+    let route: Route | null = null;
 
     try {
-      await staticMethod._options?.before?.call(controller, req);
-      await onBefore?.(req);
+      let { handler, methodParams } = this.#getHandler({ handlers: this.#getHandlers(httpMethod, segmentName), path });
+
+      // route.ts exports HEAD, so Next.js doesn't derive it from GET: a GET route answers it, HEAD drops the body
+      if (!handler && httpMethod === HttpMethod.HEAD) {
+        ({ handler, methodParams } = this.#getHandler({
+          handlers: this.#getHandlers(HttpMethod.GET, segmentName),
+          path,
+        }));
+      }
+
+      if (!handler) {
+        return this.#respondWithError({
+          req,
+          statusCode: HttpStatus.NOT_FOUND,
+          message: `Route '${path.join('/')}' is not found for ${httpMethod} method at ${segmentName === '' ? 'the root segment' : `segment '${segmentName}'`}`,
+        });
+      }
+
+      route = handler;
+      const { staticMethod, controller } = handler;
+      const headersFromDecoratorOptions = VovkApp.getHeadersFromDecoratorOptions(staticMethod._options);
+      const { onSuccess, onBefore, onError } = this.#getHooks(segmentName, controller);
+
+      req.vovk = {
+        body: () => parseBody(req),
+        query: () => reqQuery(req as VovkRequest<unknown, object>),
+        meta: <T = unknown>(meta?: T | null) => reqMeta<T>(req, meta),
+        params: () => methodParams,
+      };
+
+      // a preflight carries no credentials, so an auth hook would reject it and the browser would block the call
+      if (!staticMethod._isCorsPreflight) {
+        await staticMethod._options?.before?.call(controller, req);
+        await onBefore?.(req);
+      }
       // dispatch via the latest wrapper so decorators applied above the HTTP decorator still run
       const result = await (staticMethod._sourceMethod?.wrapper ?? staticMethod).call(controller, req, methodParams);
 
       if (result instanceof Response) {
         await onSuccess?.(result, req);
-        // set headers from decorator options
-        for (const [key, value] of Object.entries(headersFromDecoratorOptions)) {
-          if (!result.headers.has(key)) {
-            result.headers.set(key, value);
-          }
-        }
-        return result;
+        return VovkApp.withHeaders(result, headersFromDecoratorOptions);
       }
 
       if (result instanceof Responder) {
         await onSuccess?.(result, req);
-        // set headers from decorator options
-        for (const [key, value] of Object.entries(headersFromDecoratorOptions)) {
-          if (!result.response.headers.has(key)) {
-            result.response.headers.set(key, value);
-          }
-        }
-        return result.response;
+        return VovkApp.withHeaders(result.response, headersFromDecoratorOptions);
       }
 
       const isIterator =
@@ -411,13 +452,16 @@ class VovkApp {
 
         void (async () => {
           try {
+            // send() waits while the client reads slower than the generator yields
             for await (const chunk of result as AsyncGenerator<unknown>) {
               await responder.send(chunk);
+              // the client went away: leaving the loop returns the iterator, so a generator's finally runs
+              if (responder.isClosed) break;
             }
           } catch (e) {
             // the outer catch already returned the response, so onError has to run here
             try {
-              await controller._onError?.(e as HttpException, req);
+              await onError?.(e as HttpException, req);
             } catch (onErrorError) {
               console.error('An error caught in onError handler:', onErrorError);
             }
@@ -434,36 +478,44 @@ class VovkApp {
       await onSuccess?.(responseBody, req);
       return this.respond({ req, statusCode: 200, responseBody, options: staticMethod._options });
     } catch (e) {
-      const err = e as HttpException;
+      const err = e as Error | null | undefined;
       try {
-        await controller._onError?.(err, req);
+        await this.#getHooks(segmentName, route?.controller).onError?.(err as Error, req);
       } catch (onErrorError) {
         console.error('An error caught in onError handler:', onErrorError);
       }
 
-      if (err.message !== 'NEXT_REDIRECT' && err.message !== 'NEXT_NOT_FOUND') {
-        const statusCode = err.statusCode || HttpStatus.INTERNAL_SERVER_ERROR;
-        // an error without a statusCode is internal, its message and cause stay on the server in production
-        const isExpected = typeof err.statusCode === 'number';
-        if (!isExpected && process.env.NODE_ENV === 'production') {
-          console.error('🐺 Unhandled error in a Vovk handler:', err);
-          return this.#respondWithError({
-            req,
-            statusCode,
-            message: 'Internal server error',
-            options: staticMethod._options,
-          });
-        }
+      if (isNextNavigationError(e)) throw e;
+
+      const options = route?.staticMethod._options;
+
+      if (isHttpException(e)) {
         return this.#respondWithError({
           req,
-          statusCode,
-          message: err.message,
-          options: staticMethod._options,
-          cause: err.cause,
+          statusCode: e.statusCode || HttpStatus.INTERNAL_SERVER_ERROR,
+          message: e.message,
+          options,
+          cause: e.cause,
         });
       }
 
-      throw e; // if NEXT_REDIRECT or NEXT_NOT_FOUND, rethrow it
+      // anything but an HttpException is internal, in production its message and cause stay on the server
+      if (process.env.NODE_ENV === 'production') {
+        console.error('🐺 Unhandled error in a Vovk handler:', e);
+        return this.#respondWithError({
+          req,
+          statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+          message: 'Internal server error',
+          options,
+        });
+      }
+      return this.#respondWithError({
+        req,
+        statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+        message: err?.message as string,
+        options,
+        cause: err?.cause,
+      });
     }
   };
 }
