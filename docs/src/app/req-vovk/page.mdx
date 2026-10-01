@@ -96,6 +96,8 @@ export default class UserController {
 }
 ```
 
+A path segment can hold several params, e.g. `@get('range/{from}-{to}'){:ts}` or `@get('files/{name}.{ext}'){:ts}`. Each request gets its own params object. With a `params` schema, `req.vovk.params()` and the handler's second argument both return the validated value.
+
 <a name="meta"></a>
 ## `req.vovk.meta()`
 

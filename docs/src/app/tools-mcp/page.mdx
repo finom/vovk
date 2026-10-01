@@ -1,7 +1,7 @@
 
 # MCP (Model Context Protocol) Output Formatting
 
-[Derived tools](/tools) can be used as MCP tools with `ToModelOutput.MCP` formatter. It formats the tool output to meet [MCP tool specification](https://modelcontextprotocol.io/specification/2025-11-25/server/tools), supporting the folowing types of outputs: `text`, `image`, `audio`, alongside with meta information, described with `annotations` object.
+[Derived tools](/tools) can be used as MCP tools with `ToModelOutput.MCP` formatter. It formats the tool output to meet [MCP tool specification](https://modelcontextprotocol.io/specification/2025-11-25/server/tools), supporting the following types of outputs: `text`, `image`, `audio`, alongside with meta information, described with `annotations` object.
 
 ```ts
 const tools = deriveTools({
@@ -12,7 +12,7 @@ const tools = deriveTools({
 
 ## JSON Content
 
-JSON responses (including ones created with `Response` or `NextResponse`) will be formatted as text content with `structuredContent` field.
+JSON responses (including ones created with `Response` or `NextResponse`, and `+json` types such as `application/problem+json`) will be formatted as text content with `structuredContent` field. A `Response` with an error status is reported with `isError: true` and no `structuredContent`. A thrown error is reported the same way; in production only an `HttpException{:ts}` keeps its message, and any other error reads "Internal server error".
 
 ```ts showLineNumbers copy
 export default class UserController {
