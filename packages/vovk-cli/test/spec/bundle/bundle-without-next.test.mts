@@ -6,6 +6,7 @@ import { createProject, runCLI, userSegmentSchema } from '../../lib/minimal-proj
 
 const projectDir = path.join(process.cwd(), 'tmp_bundle_without_next');
 const read = (file: string) => fs.readFile(path.join(projectDir, file), 'utf-8');
+const exists = async (file: string) => !!(await fs.stat(path.join(projectDir, file)).catch(() => null));
 
 // the bundler is not under test, so the build only marks the output directory
 const configFile = (bundle: object = {}) => `export default {
@@ -67,5 +68,39 @@ await describe('vovk bundle in a project without Next.js', async () => {
         assert.ok(text.includes('UserRPC') && text.includes('PetsRPC') && !text.includes('AdminRPC'), text);
       }
     }
+  });
+
+  await it('Refuses a prebundle dir that holds other files or overlaps the bundle out dir', async () => {
+    await createApp();
+    await fs.mkdir(path.join(projectDir, 'dist'));
+    await fs.writeFile(path.join(projectDir, 'dist/old.js'), '// an earlier bundle');
+
+    const runs = [
+      ['--prebundle-out', 'src'],
+      ['--prebundle-out', '.vovk-schema'],
+      ['--prebundle-out', 'package.json'],
+      ['--prebundle-out', 'dist'],
+      ['--prebundle-out', 'dist/prebundle'],
+      ['--prebundle-out', 'build', '--out', 'build/dist'],
+    ];
+
+    for (const flags of runs) {
+      await assert.rejects(runCLI(['bundle', ...flags], { cwd: projectDir }), /Invalid prebundle output directory/);
+    }
+
+    for (const file of ['src/keep.ts', '.vovk-schema/root.json', 'package.json', 'dist/old.js']) {
+      assert.ok(await exists(file), `${file} survived`);
+    }
+  });
+
+  await it('Reuses a prebundle dir kept by an earlier bundle', async () => {
+    await createApp({ keepPrebundleDir: true });
+
+    await runCLI(['bundle'], { cwd: projectDir });
+    await runCLI(['bundle', '--exclude', 'admin'], { cwd: projectDir });
+    assert.ok(!(await read('tmp_prebundle/index.ts')).includes('AdminRPC'));
+
+    await runCLI(['bundle', '--prebundle-out', 'tmp_prebundle'], { cwd: projectDir });
+    assert.ok(await exists('dist/index.js'));
   });
 });

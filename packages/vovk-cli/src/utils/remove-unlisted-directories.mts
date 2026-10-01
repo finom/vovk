@@ -66,7 +66,7 @@ async function listFiles(dirPath: string, relativePath = ''): Promise<{ files: s
 }
 
 // "generated" only when the generator wrote every file below dirPath, a matching name alone is not enough
-async function getDirectoryOrigin(
+export async function getDirectoryOrigin(
   dirPath: string,
   generatedRelPaths: string[]
 ): Promise<'generated' | 'foreign' | 'empty'> {
