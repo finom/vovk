@@ -84,6 +84,19 @@
           },
           "path": "numeric/{id}",
           "httpMethod": "GET"
+        },
+        "postCsv": {
+          "validation": {
+            "body": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "string",
+              "x-contentType": [
+                "text/csv"
+              ]
+            }
+          },
+          "path": "csv",
+          "httpMethod": "POST"
         }
       }
     }

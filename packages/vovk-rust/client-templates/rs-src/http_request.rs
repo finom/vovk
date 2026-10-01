@@ -41,6 +41,16 @@ pub struct Endpoint {
     pub handler_name: &'static str,
 }
 
+/// The request body, as the handler's content type sends it
+pub enum RequestBody<'a, B: ?Sized> {
+    None,
+    Json(&'a B),
+    UrlEncoded(&'a B),
+    Multipart(multipart::Form),
+    Text(String, &'static str),
+    Binary(Vec<u8>, &'static str),
+}
+
 // Load the full schema only once using lazy initialization
 static FULL_SCHEMA: Lazy<Result<Value, String>> = Lazy::new(|| {
     read_full_schema::read_full_schema()
@@ -98,13 +108,32 @@ fn is_unsafe_segment(value: &str) -> bool {
     rest.is_empty()
 }
 
+// a form field is text: null is left out, an array repeats its key and an object is sent as JSON
+fn to_form_fields(value: &Value) -> Result<Vec<(String, String)>, String> {
+    let map = value.as_object().ok_or("A form body must be an object")?;
+    let mut fields = Vec::new();
+    for (key, value) in map {
+        let items = match value {
+            Value::Array(items) => items.iter().collect(),
+            other => vec![other],
+        };
+        for item in items {
+            match item {
+                Value::Null => {}
+                Value::String(text) => fields.push((key.clone(), text.clone())),
+                Value::Number(number) => fields.push((key.clone(), number_to_string(number))),
+                Value::Bool(flag) => fields.push((key.clone(), flag.to_string())),
+                other => fields.push((key.clone(), other.to_string())),
+            }
+        }
+    }
+    Ok(fields)
+}
+
 // Private helper function for request preparation
 fn prepare_request<B, Q, P>(
     endpoint: &Endpoint,
-    body: Option<&B>,
-    form: Option<multipart::Form>,
-    text_body: Option<String>,
-    binary_body: Option<(Vec<u8>, String)>,
+    body: RequestBody<'_, B>,
     query: Option<&Q>,
     params: Option<&P>,
     headers: Option<&HashMap<String, String>>,
@@ -162,9 +191,12 @@ where
     let mut url = if path.is_empty() { root.to_string() } else { format!("{}/{}", root, path) };
 
     // Convert generic types to Value for validation if needed
-    let body_value = body.map(|b| serde_json::to_value(b))
-        .transpose()
-        .map_err(|e| format!("Failed to serialize body: {}", e))?;
+    let body_value = match &body {
+        RequestBody::Json(b) | RequestBody::UrlEncoded(b) => {
+            Some(serde_json::to_value(b).map_err(|e| format!("Failed to serialize body: {}", e))?)
+        }
+        _ => None,
+    };
         
     let query_value = query.map(|q| serde_json::to_value(q))
         .transpose()
@@ -174,12 +206,12 @@ where
         .transpose()
         .map_err(|e| format!("Failed to serialize params: {}", e))?;
 
-    // Perform JSON validation if not disabled and no form/text/binary data is provided
-    if !disable_client_validation && form.is_none() && text_body.is_none() && binary_body.is_none() {
+    if !disable_client_validation {
+        // a multipart, text or binary body is left to the server
         if let Some(body_schema) = validation.get("body") {
             if let Some(ref body_val) = body_value {
                 validate(body_schema, body_val, "Body")?;
-            } else if http_method != "GET" {
+            } else if matches!(body, RequestBody::None) && http_method != "GET" {
                 return Err("Body is required for validation but not provided".into());
             }
         }
@@ -248,12 +280,17 @@ where
     // Set up request headers
     let mut headers_map = reqwest::header::HeaderMap::new();
     headers_map.insert("Accept", "application/jsonl, application/json".parse().unwrap());
-    if body_value.is_some() && form.is_none() && text_body.is_none() && binary_body.is_none() {
-        headers_map.insert("Content-Type", "application/json".parse().unwrap());
-    } else if text_body.is_some() {
-        headers_map.insert("Content-Type", "text/plain".parse().unwrap());
-    } else if let Some((_, ref content_type)) = binary_body {
-        headers_map.insert("Content-Type", content_type.parse().unwrap());
+    let content_type = match &body {
+        RequestBody::Json(_) => Some("application/json"),
+        RequestBody::UrlEncoded(_) => Some("application/x-www-form-urlencoded"),
+        RequestBody::Text(_, content_type) | RequestBody::Binary(_, content_type) => Some(*content_type),
+        // reqwest writes the multipart boundary itself
+        RequestBody::Multipart(_) | RequestBody::None => None,
+    };
+    if let Some(content_type) = content_type {
+        let value = reqwest::header::HeaderValue::from_str(content_type)
+            .map_err(|e| format!("Invalid content type {}: {}", content_type, e))?;
+        headers_map.insert("Content-Type", value);
     }
 
     // Merge with user-provided headers if any
@@ -281,19 +318,17 @@ where
 
     // Build the HTTP request
     let client = Client::new();
-    let mut request = client.request(method, &url).headers(headers_map);
-    
-    // Apply form data, text body, binary body, or JSON body to the request
-    if let Some(form_data) = form {
-        request = request.multipart(form_data);
-    } else if let Some(text) = text_body {
-        request = request.body(text);
-    } else if let Some((bytes, _)) = binary_body {
-        request = request.body(bytes);
-    } else if let Some(body_val) = body_value {
-        request = request.json(&body_val);
-    }
-    
+    let request = client.request(method, &url).headers(headers_map);
+
+    let request = match body {
+        RequestBody::None => request,
+        RequestBody::Json(_) => request.json(&body_value),
+        RequestBody::UrlEncoded(_) => request.form(&to_form_fields(body_value.as_ref().unwrap_or(&Value::Null))?),
+        RequestBody::Multipart(form) => request.multipart(form),
+        RequestBody::Text(text, _) => request.body(text),
+        RequestBody::Binary(bytes, _) => request.body(bytes),
+    };
+
     Ok((request, http_method.to_string()))
 }
 
@@ -301,10 +336,7 @@ where
 #[allow(dead_code)]
 pub async fn http_request<T, B, Q, P>(
     endpoint: &Endpoint,
-    body: Option<&B>,
-    form: Option<multipart::Form>,
-    text_body: Option<String>,
-    binary_body: Option<(Vec<u8>, String)>,
+    body: RequestBody<'_, B>,
     query: Option<&Q>,
     params: Option<&P>,
     headers: Option<&HashMap<String, String>>,
@@ -320,9 +352,6 @@ where
     let (request, _) = prepare_request(
         endpoint,
         body,
-        form,
-        text_body,
-        binary_body,
         query,
         params,
         headers,
@@ -404,10 +433,7 @@ where
 #[allow(dead_code)]
 pub async fn http_request_stream<T, B, Q, P>(
     endpoint: &Endpoint,
-    body: Option<&B>,
-    form: Option<multipart::Form>,
-    text_body: Option<String>,
-    binary_body: Option<(Vec<u8>, String)>,
+    body: RequestBody<'_, B>,
     query: Option<&Q>,
     params: Option<&P>,
     headers: Option<&HashMap<String, String>>,
@@ -423,9 +449,6 @@ where
     let (request, _) = prepare_request(
         endpoint,
         body,
-        form,
-        text_body,
-        binary_body,
         query,
         params,
         headers,

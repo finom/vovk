@@ -18,4 +18,10 @@ export default class RustSweepController {
     params: z.object({ id: z.coerce.number() }),
     output: z.object({ id: z.number() }),
   }).handle((_req, { id }) => ({ id }));
+
+  @post('csv')
+  static postCsv = procedure({
+    contentType: 'text/csv',
+    body: z.string(),
+  }).handle(async (req) => ({ contentType: req.headers.get('content-type'), body: await req.vovk.body() }));
 }

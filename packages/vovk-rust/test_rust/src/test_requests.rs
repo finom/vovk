@@ -1,7 +1,11 @@
 #[cfg(test)]
 pub mod test_requests {
-    use generated_rust_client::{mixin_rpc, rust_sweep_rpc, with_validation_rpc};
+    use generated_rust_client::{client_sweep_rpc, mixin_rpc, rust_sweep_rpc, with_validation_rpc};
     use serde_json::json;
+
+    fn port() -> String {
+        std::env::var("PORT").unwrap_or_else(|_| "3210".to_string())
+    }
 
     // an unset optional field is left out: null would fail the schema on the client and on the server
     #[tokio::test]
@@ -81,5 +85,60 @@ pub mod test_requests {
             let message = error.to_string();
             assert!(message.starts_with("[Status: 0]") && message.contains("foo"), "{}", message);
         }
+    }
+
+    // a text body goes out with the content type the handler declares
+    #[tokio::test]
+    async fn test_text_content_type() {
+        let data = rust_sweep_rpc::post_csv("a,b\n1,2".to_string(), (), (), None, None, false).await.unwrap();
+
+        assert_eq!(data, json!({"contentType": "text/csv", "body": "a,b\n1,2"}));
+    }
+
+    // a handler that takes urlencoded forms only gets its body struct as one
+    #[tokio::test]
+    async fn test_urlencoded_body() {
+        use with_validation_rpc::handle_url_encoded_data_::{body as Body, query as Query};
+
+        let data = with_validation_rpc::handle_url_encoded_data(
+            Body { hello: "world".to_string() },
+            Query { search: "value".to_string() },
+            (),
+            None,
+            None,
+            false,
+        ).await.unwrap();
+
+        assert_eq!((data.hello.as_str(), data.search.as_str()), ("world", "value"));
+
+        // the struct is validated on the client, the server validates the form it reads
+        for (disable_client_validation, status) in [(false, "[Status: 0]"), (true, "[Status: 400]")] {
+            let error = with_validation_rpc::handle_url_encoded_data(
+                Body { hello: "wrong_length".to_string() },
+                Query { search: "value".to_string() },
+                (),
+                None,
+                None,
+                disable_client_validation,
+            ).await.unwrap_err();
+
+            assert!(error.to_string().starts_with(status), "{}", error);
+        }
+
+        // an array repeats its key
+        use client_sweep_rpc::post_url_encoded_::{body as SweepBody, body_::tags as Tags};
+        let data = client_sweep_rpc::post_url_encoded(
+            SweepBody { hello: "world".to_string(), tags: Tags::Variant0(vec!["a".to_string(), "b".to_string()]) },
+            (),
+            (),
+            None,
+            Some(&format!("http://localhost:{}/api", port())),
+            false,
+        ).await.unwrap();
+
+        assert_eq!(
+            data,
+            json!({"body": {"hello": "world", "tags": ["a", "b"]}, "contentType": "application/x-www-form-urlencoded"})
+        );
     }
 }

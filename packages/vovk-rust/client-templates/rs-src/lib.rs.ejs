@@ -5,6 +5,7 @@ imports: ['vovk-rust']
 <% const vars = {
     convertJSONSchemasToRustTypes: t.imports['vovk-rust'].convertJSONSchemasToRustTypes,
     getBodyKind: t.imports['vovk-rust'].getBodyKind,
+    getTextContentType: t.imports['vovk-rust'].getTextContentType,
     toRustIdent: t.imports['vovk-rust'].toRustIdent,
     toRustDocLines: t.imports['vovk-rust'].toRustDocLines,
     toRustCommentText: t.imports['vovk-rust'].toRustCommentText,
@@ -22,7 +23,7 @@ pub use crate::http_request::HttpException;
     Object.values(segment.controllers).forEach((controllerSchema) => { %>
 pub mod <%= vars.toRustIdent(t._.snakeCase(controllerSchema.rpcModuleName)) %> {
     #[allow(unused_imports)]
-    use crate::http_request::{Endpoint, HttpException, http_request, http_request_stream};
+    use crate::http_request::{Endpoint, HttpException, RequestBody, http_request, http_request_stream};
     #[allow(unused_imports)]
     use futures_util::Stream;
     use std::collections::HashMap;
@@ -57,9 +58,17 @@ vars.convertJSONSchemasToRustTypes({
     validation?.output?.description ? `Returns: ${validation?.output?.description}`: ''
 ]).filter(Boolean).flatMap((s) => vars.toRustDocLines(s)).map((s) => ' '.repeat(4) + '///' + (s ? ' ' + s : '')).join('\n') %>
 <%
-    // Determine body kind: 'none', 'form', 'binary', 'text', or 'json'
+    // Determine body kind: 'none', 'form', 'urlencoded', 'binary', 'text', or 'json'
     const bodyKind = vars.getBodyKind(validation?.body);
-    const firstContentType = validation?.body?.['x-contentType']?.[0] || 'application/octet-stream';
+    const typedBody = bodyKind === 'json' || bodyKind === 'urlencoded';
+    const requestBody = {
+        none: 'RequestBody::None',
+        json: 'RequestBody::Json(&body)',
+        urlencoded: 'RequestBody::UrlEncoded(&body)',
+        form: 'RequestBody::Multipart(body)',
+        text: `RequestBody::Text(body, ${vars.toRustString(vars.getTextContentType(validation?.body))})`,
+        binary: `RequestBody::Binary(body, ${vars.toRustString(validation?.body?.['x-contentType']?.[0] || 'application/octet-stream')})`,
+    }[bodyKind];
 %>
     pub async fn <%= handlerName %>( 
         body: <%- bodyKind === 'form' ? 'reqwest::multipart::Form' : bodyKind !== 'none' ? `${handlerName}_::body` : '()' %>,
@@ -72,7 +81,7 @@ vars.convertJSONSchemasToRustTypes({
         let result = <%= validation?.iteration ? 'http_request_stream' : 'http_request' %>::<
 <%- [
                 validation?.output ? `${handlerName}_::output` : validation?.iteration ? `${handlerName}_::iteration` : 'serde_json::Value',
-                bodyKind === 'json' ? `${handlerName}_::body` : '()',
+                typedBody ? `${handlerName}_::body` : '()',
                 validation?.query ? `${handlerName}_::query` : '()',
                 validation?.params ? `${handlerName}_::params` : '()'
             ].filter(Boolean).map((s) => ' '.repeat(12) + s).join(',\n') %>
@@ -84,10 +93,7 @@ vars.convertJSONSchemasToRustTypes({
                 controller_name: <%- vars.toRustString(controllerSchema.rpcModuleName) %>,
                 handler_name: <%- vars.toRustString(handlerNameOriginal) %>,
             },
-            <%- bodyKind === 'json' ? 'Some(&body)' : 'None' %>,
-            <%- bodyKind === 'form' ? 'Some(body)' : 'None' %>,
-            <%- bodyKind === 'text' ? 'Some(body)' : 'None' %>,
-            <%- bodyKind === 'binary' ? `Some((body, ${vars.toRustString(firstContentType)}.to_string()))` : 'None' %>,
+            <%- requestBody %>,
             Some(&query),
             Some(&params),
             headers,

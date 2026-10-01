@@ -98,14 +98,17 @@ const MAX_TUPLE_LENGTH = 12;
 
 type Schema = VovkJSONSchemaBase;
 
+export type BodyKind = 'none' | 'form' | 'urlencoded' | 'binary' | 'text' | 'json';
+
 /**
  * Determine the body kind from the schema's x-contentType and format fields.
- * Returns 'none', 'form', 'binary', 'text', or 'json'.
  */
-export function getBodyKind(schema: VovkJSONSchemaBase | undefined): 'none' | 'form' | 'binary' | 'text' | 'json' {
+export function getBodyKind(schema: VovkJSONSchemaBase | undefined): BodyKind {
   if (!schema) return 'none';
   const ct = schema['x-contentType'] as string[] | undefined;
-  if (ct?.includes('multipart/form-data') || ct?.includes('application/x-www-form-urlencoded')) return 'form';
+  if (ct?.includes('multipart/form-data')) return 'form';
+  // a form without multipart holds no files, so the generated struct is sent urlencoded
+  if (ct?.includes('application/x-www-form-urlencoded')) return 'urlencoded';
   if (schema.format === 'binary' || schema.contentEncoding === 'binary') return 'binary';
   if (ct?.some((c: string) => c.startsWith('text/'))) return 'text';
   // a declared non JSON content type on a scalar body means raw bytes, e.g. application/octet-stream or image/png
@@ -113,6 +116,15 @@ export function getBodyKind(schema: VovkJSONSchemaBase | undefined): 'none' | 'f
   const isJSONContentType = (c: string) => c === '*/*' || c === 'application/json' || c.endsWith('+json');
   if (!isStructured && ct?.length && !ct.some(isJSONContentType)) return 'binary';
   return 'json';
+}
+
+// a text body goes out as the type the procedure declares, as the TypeScript client sends it
+export function getTextContentType(schema: VovkJSONSchemaBase | undefined): string {
+  const isTextLike = (type: string) =>
+    !type.includes('*') &&
+    !['multipart/form-data', 'application/x-www-form-urlencoded', 'application/json'].includes(type) &&
+    !type.endsWith('+json');
+  return (schema?.['x-contentType'] as string[] | undefined)?.find(isTextLike) ?? 'text/plain';
 }
 
 // Helper function for indentation

@@ -237,7 +237,7 @@ pub use crate::http_request::HttpException;
 
 pub mod user_rpc {
     #[allow(unused_imports)]
-    use crate::http_request::{Endpoint, HttpException, http_request, http_request_stream};
+    use crate::http_request::{Endpoint, HttpException, RequestBody, http_request, http_request_stream};
     #[allow(unused_imports)]
     use futures_util::Stream;
     use std::collections::HashMap;
@@ -361,10 +361,7 @@ pub mod user_rpc {
                 controller_name: "UserRPC",
                 handler_name: "updateUser",
             },
-            Some(&body),
-            None,
-            None,
-            None,
+            RequestBody::Json(&body),
             Some(&query),
             Some(&params),
             headers,
@@ -510,7 +507,7 @@ Compiles to:
 ```rs filename="./dist_rust/src/lib.rs"
 pub mod stream_rpc {
     #[allow(unused_imports)]
-    use crate::http_request::{Endpoint, HttpException, http_request, http_request_stream};
+    use crate::http_request::{Endpoint, HttpException, RequestBody, http_request, http_request_stream};
     #[allow(unused_imports)]
     use futures_util::Stream;
     use std::collections::HashMap;
@@ -552,10 +549,7 @@ pub mod stream_rpc {
                 controller_name: "StreamRPC",
                 handler_name: "streamTokens",
             },
-            None,
-            None,
-            None,
-            None,
+            RequestBody::None,
             Some(&query),
             Some(&params),
             headers,
