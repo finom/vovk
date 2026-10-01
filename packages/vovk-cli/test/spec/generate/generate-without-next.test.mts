@@ -109,6 +109,40 @@ await describe('vovk generate in a project without Next.js', async () => {
     }
   });
 
+  await it('Leaves out a segment whose route file is gone', async () => {
+    const fooSegmentSchema = {
+      ...userSegmentSchema,
+      segmentName: 'foo',
+      controllers: { FooRPC: { ...userSegmentSchema.controllers.UserRPC, rpcModuleName: 'FooRPC' } },
+    };
+    await createProject(projectDir, {
+      'package.json': { name: 'app', version: '1.0.0', type: 'module' },
+      'vovk.config.mjs': configFile({ composedClient: { prettifyClient: false } }),
+      'src/app/api/[[...vovk]]/route.ts': '',
+      '.vovk-schema/root.json': userSegmentSchema,
+      '.vovk-schema/foo.json': fooSegmentSchema,
+    });
+
+    const { stdout, stderr } = await runCLI(['generate'], { cwd: projectDir });
+
+    const index = await read('src/client/index.ts');
+    assert.ok(index.includes('UserRPC') && !index.includes('FooRPC') && !index.includes('from ""'), index);
+    assert.match(stdout + stderr, /Segment "foo" has a schema file but no route file/);
+  });
+
+  await it('Writes no empty import when the project has no route files', async () => {
+    await createProject(projectDir, {
+      'package.json': { name: 'app', version: '1.0.0', type: 'module' },
+      'vovk.config.mjs': configFile({ composedClient: { prettifyClient: false } }),
+      '.vovk-schema/root.json': userSegmentSchema,
+    });
+
+    await runCLI(['generate', '--out', 'out'], { cwd: projectDir });
+
+    const index = await read('out/index.ts');
+    assert.ok(index.includes('UserRPC') && !index.includes('from ""'), index);
+  });
+
   await it('Generates the client as soon as --watch starts', async () => {
     await createProject(projectDir, {
       'package.json': { name: 'app', version: '1.0.0', type: 'module' },

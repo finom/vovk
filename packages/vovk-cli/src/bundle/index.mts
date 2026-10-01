@@ -4,6 +4,7 @@ import groupBy from 'lodash/groupBy.js';
 import type { VovkSchema } from 'vovk';
 import { generate } from '../generate/generate.mjs';
 import { getClientTemplateFiles } from '../generate/get-client-template-files.mjs';
+import { omitRoutelessSegments } from '../generate/omit-routeless-segments.mjs';
 import { BuiltInTemplateName } from '../get-project-info/get-config/get-template-defs.mjs';
 import type { ProjectInfo } from '../get-project-info/index.mjs';
 import type { BundleOptions, GenerateOptions } from '../types.mjs';
@@ -22,6 +23,7 @@ export async function bundle({
 }) {
   const { config, log, cwd, apiDirAbsolutePath } = projectInfo;
   const locatedSegments = await locateSegments({ dir: apiDirAbsolutePath, config, log });
+  const bundledSchema = omitRoutelessSegments(fullSchema, locatedSegments, projectInfo);
   const { bundle: bundleConfig } = config;
 
   if ((bundleConfig.build as { isMissingBuild?: boolean }).isMissingBuild) {
@@ -73,7 +75,7 @@ export async function bundle({
       isBundle: true,
       projectInfo,
       forceNothingWrittenLog: true,
-      fullSchema,
+      fullSchema: bundledSchema,
       locatedSegments,
       cliGenerateOptions: {
         ...generateOptions,
@@ -100,7 +102,7 @@ export async function bundle({
         isBundle: true,
         projectInfo,
         forceNothingWrittenLog: true,
-        fullSchema,
+        fullSchema: bundledSchema,
         locatedSegments,
         cliGenerateOptions: {
           ...generateOptions,

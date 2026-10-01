@@ -7,6 +7,7 @@ import { chalkHighlightThing } from '../utils/chalk-highlight-thing.mjs';
 import { locateSegments } from '../utils/locate-segments.mjs';
 import { generate } from './generate.mjs';
 import { getProjectFullSchema } from './get-project-full-schema.mjs';
+import { omitRoutelessSegments } from './omit-routeless-segments.mjs';
 
 const THROTTLE_DELAY = 5000;
 
@@ -46,7 +47,7 @@ export class VovkGenerate {
     const locatedSegments = await locateSegments({ dir: apiDirAbsolutePath, config, log });
     await generate({
       projectInfo: this.#projectInfo,
-      fullSchema,
+      fullSchema: omitRoutelessSegments(fullSchema, locatedSegments, this.#projectInfo),
       forceNothingWrittenLog: this.#forceNothingWrittenLog,
       cliGenerateOptions: this.#cliGenerateOptions,
       locatedSegments,
