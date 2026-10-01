@@ -86,8 +86,11 @@ async function importWithVMCommonJS(configPath: string, code: string): Promise<V
   return moduleObj.exports;
 }
 
+// unique per load: two loads in the same millisecond would share a timestamp and the cached module
+let importCount = 0;
+
 async function importWithCacheBuster(configPath: string): Promise<VovkConfig> {
-  const cacheBuster = Date.now();
+  const cacheBuster = `${Date.now()}-${++importCount}`;
   const configPathUrl = pathToFileURL(configPath).href;
   // the query makes an ES module evaluate again, a CommonJS one comes from the require cache unless it's dropped
   delete createRequire(configPath).cache[configPath];
