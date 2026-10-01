@@ -56,7 +56,7 @@ export function generateStaticParams() {
 
 ## Static Endpoint Parameters
 
-The `@get` decorator accepts an options object. One of the options, `staticParams`, lets you enumerate static parameter combinations to simulate conditional routing. The example below shows a single handler that renders six variants for two parameters: section (`a | b`) and page (`1 | 2 | 3`).
+The `@get` decorator accepts an options object. One of the options, `staticParams`, lets you enumerate static parameter combinations to simulate conditional routing. A param in the controller's prefix, such as `@prefix('users/{userId}')`, takes its value from the same objects. The example below shows a single handler that renders six variants for two parameters: section (`a | b`) and page (`1 | 2 | 3`).
 
 ```ts showLineNumbers copy
 import { z } from 'zod';

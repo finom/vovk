@@ -2,6 +2,7 @@ import { deepStrictEqual, ok, rejects, strictEqual } from 'node:assert';
 import { describe, it } from 'node:test';
 import { forbidden, redirect, unauthorized } from 'next/dist/client/components/navigation.react-server.js';
 import {
+  controllersToStaticParams,
   decorate,
   del,
   get,
@@ -882,6 +883,30 @@ describe('Runtime sweep', () => {
       const response = await call(handlers, 'GET', `search?${new URLSearchParams({ q: 'new york', tag: 'a+b' })}`);
 
       deepStrictEqual(await response.json(), { q: 'new york', tag: 'a+b' });
+    });
+  });
+
+  describe('controllersToStaticParams', () => {
+    it('Fills the params of the prefix and keeps a value with a slash in one segment', () => {
+      class PostsController {
+        static list() {
+          return [];
+        }
+
+        static getPost() {
+          return {};
+        }
+      }
+      prefix('users/{userId}')(PostsController);
+      get('posts', { staticParams: [{ userId: '1' }, { userId: '2' }] })(PostsController, 'list');
+      get('posts/{postId}', { staticParams: [{ userId: '1', postId: 'a/b' }] })(PostsController, 'getPost');
+
+      const staticParams = controllersToStaticParams({ PostsController });
+
+      deepStrictEqual(
+        staticParams.map(({ vovk }) => vovk),
+        [['_schema_'], ['users', '1', 'posts'], ['users', '2', 'posts'], ['users', '1', 'posts', 'a/b']]
+      );
     });
   });
 
