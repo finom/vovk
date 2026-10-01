@@ -35,6 +35,10 @@ type ProcedureOptions<
   target?: CombinedSpec.Target;
 };
 
+// without a params schema, the handler gets the route params as strings
+type ParamsOutput<TParams extends CombinedSpec> =
+  unknown extends CombinedSpec.InferOutput<TParams> ? Record<string, string> : CombinedSpec.InferOutput<TParams>;
+
 export function createStandardValidation({
   toJSONSchema,
 }: {
@@ -108,10 +112,7 @@ export function createStandardValidation({
     TReq extends VovkRequest<KnownAny, KnownAny, KnownAny>,
     THandleFn extends (...args: KnownAny[]) => KnownAny = (...args: KnownAny[]) => KnownAny,
   > = {
-    (
-      req: TReq,
-      params: TParams extends CombinedSpec ? CombinedSpec.InferOutput<TParams> : Record<string, string>
-    ): KnownAny;
+    (req: TReq, params: ParamsOutput<TParams>): KnownAny;
     __types: {
       body: TBody extends CombinedSpec ? CombinedSpec.InferOutput<TBody> : KnownAny;
       query: TQuery extends CombinedSpec ? CombinedSpec.InferOutput<TQuery> : KnownAny;
@@ -174,25 +175,17 @@ export function createStandardValidation({
         ? ParsedBodyTypeFromContentType<NormalizeContentType<TContentType>>
         : CombinedSpec.InferOutput<TBody>,
       TQuery extends CombinedSpec ? CombinedSpec.InferOutput<TQuery> : undefined,
-      TParams extends CombinedSpec ? CombinedSpec.InferOutput<TParams> : undefined
+      ParamsOutput<TParams>
     >,
   >(
     options?: ProcedureOptions<TBody, TQuery, TParams, TOutput, TIteration, TContentType>
   ): BuilderHandleReturn<TBody, TQuery, TParams, TOutput, TIteration, TContentType, TReq> & {
     handle: unknown extends CombinedSpec.InferOutput<TOutput>
-      ? <
-          THandleFn extends (
-            req: TReq,
-            params: TParams extends CombinedSpec ? CombinedSpec.InferOutput<TParams> : Record<string, string>
-          ) => KnownAny,
-        >(
+      ? <THandleFn extends (req: TReq, params: ParamsOutput<TParams>) => KnownAny>(
           fn: THandleFn
         ) => BuilderHandleReturn<TBody, TQuery, TParams, TOutput, TIteration, TContentType, TReq, THandleFn>
       : (
-          fn: (
-            req: TReq,
-            params: TParams extends CombinedSpec ? CombinedSpec.InferOutput<TParams> : Record<string, string>
-          ) => HandleReturnType<TOutput, TIteration>
+          fn: (req: TReq, params: ParamsOutput<TParams>) => HandleReturnType<TOutput, TIteration>
         ) => BuilderHandleReturn<
           TBody,
           TQuery,
@@ -201,10 +194,7 @@ export function createStandardValidation({
           TIteration,
           TContentType,
           TReq,
-          (
-            req: TReq,
-            params: TParams extends CombinedSpec ? CombinedSpec.InferOutput<TParams> : Record<string, string>
-          ) => HandleReturnType<TOutput, TIteration>
+          (req: TReq, params: ParamsOutput<TParams>) => HandleReturnType<TOutput, TIteration>
         >;
   };
 
