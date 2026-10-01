@@ -1,4 +1,4 @@
-#!/usr/bin/env -S node --experimental-vm-modules --disable-warning=ExperimentalWarning
+#!/usr/bin/env node
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import 'dotenv/config';
