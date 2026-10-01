@@ -24,4 +24,19 @@ export default class RustSweepController {
     contentType: 'text/csv',
     body: z.string(),
   }).handle(async (req) => ({ contentType: req.headers.get('content-type'), body: await req.vovk.body() }));
+
+  @get('no-content')
+  static getNoContent() {
+    return new Response(null, { status: 204 });
+  }
+
+  @get('text')
+  static getText() {
+    return new Response('hello', { headers: { 'content-type': 'text/plain' } });
+  }
+
+  @get('is-error-data')
+  static getIsErrorData() {
+    return { isError: false, data: 1 };
+  }
 }

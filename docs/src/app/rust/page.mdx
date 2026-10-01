@@ -423,6 +423,8 @@ Under the hood, it uses [reqwest](https://docs.rs/reqwest/latest/reqwest/) for H
 
 For continuous streaming with [JSON Lines](/jsonlines) endpoints, the client implements the `Iterator` trait to return an async-capable iterator for streamed data.
 
+A JSON Lines endpoint without an `iteration` schema gets a regular function instead: it reads the whole response and returns the items as a JSON array.
+
 A controller like this:
 
 <Tabs items={['StreamController.ts', 'StreamService.ts', 'route.ts']}>

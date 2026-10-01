@@ -161,7 +161,7 @@ Method names Rust-side snake_case; `user_rpc` module reflects `UserRPC` controll
 
 ## JSON Lines streaming
 
-Streaming endpoints return pinned boxed `Stream`:
+Streaming endpoints (those with an `iteration` schema) return pinned boxed `Stream`:
 
 ```rust
 pub async fn stream_tokens(
@@ -190,6 +190,8 @@ pub async fn consume_stream() -> Result<(), Box<dyn std::error::Error>> {
     Ok(())
 }
 ```
+
+Without an `iteration` schema the call is not a stream: it reads the whole response and returns the items as a JSON array.
 
 See `jsonlines` skill for server side.
 

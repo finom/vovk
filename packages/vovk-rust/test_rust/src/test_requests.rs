@@ -141,4 +141,47 @@ pub mod test_requests {
             json!({"body": {"hello": "world", "tags": ["a", "b"]}, "contentType": "application/x-www-form-urlencoded"})
         );
     }
+
+    // a success that is not JSON: an empty body is null, a text body is a string
+    #[tokio::test]
+    async fn test_success_without_json() {
+        let data = rust_sweep_rpc::get_no_content((), (), (), None, None, false).await.unwrap();
+        assert_eq!(data, serde_json::Value::Null);
+
+        let data = rust_sweep_rpc::get_text((), (), (), None, None, false).await.unwrap();
+        assert_eq!(data, json!("hello"));
+    }
+
+    // a handler without an iteration schema reads a JSON Lines response as an array of its items
+    #[tokio::test]
+    async fn test_json_lines_without_iteration_schema() {
+        let data = with_validation_rpc::handle_stream_no_iteration_validation(
+            (),
+            with_validation_rpc::handle_stream_no_iteration_validation_::query {
+                values: vec!["a".to_string(), "b".to_string()],
+            },
+            (),
+            None,
+            None,
+            false,
+        ).await.unwrap();
+
+        assert_eq!(data, json!([{"value": "a"}, {"value": "b"}]));
+
+        // an error line fails the call
+        let api_root = format!("http://localhost:{}/api", port());
+        let error = client_sweep_rpc::get_error_line_with_status((), (), (), None, Some(&api_root), false)
+            .await
+            .unwrap_err();
+
+        assert_eq!(error.to_string(), "[Status: 403] Forbidden");
+    }
+
+    // only an error status makes an error, a 2xx object may have an isError key
+    #[tokio::test]
+    async fn test_is_error_key_in_data() {
+        let data = rust_sweep_rpc::get_is_error_data((), (), (), None, None, false).await.unwrap();
+
+        assert_eq!(data, json!({"isError": false, "data": 1}));
+    }
 }

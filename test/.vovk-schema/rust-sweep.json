@@ -97,6 +97,18 @@
           },
           "path": "csv",
           "httpMethod": "POST"
+        },
+        "getNoContent": {
+          "path": "no-content",
+          "httpMethod": "GET"
+        },
+        "getText": {
+          "path": "text",
+          "httpMethod": "GET"
+        },
+        "getIsErrorData": {
+          "path": "is-error-data",
+          "httpMethod": "GET"
         }
       }
     }

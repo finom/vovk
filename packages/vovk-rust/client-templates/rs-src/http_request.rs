@@ -23,6 +23,12 @@ pub struct HttpException {
     cause: Option<Value>,
 }
 
+impl HttpException {
+    fn new(message: impl Into<String>, status_code: i32, cause: Option<Value>) -> Self {
+        HttpException { message: message.into(), status_code, cause }
+    }
+}
+
 impl fmt::Display for HttpException {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "[Status: {}] {}", self.status_code, self.message)
@@ -332,6 +338,65 @@ where
     Ok((request, http_method.to_string()))
 }
 
+// "application/json; charset=utf-8" => "application/json"
+fn media_type(response: &reqwest::Response) -> String {
+    response
+        .headers()
+        .get("Content-Type")
+        .and_then(|v| v.to_str().ok())
+        .unwrap_or("")
+        .split(';')
+        .next()
+        .unwrap_or("")
+        .trim()
+        .to_ascii_lowercase()
+}
+
+fn is_json(media_type: &str) -> bool {
+    media_type == "application/json" || media_type.ends_with("+json")
+}
+
+fn is_json_lines(media_type: &str) -> bool {
+    media_type == "application/jsonl" || media_type == "application/x-ndjson"
+}
+
+// the message of a JSON error, or the text a proxy sent
+fn error_from_body(body: &[u8], media_type: &str, status: reqwest::StatusCode) -> HttpException {
+    let status_code = status.as_u16() as i32;
+    if is_json(media_type) {
+        if let Ok(value) = serde_json::from_slice::<Value>(body) {
+            let message = value
+                .get("message")
+                .and_then(|m| m.as_str())
+                .unwrap_or("Unknown error")
+                .to_string();
+            return HttpException::new(message, status_code, value.get("cause").cloned());
+        }
+    }
+    let text = String::from_utf8_lossy(body).trim().to_string();
+    let message = if text.is_empty() {
+        status.canonical_reason().unwrap_or("Unknown error").to_string()
+    } else {
+        text
+    };
+    HttpException::new(message, status_code, None)
+}
+
+// a success that is not JSON: an empty body is null, text is a string unless the type wants JSON, bytes are a byte list
+fn read_non_json<T: DeserializeOwned>(body: &[u8], status_code: i32) -> Result<T, HttpException> {
+    let to_error = |e: serde_json::Error| HttpException::new(e.to_string(), status_code, None);
+    if body.is_empty() {
+        return serde_json::from_value(Value::Null).map_err(to_error);
+    }
+    match std::str::from_utf8(body) {
+        Ok(text) => serde_json::from_value(Value::String(text.to_string()))
+            .or_else(|e| serde_json::from_str(text).map_err(|_| e))
+            .map_err(to_error),
+        Err(_) => serde_json::from_value(Value::Array(body.iter().map(|byte| Value::from(*byte)).collect()))
+            .map_err(to_error),
+    }
+}
+
 // Main request function for regular (non-streaming) responses
 #[allow(dead_code)]
 pub async fn http_request<T, B, Q, P>(
@@ -371,62 +436,42 @@ where
 
     let status = response.status();
     let status_code = status.as_u16() as i32;
+    let media_type = media_type(&response);
 
-    let content_type = response
-        .headers()
-        .get("Content-Type")
-        .and_then(|v| v.to_str().ok())
-        .unwrap_or("")
-        .to_string();
+    let bytes = response
+        .bytes()
+        .await
+        .map_err(|e| HttpException::new(e.to_string(), status_code, None))?;
 
-    if content_type.contains("application/json") {
-        let value: Value = response.json().await.map_err(|e| HttpException {
-            message: e.to_string(),
-            status_code,
-            cause: None,
-        })?;
-
-        if status.is_client_error() || status.is_server_error() || value.get("isError").is_some() {
-            let message = value
-                .get("message")
-                .and_then(|m| m.as_str())
-                .unwrap_or("Unknown error")
-                .to_string();
-            let cause = value.get("cause").cloned();
-
-            return Err(HttpException {
-                message,
-                status_code,
-                cause,
-            });
-        }
-
-        serde_json::from_value::<T>(value).map_err(|e| HttpException {
-            message: e.to_string(),
-            status_code,
-            cause: None,
-        })
-    } else {
-        let text = response.text().await.map_err(|e| HttpException {
-            message: e.to_string(),
-            status_code,
-            cause: None,
-        })?;
-
-        if status.is_client_error() || status.is_server_error() {
-            return Err(HttpException {
-                message: text.clone(),
-                status_code,
-                cause: None,
-            });
-        }
-
-        serde_json::from_str::<T>(&text).map_err(|e| HttpException {
-            message: e.to_string(),
-            status_code,
-            cause: None,
-        })
+    // only an error status makes an error, a 2xx body may hold any keys
+    if status.is_client_error() || status.is_server_error() {
+        return Err(error_from_body(&bytes, &media_type, status));
     }
+
+    if is_json_lines(&media_type) {
+        // a stream read in one call: its items as an array, an error line fails the call
+        let mut items = Vec::new();
+        for line in String::from_utf8_lossy(&bytes).lines() {
+            let line = line.trim();
+            if line.is_empty() {
+                continue;
+            }
+            let value: Value =
+                serde_json::from_str(line).map_err(|e| HttpException::new(e.to_string(), status_code, None))?;
+            if is_error_line(&value) {
+                return Err(error_from_line(&value, status_code));
+            }
+            items.push(value);
+        }
+        return serde_json::from_value(Value::Array(items))
+            .map_err(|e| HttpException::new(e.to_string(), status_code, None));
+    }
+
+    if is_json(&media_type) && !bytes.is_empty() {
+        return serde_json::from_slice::<T>(&bytes).map_err(|e| HttpException::new(e.to_string(), status_code, None));
+    }
+
+    read_non_json(&bytes, status_code)
 }
 
 // Request function specifically for streaming responses
@@ -470,16 +515,9 @@ where
     let status_code = status.as_u16() as i32;
 
     if !status.is_success() {
-        let message = response
-            .text()
-            .await
-            .unwrap_or_else(|_| "Streaming request failed".to_string());
-
-        return Err(HttpException {
-            message,
-            status_code,
-            cause: None,
-        });
+        let media_type = media_type(&response);
+        let bytes = response.bytes().await.unwrap_or_default();
+        return Err(error_from_body(&bytes, &media_type, status));
     }
 
     let byte_stream = response
@@ -517,17 +555,7 @@ where
     let typed_stream = json_stream.map(move |result| {
         result.and_then(|value| {
             if is_error_line(&value) {
-                let message = match &value["reason"] {
-                    Value::String(reason) => reason.clone(),
-                    reason => reason.to_string(),
-                };
-                let line_status_code = value["statusCode"].as_i64().map(|code| code as i32);
-
-                Err(HttpException {
-                    message,
-                    status_code: line_status_code.unwrap_or(status_code),
-                    cause: None,
-                })
+                Err(error_from_line(&value, status_code))
             } else {
                 serde_json::from_value::<T>(value).map_err(|e| HttpException {
                     message: e.to_string(),
@@ -551,6 +579,15 @@ fn is_error_line(value: &Value) -> bool {
         }
         _ => false,
     }
+}
+
+fn error_from_line(value: &Value, status_code: i32) -> HttpException {
+    let message = match &value["reason"] {
+        Value::String(reason) => reason.clone(),
+        reason => reason.to_string(),
+    };
+    let line_status_code = value["statusCode"].as_i64().map(|code| code as i32);
+    HttpException::new(message, line_status_code.unwrap_or(status_code), None)
 }
 
 // Helper function to build query strings from nested JSON
