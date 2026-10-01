@@ -634,6 +634,21 @@ describe('deriveTools', () => {
     });
   });
 
+  describe('Input', () => {
+    it('Runs a tool without input when execute gets undefined', async () => {
+      const calls: string[] = [];
+      const noInput = procedure({ operationObject: { description: 'd' } }).handle(async () => ({ ok: true }));
+      const [tool] = deriveTools({
+        modules: { MyModule: { noInput } },
+        onExecute: () => calls.push('onExecute'),
+        onError: () => calls.push('onError'),
+      });
+
+      assert.deepStrictEqual(await tool.execute(undefined as never), { ok: true });
+      assert.deepStrictEqual(calls, ['onExecute']);
+    });
+  });
+
   describe('Custom Result Formatter', () => {
     const tools = deriveTools({
       meta: { inputMeta: 'hello' },

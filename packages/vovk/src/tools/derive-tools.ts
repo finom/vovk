@@ -150,7 +150,8 @@ const makeTool = <TOutput, TFormattedOutput>({
     (schema?.validation?.output ? jsonSchemaToJSONSchemaOnlySpec({ jsonSchema: schema.validation.output }) : undefined);
 
   const execute = async (input: { body?: unknown; query?: unknown; params?: unknown }): Promise<TFormattedOutput> => {
-    const { body, query, params } = input;
+    // a tool without input may be called with nothing
+    const { body, query, params } = input ?? {};
 
     const callerInput: CallerInput<TOutput, TFormattedOutput> = {
       schema,
