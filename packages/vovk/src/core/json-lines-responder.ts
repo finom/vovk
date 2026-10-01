@@ -9,6 +9,10 @@ export abstract class Responder {
 // bytes queued for a slow client before send() waits for it to read
 const HIGH_WATER_MARK = 64 * 1024;
 
+// before anything reads the stream, as while a handler sends before it returns the responder, send() waits only
+// past this, so the handler isn't stuck waiting for a read that can't start
+const UNREAD_LIMIT = 16 * 1024 * 1024;
+
 /**
  * Responder subclass for streaming JSON Lines. @see https://vovk.dev/jsonlines
  * @example
@@ -147,21 +151,26 @@ export class JSONLinesResponder<T> extends Responder {
       this.sendLineOrError({ isError: true, reason: 'Internal server error' });
       return this.close();
     }
+    // the client takes a line for an error only with these keys, and statusCode only as a number
     this.sendLineOrError({
       isError: true,
       reason: e instanceof Error ? e.message : e,
-      ...(isHttpException(e) ? { statusCode: e.statusCode } : {}),
+      ...(isHttpException(e) && typeof e.statusCode === 'number' ? { statusCode: e.statusCode } : {}),
     });
     return this.close();
   };
 
   // a full queue means the client reads slower than the lines come
   private async waitForRoom() {
-    while (!this.closed && (this.controller?.desiredSize ?? 1) <= 0) {
+    while (!this.closed && this.queuedBytes() >= (this.readableStream?.locked ? HIGH_WATER_MARK : UNREAD_LIMIT)) {
       await new Promise<void>((resolve) => {
         this.resumeSend = resolve;
       });
     }
+  }
+
+  private queuedBytes() {
+    return HIGH_WATER_MARK - (this.controller?.desiredSize ?? HIGH_WATER_MARK);
   }
 
   private resume() {
