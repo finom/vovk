@@ -30,63 +30,35 @@ const DEFAULT_OPTIONS: GenerateFnNameOptions = {
   ignoreSegments: ['api'],
 };
 
-// HTTP method + OpenAPI path to a camelCased fn name,
-// e.g. GET /users -> "listUsers", GET /users/{id} -> "getUsersById", POST /v1/api/orders -> "createOrders"
+// letters and digits only, so the name is an identifier in TypeScript, Python and Rust
+const toWords = (text: string) => text.split(/[^\p{L}\p{Nd}]+/u).filter(Boolean);
+
+// HTTP method + OpenAPI path to a camelCased fn name, e.g. GET /users -> "listUsers",
+// GET /users/{id} -> "getUsersById", PATCH /users/{userId}/profile -> "patchUsersProfileByUserId",
+// DELETE /v1/api/orders/{orderId} -> "deleteV1OrdersByOrderId", GET /files/{name}.json -> "getFilesJsonByName"
 export function generateFnName(method: HttpMethod, rawPath: string, opts: GenerateFnNameOptions = {}): string {
   const { ignoreSegments } = {
     ...DEFAULT_OPTIONS,
     ...opts,
   };
 
-  // 1. Clean & split path
-  const parts = rawPath
-    .replace(/^\/|\/$/g, '') // strip leading/trailing slash
-    .split('/')
-    .filter((seg) => !ignoreSegments?.includes(seg.toLowerCase()))
-    .filter(Boolean);
-
-  // 2. Separate resource tokens from path-params
   const resources: string[] = [];
   const params: string[] = [];
 
-  parts.forEach((seg) => {
-    const match = seg.match(/^{?([^}]+)}?$/);
-    if (match) {
-      params.push(match[1]);
-    } else {
-      resources.push(seg);
-    }
-  });
-
-  // 3. Pick base verb from VERB_MAP
-  let baseVerb: string;
-  if (method === 'GET') {
-    // biome-ignore lint/style/noNonNullAssertion: TODO
-    baseVerb = params.length ? VERB_MAP.GET.withParams! : VERB_MAP.GET.noParams!;
-  } else {
-    // biome-ignore lint/style/noNonNullAssertion: TODO
-    baseVerb = VERB_MAP[method].default!;
+  for (const segment of rawPath.split('/')) {
+    if (!segment || ignoreSegments?.includes(segment.toLowerCase())) continue;
+    // a segment can mix literal text and params, e.g. "{name}.json"
+    const literal = segment.replace(/\{([^}]*)\}/g, (_, param: string) => {
+      params.push(...toWords(param));
+      return ' ';
+    });
+    resources.push(...toWords(literal));
   }
 
-  // 4. Build the “resource” part
-  const resourcePart = resources.map(capitalize).join('');
-
-  // 5. Build the “ByParam” suffix
+  const verbs = VERB_MAP[method] as VerbMapEntry | undefined;
+  const verb =
+    (params.length ? verbs?.withParams : verbs?.noParams) ?? verbs?.default ?? toWords(method).join('').toLowerCase();
   const byParams = params.length ? `By${params.map(capitalize).join('')}` : '';
 
-  // 6. Combine and ensure camelCase
-  const rawName = `${baseVerb}${resourcePart}${byParams}`;
-  return rawName[0].toLowerCase() + rawName.slice(1);
+  return `${verb}${resources.map(capitalize).join('')}${byParams}`;
 }
-
-/*
-// --- Example usage ---
-console.log(generateFnName('GET', '/users')); // listUsers
-console.log(generateFnName('GET', '/users/{id}')); // getUsersById
-console.log(generateFnName('POST', '/users')); // createUsers
-console.log(generateFnName('PATCH', '/users/{userId}/profile')); // patchUsersProfileByUserId
-console.log(generateFnName('DELETE', '/v1/api/orders/{orderId}')); // deleteOrdersByOrderId
-
-// You can also enable singularization:
-console.log(generateFnName('GET', '/users/{userId}/orders', { singularizeResources: true })); // getUserOrderByUserId
-*/

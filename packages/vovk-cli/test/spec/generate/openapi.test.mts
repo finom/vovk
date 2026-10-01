@@ -210,9 +210,9 @@ await describe('OpenAPI flags', async () => {
 
     const { schema } = await import(path.join(generatedClientDir, 'index.ts'));
 
-    strictEqual(schema.segments.mixin.controllers.api.handlers.createByTest.httpMethod, HttpMethod.POST);
+    strictEqual(schema.segments.mixin.controllers.api.handlers.createTest.httpMethod, HttpMethod.POST);
     strictEqual(
-      schema.segments.mixin.controllers.api.handlers.createByTest.validation.output.properties.success.type,
+      schema.segments.mixin.controllers.api.handlers.createTest.validation.output.properties.success.type,
       'boolean'
     );
     await fs.rm(generatedClientDir, { recursive: true, force: true });
