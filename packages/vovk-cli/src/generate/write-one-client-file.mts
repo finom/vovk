@@ -22,6 +22,7 @@ import { compileJSONSchemaToTypeScriptType } from '../utils/compile-json-schema-
 import { GENERATED_BANNER_PREFIX } from '../utils/generated-banner.mjs';
 import type { Segment } from '../utils/locate-segments.mjs';
 import { prettify, warnIfPrettierMissing } from '../utils/prettify.mjs';
+import { toImportPath, toPosixPath } from '../utils/to-import-path.mjs';
 import type { ClientTemplateFile } from './get-client-template-files.mjs';
 import { getTemplateClientImports } from './get-template-client-imports.mjs';
 
@@ -130,9 +131,11 @@ export async function writeOneClientFile({
 
   reExports = _.mapValues(reExports ?? {}, (p) =>
     p.startsWith('.')
-      ? path.relative(
-          path.join(outCwdRelativeDir, typeof segmentName === 'string' ? segmentName || ROOT_SEGMENT_FILE_NAME : '.'),
-          path.resolve(cwd, p)
+      ? toImportPath(
+          path.relative(
+            path.join(outCwdRelativeDir, typeof segmentName === 'string' ? segmentName || ROOT_SEGMENT_FILE_NAME : '.'),
+            path.resolve(cwd, p)
+          )
         )
       : p
   );
@@ -164,13 +167,14 @@ export async function writeOneClientFile({
       js: isNodeNextResolution ? '.js' : '',
       mjs: isNodeNextResolution ? '.mjs' : '',
     },
-    schemaOutDir:
+    schemaOutDir: toPosixPath(
       typeof segmentName === 'string'
         ? path.relative(
             path.join(outCwdRelativeDir, segmentName || ROOT_SEGMENT_FILE_NAME),
             cliSchemaPath ?? config.schemaOutDir
           )
-        : path.relative(outCwdRelativeDir, cliSchemaPath ?? config.schemaOutDir),
+        : path.relative(outCwdRelativeDir, cliSchemaPath ?? config.schemaOutDir)
+    ),
     commonImports: getTemplateClientImports({
       config: projectConfig,
       fullSchema,
@@ -199,13 +203,15 @@ export async function writeOneClientFile({
       Object.values(fullSchema.segments).map(({ segmentName: sName, forceApiRoot }) => {
         const { routeFilePath = null } = locatedSegmentsByName[sName] ?? {};
         const segmentImportPath = routeFilePath
-          ? path.relative(
-              path.resolve(
-                cwd,
-                outCwdRelativeDir,
-                typeof segmentName === 'string' ? segmentName || ROOT_SEGMENT_FILE_NAME : '.'
-              ),
-              path.resolve(cwd, routeFilePath)
+          ? toImportPath(
+              path.relative(
+                path.resolve(
+                  cwd,
+                  outCwdRelativeDir,
+                  typeof segmentName === 'string' ? segmentName || ROOT_SEGMENT_FILE_NAME : '.'
+                ),
+                path.resolve(cwd, routeFilePath)
+              )
             )
           : null;
         const segmentConfig = {

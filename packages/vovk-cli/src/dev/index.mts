@@ -19,10 +19,18 @@ import { chalkHighlightThing } from '../utils/chalk-highlight-thing.mjs';
 import { debounceWithArgs } from '../utils/debounce-with-args.mjs';
 import { formatLoggedSegmentName } from '../utils/format-logged-segment-name.mjs';
 import { locateSegments, type Segment } from '../utils/locate-segments.mjs';
+import { toPosixPath } from '../utils/to-import-path.mjs';
 import { debouncedEnsureSchemaFiles, ensureSchemaFiles } from './ensure-schema-files.mjs';
 import { logDiffResult } from './log-diff-result.mjs';
 import { writeMetaJson } from './write-meta-json.mjs';
 import { writeOneSegmentSchemaFile } from './write-one-segment-schema-file.mjs';
+
+// chokidar reports native paths, so both separators are accepted
+export const SEGMENT_ROUTE_FILE_REGEX = /[\\/]?\[\[\.\.\.[a-zA-Z-_]+\]\][\\/]route\.ts$/;
+
+export function getSegmentNameFromRouteFile(relativeRouteFilePath: string) {
+  return toPosixPath(relativeRouteFilePath).replace(SEGMENT_ROUTE_FILE_REGEX, '');
+}
 
 export class VovkDev {
   #projectInfo!: ProjectInfo;
@@ -53,13 +61,13 @@ export class VovkDev {
   }
 
   #watchSegments = (callback: () => void) => {
-    const segmentReg = /\/?\[\[\.\.\.[a-zA-Z-_]+\]\]\/route.ts$/;
     const { cwd, log, config, apiDirAbsolutePath } = this.#projectInfo;
     if (!apiDirAbsolutePath) {
       throw new Error('Unable to watch segments. It looks like CWD is not a Next.js app.');
     }
     const schemaOutAbsolutePath = path.resolve(cwd, this.#schemaOut ?? config.schemaOutDir);
-    const getSegmentName = (filePath: string) => path.relative(apiDirAbsolutePath, filePath).replace(segmentReg, '');
+    const getSegmentName = (filePath: string) =>
+      getSegmentNameFromRouteFile(path.relative(apiDirAbsolutePath, filePath));
     log.debug(`Watching segments at ${apiDirAbsolutePath}`);
     this.#segmentWatcher = chokidar
       .watch(apiDirAbsolutePath, {
@@ -68,7 +76,7 @@ export class VovkDev {
       })
       .on('add', (filePath: string) => {
         log.debug(`File ${filePath} has been added to segments folder`);
-        if (segmentReg.test(filePath)) {
+        if (SEGMENT_ROUTE_FILE_REGEX.test(filePath)) {
           const segmentName = getSegmentName(filePath);
 
           this.#segments = this.#segments.find((s) => s.segmentName === segmentName)
@@ -92,7 +100,7 @@ export class VovkDev {
       })
       .on('change', (filePath: string) => {
         log.debug(`File ${filePath} has been changed at segments folder`);
-        if (segmentReg.test(filePath)) {
+        if (SEGMENT_ROUTE_FILE_REGEX.test(filePath)) {
           void this.#requestSchema(getSegmentName(filePath));
         }
       })
@@ -122,7 +130,7 @@ export class VovkDev {
       })
       .on('unlink', (filePath: string) => {
         log.debug(`File ${filePath} has been removed from segments folder`);
-        if (segmentReg.test(filePath)) {
+        if (SEGMENT_ROUTE_FILE_REGEX.test(filePath)) {
           const segmentName = getSegmentName(filePath);
           this.#segments = this.#segments.filter((s) => s.segmentName !== segmentName);
           log.info(`${formatLoggedSegmentName(segmentName, { upperFirst: true })} has been removed`);

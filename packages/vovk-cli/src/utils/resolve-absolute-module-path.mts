@@ -11,7 +11,7 @@ export function getPathUpToModule(moduleName: string, fullPath: string) {
 
 export function resolveAbsoluteModulePath(modulePath: string, cwd: string) {
   // If it's an absolute path or starts with '.' (relative), resolve it directly
-  if (modulePath.startsWith('/') || modulePath.startsWith('.')) {
+  if (path.isAbsolute(modulePath) || modulePath.startsWith('.')) {
     return path.resolve(cwd, modulePath);
   }
 
