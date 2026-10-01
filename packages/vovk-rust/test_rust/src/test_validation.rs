@@ -245,6 +245,35 @@ pub mod test_validation {
 
         assert_eq!(serde_json::to_value(&data).unwrap(), serde_json::json!({"foo": "foo", "bar": "bar"}));
 
+        // a slash, a space or a query character stays inside its path parameter
+        let encoded = with_validation_rpc::handle_params(
+            (),
+            (),
+            with_validation_rpc::handle_params_::params {
+                foo: "a/b".to_string(),
+                bar: "c d?".to_string(),
+            },
+            None,
+            None,
+            false,
+        ).await.unwrap();
+
+        assert_eq!(serde_json::to_value(&encoded).unwrap(), serde_json::json!({"foo": "a/b", "bar": "c d?"}));
+
+        let traversal = with_validation_rpc::handle_params(
+            (),
+            (),
+            with_validation_rpc::handle_params_::params {
+                foo: "..".to_string(),
+                bar: "x".to_string(),
+            },
+            None,
+            None,
+            true,
+        ).await;
+
+        assert!(traversal.is_err());
+
         // Test client-side validation error
         let result = with_validation_rpc::handle_params(
             (),

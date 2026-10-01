@@ -167,7 +167,11 @@ where
             for (key, value) in map {
                 let pattern = format!("{{{}}}", key);
                 if let Value::String(s) = value {
-                    url = url.replace(&pattern, s);
+                    // "." and ".." would leave the handler's path once the URL is normalized
+                    if s == "." || s == ".." {
+                        return Err(format!("Param {} cannot be \"{}\"", key, s).into());
+                    }
+                    url = url.replace(&pattern, &urlencoding::encode(s));
                 } else {
                     return Err(format!("Param {} must be a string", key).into());
                 }
@@ -487,6 +491,7 @@ fn build_query_string(data: &Value, prefix: &str) -> String {
                     };
                     build_query_string(v, &new_prefix)
                 })
+                .filter(|part| !part.is_empty())
                 .collect();
             parts.join("&")
         }
@@ -498,6 +503,7 @@ fn build_query_string(data: &Value, prefix: &str) -> String {
                     let new_prefix = format!("{}[{}]", prefix, i);
                     build_query_string(v, &new_prefix)
                 })
+                .filter(|part| !part.is_empty())
                 .collect();
             parts.join("&")
         }
@@ -507,7 +513,7 @@ fn build_query_string(data: &Value, prefix: &str) -> String {
                 Value::String(s) => s.clone(),
                 _ => data.to_string(),
             };
-            format!("{}={}", prefix, urlencoding::encode(&value_str))
+            format!("{}={}", urlencoding::encode(prefix), urlencoding::encode(&value_str))
         }
     }
 }
