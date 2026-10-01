@@ -292,5 +292,31 @@ describe('Client sweep, pure functions', () => {
       strictEqual(requestSignal?.aborted, true);
       strictEqual(requestSignal?.reason, 'stop');
     });
+
+    it('Gives null for a JSON response without a body', async () => {
+      const rpc = rpcOf({
+        exists: { path: '', httpMethod: 'HEAD' },
+        star: { path: 'star', httpMethod: 'PUT' },
+        empty: { path: 'empty', httpMethod: 'GET' },
+        stream: { path: 'stream', httpMethod: 'HEAD' },
+        missing: { path: 'missing', httpMethod: 'GET' },
+      });
+      const respond = (url: string): Response => {
+        const path = url.split('/').pop();
+        const contentType = path === 'stream' ? 'application/jsonl' : 'application/json; charset=utf-8';
+        const status = path === 'star' ? 204 : path === 'missing' ? 404 : 200;
+        const headers = { 'content-type': contentType, ...(path === 'empty' ? { 'content-length': '0' } : {}) };
+        // HEAD answers and 204 carry the content type but no body
+        return new Response(path === 'empty' ? '' : null, { status, headers });
+      };
+
+      await withFetch(respond, async () => {
+        strictEqual(await rpc.exists(), null);
+        strictEqual(await rpc.star(), null);
+        strictEqual(await rpc.empty(), null);
+        strictEqual(await rpc.stream(), null);
+        await rejects(rpc.missing(), (error) => error instanceof HttpException && error.statusCode === 404);
+      });
+    });
   });
 });

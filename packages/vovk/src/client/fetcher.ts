@@ -215,15 +215,17 @@ export function createFetcher<T>({
       }
 
       const contentType = interpretAs ?? response.headers.get('content-type');
+      const isJSONLines = !!contentType?.startsWith('application/jsonl');
 
-      if (contentType?.startsWith('application/jsonl')) {
+      // a HEAD answer or a 204 has no body to stream, whatever the content type says
+      if (isJSONLines && response.body) {
         // route mid-stream errors to onError callbacks, which otherwise never see them
         respData = wrapStreamErrors(defaultStreamHandler({ response, abortController }), async (error) => {
           for (const cb of [...onErrorCallbacks]) {
             await cb(error as HttpException, inputOptions, { response, init: requestInit, respData, schema });
           }
         });
-      } else if (contentType?.startsWith('application/json')) {
+      } else if (isJSONLines || contentType?.startsWith('application/json')) {
         respData = await defaultHandler({ response, schema });
       } else if (response.status >= 400) {
         // a proxy's error page or a plain text error; a lower non-ok status comes from redirect: 'manual' or no-cors
