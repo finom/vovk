@@ -1,5 +1,6 @@
-import { strictEqual } from 'node:assert';
+import { deepStrictEqual, strictEqual } from 'node:assert';
 import { describe, it } from 'node:test';
+import type { VovkErrorResponse } from 'vovk/internal';
 import { request } from '../lib.ts';
 
 describe('Conflicting routes', () => {
@@ -7,5 +8,10 @@ describe('Conflicting routes', () => {
     const response = await request.get(`/conflicting-routes/hello/123`);
 
     strictEqual(response.status, 500);
+    deepStrictEqual(response.body, {
+      statusCode: 500,
+      message: 'Conflicting routes found: conflicting-routes/hello/{foo}, conflicting-routes/hello/{bar}',
+      isError: true,
+    } satisfies VovkErrorResponse);
   });
 });
