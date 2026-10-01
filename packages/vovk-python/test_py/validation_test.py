@@ -149,6 +149,14 @@ class TestValidation(unittest.TestCase):
         data = WithValidationRPC.handle_query(query={"search": "a&b=c"})
         self.assertEqual(data, {'search': 'a&b=c'})
 
+    def test_query_list_with_none(self) -> None:
+        # None is left out and the next item takes its index: the server reads indexes with a gap as an object
+        iterator = WithValidationRPC.handle_stream(
+            query={"values": [None, "a", None, "b"]},  # type: ignore
+            disable_client_validation=True,
+        )
+        self.assertEqual(list(iterator), [{'value': 'a'}, {'value': 'b'}])
+
     def test_output(self) -> None:
         data: WithValidationRPC.HandleOutputOutput = WithValidationRPC.handle_output(
             query={"helloOutput": "world"}

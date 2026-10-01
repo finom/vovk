@@ -331,9 +331,12 @@ class ApiClient:
                 parts.append(self._build_query_string(value, new_prefix))
         
         elif isinstance(data, list): # type: ignore
-            for i, item in enumerate(data):
-                new_prefix = f"{prefix}[{i}]"
-                parts.append(self._build_query_string(item, new_prefix))
+            # an item that sends nothing, such as None, gives its index to the next one:
+            # the server reads indexes with a gap as an object
+            for item in data:
+                part = self._build_query_string(item, f"{prefix}[{len(parts)}]")
+                if part:
+                    parts.append(part)
         
         elif data is None:
             return ''
