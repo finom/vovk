@@ -234,12 +234,18 @@ await describe('vovk generate in a project without Next.js', async () => {
       'src/app/api/[[...vovk]]/route.ts': '',
       'src/app/api/foo/[[...vovk]]/route.ts': '',
       '.vovk-schema/root.json': userSegmentSchema,
-      '.vovk-schema/foo.json': { ...userSegmentSchema, segmentName: 'foo' },
+      // the composed client exports every module by name, so each segment brings its own
+      '.vovk-schema/foo.json': {
+        ...userSegmentSchema,
+        segmentName: 'foo',
+        controllers: { FooRPC: { ...userSegmentSchema.controllers.UserRPC, rpcModuleName: 'FooRPC' } },
+      },
     });
 
     for (const args of [['generate'], ['generate'], ['generate', '--segmented-only']]) {
       await runCLI(args, { cwd: projectDir });
-      assert.ok((await read('src/client/all/index.ts')).includes('UserRPC'), args.join(' '));
+      const index = await read('src/client/all/index.ts');
+      assert.ok(index.includes('UserRPC') && index.includes('FooRPC'), args.join(' '));
     }
     assert.deepStrictEqual((await fs.readdir(path.join(projectDir, 'src/client'))).sort(), ['all', 'foo', 'root']);
   });
