@@ -70,6 +70,9 @@ export class VovkDev {
 
   #onFirstTimeGenerate: (() => void) | null = null;
 
+  // with --exit a failure ends the run with code 1, a watching run waits for the next change instead
+  #exit = false;
+
   #schemaOut: string | null = null;
 
   #devHttps: boolean | null;
@@ -420,7 +423,7 @@ export class VovkDev {
     return { isError: false };
   }, 500);
 
-  #generate = debounce(() => {
+  #generate = debounce(async () => {
     const fullSchema = {
       $schema: VovkSchemaIdEnum.SCHEMA,
       segments: this.#schemaSegments,
@@ -428,13 +431,23 @@ export class VovkDev {
         config: this.#projectInfo.config,
       }),
     };
-    return generate({
-      projectInfo: this.#projectInfo,
-      fullSchema,
-      locatedSegments: this.#segments,
-      cliGenerateOptions: { schemaPath: this.#getCliSchemaPath() },
-    }).then(this.#onFirstTimeGenerate);
+    try {
+      await generate({
+        projectInfo: this.#projectInfo,
+        fullSchema,
+        locatedSegments: this.#segments,
+        cliGenerateOptions: { schemaPath: this.#getCliSchemaPath() },
+      });
+      this.#onFirstTimeGenerate?.();
+    } catch (error) {
+      this.#projectInfo.log.error(`Failed to generate the client: ${(error as Error)?.message ?? error}`);
+      this.#failExitRun();
+    }
   }, 1000);
+
+  #failExitRun() {
+    if (this.#exit) process.exitCode = 1;
+  }
 
   async #handleSegmentSchema(segmentName: string, segmentSchema: VovkSegmentSchema | null) {
     const { log, config, cwd } = this.#projectInfo;
@@ -498,6 +511,7 @@ export class VovkDev {
     const { log, config, cwd, apiDirAbsolutePath } = this.#projectInfo;
     this.#segments = await locateSegments({ dir: apiDirAbsolutePath, config, log });
     log.info('Starting...');
+    this.#exit = exit;
 
     if (exit) {
       this.#onFirstTimeGenerate = once(() => {
@@ -507,10 +521,12 @@ export class VovkDev {
 
     process.on('uncaughtException', (err) => {
       log.error(`Uncaught Exception: ${err.message}`);
+      this.#failExitRun();
     });
 
     process.on('unhandledRejection', (reason) => {
       log.error(`Unhandled Rejection: ${String(reason)}`);
+      this.#failExitRun();
     });
 
     const schemaOutAbsolutePath = path.resolve(cwd, this.#schemaOut ?? config.schemaOutDir);
@@ -537,6 +553,7 @@ export class VovkDev {
                 log.error(
                   `Failed to request schema for ${formatLoggedSegmentName(segmentName)} after ${MAX_ATTEMPTS} attempts`
                 );
+                this.#failExitRun();
                 return;
               }
               void this.#requestSchema(segmentName).then(({ isError: isError2 }) => {
@@ -564,11 +581,17 @@ export class VovkDev {
 }
 const env = process.env as VovkEnv;
 if (env.__VOVK_START_WATCHER_IN_STANDALONE_MODE__ === 'true') {
-  void new VovkDev({
+  new VovkDev({
     schemaOut: env.__VOVK_SCHEMA_OUT_FLAG__ || undefined,
     devHttps: env.__VOVK_DEV_HTTPS_FLAG__ === 'true' || undefined,
     logLevel: env.__VOVK_LOG_LEVEL__,
-  }).start({
-    exit: env.__VOVK_EXIT__ === 'true',
-  });
+  })
+    .start({
+      exit: env.__VOVK_EXIT__ === 'true',
+    })
+    // exit code 1 makes vovk dev --next-dev stop next dev and fail too
+    .catch((error: unknown) => {
+      console.error(`🐺 ❌ ${error instanceof Error ? error.message : String(error)}`);
+      process.exit(1);
+    });
 }

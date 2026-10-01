@@ -105,3 +105,32 @@ export async function startSchemaServer(schemas: Record<string, object>) {
     },
   };
 }
+
+// a port nothing listens on
+export async function getFreePort() {
+  const server = http.createServer();
+  await new Promise<void>((resolve) => server.listen(0, resolve));
+  const { port } = server.address() as AddressInfo;
+  await new Promise((resolve) => server.close(resolve));
+  return String(port);
+}
+
+// node_modules/.bin/next for a project without Next.js: `next dev` answers the schema requests on -p, --port or PORT
+export function getFakeNextBin(schemas: Record<string, object>) {
+  return `#!/usr/bin/env node
+import('node:http').then(({ default: http }) => {
+  const args = process.argv.slice(2);
+  const portIndex = args.findIndex((arg) => arg === '-p' || arg === '--port');
+  const port = portIndex === -1 ? process.env.PORT : args[portIndex + 1];
+  const schemas = ${JSON.stringify(schemas)};
+  http
+    .createServer((req, res) => {
+      const match = req.url.match(/^\\/api\\/(?:(.+)\\/)?_schema_$/);
+      const schema = match ? schemas[match[1] ?? ''] : undefined;
+      res.writeHead(schema ? 200 : 404, { 'content-type': 'application/json' });
+      res.end(JSON.stringify(schema ? { schema } : { error: 'Not found' }));
+    })
+    .listen(Number(port), () => console.log('next dev listens on ' + port));
+});
+`;
+}

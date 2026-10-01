@@ -8,6 +8,8 @@ import path from 'node:path';
 import { after, describe, it } from 'node:test';
 import {
   createProject,
+  getFakeNextBin,
+  getFreePort,
   makeSegmentSchema,
   startCLI,
   startSchemaServer,
@@ -262,5 +264,57 @@ await describe('vovk dev in a project without Next.js', async () => {
       dev.getOutput()
     );
     assert.deepStrictEqual(JSON.parse(await fs.readFile(fallbackPath, 'utf-8')), vendorSpec('listPets'));
+  });
+
+  await it('Exits with code 1 when --exit gets no schema', async () => {
+    await createProject(projectDir, {
+      'package.json': { name: 'app', version: '1.0.0', type: 'module' },
+      'vovk.config.mjs': `export default ${JSON.stringify({ composedClient: { prettifyClient: false } })};`,
+      'src/app/api/[[...vovk]]/route.ts': '',
+    });
+
+    // nothing listens on the port, so every schema request fails until the retries run out
+    const dev = startCLI(['dev', '--exit'], { cwd: projectDir, env: { PORT: await getFreePort() } });
+
+    assert.strictEqual(await dev.exitCode, 1, dev.getOutput());
+    assert.match(dev.getOutput(), /Failed to request schema for the root segment after 5 attempts/);
+  });
+
+  await it('Exits with code 1 when --exit fails to generate the client', async () => {
+    const server = await startSchemaServer({ '': makeSegmentSchema('') });
+    await createProject(projectDir, {
+      'package.json': { name: 'app', version: '1.0.0', type: 'module' },
+      'vovk.config.mjs': `export default ${JSON.stringify({
+        composedClient: { fromTemplates: ['broken'], prettifyClient: false },
+        clientTemplateDefs: { broken: { templatePath: './broken-template/' } },
+      })};`,
+      // the placeholder renders, the client with a controller doesn't
+      'broken-template/index.ts.ejs':
+        "<% if (Object.values(t.schema.segments).some((s) => Object.keys(s.controllers).length)) throw new Error('broken template'); %>export {};",
+      'src/app/api/[[...vovk]]/route.ts': '',
+    });
+
+    const dev = startCLI(['dev', '--exit'], { cwd: projectDir, env: { PORT: server.port } });
+    const exitCode = await dev.exitCode;
+    await server.close();
+
+    assert.strictEqual(exitCode, 1, dev.getOutput());
+    assert.match(dev.getOutput(), /broken template/);
+  });
+
+  await it('Exits with code 1 when the watcher started by --next-dev fails to start', async () => {
+    await createProject(projectDir, {
+      'package.json': { name: 'app', version: '1.0.0', type: 'module' },
+      'vovk.config.mjs': `export default ${JSON.stringify({ composedClient: { fromTemplates: ['tss'] } })};`,
+      'node_modules/.bin/next': getFakeNextBin({}),
+      'src/app/api/[[...vovk]]/route.ts': '',
+    });
+    await fs.chmod(path.join(projectDir, 'node_modules/.bin/next'), 0o755);
+
+    const dev = startCLI(['dev', '--next-dev'], { cwd: projectDir, env: { PORT: await getFreePort() } });
+
+    assert.strictEqual(await dev.exitCode, 1, dev.getOutput());
+    assert.match(dev.getOutput(), /tss/);
+    assert.doesNotMatch(dev.getOutput(), /Unhandled Rejection/);
   });
 });

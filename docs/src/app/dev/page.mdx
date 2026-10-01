@@ -75,6 +75,8 @@ Use the `--exit` flag to terminate the processes started by `vovk dev` after the
 npx vovk dev --next-dev --exit
 ```
 
+The command exits with code 1 when a segment's schema can't be fetched after 5 retries or the client fails to generate.
+
 For convenience, add a dedicated script in `package.json`:
 
 ```json
