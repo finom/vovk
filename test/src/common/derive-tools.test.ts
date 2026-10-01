@@ -1,6 +1,6 @@
 import assert from 'node:assert';
 import { describe, it } from 'node:test';
-import { deriveTools, procedure, ToModelOutput, toDownloadResponse, type VovkOutput } from 'vovk';
+import { deriveTools, JSONLinesResponder, procedure, ToModelOutput, toDownloadResponse, type VovkOutput } from 'vovk';
 import { createRPC } from 'vovk/create-rpc';
 import type { MCPModelOutput, StandardToolV0 } from 'vovk/internal';
 import { z } from 'zod';
@@ -584,6 +584,53 @@ describe('deriveTools', () => {
 
     it('Collects the items of a generator handler', async () => {
       assert.deepStrictEqual(await generatorTool.execute({}), [{ n: 1 }, { n: 2 }]);
+    });
+  });
+
+  describe('JSONLinesResponder results', () => {
+    const returnsResponder = procedure({ operationObject: { description: 'd' } }).handle(async (req) => {
+      const responder = new JSONLinesResponder<{ n: number }>(req);
+      void (async () => {
+        await responder.send({ n: 1 });
+        await responder.send({ n: 2 });
+        await responder.close();
+      })();
+      return responder;
+    });
+
+    const failingResponder = procedure({ operationObject: { description: 'd' } }).handle(async (req) => {
+      const responder = new JSONLinesResponder<{ n: number }>(req);
+      void (async () => {
+        await responder.send({ n: 1 });
+        responder.throw(new Error('stream broke'));
+      })();
+      return responder;
+    });
+
+    it('Collects the lines a responder sends', async () => {
+      const [tool] = deriveTools({ modules: { MyModule: { returnsResponder } } });
+
+      assert.deepStrictEqual(await tool.execute({}), [{ n: 1 }, { n: 2 }]);
+    });
+
+    it('Gives the MCP formatter the lines', async () => {
+      const [tool] = deriveTools({ modules: { MyModule: { returnsResponder } }, toModelOutput: ToModelOutput.MCP });
+
+      assert.deepStrictEqual(await tool.execute({}), {
+        content: [{ type: 'text', text: '[{"n":1},{"n":2}]' }],
+        structuredContent: { items: [{ n: 1 }, { n: 2 }] },
+      });
+    });
+
+    it('Reports the error a responder throws', async () => {
+      const errors: string[] = [];
+      const [tool] = deriveTools({
+        modules: { MyModule: { failingResponder } },
+        onError: (error) => errors.push(error.message),
+      });
+
+      assert.deepStrictEqual(await tool.execute({}), { error: 'stream broke' });
+      assert.deepStrictEqual(errors, ['stream broke']);
     });
   });
 

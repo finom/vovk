@@ -1,3 +1,5 @@
+import { readableStreamToAsyncIterable } from '../client/default-stream-handler.js';
+import { JSONLinesResponder } from '../core/json-lines-responder.js';
 import type { VovkHandlerSchema, VovkSegmentSchema } from '../types/core.js';
 import type { VovkRequest } from '../types/request.js';
 import type { StandardToolV0 } from '../types/standard-tool.js';
@@ -70,6 +72,11 @@ async function caller<TOutput, TFormattedOutput>(
       throw new Error(
         `Unable to call handler "${handlerName}". It's neither RPC nor controller method with "fn" interface.`
       );
+    }
+
+    // a responder streams the lines a client would read
+    if (result instanceof JSONLinesResponder && result.readableStream) {
+      result = readableStreamToAsyncIterable({ readableStream: result.readableStream });
     }
 
     // a streaming handler yields its items, collect them so the model sees data instead of an iterator

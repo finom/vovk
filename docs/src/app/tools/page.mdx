@@ -30,7 +30,7 @@ The function returns an array of tools. Each tool satisfies the `StandardToolV0`
 - `inputSchema?: StandardSchemaV1 & StandardJSONSchemaV1{:ts}` - a single merged Standard Schema of the procedure's `body`, `query`, and `params`, when available.
 - `outputSchema?: StandardSchemaV1 & StandardJSONSchemaV1{:ts}` - equals to the procedure's `output` schema, when available.
 - `meta?: Record<string, unknown>{:ts}` - static data about the tool, copied as is from `x-tool.meta` (see below). It's read by the code that consumes the tools and never sent to the LLM.
-- `execute: (input: { body?, query?, params? }) => Promise<unknown>{:ts}` - the function to execute the tool logic. For RPC modules, it performs an HTTP request; for controllers, it calls the `fn` method to execute in the current context without HTTP.
+- `execute: (input: { body?, query?, params? }) => Promise<unknown>{:ts}` - the function to execute the tool logic. For RPC modules, it performs an HTTP request; for controllers, it calls the `fn` method to execute in the current context without HTTP. A [JSON Lines](/jsonlines) result, from a generator or a `JSONLinesResponder`, reaches the model as the array of its items.
 
 > `inputSchema` validates the `{ body, query, params }` envelope itself and delegates slot values to your original library schemas (Zod, Valibot, ArkType). For RPC modules and OpenAPI mixins it's reconstructed from the generated JSON Schemas, so only the envelope is checked and the values are validated during execution.
 
