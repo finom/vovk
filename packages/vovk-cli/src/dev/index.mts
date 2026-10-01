@@ -83,6 +83,11 @@ export class VovkDev {
     this.#logLevel = logLevel || 'info';
   }
 
+  // the client imports the schema from --schema-out when it's given
+  #getCliSchemaPath() {
+    return this.#schemaOut ? path.resolve(this.#projectInfo.cwd, this.#schemaOut) : undefined;
+  }
+
   #watchSegments = (callback: () => void) => {
     const { cwd, log, config, apiDirAbsolutePath } = this.#projectInfo;
     if (!apiDirAbsolutePath) {
@@ -418,6 +423,7 @@ export class VovkDev {
       projectInfo: this.#projectInfo,
       fullSchema,
       locatedSegments: this.#segments,
+      cliGenerateOptions: { schemaPath: this.#getCliSchemaPath() },
     }).then(this.#onFirstTimeGenerate);
   }, 1000);
 
@@ -516,7 +522,7 @@ export class VovkDev {
 
     await ensureSchemaFiles(this.#projectInfo, schemaOutAbsolutePath, segmentNames);
 
-    await ensureClient(this.#projectInfo, this.#segments);
+    await ensureClient(this.#projectInfo, this.#segments, this.#getCliSchemaPath());
 
     const MAX_ATTEMPTS = 5;
     const DELAY = 5000;

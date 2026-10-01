@@ -20,7 +20,8 @@ const getEmptySegmentRecordSchema = (segmentNames: string[]) => {
   return result;
 };
 
-export async function ensureClient(projectInfo: ProjectInfo, locatedSegments: Segment[]) {
+// schemaPath: the schema folder when it isn't config.schemaOutDir, such as vovk dev --schema-out
+export async function ensureClient(projectInfo: ProjectInfo, locatedSegments: Segment[], schemaPath?: string) {
   return generate({
     isEnsuringClient: true,
     projectInfo,
@@ -30,5 +31,6 @@ export async function ensureClient(projectInfo: ProjectInfo, locatedSegments: Se
       meta: getMetaSchema({ config: projectInfo.config }),
     },
     locatedSegments,
+    cliGenerateOptions: { schemaPath },
   });
 }

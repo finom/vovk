@@ -161,4 +161,26 @@ await describe('vovk dev in a project without Next.js', async () => {
     assert.doesNotMatch(await readClient(), /FooRPC/, dev.getOutput());
     assert.match(await readClient(), /UserRPC/);
   });
+
+  await it('Points the generated client at the --schema-out folder', async () => {
+    const server = await startSchemaServer({ '': makeSegmentSchema('') });
+    await createProject(projectDir, {
+      'package.json': { name: 'app', version: '1.0.0', type: 'module' },
+      'vovk.config.mjs': `export default ${JSON.stringify({ composedClient: { prettifyClient: false } })};`,
+      'src/app/api/[[...vovk]]/route.ts': '',
+    });
+
+    const dev = startCLI(['dev', '--exit', '--schema-out', 'custom-schema'], {
+      cwd: projectDir,
+      env: { PORT: server.port },
+    });
+    const exitCode = await dev.exitCode;
+    await server.close();
+
+    assert.strictEqual(exitCode, 0, dev.getOutput());
+    const schemaTs = await fs.readFile(path.join(projectDir, 'src/client/schema.ts'), 'utf-8');
+    assert.match(schemaTs, /from '\.\/\.\.\/\.\.\/custom-schema\/root\.json'/, schemaTs);
+    assert.match(schemaTs, /from '\.\/\.\.\/\.\.\/custom-schema\/_meta\.json'/, schemaTs);
+    assert.ok(!(await exists(path.join(projectDir, '.vovk-schema'))), dev.getOutput());
+  });
 });
