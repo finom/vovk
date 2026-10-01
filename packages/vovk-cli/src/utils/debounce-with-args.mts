@@ -1,36 +1,36 @@
 // biome-ignore lint/suspicious/noExplicitAny: Used to explicitly
 type KnownAny = any;
+
+// one timer per distinct argument list; a call that resets the timer gets the result of the call that runs
 export function debounceWithArgs<Callback extends (...args: KnownAny[]) => KnownAny>(
   callback: Callback,
   wait: number
 ): (...args: Parameters<Callback>) => Promise<Awaited<ReturnType<Callback>>> {
-  // Stores timeouts keyed by the stringified arguments
-  const timeouts = new Map<string, NodeJS.Timeout>();
+  const pending = new Map<
+    string,
+    { timeout: NodeJS.Timeout; result: PromiseWithResolvers<Awaited<ReturnType<Callback>>> }
+  >();
 
   return (...args: Parameters<Callback>) => {
-    // Convert arguments to a JSON string (or any other stable key generation)
     const key = JSON.stringify(args);
+    const waiting = pending.get(key);
 
-    // Clear any existing timer for this specific key
-    if (timeouts.has(key)) {
-      clearTimeout(timeouts.get(key));
+    if (waiting) {
+      clearTimeout(waiting.timeout);
     }
 
-    // Return a promise that resolves/rejects after the debounce delay
-    return new Promise<Awaited<ReturnType<Callback>>>((resolve, reject) => {
-      const timeoutId = setTimeout(async () => {
-        try {
-          const result = await callback(...args);
-          resolve(result);
-        } catch (error) {
-          reject(error);
-        } finally {
-          // Remove the entry once the callback is invoked
-          timeouts.delete(key);
-        }
-      }, wait);
+    const result = waiting?.result ?? Promise.withResolvers<Awaited<ReturnType<Callback>>>();
+    const timeout = setTimeout(async () => {
+      pending.delete(key);
+      try {
+        result.resolve(await callback(...args));
+      } catch (error) {
+        result.reject(error);
+      }
+    }, wait);
 
-      timeouts.set(key, timeoutId);
-    });
+    pending.set(key, { timeout, result });
+
+    return result.promise;
   };
 }

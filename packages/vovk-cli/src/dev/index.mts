@@ -308,9 +308,7 @@ export class VovkDev {
           `A file with controller ${namesOfClasses.join(', ')} have been modified at path "${filePath}". Segment(s) affected: ${JSON.stringify(affectedSegments.map((s) => s.segmentName))}`
         );
 
-        for (const segment of affectedSegments) {
-          await this.#requestSchema(segment.segmentName);
-        }
+        await Promise.all(affectedSegments.map((segment) => this.#requestSchema(segment.segmentName)));
       } else {
         log.debug(`The class ${namesOfClasses.join(', ')} does not belong to any segment`);
       }
