@@ -1,0 +1,84 @@
+import Image from "next/image";
+
+# Setting up MCP server with `mcp-handler`
+
+[Database Polling](./polling) and [State Normalization](./state) are set up, so the app is ready to accept changes made by external systems. Let’s now set up the MCP server to allow MCP clients to interact with our application.
+
+As an MCP server, we use the [`mcp-handler`](https://npmjs.com/package/mcp-handler) package, which provides a simple way to create an MCP server in a Next.js API route. The server will expose tools derived from our controllers.
+
+<img src="/diagrams/mcp_polling_flow.svg" alt="MCP Polling Flow" className="mt-4 dark:invert" />
+
+<video src="/video/kanban_mcp.mp4" type="video/mp4" className='mt-4' controls loop />
+
+The tools, as usual, are derived from the controllers using the `deriveTools` function from the `vovk` package. For more details, see [Deriving AI Tools](/tools).
+
+```ts filename="src/app/api/mcp/route.ts" source="examples/realtime-kanban"
+import { createMcpHandler } from 'mcp-handler';
+import { deriveTools, ToModelOutput } from 'vovk';
+import { z } from 'zod';
+import TaskController from '@/modules/task/task-controller';
+import UserController from '@/modules/user/user-controller';
+
+const tools = deriveTools({
+  modules: {
+    UserController,
+    TaskController,
+  },
+  toModelOutput: ToModelOutput.MCP,
+  onExecute: (result, { name }) => console.log(`${name} executed`, result),
+  onError: (e, { name }) => console.error(`Error in ${name}`, e),
+});
+
+const handler = createMcpHandler((server) => {
+  tools.forEach(({ title, name, execute, description, inputSchema }) => {
+    // mcp-handler wants a Zod raw shape, so convert the merged Standard Schema's
+    // JSON Schema back to Zod and take the body/query/params shape
+    const shape = inputSchema
+      ? (
+          z.fromJSONSchema(
+            inputSchema['~standard'].jsonSchema.input({
+              target: 'draft-2020-12',
+            }),
+          ) as z.ZodObject
+        ).shape
+      : {};
+    server.registerTool(
+      name,
+      { title, description, inputSchema: shape },
+      execute,
+    );
+  });
+});
+
+const authorizedHandler = (req: Request) => {
+  const { MCP_ACCESS_KEY } = process.env;
+  const accessKey = new URL(req.url).searchParams.get('mcp_access_key');
+  if (MCP_ACCESS_KEY && accessKey !== MCP_ACCESS_KEY) {
+    return new Response(
+      'Unable to authorize the MCP request: mcp_access_key query parameter is invalid',
+      { status: 401 },
+    );
+  }
+
+  return handler(req);
+};
+
+export { authorizedHandler as GET, authorizedHandler as POST };
+```
+*[The code above is fetched from GitHub repository.](https://github.com/finom/vovk/blob/main/examples/realtime-kanban/src/app/api/mcp/route.ts)*
+
+For simple protection, we use the `mcp_access_key` query parameter to authorize requests. It’s compared against the `MCP_ACCESS_KEY` environment variable when that variable is set.
+
+The MCP server is now set up at the `/api/mcp` endpoint and can be accessed by MCP clients via the URL `http://localhost:3000/api/mcp?mcp_access_key=your_access_key` (replace `your_access_key` with the actual key, and `localhost` with your server address if needed).
+
+## Running the MCP Inspector Locally
+
+Run the following command to start the MCP Inspector, which allows you to interact with the MCP server we just set up. The app needs to be running locally.
+
+```sh
+npx @modelcontextprotocol/inspector
+```
+
+Update the server configuration in the Inspector, select a tool, and run it to see the results.
+
+<Image src="/screenshots/mcp-inspector.png" alt="MCP Inspector" width={3456} height={1908} className="dark:invert" />

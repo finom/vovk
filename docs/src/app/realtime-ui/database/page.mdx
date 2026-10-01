@@ -1,0 +1,103 @@
+# Designing the Database with Prisma and Zod Generator
+
+[Application state normalization](./state) relies on the ability to extract entities from data structures returned by the server, based on the presence of `entityType` and `id` properties. Therefore, the database schema should be designed so that each table includes an `entityType` column with a fixed value representing the entity type.
+
+In the database we’re going to have two tables: `User` and `Task`. The `entityType` column will be set to either `user` or `task`—lowercased entity names in singular form—via the `EntityType` enum. Each table has this column with a default value (ideally, this column should be read-only).
+
+We’re also going to use [prisma-zod-generator](https://www.npmjs.com/package/prisma-zod-generator?activeTab=readme) to generate Zod schemas from our Prisma models. This allows us to define Zod models automatically and keeps our server-side code concise.
+
+```ts showLineNumbers copy filename="prisma/schema.prisma" source="examples/realtime-kanban"
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "./generated/client"
+}
+
+generator zod {
+  provider      = "prisma-zod-generator"
+  config   = "./zod-generator.config.json"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  /// @zod.brand<'user'>()
+  id         String     @id @default(uuid())
+  /// @zod.custom.use(z.literal('user'))
+  entityType EntityType @default(user)
+  /// @zod.meta({ description: "Timestamp when the user was created", examples: ["2023-01-01T00:00:00.000Z"] })
+  createdAt  DateTime   @default(now())
+  /// @zod.meta({ description: "Timestamp when the user was last updated", examples: ["2023-01-01T00:00:00.000Z"] })
+  updatedAt  DateTime   @default(now()) @updatedAt
+
+  /// @zod.meta({ examples: ["John Doe"], description: "Full name of the user" })
+  fullName   String
+  /// @zod.meta({ examples: ["john.doe@example.com"], description: "Email address of the user" })
+  email      String    @unique
+  /// @zod.meta({ examples: ["https://example.com/image.jpg"], description: "Profile image URL of the user" })
+  imageUrl   String?
+
+  tasks      Task[]
+
+  embedding Unsupported("vector(1536)")?
+}
+
+model Task {
+  /// @zod.brand<'task'>()
+  id         String     @id @default(uuid())
+  /// @zod.custom.use(z.literal('task'))
+  entityType EntityType @default(task)
+  /// @zod.meta({ description: "Timestamp when the task was created", examples: ["2023-01-01T00:00:00.000Z"] })
+  createdAt  DateTime   @default(now())
+  /// @zod.meta({ description: "Timestamp when the task was last updated", examples: ["2023-01-01T00:00:00.000Z"] })
+  updatedAt  DateTime   @default(now()) @updatedAt
+
+  /// @zod.meta({ examples: ["Implement authentication"], description: "Title of the task" })
+  title      String
+  /// @zod.meta({ examples: ["Implement user authentication using JWT"], description: "Description of the task" })
+  description String
+  /// @zod.meta({ examples: ["TODO"], description: "Status of the task" })
+  status     TaskStatus @default(TODO)
+  /// @zod.brand<'user'>().meta({ examples: ["a3bb189e-8bf9-3888-9912-ace4e6543002"], description: "ID of the user who owns the task" })
+  userId     String
+
+  user       User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  embedding Unsupported("vector(1536)")?
+}
+
+enum EntityType {
+  user
+  task
+}
+
+enum TaskStatus {
+  TODO
+  IN_PROGRESS
+  IN_REVIEW
+  DONE
+}
+```
+*[The code above is fetched from GitHub repository.](https://github.com/finom/vovk/blob/main/examples/realtime-kanban/prisma/schema.prisma)*
+
+Notice the triple-slash comments. Because React components and other app logic work with entity IDs, we need to distinguish IDs of different entity types for type safety in React components and other places. For that, [branded](https://zod.dev/api?id=branded-types) types are a good fit.
+
+We’re also using literal types for `entityType` columns and defining `examples` and `descriptions` for better OpenAPI documentation generation and for [AI tools](/tools).
+
+That’s it. Each time you run `npx prisma generate`, the Zod schemas are generated automatically in the `prisma/generated/schemas` folder with all the necessary type information. 
+
+For easier access to the generated schemas, we add a path mapping to `tsconfig.json`:
+
+```json filename="tsconfig.json"
+{
+  "compilerOptions": {
+    "paths": {
+      "@schemas/*": ["./prisma/generated/schemas/*"],
+    },
+  },
+}
+```

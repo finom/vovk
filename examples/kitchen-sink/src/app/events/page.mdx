@@ -1,0 +1,121 @@
+---
+title: Polling Example
+description: Polling Ticker Example
+---
+
+import { Tabs } from 'nextra/components';
+import EventsExample from './events-example';
+import Example from '@/components/example';
+
+# Server Events Example
+
+Type-safe alternative to Server-Sent Events (SSE) using Vovk.ts JSONLines for streaming event data from the server to the client.
+
+## Result
+
+<Example>
+  <EventsExample />
+</Example>
+
+## Code
+
+<Tabs items={['events-controller.ts', 'events-example.tsx']}>
+  <Tabs.Tab>
+```ts showLineNumbers copy filename="src/modules/events/events-controller.ts" source="examples/kitchen-sink"
+import { procedure, get, prefix } from 'vovk';
+import { z } from 'zod';
+
+const eventNames = [
+  'foo',
+  'bar',
+  'baz',
+  'qux',
+  'quux',
+  'corge',
+  'grault',
+  'garply',
+  'waldo',
+  'fred',
+  'plugh',
+  'xyzzy',
+  'thud',
+] as const;
+
+@prefix('events')
+export default class EventsController {
+  @get()
+  static streamEvents = procedure({
+    validateEachIteration: true,
+    iteration: z.object({
+      event: z.enum(eventNames).meta({ description: 'Event name' }),
+      payload: z.object({
+        timestamp: z.iso.datetime().meta({ description: 'Event timestamp' }),
+        message: z.string().meta({ description: 'Event message' }),
+      }),
+    }),
+  }).handle(async function* () {
+    for (const event of eventNames) {
+      yield {
+        event,
+        payload: {
+          timestamp: new Date().toISOString(),
+          message: `This is a message for event "${event}"`,
+        },
+      };
+      await new Promise((resolve) => setTimeout(resolve, 2000));
+    }
+  });
+}
+```
+*[The code above is fetched from GitHub repository.](https://github.com/finom/vovk/blob/main/examples/kitchen-sink/src/modules/events/events-controller.ts)*
+  </Tabs.Tab>
+  <Tabs.Tab>
+```tsx showLineNumbers copy filename="src/app/events/events-example.tsx" source="examples/kitchen-sink"
+'use client';
+import { useCallback, useRef, useState } from 'react';
+import { EventsRPC } from '@/client';
+import type { VovkIteration } from 'vovk';
+
+export default function EventsExample() {
+  const [eventPayload, setEventPayload] = useState<VovkIteration<typeof EventsRPC.streamEvents>['payload'] | null>(
+    null
+  );
+  const [eventName, setEventName] = useState<VovkIteration<typeof EventsRPC.streamEvents>['event'] | null>(null);
+  const abortRef = useRef<() => void>(null);
+
+  const streamEvents = useCallback(async () => {
+    abortRef.current?.();
+    while (true) {
+      using events = await EventsRPC.streamEvents();
+      abortRef.current = events.abortSilently;
+      for await (const { event, payload } of events) {
+        setEventName(event);
+        setEventPayload(payload);
+      }
+    }
+  }, []);
+
+  return (
+    <div>
+      <button type="button" onClick={streamEvents}>
+        Stream Events
+      </button>
+      <br />
+      <br />
+      <h2>Latest Event:</h2>
+      <pre>{eventName || 'No event yet'}</pre>
+      <br />
+      <h2>Event Payload:</h2>
+      <pre>{eventPayload ? JSON.stringify(eventPayload, null, 2) : 'No payload yet'}</pre>
+    </div>
+  );
+}
+```
+*[The code above is fetched from GitHub repository.](https://github.com/finom/vovk/blob/main/examples/kitchen-sink/src/app/events/events-example.tsx)*
+  </Tabs.Tab>
+</Tabs>
+
+## Related Documentation
+
+- [TypeScript RPC](https://vovk.dev/typescript)
+- [Controller & Procedure](https://vovk.dev/procedure)

@@ -1,0 +1,207 @@
+# Decorator Examples
+
+## `console.log` Decorator
+
+A simple logging decorator that logs the request method and URL before proceeding to the next decorator or route handler.
+
+```ts showLineNumbers copy filename="src/decorators/log.ts"
+import { createDecorator } from 'vovk';
+
+const log = createDecorator((req, next, message?: string) => {
+  console.log(`${message ?? 'Incoming request'}: ${req.method} ${req.url}`);
+  return next();
+});
+
+export default log;
+```
+
+Import the `log` decorator and apply it to a procedure after the `@get`, `@post`, etc., decorators.
+
+```ts showLineNumbers copy filename="src/modules/user/user-controller.ts"
+import { get, prefix } from 'vovk';
+import log from '../decorators/log';
+
+@prefix('users')
+export default class UserController {
+  @get('info')
+  @log('Fetching user info')
+  static async getUserInfo() {
+    // ...
+  }
+}
+```
+
+## Basic Authorization Decorator
+
+Basic authentication is a simple HTTP protocol for user authentication where credentials (username and password) are sent in the Authorization header of a request after being encoded in Base64. While not the most secure method, it can be useful for legacy cross-service communication.
+
+```ts showLineNumbers copy filename="src/decorators/basic-auth-guard.ts"
+import { HttpException, HttpStatus, createDecorator } from 'vovk';
+
+const basicAuthGuard = createDecorator((req, next) => {
+  const authorisation = req.headers.get('authorization');
+
+  if (!authorisation) {
+    throw new HttpException(HttpStatus.UNAUTHORIZED, 'No authorisation header');
+  }
+
+  const token = authorisation.split(' ')[1];
+
+  if (!token) {
+    throw new HttpException(HttpStatus.UNAUTHORIZED, 'No token provided');
+  }
+
+  let login, password;
+
+  try {
+    [login, password] = Buffer.from(token, 'base64').toString().split(':');
+  } catch (error) {
+    throw new HttpException(HttpStatus.UNAUTHORIZED, 'Unable to parse token. ' + String(error));
+  }
+
+  if (login !== process.env.BASIC_AUTH_LOGIN || password !== process.env.BASIC_AUTH_PASSWORD) {
+    throw new HttpException(HttpStatus.UNAUTHORIZED, 'Invalid login or password');
+  }
+  return next();
+});
+
+export default basicAuthGuard;
+```
+
+Import the `basicAuthGuard` decorator and apply it to procedures after the `@get`, `@post`, etc., decorators.
+
+```ts showLineNumbers copy filename="src/modules/secure/secure-controller.ts"
+import { get, prefix } from 'vovk';
+import basicAuthGuard from '../decorators/basic-auth-guard';
+
+@prefix('secure')
+export default class SecureController {
+  @get('data')
+  @basicAuthGuard()
+  static async getSecureData() {
+    // ...
+  }
+}
+```
+
+## RBAC Decorator
+
+> Role-based access control (RBAC) is a method of restricting system access for users based on their role within an organization, rather than assigning permissions individually.
+
+The `authGuard` decorator below:
+
+- Verifies the user is authorized; otherwise returns an `Unauthorized` status.
+- Adds `currentUser` to request metadata, represented by the `AuthMeta` TypeScript interface.
+- Implements role-based access control with the `Permission` enum.
+
+The `identifyUserAndCheckPermissions` function is a placeholder for your logic to identify the user from the request (e.g., from a JWT token or session) and check whether they have the required permission.
+
+```ts showLineNumbers copy filename="src/decorators/auth-guard.ts"
+import { createDecorator, HttpException, HttpStatus, type VovkRequest } from 'vovk';
+import type { User } from '@/types';
+
+export enum Permission {
+  CAN_DO_THIS = 'CAN_DO_THIS',
+  CAN_DO_THAT = 'CAN_DO_THAT',
+}
+
+// Metadata interface allows access to currentUser in the controller
+export interface AuthMeta {
+  currentUser: User;
+}
+
+// Identify the user, check permissions, and update request metadata
+const checkAuth = async (req: VovkRequest, permission: Permission) => {
+  const currentUser = identifyUserAndCheckPermissions(req, permission);
+
+  if (!currentUser) {
+    return false;
+  }
+
+  // Add currentUser to the request metadata
+  req.vovk.meta<AuthMeta>({ currentUser });
+
+  return true;
+};
+
+// Create the decorator
+const authGuard = createDecorator(async (req, next, permission: Permission) => {
+  const isAuthorized = await checkAuth(req, permission);
+
+  if (!isAuthorized) {
+    throw new HttpException(HttpStatus.UNAUTHORIZED, 'Unauthorized');
+  }
+  // The user is authorized and metadata is set; proceed to the next decorator or controller handler
+  return next();
+});
+
+export default authGuard;
+```
+
+Import the `authGuard` decorator and related members, then apply it to procedures after the `@get`, `@post`, etc., decorators.
+
+```ts showLineNumbers copy filename="src/modules/user/user-controller.ts"
+import { get, prefix } from 'vovk';
+import authGuard, { Permission, type AuthMeta } from '../decorators/auth-guard';
+
+@prefix('users')
+export default class UserController {
+  // ...
+  @get('something')
+  @authGuard(Permission.CAN_DO_THIS)
+  static async getSomething(req: VovkRequest) {
+    const { currentUser } = req.vovk.meta<AuthMeta>();
+    // ...
+  }
+
+  // ...
+}
+```
+
+## Vercel Cron Jobs Authorization Decorator
+
+[Vercel Cron Jobs](https://vercel.com/docs/cron-jobs) require simple authorization via an environment variable. You can implement this by creating a decorator that checks the `Authorization` header against a secret.
+
+```ts showLineNumbers copy filename="src/decorators/cron-guard.ts"
+import { HttpException, HttpStatus, createDecorator } from 'vovk';
+
+const cronGuard = createDecorator(async (req, next) => {
+  if (req.headers.get('authorization') !== `Bearer ${process.env.CRON_SECRET}`) {
+    throw new HttpException(HttpStatus.UNAUTHORIZED, 'Unauthorized');
+  }
+
+  return next();
+});
+
+export default cronGuard;
+```
+
+Apply the `cronGuard` decorator to the procedure that should be protected by the cron job authorization.
+
+```ts showLineNumbers copy filename="src/modules/cron/cron-controller.ts"
+import { get, prefix } from 'vovk';
+import cronGuard from '../decorators/cron-guard';
+
+@prefix('cron')
+export default class CronController {
+  @get('do-something')
+  @cronGuard()
+  static async doSomething() {
+    // ...
+  }
+}
+```
+
+Add a cron job to `vercel.json`. The `schedule` field uses standard cron syntax (this example runs daily at midnight).
+
+```json filename="/vercel.json"
+{
+  "crons": [
+    {
+      "path": "/api/cron/do-something",
+      "schedule": "0 0 * * *"
+    }
+  ]
+}
+```
+

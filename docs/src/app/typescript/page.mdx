@@ -1,0 +1,434 @@
+# TypeScript RPC Client
+
+Controllers and its procedures implemented as static methods compile to so-called RPC modules that share the same structure but have different argument signatures. For example, given the controller below:
+
+```ts showLineNumbers copy filename="src/modules/user/user-controller.ts"
+import { z } from 'zod';
+import { procedure, prefix, post, operation } from 'vovk';
+
+@prefix('users')
+export default class UserController {
+  @operation({
+    summary: 'Update user (Zod)',
+    description: 'Update user by ID with Zod validation',
+  })
+  @post('{id}')
+  static updateUser = procedure({
+    body: z
+      .object({
+        name: z.string().meta({ description: 'User full name' }),
+        age: z.number().min(0).max(120).meta({ description: 'User age' }),
+        email: z.email().meta({ description: 'User email' }),
+      })
+      .meta({ description: 'User object' }),
+    params: z.object({
+      id: z.uuid().meta({ description: 'User ID' }),
+    }),
+    query: z.object({
+      notify: z.enum(['email', 'push', 'none']).meta({ description: 'Notification type' }),
+    }),
+    output: z
+      .object({
+        success: z.boolean().meta({ description: 'Success status' }),
+      })
+      .meta({ description: 'Response object' }),
+  }).handle(async (req, { id }) => {
+    const { name, age } = await req.json();
+    const notify = req.nextUrl.searchParams.get('notify');
+
+    // do something with the data
+    console.log(`Updating user ${id}:`, { name, age, notify });
+    return {
+      success: true,
+    };
+  });
+}
+```
+
+It compiles to the following RPC module with `updateUser` method, which accepts `body`, `params`, and `query` as a three-part input.
+
+```ts showLineNumbers copy
+import { UserRPC } from '@/client';
+
+const updatedUser = await UserRPC.updateUser({
+  body: { name: 'John Doe', age: 30, email: 'john@example.com' },
+  params: { id: '69' },
+  query: { notify: 'push' },
+});
+```
+
+`updateUser` performs client-side validation, serializes `query` and `params` into the URL, and issues a standard `fetch` request. The server handles it in `UserController.updateUser`. The RPC method returns a promise that resolves to the return type used in the procedure.
+
+```ts showLineNumbers copy
+const resp = await fetch(`/api/users/${id}?notify=push`, {
+  method: 'POST',
+  body: JSON.stringify({
+    /* ... */
+  }),
+});
+
+const updatedUser = await resp.json();
+```
+
+Behind the scenes the RPC module is created by an internal function `createRPC` and uses default imports or imports defined in the [vovk.config](/config) file. See [imports customization](/imports) for details.
+
+```ts showLineNumbers copy
+import type { VovkFetcher } from "vovk/fetcher";
+import { createRPC } from "vovk/create-rpc";
+import { schema } from "./schema";
+
+import type { Controllers as Controllers0 } from "../../app/api/[[...vovk]]/route.ts";
+
+// The arguments are: schema, segmentName, controllerName, fetcher and options
+export const UserRPC = createRPC<
+  Controllers0["UserRPC"],
+  typeof import("vovk/fetcher").fetcher extends VovkFetcher<infer U> ? U : never
+>(schema, "", "UserRPC", import("vovk/fetcher"), {
+  validateOnClient: import("vovk-ajv"),
+});
+```
+
+## RPC Method Options
+
+In addition to `body`, `params`, and `query`, every RPC method accepts a set of options. This list can be [extended via a custom `fetcher`](/imports#fetcher).
+
+### `apiRoot`
+
+Overrides the default API root path. The default is `/api` and can also be [configured](/config) via `rootEntry` and/or `origin`.
+
+### `init`
+
+Lets you pass `RequestInit` options (the `fetch` options) such as `headers` and `credentials`, as well as [Next.js-specific options](https://nextjs.org/docs/app/api-reference/functions/fetch) like `next: { revalidate: number }{:ts}`.
+
+```ts showLineNumbers copy
+const user = await UserRPC.updateUser({
+  body: {
+    /* ... */
+  },
+  params: {
+    /* ... */
+  },
+  query: {
+    /* ... */
+  },
+  init: {
+    headers: {
+      'X-Custom-Header': 'value',
+    },
+    credentials: 'include',
+    next: { revalidate: 60 },
+  },
+});
+```
+
+### `transform`
+
+Allows you to post-process the result. Provide a function that receives the parsed response data and the original `Response` and returns a transformed value.
+
+```ts showLineNumbers copy
+const user = await UserRPC.updateUser({
+  body: {
+    /* ... */
+  },
+  params: {
+    /* ... */
+  },
+  query: {
+    /* ... */
+  },
+  transform: (data, response) => {
+    // Modify the response here
+    return value;
+  },
+});
+```
+
+You can also return the `Response` alongside the data:
+
+```ts showLineNumbers copy
+const [user, response] = await UserRPC.updateUser({
+  body: {
+    /* ... */
+  },
+  params: {
+    /* ... */
+  },
+  query: {
+    /* ... */
+  },
+  transform: (data, response) => [data, response] as const,
+});
+
+response satisfies Response;
+```
+
+### `disableClientValidation`
+
+Turns off client-side validation for this call. Useful when debugging to surface server-side validation errors instead.
+
+```ts showLineNumbers copy
+await UserRPC.updateUser({
+  // ...
+  disableClientValidation: true,
+});
+```
+
+### `interpretAs`
+
+Overrides how the response content type is interpreted. Useful, for example, when the server returns JSON Lines but does not set `content-type` to `application/jsonl`.
+
+```ts showLineNumbers copy
+const user = await UserRPC.updateUser({
+  body: {
+    /* ... */
+  },
+  params: {
+    /* ... */
+  },
+  query: {
+    /* ... */
+  },
+  interpretAs: 'application/jsonl',
+});
+```
+
+### `validateOnClient`
+
+Overrides the `validateOnClient` setting from [imports](/imports#validateonclient).
+
+## `withDefaults`
+
+An RPC module can be wrapped with default options using the `withDefaults` method. It returns a new RPC module with the specified deeply-merged defaults applied to every method call.
+
+```ts showLineNumbers copy
+import { UserRPC } from '@/client';
+
+const WithDefaultsUserRPC = UserRPC.withDefaults({
+  apiRoot: 'https://api.example.com/v1',
+  init: {
+    headers: {
+      'x-hello': 'world',
+    },
+  },
+});
+
+const user = await WithDefaultsUserRPC.updateUser({
+  // ...
+});
+```
+
+## Customization
+
+You can customize the client's fetch function and its types to match your app’s needs. See the [`fetcher` customization docs](/imports#fetcher) for details.
+
+```ts showLineNumbers copy
+await UserRPC.updateUser({
+  // ...
+  successMessage: 'Successfully updated the user',
+  someOtherCustomFlag: true,
+});
+```
+
+## Type Override
+
+If type inference cannot determine the return type, you can specify it explicitly—no need to cast to `unknown` first.
+
+```ts showLineNumbers copy
+import { UserRPC } from '@/client';
+import type { SomeType } from '../types';
+
+// ...
+
+// Override the return type
+const updatedUser = await UserRPC.updateUser<SomeType>(/* ... */);
+```
+
+## Async Iterable
+
+```ts showLineNumbers copy filename="src/modules/user/user-controller.ts"
+import { get } from 'vovk';
+export default class UserController {
+  @get()
+  static async *doSomething(/* ... */) {
+    yield* iterable;
+  }
+}
+```
+
+If the handler returns an async iterable, the client casts the method to a [disposable](https://github.com/tc39/proposal-explicit-resource-management) [async iterator](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/AsyncIterator) to enable [JSON Lines](/jsonlines) streaming.
+
+```ts showLineNumbers copy
+import { StreamRPC } from '@/client';
+
+using stream = await StreamRPC.getJSONLines();
+
+for await (const { message } of stream) {
+  console.log('Received message:', message);
+}
+```
+
+## Access to Schema
+
+Every RPC method exposes the emitted JSON schema through the following properties:
+
+- `schema` - the schema for this method of type `VovkHandlerSchema`;
+- `controllerSchema` - the schema object of the method's controller of type `VovkControllerSchema`;
+- `segmentSchema` - the schema object of the segment of type `VovkSegmentSchema`;
+- `fullSchema` - the full schema object of type `VovkSchema` that includes all available segments as well as emitted config (by default, `"libs"` and `"rootEntry"` options only; see [config documentation](/config)).
+
+```ts showLineNumbers copy
+console.log(UserRPC.updateUser.schema.validation.body); // get body validation JSON schema
+console.log(UserRPC.updateUser.schema.operationObject); // get OpenAPI operationObject spec for this method
+console.log(UserRPC.updateUser.fullSchema.meta.config.libs.ajv); // get config option
+```
+
+This design also allows you to create [LLM tools](/tools) that can use the schema to define the tool parameters.
+
+## `getURL` method
+
+Every RPC method exposes a type-safe `getURL` utility that returns the URL for the method, including serialized `params` and `query`.
+
+```ts showLineNumbers copy
+import { UserRPC } from '@/client';
+
+const url = UserRPC.updateUser.getURL({
+  params: { id: '69' },
+  query: { notify: 'push' },
+  apiRoot: 'https://api.example.com/v1', // optional
+});
+console.log(url); // "https://api.example.com/v1/api/users/69?notify=push"
+```
+
+It can be used to call `fetch` directly if needed.
+
+```ts showLineNumbers copy
+const response = await fetch(
+  UserRPC.updateUser.getURL({
+    /* ... */
+  }),
+  {
+    method: 'POST',
+    // ... other fetch options
+  }
+);
+```
+
+<a id="react-query" />
+## React Query
+
+Every RPC method exposes a `queryKey` utility that returns a globally unique key for use with [@tanstack/react-query](https://www.npmjs.com/package/@tanstack/react-query). It is an array: `[segmentName, controllerPrefix, rpcModuleName, decoratorPath, httpMethod, ...key]{:ts}`, where `...key` is an optional array of extra values you provide to differentiate similar queries.
+
+```ts showLineNumbers copy
+import { useQuery } from '@tanstack/react-query';
+import { UserRPC } from '@/client';
+
+const MyComponent = () => {
+  const query = useQuery({
+    queryKey: UserRPC.getUser.queryKey(['123']),
+    queryFn: () =>
+      UserRPC.getUser({
+        params: { id: '123' },
+      }),
+  });
+
+  return <div>{query.isLoading ? 'Loading...' : JSON.stringify(query.data)}</div>;
+};
+```
+
+[View live example on examples.vovk.dev »](https://examples.vovk.dev/react-query)
+
+You can use the key for cache invalidation, refetching, and other React Query features.
+
+```ts showLineNumbers copy
+queryClient.invalidateQueries({
+  queryKey: UserRPC.getUser.queryKey().slice(0, 3), // Invalidate all queries for the `UserRPC` module
+});
+```
+
+Streamed responses can utilize [`streamedQuery`](https://tanstack.com/query/latest/docs/reference/streamedQuery), which lets you consume [JSON Lines](/jsonlines) as an array.
+
+```ts showLineNumbers copy
+import { useQuery, experimental_streamedQuery as streamedQuery } from '@tanstack/react-query';
+import { JSONLinesRPC } from '@/client';
+
+const JSONLinesComponent = () => {
+  const query = useQuery({
+    queryKey: JSONLinesRPC.streamTokens.queryKey(),
+    queryFn: streamedQuery({
+      streamFn: () => JSONLinesRPC.streamTokens(),
+    }),
+  });
+
+  return (
+    <div>
+      Stream result: {query.data?.map(({ message }, i) => <span key={i}>{message}</span>) ?? <em>Loading...</em>}
+    </div>
+  );
+};
+```
+
+Mutations work with RPC module methods as expected.
+
+```ts showLineNumbers copy
+import { useMutation } from '@tanstack/react-query';
+import { UserRPC } from '@/client';
+
+const MyComponent = () => {
+  const mutation = useMutation({
+    mutationFn: UserRPC.updateUser,
+  });
+
+  return (
+    <div>
+      <button
+        onClick={() =>
+          mutation.mutate({
+            body: { name: 'John Doe', age: 30 },
+            params: { id: '123' },
+          })
+        }
+      >
+        Update User
+      </button>
+      {mutation.isLoading ? 'Loading...' : JSON.stringify(mutation.data)}
+    </div>
+  );
+};
+```
+
+## `openapi` and `schema`
+
+The generated client also exposes `openapi` and `schema` exports in corresponding modules for accessing the OpenAPI spec and the Vovk Schema, respectively.
+
+```ts showLineNumbers copy
+import { openapi } from '@/client/openapi';
+import { schema } from '@/client/schema';
+```
+
+The `schema` object can also be exported from the main module.
+
+```ts showLineNumbers copy
+import { schema } from '@/client';
+```
+
+This also works with the [segmented client](/segmented); in that case, both `openapi` and `schema` include data only for the selected segment:
+
+```ts showLineNumbers copy
+import { openapi } from '@/client/admin/openapi.ts';
+import { schema } from '@/client/admin/schema.ts';
+import { schema } from '@/client/admin/index.ts';
+```
+
+## Used Templates
+
+The TypeScript RPC client is generated from the following templates:
+
+- [ts](/templates#ts) - uncompiled TypeScript module with type definitions; used by default in both the [composed client](/composed) and the [segmented client](/segmented);
+- [mixins](/templates#mixins) - `.d.ts` types and `.json` files generated when [OpenAPI mixins](/mixins) are used;
+- [readme](/templates#readme), [packageJson](/templates#packagejson) - `README.md` with RPC documentation and `package.json` suitable for publishing the generated library as an NPM package.
+
+For more information, see the [client templates documentation](/templates).
+
+## Roadmap/bugs
+
+- 🐞 `init.signal` passed to an RPC call is overwritten by an internally created `AbortController`, so `AbortSignal`-based cancellation of regular RPC calls is not supported out of the box. Streaming responses remain cancellable via `stream.abortController.abort()`; for non-streaming calls, a custom [fetcher](/imports#fetcher) can wire a user-provided signal into `prepareRequestInit`.

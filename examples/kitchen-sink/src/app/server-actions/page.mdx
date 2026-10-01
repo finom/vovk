@@ -1,0 +1,172 @@
+---
+title: Server Actions with .fn()
+description: Using Vovk.ts Local Procedure Calls inside Next.js Server Actions
+---
+
+import { Tabs } from 'nextra/components';
+import ServerActionFormExample from './server-action-form-example';
+import Example from '@/components/example';
+
+# Server Actions with `.fn()`
+
+An example of using Vovk.ts Local Procedure Calls (`.fn()`) inside Next.js Server Actions. The `.fn()` method calls the controller handler directly on the server without making an HTTP request. When the controller uses `contentType: ['multipart/form-data']`, `.fn()` automatically parses FormData.
+
+This example reuses the same `FormZodController` from the [Form with Files](/form) example, but calls it via `.fn()` in a server action instead of the RPC client.
+
+## Result
+
+<Example>
+  <ServerActionFormExample />
+</Example>
+
+## Code
+
+<Tabs items={['actions.ts', 'server-action-form-example.tsx', 'form-zod-controller.ts']}>
+  <Tabs.Tab>
+```ts showLineNumbers copy filename="src/app/server-actions/actions.ts" source="examples/kitchen-sink"
+'use server';
+
+import FormZodController from '@/modules/form/form-zod-controller.js';
+
+export async function submitFormAction(_prevState: unknown, formData: FormData) {
+  try {
+    return {
+      data: await FormZodController.submitForm.fn({
+        body: formData,
+        params: { id: '5a279068-35d6-4d67-94e0-c21ef4052eea' },
+      }),
+    };
+  } catch (e) {
+    return { error: String(e) };
+  }
+}
+```
+*[The code above is fetched from GitHub repository.](https://github.com/finom/vovk/blob/main/examples/kitchen-sink/src/app/server-actions/actions.ts)*
+  </Tabs.Tab>
+  <Tabs.Tab>
+```tsx showLineNumbers copy filename="src/app/server-actions/server-action-form-example.tsx" source="examples/kitchen-sink"
+'use client';
+import { useActionState } from 'react';
+import { submitFormAction } from './actions.js';
+
+export default function ServerActionFormExample() {
+  const [result, formAction, isPending] = useActionState(submitFormAction, null);
+
+  return (
+    <form action={formAction}>
+      <label htmlFor="email" className="font-bold">
+        Email
+      </label>
+      <input type="text" placeholder="Email" name="email" />
+      <br />
+      <br />
+      <label htmlFor="resume" className="font-bold">
+        Resume
+      </label>
+      <br />
+      <input type="file" name="resume" />
+      <br />
+      <br />
+      <label htmlFor="portfolioSamples" className="font-bold">
+        Portfolio Samples (multiple)
+      </label>
+      <br />
+      <input type="file" multiple name="portfolioSamples" />
+      <br />
+      <button type="submit" disabled={isPending}>
+        {isPending ? 'Submitting...' : 'Submit'}
+      </button>
+
+      {result && 'data' in result && (
+        <div className="text-left">
+          <h3>Response:</h3>
+          <pre>{JSON.stringify(result.data, null, 2)}</pre>
+        </div>
+      )}
+
+      {result && 'error' in result && <div className="overflow-auto">❌ {result.error}</div>}
+    </form>
+  );
+}
+```
+*[The code above is fetched from GitHub repository.](https://github.com/finom/vovk/blob/main/examples/kitchen-sink/src/app/server-actions/server-action-form-example.tsx)*
+
+  </Tabs.Tab>
+  <Tabs.Tab>
+```ts showLineNumbers copy filename="src/modules/form/form-zod-controller.ts" source="examples/kitchen-sink"
+import { z } from 'zod';
+import { procedure, prefix, post, operation } from 'vovk';
+
+@prefix('form-zod')
+export default class FormZodController {
+  @operation({
+    summary: 'Submit form (Zod)',
+    description: 'Submit form with Zod validation',
+  })
+  @post('{id}')
+  static submitForm = procedure({
+    contentType: ['multipart/form-data'],
+    body: z
+      .object({
+        email: z.email().meta({ description: 'User email' }),
+        resume: z
+          .file()
+          .min(1)
+          .meta({ description: 'Resume file', examples: ['application/pdf'] }),
+        portfolioSamples: z
+          .union([z.array(z.file().min(1)), z.file().min(1)])
+          .meta({ description: 'Portfolio samples' }),
+      })
+      .meta({ description: 'User object' }),
+    params: z.object({
+      id: z.uuid().meta({ description: 'User ID' }),
+    }),
+    output: z
+      .object({
+        email: z.email().meta({ description: 'User email' }),
+        resume: z.object({
+          name: z.string().meta({ description: 'Resume file name', examples: ['resume.pdf'] }),
+          size: z.number().min(0).meta({ description: 'Resume file size' }),
+          type: z.string().meta({ description: 'Resume file type', examples: ['application/pdf'] }),
+        }),
+        portfolioSamples: z
+          .object({
+            name: z.string().meta({ description: 'Portfolio sample file name', examples: ['portfolio.zip'] }),
+            size: z.number().min(0).meta({ description: 'Portfolio sample file size' }),
+            type: z.string().meta({ description: 'Portfolio sample file type', examples: ['application/zip'] }),
+          })
+          .array()
+          .meta({ description: 'Array of portfolio sample files' }),
+      })
+      .meta({ description: 'Response object' }),
+  }).handle(async (req) => {
+    const { resume, portfolioSamples, email } = await req.vovk.body();
+
+    console.log('portfolioSamples:', portfolioSamples);
+
+    return {
+      email,
+      resume: {
+        name: resume.name,
+        size: resume.size,
+        type: resume.type,
+      },
+      portfolioSamples: (Array.isArray(portfolioSamples) ? portfolioSamples : [portfolioSamples]).map((file) => ({
+        name: file.name,
+        size: file.size,
+        type: file.type,
+      })),
+    };
+  });
+}
+```
+*[The code above is fetched from GitHub repository.](https://github.com/finom/vovk/blob/main/examples/kitchen-sink/src/modules/form/form-zod-controller.ts)*
+
+  </Tabs.Tab>
+</Tabs>
+
+## Related Documentation
+
+- [Controller & Procedure](https://vovk.dev/procedure)
+- [`.fn()` Local Procedure Calls](https://vovk.dev/fn)
+- [Form with Files Example](/form)

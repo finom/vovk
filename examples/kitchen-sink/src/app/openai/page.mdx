@@ -1,0 +1,136 @@
+---
+title: OpenAI Chat Example
+description: Usage of OpenAI TypeScript API showcasing async generators and JSONLines streaming in Vovk.ts
+---
+
+import { Tabs } from 'nextra/components';
+import OpenAiExample from './openai-example';
+import Example from '@/components/example';
+
+# OpenAI Chat Example
+
+Text streaming with [OpenAI TypeScript API Library](https://npmjs.com/package/openai) showcasing [JSONLines](https://vovk.dev/jsonlines) with `yield*{:ts}` syntax that delegates to the results of `await openai.chat.completions.create(){:ts}` call.
+
+## Result
+
+<Example>
+  <OpenAiExample />
+</Example>
+
+## Code
+
+<Tabs items={['openai-controller.ts', 'openai-example.tsx']}>
+  <Tabs.Tab>
+```ts showLineNumbers copy filename="src/modules/openai/openai-controller.ts" source="examples/kitchen-sink"
+import { type VovkRequest, post, prefix, operation, HttpException, HttpStatus } from 'vovk';
+import OpenAI from 'openai';
+
+@prefix('openai')
+export default class OpenAiController {
+  @operation({
+    summary: 'Create a chat completion',
+    description: 'Create a chat completion using OpenAI and yield the response',
+  })
+  @post('chat')
+  static async *createChatCompletion(
+    req: VovkRequest<{ messages: OpenAI.Chat.Completions.ChatCompletionMessageParam[] }>
+  ) {
+    const { messages } = await req.json();
+    const LIMIT = 5;
+    const openai = new OpenAI();
+
+    if (messages.filter(({ role }) => role === 'user').length > LIMIT) {
+      throw new HttpException(HttpStatus.BAD_REQUEST, `You can only send ${LIMIT} messages at a time`);
+    }
+
+    yield* await openai.chat.completions.create({
+      messages,
+      model: 'gpt-5-nano',
+      stream: true,
+    });
+  }
+}
+```
+*[The code above is fetched from GitHub repository.](https://github.com/finom/vovk/blob/main/examples/kitchen-sink/src/modules/openai/openai-controller.ts)*
+  </Tabs.Tab>
+  <Tabs.Tab>
+```tsx showLineNumbers copy filename="src/app/openai/openai-example.tsx" source="examples/kitchen-sink"
+'use client';
+import { useState } from 'react';
+import { OpenAiRPC } from '@/client';
+import type OpenAI from 'openai';
+
+type Message = OpenAI.Chat.Completions.ChatCompletionMessageParam;
+
+export default function OpenAiExample() {
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [userInput, setUserInput] = useState('');
+  const [error, setError] = useState<Error | null>(null);
+
+  const submit = async () => {
+    if (!userInput) return;
+    setUserInput('');
+    const userMessage: Message = { role: 'user', content: userInput };
+
+    setMessages((messages) => [...messages, userMessage]);
+
+    try {
+      using completion = await OpenAiRPC.createChatCompletion({
+        body: { messages: [...messages, userMessage] },
+      });
+
+      setMessages((mesages) => [...mesages, { role: 'assistant', content: '' } satisfies Message]);
+
+      for await (const chunk of completion) {
+        setMessages((messages) => {
+          const lastMessage = messages[messages.length - 1];
+          return [
+            ...messages.slice(0, -1),
+            { ...lastMessage, content: lastMessage.content + (chunk.choices[0]?.delta?.content ?? '') },
+          ];
+        });
+      }
+    } catch (error) {
+      setError(error as Error);
+    }
+  };
+
+  return (
+    <form
+      onSubmit={(e) => {
+        e.preventDefault();
+        submit();
+      }}
+    >
+      {messages.map((message, index) => (
+        <div key={index}>
+          {message.role === 'assistant' ? '🤖' : '👤'} {(message.content as string) || '...'}
+        </div>
+      ))}
+      {error && <div>❌ {error.message}</div>}
+      <div className="input-group">
+        <input
+          type="text"
+          placeholder="Type a message..."
+          value={userInput}
+          onChange={(e) => setUserInput(e.currentTarget.value)}
+        />
+        <button type="submit" disabled={!userInput}>
+          Send
+        </button>
+      </div>
+    </form>
+  );
+}
+```
+*[The code above is fetched from GitHub repository.](https://github.com/finom/vovk/blob/main/examples/kitchen-sink/src/app/openai/openai-example.tsx)*
+
+  </Tabs.Tab>
+</Tabs>
+
+## Related Documentation
+
+- [JSONLines](https://vovk.dev/jsonlines)
+- [TypeScript RPC](https://vovk.dev/typescript)
+- [Controller & Procedure](https://vovk.dev/procedure)
+- [`@operation` Decorator](https://vovk.dev/openapi)

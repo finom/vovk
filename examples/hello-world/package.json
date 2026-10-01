@@ -1,0 +1,67 @@
+{
+  "name": "vovk-hello-world",
+  "version": "0.0.88",
+  "description": "A \"Hello World!\" app built with Next.js, Vovk.ts and Zod. For details, visit https://vovk.dev/hello-world",
+  "scripts": {
+    "dev": "vovk dev --next-dev",
+    "prebuild": "vovk generate",
+    "build": "next build",
+    "start": "next start",
+    "lint": "biome check",
+    "test:node": "node --experimental-strip-types --test --test-concurrency=1",
+    "test:python": "python3 -m pip install -q -r test/python/requirements.txt && python3 -m unittest discover -s test/python -p '*_test.py'",
+    "test:rust": "RUST_BACKTRACE=full RUST_TEST_THREADS=1 cargo test --manifest-path ./test/rust/Cargo.toml --tests -- --nocapture --show-output",
+    "pretest": "next build",
+    "test": "concurrently 'next start' \"sleep 10 && printf '\\n\\033[1;96mNode tests\\033[0m\\n' && npm run test:node && printf '\\n\\033[1;96mPython tests\\033[0m\\n' && npm run test:python && printf '\\n\\033[1;96mRust tests\\033[0m\\n' && npm run test:rust\" --kill-others --success first",
+    "publish:node": "npm publish ./dist",
+    "publish:rust": "cargo publish --manifest-path dist_rust/Cargo.toml --allow-dirty",
+    "publish:python": "python3 -m build ./dist_python --wheel --sdist && python3 -m twine upload ./dist_python/dist/*",
+    "ncu": "npm-check-updates -u"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/finom/vovk.git",
+    "directory": "examples/hello-world"
+  },
+  "homepage": "https://vovk.dev/hello-world",
+  "bugs": {
+    "url": "https://github.com/finom/vovk/issues"
+  },
+  "author": "Andrey Gubanov",
+  "keywords": [
+    "vovk",
+    "openapi",
+    "zod",
+    "api"
+  ],
+  "dependencies": {
+    "@scalar/api-reference-react": "^0.9.60",
+    "@standard-schema/spec": "^1.1.0",
+    "@tanstack/react-query": "^5.101.4",
+    "ajv": "^8.20.0",
+    "ajv-errors": "^3.0.0",
+    "next": "^16.3.0",
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8",
+    "vovk": "^4.0.0-beta.0",
+    "vovk-ajv": "^0.1.0",
+    "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^2.5.14",
+    "@tailwindcss/postcss": "^4.3.3",
+    "@types/node": "^26",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "postcss": "^8",
+    "prettier": "^3.9.6",
+    "tailwindcss": "^4.3.3",
+    "tsdown": "^0.22.14",
+    "typescript": "^5",
+    "vovk-cli": "^0.3.0-beta.0",
+    "vovk-hello-world-published": "npm:vovk-hello-world@^0.0.88",
+    "vovk-python": "^0.0.3",
+    "vovk-rust": "^0.0.4"
+  }
+}

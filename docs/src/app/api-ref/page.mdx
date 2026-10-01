@@ -1,0 +1,668 @@
+# API Reference
+
+## Core
+
+### `initSegment`
+
+Creates Next.js App Route handlers for the main [Optional Catch-all Segment](https://nextjs.org/docs/pages/building-your-application/routing/dynamic-routes#optional-catch-all-segments).
+
+The function accepts:
+
+- `segmentName?: string{:ts}` – the segment name used in the route. Defaults to an empty string (the root segment).
+- `controllers: Record<string, Function>{:ts}` – a record of controllers.
+- `exposeValidation?: boolean` – set to `false` to hide validation logic from client-side code. Defaults to `true`.
+- `emitSchema?: boolean{:ts}` – set to `false` to skip emitting the schema for the segment. Defaults to `true`.
+- `onError?: (err: Error, req: VovkRequest) => void | Promise<void>{:ts}` – called when a controller throws. Can be used for logging. The second argument can be used to access the request URL, authorization data, and other request details.
+
+### `JSONLinesResponder`
+
+`JSONLinesResponder` is a utility class for creating responses in the JSON Lines format. It provides methods to send individual JSON objects as lines in the response stream.
+
+```ts showLineNumbers copy
+const responder = new JSONLinesResponder<IterationType>(req, ({ readableStream, headers }) => new Response(readableStream, { headers }));
+
+await responder.send({ message: 'Hello' });
+await responder.send({ message: 'World' });
+```
+
+Accepts:
+- `req?: Request` – the incoming request object.
+- `getResponse?: (responder: JSONLinesResponder<T>) => Response` – optional factory function to create a custom `Response` object.
+
+Provides the following methods and properties:
+- `send(item: T): Promise<void>` – Sends a single JSON object as a line in the response stream.
+- `close(): Promise<void>` – Closes the response stream, indicating that no more data will be sent.
+- `throw(err: Error): Promise<void>` – Sends an error message to the client and closes the stream.
+- `response: Response` – The underlying `Response` object that will be returned from the Next.js route handler.
+- `headers: Record<string, string>` – The `content-type` for the response.
+- `readableStream: ReadableStream<Uint8Array>` – The readable stream used as the response body.
+
+See the [JSON Lines](/jsonlines) documentation for more details.
+
+### `toDownloadResponse`
+
+Utility for constructing a `Response` that returns file/binary content with appropriate headers (e.g. `Content-Type`, `Content-Disposition`). It can be used directly in controllers and is also compatible with MCP tool output formatting when returning `Response` objects.
+
+**Arguments:**
+
+- `content: Blob | File | ArrayBuffer | Uint8Array | ReadableStream<Uint8Array> | string{:ts}` — file content/body.
+- `opts?:{:ts}`
+  - `filename?: string{:ts}` — if provided, sets `Content-Disposition: attachment; filename=...`.
+  - `type?: string{:ts}` — overrides the response `Content-Type` (e.g. `audio/mpeg`, `text/csv`, `application/pdf`).
+  - `headers?: Record<string, string>{:ts}` — extra headers to merge into the response.
+
+Example (serving audio):
+
+```ts showLineNumbers copy
+import { get, toDownloadResponse } from 'vovk';
+
+export default class MediaController {
+  @get('audio')
+  static getAudio() {
+    return toDownloadResponse(buffer, {
+      filename: 'track.mp3',
+      type: 'audio/mpeg',
+      headers: { 'x-hello': 'world' },
+    });
+  }
+}
+```
+
+## Decorators
+
+### `@get`, `@post`, `@put`, `@patch`, `@del`, `@head`, `@options`
+
+HTTP method decorators define the HTTP method for a handler. They accept two optional arguments:
+
+- `path? = ''` – the path segment for the route.
+- `opts?: { cors?: boolean, headers?: Record<string, string>, staticParams?: Record<string, string>[] }` – route options:
+  - If `cors` is `true`, CORS headers are added to the response, and the `OPTIONS` method is handled automatically.
+  - `headers` is an object with headers that will be added to the response.
+  - `staticParams` (`@get` decorator only) is an array of objects with static parameters that can be used in the route path, for example `[{ id: '123' }]`.
+
+```ts showLineNumbers copy
+import { get } from 'vovk';
+
+export default class HelloController {
+  @get('world', { cors: true, headers: { 'x-hello': 'world' }, staticParams: [{ id: '123' }] })
+  static getHelloWorld(req, { id }: { id: string }) {
+    return { hello: 'world', id };
+  }
+}
+```
+
+Each HTTP method decorator has an `.auto()` helper that can be used to generate the path automatically based on the controller and method names. It accepts the same options as the decorator itself.
+
+```ts showLineNumbers copy
+import { get } from 'vovk';
+
+export default class HelloController {
+  @get.auto({ cors: true, headers: { 'x-hello': 'world' }, staticParams: [{ id: '123' }] })
+  static getHelloWorld(req, { id }: { id: string }) {
+    return { hello: 'world', id };
+  }
+}
+```
+
+### `@prefix`
+
+The `@prefix(p: string)` decorator is used to prepend a sub-path to all endpoints of a controller. Its use is optional.
+
+```ts showLineNumbers copy
+import { prefix, get } from 'vovk';
+
+@prefix('hello')
+export default class HelloController {
+  @get('world')
+  static getHelloWorld() {
+    return { hello: 'world' };
+  }
+}
+```
+
+### `@operation`
+
+The `@operation(openAPIOperationObject)` decorator attaches OpenAPI documentation to a procedure. It accepts an object with `summary`, `description`, and any other OpenAPI Operation Object properties.
+
+It also exposes a `tool` helper that can be used to add AI tool–related metadata, stored under the `x-tool` key of the operation object. Read more on the [Deriving AI Tools](/tools) page.
+
+```ts showLineNumbers copy
+import { operation } from 'vovk';
+
+export default class HelloController {
+  @operation.tool({
+    title: 'Get Hello World',
+  })
+  @operation({
+    summary: 'Get Hello World',
+    description: 'Returns a hello world message',
+  })
+  @get('world')
+  static getHelloWorld() {
+    return { hello: 'world' };
+  }
+}
+```
+
+### `@cloneControllerMetadata`
+
+Each controller belongs to a single segment. If you want to reuse a controller in other segments, you can use the `@cloneControllerMetadata` decorator on a new class that extends the original controller. This copies all metadata (routes, operations, etc.) from the original controller to the new one. Note that the prefix is **not** inherited, so you may want to add a new prefix to the cloned controller.
+
+```ts showLineNumbers copy
+import { prefix, cloneControllerMetadata } from 'vovk';
+import UserController from './user-controller';
+
+@cloneControllerMetadata()
+@prefix('v2')
+export default class UserControllerV2 extends UserController {}
+```
+
+## Utils
+
+### `createDecorator`
+
+`createDecorator` is a higher-order helper for building procedure decorators. It accepts a middleware function with the following parameters:
+
+- `req: VovkRequest` – the request object.
+- `next: () => Promise<any>` – a function that calls the next middleware or the actual handler.
+- Additional arguments – any extra values passed to the decorator factory.
+
+The second argument is a schema modifier function that can be used to adjust the procedure schema based on the decorator arguments.
+
+```ts showLineNumbers copy
+import { createDecorator, get } from 'vovk';
+
+const myDecorator = createDecorator(
+  (req, next, a: string, b: number) => {
+    // do something with the request
+  },
+  (a: string, b: number) => {
+    // modify schema here
+  }
+);
+
+export default class MyController {
+  @get.auto()
+  @myDecorator('foo', 1) // Passes 'foo' as 'a', and 1 as 'b'
+  static doSomething() {
+    // ...
+  }
+}
+```
+
+See the [decorator docs](/decorator) for more details.
+
+### `decorate`
+
+Applies decorator results to a handler without using decorator syntax, providing an alternative to the stacked decorator syntax. Returns an object with a `.handle()` method.
+
+**Arguments:**
+
+- `...decorators: Function[]{:ts}` – one or more decorator results (e.g. `get('path')`, `operation(...)`, `myCustomDecorator(...)`, `procedure(...)`).
+
+**Returns:** an object with a `.handle(handler)` method. The handler is either an async function or omitted if `procedure` is included (in which case `procedure` already defines the handler via its own `.handle()`).
+
+The controller prefix can be defined as a `static prefix` property on the class instead of using the `@prefix()` decorator:
+
+```ts showLineNumbers copy
+import { decorate, post, get, operation, HttpStatus, procedure } from 'vovk';
+import { z } from 'zod';
+
+class UserController {
+  static prefix = 'users';
+
+  // With procedure validation
+  static updateUser = decorate(
+    post('{id}'),
+    operation({
+      summary: 'Update user',
+      description: 'Updates a user by ID',
+    }),
+    operation.error(HttpStatus.BAD_REQUEST, 'Invalid input'),
+    procedure({
+      params: z.object({ id: z.string() }),
+      body: z.object({ email: z.email() }),
+      query: z.object({ notify: z.enum(['email', 'push', 'none']) }),
+    }),
+  ).handle(async (req, { id }) => {
+    const body = await req.vovk.body();
+    const { notify } = req.vovk.query();
+    return { id, ...body, notify };
+  });
+
+  // Without validation
+  static listUsers = decorate(
+    get(),
+  ).handle(async () => {
+    return [];
+  });
+}
+
+export default UserController;
+```
+
+Decorator application follows the same order as the stacked syntax: the last decorator in the list (closest to the handler) is applied first. See [Decorators Overview](/decorator-overview) for guidance on choosing between `decorate` and decorator syntax.
+
+### `fetcher`
+
+Function that creates a data-fetching layer for the RPC client. It is used by default when the fetcher is not [customized](/imports#fetcher). A new fetcher can be created using the [createFetcher](#createFetcher) function.
+
+### `createFetcher`
+
+Function that creates a custom fetcher for the RPC client. It accepts a generic type parameter that defines additional options for the resulting RPC methods. The function returns a `fetcher` function that will be used to build the client.
+
+```ts showLineNumbers copy filename="./src/lib/fetcher.ts"
+import { createFetcher } from 'vovk';
+
+export const fetcher = createFetcher<{
+  successMessage?: string; // "Successfully created a new user"
+  useAuth?: boolean; // if true, Authorization header will be set
+  someOtherCustomFlag?: boolean; // any custom flag that you want to pass to the RPC method
+}>({
+  prepareRequestInit: async (init, { useAuth, someOtherCustomFlag }) => {
+    // ...
+    return {
+      ...init,
+      headers: {
+        ...init.headers,
+        ...(useAuth ? { Authorization: 'Bearer token' } : {}),
+      },
+    };
+  },
+  transformResponse: async (data, { someOtherCustomFlag }) => {
+    // ...
+    return {
+      ...data,
+    };
+  },
+  onSuccess: async (data, { successMessage }) => {
+    if (successMessage) {
+      alert(successMessage);
+    }
+  },
+  onError: async (error) => {
+    alert(error.message);
+  },
+});
+```
+
+See the [fetcher docs](/imports#fetcher).
+
+### `controllersToStaticParams`
+
+Function that generates an API surface at build time (static params) instead of on-demand at request time. Intended for usage with Next.js `generateStaticParams()` in `[[...slug]]/route.ts`.
+
+**Arguments:**
+
+- `controllers: Record<string, Function>{:ts}` — record of controllers to scan for `@get(...)` routes (including `staticParams` variants).
+- `slugName = 'vovk'{:ts}` — *(optional)* the name of your Optional Catch‑all Segment param (the folder name in `[[...<slugName>]]`). Use this when your segment is not `[[...vovk]]`.
+
+**Returns:**
+
+- `Array<Record<string, string[]>>{:ts}` — an array of params objects consumable by `generateStaticParams()` (e.g. `{ vovk: ['hello', 'greeting.json'] }`).
+
+```ts showLineNumbers copy filename="src/app/api/[[...vovk]]/route.ts"
+// ...
+export type Controllers = typeof controllers;
+
+export function generateStaticParams() {
+  return controllersToStaticParams(controllers);
+}
+
+export const { GET } = initSegment({ controllers });
+```
+
+If you use a custom slug folder like `src/app/api/[[...custom]]/route.ts`, pass it as the second argument:
+
+```ts showLineNumbers copy
+export function generateStaticParams() {
+  return controllersToStaticParams(controllers, 'custom');
+}
+```
+
+See the [segment](/segment) documentation for more details.
+
+### `multitenant`
+
+A [Next.js proxy](https://nextjs.org/docs/app/api-reference/file-conventions/proxy) utility that routes subdomains to specific [segments](/segment).
+
+**Returns:**
+
+- `action: 'rewrite' | 'redirect' | null` — what the proxy should do.
+- `destination?: string` — destination URL for `rewrite`/`redirect` actions.
+- `message: string` — explanation/debug info about the routing decision.
+- `subdomains: Record<string, string> | null` — wildcard subdomains extracted from the request host.
+
+```ts showLineNumbers copy filename="src/proxy.ts"
+// ... proxy ...
+const { action, destination, message, subdomains } = multitenant({
+  requestUrl: request.url,
+  requestHost: request.headers.get('host') ?? '',
+  targetHost: process.env.VERCEL ? 'multitenant.vovk.dev' : 'localhost:3000',
+  overrides: {
+    // ...
+  },
+});
+
+console.log({ action, destination, message, subdomains });
+// ...
+```
+
+For more information, see the [multitenant](/multitenant) guide.
+
+### `deriveTools`
+
+Utility that turns RPC modules or controllers into AI tools that satisfy the [standard-tool](https://standard-tool.js.org/) convention (`StandardToolV0` interface).
+
+The function accepts the following options:
+
+- `modules: Record<string, object>{:ts}` – key-value object where keys are module names and values are objects with methods. Each method should have a `schema: VovkHandlerSchema` property and either `isRPC: true` (for RPC modules) or the [fn](/fn) function (for controllers).
+- `onExecute?: (result: unknown, tool: StandardToolV0) => void | Promise<void>{:ts}` – called after each tool execution.
+- `onError?: (e: Error, tool: StandardToolV0) => void | Promise<void>{:ts}` – called when an error is thrown during tool execution.
+- `toModelOutput` – function that formats the tool result into a model-friendly output.
+- `meta?: Record<string, any>{:ts}` – data attached as the `meta` property of each function (controller handler or RPC method).
+
+```ts showLineNumbers copy
+import { deriveTools } from 'vovk';
+import { UserRPC } from '@/client';
+import TaskController from '@/modules/task/task-controller';
+
+const tools = deriveTools({
+  meta: { hello: 'world' },
+  modules: {
+    UserRPC,
+    TaskController,
+  },
+  toModelOutput: (result) => `Result: ${JSON.stringify(result, null, 2)}`,
+  onExecute: (result, { name }) => console.log(`${name} executed`, result),
+  onError: (e) => console.error('Error', e),
+});
+```
+
+For more details, see the [Deriving AI Tools](/tools) guide.
+
+### `ToModelOutput`
+
+Collection of built-in `toModelOutput` formatters used by `deriveTools` to shape tool results for LLMs.
+
+Documented built-ins:
+
+- `ToModelOutput.DEFAULT` — default formatting when `toModelOutput` is not provided.
+- `ToModelOutput.MCP` — formats output according to the MCP tool output shape (supports text, JSON, image, and audio). See [tools](/tools) for details and examples.
+
+### `createValidateOnClient`
+
+Creates the `validateOnClient` function, which controls how client-side validation is performed for RPC methods (globally or per segment). `createValidateOnClient` accepts a `validate` function that receives input data, the validation schema, and additional options, and returns the validated data or throws an error if validation fails.
+
+```ts showLineNumbers copy filename="./src/lib/validate-on-client.ts"
+import { validateData } from 'validation-library';
+import { createValidateOnClient, HttpException, HttpStatus } from 'vovk';
+
+export const validateOnClient = createValidateOnClient({
+  validate: async (input, schema, meta) => {
+    const isValid = validateData(input, schema);
+    if (!isValid) {
+      throw new HttpException(HttpStatus.NULL, 'Validation failed');
+    }
+
+    return input;
+  },
+});
+```
+
+For more details on client-side validation, see the [customization](/imports) page.
+
+### `procedure`
+
+Higher-level helper for defining procedures that adds validation and schema emission on top of a controller handler. The procedure returns `.handle(req, params)` that is used to define the endpoint handler.
+
+```ts showLineNumbers copy
+import { procedure } from 'vovk';
+
+export default class UserController {
+  static createUser = procedure({
+    body: z.object({
+      name: z.string(),
+      email: z.string().email(),
+    }),
+    output: z.object({
+      id: z.string(),
+      name: z.string(),
+      email: z.string().email(),
+    }),
+  }).handle((req) => {
+    // ...
+  });
+}
+```
+
+If `.handle()` is not called, the procedure will throw Not Implemented error.
+
+`procedure` options:
+
+- `body`, `query`, `params` — input validation schemas.
+- `output` — output validation schema for JSON responses.
+- `iteration` — item schema for JSON Lines streaming responses.
+- `contentType` — set a custom `Content-Type` (string or an array of strings) for the response to enable non-JSON responses.
+- `disableServerSideValidation` — disable server-side validation (boolean or granular by parts).
+- `skipSchemaEmission` — skip JSON Schema emission (boolean or granular by parts).
+- `validateEachIteration` — validate each streamed item (iteration), not just the first one.
+- `operation` — provide OAS details when the `@operation` decorator isn’t applicable.
+- `preferTransformed` — choose between transformed vs raw values when using `req.vovk.*`.
+
+Extra capabilities on procedures:
+
+- `.fn(...)` — call the procedure locally (same shape as an RPC call) without HTTP.
+- `.schema` — method JSON schema (mirrors the RPC method JSON schema).
+- `.definition` — original procedure definition (all options passed to `procedure`).
+
+See the full guide on [procedure](/procedure).
+
+### `progressive`
+
+Experimental utility that lets you perform one request and receive multiple responses, each resolved as a separate promise.
+
+```ts showLineNumbers copy
+const { users: usersPromise, tasks: tasksPromise } = progressive(ProgressiveRPC.streamProgressiveResponse);
+```
+
+Read more in the [Progressive Response](/progressive) documentation.
+
+### `HttpException`
+
+Custom error class that extends the built-in `Error`. It represents an HTTP error with a status code and a message. It can be thrown from a procedure and is caught by the framework to produce proper HTTP responses.
+
+```ts showLineNumbers copy
+import { HttpException, HttpStatus } from 'vovk';
+
+throw new HttpException(HttpStatus.BAD_REQUEST, 'Invalid request', { some: 'cause' });
+```
+
+The third argument is optional and can be used to pass additional data that is useful for logging or debugging. It is available via the `error.cause` property on the client side.
+
+Read more in the [responses](/response) documentation.
+
+## Inference Types
+
+### `VovkBody`, `VovkQuery`, `VovkParams`
+
+Universal input inference helpers for both RPC methods and controller procedures.
+
+```ts showLineNumbers copy
+import type { VovkBody, VovkQuery, VovkParams } from 'vovk';
+import { UserRPC } from '@/client';
+
+type Body = VovkBody<typeof UserRPC.updateUser>;
+type Query = VovkQuery<typeof UserRPC.updateUser>;
+type Params = VovkParams<typeof UserRPC.updateUser>;
+```
+
+See [inference](/inference).
+
+### `VovkInput`
+
+Combined input type that extracts `params`, `query`, and `body` from a procedure into a single object. Useful for typing Next.js server action arguments.
+
+```ts showLineNumbers copy
+import type { VovkInput } from 'vovk';
+import type UserController from './user-controller';
+
+type Input = VovkInput<typeof UserController.createUser>;
+// { params: VovkParams<...>; query: VovkQuery<...>; body: VovkBody<...> }
+```
+
+See [inference](/inference).
+
+### `VovkOutput`, `VovkIteration`
+
+Output helpers for validated procedures:
+
+- `VovkOutput<T>` infers the JSON return type when `procedure({ output })` is provided.
+- `VovkIteration<T>` infers the yielded item type for JSON Lines streams when `procedure({ iteration })` is provided.
+
+```ts showLineNumbers copy
+import type { VovkOutput, VovkIteration } from 'vovk';
+import { UserRPC, StreamRPC } from '@/client';
+
+type Output = VovkOutput<typeof UserRPC.updateUser>;
+type Iteration = VovkIteration<typeof StreamRPC.streamItems>;
+```
+
+See [inference](/inference).
+
+### `VovkReturnType`, `VovkYieldType`
+
+Lower-level helpers that infer the actual return/yield types of methods when you *don’t* use validation schemas (i.e. you are relying on the method implementation’s type).
+
+```ts showLineNumbers copy
+import type { VovkReturnType, VovkYieldType } from 'vovk';
+import { UserRPC, StreamRPC } from '@/client';
+
+type Return = VovkReturnType<typeof UserRPC.updateUser>;
+type Yield = VovkYieldType<typeof StreamRPC.streamItems>;
+```
+
+See [inference](/inference).
+
+## Other Types and Enums
+
+### `VovkRequest`
+
+Mirrors the Next.js built-in `NextRequest` to provide better typing for `.json()`, `.nextUrl.searchParams`, and a `vovk` property with advanced input retrieval helpers.
+
+`VovkRequest` doesn't extend `NextRequest` directly in order to keep the **vovk** package independent of **next** package.
+
+See the [req.vovk](/req-vovk) documentation for more information.
+
+#### `HttpStatus` enum
+
+Used to throw and catch errors produced by the server. Note the `NULL` member, which can be used to simulate HTTP errors for client-side validation failures.
+
+```ts showLineNumbers copy
+export enum HttpStatus {
+  NULL = 0,
+  CONTINUE = 100,
+  SWITCHING_PROTOCOLS = 101,
+  PROCESSING = 102,
+  EARLYHINTS = 103,
+  OK = 200,
+  CREATED = 201,
+  ACCEPTED = 202,
+  NON_AUTHORITATIVE_INFORMATION = 203,
+  NO_CONTENT = 204,
+  RESET_CONTENT = 205,
+  PARTIAL_CONTENT = 206,
+  AMBIGUOUS = 300,
+  MOVED_PERMANENTLY = 301,
+  FOUND = 302,
+  SEE_OTHER = 303,
+  NOT_MODIFIED = 304,
+  TEMPORARY_REDIRECT = 307,
+  PERMANENT_REDIRECT = 308,
+  BAD_REQUEST = 400,
+  UNAUTHORIZED = 401,
+  PAYMENT_REQUIRED = 402,
+  FORBIDDEN = 403,
+  NOT_FOUND = 404,
+  METHOD_NOT_ALLOWED = 405,
+  NOT_ACCEPTABLE = 406,
+  PROXY_AUTHENTICATION_REQUIRED = 407,
+  REQUEST_TIMEOUT = 408,
+  CONFLICT = 409,
+  GONE = 410,
+  LENGTH_REQUIRED = 411,
+  PRECONDITION_FAILED = 412,
+  PAYLOAD_TOO_LARGE = 413,
+  URI_TOO_LONG = 414,
+  UNSUPPORTED_MEDIA_TYPE = 415,
+  REQUESTED_RANGE_NOT_SATISFIABLE = 416,
+  EXPECTATION_FAILED = 417,
+  I_AM_A_TEAPOT = 418,
+  MISDIRECTED = 421,
+  UNPROCESSABLE_ENTITY = 422,
+  FAILED_DEPENDENCY = 424,
+  PRECONDITION_REQUIRED = 428,
+  TOO_MANY_REQUESTS = 429,
+  INTERNAL_SERVER_ERROR = 500,
+  NOT_IMPLEMENTED = 501,
+  BAD_GATEWAY = 502,
+  SERVICE_UNAVAILABLE = 503,
+  GATEWAY_TIMEOUT = 504,
+  HTTP_VERSION_NOT_SUPPORTED = 505,
+}
+```
+
+#### `HttpMethod` enum
+
+Represents the HTTP methods:
+
+```ts showLineNumbers copy
+export enum HttpMethod {
+  GET = 'GET',
+  POST = 'POST',
+  PUT = 'PUT',
+  PATCH = 'PATCH',
+  DELETE = 'DELETE',
+  HEAD = 'HEAD',
+  OPTIONS = 'OPTIONS',
+}
+```
+
+### `VovkSchema`
+
+The full schema of the composed client or of a single segment in a segmented client. Shape:
+
+```ts showLineNumbers copy
+{
+  segments: { [key: string]: VovkSegmentSchema };
+  meta?: VovkMetaSchema
+}
+```
+
+See the [schema docs](/schema) for more details.
+
+### `VovkConfig`
+
+The shape of the [config](/config) file.
+
+### `StandardToolV0`
+
+The shape of an LLM tool returned by the [deriveTools](#derivetools) function, defined by the [standard-tool](https://standard-tool.js.org/) convention. Exported from `vovk/internal`.
+
+See the [Deriving AI Tools](/tools) documentation for more information.
+
+### `VovkJSONSchemaBase`
+
+Basic JSON Schema object with `type`, `properties`, and other standard JSON Schema keywords.
+
+### `VovkFetcher`
+
+Object that represents a [fetcher](#fetcher) function used to make API requests.
+
+See the [fetcher docs](/imports#fetcher) for more information.
+
+### `VovkValidateOnClient`
+
+Function type that represents the client-side validation function created by [createValidateOnClient](#createvalidateonclient).
+
+See the [client-side validation docs](/imports#validateonclient) for more details.

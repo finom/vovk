@@ -1,0 +1,29 @@
+---
+title: "Vovk.ts v4: Standard Tools and an In-Project Client"
+description: "v4 makes deriveTools return standard-tool objects and generates the composed RPC client into your project, retiring the vovk-client package."
+date: "July 30, 2026"
+---
+
+# Vovk.ts v4
+
+Vovk.ts v4 is a breaking release with two themes: LLM tools now follow an open convention, and the composed RPC client is generated into your project.
+
+## Tools follow the standard-tool convention
+
+- [deriveTools](/tools) returns an array of tools implementing the `StandardToolV0` interface from [standard-tool](https://standard-tool.js.org/): `name`, `title`, `description`, `inputSchema`, `outputSchema`, `meta`, `execute`. Tools derived from RPC modules and [OpenAPI mixins](/mixins) also carry schemas, reconstructed from the generated JSON Schemas.
+- Removed: `createTool` (use the [standard-tool](https://www.npmjs.com/package/standard-tool) package or plain objects of the same shape), the `VovkTool` type, the `toolsByName` return value, and the legacy `parameters`, `type` and `inputSchemas` tool fields.
+
+## The client is generated into your project
+
+- The [composed client](/composed) is emitted as TypeScript to `src/client` (or `client/` without a `src` folder) and imported as `@/client`. The **vovk-client** package and the `node_modules/.vovk-client` folder are retired, which also ends the pnpm hoisting issues.
+- The `js` template family (`js`, `jsBase`, `schemaJs`, `openapiJs`) is removed; [ts](/templates#ts) is the default for both client modes.
+- `prettifyClient` defaults to `true` and uses the Prettier installed in your project; the CLI no longer ships its own copy and prints a warning when it's missing.
+- `vovk init` adds the generated folder to `.gitignore`; the `prebuild: vovk generate` script regenerates it on every build.
+
+## Migrating
+
+1. Remove `vovk-client` from your dependencies.
+2. Replace `from 'vovk-client'` with `from '@/client'` (and `vovk-client/openapi`, `vovk-client/schema` with `@/client/openapi`, `@/client/schema`).
+3. Add `/src/client` (or your custom `composedClient.outDir`) to `.gitignore` and keep the `prebuild: vovk generate` script.
+4. If your config sets `fromTemplates: ['js']`, switch to `['ts']`.
+5. Use the array returned by `deriveTools`; a name map is one line: `Object.fromEntries(tools.map((t) => [t.name, t]))`.

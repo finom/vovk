@@ -1,0 +1,229 @@
+import { FileTree } from 'nextra/components';
+
+# Schema
+
+The `npm run dev` script runs [vovk dev](/dev) alongside `next dev` via [concurrently](https://www.npmjs.com/package/concurrently). The Vovk process watches the `modules` folder for controller and validation changes. On the first run or after changes, it calls the Next.js dev server’s `_schema_` endpoint for the relevant segment (available only when `process.env.NODE_ENV` is `development`). That endpoint returns the schema for the target segment, enabling isolated JSON emission per segment.
+
+Each segment emits its backend schema to an individual JSON file, which is then used to generate client-side RPC modules. If your application has multiple areas (e.g., root, admin, customer), each area has its own schema file.
+
+For a segment structure like this:
+
+<FileTree>
+  <FileTree.Folder name="src/app/api" defaultOpen>
+    <FileTree.Folder name="[[...vovk]]" defaultOpen>
+      <FileTree.File
+        name={
+          <span>
+            route.ts{' '}
+            <span className="text-gray-500">
+              (root segment <code>/api/</code>)
+            </span>
+          </span>
+        }
+      />
+    </FileTree.Folder>
+    <FileTree.Folder name="admin/[[...vovk]]" defaultOpen>
+      <FileTree.File
+        name={
+          <span>
+            route.ts{' '}
+            <span className="text-gray-500">
+              (admin segment <code>/api/admin</code>)
+            </span>
+          </span>
+        }
+      />
+    </FileTree.Folder>
+    <FileTree.Folder name="customer/[[...vovk]]" defaultOpen>
+      <FileTree.File
+        name={
+          <span>
+            route.ts{' '}
+            <span className="text-gray-500">
+              (customer segment <code>/api/customer</code>)
+            </span>
+          </span>
+        }
+      />
+      <FileTree.Folder name="static/[[...vovk]]" defaultOpen>
+        <FileTree.File
+          name={
+            <span>
+              route.ts{' '}
+              <span className="text-gray-500">
+                (static segment <code>/api/customer/static</code> for OpenAPI)
+              </span>
+            </span>
+          }
+        />
+      </FileTree.Folder>
+    </FileTree.Folder>
+  </FileTree.Folder>
+</FileTree>
+
+The resulting schema files are written to `.vovk-schema/`:
+
+<FileTree>
+  <FileTree.Folder name=".vovk-schema" defaultOpen>
+    <FileTree.File name="root.json" />
+    <FileTree.File name="admin.json" />
+    <FileTree.File name="customer.json" />
+    <FileTree.Folder name="customer" defaultOpen>
+      <FileTree.File name="static.json" />
+    </FileTree.Folder>
+    <FileTree.File name="_meta.json" />
+  </FileTree.Folder>
+</FileTree>
+
+Emitted files mirror the segment tree. For example, a `foo/bar/baz` segment emits `.vovk-schema/foo/bar/baz.json`. The root segment is the only exception and uses `root.json` for clarity.
+
+`_meta.json` contains additional metadata, including selected fields from [vovk.config](/config) under the `config` key.
+
+When the Vovk CLI reads these files, it builds a single object with `segments` and `meta`. `segments` is flat, keyed by segment name, and `meta` contains the `_meta.json` content. This object powers client generation and OpenAPI output.
+
+```ts showLineNumbers copy
+{
+  "segments": {
+    "": { ... }, // root segment schema from root.json
+    "admin": { ... }, // admin segment schema from admin.json
+    "customer": { ... }, // customer segment schema from customer.json
+    "customer/static": { ... } // static segment schema from customer/static.json
+  },
+  "meta": { ... } // content of _meta.json file
+}
+```
+
+The schema is available as the `schema` export.
+
+```ts showLineNumbers copy
+import { schema } from '@/client';
+// or
+import { schema } from '@/client/schema'; // exports only the schema object (no RPC modules)
+
+import type { VovkSchema, VovkSegmentSchema } from 'vovk';
+
+console.log(schema satisfies VovkSchema); // full schema
+console.log(schema.segments.admin satisfies VovkSegmentSchema); // admin segment schema
+```
+
+The `schema` is also available in the [segmented client](/composed-and-segmented), containing exactly one segment:
+
+```ts showLineNumbers copy
+{
+  "segments": {
+    "": { ... } // root segment schema from root.json
+  },
+  "meta": { ... } // content of _meta.json file
+}
+```
+
+```ts showLineNumbers copy
+import { schema } from '@client/root';
+// or
+import { schema } from '@client/root/schema';
+```
+
+---
+
+Example of a segment schema file:
+
+```js filename=".vovk-schema/segments/foo.json"
+{
+  // Segment schema version
+  "$schema": "https://vovk.dev/api/spec/v3/segment.json",
+  // vovkInit function option that defines is the schema going to be emitted for this segment
+  "emitSchema": true,
+  // Segment name, for the root segment it's an empty string
+  "segmentName": "foo",
+  // List of controllers as key-value pairs for fast access
+  // Key is a name of the variable that's going to be exported from "@/client"
+  // Value is controller information
+  "controllers": {
+    "HelloRPC": {
+      // RPC name that's going to be used in the client
+      "rpcModuleName": "HelloRPC",
+      // Original name of the controller class, used to determine segment name when the controller is changed on "vovk dev"
+      "originalControllerName": "HelloController",
+      // An argument of @prefix class decorator
+      "prefix": "hello",
+      // List of handlers as key-value pairs for fast access
+      // Key is a static method name
+      // Value is a handler information
+      "handlers": {
+        "getHello": {
+          // Endpoint that's concatenated with the prefix
+          "path": "greeting",
+          // HTTP method
+          "httpMethod": "POST",
+          // Validation for "body", "query", "params", "output" and "iteration"
+          "validation": {
+            "body": {
+              "type": "object",
+              "properties": {
+                "foo": {
+                  "type": "string"
+                }
+              },
+              "required": ["foo"],
+              "additionalProperties": false,
+              "x-contentType": true, // A vovk-specific field that indicates that the body Content-Type
+              "$schema": "https://json-schema.org/draft/2020-12/schema"
+            },
+            "query": {
+              "type": "object",
+              "properties": {
+                "bar": {
+                  "type": "string"
+                }
+              },
+              "required": ["bar"],
+              "additionalProperties": false,
+              "$schema": "https://json-schema.org/draft/2020-12/schema"
+            },
+            "params": {
+              "type": "object",
+              "properties": {
+                "baz": {
+                  "type": "string"
+                }
+              },
+              "required": ["baz"],
+              "additionalProperties": false,
+              "$schema": "https://json-schema.org/draft/2020-12/schema"
+            },
+            "output": {
+              // or "iteration" for JSONLines response
+              "type": "object",
+              "properties": {
+                "hello": {
+                  "type": "string"
+                }
+              },
+              "required": ["hello"],
+              "additionalProperties": false,
+              "$schema": "https://json-schema.org/draft/2020-12/schema"
+            }
+          },
+          // OpenAPI object that can be used to generate OpenAPI documentation, LLM tools, MCP etc.
+          "operationObject": {
+            "summary": "Hello world",
+            "description": "Hello world",
+            // Custom field for AI tools generation
+            "x-tool": { 
+              "name": "getHello", // custom name for an AI tool
+              "title": "Get Hello", // custom title for an AI tool
+              "description": "Hello world", // custom description for an AI tool
+              "hidden": false, // whether to hide the tool from AI tool generation
+              "meta": { "category": "greetings" } // static data copied to the derived tool
+            } 
+          },
+          // Custom data that can be defined by a custom decorator
+          "misc": {
+            "hello": "World"
+          }
+        }
+      }
+    }
+  }
+}
+```

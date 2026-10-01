@@ -1,0 +1,87 @@
+---
+title: Example of a Controller with Service
+description: A basic example of the Vovk.ts controller with a service
+---
+
+import { Tabs } from 'nextra/components';
+import BasicExampleWithService from './basic-example-with-service';
+import Example from '@/components/example';
+
+# Basic Controller with Service Example
+
+A basic example of the Vovk.ts controller and a service with no validation.
+
+## Result
+
+<Example>
+  <BasicExampleWithService />
+</Example>
+
+## Code
+
+<Tabs items={['basic-service.ts', 'basic-controller-with-service.ts', 'basic-example-with-service.tsx']}>
+  <Tabs.Tab>
+```ts showLineNumbers copy filename="src/modules/basic-with-service/basic-service.ts" source="examples/kitchen-sink"
+export default class BasicService {
+  static getHello() {
+    return { greeting: 'Hello world from a service!' };
+  }
+}
+```
+*[The code above is fetched from GitHub repository.](https://github.com/finom/vovk/blob/main/examples/kitchen-sink/src/modules/basic-with-service/basic-service.ts)*
+  </Tabs.Tab>
+  <Tabs.Tab>
+```ts showLineNumbers copy filename="src/modules/basic-with-service/basic-controller-with-service.ts" source="examples/kitchen-sink"
+import { get, prefix, operation } from 'vovk';
+import BasicService from './basic-service.ts';
+
+@prefix('basic-with-service')
+export default class BasicControllerWithService {
+  @operation({
+    summary: 'Get a greeting using a service',
+    description: 'Get a greeting from the server using a service',
+  })
+  @get('greeting')
+  static getHello() {
+    return BasicService.getHello();
+  }
+}
+```
+*[The code above is fetched from GitHub repository.](https://github.com/finom/vovk/blob/main/examples/kitchen-sink/src/modules/basic-with-service/basic-controller-with-service.ts)*
+
+  </Tabs.Tab>
+  <Tabs.Tab>
+```tsx showLineNumbers copy filename="src/app/basic-with-service/basic-example-with-service.tsx" source="examples/kitchen-sink"
+'use client';
+import { useState } from 'react';
+import { BasicRPCWithService } from '@/client';
+import type { VovkReturnType } from 'vovk';
+
+export default function BasicExampleWithService() {
+  const [serverResponse, setServerResponse] = useState<VovkReturnType<typeof BasicRPCWithService.getHello>>();
+
+  return (
+    <>
+      <button
+        type="button"
+        onClick={async () => {
+          const response = await BasicRPCWithService.getHello();
+          setServerResponse(response);
+        }}
+      >
+        Get a Greeting from the Server
+      </button>
+      <div>{serverResponse?.greeting}</div>
+    </>
+  );
+}
+```
+*[The code above is fetched from GitHub repository.](https://github.com/finom/vovk/blob/main/examples/kitchen-sink/src/app/basic-with-service/basic-example-with-service.tsx)*
+  </Tabs.Tab>
+</Tabs>
+
+## Related Documentation
+
+- [Controller & Procedure](https://vovk.dev/procedure)
+- [`@operation` Decorator](https://vovk.dev/openapi)
+- [TypeScript RPC](https://vovk.dev/typescript)

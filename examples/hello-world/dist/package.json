@@ -1,0 +1,31 @@
+{
+  "name": "vovk-hello-world",
+  "version": "0.0.88",
+  "description": "A \"Hello World!\" app built with Next.js, Vovk.ts and Zod. For details, visit https://vovk.dev/hello-world",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/finom/vovk.git",
+    "directory": "examples/hello-world"
+  },
+  "homepage": "https://vovk.dev/hello-world",
+  "bugs": {
+    "url": "https://github.com/finom/vovk/issues"
+  },
+  "author": "Andrey Gubanov",
+  "keywords": [
+    "vovk",
+    "openapi",
+    "zod",
+    "api"
+  ],
+  "type": "module",
+  "main": "./index.js",
+  "types": "./index.d.ts",
+  "exports": {
+    ".": {
+      "default": "./index.js",
+      "types": "./index.d.ts"
+    }
+  }
+}

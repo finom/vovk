@@ -1,0 +1,28 @@
+name: Perf
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'packages/vovk/**'
+      - 'perf/**'
+      - '.github/workflows/perf.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  perf:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npm run build
+      - run: npm run perf-test -w vovk-perf-test

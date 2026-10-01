@@ -1,0 +1,375 @@
+import { Tabs } from 'nextra/components';
+
+# Setting Up API Endpoints
+
+This article describes how to set up API endpoints/procedures for `User` and `Task` entities with full CRUD operations. The OpenAPI documentation generated from these procedures can be explored [here](https://kanban.vovk.dev/openapi).
+
+## Preparations
+
+For the sake of shorter code, we create a reusable constant `BASE_FIELDS` that is used to omit `id`, `entityType`, `createdAt`, and `updatedAt` fields from the Zod models, and a `BASE_KEYS` array that contains the keys of these fields for use with `lodash.omit`. This helps us build proper create/update Zod models and omit these fields from entity objects when we need to construct input objects.
+
+```ts showLineNumbers copy filename="src/constants.ts"
+import type { BaseEntity } from './types';
+
+export const BASE_FIELDS = {
+  id: true,
+  entityType: true,
+  createdAt: true,
+  updatedAt: true,
+} as const satisfies { readonly [key in keyof BaseEntity]: true };
+
+export const BASE_KEYS = Object.keys(BASE_FIELDS) as (keyof BaseEntity)[];
+```
+
+For example, here’s how the `UpdateUserSchema` can be created by omitting the base fields from the generated `UserSchema`:
+
+```ts showLineNumbers copy
+import { UserSchema } from '@schemas/index';
+import { BASE_FIELDS } from '@/constants';
+
+const UpdateUserSchema = UserSchema.omit(BASE_FIELDS); // fullName and email fields only
+```
+
+## Implementing Controllers and Services
+
+The controllers declare full CRUD operations for `User` and `Task` entities, implemented as follows:
+
+- Each method is decorated with the [@operation](/openapi) decorator that describes the operation, including `summary` and `description`.
+- Each method is created with the [procedure](/procedure) function that implements request validation and schema emission.
+- Each method uses the `sessionGuard` decorator to protect the endpoints, as described in the [Authentication](./authentication) article.
+- The “get all” endpoints use the `x-tool['hidden']` operation option implemented with the `@operation.tool()` decorator to exclude them from being used as AI tools. Instead, the tools use search endpoints that rely on OpenAI Embeddings to simulate more realistic scenarios.
+
+The services implement the actual business logic for each procedure, including database operations and vector generation/search via OpenAI embeddings.
+
+- Database requests are invoked using `DatabaseService.prisma`, where the `prisma` property is a regular Prisma client instance with [extensions](https://www.prisma.io/docs/orm/prisma-client/client-extensions). This is explained in more detail in the [Database Polling](./polling) article.
+  - Deletion operations return the `__isDeleted` property to help the frontend reconcile state properly for soft deletions (see the [State](./state) page). The property is added by a Prisma client extension when `DatabaseService.prisma.xxx.delete` methods are invoked.
+  - To trigger database events on task deletions, tasks are deleted explicitly, even though `ON DELETE CASCADE` is configured at the database level.
+- Creations and updates are followed by `EmbeddingService.generateEntityEmbedding` calls, and the search endpoints use `EmbeddingService.vectorSearch` to perform vector search using OpenAI embeddings and pgvector. For details, see the [Embeddings](./embeddings) article.
+- The controller procedures use [req.vovk](/req-vovk) to access request data such as `params`, `query`, and `body`, because we want to call these methods directly from code (not only through HTTP requests) via the [fn](/fn) interface for SSR/PPR, server actions, and AI tool execution.
+
+<Tabs items={['UserController.ts', 'UserService.ts', 'TaskController.ts', 'TaskService.ts']}>
+<Tabs.Tab>
+```ts showLineNumbers copy filename="src/modules/user/user-controller.ts" source="examples/realtime-kanban"
+import { TaskSchema, UserSchema } from '@schemas/index';
+import { del, get, operation, post, prefix, procedure, put } from 'vovk';
+import { z } from 'zod';
+import { BASE_FIELDS } from '@/constants';
+import { sessionGuard } from '@/decorators/session-guard';
+import UserService from './user-service';
+
+@prefix('users')
+export default class UserController {
+  @operation.tool({
+    hidden: true,
+  })
+  @operation({
+    summary: 'Get all users',
+    description: 'Retrieves a list of all users.',
+  })
+  @get()
+  @sessionGuard()
+  static getUsers = procedure({
+    output: UserSchema.array(),
+  }).handle(UserService.getUsers);
+
+  @operation({
+    summary: 'Find users by ID, full name, or email',
+    description:
+      'Retrieves users that match the provided ID, full name, or email. Used to search the users when they need to be updated or deleted.',
+  })
+  @get('search')
+  @sessionGuard()
+  static findUsers = procedure({
+    query: z.object({
+      search: z.string().meta({
+        description: 'Search term for users',
+        examples: ['john.doe', 'Jane'],
+      }),
+    }),
+    output: UserSchema.array(),
+  }).handle(({ vovk }) => UserService.findUsers(vovk.query().search));
+
+  @operation({
+    summary: 'Create user',
+    description: 'Creates a new user with the provided details.',
+  })
+  @post()
+  @sessionGuard()
+  static createUser = procedure({
+    body: UserSchema.omit(BASE_FIELDS),
+    output: UserSchema,
+  }).handle(async ({ vovk }) => UserService.createUser(await vovk.body()));
+
+  @operation({
+    summary: 'Update user',
+    description:
+      'Updates an existing user with the provided details, such as their email or name.',
+  })
+  @put('{id}')
+  @sessionGuard()
+  static updateUser = procedure({
+    body: UserSchema.omit(BASE_FIELDS).partial(),
+    params: UserSchema.pick({ id: true }),
+    output: UserSchema,
+  }).handle(async ({ vovk }) =>
+    UserService.updateUser(vovk.params().id, await vovk.body()),
+  );
+
+  @operation({
+    summary: 'Delete user',
+    description: 'Deletes a user by ID.',
+  })
+  @del('{id}')
+  @sessionGuard()
+  static deleteUser = procedure({
+    params: UserSchema.pick({ id: true }),
+    output: UserSchema.partial().extend({
+      __isDeleted: z.literal(true),
+      tasks: TaskSchema.partial()
+        .extend({ __isDeleted: z.literal(true) })
+        .array(),
+    }),
+  }).handle(async ({ vovk }) => UserService.deleteUser(vovk.params().id));
+}
+```
+*[The code above is fetched from GitHub repository.](https://github.com/finom/vovk/blob/main/examples/realtime-kanban/src/modules/user/user-controller.ts)*
+</Tabs.Tab>
+<Tabs.Tab>
+```ts showLineNumbers copy filename="src/modules/user/user-service.ts" source="examples/realtime-kanban"
+import { EntityType } from '@prisma/client';
+import type { TaskType } from '@schemas/models/Task.schema';
+import type { UserType } from '@schemas/models/User.schema';
+import type { VovkBody, VovkOutput, VovkParams } from 'vovk';
+import DatabaseService from '../database/database-service';
+import EmbeddingService from '../embedding/embedding-service';
+import TaskService from '../task/task-service';
+import type UserController from './user-controller';
+
+export default class UserService {
+  static getUsers = () =>
+    DatabaseService.prisma.user.findMany() as Promise<UserType[]>;
+
+  static findUsers = (search: string) =>
+    EmbeddingService.vectorSearch<UserType>(EntityType.user, search);
+
+  static createUser = async (
+    data: VovkBody<typeof UserController.createUser>,
+  ) => {
+    const user = await DatabaseService.prisma.user.create({
+      data: {
+        ...data,
+        imageUrl: `https://i.pravatar.cc/300?u=${data.email}`,
+      },
+    });
+
+    await EmbeddingService.generateEntityEmbedding(
+      user.entityType,
+      user.id as UserType['id'],
+    );
+    return user as UserType;
+  };
+
+  static updateUser = async (
+    id: VovkParams<typeof UserController.updateUser>['id'],
+    data: VovkBody<typeof UserController.updateUser>,
+  ) => {
+    const user = await DatabaseService.prisma.user.update({
+      where: { id },
+      data,
+    });
+
+    await EmbeddingService.generateEntityEmbedding(user.entityType, id);
+
+    return user as UserType;
+  };
+
+  static deleteUser = async (
+    id: VovkParams<typeof UserController.updateUser>['id'],
+  ) => {
+    // Even though we have `ON DELETE CASCADE`, we need to delete tasks explicitly to trigger DB events
+    const tasksToDelete = await DatabaseService.prisma.task.findMany({
+      where: { userId: id },
+      select: { id: true },
+    });
+
+    // 1) Explicitly delete the user's tasks (fires DB events)
+    // 2) Delete the user record
+    // 3) Return a single payload that merges task deletion results with the user deletion result,
+    //    preserving __isDeleted flags so the UI can reconcile in one update
+    return Object.assign(
+      {
+        tasks: await Promise.all(
+          tasksToDelete.map((t) =>
+            TaskService.deleteTask(t.id as TaskType['id']),
+          ),
+        ),
+      },
+      await DatabaseService.prisma.user.delete({
+        where: { id },
+        select: { id: true, entityType: true },
+      }),
+    ) as VovkOutput<typeof UserController.deleteUser>;
+  };
+}
+```
+*[The code above is fetched from GitHub repository.](https://github.com/finom/vovk/blob/main/examples/realtime-kanban/src/modules/user/user-service.ts)*
+</Tabs.Tab>
+<Tabs.Tab>
+```ts showLineNumbers copy filename="src/modules/task/task-controller.ts" source="examples/realtime-kanban"
+import { TaskSchema, UserSchema } from '@schemas/index';
+import { del, get, operation, post, prefix, procedure, put } from 'vovk';
+import { z } from 'zod';
+import { BASE_FIELDS } from '@/constants';
+import { sessionGuard } from '@/decorators/session-guard';
+import TaskService from './task-service';
+
+@prefix('tasks')
+export default class TaskController {
+  @operation.tool({
+    hidden: true,
+  })
+  @operation({
+    summary: 'Get all tasks',
+    description: 'Retrieves a list of all tasks.',
+  })
+  @get()
+  @sessionGuard()
+  static getTasks = procedure({
+    output: TaskSchema.array(),
+  }).handle(TaskService.getTasks);
+
+  @operation({
+    summary: 'Find tasks by ID, title or description',
+    description:
+      'Retrieves tasks that match the provided ID, title, or description. Used to search the tasks when they need to be updated or deleted.',
+  })
+  @get('search')
+  @sessionGuard()
+  static findTasks = procedure({
+    query: z.object({
+      search: z.string().meta({
+        description: 'Search term for tasks',
+        examples: ['bug', 'feature'],
+      }),
+    }),
+    output: TaskSchema.array(),
+  }).handle(async ({ vovk }) => TaskService.findTasks(vovk.query().search));
+
+  @operation({
+    summary: 'Get tasks assigned to a specific user',
+    description: 'Retrieves all tasks associated with a specific user ID.',
+  })
+  @get('by-user/{userId}')
+  @sessionGuard()
+  static getTasksByUserId = procedure({
+    params: z.object({ userId: UserSchema.shape.id }),
+    output: TaskSchema.array(),
+  }).handle(async ({ vovk }) =>
+    TaskService.getTasksByUserId(vovk.params().userId),
+  );
+
+  @operation({
+    summary: 'Create a new task',
+    description:
+      'Creates a new task with the provided details, such as its title and description.',
+  })
+  @post()
+  @sessionGuard()
+  static createTask = procedure({
+    body: TaskSchema.omit(BASE_FIELDS),
+    output: TaskSchema,
+  }).handle(async ({ vovk }) => TaskService.createTask(await vovk.body()));
+
+  @operation({
+    summary: 'Update task',
+    description:
+      'Updates an existing task with the provided details, such as its title or description.',
+  })
+  @put('{id}')
+  @sessionGuard()
+  static updateTask = procedure({
+    body: TaskSchema.omit(BASE_FIELDS).partial(),
+    params: TaskSchema.pick({ id: true }),
+    output: TaskSchema,
+  }).handle(async ({ vovk }) =>
+    TaskService.updateTask(vovk.params().id, await vovk.body()),
+  );
+
+  @operation({
+    summary: 'Delete task',
+    description: 'Deletes a task by ID.',
+  })
+  @del('{id}')
+  @sessionGuard()
+  static deleteTask = procedure({
+    params: TaskSchema.pick({ id: true }),
+    output: TaskSchema.partial().extend({
+      __isDeleted: z.literal(true),
+    }),
+  }).handle(async ({ vovk }) => TaskService.deleteTask(vovk.params().id));
+}
+```
+*[The code above is fetched from GitHub repository.](https://github.com/finom/vovk/blob/main/examples/realtime-kanban/src/modules/task/task-controller.ts)*
+</Tabs.Tab>
+<Tabs.Tab>
+```ts showLineNumbers copy filename="src/modules/task/task-service.ts" source="examples/realtime-kanban"
+import { EntityType } from '@prisma/client';
+import type { TaskType } from '@schemas/models/Task.schema';
+import type { UserType } from '@schemas/models/User.schema';
+import type { VovkBody, VovkOutput, VovkParams } from 'vovk';
+import DatabaseService from '../database/database-service';
+import EmbeddingService from '../embedding/embedding-service';
+import type TaskController from './task-controller';
+
+export default class TaskService {
+  static getTasks = () =>
+    DatabaseService.prisma.task.findMany() as Promise<TaskType[]>;
+
+  static findTasks = (search: string) =>
+    EmbeddingService.vectorSearch<TaskType>(EntityType.task, search);
+
+  static getTasksByUserId = (userId: UserType['id']) =>
+    DatabaseService.prisma.task.findMany({
+      where: { userId },
+    }) as Promise<TaskType[]>;
+
+  static createTask = async (
+    data: VovkBody<typeof TaskController.createTask>,
+  ) => {
+    const task = await DatabaseService.prisma.task.create({ data });
+
+    await EmbeddingService.generateEntityEmbedding(
+      task.entityType,
+      task.id as TaskType['id'],
+    );
+
+    return task as TaskType;
+  };
+
+  static updateTask = async (
+    id: VovkParams<typeof TaskController.updateTask>['id'],
+    data: VovkBody<typeof TaskController.updateTask>,
+  ) => {
+    const task = await DatabaseService.prisma.task.update({
+      where: { id },
+      data,
+    });
+
+    await EmbeddingService.generateEntityEmbedding(task.entityType, id);
+
+    return task as TaskType;
+  };
+
+  static deleteTask = (
+    id: VovkParams<typeof TaskController.deleteTask>['id'],
+  ) =>
+    DatabaseService.prisma.task.delete({
+      where: { id },
+      select: { id: true, entityType: true },
+      // TODO: __isDeleted incompatibility
+    }) as unknown as Promise<VovkOutput<typeof TaskController.deleteTask>>;
+}
+```
+*[The code above is fetched from GitHub repository.](https://github.com/finom/vovk/blob/main/examples/realtime-kanban/src/modules/task/task-service.ts)*
+</Tabs.Tab>
+</Tabs>

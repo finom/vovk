@@ -1,0 +1,103 @@
+# Testing
+
+Vovk.ts procedures expose an [`.fn` method](/fn) that calls the handler directly, skipping the HTTP round-trip. The same method powers SSR, server actions, and testing. This makes unit testing straightforward — no server required.
+
+## Setup
+
+Any test runner works (Vitest, Jest, Node.js test runner, etc.). Examples below use Vitest.
+
+## Testing with `.fn`
+
+Given a controller:
+
+```ts showLineNumbers copy filename="src/modules/user/user-controller.ts"
+import { z } from 'zod';
+import { procedure, get, post, prefix } from 'vovk';
+
+@prefix('users')
+export default class UserController {
+  @get('{id}')
+  static getUser = procedure({
+    params: z.object({ id: z.string() }),
+    output: z.object({ id: z.string(), name: z.string() }),
+  }).handle(async ({ vovk }) => {
+    const { id } = vovk.params();
+    return { id, name: 'John' };
+  });
+
+  @post()
+  static createUser = procedure({
+    body: z.object({ name: z.string() }),
+    output: z.object({ id: z.string(), name: z.string() }),
+  }).handle(async ({ vovk }) => {
+    const { name } = await vovk.body();
+    return { id: 'new-id', name };
+  });
+}
+```
+
+Test it directly:
+
+```ts showLineNumbers copy filename="src/modules/user/user-controller.test.ts"
+import { describe, it, expect } from 'vitest';
+import UserController from './user-controller';
+
+describe('UserController', () => {
+  it('gets a user by ID', async () => {
+    const user = await UserController.getUser.fn({
+      params: { id: '42' },
+    });
+
+    expect(user).toEqual({ id: '42', name: 'John' });
+  });
+
+  it('creates a user', async () => {
+    const user = await UserController.createUser.fn({
+      body: { name: 'Alice' },
+    });
+
+    expect(user).toEqual({ id: 'new-id', name: 'Alice' });
+  });
+});
+```
+
+The `.fn` method runs the full procedure pipeline including validation and [decorators](/decorator-overview), but without HTTP overhead. This makes it a perfect fit for tests built around mocked or stubbed data — there is no server to start, no network latency, and no cold-start penalty, so test suites complete remarkably fast.
+
+The trade-off is that `.fn()` bypasses `proxy.js` (previously `middleware.js` in earlier Next.js versions). Any logic that lives there — authentication checks, rate limiting, header injection — will not run during `.fn()` calls. If your tests need to exercise that layer, use [integration tests with RPC modules](#integration-testing-with-rpc-modules) against a running dev server instead.
+
+## Testing Validation
+
+Since procedures validate input, you can test that invalid data is rejected:
+
+```ts showLineNumbers copy filename="src/modules/user/user-controller.test.ts"
+import { describe, it, expect } from 'vitest';
+import { HttpException } from 'vovk';
+import UserController from './user-controller';
+
+describe('UserController validation', () => {
+  it('rejects invalid body', async () => {
+    await expect(
+      UserController.createUser.fn({
+        body: { name: 123 }, // invalid
+      })
+    ).rejects.toThrow(HttpException);
+  });
+});
+```
+
+## Integration Testing with RPC Modules
+
+For end-to-end tests that go through the HTTP layer, use the generated [RPC modules](/typescript) against a running dev server:
+
+```ts showLineNumbers copy filename="src/modules/user/user-controller.e2e.test.ts"
+import { describe, it, expect } from 'vitest';
+import { UserRPC } from '@/client';
+
+describe('UserController E2E', () => {
+  it('gets a user via HTTP', async () => {
+    const user = await UserRPC.getUser({ params: { id: '42' } });
+
+    expect(user).toEqual({ id: '42', name: 'John' });
+  });
+});
+```

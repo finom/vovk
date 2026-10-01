@@ -1,0 +1,74 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "./generated/client"
+}
+
+generator zod {
+  provider      = "prisma-zod-generator"
+  config   = "./zod-generator.config.json"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  /// @zod.brand<'user'>()
+  id         String     @id @default(uuid())
+  /// @zod.custom.use(z.literal('user'))
+  entityType EntityType @default(user)
+  /// @zod.meta({ description: "Timestamp when the user was created", examples: ["2023-01-01T00:00:00.000Z"] })
+  createdAt  DateTime   @default(now())
+  /// @zod.meta({ description: "Timestamp when the user was last updated", examples: ["2023-01-01T00:00:00.000Z"] })
+  updatedAt  DateTime   @default(now()) @updatedAt
+
+  /// @zod.meta({ examples: ["John Doe"], description: "Full name of the user" })
+  fullName   String
+  /// @zod.meta({ examples: ["john.doe@example.com"], description: "Email address of the user" })
+  email      String    @unique
+  /// @zod.meta({ examples: ["https://example.com/image.jpg"], description: "Profile image URL of the user" })
+  imageUrl   String?
+
+  tasks      Task[]
+
+  embedding Unsupported("vector(1536)")?
+}
+
+model Task {
+  /// @zod.brand<'task'>()
+  id         String     @id @default(uuid())
+  /// @zod.custom.use(z.literal('task'))
+  entityType EntityType @default(task)
+  /// @zod.meta({ description: "Timestamp when the task was created", examples: ["2023-01-01T00:00:00.000Z"] })
+  createdAt  DateTime   @default(now())
+  /// @zod.meta({ description: "Timestamp when the task was last updated", examples: ["2023-01-01T00:00:00.000Z"] })
+  updatedAt  DateTime   @default(now()) @updatedAt
+
+  /// @zod.meta({ examples: ["Implement authentication"], description: "Title of the task" })
+  title      String
+  /// @zod.meta({ examples: ["Implement user authentication using JWT"], description: "Description of the task" })
+  description String
+  /// @zod.meta({ examples: ["TODO"], description: "Status of the task" })
+  status     TaskStatus @default(TODO)
+  /// @zod.brand<'user'>().meta({ examples: ["a3bb189e-8bf9-3888-9912-ace4e6543002"], description: "ID of the user who owns the task" })
+  userId     String
+
+  user       User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  embedding Unsupported("vector(1536)")?
+}
+
+enum EntityType {
+  user
+  task
+}
+
+enum TaskStatus {
+  TODO
+  IN_PROGRESS
+  IN_REVIEW
+  DONE
+}

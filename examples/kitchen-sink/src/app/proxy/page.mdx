@@ -1,0 +1,76 @@
+---
+title: A Proxy Endpoint Example
+description: A Proxy Endpoint Example
+---
+
+import { Tabs } from 'nextra/components';
+import ProxyExample from './proxy-example';
+import Example from '@/components/example';
+
+# Proxy Endpoint Example
+
+A proxy endpoint for [vovk.dev/api/hello/greeting.json](https://vovk.dev/api/hello/greeting.json).
+
+## Result
+
+<Example>
+  <ProxyExample />
+</Example>
+
+## Code
+
+<Tabs items={['proxy-controller.ts', 'proxy-example.tsx']}>
+  <Tabs.Tab>
+```ts showLineNumbers copy filename="src/modules/proxy/proxy-controller.ts" source="examples/kitchen-sink"
+import { get, prefix, operation } from 'vovk';
+
+@prefix('proxy')
+export default class ProxyController {
+  @operation({
+    summary: 'Proxy procedure',
+    description: 'Get a greeting from vovk.dev',
+  })
+  @get('greeting', { cors: true })
+  static getHello() {
+    return fetch('https://vovk.dev/api/hello/greeting.json') as unknown as { greeting: 'Hello world!' };
+  }
+}
+```
+*[The code above is fetched from GitHub repository.](https://github.com/finom/vovk/blob/main/examples/kitchen-sink/src/modules/proxy/proxy-controller.ts)*
+  </Tabs.Tab>
+  <Tabs.Tab>
+```tsx showLineNumbers copy filename="src/app/proxy/proxy-example.tsx" source="examples/kitchen-sink"
+'use client';
+import { useState } from 'react';
+import { ProxyRPC } from '@/client';
+import type { VovkReturnType } from 'vovk';
+
+export default function ProxyExample() {
+  const [serverResponse, setServerResponse] = useState<VovkReturnType<typeof ProxyRPC.getHello>>();
+
+  return (
+    <>
+      <button
+        type="button"
+        onClick={async () => {
+          setServerResponse(await ProxyRPC.getHello());
+        }}
+      >
+        Get a Greeting from the Server
+      </button>
+      <div>{serverResponse?.greeting}</div>
+    </>
+  );
+}
+```
+*[The code above is fetched from GitHub repository.](https://github.com/finom/vovk/blob/main/examples/kitchen-sink/src/app/proxy/proxy-example.tsx)*
+
+  </Tabs.Tab>
+</Tabs>
+
+## Related Documentation
+
+- [Response](https://vovk.dev/response)
+- [Controller & Procedure](https://vovk.dev/procedure)
+- [`@operation` Decorator](https://vovk.dev/openapi)
+- [TypeScript RPC](https://vovk.dev/typescript)

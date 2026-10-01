@@ -1,0 +1,328 @@
+
+# Response and Errors
+
+[Procedures](./procedure), being a wrapper over Next.js route handlers, return `Response` objects. Alternatively, they can return JSON objects and throw exceptions, that internally get converted to `Response` objects.
+
+The following snippets are equivalent for type inference at [TypeScript client](/typescript).
+
+```ts showLineNumbers copy
+// ...
+export default class HelloController {
+  @get()
+  static helloWorld() {
+    return { hello: 'world' };
+  }
+}
+```
+
+```ts showLineNumbers copy
+import { NextResponse } from 'next/server';
+// ...
+export default class HelloController {
+  @get()
+  static helloWorld() {
+    return NextResponse.json({ hello: 'world' });
+  }
+}
+```
+
+```ts showLineNumbers copy
+// ...
+export default class HelloController {
+  @get()
+  static helloWorld() {
+    return new Response(JSON.stringify({ hello: 'world' }), {
+      headers: { 'Content-Type': 'application/json' },
+    }) as unknown as { hello: string };
+  }
+}
+```
+
+<a name="headers"></a>
+## Response Headers
+
+### Static Response Headers
+
+All HTTP decorators support custom response headers via the second argument.
+
+```ts showLineNumbers copy
+// ...
+export default class UserController {
+  @put('do-something', { headers: { 'x-hello': 'world' } })
+  static async doSomething(/* ... */) {
+    /* ... */
+  }
+}
+```
+
+Enable CORS headers with the `cors: true` option.
+
+```ts showLineNumbers copy
+// ...
+export default class UserController {
+  @put('do-something', { cors: true })
+  static async doSomething(/* ... */) {
+    /* ... */
+  }
+}
+```
+
+For auto‑generated endpoints, `cors` and `headers` are specified as the single argument.
+
+```ts showLineNumbers copy
+// ...
+export default class UserController {
+  @put.auto({ cors: true, headers: { 'x-hello': 'world' } })
+  static async doSomething(/* ... */) {
+    /* ... */
+  }
+}
+```
+
+### Dynamic Response Headers
+
+Set dynamic response headers with the `NextResponse` or `Response` object.
+
+```ts showLineNumbers copy
+import { NextResponse } from 'next/server';
+
+// ...
+export default class UserController {
+  @put('do-something')
+  static async doSomething() {
+    return NextResponse.json({ hello: 'world' }, { headers: { 'x-hello': 'world' } });
+  }
+}
+```
+
+## `redirect` and `notFound`
+
+To perform a redirect or render the not‑found page, use the built‑in Next.js functions from **next/navigation**.
+
+```ts showLineNumbers copy
+import { redirect, notFound } from 'next/navigation';
+
+export default class UserController {
+  @get('redirect')
+  static async redirect() {
+    // ... if something
+    redirect('/some-other-endpoint');
+  }
+
+  @get('not-found')
+  static async notFound() {
+    // ... if something
+    notFound();
+  }
+}
+```
+
+Both functions work by throwing an error, so you don’t need a `return` statement. TypeScript casts their return type as `never`.
+
+See the [Next.js documentation](https://nextjs.org/docs/app/building-your-application/routing/redirecting) for more information.
+
+<a name="downloads"></a>
+## File Downloads
+
+For attachments use `Response` from the Web API with appropriate headers.
+
+```ts showLineNumbers copy
+// ...
+export default class DownloadController {
+  @get('csv-report')
+  static async downloadCSV() {
+    return new Response(csvString, {
+      headers: {
+        'Content-Type': 'text/csv',
+        'Content-Disposition': `attachment; filename=report.csv`,
+      },
+    });
+  }
+}
+```
+
+In order to simplify file responses, Vovk provides a helper function `toDownloadResponse`, which accepts a `Blob | File | ArrayBuffer | Uint8Array | ReadableStream<Uint8Array> | string{:ts}` as the file content, along with optional `filename`, `type` and `headers` object.
+
+```ts showLineNumbers copy
+
+import { toDownloadResponse } from 'vovk';
+// ...
+export default class DownloadController {
+  @get('csv-report')
+  static async downloadCSV() {
+    return toDownloadResponse(csvString, { 
+        filename: 'report.csv', 
+        type: 'text/csv', 
+        headers: { 'x-hello': 'world' } 
+    });
+  }
+}
+```
+
+## Errors
+
+You can gracefully throw HTTP exceptions using syntax inspired by NestJS. The `HttpException` class accepts three arguments: an HTTP code from `HttpStatus`, a message, and an optional `cause` object.
+
+```ts showLineNumbers copy
+import { HttpException, HttpStatus } from 'vovk';
+
+// ...
+static async updateUser(/* ... */) {
+    // ...
+    throw new HttpException(HttpStatus.BAD_REQUEST, 'Something went wrong');
+}
+```
+
+Errors are rethrown on the [client side](/typescript) with the same interface.
+
+```ts showLineNumbers copy
+import { UserRPC } from '@/client';
+import { HttpException } from 'vovk';
+
+// ...
+try {
+  const updatedUser = await UserRPC.updateUser(/* ... */);
+} catch (e) {
+  console.log(e instanceof HttpException); // true
+  const err = e as HttpException;
+  console.log(err.message, err.statusCode);
+}
+```
+
+Regular errors such as `Error` are equivalent to `HttpException` with code `500`.
+
+```ts showLineNumbers copy
+import { HttpException, HttpStatus } from 'vovk';
+
+// ...
+static async updateUser(/* ... */) {
+    // ...
+    throw new Error('Something went wrong'); // 500
+}
+```
+
+You can provide a `cause` as the third argument to `HttpException` to supply additional context.
+
+```ts showLineNumbers copy
+throw new HttpException(HttpStatus.BAD_REQUEST, 'Something went wrong', { hello: 'World' });
+```
+
+## HttpStatus Enum
+
+Here are the values of the `HttpStatus` enum for quick reference.
+
+```ts showLineNumbers copy
+export enum HttpStatus {
+  NULL = 0, // for client-side errors, such as client-side validation
+  CONTINUE = 100,
+  SWITCHING_PROTOCOLS = 101,
+  PROCESSING = 102,
+  EARLYHINTS = 103,
+  OK = 200,
+  CREATED = 201,
+  ACCEPTED = 202,
+  NON_AUTHORITATIVE_INFORMATION = 203,
+  NO_CONTENT = 204,
+  RESET_CONTENT = 205,
+  PARTIAL_CONTENT = 206,
+  AMBIGUOUS = 300,
+  MOVED_PERMANENTLY = 301,
+  FOUND = 302,
+  SEE_OTHER = 303,
+  NOT_MODIFIED = 304,
+  TEMPORARY_REDIRECT = 307,
+  PERMANENT_REDIRECT = 308,
+  BAD_REQUEST = 400,
+  UNAUTHORIZED = 401,
+  PAYMENT_REQUIRED = 402,
+  FORBIDDEN = 403,
+  NOT_FOUND = 404,
+  METHOD_NOT_ALLOWED = 405,
+  NOT_ACCEPTABLE = 406,
+  PROXY_AUTHENTICATION_REQUIRED = 407,
+  REQUEST_TIMEOUT = 408,
+  CONFLICT = 409,
+  GONE = 410,
+  LENGTH_REQUIRED = 411,
+  PRECONDITION_FAILED = 412,
+  PAYLOAD_TOO_LARGE = 413,
+  URI_TOO_LONG = 414,
+  UNSUPPORTED_MEDIA_TYPE = 415,
+  REQUESTED_RANGE_NOT_SATISFIABLE = 416,
+  EXPECTATION_FAILED = 417,
+  I_AM_A_TEAPOT = 418,
+  MISDIRECTED = 421,
+  UNPROCESSABLE_ENTITY = 422,
+  FAILED_DEPENDENCY = 424,
+  PRECONDITION_REQUIRED = 428,
+  TOO_MANY_REQUESTS = 429,
+  INTERNAL_SERVER_ERROR = 500,
+  NOT_IMPLEMENTED = 501,
+  BAD_GATEWAY = 502,
+  SERVICE_UNAVAILABLE = 503,
+  GATEWAY_TIMEOUT = 504,
+  HTTP_VERSION_NOT_SUPPORTED = 505,
+}
+```
+
+## Proxy Response
+
+### JSON Proxy
+
+You can create a proxy endpoint by fetching data from another server with `fetch`. It returns a `Response`, which Next.js handles automatically. To ensure correct client-side inference, force a different return type.
+
+```ts showLineNumbers copy
+import { get } from 'vovk';
+
+export default class ProxyController {
+  @get('greeting')
+  static getHello() {
+    return fetch('https://vovk.dev/api/hello/greeting.json') as unknown as { greeting: string };
+  }
+}
+```
+
+[View live example on examples.vovk.dev »](https://examples.vovk.dev/proxy)
+
+On the client, the return type is inferred as expected.
+
+```ts showLineNumbers copy
+import { ProxyRPC } from '@/client';
+
+// ...
+const { greeting } = await ProxyRPC.getHello();
+```
+
+Alternatively, you can define the response type at the client method and keep the server return type as `Response`.
+
+```ts showLineNumbers copy
+import { ProxyRPC } from '@/client';
+
+// ...
+const { greeting } = await ProxyRPC.getHello<{ greeting: string }>();
+```
+
+### Blob Proxy
+
+When you keep the original `Response` type, the client resolves the result as a `Response` object. This is useful for files or binary data.
+
+```ts showLineNumbers copy
+import { get } from 'vovk';
+
+export default class ProxyController {
+  @get('pdf-proxy')
+  static getPdf() {
+    return fetch('https://example.com/example.pdf');
+  }
+}
+```
+
+```ts showLineNumbers copy
+import { ProxyRPC } from '@/client';
+
+// ...
+const response = await ProxyRPC.getPdf();
+const buffer = await response.arrayBuffer();
+const blob = new Blob([buffer], { type: 'application/pdf' });
+// ...
+```

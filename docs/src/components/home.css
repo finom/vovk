@@ -1,0 +1,85 @@
+@import 'tailwindcss';
+
+:root {
+  --gh-dark: #0d1117;
+}
+
+.bg-code {
+  @apply bg-white dark:bg-[var(--gh-dark)];
+}
+
+body {
+}
+
+.text-secondary {
+  @apply text-gray-800 dark:text-gray-300;
+}
+
+a.link {
+  @apply underline underline-offset-4 transition-colors;
+}
+
+a.link-docs {
+  @apply inline-flex items-center gap-2 mt-3;
+}
+
+.button {
+  @apply py-2 px-4 rounded bg-blue-500 text-white hover:bg-blue-700 transition-colors cursor-pointer leading-none h-auto disabled:pointer-events-none disabled:opacity-70;
+}
+
+.front-page-button {
+  @apply min-w-8 transition-all bg-gradient-to-b from-[#238aff] to-[#07f] hover:shadow-[0_5px_30px_-10px_#0078ffab] filter hover:brightness-105 justify-center items-center gap-2 rounded-full py-3 px-6 text-white font-medium;
+}
+
+.code {
+  @apply bg-gray-200 dark:bg-gray-800 rounded px-1 py-0.5 mx-0.5;
+}
+
+.mdx-with-style {
+  & code {
+    @apply bg-white dark:bg-gray-800 rounded px-1 py-0.5 mx-0.5;
+  }
+
+  & pre {
+    @apply my-2;
+  }
+}
+
+.live-example {
+  a {
+    @apply text-blue-500 hover:text-blue-700 transition-colors;
+  }
+
+  h1 {
+    @apply text-2xl font-semibold mb-4 text-gray-700 dark:text-white;
+  }
+
+  input[type='text'] {
+    @apply appearance-none rounded w-full py-2 px-4 dark:text-gray-200 dark:bg-slate-800;
+    @apply leading-tight focus:outline my-1 border border-gray-200 dark:border-gray-700;
+  }
+
+  button {
+    @apply py-2 px-4 rounded bg-blue-500 text-white hover:bg-blue-700 transition-colors cursor-pointer leading-none h-auto disabled:pointer-events-none disabled:opacity-70;
+  }
+
+  .input-group {
+    @apply shadow flex flex-row mt-2;
+
+    & > input {
+      @apply rounded-r-none my-0;
+    }
+
+    & > button {
+      @apply rounded-l-none my-0;
+    }
+  }
+
+  .github-tab-content > div {
+    @apply !m-0;
+  }
+}
+
+div[data-bright-theme] {
+  @apply !m-0;
+}

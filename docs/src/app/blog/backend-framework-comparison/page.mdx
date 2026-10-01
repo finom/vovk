@@ -1,0 +1,1619 @@
+---
+title: "TypeScript Backend Frameworks Compared: REST Semantics, Validation, Next.js, RPC, LLM Tools, and Local Call"
+description: "A six-axis comparison of ~30 TypeScript backend frameworks — REST URL semantics, Next.js compatibility, validation library, typed RPC client, LLM tool derivation, and validated local call."
+date: "May 11, 2026"
+---
+import { Bleed } from 'nextra/components';
+
+# TypeScript Backend Frameworks Compared
+
+## REST Semantics, Validation, Next.js, RPC, LLM Tools, and Local Call
+
+The TypeScript backend ecosystem has fragmented into ~30 frameworks competing for the same problem space. This article evaluates them on six concrete axes that matter for production systems: **REST URL semantics**, **Next.js compatibility**, **validation library**, **typed RPC client**, **LLM tool derivation**, and **validated in-process call**.
+
+This is not an exhaustive feature list — it's a focused comparison of one specific design pattern: the *single-source-of-truth procedure* thesis, where one typed declaration auto-derives an HTTP endpoint, a typed client, an LLM tool, and an in-process call. Vovk.ts is built around this thesis. The natural question is: which other frameworks deliver on the same promise, and where does each draw the line?
+
+---
+
+## TL;DR
+
+- Four TypeScript frameworks deliver one declaration → REST + RPC client + LLM tool + validated local call: **Vovk.ts, Nestia, oRPC, Igniter.js**.
+- Of those four, three mount on Next.js App Router — **Vovk, oRPC, Igniter.js** — while Nestia is NestJS-only.
+- **Vovk.ts** is a thin layer over Next.js Route Handlers — it owns the procedure declaration and tooling, inheriting the Next.js ecosystem for auth, deployment, MCP transport (`mcp-handler`), and so on. Among the SSOT four, it has the deepest substrate integration (per-segment serverless functions with independent `maxDuration` / runtime, on-disk schema artifacts in `.vovk-schema/`) plus first-party Python and Rust client codegen (🧪 experimental).
+- True validated local-call bypass — calling a procedure in-process *with* its validation — is ecosystem-rare. Most "test without HTTP" stories (Hono `app.request`, Fastify `inject`, Elysia `app.handle`) are HTTP simulation, not bypass.
+- MCP server transport: only **Igniter.js** bundles one (`@igniter-js/adapter-mcp-server`). Vovk and oRPC delegate to `mcp-handler` / `@modelcontextprotocol/sdk`.
+- **Standard Schema** (Zod / Valibot / ArkType) is the emerging consensus. class-validator / TypeBox / Effect Schema persist where the framework predates the spec.
+
+---
+
+## What the columns mean
+
+### REST semantics
+Does the framework produce RESTful URLs (`GET /users/123`) or RPC envelopes (`POST /trpc/users.getById?batch=1`)? This is the most contentious column because frameworks blur the line. We mark **✅ Native** only when URLs are resource-style with method + path + path-param semantics. **🔌 Plugin** when REST URLs are opt-in via a separate package (e.g. tRPC's `trpc-to-openapi`). **⚠️** when there's a split surface (RPC default, REST as a separate concept). **❌** when URLs are RPC envelopes.
+
+### Next.js compatibility (App Router)
+Does this mount on Next.js App Router? **✅ Native** = designed for Next.js. **🔌 Adapter** = official adapter package or documented mounting pattern. **⚠️** = possible via custom-server workarounds. **❌** = incompatible (own runtime / is a Next.js alternative).
+
+### Validation
+Which validation library does the framework use? **✅ Standard Schema** = accepts any [Standard Schema](https://standardschema.dev) implementation (Zod / Valibot / ArkType / Effect Schema). **🔌** = one library only (Zod, TypeBox, class-validator, VineJS, typia). **❌** = no built-in validation.
+
+### Typed RPC client
+A type-safe client that calls your endpoints. **✅ Native** = first-party client. Sub-modes: **pure inference** (no codegen, TS type flows), **codegen** (build step), **OpenAPI roundtrip** (spec → external generator). **❌** = no typed client.
+
+### LLM tool derivation
+Auto-derived `{ name, description, parameters, execute }` tool objects from existing procedures. **✅ Native** = same procedure declaration becomes a tool. **🔌** = via first-party package. **OpenAPI bridge** = only through OpenAPI doc + external generator. **❌** = no auto-derivation (write `@Tool` methods manually).
+
+### Local call
+Calling a procedure in-process, without HTTP, with full input validation. **✅ True bypass** = no `Request` construction, no network, validation runs. **HTTP simulation** = framework constructs a `Request` and runs the middleware stack (e.g. Hono `app.request`, Fastify `inject`, Elysia `app.handle`). **Plain function** = the handler can be called as a function but skips validation. **❌** = none.
+
+---
+
+## Master table
+
+Framework names link to their detailed breakdown below.
+
+<Bleed>
+<div className="sticky-comparison">
+
+| Framework | REST semantics | Next.js (App Router) | Validation | Typed RPC client | LLM tool | Local call |
+|---|---|---|---|---|---|---|
+| [**Vovk.ts**](#vovkts) | ✅ Native | ✅ Native | ✅ Standard Schema | ✅ Codegen | ✅ `deriveTools` | ✅ `.fn()` bypass |
+| [**Nestia**](#nestia) | ✅ Native | ❌ NestJS-only | 🔌 typia | ✅ AST codegen | ✅ `typia.llm` + `@agentica` | ⚠️ controller skip |
+| [**oRPC**](#orpc) | ✅ Native (OpenAPIHandler) | 🔌 Adapter | ✅ Standard Schema | ✅ Pure inference | ✅ `@orpc/ai-sdk` | ✅ `.callable()` |
+| [**Igniter.js**](#igniterjs) | ✅ Native | ✅ Built-in adapter | ✅ Standard Schema | ✅ `@igniter-js/caller` | ✅ `adapter-mcp-server` | ✅ Native |
+| [**Effect Platform**](#effect-platform) | ✅ Native (HttpApi) | 🔌 `toWebHandler` | 🔌 Effect Schema | ✅ HttpApiClient | ⚠️ parallel to HttpApi | ✅ Effect-runtime |
+| [**Encore.ts**](#encorets) | ✅ Native | ❌ Own runtime | 🔌 TS types | ✅ `encore gen client` | ❌ dev-tool MCP only | ✅ service-to-service |
+| [**FeathersJS**](#feathersjs) | ⚠️ CRUD-mapped | ⚠️ Custom server | 🔌 `@feathersjs/schema` | ✅ `feathers-client` | ❌ | ✅ `app.service()` |
+| [**Elysia**](#elysia) | ✅ Native | ⚠️ Bun-optimized | 🔌 TypeBox | ✅ Eden Treaty | 🔌 `@8monkey/elysia-mcp` | ⚠️ HTTP simulation |
+| [**TanStack Start**](#tanstack-start) | ⚠️ split (server fns RPC + API Routes REST) | ❌ Next.js alternative | ✅ Standard Schema | ✅ Native | ❌ | ✅ direct fn call |
+| [**tRPC**](#trpc) | 🔌 `trpc-to-openapi` | 🔌 Adapter | ✅ Standard Schema | ✅ Pure inference | ❌ | ✅ `createCaller` |
+| [**ts-rest**](#ts-rest) | ✅ Native | 🔌 `@ts-rest/next` | ✅ Standard Schema | ✅ Pure inference | ❌ | ❌ |
+| [**Hono**](#hono) | ✅ Native | 🔌 `hono/vercel` adapter | ✅ Standard Schema (via validator pkgs) | ✅ `hc` pure inference | ❌ | ⚠️ `app.request` simulation |
+| [**Deepkit**](#deepkit) | ✅ Native (HTTP) | ❌ Own runtime | 🔌 runtime types | ✅ Pure inference (RPC) | ❌ | ✅ `DirectClient` (RPC) |
+| [**NestJS** (vanilla)](#nestjs) | ✅ Native | ⚠️ Custom server | 🔌 class-validator | 🔌 OpenAPI roundtrip | 🔌 `@rekog/mcp-nest` (manual) | ⚠️ skips pipes |
+| [**AdonisJS + Tuyau**](#adonisjs) | ✅ Native | ❌ Own runtime | 🔌 VineJS | ✅ Tuyau codegen | 🔌 `@jrmc/adonis-mcp` (manual) | ⚠️ HttpContext fabrication |
+| [**Fastify**](#fastify) | ✅ Native | ⚠️ Custom server | 🔌 JSON Schema / TypeBox / Zod | ❌ OpenAPI roundtrip only | 🔌 `fastify-mcp` (transport) | ⚠️ `inject` (simulation) |
+| [**next-safe-action**](#next-safe-action) | ❌ RSC RPC | ✅ Native | ✅ Standard Schema | ⚠️ React hooks only | ❌ | ✅ direct import |
+| [**zsa**](#zsa) | ❌ RSC RPC | ✅ Native | 🔌 Zod | ⚠️ React-only | ❌ | ✅ direct import |
+| [**mcp-handler**](#mcp-handler) | — (not a framework) | ✅ Native | 🔌 Zod | — | ❌ manual registration | — |
+| [**Blitz.js**](#blitzjs) | ❌ JSON-RPC envelope | ⚠️ Pages legacy | 🔌 Zod | ✅ build-time rewrite | ❌ | ✅ resolver call |
+| [**Wasp**](#wasp) | ⚠️ split (`operations` RPC + `api` REST) | ❌ Own DSL | ❌ BYO | ✅ codegen | ❌ | ✅ operations call |
+| [**Next.js raw Route Handlers**](#nextjs-raw-route-handlers) | ✅ Native | ✅ Native | ❌ BYO | ❌ | ❌ | ⚠️ forge `Request` |
+| [**Tier C frameworks**](#tier-c-frameworks) | — | — | — | — | — | — |
+
+</div>
+</Bleed>
+
+On the LLM-tool column: none of the four 4/4 SSOT frameworks (Vovk, Nestia, oRPC, Igniter.js) ships an end-to-end MCP server transport. Vovk's `deriveTools()` produces tool objects with a `ToModelOutput.MCP` formatter; the transport is delegated to `mcp-handler`. oRPC's `@orpc/ai-sdk` produces ai-sdk tool definitions; MCP server requires `@modelcontextprotocol/sdk` directly. Nestia's `@agentica` runtime is comprehensive but again does not bundle an MCP HTTP transport. **Only Igniter.js packages its own MCP server end-to-end via `@igniter-js/adapter-mcp-server`**.
+
+---
+
+## Beyond the six axes: where the Tier S frameworks differentiate
+
+Several secondary capabilities meaningfully differentiate the four frameworks that hit 4/4 SSOT:
+
+| Bonus axis | Vovk.ts | Nestia | oRPC | Igniter.js |
+|---|---|---|---|---|
+| Multi-language clients (Python, Rust) | ✅ first-party (🧪 experimental) | ❌ TS only | community via OpenAPI roundtrip | ❌ TS only |
+| Schema artifacts persisted on disk | ✅ `.vovk-schema/*.json` (automatic) | ⚠️ `swagger.json` (opt-in `nestia swagger`) | ⚠️ OpenAPI export (opt-in) | ❌ pure inference |
+| Per-segment serverless function config | ✅ independent `maxDuration` / runtime | n/a (NestJS) | ❌ single handler | ❌ single handler |
+| Static segments (build-time JSON content) | ✅ | ❌ | ❌ | ❌ |
+| First-party MCP server transport | ❌ delegates to `mcp-handler` | ❌ delegates | ❌ delegates | ✅ `adapter-mcp-server` |
+| Streaming as part of procedure declaration | ✅ JSON Lines | ❌ | ✅ Event Iterator (SSE) | ⚠️ |
+| Typed errors flow to client | partial via `HttpException` | ✅ | ✅ explicit `.errors()` | ✅ |
+
+Vovk leads on four of these (multi-language clients, automatic schema artifacts, segments-as-functions, static segments); ties oRPC on streaming; loses to Igniter.js on first-party MCP server transport and loses to oRPC on typed-error ergonomics. The schema-artifact edge is about being *automatic and always-on* — Nestia can emit `swagger.json` and oRPC can export OpenAPI, but both are opt-in steps, not a build artifact you get for free. oRPC chose runtime portability — Vovk chose Next.js depth. Both are valid trade-offs, but a buyer who has already committed to Next.js should weight the four Vovk-leading rows heavily, because every one of them requires the Next.js substrate Vovk targets. *Sources: [vovk.dev](https://vovk.dev), [orpc.dev/docs/event-iterator](https://orpc.dev/docs/event-iterator), [nestia.io](https://nestia.io), [github.com/felipebarcelospro/igniter-js](https://github.com/felipebarcelospro/igniter-js).*
+
+---
+
+## Which framework when
+
+If your project matches one of these descriptions, that's the framework to start with.
+
+| You're building... | Pick |
+|---|---|
+| Next.js App Router app + REST endpoints + AI tools, all from one declaration | **Vovk.ts** |
+| Next.js App Router app, but want a pure-inference client with no codegen step | **oRPC** with `OpenAPIHandler` |
+| Already invested in NestJS, want SSOT for AI tools | **Nestia** (`@nestia/core` + `@agentica`) |
+| Next.js Server Actions only, no external client | **next-safe-action** |
+| Bun-first, no Next.js | **Elysia** + Eden Treaty |
+| Hono / Fastify / Cloudflare Workers stack, runtime-agnostic | **oRPC** with `RPCHandler` (or Hono + hand-rolled MCP) |
+| Need WebSockets or duplex traffic today | None of the SSOT four; pick **Hono** or **Fastify** |
+| Want backend as a separate platform (own runtime, own CI) | **Encore.ts** or **Convex** (both off the SSOT rubric — not Next.js libraries — but the right call if you want a managed platform) |
+| Want the strongest contract-first REST + Zod story without a typed local call | **ts-rest** |
+
+---
+
+## Tier S — 4/4 SSOT (one declaration → all four artifacts)
+
+### Vovk.ts
+
+**Version**: `vovk@3.2.2`. Requires Next.js 15+, Node 22+. Source: [vovk.dev](https://vovk.dev).
+
+#### REST semantics
+
+Procedures decorated with `@get('{id}')`, `@post()`, `@put()`, `@patch()`, `@del()` mount as RESTful endpoints with path-param syntax.
+
+```ts filename="src/modules/user/user-controller.ts"
+import { procedure, prefix, get } from 'vovk';
+import { z } from 'zod';
+
+@prefix('users')
+export default class UserController {
+  @get('{id}')
+  static getUser = procedure({
+    params: z.object({ id: z.uuid() }),
+    output: z.object({ id: z.string(), name: z.string() }),
+  }).handle(async (req, { id }) => {
+    return { id, name: 'Alice' };
+  });
+}
+```
+
+*Source: [vovk.dev/procedure](https://vovk.dev/procedure)*
+
+```sh
+curl http://localhost:3000/api/users/0190ad59-c3e3-71e0-bbaf-2c4c4f2f8a3f
+```
+
+#### Next.js compatibility
+
+Native. Vovk targets Next.js App Router exclusively — controllers mount into [segments](/segment) (catch-all routes) via `initSegment`. No standalone server.
+
+```ts filename="src/app/api/[[...vovk]]/route.ts"
+import { initSegment } from 'vovk';
+import UserController from '@/modules/user/user-controller';
+
+const controllers = { UserRPC: UserController };
+export type Controllers = typeof controllers;
+export const { GET, POST, PUT, DELETE, PATCH } = initSegment({ controllers });
+```
+
+*Source: [vovk.dev/segment](https://vovk.dev/segment)*
+
+#### Validation
+
+[Standard Schema](https://standardschema.dev). Any library implementing both Standard Schema and Standard JSON Schema (Zod 4, Valibot, ArkType) works in `procedure({ params, query, body, output })`.
+
+*Source: [vovk.dev/procedure#procedure](https://vovk.dev/procedure#procedure)*
+
+#### Typed RPC client
+
+Codegen via `vovk generate` (or `vovk dev` watcher) emits `vovk-client` — a TypeScript module mirroring controllers, same call signature as `.fn()`.
+
+```ts
+import { UserRPC } from 'vovk-client';
+
+const user = await UserRPC.getUser({
+  params: { id: '0190ad59-c3e3-71e0-bbaf-2c4c4f2f8a3f' },
+});
+```
+
+*Source: [vovk.dev/typescript](https://vovk.dev/typescript)*
+
+#### LLM tool derivation
+
+Native, first-party. `deriveTools()` converts any controller or RPC module into `{ name, description, parameters, execute }` tool objects compatible with Vercel AI SDK out of the box. The `ToModelOutput.MCP` formatter shapes execute-output for MCP transports.
+
+```ts
+import { deriveTools } from 'vovk';
+import UserController from '@/modules/user/user-controller';
+
+const { tools, toolsByName } = deriveTools({ modules: { UserController } });
+// tools: [{ name, description, parameters, execute }, ...]
+```
+
+*Source: [vovk.dev/tools](https://vovk.dev/tools)*
+
+The actual MCP server transport is delegated to [`mcp-handler`](#mcp-handler) (Vercel's package). Same delegation pattern as oRPC's AI SDK integration.
+
+#### Local call
+
+True bypass via `.fn()`. No `Request` construction, no network — full input validation runs.
+
+```ts
+const user = await UserController.getUser.fn({
+  params: { id: '0190ad59-c3e3-71e0-bbaf-2c4c4f2f8a3f' },
+});
+```
+
+*Source: [vovk.dev/fn](https://vovk.dev/fn)*
+
+Used in server components, server actions, SSR/PPR, and AI tool execution.
+
+In a Next.js App Router app, validated bypass matters in three concrete places: (a) React Server Components fetching data without HTTP overhead; (b) Server Actions composing existing procedures without re-serializing; (c) AI tools executing in-process so token streams don't round-trip the network. The same procedure declaration serves all three plus its HTTP endpoint.
+
+#### Notable Vovk-specific capabilities
+
+Beyond the six-axis rubric, Vovk ships a few capabilities that other Tier S frameworks don't match. All verifiable on [vovk.dev](https://vovk.dev):
+
+- **Per-segment serverless function config.** Each [segment](/segment) compiles to its own Next.js catch-all route, which becomes its own serverless function — with its own `maxDuration`, `runtime` (e.g., `'edge'`), and bundle. Most competitors mount as a single handler.
+- **Multi-language client codegen.** First-party [`vovk-python`](https://github.com/finom/vovk-python) and [`vovk-rust`](https://github.com/finom/vovk-rust) emit typed clients in Python and Rust from the same `.vovk-schema`. 🧪 experimental. ([Encore.ts](#encorets) also emits non-TS clients first-party — Go — via `encore gen client`; Vovk is the one on this list emitting Python and Rust.)
+- **Schema artifacts on disk.** `.vovk-schema/*.json` is a build artifact, not just an inferred type. CI tools, codegen pipelines, and AI agents can read the API surface without running the dev server.
+- **[Static segments](/static-segment).** Compile-time-generated JSON for content that doesn't change at runtime (OpenAPI specs, historical data). Served as a static file.
+- **`decorate()` escape hatch.** `decorate(get('{id}'), procedure(...))` produces identical runtime and types without requiring `experimentalDecorators` in `tsconfig.json` — for projects that can't enable the legacy TS decorator flag.
+
+Streaming (JSON Lines via `iteration` validator) is a first-class procedure-level capability; oRPC has parity via its [Event Iterator](https://orpc.dev/docs/event-iterator) (SSE).
+
+#### Verdict
+
+**4/4 SSOT.** Vovk.ts is a thin layer over Next.js App Router Route Handlers — it owns the procedure declaration, codegen, and tooling, and inherits the Next.js ecosystem for everything else (auth, deployment, ISR/PPR, `mcp-handler` for the MCP transport, `next-ws` for WebSocket, etc.). That positioning matters for evaluating the trade-offs honestly: many things missing from Vovk are missing from Next.js Route Handlers, not from Vovk specifically.
+
+Trade-offs that are *Vovk-specific* (you wouldn't hit these by writing raw Route Handlers):
+
+- **Tied to Next.js App Router.** Not a portable library. Services (plain classes with no framework imports) transfer; controllers, decorators, and `procedure()` definitions don't. Among the four 4/4 SSOT frameworks, Vovk is the only Next.js-exclusive one: Nestia is NestJS-only, Igniter.js has a Next.js adapter but isn't Next.js-exclusive, oRPC is runtime-agnostic.
+- **Codegen step required.** Pure-inference frameworks (tRPC, oRPC, Hono `hc`, Eden Treaty) don't need a build step; Vovk does. `vovk dev` must run alongside `next dev` in development. The on-disk artifact (`.vovk-schema/*.json`) has real value — CI tools, AI agents, multi-language clients all consume it — but it's a workflow tax pure-inference frameworks avoid.
+- **Ecosystem size.** Smaller community than tRPC, NestJS, Hono. Fewer Stack Overflow answers, fewer third-party plugins, less battle-tested edge-case coverage. (Major-version numbers — Vovk 3.x vs tRPC 11.x — reflect different semver philosophies and aren't a meaningful comparison; weekly downloads and contributor counts are.)
+- **Decorator-based idiomatic API.** `@get('{id}')`-style decorators require `"experimentalDecorators": true` in `tsconfig.json`. Next.js's toolchain throws on TC39 Stage 3 decorator syntax — not a Vovk bug, but it constrains your `tsconfig`. `decorate()` is the escape hatch for projects that can't enable the legacy flag.
+- **`deriveTools` tool-count ceiling.** Very large APIs hit per-conversation LLM tool-list limits. The roadmap includes a vector-search-gated `router` option to scale this; today you expose a subset of procedures or split agents per domain.
+- **Python/Rust clients are experimental** (🧪). Stable for typical CRUD; expect rough edges on advanced patterns until they leave 🧪.
+
+Constraints inherited from the Next.js Route Handler substrate — not Vovk choices, but worth knowing if you're picking the stack: no WebSockets / persistent connections (use `next-ws` or an external service), no first-party MCP server transport (use `mcp-handler` — the Next.js-canonical pattern; oRPC and Nestia delegate identically), shared cold start with page renders within a segment, no GraphQL on the same handler surface.
+
+---
+
+### Nestia
+
+**Version**: `@nestia/core@11.2.0`. Built on NestJS 11. Requires `typia` compile-time transformer. Source: [nestia.io](https://nestia.io).
+
+#### REST semantics
+
+Native via `@core.TypedRoute.Get('/:id')`-style decorators that mirror NestJS routing.
+
+```ts
+import core from "@nestia/core";
+import { Controller } from "@nestjs/common";
+import typia, { tags } from "typia";
+
+@Controller("bbs/articles/:section")
+export class BbsArticlesController {
+  @core.TypedRoute.Put(":id")
+  public async update(
+    @core.TypedParam("section") section: string,
+    @core.TypedParam("id") id: string & tags.Format<"uuid">,
+    @core.TypedBody() input: IBbsArticle.IStore,
+  ): Promise<IBbsArticle> {
+    // ...
+  }
+}
+```
+
+*Source: [nestia.io/docs/sdk/](https://nestia.io/docs/sdk/)*
+
+#### Next.js compatibility
+
+❌ **NestJS only.** Nestia requires `NestFactory.create()`; no Next.js adapter exists.
+
+#### Validation
+
+🔌 **typia.** TypeScript types act as runtime validators via compile-time transformation. Not Standard Schema — different paradigm (types-as-validators). Validators are synthesized from your TS interfaces at build time, with near-zero runtime cost.
+
+#### Typed RPC client
+
+✅ AST-direct codegen via `@nestia/sdk` — **no OpenAPI roundtrip**.
+
+```sh
+npx nestia sdk
+```
+
+Generated SDK shape:
+
+```ts
+import api from "./api";
+
+const output = await api.functional.bbs.articles.update(
+  connection,
+  section,
+  id,
+  input,
+);
+
+if (output.success) {
+  const article: IBbsArticle = output.data;
+}
+```
+
+*Source: [nestia.io/docs/sdk/](https://nestia.io/docs/sdk/)*
+
+#### LLM tool derivation
+
+✅ via `typia.llm.application<App>()` and `@agentica/core`. The same TypeScript controller methods become function-calling schemas. **Auto-derived from controller types**, not from separate `@Tool` definitions. *Source: [nestia.io](https://nestia.io).*
+
+#### Local call
+
+⚠️ NestJS controllers can be instantiated and methods called as functions, but `@core.TypedRoute` validation runs at the HTTP transport layer — direct controller calls skip it unless you wire validation manually. The recommended path is calling underlying service methods.
+
+#### Verdict
+
+**4/4 SSOT (with caveats).** The architectural proof-point that procedure-as-SSOT works. NestJS-only. typia instead of Standard Schema. If you're already on NestJS, this is the obvious choice.
+
+---
+
+### oRPC
+
+**Versions**: `@orpc/server@1.14.2`, `@orpc/client@1.14.2`, `@orpc/openapi@1.14.2`, `@orpc/ai-sdk@1.14.2`. Runtime-agnostic. Source: [orpc.dev](https://orpc.dev).
+
+#### REST semantics
+
+oRPC ships two handlers: `RPCHandler` (proprietary envelope behind a prefix) and `OpenAPIHandler` (REST URLs from `.route({ method, path })`). For REST semantics, use OpenAPIHandler and define routes explicitly.
+
+```ts
+import { os } from '@orpc/server';
+import * as z from 'zod';
+
+export const getPlanet = os
+  .route({ method: 'GET', path: '/planets/{id}' })
+  .input(z.object({ id: z.coerce.number() }))
+  .handler(async ({ input }) => ({ id: input.id, name: 'Earth' }));
+```
+
+```sh
+curl http://localhost:3000/api/planets/1
+```
+
+*Source: [orpc.dev/docs/openapi/routing](https://orpc.dev/docs/openapi/routing)*
+
+#### Next.js compatibility
+
+🔌 Adapter. Mount `RPCHandler` or `OpenAPIHandler` from `@orpc/server/fetch` on a catch-all route — the framework-agnostic fetch handler is the documented Next.js pattern. (A legacy `@orpc/next@0.27.0` exists on npm but is unmaintained and not part of the 1.x line.)
+
+```ts filename="app/rpc/[[...rest]]/route.ts"
+import { RPCHandler } from '@orpc/server/fetch';
+import { router } from '@/router';
+
+const handler = new RPCHandler(router);
+
+async function handleRequest(request: Request) {
+  const { response } = await handler.handle(request, {
+    prefix: '/rpc',
+    context: {},
+  });
+  return response ?? new Response('Not found', { status: 404 });
+}
+
+export const HEAD = handleRequest;
+export const GET = handleRequest;
+export const POST = handleRequest;
+export const PUT = handleRequest;
+export const PATCH = handleRequest;
+export const DELETE = handleRequest;
+```
+
+*Source: [orpc.dev/docs/adapters/next](https://orpc.dev/docs/adapters/next). Note: the example above mounts `RPCHandler` (oRPC's own envelope); swap to `OpenAPIHandler` from `@orpc/openapi/fetch` for the REST-semantic path.*
+
+#### Validation
+
+[Standard Schema](https://standardschema.dev) — Zod (`@orpc/zod`), Valibot (`@orpc/valibot`), ArkType (`@orpc/arktype`), or any Standard Schema implementation. *Source: [orpc.dev/docs/getting-started](https://orpc.dev/docs/getting-started).*
+
+#### Typed RPC client
+
+Pure TS inference — no codegen. `createORPCClient<typeof router>(link)`.
+
+```ts
+import { createORPCClient } from '@orpc/client';
+import { RPCLink } from '@orpc/client/fetch';
+
+const link = new RPCLink({
+  url: 'http://localhost:3000/rpc',
+  headers: () => ({ authorization: 'Bearer token' }),
+});
+
+const client = createORPCClient<typeof router>(link);
+const planet = await client.planet.find({ id: 1 });
+```
+
+*Source: [orpc.dev/docs/client/client-side](https://orpc.dev/docs/client/client-side)*
+
+#### LLM tool derivation
+
+`@orpc/ai-sdk` provides `createTool()` and `implementTool()` for Vercel AI SDK conversion. There is **no first-party `@orpc/mcp` package** — MCP exposure goes through the OpenAPI spec via a third-party generator.
+
+```ts
+import { createTool, AI_SDK_TOOL_META_SYMBOL } from '@orpc/ai-sdk';
+import { os } from '@orpc/server';
+import * as z from 'zod';
+
+const getWeatherProcedure = os
+  .meta({ [AI_SDK_TOOL_META_SYMBOL]: { title: 'Get Weather' } })
+  .route({ summary: 'Get the weather in a location' })
+  .input(z.object({ location: z.string() }))
+  .handler(async ({ input }) => ({ location: input.location, temperature: 72 }));
+
+const getWeatherTool = createTool(getWeatherProcedure, { context: {} });
+```
+
+*Source: [orpc.dev/docs/integrations/ai-sdk](https://orpc.dev/docs/integrations/ai-sdk)*
+
+#### Local call
+
+`.callable()`, `call()`, `createRouterClient` — all true bypass with validation. `.actionable()` for Next.js Server Actions.
+
+```ts
+// .callable() turns a procedure into a plain async function
+const getProcedure = os
+  .input(z.object({ id: z.string() }))
+  .handler(async ({ input }) => ({ id: input.id }))
+  .callable({ context: {} });
+
+const result = await getProcedure({ id: '123' });
+
+// createRouterClient — typed client that bypasses HTTP
+const client = createRouterClient(router, { context: {} });
+const result2 = await client.planet.find({ id: 1 });
+```
+
+*Source: [orpc.dev/docs/client/server-side](https://orpc.dev/docs/client/server-side)*
+
+Server Action variant:
+
+```ts
+'use server';
+
+import { os } from '@orpc/server';
+import * as z from 'zod';
+
+export const ping = os
+  .input(z.object({ name: z.string() }))
+  .handler(async ({ input }) => `Hello, ${input.name}`)
+  .actionable({ context: async () => ({}) });
+```
+
+*Source: [orpc.dev/docs/server-action](https://orpc.dev/docs/server-action)*
+
+#### Verdict
+
+**4/4 SSOT.** Closest existential competitor to Vovk on this rubric. Router-builder pattern vs Vovk's decorator/controller pattern. Runtime-portable (Next.js, Hono, Fastify, Express, Lambda) vs Vovk's Next.js-only. No first-party MCP server transport — same delegation pattern as Vovk.
+
+---
+
+### Igniter.js
+
+**Versions**: `@igniter-js/core@0.3.40`, `@igniter-js/adapter-mcp-server@0.3.7`. **Pre-1.0** (a `1.0.0-alpha` line exists on npm but no GA). Development has been quiet — no published release since December 2025 — and the ecosystem is thin and largely single-maintainer. Source: [igniterjs.com](https://igniterjs.com).
+
+#### REST semantics
+
+Native. Controllers expose queries (read) and mutations (write) at canonical REST URLs.
+
+#### Next.js compatibility
+
+✅ Built into core via `nextRouteHandlerAdapter`, imported from `@igniter-js/core/adapters` — no separate adapter package needed.
+
+#### Validation
+
+Standard Schema (Zod most commonly).
+
+#### Typed RPC client
+
+✅ `@igniter-js/caller` — type-safe HTTP client with retries, cache, interceptors.
+
+#### LLM tool derivation
+
+✅ **The only TS framework here that ships a first-party *packaged* MCP server transport.** `@igniter-js/adapter-mcp-server` auto-derives MCP tools from the router queries/mutations — no separate `@Tool` definitions required — and bundles the transport (built on `mcp-handler` + `@modelcontextprotocol/sdk` under the hood). Vovk and oRPC produce tool objects but delegate that transport; Nestia's `@agentica` is an MCP *client* and bundles no server.
+
+```ts
+import { IgniterMcpServer } from '@igniter-js/adapter-mcp-server';
+import { AppRouter } from '@/igniter.router';
+
+const { handler } = IgniterMcpServer
+  .create()
+  .router(AppRouter)
+  .withServerInfo({
+    name: 'Igniter.js MCP Server',
+    version: '1.0.0',
+  })
+  .withInstructions("Use the available tools to manage users and products in the Acme Corporation API.")
+  .build();
+
+export const GET = handler;
+export const POST = handler;
+```
+
+Per the package README, the adapter exposes your entire Igniter.js API as MCP tools so agents can interact with your endpoints as native functions — no separate definitions required. *Source: [github.com/felipebarcelospro/igniter-js — adapter-mcp-server README](https://github.com/felipebarcelospro/igniter-js/tree/main/packages/adapter-mcp-server).*
+
+#### Local call
+
+✅ Native. Procedures and actions callable in-process.
+
+#### Verdict
+
+**4/4 SSOT on paper. Most "AI-native" TS framework after Vovk and Nestia for the MCP sub-feature** — it's the only one that bundles a packaged MCP server adapter. Caveats: pre-1.0 (0.3.x), small ecosystem, less battle-tested than Vovk / oRPC / NestJS-Nestia.
+
+---
+
+## Tier A — 3/4 SSOT (one structural gap)
+
+### Effect Platform
+
+**Versions**: `@effect/platform@0.96.1`, `@effect/ai@0.35.0`. Source: [effect.website](https://effect.website).
+
+#### REST semantics
+
+Native via `HttpApi` / `HttpApiGroup` / `HttpApiEndpoint`. Method + path + path-param schema.
+
+#### Next.js compatibility
+
+🔌 Adapter. `HttpApiBuilder.toWebHandler(...)` returns a Web handler that mounts on a Next.js App Router catch-all route.
+
+#### Validation
+
+🔌 **Effect Schema** (now `effect/Schema`). Not Standard Schema by default — uses Effect's own schema language tightly coupled with the runtime.
+
+#### Typed RPC client
+
+✅ Native via `HttpApiClient.make(MyApi, { baseUrl })`. Pure TS inference from the same `HttpApi` declaration that drives the server.
+
+#### LLM tool derivation
+
+⚠️ `@effect/ai` provides `Tool.make`, `Toolkit.make`, and the toolkit's `.toLayer()`. **No `Toolkit.fromHttpApi` auto-derivation as of v0.35.0**. Tools share schemas with HttpApi endpoints but require separate definitions — parallel to HttpApi, not auto-derived.
+
+#### Local call
+
+✅ HTTP handlers are `Effect`s. Run them directly via `Effect.runPromise` with the appropriate Layer. (`toWebHandler` itself is HTTP simulation; the true bypass is at the Effect-runtime level.)
+
+#### Verdict
+
+**3/4.** Excellent SSOT for REST + client + local call from one `HttpApi` declaration. AI tool layer parallels HttpApi rather than auto-deriving from it. The biggest commitment is Effect-runtime buy-in.
+
+---
+
+### Encore.ts
+
+**Version**: `encore.dev@1.57.1`. Source: [encore.dev/docs/ts](https://encore.dev/docs/ts).
+
+#### REST semantics
+
+Native.
+
+```ts
+import { api } from "encore.dev/api";
+
+interface PingParams { name: string }
+interface PingResponse { message: string }
+
+export const ping = api(
+  { method: "POST", path: "/ping/:name", expose: true },
+  async (p: PingParams): Promise<PingResponse> => ({ message: `Hello ${p.name}!` }),
+);
+```
+
+*Source: [encore.dev/docs/ts/primitives/services-and-apis](https://encore.dev/docs/ts/primitives/services-and-apis)*
+
+#### Next.js compatibility
+
+❌ Encore is its own platform/runtime, not a library. Not mountable on Next.js.
+
+#### Validation
+
+🔌 TS types parsed at build time (Rust-based parser → schema); validation then runs in the Rust runtime at request time. Brand types like `MinLen`, `IsEmail` for constraints. No external validator library involved.
+
+#### Typed RPC client
+
+✅ Codegen via `encore gen client <app> --output=./client.ts`. Supports TypeScript, JavaScript, Go, OpenAPI.
+
+```sh
+encore gen client hello-a8bc --output=./client.ts
+```
+
+```ts
+import { client } from './client';
+const response = await client.email.Send(params);
+```
+
+Internal service-to-service calls go via `~encore/clients` and are typed:
+
+```ts
+import { greeting } from '~encore/clients';
+const result = await greeting.ping({ name: 'world' });
+```
+
+*Source: [encore.dev/docs/ts/cli/client-generation](https://encore.dev/docs/ts/cli/client-generation)*
+
+#### LLM tool derivation
+
+❌ **Encore's `encore mcp start` is a dev-tooling MCP** that exposes app metadata (services, schemas, traces) to coding agents like Cursor. It does NOT convert user-defined `api()` endpoints into runtime LLM tools for end-user agents. *Source: [encore.dev/docs/ts/cli/mcp](https://encore.dev/docs/ts/cli/mcp).*
+
+#### Local call
+
+✅ Service-to-service calls are typed and feel local. In production these are HTTP between deployed services; in development they're in-process.
+
+#### Verdict
+
+**3/4** (REST + client + local call all excellent). LLM-tool column is structurally missing despite "AI-native" branding — that branding refers to dev-tool MCP, not runtime API-as-tool.
+
+---
+
+### FeathersJS
+
+**Version**: Feathers v5 (Dove). Source: [feathersjs.com](https://feathersjs.com).
+
+#### REST semantics
+
+⚠️ Service methods (`find`, `get`, `create`, `update`, `patch`, `remove`) map automatically to REST verbs and URLs. **Custom methods don't auto-get REST URLs** — they require explicit route configuration.
+
+```ts
+class UserService {
+  async find(params: Params) { return [] }
+  async get(id: Id, params: Params) { /* ... */ }
+  async create(data: any, params: Params) { /* ... */ }
+  async update(id: NullableId, data: any, params: Params) { /* ... */ }
+  async patch(id: NullableId, data: any, params: Params) { /* ... */ }
+  async remove(id: NullableId, params: Params) { /* ... */ }
+}
+
+const app = feathers();
+app.use('users', new UserService());
+```
+
+*Source: [feathersjs.com/api/services.html](https://feathersjs.com/api/services.html)*
+
+#### Next.js compatibility
+
+⚠️ Custom server only. Feathers runs on Koa or Express.
+
+#### Validation
+
+🔌 `@feathersjs/schema` — Feathers' own schema builder; can wrap Zod-compatible schemas.
+
+#### Typed RPC client
+
+✅ `feathers-client`. Services are callable identically locally and remotely — that's Feathers' core SSOT thesis.
+
+#### LLM tool derivation
+
+❌ None first-party. OpenAPI bridge only via `feathers-swagger`.
+
+#### Local call
+
+✅ True service call: `app.service('users').get(id)`. Hooks (Feathers' middleware) run; validation runs if configured.
+
+```ts
+const myService = app.service('users');
+const items = await myService.find();
+const item = await app.service('users').get(1);
+```
+
+*Source: [feathersjs.com/api/services.html](https://feathersjs.com/api/services.html)*
+
+#### Verdict
+
+**3/4 within CRUD.** Historical precedent for service-as-SSOT, but CRUD-shaped — custom verbs are second-class. Mature; Node-classic stack. The closest pre-Vovk SSOT analogue in the TS ecosystem.
+
+---
+
+### Elysia
+
+**Version**: `elysia@1.4.28`. **Optimized for Bun, also runs on Node.js.** Source: [elysiajs.com](https://elysiajs.com).
+
+#### REST semantics
+
+Native.
+
+```ts
+import { Elysia, t } from 'elysia';
+
+const app = new Elysia()
+  .get('/users/:id', ({ params: { id } }) => ({ id, name: 'Alice' }), {
+    params: t.Object({ id: t.String() }),
+  })
+  .listen(3000);
+
+export type App = typeof app;
+```
+
+*Source: [elysiajs.com/essential/route.html](https://elysiajs.com/essential/route.html)*
+
+#### Next.js compatibility
+
+⚠️ Possible — Elysia 1.x runs on Node.js (per docs: "multiple runtime support but optimized for Bun"). Mounting on Next.js App Router works but isn't the documented or idiomatic path. *Source: [elysiajs.com/quick-start.html](https://elysiajs.com/quick-start.html).*
+
+#### Validation
+
+🔌 **TypeBox** via `elysia.t`. JSON Schema-shaped at runtime.
+
+#### Typed RPC client
+
+✅ Eden Treaty — pure TS inference, no codegen.
+
+```ts
+import { treaty } from '@elysiajs/eden';
+import type { App } from './server';
+
+const app = treaty<App>('localhost:3000');
+const { data, error } = await app.users({ id: '1' }).get();
+```
+
+*Source: [elysiajs.com/eden/treaty/overview.html](https://elysiajs.com/eden/treaty/overview.html)*
+
+#### LLM tool derivation
+
+🔌 `@8monkey/elysia-mcp` (community) — auto-derives MCP tools from Elysia routes using TypeBox schemas. Niche. *Source: [npmjs.com/package/@8monkey/elysia-mcp](https://www.npmjs.com/package/@8monkey/elysia-mcp).*
+
+#### Local call
+
+⚠️ `app.handle(new Request(...))` is HTTP simulation, not validated bypass.
+
+#### Verdict
+
+**3/4 in Bun world.** Outside Bun, it's a Hono-class framework with a dedicated MCP plugin. Next.js compatibility is technical, not idiomatic.
+
+---
+
+### TanStack Start
+
+**Version**: `@tanstack/react-start@1.167.65`. (Uses the unified TanStack monorepo version — there is no separate "1.0 GA" milestone; non-prerelease builds have shipped since early 2025.) Source: [tanstack.com/start](https://tanstack.com/start).
+
+#### REST semantics
+
+⚠️ **Split.** Server functions (`createServerFn`) are RPC-shaped — they compile to HTTP POSTs at framework-managed paths, NOT RESTful URLs. For true REST, use separate **API Routes** (file-based, `/api/...`).
+
+```ts
+import { createServerFn } from '@tanstack/react-start';
+import { z } from 'zod';
+
+const UserSchema = z.object({ name: z.string().min(1), age: z.number().min(0) });
+
+export const createUser = createServerFn({ method: 'POST' })
+  .inputValidator(UserSchema)
+  .handler(async ({ data }) => `Created user: ${data.name}, age ${data.age}`);
+```
+
+Per the docs: "the build process replaces server function implementations with RPC stubs in client bundles. When invoked from client code, calls become network requests to the server RPC endpoint." *Source: [tanstack.com/start/latest/docs/framework/react/quick-start](https://tanstack.com/start/latest/docs/framework/react/quick-start).*
+
+#### Next.js compatibility
+
+❌ TanStack Start is its own full-stack meta-framework — a Next.js alternative, not a library you mount on Next.js.
+
+#### Validation
+
+✅ Standard Schema. `.inputValidator()` accepts Zod, Valibot, ArkType.
+
+#### Typed RPC client
+
+✅ Native — server functions imported on the client are rewritten at build time to fetch calls. Pure inference, no separate codegen step.
+
+```tsx
+import { useServerFn } from '@tanstack/react-start';
+
+function UserForm() {
+  const createNewUser = useServerFn(createUser);
+  const { mutate } = useMutation({
+    mutationFn: () => createNewUser({ data: { name: 'John', age: 30 } }),
+  });
+}
+```
+
+#### LLM tool derivation
+
+❌ None.
+
+#### Local call
+
+✅ Server-fn-to-server-fn calls are direct function calls — validation runs through `.inputValidator`.
+
+#### Verdict
+
+**3/4 within its own ecosystem.** Strongest validator-first server-function story outside Vovk/oRPC. REST and AI-tool stories are the structural gaps.
+
+---
+
+## Tier B — 2/4 SSOT
+
+### tRPC
+
+**Versions**: `@trpc/server@11.17.0`, `trpc-to-openapi@3.2.0` (community fork). Official `@trpc/openapi@11.17-alpha` exists. Source: [trpc.io](https://trpc.io).
+
+#### REST semantics
+
+🔌 **Plugin and opt-in per procedure.** Vanilla tRPC v11 routes go through `/trpc/<procedure>?batch=1&input=...` — RPC envelope over batched POST. For REST URLs, add `.meta({ openapi })` to procedures and serve via `trpc-to-openapi`:
+
+```ts
+const router = t.router({
+  getUser: t.procedure
+    .meta({ openapi: { method: 'GET', path: '/users/{id}' } })
+    .input(z.object({ id: z.string() }))
+    .output(z.object({ id: z.string(), name: z.string() }))
+    .query(({ input }) => ({ id: input.id, name: 'Alice' })),
+});
+```
+
+Each procedure you want exposed needs the `.meta()`. Procedures without it are not REST-exposed. *Source: [npmjs.com/package/trpc-to-openapi](https://www.npmjs.com/package/trpc-to-openapi).*
+
+#### Next.js compatibility
+
+🔌 Adapter. App Router uses the fetch adapter:
+
+```ts filename="app/api/trpc/[trpc]/route.ts"
+import { fetchRequestHandler } from '@trpc/server/adapters/fetch';
+import { appRouter } from '@/server/router';
+
+const handler = (req: Request) =>
+  fetchRequestHandler({
+    endpoint: '/api/trpc',
+    req,
+    router: appRouter,
+    createContext: () => ({}),
+  });
+
+export { handler as GET, handler as POST };
+```
+
+URL pattern: `/api/trpc/<procedure>` (RPC envelope, not REST — see column 1). *Source: [trpc.io/docs/server/adapters/nextjs](https://trpc.io/docs/server/adapters/nextjs).*
+
+#### Validation
+
+Standard Schema (Zod, Valibot, ArkType, custom).
+
+#### Typed RPC client
+
+✅ `@trpc/client` — pure TS inference, fetch-based.
+
+#### LLM tool derivation
+
+❌ `trpc-mcp` exists but is abandoned (third-party; a single `0.0.1` from early 2025, ~33 downloads/month). Practical path: `trpc-to-openapi` → OpenAPI doc → external MCP generator. Not first-party.
+
+#### Local call
+
+✅ `createCallerFactory` — true bypass, full validation runs.
+
+```ts
+const t = initTRPC.context<Context>().create();
+const { createCallerFactory, router } = t;
+
+const appRouter = router({
+  post: router({
+    add: publicProcedure
+      .input(z.object({ title: z.string().min(2) }))
+      .mutation((opts) => {
+        // procedure logic
+      }),
+  }),
+});
+
+const createCaller = createCallerFactory(appRouter);
+const caller = createCaller({ /* context */ });
+const result = await caller.post.add({ title: 'Example' });
+```
+
+Note: the docs warn that `createCaller` "should not be used to call procedures from within other procedures" — it recreates context and re-runs middleware. Extract shared logic into plain functions. *Source: [trpc.io/docs/server/server-side-calls](https://trpc.io/docs/server/server-side-calls).*
+
+#### Verdict
+
+**2/4 native** (RPC + local call). REST is plugin-and-opt-in. LLM tool requires the OpenAPI bridge. The most popular RPC framework, structurally weaker on REST than common perception.
+
+---
+
+### ts-rest
+
+**Version**: `@ts-rest/core@3.52.1`. Source: [ts-rest.com](https://ts-rest.com).
+
+#### REST semantics
+
+Native, contract-first.
+
+```ts
+import { initContract } from '@ts-rest/core';
+import { z } from 'zod';
+
+const c = initContract();
+
+export const contract = c.router({
+  getPosts: {
+    method: 'GET',
+    path: '/posts',
+    query: z.object({ skip: z.number(), take: z.number() }),
+    responses: { 200: c.type<Post[]>() },
+    headers: z.object({ 'x-pagination-page': z.coerce.number().optional() }),
+  },
+});
+```
+
+Server implementation binds handlers to contract entries:
+
+```ts
+const router = s.router(contract, {
+  getPosts: async ({ query }) => ({
+    status: 200,
+    body: await prisma.post.findMany({ skip: query.skip, take: query.take }),
+  }),
+});
+```
+
+*Source: [github.com/ts-rest/ts-rest README](https://github.com/ts-rest/ts-rest)*
+
+#### Next.js compatibility
+
+🔌 Adapter `@ts-rest/next` v3.52. *Source: [npmjs.com/package/@ts-rest/next](https://www.npmjs.com/package/@ts-rest/next).*
+
+#### Validation
+
+Standard Schema (Zod, Valibot, ArkType).
+
+#### Typed RPC client
+
+✅ `initClient(contract, ...)` — pure TS inference.
+
+```ts
+const result = await client.getPosts({
+  headers: { 'x-pagination-page': 1 },
+  query: { skip: 0, take: 10 },
+});
+```
+
+*Source: [github.com/ts-rest/ts-rest README](https://github.com/ts-rest/ts-rest)*
+
+#### LLM tool derivation
+
+❌ None first-party. `@ts-rest/open-api` → external MCP generator.
+
+#### Local call
+
+❌ No validating caller. Handlers are plain functions you can import, but no first-class validated-bypass API.
+
+#### Verdict
+
+**2/4.** Excellent contract → REST + client SSOT. Punts on local and AI.
+
+---
+
+### Hono
+
+**Versions**: `hono@4.12.18`, `@hono/mcp@0.3.0`. Source: [hono.dev](https://hono.dev).
+
+#### REST semantics
+
+Native.
+
+```ts
+import { Hono } from 'hono';
+import { zValidator } from '@hono/zod-validator';
+import { z } from 'zod';
+
+const app = new Hono();
+
+const route = app.post(
+  '/posts',
+  zValidator('form', z.object({ title: z.string(), body: z.string() })),
+  (c) => c.json({ ok: true, message: 'Created!' }, 201),
+);
+
+export type AppType = typeof route;
+```
+
+*Source: [hono.dev/docs/guides/rpc](https://hono.dev/docs/guides/rpc)*
+
+#### Next.js compatibility
+
+🔌 Adapter. `app/api/[[...route]]/route.ts`:
+
+```ts filename="app/api/[[...route]]/route.ts"
+import { Hono } from 'hono';
+import { handle } from 'hono/vercel';
+
+const app = new Hono().basePath('/api');
+
+app.get('/hello', (c) => c.json({ message: 'Hello Next.js!' }));
+
+export const GET = handle(app);
+export const POST = handle(app);
+```
+
+*Source: [hono.dev/docs/getting-started/nextjs](https://hono.dev/docs/getting-started/nextjs)*
+
+#### Validation
+
+Standard Schema via `@hono/zod-validator`, `@hono/valibot-validator`, `@hono/arktype-validator`, `@hono/typebox-validator`. Per-validator package — but the surface is consistent.
+
+#### Typed RPC client
+
+✅ `hc<typeof app>(url)` — pure TS inference, fetch-based, no codegen.
+
+```ts
+import { hc } from 'hono/client';
+import type { AppType } from './server';
+
+const client = hc<AppType>('http://localhost:8787/');
+
+const res = await client.posts.$post({
+  form: { title: 'Hello', body: 'Hono is a cool project' },
+});
+
+if (res.ok) {
+  const data = await res.json();
+  console.log(data.message);
+}
+```
+
+*Source: [hono.dev/docs/guides/rpc](https://hono.dev/docs/guides/rpc)*
+
+#### LLM tool derivation
+
+❌ `@hono/mcp` v0.3.0 is **HTTP Streamable transport for an externally-instantiated `McpServer`** — not auto-derivation. You write tools manually against `@modelcontextprotocol/sdk`. Community `hono-mcp` claims `describe()`-based exposure but is not first-party. The MCP team itself also publishes an official adapter, `@modelcontextprotocol/hono@2.0.0-alpha.2` (currently pre-alpha), with the same transport-not-derivation shape. *Sources: [npmjs.com/package/@hono/mcp](https://www.npmjs.com/package/@hono/mcp), [github.com/modelcontextprotocol/typescript-sdk](https://github.com/modelcontextprotocol/typescript-sdk).*
+
+#### Local call
+
+⚠️ `app.request(req)` is HTTP simulation (constructs Request, runs middleware) — not a validated bypass. Mostly used for testing.
+
+#### Verdict
+
+**2/4.** Strong REST + typed client (one of the best inferred-client stories in the ecosystem). No SSOT for AI tools, no true validated local-call.
+
+---
+
+### Deepkit
+
+**Versions**: `@deepkit/http@1.0.19`, `@deepkit/rpc@1.0.19`, `@deepkit/type@1.0.19`. Source: [deepkit.io](https://deepkit.io).
+
+Deepkit is the ecosystem's most committed "define the type once" framework — but its REST and RPC stories are **two separate subsystems**, which makes it a split-surface story rather than a single-declaration SSOT.
+
+#### REST semantics
+
+✅ Native (HTTP side). `@deepkit/http` produces resource-style URLs with method + path + path-params, functional or controller style.
+
+```ts
+import { http } from '@deepkit/http';
+
+class UserController {
+  @http.GET('/user/:id')
+  user(id: number & Positive) {
+    return { id };
+  }
+}
+```
+
+*Source: [deepkit.io/documentation/http](https://deepkit.io/documentation/http)*
+
+#### Next.js compatibility
+
+❌ Own runtime. Deepkit owns the HTTP kernel (and, for RPC, a long-lived WebSocket/TCP server) — there's no Web-`fetch` handler to mount on a Next.js App Router catch-all.
+
+#### Validation
+
+🔌 Its own runtime-types paradigm — validators are reified from TypeScript types via `@deepkit/type` reflection (constraints like `Positive`, `MinLength`, `Email`). Not Standard Schema. The setup cost is real: it requires `@deepkit/type-compiler` (a TypeScript transformer that patches `tsc`) plus `"reflection": true` in `tsconfig.json`.
+
+*Source: [deepkit.io/documentation/runtime-types](https://deepkit.io/documentation/runtime-types)*
+
+#### Typed RPC client
+
+✅ Pure inference, no codegen — `client.controller<MyController>('/path')`. But this client talks to `@deepkit/rpc` controllers over Deepkit's own binary protocol (WebSocket/TCP; the HTTP transport is documented as "not implemented yet") — **not** to the `@http` REST routes above.
+
+```ts
+const client = new RpcWebSocketClient('ws://localhost:8081');
+const ctrl = client.controller<MyController>('/main');
+const result = await ctrl.hello('World');
+```
+
+*Source: [deepkit.io/documentation/rpc](https://deepkit.io/documentation/rpc)*
+
+#### LLM tool derivation
+
+❌ None first-party. No `@deepkit/ai` / `@deepkit/mcp` package exists; you'd hand-write tools against `@modelcontextprotocol/sdk`.
+
+#### Local call
+
+✅ True validated bypass — `DirectClient` / `AsyncDirectClient` (via `RpcDirectClientAdapter`) call an RPC controller in-process with no socket, validation still running. Scoped to RPC controllers, not `@http` routes.
+
+*Source: [deepkit.io/documentation/package/rpc](https://deepkit.io/documentation/package/rpc)*
+
+#### Verdict
+
+**2/4 (split-surface).** A genuinely good typed RPC client and a real in-process bypass — but they ride a separate WebSocket/TCP RPC protocol, not Deepkit's REST routes, and there's no LLM-tool path. A single `@http` route yields neither a typed Deepkit client nor a `DirectClient` call; you author REST and RPC as parallel surfaces (the same shape flagged for Wasp/TanStack). Mature and GA-tagged (1.0.x) but effectively single-maintainer and low-velocity — one commit on `main` since January 2026 as of writing.
+
+---
+
+### NestJS
+
+**Version**: `@nestjs/core@11.1.19` (vanilla NestJS, without Nestia). Source: [docs.nestjs.com](https://docs.nestjs.com).
+
+#### REST semantics
+
+Native via class decorators.
+
+```ts
+import { Controller, Get, Param } from '@nestjs/common';
+
+@Controller('users')
+export class UsersController {
+  @Get(':id')
+  findOne(@Param('id') id: string) {
+    return { id, name: 'Alice' };
+  }
+}
+```
+
+*Source: [docs.nestjs.com/controllers](https://docs.nestjs.com/controllers)*
+
+#### Next.js compatibility
+
+⚠️ **Custom server only.** The historical Pages Router custom-server pattern is fragile on App Router. In practice, NestJS runs as its own process and you'd reverse-proxy from Next.
+
+#### Validation
+
+🔌 **class-validator + class-transformer** (DTO pattern). Not Standard Schema.
+
+```ts
+import { IsEmail, IsString } from 'class-validator';
+
+export class CreateUserDto {
+  @IsString() name: string;
+  @IsEmail() email: string;
+}
+```
+
+*Source: [docs.nestjs.com/techniques/validation](https://docs.nestjs.com/techniques/validation)*
+
+#### Typed RPC client
+
+🔌 **OpenAPI roundtrip.** Generate OpenAPI via `@nestjs/swagger`, then run `@hey-api/openapi-ts` or NSwag for client codegen. No first-party typed client.
+
+#### LLM tool derivation
+
+🔌 Community packages (`@rekog/mcp-nest`, `@nestjs-mcp/server`). These typically require **separate `@Tool` methods** — not auto-derived from existing controllers. Pattern is "write a `@Tool createUser()` that internally calls the same service as `@Post('/users')`" — manual mirroring.
+
+#### Local call
+
+⚠️ `app.get(UsersController).findOne(id)` skips `ValidationPipe` and guards unless you wire them manually. Plain method call, not validated bypass.
+
+#### Verdict
+
+**1.5/4.** Mature, enterprise-grade. Each SSOT pillar requires an additional package or workaround. [Nestia](#nestia) is the SSOT path within the NestJS ecosystem.
+
+---
+
+### AdonisJS
+
+**Versions**: AdonisJS v6 / `@tuyau/core` (typed client add-on). Source: [adonisjs.com](https://adonisjs.com).
+
+#### REST semantics
+
+Native.
+
+```ts
+router.get('/posts/:id', ({ params }) => {
+  return `This is post with id ${params.id}`;
+});
+
+router.get('/posts/:id/comments/:commentId', ({ params }) => {
+  console.log(params.id, params.commentId);
+});
+```
+
+*Source: [docs.adonisjs.com/guides/basics/routing](https://docs.adonisjs.com/guides/basics/routing)*
+
+#### Next.js compatibility
+
+❌ AdonisJS is its own runtime (HTTP server, lifecycle, DI container).
+
+#### Validation
+
+🔌 **VineJS** — AdonisJS's own validation library.
+
+#### Typed RPC client
+
+✅ Tuyau — codegen-based.
+
+```ts
+import { createTuyau } from '@tuyau/core/client';
+import { registry } from '@my-app/backend/registry';
+
+export const client = createTuyau({
+  baseUrl: 'http://localhost:3333',
+  registry,
+  headers: { Accept: 'application/json' },
+});
+
+async function handleCreatePost() {
+  const post = await client.api.posts.store({
+    body: {
+      title: 'My first blog post',
+      content: 'This is the content of the blog post',
+      published: true,
+    },
+  });
+}
+```
+
+The `body` shape is inferred from your VineJS validator. *Source: [docs.adonisjs.com/guides/frontend/api-client](https://docs.adonisjs.com/guides/frontend/api-client).*
+
+#### LLM tool derivation
+
+🔌 `@jrmc/adonis-mcp` (community). Separate `@Tool` methods, not auto-derived.
+
+#### Local call
+
+⚠️ HttpContext fabrication required. No first-class validated bypass.
+
+#### Verdict
+
+**2/4.** Strong typed client and REST. Weaker on local call and AI tools.
+
+---
+
+### Fastify
+
+**Version**: `fastify@5.8.5`. Source: [fastify.dev](https://fastify.dev).
+
+#### REST semantics
+
+Native.
+
+```ts
+import Fastify from 'fastify';
+
+const fastify = Fastify();
+
+fastify.get('/users/:id', {
+  schema: {
+    params: {
+      type: 'object',
+      properties: { id: { type: 'string' } },
+      required: ['id'],
+    },
+    response: {
+      200: {
+        type: 'object',
+        properties: { id: { type: 'string' }, name: { type: 'string' } },
+      },
+    },
+  },
+}, async (request, reply) => {
+  const { id } = request.params as { id: string };
+  return { id, name: 'Alice' };
+});
+```
+
+*Source: [fastify.dev/docs/latest/Reference/Validation-and-Serialization](https://fastify.dev/docs/latest/Reference/Validation-and-Serialization)*
+
+#### Next.js compatibility
+
+⚠️ Custom server only.
+
+#### Validation
+
+🔌 **JSON Schema natively.** Library-specific TypeScript type providers add Zod (`@fastify/type-provider-zod`) and TypeBox (`@fastify/type-provider-typebox`) support — these are per-validator providers bridging to Fastify's JSON-Schema pipeline, **not** a Standard Schema integration.
+
+#### Typed RPC client
+
+❌ Codegen via `@fastify/swagger` → external OpenAPI generator (e.g. `openapi-fetch`). No first-party typed client.
+
+#### LLM tool derivation
+
+🔌 Community packages: `fastify-mcp` and `fastify-mcp-server` require manual tool registration, while `@mcp-it/fastify` auto-derives MCP tools from existing Fastify routes (schema + `operationId`) — the same route-to-tool pattern Elysia's `@8monkey/elysia-mcp` uses. The MCP team also publishes a pre-alpha first-party Fastify adapter, `@modelcontextprotocol/fastify` (alongside `@modelcontextprotocol/node` and `/express`) — all intentionally thin, transport-only.
+
+#### Local call
+
+⚠️ `fastify.inject({ method, url, payload })` — HTTP simulation, not bypass. Mature for testing.
+
+#### Verdict
+
+**1.5/4.** Best JSON Schema story in the ecosystem; great performance. No native typed RPC, no SSOT AI tools.
+
+---
+
+### next-safe-action
+
+**Version**: `next-safe-action@8.5.2`. Source: [next-safe-action.dev](https://next-safe-action.dev).
+
+#### REST semantics
+
+❌ **Server Actions are RSC RPC, not REST.** They POST to React's RSC endpoint with serialized payloads. Not curl-able with a normal URL.
+
+#### Next.js compatibility
+
+✅ Native (Next.js-specific).
+
+#### Validation
+
+Standard Schema (Zod, Valibot, ArkType via `.inputSchema()`).
+
+```ts
+import { createSafeActionClient } from "next-safe-action";
+
+export const actionClient = createSafeActionClient();
+
+export const loginUser = actionClient
+  .inputSchema(loginSchema)
+  .action(async ({ parsedInput: { username, password } }) => {
+    const user = await verifyCredentials(username, password);
+    return { id: user.id, name: user.name };
+  });
+```
+
+*Source: [next-safe-action.dev/docs/getting-started](https://next-safe-action.dev/docs/getting-started)*
+
+#### Typed RPC client
+
+⚠️ React hooks only (`useAction`). No general-purpose client.
+
+#### LLM tool derivation
+
+❌ None.
+
+#### Local call
+
+✅ Native — actions are async functions; you import and call them directly with validation:
+
+```ts
+const result = await loginUser({ username, password });
+```
+
+#### Verdict
+
+**2/4 within RSC scope.** The cleanest Server Action wrapper. RSC-RPC by design — REST is a non-goal.
+
+---
+
+### zsa
+
+**Version**: `zsa@0.6.0`. Source: zsa.vercel.app.
+
+Similar shape to next-safe-action: RSC RPC (not REST), Zod-only validation, React-hook client, direct call works (validated), no LLM tool derivation.
+
+**Verdict: 2/4** within RSC scope. Smaller and more focused than next-safe-action.
+
+---
+
+### mcp-handler
+
+**Version**: `mcp-handler@1.1.0`. Source: [github.com/vercel/mcp-adapter](https://github.com/vercel/mcp-adapter).
+
+This is **not a framework** — it's Vercel's MCP HTTP Streamable transport adapter for Next.js. You manually register tools against an `McpServer` instance from `@modelcontextprotocol/sdk`:
+
+```ts filename="app/api/[transport]/route.ts"
+import { createMcpHandler } from "mcp-handler";
+import { z } from "zod";
+
+const handler = createMcpHandler(
+  (server) => {
+    server.registerTool(
+      "roll_dice",
+      {
+        title: "Roll Dice",
+        description: "Roll a dice with a specified number of sides.",
+        inputSchema: { sides: z.number().int().min(2) },
+      },
+      async ({ sides }) => {
+        const value = 1 + Math.floor(Math.random() * sides);
+        return {
+          content: [{ type: "text", text: `🎲 You rolled a ${value}!` }],
+        };
+      },
+    );
+  },
+  {},
+  { basePath: "/api", maxDuration: 60, verboseLogs: true },
+);
+
+export { handler as GET, handler as POST };
+```
+
+*Source: [github.com/vercel/mcp-adapter](https://github.com/vercel/mcp-adapter)*
+
+**Manual tool registration only.** Does NOT auto-derive from existing route handlers, server actions, or any other endpoint surface. This is the transport layer Vovk's `deriveTools()` output plugs into (and oRPC users would also wire into).
+
+---
+
+### Blitz.js
+
+**Package**: `@blitzjs/rpc`. Source: [blitzjs.com](https://blitzjs.com).
+
+`@blitzjs/rpc` resolvers are RPC-over-POST through a single `/api/rpc/[[...blitz]]` endpoint. **Not REST.** Build-time fetch rewrite gives type-safe imports on the client. Resolvers callable directly server-side (validation via `resolver.pipe(resolver.zod(Schema), ...)`).
+
+**Verdict: 1.5/4.** Original "zero-API" RPC; structurally anti-REST.
+
+---
+
+### Wasp
+
+**Package**: `wasp` / `wasp-lang`. Source: [wasp.sh](https://wasp.sh).
+
+Operations declared in `main.wasp` DSL produce typed RPC client + local-callable Node functions. For REST, you author a separate `api` declaration with explicit `httpRoute` — parallel surface, not auto-derived from operations.
+
+**Verdict: 2/4.** DSL lock-in is the opposite tradeoff from "just TypeScript."
+
+---
+
+### Next.js raw Route Handlers
+
+App Router file-based REST. Native to Next.js.
+
+```ts filename="app/users/[id]/route.ts"
+export async function GET(
+  request: Request,
+  { params }: { params: Promise<{ id: string }> },
+) {
+  const { id } = await params;
+  return Response.json({ id, name: 'Alice' });
+}
+```
+
+*Source: [nextjs.org/docs/app/api-reference/file-conventions/route](https://nextjs.org/docs/app/api-reference/file-conventions/route)*
+
+No built-in validation, no typed RPC client, no LLM tool derivation, no validated local-call mechanism. Pure REST, nothing else from the SSOT rubric.
+
+**Verdict: 1/4.** Pure REST. Everything else is BYO — and BYO at every cell is what Vovk and oRPC are built to absorb.
+
+---
+
+## Tier C frameworks
+
+REST endpoints work; little else from the SSOT rubric. Listed for completeness; not detailed individually because the verdict is the same: ~1/4, REST works, everything else is BYO or unsupported.
+
+| Framework | One-line summary |
+|---|---|
+| **next-rest-framework** | Adds OpenAPI emission to Next.js Route Handlers. No typed client, no LLM tools. |
+| **next-zod-route, typed-route-handler, next-openapi-route-handler** | Small Zod-validation wrappers around Route Handlers. No client, no AI, no local-call. |
+| **Convex** | BaaS with TypeScript backend functions and its own runtime. Mounts on Next.js via `convex/nextjs` helpers, not as a library. Convex MCP exists but is dev-tooling (queries the data layer), not API-as-tool. ~1/4 on this rubric. |
+| **H3 + Nitro (UnJS)** | H3 is the HTTP toolkit, Nitro is the server engine; both deploy anywhere (Node/Bun/CF/Vercel/Deno/Lambda) but Nitro IS a Next.js alternative server engine. Hono-class on REST; no first-party typed RPC client. |
+| **tsoa** | OpenAPI-from-TypeScript-controllers for Express/Koa/Hapi. No App Router adapter, no MCP, no first-party typed client. ~1.5/4. Active but Express-era stack. |
+| **Express** | Vanilla. No type-flow, no SSOT. Custom-server-only on Next.js. |
+| **Koa** | Same shape as Express. |
+| **routing-controllers** | NestJS-like decorators on Express. OpenAPI roundtrip only. Maintenance-mode. |
+| **LoopBack 4** | Heavy enterprise, OpenAPI-first. Own runtime, not Next.js compatible. |
+| **Moleculer** | Microservices broker; `moleculer-web` exposes REST. Stringly-typed `broker.call()` is the local-call. |
+| **Sails.js / Marble.js / Total.js** | Niche, mostly legacy. |
+| **Zodios** | Contract-first REST + Zod client. **Unmaintained since 2022** — listed only to dismiss. |
+| **SvelteKit / SolidStart / Qwik City / Astro / Remix (React Router 7) / Nuxt / Fresh** | All Next.js alternatives, not libraries. Each has its own server-function story; none mounts on Next.js. |
+| **RedwoodJS** | GraphQL-first. REST via `functions/`; services local-callable but not auto-derived. |
+| **Inngest / Trigger.dev / Vercel Workflows / Temporal / Restate / DBOS** | Durable-execution / background-job platforms — adjacent category, not HTTP backend frameworks. Out of scope for this rubric; mentioned to disambiguate. |
+
+---
+
+## What the comparison reveals
+
+### 1. Only four TypeScript frameworks hit 4/4 SSOT
+
+Vovk.ts, Nestia, oRPC, Igniter.js. Of these, **only Vovk, oRPC, and Igniter.js mount on Next.js App Router**; Nestia is NestJS-only.
+
+### 2. oRPC is the closest existential competitor
+
+Same SSOT thesis, comparable maturity (1.14.x). Concrete differences a buyer can audit:
+
+- **Multi-language client codegen.** Vovk emits Python and Rust clients first-party (🧪 experimental); oRPC is TS-only — non-TS clients require an OpenAPI roundtrip through a third-party generator.
+- **Schema artifacts on disk.** Vovk persists `.vovk-schema/*.json` build artifacts that CI tools and AI agents can consume offline; oRPC types live only in TypeScript inference.
+- **Per-segment serverless function config.** Each Vovk segment compiles to its own Next.js catch-all → its own Vercel function with independent `maxDuration` and `runtime`; oRPC mounts as a single handler regardless of how the router is structured.
+- **First-class MCP formatter in `deriveTools`.** Vovk's `ToModelOutput.MCP` shapes execute-output for MCP transports; oRPC's `@orpc/ai-sdk` produces ai-sdk tool definitions but routes MCP through `@modelcontextprotocol/sdk` directly — *[orpc.dev/docs/integrations/ai-sdk](https://orpc.dev/docs/integrations/ai-sdk)*.
+- **Streaming: parity.** Vovk's JSON Lines and oRPC's [Event Iterator](https://orpc.dev/docs/event-iterator) are roughly equivalent first-class streaming primitives — neither leads here.
+- **Typed errors: oRPC ahead.** oRPC has explicit `.errors()` declarations that flow to the client. Vovk's error story (`HttpException`, client rethrow) is more implicit. This is one of the few axes where oRPC has a clean lead.
+- **Ergonomics: a question of taste.** Decorator/controller (Vovk) vs router-builder (oRPC). Vovk targets Next.js App Router exclusively; oRPC mounts on Next.js, Hono, Fastify, Express, Lambda via separate adapters.
+
+### 3. Igniter.js is the only TS framework packaging its own MCP server transport
+
+`@igniter-js/adapter-mcp-server` builds the actual MCP server end-to-end. Strictly more first-party than Vovk on this single sub-feature. Counterweights: pre-1.0 maturity (0.3.x), thin ecosystem, less battle-tested. *Source: [github.com/felipebarcelospro/igniter-js/tree/main/packages/adapter-mcp-server](https://github.com/felipebarcelospro/igniter-js/tree/main/packages/adapter-mcp-server).*
+
+### 4. tRPC's REST story is structurally weaker than perception suggests
+
+Vanilla tRPC v11 is non-REST-semantic. REST requires per-procedure `.meta({ openapi })` opt-in via `trpc-to-openapi` (community fork) or `@trpc/openapi@11.17-alpha`. tRPC and Blitz remain RPC-first by design — that's a feature, not a bug, but it's not REST. *Sources: [trpc.io/docs/server/adapters/nextjs](https://trpc.io/docs/server/adapters/nextjs), [npmjs.com/package/trpc-to-openapi](https://www.npmjs.com/package/trpc-to-openapi).*
+
+### 5. True validated local-call bypass is genuinely rare
+
+Two in-process patterns both run validation, and the distinction is what the master table's ✅ column captures. (a) *RSC- or service-native* frameworks where the function simply **is** the unit — next-safe-action, zsa, TanStack server functions, Feathers `app.service()`, Encore service-to-service, Effect's runtime, Blitz resolvers, Wasp operations — call the logic directly because there's no separate HTTP route to bypass. (b) A purpose-built **bypass of an HTTP/RPC-routed procedure** — taking a declaration whose primary surface is an endpoint and calling it in-process *with* validation: Vovk `.fn()`, oRPC `.callable()` / `call()` / `createRouterClient`, tRPC `createCaller`, Deepkit `DirectClient` (Nestia only with a caveat — its `TypedRoute` validation is transport-layer, so direct controller calls skip it unless wired manually). Category (b) is the short list that matters for the SSOT thesis. By contrast, the "test without HTTP" helpers most frameworks ship — Hono `app.request`, Fastify `inject`, Elysia `app.handle`, H3 `app.fetch` — are **HTTP simulation**: they construct a `Request` and run the middleware stack, not a validated bypass. *Sources: [vovk.dev/fn](https://vovk.dev/fn), [orpc.dev/docs/client/server-side](https://orpc.dev/docs/client/server-side), [trpc.io/docs/server/server-side-calls](https://trpc.io/docs/server/server-side-calls).*
+
+### 6. MCP-from-routes auto-derivation is one of the two thinnest columns
+
+First-party native: Vovk (`deriveTools`), Nestia (`typia.llm` + `@agentica`), Igniter.js (`adapter-mcp-server`). Via a first-party or community package: oRPC (`@orpc/ai-sdk`), Elysia (`@8monkey/elysia-mcp`), Fastify (`@mcp-it/fastify`). Everywhere else — Hono, NestJS vanilla, AdonisJS, Express — you're hand-writing tools against `@modelcontextprotocol/sdk` or chaining `openapi-mcp-generator`. Together with true validated local-call (finding #5), it's one of the two capabilities the fewest frameworks derive from a single procedure declaration. *Sources: [vovk.dev/tools](https://vovk.dev/tools), [orpc.dev/docs/integrations/ai-sdk](https://orpc.dev/docs/integrations/ai-sdk), [npmjs.com/package/@8monkey/elysia-mcp](https://www.npmjs.com/package/@8monkey/elysia-mcp).*
+
+### 7. "AI-native" branding doesn't always mean "API-as-tool"
+
+Encore's `encore mcp start`, Nuxt's `nuxt-mcp`, and Next.js's devtools MCP are all **dev-tooling MCPs** — they expose framework state to coding agents during development. None converts production endpoints into runtime LLM tools. Read the branding carefully. *Source: [encore.dev/docs/ts/cli/mcp](https://encore.dev/docs/ts/cli/mcp).*
+
+### 8. WebMCP is a parallel client-side dimension
+
+This article's MCP analysis is **server-side**: a procedure becomes a tool an agent calls over HTTP/stdio. [WebMCP](https://webmachinelearning.github.io/webmcp/) — a W3C Draft Community Group Report from the Web Machine Learning Community Group (first published August 2025, updated continuously; not a W3C Standard and not on the Standards Track) — flips that: the **browser** exposes tools via `document.modelContext`, so an agent inherits the user's authenticated session and DOM context rather than calling the backend. It's available behind an experimental flag in Chrome Canary (146+) — *not* on the stable channel — with a formal origin trial expected around Chrome 149. Microsoft co-edits the spec, so Edge is a likely follower, though no ship date is announced.
+
+The spec is still moving fast: `provideContext()` was removed on 2026-03-05, `unregisterTool()` was dropped in favor of `AbortSignal`-driven unregistration in late March 2026, and the entry point itself moved from `navigator.modelContext` to `document.modelContext` on 2026-05-27 (the polyfill keeps the old name as a deprecated alias). Anyone integrating now should expect more churn before the draft stabilizes. *Sources: [the WebMCP spec](https://webmachinelearning.github.io/webmcp/) and its [repo/PRs](https://github.com/webmachinelearning/webmcp); Chrome's [WebMCP docs](https://developer.chrome.com/docs/ai/webmcp).*
+
+The npm ecosystem already includes `@mcp-b/webmcp-polyfill` and `@mcp-b/webmcp-types` (polyfill + TS types for the spec), `@webmcp-auto-ui/core` (polyfill + Streamable HTTP client), `@mcp-b/webmcp-local-relay` (iframe/localhost bridge), and `auto-webmcp` (form-to-tool wrapper). A third-party demo (unpublished, in the `Mark-Life/webMCP-example` repo) introspects oRPC routers and registers procedures as browser tools — a preview of where procedure-as-SSOT frameworks could go.
+
+This doesn't replace server-side MCP — agents still need server tools for anything stateful that lives outside the browser tab — but it changes what "AI-tool derivation from a procedure" *can* mean. None of the four 4/4 SSOT frameworks ships a first-party WebMCP bridge yet; for procedure-as-SSOT frameworks, this is the next plausible derivation target.
+
+### 9. Standard Schema is the emerging consensus
+
+Frameworks that accept any Standard Schema implementation (Vovk, oRPC, tRPC, ts-rest, Hono via validator packages, TanStack Start, next-safe-action) have the lightest validation lock-in. NestJS/Nestia (class-validator/typia), Encore (TS types), Effect (Effect Schema), Fastify (JSON Schema), AdonisJS (VineJS) each pin to one library — sometimes for good reasons (typia's compile-time performance, Effect's runtime integration), but it's a coupling. *Source: [standardschema.dev](https://standardschema.dev).*
+
+---
+
+## Methodology
+
+This comparison is authored by the maintainer of [Vovk.ts](https://vovk.dev). The six-axis rubric was fixed before per-framework analysis began, and every claim about every other framework is sourced inline against that framework's official docs, npm, or package README. If you find a Vovk-vs-competitor claim that doesn't hold against the linked source, the article is wrong — please open an issue.
+
+Column rubric:
+
+- **✅ Native** — feature is built-in to the framework's core
+- **🔌 Plugin** — feature available via first-party or commonly-used add-on package
+- **⚠️** — works with caveats (HTTP simulation, missing validation, split surface)
+- **❌** — not available
+
+---
+
+{/*
+================================================================================
+INTERNAL METADATA — for future expansion of this article
+================================================================================
+
+Snapshot date: 2026-05-11
+Re-verified: 2026-05-25 (current versions in parentheses where they drifted)
+
+Versions verified at snapshot:
+- vovk: 3.2.2
+- '@orpc/server': 1.14.2 (current: 1.14.3, 2026-05-12, patch)
+- '@orpc/client': 1.14.2 (current: 1.14.3)
+- '@orpc/openapi': 1.14.2 (current: 1.14.3)
+- '@orpc/ai-sdk': 1.14.2 (current: 1.14.3)
+- '@trpc/server': 11.17.0
+- 'trpc-to-openapi': 3.2.0 (current: 3.3.0, 2026-05-22, minor; no public release notes)
+- hono: 4.12.18 (current: 4.12.23, patches)
+- '@hono/mcp': 0.2.5 (current: 0.3.0, 2026-05-16 — only relaxes Accept-header validation; no API change)
+- elysia: 1.4.28
+- '@8monkey/elysia-mcp': 0.1.0
+- '@nestia/core': 11.2.0 (current: 11.2.1)
+- '@igniter-js/core': 0.3.40
+- '@igniter-js/adapter-mcp-server': 0.3.7
+- '@nestjs/core': 11.1.19 (current: 11.1.24)
+- '@ts-rest/core': 3.52.1
+- 'encore.dev': 1.57.1 (current: 1.57.5)
+- '@effect/platform': 0.96.1
+- '@effect/ai': 0.35.0
+- '@tanstack/react-start': 1.167.65 (current: 1.168.13)
+- 'next-safe-action': 8.5.2 (current: 8.5.3)
+- 'fastify': 5.8.5
+- 'zsa': 0.6.0
+- 'mcp-handler': 1.1.0
+
+WebMCP / official MCP-team adapters (added 2026-05-25):
+- '@mcp-b/webmcp-polyfill': 2.3.2
+- '@mcp-b/webmcp-types': 2.3.2
+- '@webmcp-auto-ui/core': 2.5.40
+- '@mcp-b/webmcp-local-relay': 2.3.2
+- 'auto-webmcp': 0.3.24
+- '@modelcontextprotocol/sdk': 1.29.0 (latest; NO v2 / pre-release line published)
+- '@modelcontextprotocol/hono': 2.0.0-alpha.2 (adapter pkg, separate from sdk)
+- '@modelcontextprotocol/express': 2.0.0-alpha.2
+- '@modelcontextprotocol/node': 2.0.0-alpha.2
+- '@modelcontextprotocol/fastify': 2.0.0-alpha.2 (dedicated Fastify adapter — exists)
+
+WebMCP spec movement (re-verified 2026-05-29 against W3C spec + repo PRs + developer.chrome.com):
+- WebMCP is W3C Draft Community Group Report (WebML CG), first published Aug 2025, living doc. NOT a Standard.
+- Chrome 146 reached stable 2026-03-10, but WebMCP is Canary-ONLY (behind a flag); NOT on stable. Origin trial expected ~Chrome 149.
+- 2026-03-05: provideContext()/clearContext() removed from spec (PR #132)
+- late March 2026: unregisterTool() dropped for AbortSignal-driven unregistration (PRs #147/#156, ~Mar 26-27) — NOT 2026-04-23
+- 2026-05-27: getter moved Navigator -> Document; now document.modelContext (navigator.* = deprecated alias) (PR #184)
+- orpc-webmcp is an UNPUBLISHED demo (Mark-Life/webMCP-example), NOT an npm package
+- webmcp npm pkgs jumped to 3.0.0 on 2026-05-29 (were 2.3.2 at snapshot)
+
+Columns to add in future revisions:
+- Performance benchmark (req/sec on identical hardware)
+- Cold start latency (edge / serverless)
+- Bundle size on Edge runtime
+- WebSocket / persistent connection support
+- Streaming (SSE / JSON Lines / chunked transfer)
+- File upload handling (multipart, streaming)
+- Auth ergonomics (sessions, JWT, OAuth flows)
+- GraphQL interop
+- Database ergonomics (ORM coupling, transaction handling)
+- Observability hooks (OpenTelemetry, tracing)
+
+Frameworks added in 2026-05-25 revision: Convex (Tier C, BaaS), H3 + Nitro (Tier C, UnJS), tsoa (Tier C, OpenAPI-from-TS-controllers), durable-execution category dismissal (Inngest/Trigger/Vercel Workflows/Temporal/Restate/DBOS).
+
+Dropped from "to revisit" (2026-05-25):
+- defer.run — appears dormant; folded into the durable-execution wave
+- effect-http — officially deprecated 2024-08-30 in favor of @effect/platform HttpApi
+
+Still to revisit:
+- Better Auth interactions per framework
+
+Re-verify after these releases:
+- oRPC 2.x
+- tRPC v12
+- Next.js 17
+- Effect Platform stable HttpApi (out of unstable)
+- @orpc/mcp if it ever ships
+- @trpc/openapi stable (currently alpha)
+
+Open questions / things to double-check before next major revision:
+- Elysia Node.js parity: confirm feature flag coverage on Node vs Bun
+- TanStack Start API Routes vs server functions URL conventions (anything that changes in v2)
+- Whether Hono ever ships first-party MCP route-to-tool derivation
+- Igniter.js post-1.0 ergonomics: does the @Tool surface stay auto-derive?
+- NestJS App Router custom-server pattern viability after Next.js 17
+================================================================================
+*/}
