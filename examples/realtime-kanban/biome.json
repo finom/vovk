@@ -14,7 +14,9 @@
       "!.vovk-schema",
       "!.openapi-cache",
       "!src/components/ui",
-      "!src/components/ai-elements"
+      "!src/components/ai-elements",
+      "!public",
+      "!**/*.svg"
     ]
   },
   "formatter": {

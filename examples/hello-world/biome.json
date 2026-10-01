@@ -12,7 +12,9 @@
       "!build",
       "!**/*.css",
       "!src/client",
-      "!tmp_prebundle"
+      "!tmp_prebundle",
+      "!public",
+      "!**/*.svg"
     ]
   },
   "formatter": {

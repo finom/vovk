@@ -10,7 +10,9 @@
       "!.next",
       "!dist",
       "!build",
-      "!**/*.css"
+      "!**/*.css",
+      "!public",
+      "!**/*.svg"
     ]
   },
   "formatter": {

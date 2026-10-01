@@ -25,7 +25,7 @@
     "serve:unit": "npm --prefix test run generate && npm --prefix test run dev",
     "lint-fix": "biome check --fix",
     "lint": "biome check",
-    "build": "npm run rm-dist --prefix packages/vovk && npm run build --prefix packages/vovk && npm run build --prefix packages/vovk-cli && turbo run build --force --dangerously-disable-package-manager-check --filter='./packages/*'",
+    "build": "npm run rm-dist --prefix packages/vovk && npm run build --prefix packages/vovk && npm run build --prefix packages/vovk-cli && turbo run build --force --dangerously-disable-package-manager-check --filter='./packages/*' && npm run link-cli",
     "vpub-check-vars": "if [ -z \"$VERSION_TYPE\" ] || [ -z \"$PACKAGE\" ] || [ -z \"$NPM_TAG\" ]; then echo 'Error: some vars are not set'; exit 1; fi;",
     "vpub:version": "npm version --prefix ./packages/$PACKAGE $VERSION_TYPE",
     "vpub:build": "npm run build",
@@ -39,7 +39,8 @@
     "BREAKING-beta-minor": "NPM_TAG=beta VERSION_TYPE=\"preminor --preid=beta\" npm run vpub",
     "draft": "NPM_TAG=draft VERSION_TYPE=\"prerelease --preid=draft\" npm run vpub",
     "beta-all": "npm t && for PACKAGE in vovk vovk-cli vovk-ajv vovk-python vovk-rust; do PACKAGE=$PACKAGE NOTEST=IAMSURE npm run beta; done",
-    "draft-all": "for PACKAGE in vovk vovk-cli vovk-ajv vovk-python vovk-rust; do PACKAGE=$PACKAGE NOTEST=IAMSURE npm run draft; done"
+    "draft-all": "for PACKAGE in vovk vovk-cli vovk-ajv vovk-python vovk-rust; do PACKAGE=$PACKAGE NOTEST=IAMSURE npm run draft; done",
+    "link-cli": "npm rebuild vovk-cli --ignore-scripts"
   },
   "engines": {
     "node": ">=23.0.0"

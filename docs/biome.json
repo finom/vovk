@@ -15,7 +15,8 @@
       "!.vovk-schema",
       "!**/*/mdx",
       "!src/components/ui",
-      "!public"
+      "!public",
+      "!**/*.svg"
     ]
   },
   "formatter": {
