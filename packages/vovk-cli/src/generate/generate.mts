@@ -216,9 +216,9 @@ export async function generate({
     ),
   };
 
-  const moduleResolution = await getTsconfig(cwd)?.config?.compilerOptions?.moduleResolution?.toLowerCase();
-
-  const isNodeNextResolution = !moduleResolution || ['node16', 'nodenext'].includes(moduleResolution ?? '');
+  const { module, moduleResolution } = getTsconfig(cwd)?.config?.compilerOptions ?? {};
+  // without moduleResolution TypeScript resolves like Node.js only for a node16+ module; no tsconfig at all is a Next.js default
+  const isNodeNextResolution = /^node(16|18|20|next)$/i.test(moduleResolution ?? module ?? '');
   const isVovkProject = !!srcRoot;
   const isComposedEnabled =
     cliGenerateOptions?.composedOnly ||

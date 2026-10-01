@@ -1,5 +1,6 @@
 import assert from 'node:assert';
 import fs from 'node:fs/promises';
+import os from 'node:os';
 import path from 'node:path';
 import { after, describe, it } from 'node:test';
 import { createProject, runCLI, userSegmentSchema } from '../../lib/minimal-project.mts';
@@ -29,6 +30,41 @@ await describe('vovk generate in a project without Next.js', async () => {
     const index = await read('src/client/index.ts');
     assert.ok(index.includes(`import('./fetcher')`), index);
     assert.ok(index.includes(`from "../app/api/[[...vovk]]/route.ts"`), index);
+  });
+
+  await it('Imports the schema without an extension when the project has no tsconfig.json', async () => {
+    // outside the repo, so no parent tsconfig.json is found either
+    const dir = await fs.mkdtemp(path.join(os.tmpdir(), 'vovk-no-tsconfig-'));
+    try {
+      await createProject(dir, {
+        'package.json': { name: 'app', version: '1.0.0', type: 'module' },
+        'vovk.config.mjs': configFile({ composedClient: { prettifyClient: false } }),
+        'src/app/api/[[...vovk]]/route.ts': '',
+        '.vovk-schema/root.json': userSegmentSchema,
+      });
+
+      await runCLI(['generate'], { cwd: dir });
+
+      const index = await fs.readFile(path.join(dir, 'src/client/index.ts'), 'utf-8');
+      assert.ok(index.includes(`import { schema } from './schema';`), index);
+    } finally {
+      await fs.rm(dir, { recursive: true, force: true });
+    }
+  });
+
+  await it('Imports the schema with an extension when tsconfig.json sets module to nodenext', async () => {
+    await createProject(projectDir, {
+      'package.json': { name: 'app', version: '1.0.0', type: 'module' },
+      'tsconfig.json': { compilerOptions: { module: 'nodenext', allowImportingTsExtensions: true, noEmit: true } },
+      'vovk.config.mjs': configFile({ composedClient: { prettifyClient: false } }),
+      'src/app/api/[[...vovk]]/route.ts': '',
+      '.vovk-schema/root.json': userSegmentSchema,
+    });
+
+    await runCLI(['generate'], { cwd: projectDir });
+
+    const index = await read('src/client/index.ts');
+    assert.ok(index.includes(`import { schema } from './schema.ts';`), index);
   });
 
   await it('Resolves a relative createRPC import from each segmented client folder', async () => {
