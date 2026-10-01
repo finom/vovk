@@ -33,18 +33,24 @@ type DeepPartial<T> = {
 
 type SpecificValue = Buffer | Date | RegExp;
 
+// Buffer is a Node global, a browser or React Native bundle has none
+function isBuffer(val: unknown): val is Buffer {
+  return typeof Buffer !== 'undefined' && val instanceof Buffer;
+}
+
 function isSpecificValue(val: KnownAny): val is SpecificValue {
-  return val instanceof Buffer || val instanceof Date || val instanceof RegExp;
+  return isBuffer(val) || val instanceof Date || val instanceof RegExp;
 }
 
 // class instances like Headers or AbortSignal have no enumerable keys and must not be fake-cloned into {}
+// the prototype is compared by shape, a config loaded in a VM has another realm's Object.prototype
 function isPlainObject(val: object): boolean {
   const proto = Object.getPrototypeOf(val);
-  return proto === Object.prototype || proto === null;
+  return proto === null || Object.getPrototypeOf(proto) === null;
 }
 
 function cloneSpecificValue(val: SpecificValue): SpecificValue {
-  if (val instanceof Buffer) {
+  if (isBuffer(val)) {
     const x = Buffer.alloc ? Buffer.alloc(val.length) : Buffer.from(val);
     val.copy(x);
     return x;
