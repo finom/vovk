@@ -133,6 +133,18 @@ class TestValidation(unittest.TestCase):
             )
         self.assertRegex(str(context2.exception), r"Validation failed\. Invalid params: .*bar.*")
 
+    def test_params_encoding(self) -> None:
+        # a slash, a space or a query character stays inside its path parameter
+        data = WithValidationRPC.handle_params(params={"foo": "a/b", "bar": "c d?"})
+        self.assertEqual(data, {'foo': 'a/b', 'bar': 'c d?'})
+
+        with self.assertRaises(ValueError):
+            WithValidationRPC.handle_params(params={"foo": "..", "bar": "x"})
+
+    def test_query_encoding(self) -> None:
+        data = WithValidationRPC.handle_query(query={"search": "a&b=c"})
+        self.assertEqual(data, {'search': 'a&b=c'})
+
     def test_output(self) -> None:
         data: WithValidationRPC.HandleOutputOutput = WithValidationRPC.handle_output(
             query={"helloOutput": "world"}
