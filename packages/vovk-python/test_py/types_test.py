@@ -1,4 +1,7 @@
+import configparser
 import json
+import os
+import re
 import sys
 import typing
 import unittest
@@ -11,6 +14,8 @@ if sys.version_info >= (3, 11):
     from typing import NotRequired
 else:
     from typing_extensions import NotRequired
+
+PACKAGE_DIR = os.path.join(os.path.dirname(__file__), 'generated_python_client')
 
 
 class TestTypes(unittest.TestCase):
@@ -41,6 +46,22 @@ class TestTypes(unittest.TestCase):
         hints = typing.get_type_hints(ClientSweepRPC.GetEchoQuery, include_extras=True)
         self.assertIs(hints['q'], str)
         self.assertIs(typing.get_origin(hints['page']), NotRequired)
+
+    @unittest.skipIf(sys.version_info < (3, 11), 'tomllib is in Python 3.11 and later')
+    def test_package_metadata(self) -> None:
+        import tomllib
+        with open(os.path.join(PACKAGE_DIR, 'pyproject.toml'), 'rb') as file:
+            pyproject = tomllib.load(file)
+        names = [re.split(r'[^A-Za-z0-9_.-]', dependency)[0] for dependency in pyproject['project']['dependencies']]
+        # requests picks a urllib3 itself, and rfc3987 is GPL-3.0
+        self.assertNotIn('urllib3', names)
+        self.assertNotIn('rfc3987', names)
+        # the client's annotations need Python 3.9
+        self.assertEqual(pyproject['project']['requires-python'], '>=3.9')
+        self.assertEqual(pyproject['tool']['mypy']['python_version'], '3.9')
+        setup = configparser.ConfigParser()
+        setup.read(os.path.join(PACKAGE_DIR, 'setup.cfg'))
+        self.assertEqual(setup['mypy']['python_version'], '3.9')
 
 
 if __name__ == "__main__":
