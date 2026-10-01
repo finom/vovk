@@ -19,7 +19,8 @@
       "!test_data",
       "!test/src/modules/generated",
       "!test/src/app/api/generated",
-      "!test/public"
+      "!test/public",
+      "!**/*.svg"
     ]
   },
   "formatter": {

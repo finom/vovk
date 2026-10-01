@@ -11,7 +11,9 @@
       "!dist",
       "!build",
       "!**/*.css",
-      "!.vovk-schema"
+      "!.vovk-schema",
+      "!public",
+      "!**/*.svg"
     ]
   },
   "formatter": {
