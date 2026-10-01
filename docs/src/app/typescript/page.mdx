@@ -296,7 +296,7 @@ const url = UserRPC.updateUser.getURL({
   query: { notify: 'push' },
   apiRoot: 'https://api.example.com/v1', // optional
 });
-console.log(url); // "https://api.example.com/v1/api/users/69?notify=push"
+console.log(url); // "https://api.example.com/v1/users/69?notify=push"
 ```
 
 It can be used to call `fetch` directly if needed.
@@ -307,7 +307,7 @@ const response = await fetch(
     /* ... */
   }),
   {
-    method: 'POST',
+    method: 'PUT',
     // ... other fetch options
   }
 );
@@ -428,7 +428,3 @@ The TypeScript RPC client is generated from the following templates:
 - [readme](/templates#readme), [packageJson](/templates#packagejson) - `README.md` with RPC documentation and `package.json` suitable for publishing the generated library as an NPM package.
 
 For more information, see the [client templates documentation](/templates).
-
-## Roadmap/bugs
-
-- 🐞 `init.signal` passed to an RPC call is overwritten by an internally created `AbortController`, so `AbortSignal`-based cancellation of regular RPC calls is not supported out of the box. Streaming responses remain cancellable via `stream.abortController.abort()`; for non-streaming calls, a custom [fetcher](/imports#fetcher) can wire a user-provided signal into `prepareRequestInit`.

@@ -112,9 +112,11 @@ export function multitenant(config: Config) {
 
       // Find the appropriate rule based on the path
       for (const rule of overrideRules) {
-        if (pathname === rule.from || pathname.startsWith(`${rule.from}/`)) {
+        // from is a path prefix, so "" matches every path
+        if (rule.from === '' || pathname === rule.from || pathname.startsWith(`${rule.from}/`)) {
           // Replace path with the destination
-          let destination = pathname.replace(rule.from, rule.to);
+          const restPath = pathname.slice(rule.from.length).replace(/^\//, '');
+          let destination = [rule.to, restPath].filter(Boolean).join('/');
 
           // Replace any dynamic parameters in destination
           if (Object.keys(params).length > 0) {

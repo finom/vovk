@@ -72,11 +72,11 @@ export default class MediaController {
 
 ### `@get`, `@post`, `@put`, `@patch`, `@del`, `@head`, `@options`
 
-HTTP method decorators define the HTTP method for a handler. They accept two optional arguments:
+HTTP method decorators define the HTTP method for a handler. A `HEAD` request without its own `@head` route is answered by the `GET` route, with its status and headers and no body. They accept two optional arguments:
 
 - `path? = ''` – the path segment for the route.
 - `opts?: { cors?: boolean, headers?: Record<string, string>, staticParams?: Record<string, string>[] }` – route options:
-  - If `cors` is `true`, CORS headers are added to the response, and the `OPTIONS` method is handled automatically.
+  - If `cors` is `true`, CORS headers are added to the response, and the `OPTIONS` method is handled automatically. The automatic preflight skips the decorator's `before` and the segment's `onBefore` hooks.
   - `headers` is an object with headers that will be added to the response.
   - `staticParams` (`@get` decorator only) is an array of objects with static parameters that can be used in the route path, for example `[{ id: '123' }]`.
 

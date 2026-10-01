@@ -1,11 +1,11 @@
 ---
 name: config
-description: Vovk.ts configuration — vovk.config.{mjs,js,ts,cjs} shape, every config key + default (rootEntry, schemaOutDir, libs, exposeConfigKeys, logLevel, devHttps, moduleTemplates, clientTemplateDefs, composedClient, segmentedClient, outputConfig, bundle, info), tsconfig.json setup (experimentalDecorators), and the decorate() alternative for projects without TS decorators. Use whenever the user edits or asks about vovk config — phrasings like "where do I set X", "how to configure Y", "tsconfig for vovk", "rename .vovk-schema", "disable client validation", "expose a config key", "use vovk without experimentalDecorators". Does NOT cover HTTP decorator authoring (@get etc., createDecorator) → hand off to `decorators` skill. Does NOT cover bundle CLI flow → `bundle` skill. Does NOT cover composed vs segmented client output internals → `rpc` skill.
+description: Vovk.ts configuration — vovk.config.{mjs,cjs,js} shape, every config key + default (rootEntry, schemaOutDir, libs, exposeConfigKeys, logLevel, devHttps, moduleTemplates, clientTemplateDefs, composedClient, segmentedClient, outputConfig, bundle, info), tsconfig.json setup (experimentalDecorators), and the decorate() alternative for projects without TS decorators. Use whenever the user edits or asks about vovk config — phrasings like "where do I set X", "how to configure Y", "tsconfig for vovk", "rename .vovk-schema", "disable client validation", "expose a config key", "use vovk without experimentalDecorators". Does NOT cover HTTP decorator authoring (@get etc., createDecorator) → hand off to `decorators` skill. Does NOT cover bundle CLI flow → `bundle` skill. Does NOT cover composed vs segmented client output internals → `rpc` skill.
 ---
 
 # Vovk.ts configuration
 
-Single config file at project root. Picked up by `vovk-cli` (dev / generate / bundle).
+Single config file at project root or in `.config/`. Picked up by `vovk-cli` (dev / generate / bundle).
 
 ## Source of truth
 
@@ -13,7 +13,7 @@ Don't `WebFetch` vovk.dev mid-task. This skill + sibling vovk:* skills = canonic
 
 ## File
 
-Vovk-cli looks for the first that exists, in order: `vovk.config.mjs` (recommended) → `vovk.config.js` → `vovk.config.ts` → `vovk.config.cjs`.
+Vovk-cli uses the first that exists, in order: `.config/vovk.config.cjs` → `vovk.config.cjs` → `.config/vovk.config.mjs` → `vovk.config.mjs` (recommended, what `vovk init` writes) → `.config/vovk.config.js` → `vovk.config.js`. No TypeScript config: `vovk.config.ts` is never read.
 
 ```ts
 // vovk.config.mjs

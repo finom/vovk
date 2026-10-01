@@ -1,4 +1,15 @@
+import { HttpException } from '../core/http-exception.js';
+import { HttpStatus } from '../types/enums.js';
 import type { KnownAny } from '../types/utils.js';
+
+// form encoding, as URLSearchParams and GET forms send it, where "+" is a space
+function decodeQueryComponent(component: string): string {
+  try {
+    return decodeURIComponent(component.replace(/\+/g, ' '));
+  } catch {
+    throw new HttpException(HttpStatus.BAD_REQUEST, `Malformed query string: ${component}`);
+  }
+}
 
 // segments that would let a query string reach Object.prototype, such pairs are dropped like qs does
 const FORBIDDEN_KEYS = new Set(['__proto__', 'constructor', 'prototype']);
@@ -39,6 +50,14 @@ function isArrayIndex(segment: string): boolean {
 // which container the next segment needs, "" is a push and so wants an array too
 function wantsArray(segment: unknown): boolean {
   return typeof segment === 'string' && (segment === '' || isArrayIndex(segment));
+}
+
+// the existing container under a key, or null; never an inherited member such as valueOf, which every object
+// shares with the whole process, and never a scalar, which cannot take a nested key
+function ownContainer(node: KnownAny, key: string | number): object | null {
+  if (!Object.hasOwn(node, key)) return null;
+  const value = node[key];
+  return value !== null && typeof value === 'object' ? value : null;
 }
 
 // sets a value at a segment path: numeric => array index, "" => array push, else object property
@@ -116,7 +135,7 @@ function setValue(obj: Record<string, unknown>, path: string[], value: unknown):
         if (!Array.isArray(current)) {
           current = [];
         }
-        if (current[idx] === undefined) {
+        if (!ownContainer(current, idx)) {
           // Create placeholder for next segment
           current[idx] = wantsArray(nextSegment) ? [] : {};
         }
@@ -126,7 +145,7 @@ function setValue(obj: Record<string, unknown>, path: string[], value: unknown):
       } else {
         // segment is an object key
         demoteArray();
-        if (current[segment] === undefined) {
+        if (!ownContainer(current, segment)) {
           // Create placeholder
           current[segment] = wantsArray(nextSegment) ? [] : {};
         }
@@ -156,8 +175,8 @@ export function parseQuery(queryString: string): Record<string, unknown> {
     const rawKey = eqIndex === -1 ? pair : pair.slice(0, eqIndex);
     const rawVal = eqIndex === -1 ? '' : pair.slice(eqIndex + 1);
 
-    const decodedKey = decodeURIComponent(rawKey);
-    const decodedVal = decodeURIComponent(rawVal);
+    const decodedKey = decodeQueryComponent(rawKey);
+    const decodedVal = decodeQueryComponent(rawVal);
 
     // Parse bracket notation
     const pathSegments = parseKey(decodedKey);

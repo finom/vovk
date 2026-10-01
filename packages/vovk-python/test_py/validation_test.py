@@ -133,17 +133,31 @@ class TestValidation(unittest.TestCase):
             )
         self.assertRegex(str(context2.exception), r"Validation failed\. Invalid params: .*bar.*")
 
+    def test_params_encoding(self) -> None:
+        # a slash, a space or a query character stays inside its path parameter
+        data = WithValidationRPC.handle_params(params={"foo": "a/b", "bar": "c d?"})
+        self.assertEqual(data, {'foo': 'a/b', 'bar': 'c d?'})
+
+        with self.assertRaises(ValueError):
+            WithValidationRPC.handle_params(params={"foo": "..", "bar": "x"})
+
+    def test_query_encoding(self) -> None:
+        data = WithValidationRPC.handle_query(query={"search": "a&b=c"})
+        self.assertEqual(data, {'search': 'a&b=c'})
+
     def test_output(self) -> None:
         data: WithValidationRPC.HandleOutputOutput = WithValidationRPC.handle_output(
             query={"helloOutput": "world"}
         )
         self.assertEqual(data, {'hello': 'world'})
 
+        # invalid output is the handler's bug: the production server answers 500 and keeps the issues
         with self.assertRaises(HttpException) as context:
             WithValidationRPC.handle_output(
                 query={"helloOutput": "wrong_length"},
             )
-        self.assertRegex(str(context.exception), r"Validation failed\. Invalid output: .*hello.*")
+        self.assertEqual(context.exception.status_code, 500)
+        self.assertEqual(str(context.exception), "Internal server error")
 
     def test_form(self) -> None:
         data: WithValidationRPC.HandleMultipartDataOnlyOutput = WithValidationRPC.handle_multipart_data_only(
@@ -222,7 +236,7 @@ class TestValidation(unittest.TestCase):
             for data in iterator:
                 print(data)
                 pass
-        self.assertRegex(str(context.exception), r"Validation failed\. Invalid iteration #0: .*value.*")
+        self.assertEqual(str(context.exception), "Internal server error")
 
     def test_text_plain(self) -> None:
         data: WithValidationRPC.HandleTextPlainDataOutput = WithValidationRPC.handle_text_plain_data(

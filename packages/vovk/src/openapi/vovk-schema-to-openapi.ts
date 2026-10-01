@@ -12,53 +12,81 @@ import type {
 import type { VovkSchema } from '../types/core.js';
 import { type HttpMethod, HttpStatus } from '../types/enums.js';
 import type { VovkJSONSchemaBase } from '../types/json-schema.js';
+import { camelCase } from '../utils/camel-case.js';
+import {
+  encodeJSONPointerToken,
+  isLocalJSONSchemaRef,
+  mapJSONSchemaRefs,
+  parseDefinitionRef,
+} from '../utils/map-json-schema-refs.js';
+import { upperFirst } from '../utils/upper-first.js';
 
+// Zod names the schemas it extracts for recursion `__schema0`, `__schema1`, ... in every slot
+const isNumberedDefinitionName = (name: string) => /^__schema\d+$/.test(name);
+
+/**
+ * Moves a slot's `$defs` (or `definitions`) to `components` and returns the slot with its refs rewritten to them.
+ * A numbered definition, or one whose name another slot took for a different schema, gets the slot's name in front;
+ * a slot that refers to its own root is added to the components as well.
+ */
 function extractComponents(
-  schema: VovkJSONSchemaBase | undefined
-): [VovkJSONSchemaBase | undefined, { [key: string]: VovkJSONSchemaBase }] {
-  if (!schema) return [undefined, {}];
+  schema: VovkJSONSchemaBase | undefined,
+  slotName: string,
+  components: Record<string, VovkJSONSchemaBase>
+): VovkJSONSchemaBase | undefined {
+  if (!schema) return undefined;
 
-  const components: { [key: string]: VovkJSONSchemaBase } = {};
+  const { $defs, definitions, ...root } = schema;
+  const defs: Record<string, VovkJSONSchemaBase> = { ...definitions, ...$defs };
+  // a definition that keeps its name takes it, a renamed one finds its name taken already
+  const taken = new Set([...Object.keys(components), ...Object.keys(defs)]);
+  const reserve = (name: string) => {
+    let unique = name;
+    for (let i = 2; taken.has(unique); i++) unique = `${name}_${i}`;
+    taken.add(unique);
+    return unique;
+  };
+  const newNames = new Map<string, string>();
+  for (const name of Object.keys(defs)) {
+    if (isNumberedDefinitionName(name)) newNames.set(name, reserve(`${slotName}${upperFirst(camelCase(name))}`));
+  }
 
-  // Function to collect components and replace $refs recursively
-  const process = (obj: VovkJSONSchemaBase, path: string[] = []): VovkJSONSchemaBase | VovkJSONSchemaBase[] => {
-    if (!obj || typeof obj !== 'object') return obj;
-
-    // Handle arrays
-    if (Array.isArray(obj)) {
-      return (obj as VovkJSONSchemaBase[]).map((item) => process(item, path) as VovkJSONSchemaBase);
+  let refersToRoot = false;
+  let rootName = slotName;
+  const rewrite = (ref: string): string => {
+    // outside the document: the component named after the last segment
+    if (!ref.startsWith('#')) return `#/components/schemas/${ref.split('/').pop()}`;
+    if (!isLocalJSONSchemaRef(ref) || ref.startsWith('#/components/')) return ref;
+    const def = parseDefinitionRef(ref);
+    if (def) {
+      const newName = newNames.get(def.name);
+      return `#/components/schemas/${newName ? encodeJSONPointerToken(newName) : def.token}${def.rest}`;
     }
-
-    // Create a copy to modify
-    const result: Record<string, unknown> = {};
-
-    Object.entries({ ...obj.definitions, ...obj.$defs }).forEach(([key, value]) => {
-      components[key] = process(value, [...path, key]) as VovkJSONSchemaBase;
-    });
-
-    // Process all properties
-    for (const [key, value] of Object.entries(obj ?? {})) {
-      // Skip already processed special properties
-      if (key === '$defs' || key === 'definitions') continue;
-
-      if (key === '$ref' && typeof value === 'string') {
-        // Extract the component name from the reference
-        const refParts = value.split('/');
-        const refName = refParts[refParts.length - 1];
-        // Replace with component reference
-        result[key] = `#/components/schemas/${refName}`;
-      } else {
-        // Recursively process other properties
-        result[key] = process(value as VovkJSONSchemaBase, [...path, key]);
-      }
-    }
-
-    return result as VovkJSONSchemaBase;
+    refersToRoot = true;
+    return `#/components/schemas/${encodeJSONPointerToken(rootName)}${ref.slice(1)}`;
   };
 
-  const processedSchema = process(schema) as VovkJSONSchemaBase;
+  mapJSONSchemaRefs(schema, rewrite);
+  if (refersToRoot) rootName = reserve(slotName);
 
-  return [processedSchema, components];
+  // renaming a definition changes the ones that refer to it, so compare again until no name changes
+  for (let renamed = true; renamed; ) {
+    renamed = false;
+    for (const [name, def] of Object.entries(defs)) {
+      if (newNames.has(name) || !Object.hasOwn(components, name)) continue;
+      if (JSON.stringify(components[name]) !== JSON.stringify(mapJSONSchemaRefs(def, rewrite))) {
+        newNames.set(name, reserve(`${slotName}${upperFirst(camelCase(name))}`));
+        renamed = true;
+      }
+    }
+  }
+
+  for (const [name, def] of Object.entries(defs)) {
+    components[newNames.get(name) ?? name] = mapJSONSchemaRefs(def, rewrite);
+  }
+  const result = mapJSONSchemaRefs(root as VovkJSONSchemaBase, rewrite);
+  if (refersToRoot) components[rootName] = result;
+  return result;
 }
 
 // returns OpenAPIObject along with resolved configs
@@ -111,24 +139,20 @@ export function vovkSchemaToOpenAPI({
   for (const [segmentName, segmentSchema] of givenSegmentName
     ? ([[givenSegmentName, fullSchema.segments[givenSegmentName]]] as const)
     : Object.entries(fullSchema.segments ?? {})) {
+    // the generated client calls a segment under these names, see the multitenancy docs
+    const segmentConfig = config?.outputConfig?.segments?.[segmentName];
+    const segmentRootEntry = segmentConfig?.rootEntry ?? rootEntry;
+    const segmentPathName = segmentConfig?.segmentNameOverride ?? segmentName;
     for (const c of Object.values(segmentSchema.controllers)) {
       for (const [handlerName, h] of Object.entries(c.handlers ?? {})) {
         if (h.operationObject && !h.misc?.isOpenAPIMixin) {
-          const [queryValidation, queryComponents] = extractComponents(h?.validation?.query);
-          const [bodyValidation, bodyComponents] = extractComponents(h?.validation?.body);
-          const [paramsValidation, paramsComponents] = extractComponents(h?.validation?.params);
-          const [outputValidation, outputComponents] = extractComponents(h?.validation?.output);
-          const [iterationValidation, iterationComponents] = extractComponents(h?.validation?.iteration);
-
-          // TODO: Handle name conflicts?
-          Object.assign(
-            components,
-            queryComponents,
-            bodyComponents,
-            paramsComponents,
-            outputComponents,
-            iterationComponents
-          );
+          const slotName = (slot: string) =>
+            `${c.rpcModuleName}${upperFirst(handlerName)}${upperFirst(slot)}`.replace(/[^A-Za-z0-9._-]/g, '_');
+          const queryValidation = extractComponents(h.validation?.query, slotName('query'), components);
+          const bodyValidation = extractComponents(h.validation?.body, slotName('body'), components);
+          const paramsValidation = extractComponents(h.validation?.params, slotName('params'), components);
+          const outputValidation = extractComponents(h.validation?.output, slotName('output'), components);
+          const iterationValidation = extractComponents(h.validation?.iteration, slotName('iteration'), components);
 
           const { ts, rs, py } = createCodeSamples({
             package: packageJson,
@@ -159,7 +183,7 @@ export function vovkSchemaToOpenAPI({
 
           const path =
             (h.misc?.originalPath as string) ??
-            `/${[rootEntry.replace(/^\/+|\/+$/g, ''), segmentName, c.prefix, h.path].filter(Boolean).join('/')}`;
+            `/${[segmentRootEntry.replace(/^\/+|\/+$/g, ''), segmentPathName, c.prefix, h.path].filter(Boolean).join('/')}`;
           paths[path] = paths[path] ?? {};
           const httpMethod = h.httpMethod.toLowerCase() as Lowercase<HttpMethod>;
           paths[path][httpMethod] ??= {};
@@ -204,7 +228,7 @@ export function vovkSchemaToOpenAPI({
                   parameters: paths[path][httpMethod].parameters,
                 }
               : {}),
-            ...(outputValidation && 'type' in outputValidation
+            ...(outputValidation
               ? {
                   responses: {
                     200: {
@@ -219,7 +243,7 @@ export function vovkSchemaToOpenAPI({
                   },
                 }
               : {}),
-            ...(iterationValidation && 'type' in iterationValidation
+            ...(iterationValidation
               ? {
                   responses: {
                     200: {
@@ -249,7 +273,7 @@ export function vovkSchemaToOpenAPI({
                   responses: paths[path][httpMethod].responses,
                 }
               : {}),
-            ...(bodyValidation && 'type' in bodyValidation
+            ...(bodyValidation
               ? {
                   requestBody: h.operationObject?.requestBody ?? {
                     description: 'description' in bodyValidation ? bodyValidation.description : 'Request body',

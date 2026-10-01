@@ -30,6 +30,14 @@ export function getPackageManager(
   return packageManager as PackageManager;
 }
 
+// npm, yarn and pnpm are .cmd shims on Windows, and spawn runs those only through a shell.
+// the shell gets one command string: the package manager comes from a fixed list, so there is nothing to escape
+export function getInstallCommand(packageManager: PackageManager, platform: NodeJS.Platform = process.platform) {
+  return platform === 'win32'
+    ? { command: `${packageManager} install`, args: [], shell: true }
+    : { command: packageManager, args: ['install'], shell: false };
+}
+
 export async function installDependencies({
   log,
   cwd,
@@ -42,8 +50,8 @@ export async function installDependencies({
   log.info(`Installing dependencies at ${chalkHighlightThing(cwd)} using ${chalkHighlightThing(packageManager)}...`);
 
   await new Promise<void>((resolve, reject) => {
-    const args = ['install'];
-    const child = spawn(packageManager, args, { cwd, stdio: 'inherit' });
+    const { command, args, shell } = getInstallCommand(packageManager);
+    const child = spawn(command, args, { cwd, stdio: 'inherit', shell });
 
     child.on('close', (code) => {
       if (code === 0) {

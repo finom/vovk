@@ -56,14 +56,16 @@ export async function getClientTemplateFiles({
   }
 
   const templateFiles: ClientTemplateFile[] = [];
+  // the last item lists the templates whose "requires" led here
   const entries = Object.entries(usedTemplateDefs) as [] as [
     string,
     VovkStrictConfig['clientTemplateDefs'][string],
     string | undefined,
+    string[] | undefined,
   ][];
 
   for (let i = 0; i < entries.length; i++) {
-    const [templateName, templateDef, forceOutCwdRelativeDir] = entries[i];
+    const [templateName, templateDef, forceOutCwdRelativeDir, requiredBy = []] = entries[i];
     const templateAbsolutePath = templateDef.templatePath
       ? resolveAbsoluteModulePath(templateDef.templatePath, cwd)
       : null;
@@ -90,8 +92,8 @@ export async function getClientTemplateFiles({
       if (entryType === FileSystemEntryType.FILE) {
         files = [{ filePath: templateAbsolutePath, isSingleFileTemplate: true }];
       } else {
-        const globPath = path.join(templateAbsolutePath, '**/*.*');
-        files = (await glob(globPath)).map((filePath) => ({
+        // the pattern stays relative: glob reads "\" and brackets in a path as pattern syntax
+        files = (await glob('**/*.*', { cwd: templateAbsolutePath, absolute: true, nodir: true })).map((filePath) => ({
           filePath,
           isSingleFileTemplate: false,
         }));
@@ -117,7 +119,14 @@ export async function getClientTemplateFiles({
     }
 
     if (templateDef.requires) {
+      const chain = [...requiredBy, templateName];
       for (const [tName, reqRelativeDir] of Object.entries(templateDef.requires)) {
+        if (chain.includes(tName)) {
+          throw new Error(
+            `Client templates require each other in a loop: ${[...chain, tName].map((name) => `"${name}"`).join(' → ')}`
+          );
+        }
+
         let def = config.clientTemplateDefs[tName];
         if (!def) {
           throw new Error(`Template "${tName}" required by "${templateName}" not found`);
@@ -130,7 +139,7 @@ export async function getClientTemplateFiles({
           segmentedClient: merge(omit(templateDef?.segmentedClient ?? {}, ['outDir']), def.segmentedClient),
         };
 
-        entries.push([tName, def, path.join(outCwdRelativeDir, reqRelativeDir)]);
+        entries.push([tName, def, path.join(outCwdRelativeDir, reqRelativeDir), chain]);
       }
     }
   }

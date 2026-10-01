@@ -196,7 +196,8 @@ The responder instance provides the following members:
 
 - `send(item: T): Promise<void>` – Sends a JSON line to the client. The item is validated (if `iteration` is present; by default only the first item is validated unless `validateEachIteration: true` is set), serialized to JSON and followed by a newline character.
 - `close(): void` – Closes the response stream, indicating that no more data will be sent.
-- `throw(err: Error): void` – Sends an error message to the client and closes the stream.
+- `throw(err: Error): void` – Sends an error message to the client and closes the stream. The error line is `{"isError":true,"reason":"…"}`, plus the `statusCode` of an `HttpException{:ts}`; the client rethrows it as an `HttpException{:ts}` with that status. In production, an error that is not an `HttpException{:ts}` reads "Internal server error".
+- `isClosed: boolean` – Whether the stream is closed: by `close()`, `throw()`, or the client going away. `send()` waits while the client reads slower than the handler writes, and a generator handler is stopped, with its `finally` run, when the client disconnects.
 - `response: Response` – The underlying `Response` object that will be returned from the Next.js route handler.
 - `headers: Record<string, string>` – The `content-type` for the response.
 - `readableStream: ReadableStream<Uint8Array>` – The readable stream used as the response body.

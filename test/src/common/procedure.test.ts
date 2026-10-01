@@ -150,6 +150,20 @@ describe('procedure features', async () => {
     assert.deepEqual(await handler.fn({ body: formData }), { foo: 'bar' });
   });
 
+  it('Should keep FormData keys as own values', async () => {
+    const formData = new FormData();
+    formData.append('__proto__', 'x');
+    formData.append('toString', 't');
+    formData.append('tags', '');
+    formData.append('tags', 'b');
+
+    const handler = procedure({ contentType: ['multipart/form-data'] }).handle(({ vovk }) => vovk.body());
+    const body = (await handler.fn({ body: formData })) as Record<string, unknown>;
+
+    assert.equal(Object.getPrototypeOf(body), Object.prototype);
+    assert.deepEqual({ ...body }, { toString: 't', tags: ['', 'b'] });
+  });
+
   it('Should assign schema', async () => {
     assert.equal(handler.schema.validation?.body?.$schema, 'https://json-schema.org/draft/2020-12/schema');
     assert.equal(handler.schema.validation?.query?.$schema, 'https://json-schema.org/draft/2020-12/schema');

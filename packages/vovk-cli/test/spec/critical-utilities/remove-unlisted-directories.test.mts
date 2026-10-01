@@ -100,4 +100,71 @@ await describe('removeUnlistedDirectories', async () => {
     assert.deepStrictEqual(await list(), []);
     assert.deepStrictEqual(skipped, []);
   });
+
+  // what generate passes for segmented fromTemplates ['ts', 'packageJson']
+  const tsGeneratedRelPaths = [
+    'index.ts',
+    'schema.ts',
+    'mixins.d.ts',
+    'mixins.json',
+    'openapi.ts',
+    'openapi.json',
+    'package.json',
+  ];
+
+  await it('Keeps user json files named like generated ones', async () => {
+    await writeFiles(['root/index.ts']);
+    await write(['specs/openapi.json', 'pkg/package.json'], '{}');
+
+    const skipped = await removeUnlistedDirectories(tmpDir, ['root'], tsGeneratedRelPaths);
+
+    assert.deepStrictEqual(await list(), ['pkg', 'root', 'specs']);
+    assert.deepStrictEqual(skipped.map((dir) => path.relative(tmpDir, dir)).sort(), ['pkg', 'specs']);
+  });
+
+  await it('Keeps json that sits apart from the bannered files of its segment directory', async () => {
+    await writeFiles(['mixed/a/index.ts']);
+    await write(['mixed/b/openapi.json'], '{}');
+
+    const skipped = await removeUnlistedDirectories(tmpDir, [], tsGeneratedRelPaths);
+
+    assert.deepStrictEqual(await list(), ['mixed']);
+    assert.deepStrictEqual(
+      skipped.map((dir) => path.relative(tmpDir, dir)),
+      ['mixed']
+    );
+  });
+
+  await it('Removes a stale segment directory with every generated file, json included', async () => {
+    await writeFiles(['stale/index.ts', 'stale/schema.ts', 'stale/openapi.ts', 'bar/baz/index.ts']);
+    await write(['stale/openapi.json', 'stale/package.json', 'bar/baz/openapi.json'], '{}');
+
+    const skipped = await removeUnlistedDirectories(tmpDir, [], tsGeneratedRelPaths);
+
+    assert.deepStrictEqual(await list(), []);
+    assert.deepStrictEqual(skipped, []);
+  });
+
+  await it('Leaves empty directories alone', async () => {
+    await writeFiles(['root/index.ts']);
+    await fs.mkdir(path.join(tmpDir, 'emptydir', 'sub'), { recursive: true });
+
+    const skipped = await removeUnlistedDirectories(tmpDir, ['root'], tsGeneratedRelPaths);
+
+    assert.deepStrictEqual(await list(), ['emptydir', 'root']);
+    assert.deepStrictEqual(skipped, []);
+  });
+
+  await it('Keeps a stale segment directory that also holds an empty directory', async () => {
+    await writeFiles(['stale/index.ts']);
+    await fs.mkdir(path.join(tmpDir, 'stale', 'notes'), { recursive: true });
+
+    const skipped = await removeUnlistedDirectories(tmpDir, [], tsGeneratedRelPaths);
+
+    assert.deepStrictEqual(await list(), ['stale']);
+    assert.deepStrictEqual(
+      skipped.map((dir) => path.relative(tmpDir, dir)),
+      ['stale']
+    );
+  });
 });

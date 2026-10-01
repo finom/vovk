@@ -18,6 +18,13 @@ type VovkRequestAny = VovkRequest<KnownAny, KnownAny, KnownAny>;
 
 type Meta = { __disableClientValidation?: boolean; [key: string]: KnownAny };
 
+// fetch() without a body sends no Content-Type, and no length or a length of 0
+const hasBody = (req: VovkRequestAny) => {
+  if (req.body === null) return false;
+  const contentLength = req.headers?.get('content-length');
+  return !!req.headers?.get('content-type') || (!!contentLength && contentLength !== '0');
+};
+
 export function withValidationLibrary<
   THandle extends VovkTypedProcedure<
     (req: KnownAny, params: KnownAny) => KnownAny,
@@ -158,16 +165,19 @@ export function withValidationLibrary<
 
   const resultHandler = (async (req: VovkRequestAny, handlerParams: Parameters<THandle>[1]) => {
     const { __disableClientValidation } = req.vovk.meta<Meta>();
+    // the handler gets the validated params as its second argument, the same value req.vovk.params() returns
+    let validatedParams = handlerParams;
     if (!__disableClientValidation) {
-      // a declared contentType is enforced even with no body schema to validate against,
+      // a declared contentType is enforced even with no body schema to validate against, unless there is no body;
       // disabling body validation still opts out of it, same as in the body branch below
-      if (contentType && !body && !disableServerSideValidationKeys.includes('body')) {
+      if (contentType && !body && !disableServerSideValidationKeys.includes('body') && hasBody(req)) {
         validateContentType(req, contentType);
       }
 
       if (body && !disableServerSideValidationKeys.includes('body')) {
-        if (typeof req.url === 'string') await bufferBody(req); // buffer the body to make it replayable for validation and actual parsing
+        // a wrong content type gets its 415 before the body is read
         validateContentType(req, contentType ?? ['application/json']);
+        if (typeof req.url === 'string') await bufferBody(req); // buffer the body to make it replayable for validation and actual parsing
         const data = await req.vovk.body();
         const parsed = (await validate(data, body, { validationType: 'body', req })) ?? data;
         const instance = preferTransformed ? parsed : data;
@@ -186,10 +196,11 @@ export function withValidationLibrary<
         const parsed = (await validate(data, params, { validationType: 'params', req })) ?? data;
         const instance = preferTransformed ? parsed : data;
         req.vovk.params = () => instance;
+        validatedParams = instance as Parameters<THandle>[1];
       }
     }
 
-    return outputHandler(req, handlerParams);
+    return outputHandler(req, validatedParams);
   }) as THandle & {
     schema: Omit<VovkHandlerSchema, 'httpMethod' | 'path'> & Partial<VovkHandlerSchema>;
     wrapper?: (req: VovkRequestAny, params: Parameters<THandle>[1]) => ReturnType<THandle>;

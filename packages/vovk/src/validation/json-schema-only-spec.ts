@@ -1,6 +1,7 @@
 import type { VovkJSONSchemaBase } from '../types/json-schema.js';
 import type { StandardSchemaV1 } from '../types/standard-schema.js';
 import type { CombinedProps, CombinedSpec } from '../types/validation.js';
+import { toEnvelopeJSONSchema } from './envelope-json-schema.js';
 
 const SLOT_KEYS = ['body', 'query', 'params'] as const;
 type SlotKey = (typeof SLOT_KEYS)[number];
@@ -74,13 +75,5 @@ export function jsonSchemasObjectToSingleJSONSchemaOnlySpec({
     return issues.length > 0 ? { issues } : { value: input };
   };
 
-  return makeSpec(
-    {
-      type: 'object',
-      properties: Object.fromEntries(definedEntries),
-      required: definedSlots,
-      additionalProperties: false,
-    },
-    validate
-  );
+  return makeSpec(toEnvelopeJSONSchema(definedEntries) as VovkJSONSchemaBase, validate);
 }

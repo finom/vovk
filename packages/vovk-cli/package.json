@@ -28,7 +28,8 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/finom/vovk.git"
+    "url": "git+https://github.com/finom/vovk.git",
+    "directory": "packages/vovk-cli"
   },
   "keywords": [
     "nextjs",

@@ -5,6 +5,10 @@ imports: ['vovk-rust']
 <% const vars = {
     convertJSONSchemasToRustTypes: t.imports['vovk-rust'].convertJSONSchemasToRustTypes,
     getBodyKind: t.imports['vovk-rust'].getBodyKind,
+    toRustIdent: t.imports['vovk-rust'].toRustIdent,
+    toRustDocLines: t.imports['vovk-rust'].toRustDocLines,
+    toRustCommentText: t.imports['vovk-rust'].toRustCommentText,
+    toRustString: t.imports['vovk-rust'].toRustString,
 }; %>
 mod http_request;
 mod read_full_schema;
@@ -12,7 +16,7 @@ mod read_full_schema;
 pub use crate::http_request::HttpException;
 <% Object.entries(t.schema.segments).forEach(([segmentName, segment]) => {
     Object.values(segment.controllers).forEach((controllerSchema) => { %>
-pub mod <%= t._.snakeCase(controllerSchema.rpcModuleName) %> {
+pub mod <%= vars.toRustIdent(t._.snakeCase(controllerSchema.rpcModuleName)) %> {
     #[allow(unused_imports)]
     use crate::http_request::{HttpException, http_request, http_request_stream};
     #[allow(unused_imports)]
@@ -21,10 +25,10 @@ pub mod <%= t._.snakeCase(controllerSchema.rpcModuleName) %> {
     #[allow(unused_imports)]
     use std::pin::Pin;
 <% Object.entries(controllerSchema.handlers).forEach(([handlerNameOriginal, handlerSchema]) => { 
-    const { validation, openapi, path, httpMethod } = handlerSchema;
-    const handlerName = t._.snakeCase(handlerNameOriginal);
+    const { validation, operationObject, httpMethod } = handlerSchema;
+    const handlerName = vars.toRustIdent(t._.snakeCase(handlerNameOriginal));
     %>
-    // <%= controllerSchema.rpcModuleName %>.<%= handlerName %> <%= httpMethod %> `<%= [t.apiRoot, segmentName, controllerSchema.prefix, handlerSchema.path].filter(Boolean).join('/') %>`
+    // <%- vars.toRustCommentText(`${controllerSchema.rpcModuleName}.${handlerName} ${httpMethod} \`${[t.apiRoot, segmentName, controllerSchema.prefix, handlerSchema.path].filter(Boolean).join('/')}\``) %>
 <%- 
 vars.convertJSONSchemasToRustTypes({ 
     schemas: {
@@ -39,14 +43,14 @@ vars.convertJSONSchemasToRustTypes({
     pad: 4 
 })
 %>
-<%= ([
-    openapi?.summary ? `Summary: ${openapi.summary}` : '',
-    openapi?.description ? `Description: ${openapi.description}` : '',
+<%- ([
+    operationObject?.summary ? `Summary: ${operationObject.summary}` : '',
+    operationObject?.description ? `Description: ${operationObject.description}` : '',
     validation?.params?.description ? `Params: ${validation?.params?.description}` : '',
     validation?.body?.description ? `Body: ${validation?.body?.description}`: '',
     validation?.query?.description ? `Query: ${validation?.query?.description}`: '',
     validation?.output?.description ? `Returns: ${validation?.output?.description}`: ''
-]).filter(Boolean).map((s) => s.split('\n')).flat().map((s) => ' '.repeat(4) + '/// ' + s).join('\n') %>
+]).filter(Boolean).flatMap((s) => vars.toRustDocLines(s)).map((s) => ' '.repeat(4) + '///' + (s ? ' ' + s : '')).join('\n') %>
 <%
     // Determine body kind: 'none', 'form', 'binary', 'text', or 'json'
     const bodyKind = vars.getBodyKind(validation?.body);
@@ -68,14 +72,14 @@ vars.convertJSONSchemasToRustTypes({
                 validation?.params ? `${handlerName}_::params` : '()'
             ].filter(Boolean).map((s) => ' '.repeat(12) + s).join(',\n') %>
         >(
-            "<%= t.apiRoot %>",
-            "<%= segmentName %>",
-            "<%= controllerSchema.rpcModuleName %>",
-            "<%= handlerNameOriginal %>",
+            <%- vars.toRustString(t.apiRoot ?? '') %>,
+            <%- vars.toRustString(segmentName) %>,
+            <%- vars.toRustString(controllerSchema.rpcModuleName) %>,
+            <%- vars.toRustString(handlerNameOriginal) %>,
             <%- bodyKind === 'json' ? 'Some(&body)' : 'None' %>,
             <%- bodyKind === 'form' ? 'Some(body)' : 'None' %>,
             <%- bodyKind === 'text' ? 'Some(body)' : 'None' %>,
-            <%- bodyKind === 'binary' ? `Some((body, "${firstContentType}".to_string()))` : 'None' %>,
+            <%- bodyKind === 'binary' ? `Some((body, ${vars.toRustString(firstContentType)}.to_string()))` : 'None' %>,
             Some(&query),
             Some(&params),
             headers,

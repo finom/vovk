@@ -12,6 +12,7 @@ import type { VovkSchema } from 'vovk';
 import { VovkSchemaIdEnum, type VovkSegmentSchema } from 'vovk/internal';
 import { ensureClient } from '../generate/ensure-client.mjs';
 import { generate } from '../generate/generate.mjs';
+import { CONFIG_FILE_PATHS } from '../get-project-info/get-config/get-config-absolute-paths.mjs';
 import { getMetaSchema } from '../get-project-info/get-meta-schema.mjs';
 import { getProjectInfo, type ProjectInfo } from '../get-project-info/index.mjs';
 import type { DevOptions, VovkEnv } from '../types.mjs';
@@ -19,10 +20,33 @@ import { chalkHighlightThing } from '../utils/chalk-highlight-thing.mjs';
 import { debounceWithArgs } from '../utils/debounce-with-args.mjs';
 import { formatLoggedSegmentName } from '../utils/format-logged-segment-name.mjs';
 import { locateSegments, type Segment } from '../utils/locate-segments.mjs';
+import { toPosixPath } from '../utils/to-import-path.mjs';
 import { debouncedEnsureSchemaFiles, ensureSchemaFiles } from './ensure-schema-files.mjs';
 import { logDiffResult } from './log-diff-result.mjs';
 import { writeMetaJson } from './write-meta-json.mjs';
 import { writeOneSegmentSchemaFile } from './write-one-segment-schema-file.mjs';
+
+// chokidar reports native paths, so both separators are accepted
+export const SEGMENT_ROUTE_FILE_REGEX = /[\\/]?\[\[\.\.\.[a-zA-Z-_]+\]\][\\/]route\.ts$/;
+
+export function getSegmentNameFromRouteFile(relativeRouteFilePath: string) {
+  return toPosixPath(relativeRouteFilePath).replace(SEGMENT_ROUTE_FILE_REGEX, '');
+}
+
+// the schema always comes from the local dev server, outputConfig.origin only applies to the generated client
+export function getSchemaEndpoint({
+  port,
+  rootEntry,
+  devHttps,
+  segmentName,
+}: {
+  port: string;
+  rootEntry: string;
+  devHttps: boolean;
+  segmentName: string;
+}) {
+  return `http${devHttps ? 's' : ''}://localhost:${port}/${rootEntry}/${segmentName ? `${segmentName}/` : ''}_schema_`;
+}
 
 export class VovkDev {
   #projectInfo!: ProjectInfo;
@@ -53,13 +77,13 @@ export class VovkDev {
   }
 
   #watchSegments = (callback: () => void) => {
-    const segmentReg = /\/?\[\[\.\.\.[a-zA-Z-_]+\]\]\/route.ts$/;
     const { cwd, log, config, apiDirAbsolutePath } = this.#projectInfo;
     if (!apiDirAbsolutePath) {
       throw new Error('Unable to watch segments. It looks like CWD is not a Next.js app.');
     }
     const schemaOutAbsolutePath = path.resolve(cwd, this.#schemaOut ?? config.schemaOutDir);
-    const getSegmentName = (filePath: string) => path.relative(apiDirAbsolutePath, filePath).replace(segmentReg, '');
+    const getSegmentName = (filePath: string) =>
+      getSegmentNameFromRouteFile(path.relative(apiDirAbsolutePath, filePath));
     log.debug(`Watching segments at ${apiDirAbsolutePath}`);
     this.#segmentWatcher = chokidar
       .watch(apiDirAbsolutePath, {
@@ -68,7 +92,7 @@ export class VovkDev {
       })
       .on('add', (filePath: string) => {
         log.debug(`File ${filePath} has been added to segments folder`);
-        if (segmentReg.test(filePath)) {
+        if (SEGMENT_ROUTE_FILE_REGEX.test(filePath)) {
           const segmentName = getSegmentName(filePath);
 
           this.#segments = this.#segments.find((s) => s.segmentName === segmentName)
@@ -92,7 +116,7 @@ export class VovkDev {
       })
       .on('change', (filePath: string) => {
         log.debug(`File ${filePath} has been changed at segments folder`);
-        if (segmentReg.test(filePath)) {
+        if (SEGMENT_ROUTE_FILE_REGEX.test(filePath)) {
           void this.#requestSchema(getSegmentName(filePath));
         }
       })
@@ -122,7 +146,7 @@ export class VovkDev {
       })
       .on('unlink', (filePath: string) => {
         log.debug(`File ${filePath} has been removed from segments folder`);
-        if (segmentReg.test(filePath)) {
+        if (SEGMENT_ROUTE_FILE_REGEX.test(filePath)) {
           const segmentName = getSegmentName(filePath);
           this.#segments = this.#segments.filter((s) => s.segmentName !== segmentName);
           log.info(`${formatLoggedSegmentName(segmentName, { upperFirst: true })} has been removed`);
@@ -146,7 +170,7 @@ export class VovkDev {
 
   #watchModules = (callback: () => void) => {
     const { config, cwd, log } = this.#projectInfo;
-    const modulesDirAbsolutePath = path.join(cwd, config.modulesDir);
+    const modulesDirAbsolutePath = path.resolve(cwd, config.modulesDir);
     log.debug(`Watching modules at ${modulesDirAbsolutePath}`);
     const processControllerChange = debounceWithArgs(this.#processControllerChange, 500);
     this.#modulesWatcher = chokidar
@@ -202,7 +226,7 @@ export class VovkDev {
         new Promise((resolve) => this.#watchSegments(() => resolve(0))),
       ]);
 
-      const schemaOutAbsolutePath = path.join(cwd, this.#schemaOut ?? this.#projectInfo.config.schemaOutDir);
+      const schemaOutAbsolutePath = path.resolve(cwd, this.#schemaOut ?? this.#projectInfo.config.schemaOutDir);
 
       if (isInitial) {
         callback();
@@ -222,8 +246,7 @@ export class VovkDev {
     }, 1000);
 
     chokidar
-      // .watch(['vovk.config.{js,mjs}', '.config/vovk.config.{js,mjs}'], {
-      .watch(['vovk.config.js', 'vovk.config.mjs', '.config/vovk.config.js', '.config/vovk.config.mjs'], {
+      .watch(CONFIG_FILE_PATHS, {
         persistent: true,
         cwd,
         ignoreInitial: false,
@@ -297,9 +320,13 @@ export class VovkDev {
   };
 
   #requestSchema = debounceWithArgs(async (segmentName: string) => {
-    const { apiRoot, log, port, config } = this.#projectInfo;
-    const devHttps = this.#devHttps ?? config.devHttps;
-    const endpoint = `${apiRoot.startsWith(`http${devHttps ? 's' : ''}://`) ? apiRoot : `http${devHttps ? 's' : ''}://localhost:${port}${apiRoot}`}/${segmentName ? `${segmentName}/` : ''}_schema_`;
+    const { log, port, config } = this.#projectInfo;
+    const endpoint = getSchemaEndpoint({
+      port,
+      rootEntry: config.rootEntry,
+      devHttps: this.#devHttps ?? config.devHttps,
+      segmentName,
+    });
 
     log.debug(`Requesting schema for ${formatLoggedSegmentName(segmentName)} at ${endpoint}`);
 
@@ -319,10 +346,10 @@ export class VovkDev {
 
       if (resp.status !== 200) {
         const probableCause = {
-          404: 'The segment did not compile or config.origin is wrong.',
+          404: 'the segment did not compile or another server listens on this port',
         }[resp.status];
         log.warn(
-          `Schema request to ${chalkHighlightThing(endpoint)} for ${formatLoggedSegmentName(segmentName)} failed with status code ${resp.status} but expected 200.${probableCause ? ` Probable cause: ${probableCause}.` : ''}.`
+          `Schema request to ${chalkHighlightThing(endpoint)} for ${formatLoggedSegmentName(segmentName)} failed with status code ${resp.status} but expected 200.${probableCause ? ` Probable cause: ${probableCause}.` : ''}`
         );
         log.warn(`Response from ${formatLoggedSegmentName(segmentName)}: ${text}`);
         return { isError: true };

@@ -12,6 +12,7 @@ import { getProjectInfo } from './get-project-info/index.mjs';
 import { newComponents } from './new/index.mjs';
 import type { BundleOptions, DevOptions, GenerateOptions, InitOptions, NewOptions, VovkEnv } from './types.mjs';
 import { getAvailablePort } from './utils/get-available-port.mjs';
+import { getCommandShell, quoteShellArgument } from './utils/quote-shell-argument.mjs';
 
 export type { VovkEnv };
 
@@ -55,12 +56,12 @@ program
       const { result } = concurrently(
         [
           {
-            command: `npx next dev ${nextArgs.join(' ')}`,
+            command: ['npx', 'next', 'dev', ...nextArgs].map((arg) => quoteShellArgument(arg)).join(' '),
             name: 'Next.js Development Server',
             env: { PORT } satisfies VovkEnv,
           },
           {
-            command: `node ${import.meta.dirname}/dev/index.mjs`,
+            command: `node ${quoteShellArgument(path.join(import.meta.dirname, 'dev', 'index.mjs'))}`,
             name: 'Vovk Dev Watcher',
             env: {
               PORT,
@@ -77,6 +78,7 @@ program
           killOthersOn: ['failure', 'success'],
           prefix: 'none',
           successCondition: 'first',
+          shell: getCommandShell(),
         }
       );
       try {

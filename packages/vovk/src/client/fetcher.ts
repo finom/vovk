@@ -73,6 +73,17 @@ export type CreateFetcherOnError<T> = (
  * Creates a customizable fetcher function for client requests.
  * @see https://vovk.dev/imports
  */
+// a string body goes out as the type the procedure declares, e.g. application/jsonl, so the server accepts it;
+// a form, JSON or wildcard type says nothing about a string, so it falls back to text/plain
+const getStringBodyContentType = (schema: VovkHandlerSchema) => {
+  const declared = schema.validation?.body?.['x-contentType'] as string[] | undefined;
+  const isTextLike = (type: string) =>
+    !type.includes('*') &&
+    !['multipart/form-data', 'application/x-www-form-urlencoded', 'application/json'].includes(type) &&
+    !type.endsWith('+json');
+  return declared?.find(isTextLike) ?? 'text/plain';
+};
+
 export function createFetcher<T>({
   prepareRequestInit,
   transformResponse,
@@ -103,21 +114,9 @@ export function createFetcher<T>({
     try {
       const { meta, apiRoot, disableClientValidation, init, interpretAs } = inputOptions;
       let { body, query, params } = inputOptions;
-      const endpoint = getURL({ apiRoot, params, query });
-      const unusedParams = Array.from(
-        new URL(endpoint.startsWith('/') ? `http://localhost${endpoint}` : endpoint).pathname.matchAll(/\{([^}]+)\}/g)
-      ).map((m) => m[1]);
-
-      if (unusedParams.length) {
-        throw new HttpException(HttpStatus.NULL, `Unused params: ${unusedParams.join(', ')} in ${endpoint}`, {
-          body,
-          query,
-          params,
-          endpoint,
-        });
-      }
 
       if (!disableClientValidation) {
+        const endpoint = getURL({ apiRoot, params, query });
         try {
           ({ body, query, params } = (await validate(inputOptions, { endpoint })) ?? { body, query, params });
         } catch (e) {
@@ -133,13 +132,29 @@ export function createFetcher<T>({
         }
       }
 
-      const resolvedContentType =
-        body instanceof FormData
+      // built from the validated query and params, which are the ones to send
+      const endpoint = getURL({ apiRoot, params, query });
+      // a given param replaces its placeholder with an encoded value, so a brace left in the path is a missing one
+      const missingParams = Array.from(endpoint.split('?')[0].matchAll(/\{([^}]+)\}/g), ([, name]) => name);
+
+      if (missingParams.length) {
+        throw new HttpException(HttpStatus.NULL, `Missing params: ${missingParams.join(', ')} in ${endpoint}`, {
+          body,
+          query,
+          params,
+          endpoint,
+        });
+      }
+
+      const hasBody = body !== undefined && body !== null;
+      const resolvedContentType = !hasBody
+        ? undefined // no body, no content type: a cross-origin GET then needs no preflight
+        : body instanceof FormData
           ? undefined // browser sets multipart/form-data with boundary automatically
           : body instanceof URLSearchParams
             ? 'application/x-www-form-urlencoded'
             : typeof body === 'string'
-              ? 'text/plain'
+              ? getStringBodyContentType(schema)
               : body instanceof Blob
                 ? body.type || 'application/octet-stream'
                 : body instanceof ArrayBuffer || body instanceof Uint8Array
@@ -172,7 +187,7 @@ export function createFetcher<T>({
         requestInit.body = body as BodyInit;
       } else if (typeof body === 'string') {
         requestInit.body = body;
-      } else if (body) {
+      } else if (hasBody) {
         requestInit.body = JSON.stringify(body);
       }
 
@@ -208,6 +223,10 @@ export function createFetcher<T>({
         });
       } else if (contentType?.startsWith('application/json')) {
         respData = await defaultHandler({ response, schema });
+      } else if (response.status >= 400) {
+        // a proxy's error page or a plain text error; a lower non-ok status comes from redirect: 'manual' or no-cors
+        const text = await response.text().catch(() => '');
+        throw new HttpException(response.status, text || response.statusText || DEFAULT_ERROR_MESSAGE);
       } else {
         respData = response;
       }

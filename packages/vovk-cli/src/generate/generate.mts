@@ -443,7 +443,7 @@ export async function generate({
 
         for (const skippedDir of skippedDirs) {
           log.warn(
-            `Directory ${chalkHighlightThing(skippedDir)} is not a known segment but holds files that were not generated, so it is left untouched.`
+            `Directory ${chalkHighlightThing(skippedDir)} is not a known segment but holds files or folders the generator did not write, so it is left untouched.`
           );
         }
         return {

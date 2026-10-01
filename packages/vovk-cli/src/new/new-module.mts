@@ -9,6 +9,7 @@ import { getFileSystemEntryType } from '../utils/get-file-system-entry-type.mjs'
 import { locateSegments } from '../utils/locate-segments.mjs';
 import { prettify } from '../utils/prettify.mjs';
 import { resolveAbsoluteModulePath } from '../utils/resolve-absolute-module-path.mjs';
+import { toImportPath } from '../utils/to-import-path.mjs';
 import { addClassToSegmentCode } from './add-class-to-segment-code.mjs';
 import { render } from './render.mjs';
 
@@ -127,7 +128,7 @@ export async function newModule({
       throw new Error(`The template for "${type}" does not provide a fileName`);
     }
 
-    const absoluteModuleDir = path.join(cwd, outDir);
+    const absoluteModuleDir = path.resolve(cwd, outDir);
     const absoluteModulePath = path.join(absoluteModuleDir, fileName);
 
     const prettiedCode = await prettify(code, absoluteModulePath);
@@ -163,7 +164,9 @@ export async function newModule({
 
       const { routeFilePath } = segment;
       const segmentSourceCode = await fs.readFile(routeFilePath, 'utf-8');
-      let importPath = path.relative(`${path.dirname(routeFilePath)}/`, absoluteModulePath).replace(/\.(ts|tsx)$/, '');
+      let importPath = toImportPath(
+        path.relative(path.dirname(routeFilePath), absoluteModulePath).replace(/\.(ts|tsx)$/, '')
+      );
 
       importPath += isNodeNextResolution ? '.ts' : '';
 

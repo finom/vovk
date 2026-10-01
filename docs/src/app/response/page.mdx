@@ -117,7 +117,7 @@ export default class UserController {
 }
 ```
 
-Both functions work by throwing an error, so you don’t need a `return` statement. TypeScript casts their return type as `never`.
+Both functions work by throwing an error, so you don’t need a `return` statement. TypeScript casts their return type as `never`. The same goes for `forbidden()` and `unauthorized()`: Vovk.ts rethrows these errors so Next.js answers them.
 
 See the [Next.js documentation](https://nextjs.org/docs/app/building-your-application/routing/redirecting) for more information.
 

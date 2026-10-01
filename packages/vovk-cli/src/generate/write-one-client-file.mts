@@ -22,11 +22,17 @@ import { compileJSONSchemaToTypeScriptType } from '../utils/compile-json-schema-
 import { GENERATED_BANNER_PREFIX } from '../utils/generated-banner.mjs';
 import type { Segment } from '../utils/locate-segments.mjs';
 import { prettify, warnIfPrettierMissing } from '../utils/prettify.mjs';
+import { toImportPath, toPosixPath } from '../utils/to-import-path.mjs';
 import type { ClientTemplateFile } from './get-client-template-files.mjs';
 import { getTemplateClientImports } from './get-template-client-imports.mjs';
 
+// a valid Python import name and Cargo package name: "@acme/web-app" becomes "acme_web_app"
+export function toUnderscoredPackageName(name: string | undefined): string {
+  return name?.replace(/^@/, '').replace(/[^A-Za-z0-9_]/g, '_') || 'my_package_name';
+}
+
 export function normalizeOutTemplatePath(out: string, packageJson: PackageJson): string {
-  return out.replace('[package_name]', packageJson.name?.replace(/-/g, '_') ?? 'my_package_name');
+  return out.replace('[package_name]', toUnderscoredPackageName(packageJson.name));
 }
 
 export async function writeOneClientFile({
@@ -116,7 +122,8 @@ export async function writeOneClientFile({
   placeholder = outPath.endsWith('.py') ? placeholder.replace(/\/\//g, '#') : placeholder;
 
   const getFirstLineBanner = (type: 'html' | 'sh' | 'c' = 'c') => {
-    const text = `${GENERATED_BANNER_PREFIX} v${vovkCliPackage.version} at ${new Date().toISOString()}`;
+    // no timestamp: regenerating unchanged sources must not change committed files
+    const text = `${GENERATED_BANNER_PREFIX} v${vovkCliPackage.version}`;
     switch (type) {
       case 'html':
         return `<!-- ${text} -->`;
@@ -129,9 +136,11 @@ export async function writeOneClientFile({
 
   reExports = _.mapValues(reExports ?? {}, (p) =>
     p.startsWith('.')
-      ? path.relative(
-          path.join(outCwdRelativeDir, typeof segmentName === 'string' ? segmentName || ROOT_SEGMENT_FILE_NAME : '.'),
-          path.resolve(cwd, p)
+      ? toImportPath(
+          path.relative(
+            path.join(outCwdRelativeDir, typeof segmentName === 'string' ? segmentName || ROOT_SEGMENT_FILE_NAME : '.'),
+            path.resolve(cwd, p)
+          )
         )
       : p
   );
@@ -142,13 +151,14 @@ export async function writeOneClientFile({
     hasMixins,
     isVovkProject,
     package: packageJson,
+    underscoredPackageName: toUnderscoredPackageName(packageJson.name),
     readme,
     samples,
     reExports,
     openapi: openAPIObject,
     ROOT_SEGMENT_FILE_NAME,
     apiRoot: origin ? `${origin}/${config.rootEntry}` : undefined,
-    imports: {},
+    imports: {} as Record<string, unknown>,
     schema: fullSchema,
     config: projectConfig,
     VovkSchemaIdEnum,
@@ -163,21 +173,26 @@ export async function writeOneClientFile({
       js: isNodeNextResolution ? '.js' : '',
       mjs: isNodeNextResolution ? '.mjs' : '',
     },
-    schemaOutDir:
+    schemaOutDir: toPosixPath(
       typeof segmentName === 'string'
         ? path.relative(
             path.join(outCwdRelativeDir, segmentName || ROOT_SEGMENT_FILE_NAME),
             cliSchemaPath ?? config.schemaOutDir
           )
-        : path.relative(outCwdRelativeDir, cliSchemaPath ?? config.schemaOutDir),
-    commonImports: getTemplateClientImports({
-      config: projectConfig,
-      fullSchema,
-      isBundle,
-      outCwdRelativeDir,
-      segmentName,
-      outputConfigs: [templateDef.outputConfig ?? {}],
-    }).composedClient,
+        : path.relative(outCwdRelativeDir, cliSchemaPath ?? config.schemaOutDir)
+    ),
+    // a segmented client sits one folder deeper, so its relative imports are resolved from there
+    commonImports: (({ composedClient, segmentedClient }) =>
+      typeof segmentName === 'string' ? (segmentedClient[segmentName] ?? composedClient) : composedClient)(
+      getTemplateClientImports({
+        config: projectConfig,
+        fullSchema,
+        isBundle,
+        outCwdRelativeDir,
+        segmentName,
+        outputConfigs: [projectConfig[configKey].outputConfig ?? {}, templateDef.outputConfig ?? {}],
+      })
+    ),
     segmentImports: Object.fromEntries(
       Object.values(fullSchema.segments).map(({ segmentName: sName }) => {
         const clientImports = getTemplateClientImports({
@@ -198,13 +213,15 @@ export async function writeOneClientFile({
       Object.values(fullSchema.segments).map(({ segmentName: sName, forceApiRoot }) => {
         const { routeFilePath = null } = locatedSegmentsByName[sName] ?? {};
         const segmentImportPath = routeFilePath
-          ? path.relative(
-              path.resolve(
-                cwd,
-                outCwdRelativeDir,
-                typeof segmentName === 'string' ? segmentName || ROOT_SEGMENT_FILE_NAME : '.'
-              ),
-              path.resolve(cwd, routeFilePath)
+          ? toImportPath(
+              path.relative(
+                path.resolve(
+                  cwd,
+                  outCwdRelativeDir,
+                  typeof segmentName === 'string' ? segmentName || ROOT_SEGMENT_FILE_NAME : '.'
+                ),
+                path.resolve(cwd, routeFilePath)
+              )
             )
           : null;
         const segmentConfig = {
@@ -232,9 +249,7 @@ export async function writeOneClientFile({
 
   if (Array.isArray(data.imports)) {
     for (const imp of data.imports) {
-      t.imports = {
-        [imp]: await import(imp),
-      };
+      t.imports[imp] = await import(imp);
     }
   }
 
@@ -260,14 +275,10 @@ export async function writeOneClientFile({
     rendered = `${rendered}\n\n${placeholder}`;
   }
 
-  // Read existing file content to compare
   const existingContent = await fs.readFile(outPath, 'utf-8').catch(() => null);
 
-  // Determine if we need to rewrite the file, ignore 1st line
-  const needsWriting = isEnsuringClient
-    ? !existingContent
-    : !existingContent ||
-      existingContent.trim().split('\n').slice(1).join('\n') !== rendered.trim().split('\n').slice(1).join('\n');
+  // a placeholder never replaces a generated file
+  const needsWriting = isEnsuringClient ? !existingContent : existingContent !== rendered;
 
   if (needsWriting) {
     log.debug(`Writing file: ${chalkHighlightThing(outPath)} ${existingContent ? '(updated)' : '(new)'}`);

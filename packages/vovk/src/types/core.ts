@@ -83,6 +83,8 @@ export type VovkErrorResponse = {
 export type StreamAbortMessage = {
   isError: true;
   reason: KnownAny;
+  // set when the stream ends with an HttpException
+  statusCode?: HttpStatus;
 };
 
 export type VovkControllerInternal = {
@@ -114,6 +116,8 @@ export type RouteHandler = ((
 ) => Response | Promise<Response> | Responder | Promise<Responder> | Iterable<unknown> | AsyncIterable<unknown>) & {
   _options?: DecoratorOptions;
   _sourceMethod?: { wrapper?: RouteHandler };
+  // the OPTIONS handler that the cors option adds
+  _isCorsPreflight?: boolean;
 };
 
 export type ControllerStaticMethod<

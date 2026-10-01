@@ -19,6 +19,9 @@ A cleanup release. `vovk-cli` is pre-1.0, so this minor carries breaking changes
 
 - Composed client defaults: `fromTemplates: ['ts']`, `outDir: src/client`, `prettifyClient: true`; `vovk init` gitignores the client dir and no longer installs `vovk-client` ([#29](https://github.com/finom/vovk/pull/29))
 - Broken input fails fast, and the CLI reports what it actually did ([0ad9872](https://github.com/finom/vovk/commit/0ad9872e))
+- `getMethodName: 'auto'` treats only `{param}` segments as params: `GET /users` is `listUsers` (was `getByUsers`), `GET /users/{id}` is `getUsersById`; a name taken twice gets `_2` instead of overwriting ([#35](https://github.com/finom/vovk/pull/35))
+- The generated-file banner has no timestamp, and files are compared whole: unchanged sources leave committed files alone, and a CLI upgrade rewrites them once ([ed031a1](https://github.com/finom/vovk/commit/ed031a11), [#35](https://github.com/finom/vovk/pull/35))
+- A segment named `root` is refused: it would share the root segment's files ([#35](https://github.com/finom/vovk/pull/35))
 
 ### Fixed
 
@@ -28,6 +31,15 @@ A cleanup release. `vovk-cli` is pre-1.0, so this minor carries breaking changes
 - `vovk init` only spawns a known package manager, never a path from `packageManager` ([053cb1a](https://github.com/finom/vovk/commit/053cb1a8))
 - `--prebundle-out-dir` takes effect and stays inside the project ([22f505c](https://github.com/finom/vovk/commit/22f505c6))
 - `vovk new segment` scaffolds `force-static` for static segments ([#25](https://github.com/finom/vovk/pull/25))
+- Windows: template and schema lookups find their files, and import paths in generated code use `/` ([#35](https://github.com/finom/vovk/pull/35))
+- `vovk dev --next-dev` runs from a path with spaces, and asks only the local dev server for schemas ([#35](https://github.com/finom/vovk/pull/35))
+- The pruner removes only folders whose every file the generator wrote ([#35](https://github.com/finom/vovk/pull/35))
+- Python and Rust package names from a scoped or missing `name` are valid ([#35](https://github.com/finom/vovk/pull/35))
+- One-line template output updates, every front matter import is kept, `.cjs` configs are watched ([#35](https://github.com/finom/vovk/pull/35))
+- `vovk new` pluralizes whole words: `inbox` gives `inboxes`, not `inboxen` ([#35](https://github.com/finom/vovk/pull/35))
+- Absolute `modulesDir`, `--schema-out` and `--out` paths work, circular template `requires` throw, `vovk init` installs on Windows ([#35](https://github.com/finom/vovk/pull/35))
+- Mixin types: quoted property names, `allOf` with sibling properties, `nullable`, names starting with a digit ([#35](https://github.com/finom/vovk/pull/35))
+- A segmented client resolves relative `imports` from its own folder ([#35](https://github.com/finom/vovk/pull/35))
 
 ### Upgrading from 0.2.x
 

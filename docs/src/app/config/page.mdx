@@ -4,16 +4,16 @@ The configuration file defines options for the CLI, updates [template definition
 
 ## Valid Config File Names
 
-The config can be authored as either a CJS or ESM module. It supports the following extensions: **.js**, **.cjs**, **.mjs**, and can live either at the project root or inside the [.config](https://dot-config.github.io/) folder. In other words, the following paths are valid:
+The config can be authored as either a CJS or ESM module. It supports the following extensions: **.js**, **.cjs**, **.mjs**, and can live either at the project root or inside the [.config](https://dot-config.github.io/) folder. The CLI checks the following paths in this order and uses the first one that exists (it warns if there are more):
 
-- **vovk.config.js**
+- **.config/vovk.config.cjs**
 - **vovk.config.cjs**
+- **.config/vovk.config.mjs**
 - **vovk.config.mjs**
 - **.config/vovk.config.js**
-- **.config/vovk.config.cjs**
-- **.config/vovk.config.mjs**
+- **vovk.config.js**
 
-When [vovk init](/init) runs, it checks whether the project uses ES modules and whether the **.config** folder exists to choose the appropriate filename.
+When [vovk init](/init) runs, it writes **vovk.config.mjs**, inside the **.config** folder if that folder exists.
 
 ## Config Options
 

@@ -71,7 +71,7 @@ The `fetcher` prepares handlers, performs client-side validation, issues HTTP re
 
 - For `application/json`, it returns the parsed JSON.
 - For `application/jsonl` or `application/jsonlines`, it returns a disposable async iterable.
-- For other content types, it returns the `Response` object as-is, letting you access text or binary data.
+- For other content types, it returns the `Response` object as-is, letting you access text or binary data. A status of 400 or above throws an `HttpException{:ts}` with the response text as its message instead.
 
 It can also process custom per-call options passed to RPC methods.
 

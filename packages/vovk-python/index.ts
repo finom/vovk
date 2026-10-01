@@ -7,6 +7,57 @@ interface ConvertOptions {
   pad: number;
 }
 
+// biome-ignore format: a word list
+const PYTHON_KEYWORDS = new Set([
+  'False', 'None', 'True', 'and', 'as', 'assert', 'async', 'await', 'break', 'class', 'continue', 'def', 'del', 'elif',
+  'else', 'except', 'finally', 'for', 'from', 'global', 'if', 'import', 'in', 'is', 'lambda', 'nonlocal', 'not', 'or',
+  'pass', 'raise', 'return', 'try', 'while', 'with', 'yield',
+]);
+
+// Schema text comes from the project or from a third-party OpenAPI document, so it never reaches the generated code
+// unescaped: these helpers turn it into Python literals, identifiers, docstrings and comments
+
+// JSON string escapes are valid Python string escapes
+export function toPythonString(value: string): string {
+  return JSON.stringify(value);
+}
+
+export function toPythonIdentifier(name: string): string {
+  const ident = name.replace(/[^A-Za-z0-9_]/g, '_').replace(/^(?=[0-9])/, '_') || '_';
+  return PYTHON_KEYWORDS.has(ident) ? `${ident}_` : ident;
+}
+
+// lines for a """ docstring: a quote or a backslash would end the string or start an escape
+export function toPythonDocstringLines(text: string): string[] {
+  return text
+    .replace(/\\/g, '\\\\')
+    .replace(/"/g, '\\"')
+    .split(/\r\n|\r|\n/)
+    .map((line) => line.replace(/\p{Cc}/gu, (char) => `\\x${char.charCodeAt(0).toString(16).padStart(2, '0')}`));
+}
+
+// one comment line: a line break would end the comment
+export function toPythonCommentText(text: string): string {
+  return text.replace(/\p{Cc}+/gu, ' ');
+}
+
+// a key a TypedDict class body can declare: Python mangles __private names, and keywords or dashes don't parse
+function isPlainPythonName(name: string): boolean {
+  return (
+    /^[A-Za-z_][A-Za-z0-9_]*$/.test(name) &&
+    !PYTHON_KEYWORDS.has(name) &&
+    !(name.startsWith('__') && !name.endsWith('__'))
+  );
+}
+
+function toPythonLiteral(value: unknown): string | null {
+  if (typeof value === 'string') return toPythonString(value);
+  if (typeof value === 'boolean') return value ? 'True' : 'False';
+  if (typeof value === 'number' && Number.isFinite(value)) return String(value);
+  if (value === null) return 'None';
+  return null;
+}
+
 /**
  * Check if a schema represents a file upload field (format: binary)
  */
@@ -34,12 +85,18 @@ function isFileUploadSchema(s: VovkJSONSchemaBase): boolean {
   return false;
 }
 
+// a mixin body may be a bare $ref into its own $defs
+function resolveTopLevelRef(schema: VovkJSONSchemaBase): VovkJSONSchemaBase {
+  const name = schema.$ref?.startsWith('#/') ? schema.$ref.split('/').pop() : undefined;
+  return (name && (schema.$defs?.[name] ?? schema.definitions?.[name])) || schema;
+}
+
 export function hasFiles(schema: VovkJSONSchemaBase): boolean {
-  return Object.values(schema.properties ?? {}).some((prop) => isFileUploadSchema(prop));
+  return Object.values(resolveTopLevelRef(schema).properties ?? {}).some((prop) => isFileUploadSchema(prop));
 }
 
 export function hasNormalData(schema: VovkJSONSchemaBase): boolean {
-  return Object.values(schema.properties ?? {}).some((prop) => !isFileUploadSchema(prop));
+  return Object.values(resolveTopLevelRef(schema).properties ?? {}).some((prop) => !isFileUploadSchema(prop));
 }
 
 /**
@@ -93,6 +150,21 @@ export function convertJSONSchemaToPythonDataType(options: ConvertOptions): stri
     return ident;
   }
 
+  // nested classes are named after their property path, and "a-b" and "a_b" must not land on one name
+  const usedNestedNames = new Set<string>();
+  function uniqueNestedName(path: string): string {
+    const base = path.replace(/[^A-Za-z0-9_]/g, '_');
+    let name = base;
+    let i = 2;
+    while (usedNestedNames.has(name)) name = `${base}_${i++}`;
+    usedNestedNames.add(name);
+    return name;
+  }
+
+  function refNameOf(ref: string): string | undefined {
+    return ref.startsWith('#/') ? ref.split('/').pop() : undefined;
+  }
+
   /**
    * Turn a schema into a Python type expression
    */
@@ -104,7 +176,7 @@ export function convertJSONSchemaToPythonDataType(options: ConvertOptions): stri
 
     // 0. Named $ref: point at the shared class, registering it first so cycles terminate
     if (s.$ref) {
-      const refName = s.$ref.startsWith('#/') ? s.$ref.split('/').pop() : undefined;
+      const refName = refNameOf(s.$ref);
       if (!refName || !namedSchemas[refName]) return 'Any';
 
       const known = namedTypeNames.get(refName);
@@ -130,29 +202,32 @@ export function convertJSONSchemaToPythonDataType(options: ConvertOptions): stri
 
     // 1. Enums
     if (s.enum && s.enum.length > 0) {
-      const literalValues = s.enum.map((val) => (typeof val === 'string' ? `"${val}"` : val));
-      return `Literal[${literalValues.join(', ')}]`;
+      const literalValues = s.enum.map(toPythonLiteral).filter((literal) => literal !== null);
+      return literalValues.length ? `Literal[${literalValues.join(', ')}]` : 'Any';
     }
 
     // 2. allOf
     if (s.allOf && s.allOf.length > 0) {
       const merged: VovkJSONSchemaBase = {
         type: 'object',
+        title: s.title,
+        description: s.description,
         properties: {},
         required: [],
       };
-      for (const sub of s.allOf) {
-        const subType = sub.type;
-        if (!subType || subType === 'object') {
-          merged.properties = {
-            ...merged.properties,
-            ...sub.properties,
-          };
-          if (sub.required) {
-            merged.required = Array.from(new Set([...(merged.required ?? []), ...sub.required]));
-          }
-        }
-      }
+      // a member may be a $ref or an allOf itself, and the schema may list its own properties next to allOf
+      const seen = new Set<VovkJSONSchemaBase>();
+      const mergeMember = (member: VovkJSONSchemaBase) => {
+        const resolved = member.$ref ? namedSchemas[refNameOf(member.$ref) ?? ''] : member;
+        if (!resolved || seen.has(resolved)) return;
+        seen.add(resolved);
+        resolved.allOf?.forEach(mergeMember);
+        if (resolved.type && resolved.type !== 'object') return;
+        merged.properties = { ...merged.properties, ...resolved.properties };
+        merged.required = Array.from(new Set([...(merged.required ?? []), ...(resolved.required ?? [])]));
+      };
+      s.allOf.forEach(mergeMember);
+      mergeMember({ type: s.type, properties: s.properties, required: s.required });
       return buildType(merged, propNameForParent);
     }
 
@@ -210,42 +285,32 @@ export function convertJSONSchemaToPythonDataType(options: ConvertOptions): stri
 
           seenObjects.set(s, fullyQualifiedName);
 
-          const lines: string[] = [];
-          lines.push(`class ${newClassName}(TypedDict):`);
-
-          if (s.title || s.description) {
-            lines.push(`    """`);
-            if (s.title) {
-              lines.push(`    ${s.title}`);
-            }
-            if (s.title && s.description) {
-              lines.push(``);
-            }
-            if (s.description) {
-              const descLines = s.description.split('\n');
-              for (const descLine of descLines) {
-                lines.push(`    ${descLine}`);
-              }
-            }
-            lines.push(`    """`);
-          }
-
-          const props = s.properties || {};
           const required = new Set(s.required || []);
+          // file upload properties go to the Files type
+          const fields = Object.entries(s.properties || {})
+            .filter(([, propSchema]) => !isFileUploadSchema(propSchema))
+            .map(([propName, propSchema]) => {
+              const childType = buildType(propSchema, uniqueNestedName(`${propNameForParent}_${propName}`));
+              return [propName, required.has(propName) ? childType : `Optional[${childType}]`] as const;
+            });
+          const docLines = [
+            ...(s.title ? toPythonDocstringLines(s.title) : []),
+            ...(s.title && s.description ? [''] : []),
+            ...(s.description ? toPythonDocstringLines(s.description) : []),
+          ];
 
-          // Filter out file upload properties
-          const nonFileProps = Object.entries(props).filter(([, propSchema]) => !isFileUploadSchema(propSchema));
-
-          if (nonFileProps.length === 0) {
-            lines.push(`    pass`);
+          const lines: string[] = [];
+          if (fields.every(([propName]) => isPlainPythonName(propName))) {
+            lines.push(`class ${newClassName}(TypedDict):`);
+            if (docLines.length) lines.push('    """', ...docLines.map((line) => `    ${line}`), '    """');
+            if (!fields.length) lines.push('    pass');
+            for (const [propName, propType] of fields) lines.push(`    ${propName}: ${propType}`);
           } else {
-            for (const [propName, propSchema] of nonFileProps) {
-              const isRequired = required.has(propName);
-              const childPropPath = `${propNameForParent}_${propName}`;
-              const childPropType = buildType(propSchema, childPropPath);
-              const finalType = isRequired ? childPropType : `Optional[${childPropType}]`;
-              lines.push(`    ${propName}: ${finalType}`);
-            }
+            // keys such as "content-type" or "from" only fit the functional syntax, its types stay lazy as strings
+            const entries = fields.map(
+              ([propName, propType]) => `${toPythonString(propName)}: ${toPythonString(propType)}`
+            );
+            lines.push(`${newClassName} = TypedDict(${toPythonString(newClassName)}, {${entries.join(', ')}})`);
           }
 
           classDefinitions.push(lines.join('\n'));
@@ -263,7 +328,9 @@ export function convertJSONSchemaToPythonDataType(options: ConvertOptions): stri
 
   const isTypedDictTop =
     topLevelTypeName === `${namespace}.${className}` &&
-    classDefinitions.some((def) => def.startsWith(`class ${className}(`));
+    classDefinitions.some(
+      (def) => def.startsWith(`class ${className}(`) || def.startsWith(`${className} = TypedDict(`)
+    );
 
   if (!isTypedDictTop) {
     classDefinitions.push(`${className} = ${topLevelTypeName}`);
@@ -294,7 +361,8 @@ export function convertJSONSchemaToPythonDataType(options: ConvertOptions): stri
 }
 
 export function convertJSONSchemaToPythonFilesType(options: ConvertOptions): string {
-  const { schema, className, pad } = options;
+  const { className, pad } = options;
+  const schema = options.schema && resolveTopLevelRef(options.schema);
 
   if (schema?.type !== 'object') {
     // Files must be in an object schema
@@ -312,6 +380,12 @@ export function convertJSONSchemaToPythonFilesType(options: ConvertOptions): str
     return '';
   }
 
+  const fileDocLines = (suffix: string) => [
+    ...(schema.title ? toPythonDocstringLines(`${schema.title} - ${suffix}`) : []),
+    ...(schema.title && schema.description ? [''] : []),
+    ...(schema.description ? toPythonDocstringLines(schema.description) : []),
+  ];
+
   // Check if any property is an array (multiple files)
   const hasArrayFields = fileProps.some(([, propSchema]) => propSchema.type === 'array');
 
@@ -324,20 +398,7 @@ export function convertJSONSchemaToPythonFilesType(options: ConvertOptions): str
 
     // Add docstring if exists
     if (schema.title || schema.description) {
-      lines.push(`"""`);
-      if (schema.title) {
-        lines.push(`${schema.title} - File Uploads`);
-      }
-      if (schema.title && schema.description) {
-        lines.push(``);
-      }
-      if (schema.description) {
-        const descLines = schema.description.split('\n');
-        for (const descLine of descLines) {
-          lines.push(`${descLine}`);
-        }
-      }
-      lines.push(`"""`);
+      lines.push(`"""`, ...fileDocLines('File Uploads'), `"""`);
     }
 
     // Define the file tuple type
@@ -354,10 +415,10 @@ export function convertJSONSchemaToPythonFilesType(options: ConvertOptions): str
 
     for (const [propName, propSchema] of fileProps) {
       if (propSchema.type === 'array') {
-        lines.push(`#     ('${propName}', ('file1.pdf', open('file1.pdf', 'rb'), 'application/pdf')),`);
-        lines.push(`#     ('${propName}', ('file2.pdf', open('file2.pdf', 'rb'), 'application/pdf')),`);
+        lines.push(`#     (${toPythonString(propName)}, ('file1.pdf', open('file1.pdf', 'rb'), 'application/pdf')),`);
+        lines.push(`#     (${toPythonString(propName)}, ('file2.pdf', open('file2.pdf', 'rb'), 'application/pdf')),`);
       } else {
-        lines.push(`#     ('${propName}', ('file.jpg', open('file.jpg', 'rb'), 'image/jpeg')),`);
+        lines.push(`#     (${toPythonString(propName)}, ('file.jpg', open('file.jpg', 'rb'), 'image/jpeg')),`);
       }
     }
     lines.push(`# ]`);
@@ -366,30 +427,24 @@ export function convertJSONSchemaToPythonFilesType(options: ConvertOptions): str
     const [propName] = fileProps[0];
     const isRequired = required.has(propName);
 
-    lines.push(`class ${className}(TypedDict):`);
-
-    // Add docstring if exists
-    if (schema.title || schema.description) {
-      lines.push(`    """`);
-      if (schema.title) {
-        lines.push(`    ${schema.title} - File Upload`);
-      }
-      if (schema.title && schema.description) {
-        lines.push(``);
-      }
-      if (schema.description) {
-        const descLines = schema.description.split('\n');
-        for (const descLine of descLines) {
-          lines.push(`    ${descLine}`);
-        }
-      }
-      lines.push(`    """`);
-    }
-
     // Single file type
     const fileType =
       'Union[BinaryIO, Tuple[str, BinaryIO], Tuple[str, BinaryIO, str], Tuple[str, BinaryIO, str, Dict[str, str]]]';
     const finalType = isRequired ? fileType : `Optional[${fileType}]`;
+
+    if (!isPlainPythonName(propName)) {
+      lines.push(
+        `${className} = TypedDict(${toPythonString(className)}, {${toPythonString(propName)}: ${toPythonString(finalType)}})`
+      );
+      return lines.map((line) => `${' '.repeat(pad)}${line}`).join('\n');
+    }
+
+    lines.push(`class ${className}(TypedDict):`);
+
+    // Add docstring if exists
+    if (schema.title || schema.description) {
+      lines.push(`    """`, ...fileDocLines('File Upload').map((line) => `    ${line}`), `    """`);
+    }
 
     lines.push(`    ${propName}: ${finalType}`);
     lines.push(`    # Example: open('file.jpg', 'rb') or ('filename.jpg', open('file.jpg', 'rb'), 'image/jpeg')`);

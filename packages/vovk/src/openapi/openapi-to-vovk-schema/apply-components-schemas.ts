@@ -15,6 +15,12 @@ function cloneJSON(obj: unknown): unknown {
   return result;
 }
 
+// the type name vovk-cli declares for a component: PascalCase, a leading digit gets an underscore
+function toComponentTypeName(componentName: string): string {
+  const typeName = upperFirst(camelCase(componentName));
+  return /^[\p{L}_$]/u.test(typeName) ? typeName : `_${typeName}`;
+}
+
 export function applyComponentsSchemas(
   schema: VovkJSONSchemaBase,
   components: ComponentsObject['schemas'],
@@ -54,7 +60,7 @@ export function applyComponentsSchemas(
       const componentName = $ref.replace(`#/${key}/`, '');
       if (components?.[componentName]) {
         // Set `x-tsType` so TS resolves the ref without local `$defs`.
-        newObj['x-tsType'] ??= `Mixins.${upperFirst(camelCase(mixinName))}.${upperFirst(camelCase(componentName))}`;
+        newObj['x-tsType'] ??= `Mixins.${upperFirst(camelCase(mixinName))}.${toComponentTypeName(componentName)}`;
 
         if (emitDefs) {
           // Self-contained slot: local $defs + embedded closure.

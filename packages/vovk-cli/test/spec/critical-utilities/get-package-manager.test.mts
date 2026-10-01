@@ -1,6 +1,6 @@
 import assert from 'node:assert';
 import { describe, it } from 'node:test';
-import { getPackageManager } from '../../../dist/init/install-dependencies.mjs';
+import { getInstallCommand, getPackageManager } from '../../../dist/init/install-dependencies.mjs';
 
 // only the fields getPackageManager reads
 const asPkgJson = (packageManager?: string) =>
@@ -29,5 +29,17 @@ await describe('getPackageManager', async () => {
   await it('Explicit flags win over package.json', async () => {
     assert.strictEqual(getPackageManager({ useBun: true, pkgJson: asPkgJson('./evil@1.0.0') }), 'bun');
     assert.strictEqual(getPackageManager({ useNpm: true, pkgJson: asPkgJson('pnpm@8.6.0') }), 'npm');
+  });
+});
+
+await describe('getInstallCommand', async () => {
+  await it('Runs the package manager through a shell on Windows, where it is a .cmd shim', async () => {
+    assert.deepStrictEqual(getInstallCommand('npm', 'win32'), { command: 'npm install', args: [], shell: true });
+    assert.deepStrictEqual(getInstallCommand('pnpm', 'win32'), { command: 'pnpm install', args: [], shell: true });
+  });
+
+  await it('Spawns the package manager directly elsewhere', async () => {
+    assert.deepStrictEqual(getInstallCommand('npm', 'darwin'), { command: 'npm', args: ['install'], shell: false });
+    assert.deepStrictEqual(getInstallCommand('yarn', 'linux'), { command: 'yarn', args: ['install'], shell: false });
   });
 });

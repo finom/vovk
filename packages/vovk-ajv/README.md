@@ -39,10 +39,12 @@ const config = {
   libs: {
     /** @type {import('vovk-ajv').VovkAjvConfig} */
     ajv: {
+      // Ajv options
       options: {
         strict: false,
       },
-      localize: 'de',
+      // 'draft-2020-12' or 'draft-07', detected from the schema's $schema when omitted
+      target: 'draft-2020-12',
     },
   },
 };
