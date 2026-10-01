@@ -237,7 +237,7 @@ pub use crate::http_request::HttpException;
 
 pub mod user_rpc {
     #[allow(unused_imports)]
-    use crate::http_request::{HttpException, http_request, http_request_stream};
+    use crate::http_request::{Endpoint, HttpException, http_request, http_request_stream};
     #[allow(unused_imports)]
     use futures_util::Stream;
     use std::collections::HashMap;
@@ -354,11 +354,16 @@ pub mod user_rpc {
             update_user_::query,
             update_user_::params
         >(
-            "https://hello-world.vovk.dev/api",
-            "",
-            "UserRPC",
-            "updateUser",
+            &Endpoint {
+                api_root: "https://hello-world.vovk.dev/api",
+                segment_path: "",
+                segment_name: "",
+                controller_name: "UserRPC",
+                handler_name: "updateUser",
+            },
             Some(&body),
+            None,
+            None,
             None,
             Some(&query),
             Some(&params),
@@ -505,7 +510,7 @@ Compiles to:
 ```rs filename="./dist_rust/src/lib.rs"
 pub mod stream_rpc {
     #[allow(unused_imports)]
-    use crate::http_request::{HttpException, http_request, http_request_stream};
+    use crate::http_request::{Endpoint, HttpException, http_request, http_request_stream};
     #[allow(unused_imports)]
     use futures_util::Stream;
     use std::collections::HashMap;
@@ -540,11 +545,16 @@ pub mod stream_rpc {
             (),
             ()
         >(
-            "https://hello-world.vovk.dev/api",
-            "",
-            "StreamRPC",
-            "streamTokens",
-            Some(&body),
+            &Endpoint {
+                api_root: "https://hello-world.vovk.dev/api",
+                segment_path: "",
+                segment_name: "",
+                controller_name: "StreamRPC",
+                handler_name: "streamTokens",
+            },
+            None,
+            None,
+            None,
             None,
             Some(&query),
             Some(&params),

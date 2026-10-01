@@ -31,6 +31,16 @@ impl fmt::Display for HttpException {
 
 impl Error for HttpException {}
 
+/// Where a handler is: the segment's root, its path in the URL and the names that find it in the schema
+pub struct Endpoint {
+    pub api_root: &'static str,
+    // empty for an OpenAPI mixin, whose root already points at the API
+    pub segment_path: &'static str,
+    pub segment_name: &'static str,
+    pub controller_name: &'static str,
+    pub handler_name: &'static str,
+}
+
 // Load the full schema only once using lazy initialization
 static FULL_SCHEMA: Lazy<Result<Value, String>> = Lazy::new(|| {
     read_full_schema::read_full_schema()
@@ -40,10 +50,7 @@ static FULL_SCHEMA: Lazy<Result<Value, String>> = Lazy::new(|| {
 
 // Private helper function for request preparation
 fn prepare_request<B, Q, P>(
-    default_api_root: &str,
-    segment_name: &str,
-    controller_name: &str,
-    handler_name: &str,
+    endpoint: &Endpoint,
     body: Option<&B>,
     form: Option<multipart::Form>,
     text_body: Option<String>,
@@ -66,21 +73,22 @@ where
     };
     
     let segment = schema.get("segments")
-        .and_then(|s| s.get(segment_name))
+        .and_then(|s| s.get(endpoint.segment_name))
         .ok_or("Segment not found")?;
     
     let controller = segment.get("controllers")
-        .and_then(|c| c.get(controller_name))
+        .and_then(|c| c.get(endpoint.controller_name))
         .ok_or("Controller not found")?;
     
     let handlers = controller.get("handlers")
         .and_then(|h| h.as_object())
         .ok_or("Handlers not found")?;
     
-    let handler = handlers.get(handler_name).ok_or("Handler not found")?;
+    let handler = handlers.get(endpoint.handler_name).ok_or("Handler not found")?;
+    // an OpenAPI mixin's controller has no prefix
     let prefix = controller.get("prefix")
         .and_then(|p| p.as_str())
-        .ok_or("Prefix not found")?;
+        .unwrap_or("");
     let handler_path = handler.get("path")
         .and_then(|p| p.as_str())
         .ok_or("Path not found")?;
@@ -93,12 +101,15 @@ where
         .get("validation")
         .unwrap_or(&default_validation);
 
-    // Construct the base URL
-    let url_parts: Vec<&str> = vec![api_root.unwrap_or(default_api_root), segment_name, prefix, handler_path]
-        .into_iter()
-        .filter(|s| !s.is_empty())
-        .collect();
-    let mut url = url_parts.join("/");
+    // Construct the base URL, the parts are joined with single slashes whatever slashes they start or end with
+    let path = [endpoint.segment_path, prefix, handler_path]
+        .iter()
+        .flat_map(|part| part.split('/'))
+        .filter(|piece| !piece.is_empty())
+        .collect::<Vec<_>>()
+        .join("/");
+    let root = api_root.unwrap_or(endpoint.api_root).trim_end_matches('/');
+    let mut url = if path.is_empty() { root.to_string() } else { format!("{}/{}", root, path) };
 
     // Convert generic types to Value for validation if needed
     let body_value = body.map(|b| serde_json::to_value(b))
@@ -247,10 +258,7 @@ where
 // Main request function for regular (non-streaming) responses
 #[allow(dead_code)]
 pub async fn http_request<T, B, Q, P>(
-    default_api_root: &str,
-    segment_name: &str,
-    controller_name: &str,
-    handler_name: &str,
+    endpoint: &Endpoint,
     body: Option<&B>,
     form: Option<multipart::Form>,
     text_body: Option<String>,
@@ -268,10 +276,7 @@ where
     P: Serialize + ?Sized,
 {
     let (request, _) = prepare_request(
-        default_api_root,
-        segment_name,
-        controller_name,
-        handler_name,
+        endpoint,
         body,
         form,
         text_body,
@@ -356,10 +361,7 @@ where
 // Request function specifically for streaming responses
 #[allow(dead_code)]
 pub async fn http_request_stream<T, B, Q, P>(
-    default_api_root: &str,
-    segment_name: &str,
-    controller_name: &str,
-    handler_name: &str,
+    endpoint: &Endpoint,
     body: Option<&B>,
     form: Option<multipart::Form>,
     text_body: Option<String>,
@@ -377,10 +379,7 @@ where
     P: Serialize + ?Sized,
 {
     let (request, _) = prepare_request(
-        default_api_root,
-        segment_name,
-        controller_name,
-        handler_name,
+        endpoint,
         body,
         form,
         text_body,

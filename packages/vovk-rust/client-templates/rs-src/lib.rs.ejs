@@ -15,10 +15,14 @@ mod read_full_schema;
 
 pub use crate::http_request::HttpException;
 <% Object.entries(t.schema.segments).forEach(([segmentName, segment]) => {
+    const segmentMeta = t.segmentMeta?.[segmentName] ?? {};
+    // a configured origin or root entry gives the segment its own root, a mixin's root already includes its path
+    const apiRoot = segmentMeta.forceApiRoot ?? t.apiRoot ?? '';
+    const segmentPath = segment.forceApiRoot ? '' : typeof segmentMeta.segmentNameOverride === 'string' ? segmentMeta.segmentNameOverride : segmentName;
     Object.values(segment.controllers).forEach((controllerSchema) => { %>
 pub mod <%= vars.toRustIdent(t._.snakeCase(controllerSchema.rpcModuleName)) %> {
     #[allow(unused_imports)]
-    use crate::http_request::{HttpException, http_request, http_request_stream};
+    use crate::http_request::{Endpoint, HttpException, http_request, http_request_stream};
     #[allow(unused_imports)]
     use futures_util::Stream;
     use std::collections::HashMap;
@@ -27,8 +31,9 @@ pub mod <%= vars.toRustIdent(t._.snakeCase(controllerSchema.rpcModuleName)) %> {
 <% Object.entries(controllerSchema.handlers).forEach(([handlerNameOriginal, handlerSchema]) => { 
     const { validation, operationObject, httpMethod } = handlerSchema;
     const handlerName = vars.toRustIdent(t._.snakeCase(handlerNameOriginal));
+    const url = [apiRoot.replace(/\/+$/, ''), ...[segmentPath, controllerSchema.prefix ?? '', handlerSchema.path].map((part) => t._.trim(part, '/'))].filter(Boolean).join('/');
     %>
-    // <%- vars.toRustCommentText(`${controllerSchema.rpcModuleName}.${handlerName} ${httpMethod} \`${[t.apiRoot, segmentName, controllerSchema.prefix, handlerSchema.path].filter(Boolean).join('/')}\``) %>
+    // <%- vars.toRustCommentText(`${controllerSchema.rpcModuleName}.${handlerName} ${httpMethod} \`${url}\``) %>
 <%- 
 vars.convertJSONSchemasToRustTypes({ 
     schemas: {
@@ -72,10 +77,13 @@ vars.convertJSONSchemasToRustTypes({
                 validation?.params ? `${handlerName}_::params` : '()'
             ].filter(Boolean).map((s) => ' '.repeat(12) + s).join(',\n') %>
         >(
-            <%- vars.toRustString(t.apiRoot ?? '') %>,
-            <%- vars.toRustString(segmentName) %>,
-            <%- vars.toRustString(controllerSchema.rpcModuleName) %>,
-            <%- vars.toRustString(handlerNameOriginal) %>,
+            &Endpoint {
+                api_root: <%- vars.toRustString(apiRoot) %>,
+                segment_path: <%- vars.toRustString(segmentPath) %>,
+                segment_name: <%- vars.toRustString(segmentName) %>,
+                controller_name: <%- vars.toRustString(controllerSchema.rpcModuleName) %>,
+                handler_name: <%- vars.toRustString(handlerNameOriginal) %>,
+            },
             <%- bodyKind === 'json' ? 'Some(&body)' : 'None' %>,
             <%- bodyKind === 'form' ? 'Some(body)' : 'None' %>,
             <%- bodyKind === 'text' ? 'Some(body)' : 'None' %>,

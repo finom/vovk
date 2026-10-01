@@ -48,8 +48,12 @@ pub struct HandlerSchema {
 #[allow(non_snake_case)]
 pub struct ControllerSchema {
     pub rpcModuleName: String,
-    pub originalControllerName: String,
+    // an OpenAPI mixin's controller has no original name and no prefix
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub originalControllerName: Option<String>,
+    #[serde(default)]
     pub prefix: String,
+    #[serde(default)]
     pub handlers: HashMap<String, HandlerSchema>,
 }
 
@@ -57,14 +61,17 @@ pub struct ControllerSchema {
 #[derive(Debug, Deserialize, Serialize)]
 #[allow(non_snake_case)]
 pub struct VovkSegmentSchema {
+    #[serde(default)]
     pub emitSchema: bool,
     pub segmentName: String,
+    #[serde(default)]
     pub controllers: HashMap<String, ControllerSchema>,
 }
 
 /// Complete Vovk schema with meta and multiple segments
 #[derive(Debug, Deserialize, Serialize)]
 pub struct VovkSchema {
+    #[serde(default)]
     pub meta: HashMap<String, Value>,
     pub segments: HashMap<String, VovkSegmentSchema>,
 }

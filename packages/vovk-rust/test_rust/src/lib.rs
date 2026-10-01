@@ -1,5 +1,6 @@
 mod test_validation;
 mod test_common;
+mod test_segments;
 
 // Helper function to create objects with specific validation issues
 pub fn get_constraining_object(key: Option<String>) -> serde_json::Value {        
