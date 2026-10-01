@@ -203,13 +203,9 @@ export function createFetcher<T>({
       try {
         response = await fetch(endpoint, requestInit);
       } catch (e) {
-        // handle network errors
-        throw new HttpException(HttpStatus.NULL, `${(e as Error)?.message ?? DEFAULT_ERROR_MESSAGE} ${endpoint}`, {
-          body,
-          query,
-          params,
-          endpoint,
-        });
+        // an abort, an AbortError or the caller's own reason, is not a network failure
+        if (requestInit.signal?.aborted) throw e;
+        throw new HttpException(HttpStatus.NULL, `${(e as Error)?.message ?? DEFAULT_ERROR_MESSAGE} ${endpoint}`, e);
       }
 
       const contentType = interpretAs ?? response.headers.get('content-type');

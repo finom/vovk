@@ -238,5 +238,32 @@ describe('Client sweep, pure functions', () => {
 
       deepStrictEqual(calls, ['error 1', 'error 2', 'success 1', 'success 2']);
     });
+
+    it('Keeps a network error as the cause', async () => {
+      const failure = new TypeError('fetch failed');
+
+      await withFetch(
+        () => Promise.reject(failure),
+        () =>
+          rejects(rpcOf(handlers).get(), (error: unknown) => {
+            ok(error instanceof HttpException);
+            strictEqual(error.statusCode, 0);
+            strictEqual(error.message, 'fetch failed /api/test');
+            strictEqual(error.cause, failure);
+            return true;
+          })
+      );
+    });
+
+    it('Rethrows an abort as is', async () => {
+      const controller = new AbortController();
+      const reason = new Error('Stopped by the user');
+      controller.abort(reason);
+
+      await withFetch(
+        (_url, init) => Promise.reject(init.signal?.reason),
+        () => rejects(rpcOf(handlers).get({ init: { signal: controller.signal } }), (error) => error === reason)
+      );
+    });
   });
 });
