@@ -42,8 +42,10 @@ export default class UserController {
 Nested data is serialized as a query string with square brackets, commonly referred to as "PHP‑style" or "bracket notation".
 
 - Square brackets `[ ]` denote keys for arrays or nested objects.
-- Indices `[0]` to `[n-1]`, none missing, make an array of any length; `[]` appends an element.
+- Indices `[0]` to `[n-1]`, none missing, make an array of any length; `[]` appends an element after the highest index.
 - Any other keys make an object: named keys (e.g., `[f]`, `[u]`), and numeric keys with gaps, so `record[7]=on` gives `{ record: { 7: "on" } }`.
+- A key given more than once collects its values into an array, so `tag=a&tag=b` gives `{ tag: ["a", "b"] }`. A repeated index names the same element, so its last value wins.
+- `[]` followed by more brackets adds to the last element until that element already has the key: `items[][name]=a&items[][price]=1&items[][name]=b` gives `{ items: [{ name: "a", price: "1" }, { name: "b" }] }`.
 - The structure can be nested arbitrarily to represent complex data.
 
 The following query string:

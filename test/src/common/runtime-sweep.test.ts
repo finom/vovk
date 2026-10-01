@@ -459,6 +459,43 @@ describe('Runtime sweep', () => {
 
       deepStrictEqual(await response.json(), { q: 'new york', tag: 'a+b' });
     });
+
+    it('Collects the values of a repeated key, and keeps the last value of a repeated index', async () => {
+      const response = await call(
+        handlers,
+        'GET',
+        'search?tag=a&tag=b&filter[status]=open&filter[status]=closed&page[0]=1&page[0]=2'
+      );
+
+      deepStrictEqual(await response.json(), {
+        tag: ['a', 'b'],
+        filter: { status: ['open', 'closed'] },
+        page: ['2'],
+      });
+    });
+
+    it('Appends [] after the highest index', async () => {
+      const response = await call(handlers, 'GET', 'search?a[1]=x&a[]=y&b[0]=x&b[2]=z&b[]=y&c[]=1&c[]=2');
+
+      deepStrictEqual(await response.json(), {
+        a: { 1: 'x', 2: 'y' },
+        b: { 0: 'x', 2: 'z', 3: 'y' },
+        c: ['1', '2'],
+      });
+    });
+
+    it('Fills the last element of [] until it holds the key again', async () => {
+      const response = await call(
+        handlers,
+        'GET',
+        'search?items[][name]=a&items[][price]=1&items[][name]=b&tags[][list][]=x&tags[][list][]=y'
+      );
+
+      deepStrictEqual(await response.json(), {
+        items: [{ name: 'a', price: '1' }, { name: 'b' }],
+        tags: [{ list: ['x', 'y'] }],
+      });
+    });
   });
 
   describe('multitenant', () => {
