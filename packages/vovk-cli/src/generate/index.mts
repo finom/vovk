@@ -95,29 +95,34 @@ export class VovkGenerate {
       }
     };
 
+    const scheduleGeneration = () => {
+      const now = Date.now();
+
+      // generate immediately outside the throttle window, otherwise defer to the end of it
+      if (now - lastGenerationTime > throttleDelay) {
+        void generateCode();
+      } else if (!pendingTimer) {
+        pendingTimer = setTimeout(
+          () => {
+            pendingTimer = null;
+            void generateCode();
+          },
+          throttleDelay - (now - lastGenerationTime)
+        );
+      }
+    };
+
     chokidar
       .watch(schemaPath, {
         persistent: true,
         ignoreInitial: true,
       })
+      // "ready" never reaches the "all" listener, and ignoreInitial skips the files already there
+      .on('ready', scheduleGeneration)
       .on('all', (event, path) => {
-        if (event === 'change' || event === 'add' || event === 'ready' || event === 'unlink') {
+        if (event === 'change' || event === 'add' || event === 'unlink') {
           log.debug(`Schema file ${event}: ${path}`);
-
-          const now = Date.now();
-
-          // generate immediately outside the throttle window, otherwise defer to the end of it
-          if (now - lastGenerationTime > throttleDelay) {
-            void generateCode();
-          } else if (!pendingTimer) {
-            pendingTimer = setTimeout(
-              () => {
-                pendingTimer = null;
-                void generateCode();
-              },
-              throttleDelay - (now - lastGenerationTime)
-            );
-          }
+          scheduleGeneration();
         }
       });
   }

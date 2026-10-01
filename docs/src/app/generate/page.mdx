@@ -72,7 +72,7 @@ Mixins extend the sclient declared in one or more OpenAPI specs. See [OpenAPI mi
 - `--openapi-root-url <urls...>` — root URLs aligned by index with `--openapi`. Mirrors `outputConfig.segments.mixinName.openAPIMixin.apiRoot`.
 - `--openapi-mixin-name <names...>` — mixin names aligned by index with `--openapi`. In config, serves as the key in `outputConfig.segments` and defines pseudo-segment names for the mixins.
 - `--openapi-fallback <paths...>` — save OpenAPI specs to the specified paths and use them as a fallback if the URL is unavailable. Paths align by index with `--openapi`.
-- `--watch <s>` — watch the schema or OpenAPI spec and regenerate the client. Accepts a throttle interval in seconds. For remote specs, performs an HTTP request every `s` seconds; for local files, regenerates on change.
+- `--watch <s>` — generate the client on start, then watch the schema or OpenAPI spec and regenerate it. Accepts a throttle interval in seconds. For remote specs, performs an HTTP request every `s` seconds; for local files, regenerates on change.
 
 ### Other Flags
 

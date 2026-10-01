@@ -3,7 +3,7 @@ import fs from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import { after, describe, it } from 'node:test';
-import { createProject, runCLI, userSegmentSchema } from '../../lib/minimal-project.mts';
+import { createProject, runCLI, startCLI, userSegmentSchema } from '../../lib/minimal-project.mts';
 
 const projectDir = path.join(process.cwd(), 'tmp_generate_without_next');
 const read = (file: string) => fs.readFile(path.join(projectDir, file), 'utf-8');
@@ -106,6 +106,23 @@ await describe('vovk generate in a project without Next.js', async () => {
       await assert.rejects(runCLI(['generate'], { cwd: projectDir }), (error: Error) =>
         error.message.includes(path.join(projectDir, file))
       );
+    }
+  });
+
+  await it('Generates the client as soon as --watch starts', async () => {
+    await createProject(projectDir, {
+      'package.json': { name: 'app', version: '1.0.0', type: 'module' },
+      'vovk.config.mjs': configFile({ composedClient: { prettifyClient: false } }),
+      'src/app/api/[[...vovk]]/route.ts': '',
+      '.vovk-schema/root.json': userSegmentSchema,
+    });
+
+    const cli = startCLI(['generate', '--watch', '1'], { cwd: projectDir });
+    try {
+      await cli.waitForOutput(/Composed client is generated/, 10_000);
+      assert.ok((await read('src/client/index.ts')).includes('UserRPC'));
+    } finally {
+      await cli.stop();
     }
   });
 
