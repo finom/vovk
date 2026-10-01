@@ -265,5 +265,32 @@ describe('Client sweep, pure functions', () => {
         () => rejects(rpcOf(handlers).get({ init: { signal: controller.signal } }), (error) => error === reason)
       );
     });
+
+    it('Forwards init.signal where AbortSignal.any is missing', async () => {
+      // React Native and Safari before 17.4 have no AbortSignal.any
+      const { any } = AbortSignal;
+      const controller = new AbortController();
+      let requestSignal: AbortSignal | null | undefined;
+
+      try {
+        Reflect.deleteProperty(AbortSignal, 'any');
+        const result = await withFetch(
+          (_url, init) => {
+            requestSignal = init.signal;
+            return Response.json({ ok: true });
+          },
+          () => rpcOf(handlers).get({ init: { signal: controller.signal } })
+        );
+
+        deepStrictEqual(result, { ok: true });
+      } finally {
+        AbortSignal.any = any;
+      }
+
+      strictEqual(requestSignal?.aborted, false);
+      controller.abort('stop');
+      strictEqual(requestSignal?.aborted, true);
+      strictEqual(requestSignal?.reason, 'stop');
+    });
   });
 });

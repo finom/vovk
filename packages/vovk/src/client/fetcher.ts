@@ -50,6 +50,14 @@ function wrapStreamErrors(
   });
 }
 
+// AbortSignal.any is missing in React Native and Safari before 17.4, where the given signal aborts the controller
+function anySignal(controller: AbortController, signal: AbortSignal): AbortSignal {
+  if (typeof AbortSignal.any === 'function') return AbortSignal.any([controller.signal, signal]);
+  if (signal.aborted) controller.abort(signal.reason);
+  else signal.addEventListener('abort', () => controller.abort(signal.reason), { once: true });
+  return controller.signal;
+}
+
 export type { VovkFetcher };
 
 export type CreateFetcherOnSuccess<T> = (
@@ -194,9 +202,7 @@ export function createFetcher<T>({
       const abortController = new AbortController();
 
       // keep the internal controller for stream disposal but let a user-provided init.signal abort too
-      requestInit.signal = init?.signal
-        ? AbortSignal.any([abortController.signal, init.signal])
-        : abortController.signal;
+      requestInit.signal = init?.signal ? anySignal(abortController, init.signal) : abortController.signal;
 
       requestInit = prepareRequestInit ? await prepareRequestInit(requestInit, inputOptions) : requestInit;
 
