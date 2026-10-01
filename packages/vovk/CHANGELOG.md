@@ -51,6 +51,7 @@ A cleanup major: removals and renames, no new APIs.
 - Mixins: only HTTP methods become operations, path-level parameters merge in, `+json` and charset bodies are read, server variables are substituted, bodies are typed ([#35](https://github.com/finom/vovk/pull/35))
 - Derived tool input schemas resolve their `$defs`; MCP output is valid for empty results and `+json` responses ([#35](https://github.com/finom/vovk/pull/35))
 - The package ships the MIT license instead of a copy of package.json, and no stale modules from older builds ([#35](https://github.com/finom/vovk/pull/35))
+- Query arrays of any length parse as arrays, and a record with numeric keys (`record[7]=on`) stays an object ([#38](https://github.com/finom/vovk/pull/38))
 
 ### Security
 
