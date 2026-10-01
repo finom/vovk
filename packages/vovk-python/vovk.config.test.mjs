@@ -29,6 +29,16 @@ const petstore = {
         responses: { 200: { description: 'ok' } },
       },
     },
+    '/documents': {
+      post: {
+        operationId: 'createDocument',
+        requestBody: {
+          required: true,
+          content: { 'application/json': { schema: { $ref: '#/components/schemas/Document' } } },
+        },
+        responses: { 200: { description: 'ok' } },
+      },
+    },
     '/pets/{petId}': {
       get: {
         operationId: 'getPet',
@@ -45,6 +55,24 @@ const petstore = {
         type: 'object',
         required: ['name'],
         properties: { name: { type: 'string' }, tag: { type: 'string' } },
+      },
+      // definitions that refer to themselves
+      Json: {
+        anyOf: [
+          { type: 'string' },
+          { type: 'number' },
+          { type: 'boolean' },
+          { type: 'null' },
+          { type: 'array', items: { $ref: '#/components/schemas/Json' } },
+          { type: 'object', additionalProperties: { $ref: '#/components/schemas/Json' } },
+        ],
+      },
+      Tree: { type: 'object', properties: { children: { $ref: '#/components/schemas/Forest' } } },
+      Forest: { type: 'array', items: { $ref: '#/components/schemas/Tree' } },
+      Document: {
+        type: 'object',
+        required: ['data'],
+        properties: { data: { $ref: '#/components/schemas/Json' }, tree: { $ref: '#/components/schemas/Tree' } },
       },
     },
   },

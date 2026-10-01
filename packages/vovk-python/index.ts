@@ -167,6 +167,18 @@ export function convertJSONSchemaToPythonDataType(options: ConvertOptions): stri
     return ref.startsWith('#/') ? ref.split('/').pop() : undefined;
   }
 
+  // a $ref whose definition is still being built is marked: a TypedDict annotation is evaluated later
+  // and may name it, an alias is evaluated at once and gets Any there instead
+  const unfinished = new Set<string>();
+  // a NUL never reaches a type expression: identifiers are sanitized and literals are JSON-escaped
+  const MARK = '\u0000';
+  const markUnfinished = (name: string) => `${MARK}${name}${MARK}`;
+  const settle = (code: string, isEager: boolean) =>
+    code
+      .split(MARK)
+      .map((part, i) => (i % 2 && isEager ? 'Any' : part))
+      .join('');
+
   /**
    * Turn a schema into a Python type expression
    */
@@ -182,7 +194,7 @@ export function convertJSONSchemaToPythonDataType(options: ConvertOptions): stri
       if (!refName || !namedSchemas[refName]) return 'Any';
 
       const known = namedTypeNames.get(refName);
-      if (known) return known;
+      if (known) return unfinished.has(known) ? markUnfinished(known) : known;
 
       // single underscore on purpose, Python mangles __names inside a class body
       const safeRefName = toPyIdent(refName);
@@ -190,10 +202,12 @@ export function convertJSONSchemaToPythonDataType(options: ConvertOptions): stri
       const qualifiedName = `${namespace}.${localName}`;
       namedTypeNames.set(refName, qualifiedName);
 
+      unfinished.add(qualifiedName);
       const built = buildType(namedSchemas[refName], `${className}_${safeRefName}`, localName);
+      unfinished.delete(qualifiedName);
       // non-object definitions (enums, primitives) need an alias to keep the reference valid
       if (built !== qualifiedName) {
-        classDefinitions.push(`${localName} = ${built}`);
+        classDefinitions.push(`${localName} = ${settle(built, true)}`);
       }
 
       return qualifiedName;
@@ -312,11 +326,11 @@ export function convertJSONSchemaToPythonDataType(options: ConvertOptions): stri
             lines.push(`class ${newClassName}(TypedDict):`);
             if (docLines.length) lines.push('    """', ...docLines.map((line) => `    ${line}`), '    """');
             if (!fields.length) lines.push('    pass');
-            for (const [propName, propType] of fields) lines.push(`    ${propName}: ${propType}`);
+            for (const [propName, propType] of fields) lines.push(`    ${propName}: ${settle(propType, false)}`);
           } else {
             // keys such as "content-type" or "from" only fit the functional syntax, its types stay lazy as strings
             const entries = fields.map(
-              ([propName, propType]) => `${toPythonString(propName)}: ${toPythonString(propType)}`
+              ([propName, propType]) => `${toPythonString(propName)}: ${toPythonString(settle(propType, false))}`
             );
             lines.push(`${newClassName} = TypedDict(${toPythonString(newClassName)}, {${entries.join(', ')}})`);
           }
@@ -341,7 +355,7 @@ export function convertJSONSchemaToPythonDataType(options: ConvertOptions): stri
     );
 
   if (!isTypedDictTop) {
-    classDefinitions.push(`${className} = ${topLevelTypeName}`);
+    classDefinitions.push(`${className} = ${settle(topLevelTypeName, true)}`);
   }
 
   // If there are no non-file properties, return an empty TypedDict

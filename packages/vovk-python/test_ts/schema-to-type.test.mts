@@ -946,3 +946,89 @@ test('bodies without top-level properties', async (t) => {
     assert.equal(result, 'class Body(TypedDict):\n    meta: Dict[str, Any]');
   });
 });
+
+test('recursive definitions', async (t) => {
+  await t.test('an alias that refers to itself has Any there', () => {
+    // as Zod emits z.json()
+    const result = convertJSONSchemaToPythonDataType({
+      schema: {
+        type: 'object',
+        properties: { data: { $ref: '#/$defs/__schema0' } },
+        required: ['data'],
+        $defs: {
+          __schema0: {
+            anyOf: [
+              { type: 'string' },
+              { type: 'number' },
+              { type: 'boolean' },
+              { type: 'null' },
+              { type: 'array', items: { $ref: '#/$defs/__schema0' } },
+              { type: 'object', additionalProperties: { $ref: '#/$defs/__schema0' } },
+            ],
+          },
+        },
+      },
+      namespace: 'Rpc',
+      className: 'Body',
+      pad: 0,
+    });
+
+    assert.equal(
+      result,
+      `_Body___schema0 = Union[str, float, bool, None, List[Any], Dict[str, Any]]
+class Body(TypedDict):
+    data: Rpc._Body___schema0`
+    );
+  });
+
+  await t.test('an alias has Any for a class that is still being built', () => {
+    const result = convertJSONSchemaToPythonDataType({
+      schema: {
+        type: 'object',
+        properties: { tree: { $ref: '#/$defs/Tree' } },
+        required: ['tree'],
+        $defs: {
+          Tree: { type: 'object', properties: { children: { $ref: '#/$defs/Forest' } }, required: ['children'] },
+          Forest: { type: 'array', items: { $ref: '#/$defs/Tree' } },
+        },
+      },
+      namespace: 'Rpc',
+      className: 'Body',
+      pad: 0,
+    });
+
+    assert.equal(
+      result,
+      `_Body_Forest = List[Any]
+class _Body_Tree(TypedDict):
+    children: Rpc._Body_Forest
+class Body(TypedDict):
+    tree: Rpc._Body_Tree`
+    );
+  });
+
+  await t.test('a class may name itself', () => {
+    const result = convertJSONSchemaToPythonDataType({
+      schema: {
+        $ref: '#/$defs/Node',
+        $defs: {
+          Node: {
+            type: 'object',
+            properties: { next: { anyOf: [{ $ref: '#/$defs/Node' }, { type: 'null' }] } },
+            required: ['next'],
+          },
+        },
+      },
+      namespace: 'Rpc',
+      className: 'Body',
+      pad: 0,
+    });
+
+    assert.equal(
+      result,
+      `class _Body_Node(TypedDict):
+    next: Union[Rpc._Body_Node, None]
+Body = _Body_Node`
+    );
+  });
+});
