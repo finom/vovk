@@ -13,7 +13,8 @@ import type { VovkRequest } from '../types/request.js';
 import { HttpException, isHttpException } from './http-exception.js';
 import { JSONLinesResponder, Responder } from './json-lines-responder.js';
 
-type Route = { staticMethod: RouteHandler; controller: VovkController };
+// conflictsWith: the other controllers whose own handler has the same method and path in the segment
+type Route = { staticMethod: RouteHandler; controller: VovkController; conflictsWith?: VovkController[] };
 
 // a route segment as the literals around its params: "{from}-{to}.json" is ['', '-', '.json'] around ['from', 'to']
 type ParamSegment = { literals: string[]; paramNames: string[] };
@@ -375,7 +376,13 @@ class VovkApp {
 
       Object.entries(staticMethods ?? {}).forEach(([path, staticMethod]) => {
         const fullPath = [prefix, path].filter(Boolean).join('/');
-        handlers[fullPath] = { staticMethod, controller };
+        const existing = handlers[fullPath];
+        // a route a child inherits is its parent's handler, which answers the same
+        const conflictsWith =
+          existing && existing.staticMethod !== staticMethod
+            ? [...(existing.conflictsWith ?? []), existing.controller]
+            : existing?.conflictsWith;
+        handlers[fullPath] = { staticMethod, controller, ...(conflictsWith ? { conflictsWith } : {}) };
       });
     });
 
@@ -390,10 +397,21 @@ class VovkApp {
   };
 
   #findRoute = (httpMethod: HttpMethod, segmentName: string, path: string[]) => {
-    const found = this.#getHandler({ handlers: this.#getHandlers(httpMethod, segmentName), path });
-    if (found.handler || httpMethod !== HttpMethod.HEAD) return found;
+    let found = this.#getHandler({ handlers: this.#getHandlers(httpMethod, segmentName), path });
     // route.ts exports HEAD, so Next.js doesn't derive it from GET: a GET route answers it, HEAD drops the body
-    return this.#getHandler({ handlers: this.#getHandlers(HttpMethod.GET, segmentName), path });
+    if (!found.handler && httpMethod === HttpMethod.HEAD) {
+      found = this.#getHandler({ handlers: this.#getHandlers(HttpMethod.GET, segmentName), path });
+    }
+
+    const { conflictsWith, controller } = found.handler ?? {};
+    if (conflictsWith && controller) {
+      const controllerNames = [...conflictsWith, controller].map(({ name }) => name).join(', ');
+      throw new HttpException(
+        HttpStatus.INTERNAL_SERVER_ERROR,
+        `Conflicting routes found: ${path.join('/')} in ${controllerNames}`
+      );
+    }
+    return found;
   };
 
   // the route of each method on a path, in the order the Allow header lists them

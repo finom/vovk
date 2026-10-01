@@ -1,7 +1,8 @@
-import { deepStrictEqual, ok, rejects, strictEqual } from 'node:assert';
+import { deepStrictEqual, ok, rejects, strictEqual, throws } from 'node:assert';
 import { describe, it } from 'node:test';
 import { forbidden, redirect, unauthorized } from 'next/dist/client/components/navigation.react-server.js';
 import {
+  cloneControllerMetadata,
   controllersToStaticParams,
   decorate,
   del,
@@ -304,6 +305,76 @@ describe('Runtime sweep', () => {
         isError: true,
       });
       deepStrictEqual(errors, ['Conflicting routes found: hello/{foo}, hello/{bar}']);
+    });
+
+    it('Refuses a second handler for the same method and path in one controller', () => {
+      class DuplicateController {
+        static list() {
+          return [];
+        }
+
+        static listAgain() {
+          return [];
+        }
+      }
+      get('users')(DuplicateController, 'list');
+
+      throws(() => get('users')(DuplicateController, 'listAgain'), {
+        message: "Duplicate route GET 'users' in DuplicateController: list and listAgain",
+      });
+    });
+
+    it('Answers a path two controllers of a segment declare with a JSON error and calls onError', async () => {
+      const errors: string[] = [];
+      class FirstController {
+        static list() {
+          return 'first';
+        }
+      }
+      class SecondController {
+        static list() {
+          return 'second';
+        }
+      }
+      prefix('users')(FirstController);
+      prefix('users')(SecondController);
+      get()(FirstController, 'list');
+      get()(SecondController, 'list');
+      const handlers = initSegment({
+        segmentName: 'duplicate',
+        controllers: { FirstController, SecondController },
+        onError: (error) => {
+          errors.push(error.message);
+        },
+      });
+
+      const response = await call(handlers, 'GET', 'users');
+
+      strictEqual(response.status, 500);
+      deepStrictEqual(await response.json(), {
+        statusCode: 500,
+        message: 'Conflicting routes found: users in FirstController, SecondController',
+        isError: true,
+      });
+      deepStrictEqual(errors, ['Conflicting routes found: users in FirstController, SecondController']);
+    });
+
+    it('Serves a route a child controller inherits on the same path as its parent', async () => {
+      class ParentController {
+        static list() {
+          return 'parent';
+        }
+      }
+      prefix('users')(ParentController);
+      get()(ParentController, 'list');
+      class ChildController extends ParentController {}
+      cloneControllerMetadata()(ChildController);
+      const handlers = initSegment({ segmentName: 'inherited', controllers: { ParentController, ChildController } });
+
+      const response = await call(handlers, 'GET', 'users');
+
+      strictEqual(response.status, 200);
+      deepStrictEqual(await response.json(), 'parent');
     });
 
     it('Answers a known path with another method 405 and the allowed methods', async () => {

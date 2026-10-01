@@ -8,6 +8,9 @@ import { vovkApp } from './vovk-app.js';
 
 const isClass = (func: unknown) => typeof func === 'function' && /class/.test(func.toString());
 
+// the handler name by method and path of each route a controller declares itself, not the ones it inherits
+const declaredRoutes = new WeakMap<VovkController, Map<string, string>>();
+
 const assignSchema = ({
   controller,
   propertyKey,
@@ -35,6 +38,15 @@ const assignSchema = ({
       `Decorator must be used on a static class method. Check the controller method named "${propertyKey}" used with @${decoratorName}().`
     );
   }
+
+  // the same handler again is fine: initSegment applies the decorate() decorators of a controller in every segment
+  const routes = declaredRoutes.get(controller) ?? new Map<string, string>();
+  declaredRoutes.set(controller, routes);
+  const declaredBy = routes.get(`${httpMethod} ${path}`);
+  if (declaredBy !== undefined && declaredBy !== propertyKey) {
+    throw new Error(`Duplicate route ${httpMethod} '${path}' in ${controller.name}: ${declaredBy} and ${propertyKey}`);
+  }
+  routes.set(`${httpMethod} ${path}`, propertyKey);
 
   const methods: Record<string, RouteHandler> = vovkApp.routes[httpMethod].get(controller) ?? {};
   vovkApp.routes[httpMethod].set(controller, methods);
