@@ -2,6 +2,7 @@ import { reqMeta } from '../req/req-meta.js';
 import type { VovkRequest } from '../types/request.js';
 import type { StandardToolV0 } from '../types/standard-tool.js';
 import type { KnownAny } from '../types/utils.js';
+import { toModelErrorMessage } from './to-model-error-message.js';
 
 export type MCPModelOutput = {
   content: [
@@ -18,12 +19,11 @@ export type MCPModelOutput = {
   isError?: boolean;
 };
 
-// converts array to object with "items" key for MCP structured content
-const structuredContentToObject = (data: unknown): { [key: string]: unknown } => {
-  if (Array.isArray(data)) {
-    return { items: data };
-  }
-  return data as { [key: string]: unknown };
+// MCP structured content is an object: an array goes under "items", any other value has none
+const toStructuredContent = (data: unknown): Pick<MCPModelOutput, 'structuredContent'> => {
+  if (Array.isArray(data)) return { structuredContent: { items: data } };
+  if (typeof data === 'object' && data !== null) return { structuredContent: data as { [key: string]: unknown } };
+  return {};
 };
 
 const toBase64 = (buf: ArrayBuffer) =>
@@ -31,7 +31,7 @@ const toBase64 = (buf: ArrayBuffer) =>
     ? Buffer.from(buf).toString('base64')
     : btoa([...new Uint8Array(buf)].map((b) => String.fromCharCode(b)).join(''));
 
-async function responseToMCP(res: Response): Promise<MCPModelOutput> {
+async function responseContentToMCP(res: Response): Promise<MCPModelOutput> {
   const mimeType = res.headers.get('Content-Type')?.split(';')[0].trim() || '';
 
   if (mimeType.startsWith('audio/')) {
@@ -42,12 +42,9 @@ async function responseToMCP(res: Response): Promise<MCPModelOutput> {
     return { content: [{ type: 'image', mimeType, data: toBase64(await res.arrayBuffer()) }] };
   }
 
-  if (mimeType === 'application/json') {
-    const structuredContent = await res.json();
-    return {
-      content: [{ type: 'text', text: JSON.stringify(structuredContent) }],
-      structuredContent: structuredContentToObject(structuredContent),
-    };
+  if (mimeType === 'application/json' || mimeType.endsWith('+json')) {
+    const data = await res.json();
+    return { content: [{ type: 'text', text: JSON.stringify(data) }], ...toStructuredContent(data) };
   }
 
   if (mimeType.startsWith('text/') || /xml|javascript|yaml/.test(mimeType)) {
@@ -58,6 +55,12 @@ async function responseToMCP(res: Response): Promise<MCPModelOutput> {
     content: [{ type: 'text', text: `Unsupported response content type ${mimeType}` }],
     isError: true,
   };
+}
+
+// an error status fails the call whatever the body says, e.g. an application/problem+json document
+async function responseToMCP(res: Response): Promise<MCPModelOutput> {
+  const output = await responseContentToMCP(res);
+  return res.ok ? output : { content: output.content, isError: true };
 }
 
 type ToModelOutputMCPFn = <TOutput>(
@@ -72,18 +75,18 @@ export const toModelOutputMCP: ToModelOutputMCPFn = async (result: unknown, _too
     return { ...(await responseToMCP(result)), ...(mcpOutputMeta || {}) };
   }
 
-  const isError = result instanceof Error;
+  if (result instanceof Error) {
+    return {
+      content: [{ type: 'text', text: toModelErrorMessage(result) }],
+      isError: true,
+      ...(mcpOutputMeta || {}),
+    };
+  }
+
   return {
-    content: [
-      {
-        type: 'text',
-        text: isError ? result.message : JSON.stringify(result),
-      },
-    ],
-    ...(isError ? { isError: true } : {}),
-    ...(!isError && typeof result === 'object' && result !== null
-      ? { structuredContent: structuredContentToObject(result) }
-      : {}),
+    // a handler that returns nothing has no JSON text
+    content: [{ type: 'text', text: JSON.stringify(result) ?? '' }],
+    ...toStructuredContent(result),
     ...(mcpOutputMeta || {}),
   };
 };
