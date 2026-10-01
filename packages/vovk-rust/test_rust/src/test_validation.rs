@@ -300,8 +300,9 @@ pub mod test_validation {
             false,
         ).await;
         
+        // invalid output is the handler's bug: the production server answers 500 and keeps the issues
         assert!(result.is_err());
-        assert!(result.err().unwrap().to_string().contains("Validation failed"));
+        assert!(result.err().unwrap().to_string().contains("Internal server error"));
     }
 
     #[tokio::test]

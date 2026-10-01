@@ -1,7 +1,17 @@
 import { strict as assert } from 'node:assert';
 import { test } from 'node:test';
 import type { VovkJSONSchemaBase } from 'vovk';
-import { convertJSONSchemaToPythonDataType, getBodyKind } from '../index.js';
+import {
+  convertJSONSchemaToPythonDataType,
+  convertJSONSchemaToPythonFilesType,
+  getBodyKind,
+  hasFiles,
+  hasNormalData,
+  toPythonCommentText,
+  toPythonDocstringLines,
+  toPythonIdentifier,
+  toPythonString,
+} from '../index.js';
 
 test('convertJSONSchemaToPythonDataType - simple types', async (t) => {
   await t.test('converts string schema', () => {
@@ -794,5 +804,104 @@ test('getBodyKind', async (t) => {
     assert.equal(getBodyKind({ type: 'object', 'x-contentType': ['multipart/form-data'] }), 'form');
     assert.equal(getBodyKind({ type: 'object', 'x-contentType': ['application/json'] }), 'json');
     assert.equal(getBodyKind({ type: 'object', properties: {} }), 'json');
+  });
+});
+
+test('schema text never leaves its literal', async (t) => {
+  const breakout = 'A thing"""\n__import__("os").system("id")\n"""';
+
+  await t.test('escapes titles and descriptions in docstrings', () => {
+    const result = convertJSONSchemaToPythonDataType({
+      schema: { type: 'object', title: 'C:\\Users', description: breakout, properties: { a: { type: 'string' } } },
+      namespace: 'Rpc',
+      className: 'Body',
+      pad: 0,
+    });
+
+    assert.ok(result.includes('    C:\\\\Users'), result);
+    assert.ok(result.includes('    A thing\\"\\"\\"'), result);
+    assert.equal(result.match(/"""/g)?.length, 2, result);
+  });
+
+  await t.test('declares keys that are not plain names with the functional syntax', () => {
+    const result = convertJSONSchemaToPythonDataType({
+      schema: {
+        type: 'object',
+        properties: {
+          from: { type: 'string' },
+          'content-type': { type: 'string' },
+          'x\nimport os': { type: 'string' },
+        },
+        required: ['from'],
+      },
+      namespace: 'Rpc',
+      className: 'Body',
+      pad: 0,
+    });
+
+    assert.equal(
+      result,
+      'Body = TypedDict("Body", {"from": "str", "content-type": "Optional[str]", "x\\nimport os": "Optional[str]"})'
+    );
+  });
+
+  await t.test('writes enum values as Python literals', () => {
+    const result = convertJSONSchemaToPythonDataType({
+      schema: { enum: ['say "hi"', true, null, 1.5, { no: 'object' }] },
+      namespace: 'Rpc',
+      className: 'Kind',
+      pad: 0,
+    });
+
+    assert.equal(result, 'Kind = Literal["say \\"hi\\"", True, None, 1.5]');
+  });
+
+  await t.test('names the helpers for templates', () => {
+    assert.equal(toPythonIdentifier('from'), 'from_');
+    assert.equal(toPythonIdentifier('user-profiles'), 'user_profiles');
+    assert.equal(toPythonIdentifier('2fa'), '_2fa');
+    assert.equal(toPythonString('it\'s "x"\n'), '"it\'s \\"x\\"\\n"');
+    assert.deepEqual(toPythonDocstringLines('a"""\r\nb\\\u0000'), ['a\\"\\"\\"', 'b\\\\\\x00']);
+    assert.equal(toPythonCommentText('a\nimport os\r\nb'), 'a import os b');
+  });
+});
+
+test('allOf and $ref bodies', async (t) => {
+  await t.test('merges referenced members and sibling properties', () => {
+    const result = convertJSONSchemaToPythonDataType({
+      schema: {
+        allOf: [{ $ref: '#/$defs/Base' }, { type: 'object', properties: { extra: { type: 'string' } } }],
+        properties: { own: { type: 'boolean' } },
+        $defs: { Base: { type: 'object', properties: { id: { type: 'integer' } }, required: ['id'] } },
+      },
+      namespace: 'Rpc',
+      className: 'Output',
+      pad: 0,
+    });
+
+    assert.ok(result.includes('    id: int'), result);
+    assert.ok(result.includes('    extra: Optional[str]'), result);
+    assert.ok(result.includes('    own: Optional[bool]'), result);
+  });
+
+  await t.test('looks through a bare $ref body for its fields', () => {
+    const body: VovkJSONSchemaBase = {
+      $ref: '#/$defs/Upload',
+      $defs: {
+        Upload: {
+          type: 'object',
+          properties: { name: { type: 'string' }, file: { type: 'string', format: 'binary' } },
+          required: ['file'],
+        },
+      },
+    };
+
+    assert.equal(hasNormalData(body), true);
+    assert.equal(hasFiles(body), true);
+    assert.ok(
+      convertJSONSchemaToPythonFilesType({ schema: body, namespace: 'Rpc', className: 'Files', pad: 0 }).includes(
+        'class Files(TypedDict):'
+      )
+    );
   });
 });

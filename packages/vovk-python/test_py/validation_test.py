@@ -139,11 +139,13 @@ class TestValidation(unittest.TestCase):
         )
         self.assertEqual(data, {'hello': 'world'})
 
+        # invalid output is the handler's bug: the production server answers 500 and keeps the issues
         with self.assertRaises(HttpException) as context:
             WithValidationRPC.handle_output(
                 query={"helloOutput": "wrong_length"},
             )
-        self.assertRegex(str(context.exception), r"Validation failed\. Invalid output: .*hello.*")
+        self.assertEqual(context.exception.status_code, 500)
+        self.assertEqual(str(context.exception), "Internal server error")
 
     def test_form(self) -> None:
         data: WithValidationRPC.HandleMultipartDataOnlyOutput = WithValidationRPC.handle_multipart_data_only(
@@ -222,7 +224,7 @@ class TestValidation(unittest.TestCase):
             for data in iterator:
                 print(data)
                 pass
-        self.assertRegex(str(context.exception), r"Validation failed\. Invalid iteration #0: .*value.*")
+        self.assertEqual(str(context.exception), "Internal server error")
 
     def test_text_plain(self) -> None:
         data: WithValidationRPC.HandleTextPlainDataOutput = WithValidationRPC.handle_text_plain_data(

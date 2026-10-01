@@ -82,24 +82,30 @@ export function indent(level: number, pad: number = 0): string {
 export function generateDocComment(schema: VovkJSONSchemaBase, level: number, pad: number = 0): string {
   if (!schema?.title && !schema?.description) return '';
 
-  let comment = '';
+  const lines = [
+    ...(schema.title ? toRustDocLines(schema.title) : []),
+    ...(schema.title && schema.description ? [''] : []),
+    ...(schema.description ? toRustDocLines(schema.description) : []),
+  ];
 
-  if (schema.title) {
-    comment += `${indent(level, pad)}/// ${schema.title}\n`;
-    if (schema.description) {
-      comment += `${indent(level, pad)}///\n`;
-    }
-  }
+  return lines.map((line) => `${indent(level, pad)}///${line ? ` ${line}` : ''}\n`).join('');
+}
 
-  if (schema.description) {
-    // Split description into lines and add /// to each line
-    const lines = schema.description.split('\n');
-    for (const line of lines) {
-      comment += `${indent(level, pad)}/// ${line}\n`;
-    }
-  }
+// Schema text may come from a third-party OpenAPI document: a line break would end a comment and start code,
+// and rustc rejects a bare carriage return inside a doc comment
+export function toRustDocLines(text: string): string[] {
+  return text.split(/\r\n|\r|\n/).map((line) => line.replace(/\p{Cc}/gu, ' '));
+}
 
-  return comment;
+export function toRustCommentText(text: string): string {
+  return text.replace(/\p{Cc}+/gu, ' ');
+}
+
+export function toRustString(value: string): string {
+  const escaped = value
+    .replace(/[\\"]/g, '\\$&')
+    .replace(/\p{Cc}/gu, (char) => `\\u{${char.charCodeAt(0).toString(16)}}`);
+  return `"${escaped}"`;
 }
 
 // Resolve $ref paths in the schema, "seen" guards $ref chains that point back at themselves
@@ -286,6 +292,23 @@ export function toRustType(
       return toRustType(resolvedSchema, refName ? [...path.slice(0, -1), refName] : path, rootSchema);
     }
     return 'serde_json::Value'; // Fallback for unresolved $ref
+  }
+
+  // ["T", "null"] is an optional T. Nested types are only generated for a plain "type", so anything
+  // but a scalar or an array of scalars stays untyped, as do several non-null types
+  if (Array.isArray(schema.type)) {
+    const types = schema.type.filter((type) => type !== 'null');
+    const items = schema.items;
+    const hasNestedItems =
+      !!items &&
+      typeof items !== 'boolean' &&
+      (items.type === 'object' ||
+        !!(items.properties || items.$ref || items.enum || items.anyOf || items.oneOf || items.allOf));
+    if (types.length !== 1 || types[0] === 'object' || (types[0] === 'array' && hasNestedItems)) {
+      return 'serde_json::Value';
+    }
+    const type = toRustType({ ...schema, type: types[0], enum: undefined }, path, rootSchema);
+    return types.length < schema.type.length ? `Option<${type}>` : type;
   }
 
   // Check for enum without type (assume string)
@@ -644,7 +667,8 @@ export function processObject(
       propType = toRustType(propSchema, propPath, rootSchema);
     }
 
-    if (!isRequired) {
+    const isNullable = Array.isArray(propSchema.type) && propSchema.type.includes('null');
+    if ((!isRequired || isNullable) && !propType.startsWith('Option<')) {
       propType = `Option<${propType}>`;
     }
 
@@ -833,7 +857,11 @@ export function convertJSONSchemasToRustTypes({
     });
 
     // Handle the schema based on its type
-    if (schemaObj.type === 'object' || schemaObj.properties) {
+    const namedRef = refToName(schemaObj.$ref, schemaObj);
+    if (namedRef) {
+      // a bare $ref slot, as a mixin body often is, names one of the types emitted above
+      result += `${indentFn(1)}pub type ${schemaName} = ${namedRef};\n\n`;
+    } else if (schemaObj.type === 'object' || schemaObj.properties) {
       // Create a root object for object schema
       const rootObject = {
         type: 'object',
