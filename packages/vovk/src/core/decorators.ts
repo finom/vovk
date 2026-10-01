@@ -41,8 +41,10 @@ const assignSchema = ({
 
   if (options?.cors) {
     const optionsMethods = vovkApp.routes.OPTIONS.get(controller) ?? {};
-    optionsMethods[path] = (() => {}) as unknown as RouteHandler;
-    optionsMethods[path]._options = options;
+    const preflight = (() => {}) as unknown as RouteHandler;
+    preflight._options = options;
+    preflight._isCorsPreflight = true;
+    optionsMethods[path] = preflight;
     vovkApp.routes.OPTIONS.set(controller, optionsMethods);
   }
 
@@ -109,7 +111,13 @@ function createHTTPDecorator<T extends HttpMethod>(httpMethod: T) {
   const auto = (options?: DecoratorOptions) => {
     function decorator(givenTarget: unknown, propertyKeyOrContext?: unknown): KnownAny {
       return applyDecoratorAdapter(givenTarget, propertyKeyOrContext, (controller, propertyKey) => {
-        const properties = Object.keys(controller._handlers?.[propertyKey]?.validation?.params?.properties ?? {});
+        // a procedure's schema reaches _handlers only once the HTTP decorator is applied, read it from the source method
+        const method = controller[propertyKey] as
+          | { schema?: VovkHandlerSchema; _sourceMethod?: { schema?: VovkHandlerSchema } }
+          | undefined;
+        const validation =
+          controller._handlers?.[propertyKey]?.validation ?? (method?._sourceMethod ?? method)?.schema?.validation;
+        const properties = Object.keys(validation?.params?.properties ?? {});
         const kebabCasePath = toKebabCase(propertyKey);
         const path = properties.length
           ? `${kebabCasePath}/${properties.map((prop) => `{${prop}}`).join('/')}`

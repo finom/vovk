@@ -5,7 +5,7 @@ import type { KnownAny, StaticClass } from '../types/utils.js';
 import { trimPath } from '../utils/trim-path.js';
 import type { DecorateMetadata } from './decorate.js';
 import { getSchema } from './get-schema.js';
-import { vovkApp } from './vovk-app.js';
+import { getCatchAllPath, vovkApp } from './vovk-app.js';
 
 export const initSegment = (options: {
   segmentName?: string;
@@ -59,9 +59,16 @@ export const initSegment = (options: {
     }
   }
 
+  vovkApp.setSegment(segmentName, {
+    controllers: controllerSet,
+    onError: options.onError,
+    onSuccess: options.onSuccess,
+    onBefore: options.onBefore,
+  });
+
   async function GET_DEV(req: Request, data: { params: Promise<Record<string, string[]>> }) {
     const params = await data.params;
-    if (params[Object.keys(params)[0]]?.[0] === '_schema_') {
+    if (getCatchAllPath(params)[0] === '_schema_') {
       const schema = await getSchema(options);
       return vovkApp.respond({
         req,
