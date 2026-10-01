@@ -3,6 +3,7 @@
   "type": "module",
   "files": [
     "dist",
+    "!dist/tsconfig.tsbuildinfo",
     "bin",
     "CHANGELOG.md"
   ],
@@ -41,8 +42,8 @@
   },
   "scripts": {
     "postbuild": "chmod +x ./bin/index.mjs",
-    "build": "rm -f *.tsbuildinfo && tsc",
-    "rm-dist": "rm -rf mjs cjs",
+    "build": "rm -rf dist *.tsbuildinfo && tsc",
+    "rm-dist": "rm -rf dist mjs cjs",
     "lint": "biome check --fix",
     "tsc": "tsc --noEmit",
     "npm-publish": "if [ -z \"$NPM_TAG\" ]; then echo 'Error: NPM_TAG is not set'; exit 1; fi; npm publish --tag=$NPM_TAG",
