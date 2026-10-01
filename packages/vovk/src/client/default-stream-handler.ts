@@ -6,6 +6,23 @@ import '../utils/shim.js';
 
 export const DEFAULT_ERROR_MESSAGE = 'An unknown error at the default stream handler';
 
+type StreamErrorLine = { isError: true; reason: unknown; statusCode?: unknown };
+
+const ERROR_LINE_KEYS = new Set(['isError', 'reason', 'statusCode']);
+
+// only the envelope a responder writes ends the stream, not a data item that happens to have these keys
+const isErrorLine = (data: unknown): data is StreamErrorLine =>
+  typeof data === 'object' &&
+  data !== null &&
+  (data as { isError?: unknown }).isError === true &&
+  'reason' in data &&
+  Object.keys(data).every((key) => ERROR_LINE_KEYS.has(key));
+
+const toStreamError = ({ reason, statusCode }: StreamErrorLine) => {
+  if (typeof reason !== 'string') return reason;
+  return typeof statusCode === 'number' ? new HttpException(statusCode, reason) : new Error(reason);
+};
+
 /** ReadableStream of JSON Lines to VovkStreamAsyncIterable, reusable outside HTTP contexts. @see https://vovk.dev/jsonlines */
 export const readableStreamToAsyncIterable = <T = unknown>({
   readableStream,
@@ -78,36 +95,34 @@ export const readableStreamToAsyncIterable = <T = unknown>({
   const runPrimaryReader = async () => {
     let buffer = '';
     let iterationIndex = 0;
+    // one decoder for the whole stream keeps a multi-byte character that a chunk boundary splits
+    const decoder = new TextDecoder();
 
     // Returns true if the stream should stop (error encountered)
     const processLine = (line: string): boolean => {
-      let data: T | undefined;
+      let data: T;
       try {
         data = JSON.parse(line) as T;
       } catch {
         return false;
       }
 
-      if (data) {
-        // the error envelope is a control message, not data, subscribers must not see it
-        if (typeof data === 'object' && data !== null && 'isError' in data && 'reason' in data) {
-          const upcomingError = (data as { reason: unknown }).reason;
-          abortController?.abort(upcomingError);
-          const error = typeof upcomingError === 'string' ? new Error(upcomingError) : upcomingError;
-          setStreamError(error);
-          return true;
-        }
+      // the error envelope is a control message, not data, subscribers must not see it
+      if (isErrorLine(data)) {
+        abortController?.abort(data.reason);
+        setStreamError(toStreamError(data));
+        return true;
+      }
 
-        subscribers.forEach((cb) => {
-          if (!abortController?.signal.aborted) cb(data, iterationIndex);
-        });
+      subscribers.forEach((cb) => {
+        if (!abortController?.signal.aborted) cb(data, iterationIndex);
+      });
 
-        iterationIndex++;
+      iterationIndex++;
 
-        if (!abortController?.signal.aborted) {
-          cachedItems.push(data);
-          notifyWaiters();
-        }
+      if (!abortController?.signal.aborted) {
+        cachedItems.push(data);
+        notifyWaiters();
       }
 
       return false;
@@ -140,7 +155,7 @@ export const readableStreamToAsyncIterable = <T = unknown>({
             ? value
             : typeof value === 'number'
               ? String.fromCharCode(value)
-              : new TextDecoder().decode(value);
+              : decoder.decode(value, { stream: true });
         buffer += chunk;
 
         let newlineIdx: number;
@@ -164,6 +179,7 @@ export const readableStreamToAsyncIterable = <T = unknown>({
       }
 
       // Process any remaining data in the buffer (last line without trailing newline)
+      buffer += decoder.decode();
       const remaining = buffer.trim();
       if (remaining) {
         processLine(remaining);

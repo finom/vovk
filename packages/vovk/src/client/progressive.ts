@@ -32,7 +32,8 @@ export function progressive<T extends (...args: KnownAny[]) => Promise<VovkStrea
   void fn(arg)
     .then(async (result) => {
       for await (const item of result) {
-        for (const [key, value] of Object.entries(item)) {
+        // a null line carries no keys
+        for (const [key, value] of Object.entries(item ?? {})) {
           if (key in reg) {
             if (!reg[key].isSettled) {
               reg[key].isSettled = true;
