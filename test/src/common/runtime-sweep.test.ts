@@ -432,6 +432,28 @@ describe('Runtime sweep', () => {
         id: 5,
       });
     });
+
+    it('Lists the first 20 issues of an invalid body', async () => {
+      class TagController {
+        static tags = procedure({ body: z.object({ tags: z.array(z.string()) }) }).handle(async () => ({ ok: true }));
+      }
+      post('tags')(TagController, 'tags');
+      const handlers = initSegment({ segmentName: 'tags', controllers: { TagController } });
+
+      const response = await call(handlers, 'POST', 'tags', {
+        body: JSON.stringify({ tags: new Array(100_000).fill(0) }),
+        headers: { 'content-type': 'application/json' },
+      });
+      const { message, cause } = await response.json();
+      const issues = Array.from(
+        { length: 20 },
+        (_, i) => `Invalid input: expected string, received number at tags.${i}`
+      );
+
+      strictEqual(response.status, 400);
+      strictEqual(message, `Validation failed. Invalid body: ${issues.join(', ')}, and 99980 more`);
+      strictEqual(cause.issues.length, 20);
+    });
   });
 
   describe('Query', () => {
