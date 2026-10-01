@@ -2,6 +2,9 @@ import { createRequire } from 'node:module';
 import path from 'node:path';
 import { getPublicModuleNameFromPath } from './get-public-module-name-from-path.mjs';
 
+// the root of the running vovk-cli package, this file sits in dist/utils/
+const cliPackageRoot = path.resolve(import.meta.dirname, '../..');
+
 // Returns the path up to and including the last occurrence of the given module name
 export function getPathUpToModule(moduleName: string, fullPath: string) {
   const idx = fullPath.lastIndexOf(moduleName);
@@ -15,21 +18,24 @@ export function resolveAbsoluteModulePath(modulePath: string, cwd: string) {
     return path.resolve(cwd, modulePath);
   }
 
-  // For npm package names, use Node's module resolution algorithm
-  try {
-    const { moduleName, restPath } = getPublicModuleNameFromPath(modulePath);
+  const { moduleName, restPath } = getPublicModuleNameFromPath(modulePath);
 
-    if (!moduleName) {
-      throw new Error(`Invalid module path: ${modulePath}`);
-    }
-
-    const require = createRequire(import.meta.url);
-    const resolved = require.resolve(moduleName);
-
-    return path.resolve(getPathUpToModule(moduleName, path.dirname(resolved)), restPath);
-  } catch (e) {
-    console.error(`Error resolving module path: ${modulePath}`, e);
-    // If resolution fails, fall back to the original behavior
-    return path.resolve(cwd, './node_modules', modulePath);
+  // the built-in templates match the running CLI, even when the project has another vovk-cli
+  if (moduleName === 'vovk-cli') {
+    return path.resolve(cliPackageRoot, restPath);
   }
+
+  if (moduleName) {
+    // the project first: npx, pnpm and Yarn PnP keep its packages out of the CLI's reach
+    for (const resolveFrom of [path.join(cwd, 'package.json'), import.meta.url]) {
+      try {
+        const resolved = createRequire(resolveFrom).resolve(moduleName);
+        return path.resolve(getPathUpToModule(moduleName, path.dirname(resolved)), restPath);
+      } catch {
+        // not resolvable from there
+      }
+    }
+  }
+
+  return path.resolve(cwd, './node_modules', modulePath);
 }
