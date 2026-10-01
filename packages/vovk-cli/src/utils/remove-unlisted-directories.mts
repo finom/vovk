@@ -21,25 +21,23 @@ export async function removeUnlistedDirectories(
   return skipped;
 }
 
-// "[package_name]" is substituted at write time, so treat it as a wildcard segment
-function matchesGeneratedPath(relPath: string, generatedRelPaths: string[]): boolean {
+// the directories, relative to the scanned one, that hold relPath as a segment's generated file.
+// a nested segment such as bar/baz adds leading directories, "[package_name]" is substituted at write time
+function getSegmentDirs(relPath: string, generatedRelPaths: string[]): string[] {
   const segments = relPath.split(path.sep);
 
-  return generatedRelPaths.some((generated) => {
+  return generatedRelPaths.flatMap((generated) => {
     const generatedSegments = generated.split(path.sep);
-    if (generatedSegments.length > segments.length) return false;
-    // a nested segment such as bar/baz adds leading directories, so match the tail
     const offset = segments.length - generatedSegments.length;
-    return generatedSegments.every((segment, i) => segment === '[package_name]' || segment === segments[offset + i]);
+    const isMatch =
+      offset >= 0 &&
+      generatedSegments.every((segment, i) => segment === '[package_name]' || segment === segments[offset + i]);
+
+    return isMatch ? [segments.slice(0, offset).join(path.sep)] : [];
   });
 }
 
-// a matching name is not enough, a user file may be named like ours, so require our banner too.
-// json holds no comment and therefore no banner, so there the name stays the only signal
-async function isGeneratedFile(absolutePath: string, relPath: string, generatedRelPaths: string[]): Promise<boolean> {
-  if (!matchesGeneratedPath(relPath, generatedRelPaths)) return false;
-  if (path.extname(absolutePath) === '.json') return true;
-
+async function hasGeneratedBanner(absolutePath: string): Promise<boolean> {
   try {
     const content = await fs.readFile(absolutePath, 'utf-8');
     return content.slice(0, content.indexOf('\n') + 1 || undefined).includes(GENERATED_BANNER_PREFIX);
@@ -48,25 +46,55 @@ async function isGeneratedFile(absolutePath: string, relPath: string, generatedR
   }
 }
 
-// true when every file below dirPath is something the generator wrote
-async function containsOnlyGenerated(
-  dirPath: string,
-  generatedRelPaths: string[],
-  relativePath = ''
-): Promise<boolean> {
+async function listFiles(dirPath: string, relativePath = ''): Promise<{ files: string[]; hasEmptyDir: boolean }> {
   const entries = await fs.readdir(path.join(dirPath, relativePath), { withFileTypes: true });
+  const result = { files: [] as string[], hasEmptyDir: !entries.length };
 
   for (const entry of entries) {
     const entryRelPath = relativePath ? path.join(relativePath, entry.name) : entry.name;
 
     if (entry.isDirectory()) {
-      if (!(await containsOnlyGenerated(dirPath, generatedRelPaths, entryRelPath))) return false;
-    } else if (!(await isGeneratedFile(path.join(dirPath, entryRelPath), entryRelPath, generatedRelPaths))) {
-      return false;
+      const nested = await listFiles(dirPath, entryRelPath);
+      result.files.push(...nested.files);
+      result.hasEmptyDir ||= nested.hasEmptyDir;
+    } else {
+      result.files.push(entryRelPath);
     }
   }
 
-  return true;
+  return result;
+}
+
+// "generated" only when the generator wrote every file below dirPath, a matching name alone is not enough
+async function getDirectoryOrigin(
+  dirPath: string,
+  generatedRelPaths: string[]
+): Promise<'generated' | 'foreign' | 'empty'> {
+  const { files, hasEmptyDir } = await listFiles(dirPath);
+  if (!files.length) return 'empty';
+  // the generator never leaves an empty directory behind
+  if (hasEmptyDir) return 'foreign';
+
+  const bannerSegmentDirs = new Set<string>();
+  const jsonSegmentDirs: string[][] = [];
+
+  for (const file of files) {
+    const segmentDirs = getSegmentDirs(file, generatedRelPaths);
+    if (!segmentDirs.length) return 'foreign';
+
+    if (path.extname(file) === '.json') {
+      jsonSegmentDirs.push(segmentDirs);
+    } else if (await hasGeneratedBanner(path.join(dirPath, file))) {
+      for (const segmentDir of segmentDirs) bannerSegmentDirs.add(segmentDir);
+    } else {
+      return 'foreign';
+    }
+  }
+
+  // json holds no banner, so it counts only beside a bannered file of the same segment directory
+  return jsonSegmentDirs.every((segmentDirs) => segmentDirs.some((segmentDir) => bannerSegmentDirs.has(segmentDir)))
+    ? 'generated'
+    : 'foreign';
 }
 
 // recursively decides which dirs to keep or remove
@@ -113,10 +141,11 @@ async function processDirectory(
     } else {
       const fullPath = path.join(basePath, newRelativePath);
 
-      // never delete a directory that holds files we did not generate
-      if (generatedRelPaths && !(await containsOnlyGenerated(fullPath, generatedRelPaths))) {
-        skipped.push(fullPath);
-        continue;
+      if (generatedRelPaths) {
+        const origin = await getDirectoryOrigin(fullPath, generatedRelPaths);
+        // an empty directory is left alone silently, one holding anything else is reported
+        if (origin === 'foreign') skipped.push(fullPath);
+        if (origin !== 'generated') continue;
       }
 
       // Remove this directory since it's not in the allowed list
