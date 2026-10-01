@@ -170,7 +170,7 @@ export class VovkDev {
 
   #watchModules = (callback: () => void) => {
     const { config, cwd, log } = this.#projectInfo;
-    const modulesDirAbsolutePath = path.join(cwd, config.modulesDir);
+    const modulesDirAbsolutePath = path.resolve(cwd, config.modulesDir);
     log.debug(`Watching modules at ${modulesDirAbsolutePath}`);
     const processControllerChange = debounceWithArgs(this.#processControllerChange, 500);
     this.#modulesWatcher = chokidar
@@ -226,7 +226,7 @@ export class VovkDev {
         new Promise((resolve) => this.#watchSegments(() => resolve(0))),
       ]);
 
-      const schemaOutAbsolutePath = path.join(cwd, this.#schemaOut ?? this.#projectInfo.config.schemaOutDir);
+      const schemaOutAbsolutePath = path.resolve(cwd, this.#schemaOut ?? this.#projectInfo.config.schemaOutDir);
 
       if (isInitial) {
         callback();

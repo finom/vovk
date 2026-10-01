@@ -128,7 +128,7 @@ export async function newModule({
       throw new Error(`The template for "${type}" does not provide a fileName`);
     }
 
-    const absoluteModuleDir = path.join(cwd, outDir);
+    const absoluteModuleDir = path.resolve(cwd, outDir);
     const absoluteModulePath = path.join(absoluteModuleDir, fileName);
 
     const prettiedCode = await prettify(code, absoluteModulePath);
