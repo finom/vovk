@@ -46,6 +46,8 @@ Nested data is serialized as a query string with square brackets, commonly refer
 - Any other keys make an object: named keys (e.g., `[f]`, `[u]`), and numeric keys with gaps, so `record[7]=on` gives `{ record: { 7: "on" } }`.
 - The structure can be nested arbitrarily to represent complex data.
 
+The RPC client leaves out `null`, `undefined` and empty objects or arrays, and numbers the remaining array items without gaps, so `{ tags: ['a', null, 'b'] }{:ts}` arrives as `{ tags: ['a', 'b'] }{:ts}`.
+
 The following query string:
 
 ```

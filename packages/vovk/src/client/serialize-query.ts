@@ -15,10 +15,13 @@ function buildParams(key: string, value: KnownAny): string[] {
   if (typeof value === 'object') {
     // Array case
     if (Array.isArray(value)) {
-      // index-based brackets: ['aa', 'bb'] + 'foo' -> "foo[0]=aa&foo[1]=bb"
-      return value.flatMap((v, i) => {
-        const newKey = `${key}[${i}]`;
-        return buildParams(newKey, v);
+      // index-based brackets: ['aa', 'bb'] + 'foo' -> "foo[0]=aa&foo[1]=bb"; an item that sends nothing, such as
+      // null or {}, takes no index, since the server reads indexes with a gap as an object
+      let index = 0;
+      return value.flatMap((v) => {
+        const params = buildParams(`${key}[${index}]`, v);
+        if (params.length) index++;
+        return params;
       });
     }
 

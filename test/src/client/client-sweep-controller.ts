@@ -24,6 +24,11 @@ export default class ClientSweepController {
     return req.vovk.query();
   }
 
+  @get('query')
+  static getQuery(req: VovkRequest<null, Record<string, unknown>>) {
+    return req.vovk.query();
+  }
+
   @get('content-type')
   static getContentType(req: VovkRequest) {
     return { contentType: req.headers.get('content-type') };

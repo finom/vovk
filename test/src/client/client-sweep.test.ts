@@ -153,6 +153,29 @@ describe('Client sweep', () => {
       deepStrictEqual(result, { since: '1970-01-01T00:00:00.000Z', nested: { at: '1970-01-01T00:00:01.000Z' } });
     });
 
+    it('Numbers query array items consecutively, leaving out the empty ones', async () => {
+      const query = {
+        tags: ['a', null, 'b'],
+        ids: [undefined, '2'],
+        items: [{}, { id: '1' }],
+        matrix: [[], ['x']],
+        dates: [new Date('invalid'), new Date(0)],
+        rows: [{ a: null }, { a: '1' }],
+      };
+
+      deepStrictEqual(await ClientSweepRPC.getQuery({ query }), {
+        tags: ['a', 'b'],
+        ids: ['2'],
+        items: [{ id: '1' }],
+        matrix: [['x']],
+        dates: ['1970-01-01T00:00:00.000Z'],
+        rows: [{ a: '1' }],
+      });
+      ok(
+        ClientSweepRPC.getQuery.getURL({ query: { tags: ['a', null, 'b'] } }).endsWith('?tags%5B0%5D=a&tags%5B1%5D=b')
+      );
+    });
+
     it('Converts an object body to form fields', async () => {
       const result = await ClientSweepRPC.postFormEntries({
         body: {
