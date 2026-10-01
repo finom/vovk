@@ -1,5 +1,7 @@
 import { deepStrictEqual, ok, rejects, strictEqual, throws } from 'node:assert';
 import { describe, it } from 'node:test';
+import { setFlagsFromString } from 'node:v8';
+import { runInNewContext } from 'node:vm';
 import { forbidden, redirect, unauthorized } from 'next/dist/client/components/navigation.react-server.js';
 import {
   cloneControllerMetadata,
@@ -461,6 +463,32 @@ describe('Runtime sweep', () => {
       for (const path of ['child/a', 'child/b', 'child/c']) {
         strictEqual((await call(handlers, 'GET', path)).status, 200, path);
       }
+    });
+
+    it('Keeps long paths out of the route match cache', async () => {
+      // the gc() the test runner doesn't expose, to measure what the cache retains
+      setFlagsFromString('--expose-gc');
+      const gc = runInNewContext('gc') as () => void;
+      class LongIdController {
+        static getUser(_req: VovkRequest, params: Record<string, string>) {
+          return { length: params.id.length };
+        }
+      }
+      get('users/{id}')(LongIdController, 'getUser');
+      const handlers = initSegment({ segmentName: 'long-ids', controllers: { LongIdController } });
+
+      gc();
+      const heapBefore = process.memoryUsage().heapUsed;
+      for (let i = 0; i < 1000; i++) {
+        await (await call(handlers, 'GET', `users/${i}-${'x'.repeat(15_000)}`)).text();
+      }
+      gc();
+      const retained = process.memoryUsage().heapUsed - heapBefore;
+
+      ok(
+        retained < 10 * 1024 * 1024,
+        `${(retained / 1024 / 1024).toFixed(1)} MB retained by 1000 requests with 15 KB ids`
+      );
     });
 
     it('Finds the catch-all under a dynamic parent folder', async () => {

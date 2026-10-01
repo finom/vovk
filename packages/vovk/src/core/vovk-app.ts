@@ -252,6 +252,8 @@ class VovkApp {
   #routeMatchCache = new WeakMap<object, Map<string, { route: string; params: Record<string, string> }>>();
   // concrete paths come from the URL, cap the per handlers map cache so it can't grow forever
   static #ROUTE_MATCH_CACHE_LIMIT = 1000;
+  // and in size: a longer path, as one with a long token in it, is matched each time
+  static #ROUTE_MATCH_CACHE_MAX_PATH_LENGTH = 256;
 
   #getRouteShape = (route: string) => {
     let shape = this.#routeShapeCache.get(route);
@@ -306,9 +308,10 @@ class VovkApp {
     // a decoded "/" inside one segment makes the joined path ambiguous, /files/a%2Fb vs /files/a/b
     const hasEncodedSlash = path.some((segment) => segment.includes('/'));
     const pathStr = path.join('/');
+    const isCacheable = !hasEncodedSlash && pathStr.length <= VovkApp.#ROUTE_MATCH_CACHE_MAX_PATH_LENGTH;
 
     // Fast path: Check if this exact path has been matched before
-    let matchCache = hasEncodedSlash ? undefined : this.#routeMatchCache.get(handlers);
+    let matchCache = isCacheable ? this.#routeMatchCache.get(handlers) : undefined;
     const cachedMatch = matchCache?.get(pathStr);
     if (cachedMatch) {
       // a copy per request, a handler may change its params
@@ -341,7 +344,7 @@ class VovkApp {
       [methodKey] = methodKeys;
 
       // Cache successful matches, an ambiguous joined path must not become a cache key
-      if (methodKey && !hasEncodedSlash) {
+      if (methodKey && isCacheable) {
         if (!matchCache) {
           matchCache = new Map();
           this.#routeMatchCache.set(handlers, matchCache);
