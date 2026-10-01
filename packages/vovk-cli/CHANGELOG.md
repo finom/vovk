@@ -22,6 +22,14 @@ A cleanup release. `vovk-cli` is pre-1.0, so this minor carries breaking changes
 - `getMethodName: 'auto'` treats only `{param}` segments as params: `GET /users` is `listUsers` (was `getByUsers`), `GET /users/{id}` is `getUsersById`; a name taken twice gets `_2` instead of overwriting ([#35](https://github.com/finom/vovk/pull/35))
 - The generated-file banner has no timestamp, and files are compared whole: unchanged sources leave committed files alone, and a CLI upgrade rewrites them once ([3001c89](https://github.com/finom/vovk/commit/3001c89b), [#35](https://github.com/finom/vovk/pull/35))
 - A segment named `root` is refused: it would share the root segment's files ([#35](https://github.com/finom/vovk/pull/35))
+- `vovk generate` refuses to overwrite files it didn't generate; `--force` overrides ([#40](https://github.com/finom/vovk/pull/40))
+- Segmented Python and Rust clients put a whole package in each segment folder, named after the project and the segment ([#40](https://github.com/finom/vovk/pull/40))
+- `vovk init` chains existing `prebuild` and `bundle` scripts, moves a customized config to `.bak`, and detects the package manager from the lockfile ([#40](https://github.com/finom/vovk/pull/40))
+- `vovk new` writes all files of a module or none, unless `--overwrite` is given ([#40](https://github.com/finom/vovk/pull/40))
+- A config that is ESM or contains `import(` loads through Node, so its imports resolve from the config file; remote OpenAPI mixins are fetched only to generate a client ([#40](https://github.com/finom/vovk/pull/40))
+- Generation fails for a mixin named `root` or like a segment, and for one module name in two segments of the composed client; unnamed CLI mixins get `api`, `api2` and so on ([#40](https://github.com/finom/vovk/pull/40))
+- The bin runs with plain `node`, so it works on Alpine; `engines.node` is `^22.22.2 || ^24.15.0 || >=26.0.0` ([#40](https://github.com/finom/vovk/pull/40))
+- The `vovk` peer range is `>=3.7.0 || ^4.0.0-0`: 3.0-3.6 lack `vovk/create-rpc` ([#40](https://github.com/finom/vovk/pull/40))
 
 ### Fixed
 
@@ -40,6 +48,15 @@ A cleanup release. `vovk-cli` is pre-1.0, so this minor carries breaking changes
 - Absolute `modulesDir`, `--schema-out` and `--out` paths work, circular template `requires` throw, `vovk init` installs on Windows ([#35](https://github.com/finom/vovk/pull/35))
 - Mixin types: quoted property names, `allOf` with sibling properties, `nullable`, names starting with a digit ([#35](https://github.com/finom/vovk/pull/35))
 - A segmented client resolves relative `imports` from its own folder ([#35](https://github.com/finom/vovk/pull/35))
+- `vovk bundle` refuses a prebundle folder that holds other files or overlaps its output: `--prebundle-out src` deleted `src/` ([#40](https://github.com/finom/vovk/pull/40))
+- `devHttps` turns TLS checks off for the local schema request only, not for every fetch in the process ([#40](https://github.com/finom/vovk/pull/40))
+- `vovk dev`: `--exit` and `--next-dev` exit 1 on failure, `-p`/`--port` is read, `--schema-out` reaches the client, a removed segment leaves the client, rapid saves no longer leave schema requests pending, a corrupt schema file is replaced ([#40](https://github.com/finom/vovk/pull/40))
+- The root segment name check ignores case, `--no-segment-update` works, `--watch` generates on start, an invalid schema JSON fails ([#40](https://github.com/finom/vovk/pull/40))
+- Pruning runs once after all writes and keeps other output folders and case-only renames ([#40](https://github.com/finom/vovk/pull/40))
+- The bundle README follows the include/exclude and mixin flags; Python and Rust package names stay valid for a leading digit or a keyword ([#40](https://github.com/finom/vovk/pull/40))
+- `vovk init --channel` falls back to `latest` for packages without that channel; the `.gitignore` entry and scripts work on Windows ([#40](https://github.com/finom/vovk/pull/40))
+- Mixin types import what `vovk` exports, and non-ASCII or digit-led names give valid TypeScript ([#40](https://github.com/finom/vovk/pull/40))
+- `origin: null` resets an inherited origin; a project without tsconfig imports `./schema` without `.ts` ([#40](https://github.com/finom/vovk/pull/40))
 
 ### Upgrading from 0.2.x
 
@@ -48,3 +65,4 @@ A cleanup release. `vovk-cli` is pre-1.0, so this minor carries breaking changes
 3. Install `prettier` yourself if you want the client formatted, or set `prettifyClient: false`.
 4. Add the composed client output directory to `.gitignore`; `vovk init` does this for new projects.
 5. A stale `node_modules/.vovk-client` is inert and can be deleted.
+6. Use Node 22.22.2+, 24.15+ or 26+.
