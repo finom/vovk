@@ -185,7 +185,7 @@ export default config;
 
 Define a mixin as a pseudo-[segment](/segment) in `outputConfig.segments` by setting the `openAPIMixin` property. It accepts:
 
-- `source`: an object with either `url` (remote specs), `path` (local specs), or `object` (inline specs). The `url` variant may include a `fallback` file path used if the remote URL is unreachable.
+- `source`: an object with either `url` (remote specs), `file` (local specs), or `object` (inline specs). The `url` variant may include a `fallback` file path used if the remote URL is unreachable.
 - `getModuleName`: a string or function to name generated API modules. The string can be any custom string for hard-coded module names.
 - `getMethodName`: a string or function to generate method names. Supported strings: `camel-case-operation-id` (converts `operationId` like `get_users` to `getUsers`), or `auto` (generates from `operationId` or from HTTP method + path if `operationId` is unsuitable or missing).
 - `apiRoot` (optional): the API root URL, overridable per call via the `apiRoot` option. Required if the OAS document has no `servers` property.

@@ -31,19 +31,19 @@ Let's simulate how you would define this setup in your own `vovk.config.mjs` fil
 const config = {
   clientTemplateDefs: {
     schemaJson: {
-      templatePath: `vovk-cli/client-templates/schemaJson/`,
+      templatePath: `vovk-cli/client-templates/schema-json/`,
     },
     rsSrc: {
-      templatePath: `vovk-rust/client-templates/rsSrc/`,
+      templatePath: `vovk-rust/client-templates/rs-src/`,
       requires: {
         schemaJson: './',
       },
     },
     rsPkg: {
-      templatePath: `vovk-rust/client-templates/rsPkg/`,
+      templatePath: `vovk-rust/client-templates/rs-pkg/`,
     },
     rsReadme: {
-      templatePath: `vovk-rust/client-templates/rsReadme/`,
+      templatePath: `vovk-rust/client-templates/rs-readme/`,
     },
     rs: {
       composedClient: {
@@ -129,33 +129,33 @@ Used as the default template for both the [composed client](/composed) and the [
 
 Used as the default template for the [bundle](/bundle) as it doesn't include `openapi` object. Renders TypeScript code.
 
-- `templatePath` is `vovk-cli/client-templates/tsBase/`.
+- `templatePath` is `vovk-cli/client-templates/ts-base/`.
 - `requires` [schemaTs](#schemats), [mixins](#mixins) (the last one is used conditionally if [OpenAPI mixins](/mixins) are used).
 
 ### `schemaTs`
 
 Renders the `schema.ts` file that imports the schema of available segments from the `.vovk-schema/` folder and re-exports it as a TypeScript object.
 
-- `templatePath` is `vovk-cli/client-templates/schemaTs/`.
+- `templatePath` is `vovk-cli/client-templates/schema-ts/`.
 
 ### `schemaJson`
 
 Renders the `schema.json` file that contains the full schema of all segment schemas combined from the `.vovk-schema/` folder for the composed client, or of a single segment schema for the segmented client.
 
-- `templatePath` is `vovk-cli/client-templates/schemaJson/`.
+- `templatePath` is `vovk-cli/client-templates/schema-json/`.
 
 ### `openapiTs`
 
 Renders the `openapi.ts` file that re-exports the OpenAPI schema located in the `openapi.json` file (provided by the [openapiJson](#openapijson) template) in the same folder.
 
-- `templatePath` is `vovk-cli/client-templates/openapiTs/`.
+- `templatePath` is `vovk-cli/client-templates/openapi-ts/`.
 - `requires` [openapiJson](#openapijson) template to import the OpenAPI schema in the generated code.
 
 ### `openapiJson`
 
 Renders the `openapi.json` file that contains the OpenAPI schema. Can be used separately if you need to provide the OpenAPI schema in your project.
 
-- `templatePath` is `vovk-cli/client-templates/openapiJson/`.
+- `templatePath` is `vovk-cli/client-templates/openapi-json/`.
 
 To emit just the `openapi.json` file, without generating a client:
 
@@ -173,7 +173,7 @@ Renders the `README.md` file that contains the generated [TypeScript](/typescrip
 
 Renders the `package.json` file that makes the generated client ready to be published to NPM. It includes the `name`, `version`, `description`, and `repository` taken from the root `package.json`, and other `package` fields that can be overridden in the `bundle`, `composedClient`, or `segmentedClient` options in the [config](/config) file, at the root level or on the template definition level.
 
-- `templatePath` is `vovk-cli/client-templates/packageJson/`.
+- `templatePath` is `vovk-cli/client-templates/package-json/`.
 
 ### `mixins`
 
@@ -185,52 +185,48 @@ Generates types and [schema](/schema) for [OpenAPI mixins](/mixins) when they ar
 
 Renders the [Rust](/rust) client package that includes both source code and Cargo files.
 
-- `requires` [rsSrc](#rssrc) and [rsPkg](#rspkg) templates.
+- `requires` [rsSrc](#rssrc) (rendered to `./src/`), [rsPkg](#rspkg) and [rsReadme](#rsreadme) templates.
 - Defines a `composedClient` option to set the output directory to `dist_rust`.
-- `extends` [rsSrc](#rssrc) and [rsPkg](#rspkg) templates.
 
 ### `rsSrc`
 
 Renders [Rust](/rust) client source code files, such as `lib.rs`, `http_request.rs`, etc.
 
-- `templatePath` is `vovk-rust/client-templates/rsSrc/`.
+- `templatePath` is `vovk-rust/client-templates/rs-src/`.
 - `requires` [schemaJson](#schemajson) template to include the full schema in the generated code.
 
 ### `rsPkg`
 
-Renders `Cargo.toml` and `README.md` files for the Rust client.
+Renders the `Cargo.toml` file for the Rust client.
 
-- `templatePath` is `vovk-rust/client-templates/rsPkg/`.
-- `requires` [rsReadme](#rsreadme) template to include the README file in the package.
+- `templatePath` is `vovk-rust/client-templates/rs-pkg/`.
 
 ### `rsReadme`
 
 Renders the `README.md` file for the Rust client. Works similarly to the [readme](#readme) template.
 
-- `templatePath` is `vovk-rust/client-templates/rsReadme/`.
+- `templatePath` is `vovk-rust/client-templates/rs-readme/`.
 
 ### `py`
 
 Renders the Python client package that includes both source code and setup files.
 
-- `requires` [pySrc](#pysrc) and [pyPkg](#pypkg) templates.
+- `requires` [pySrc](#pysrc) (rendered to `./src/[package_name]/`), [pyPkg](#pypkg) and [pyReadme](#pyreadme) templates. `[package_name]` is the package name without `@`, with `/`, `-` and other characters a Python name can't hold turned into `_`: `@acme/web-app` becomes `acme_web_app`.
 - Defines a `composedClient` option to set the output directory to `dist_python`.
-- `extends` [pySrc](#pysrc) and [pyPkg](#pypkg) templates.
 
 ### `pySrc`
 
-Renders [Python](/python) client source code files, such as `__init__.py`, `http_request.py`, etc.
-- `templatePath` is `vovk-python/client-templates/pySrc/`.
+Renders [Python](/python) client source code files: `__init__.py`, `api_client.py` and `py.typed`.
+- `templatePath` is `vovk-python/client-templates/py-src/`.
 - `requires` [schemaJson](#schemajson) template to include the full schema in the generated code.
 
 ### `pyPkg`
-Renders `setup.py`, `pyproject.toml`, and `README.md` files for the Python client.
-- `templatePath` is `vovk-python/client-templates/pyPkg/`.
-- `requires` [pyReadme](#pyreadme) template to include the README file in the package.
+Renders `pyproject.toml` and `setup.cfg` files for the Python client.
+- `templatePath` is `vovk-python/client-templates/py-pkg/`.
 
 ### `pyReadme`
 Renders the `README.md` file for the Python client. Works similarly to the [readme](#readme) template.
-- `templatePath` is `vovk-python/client-templates/pyReadme/`.
+- `templatePath` is `vovk-python/client-templates/py-readme/`.
 
 
 ## Roadmap
