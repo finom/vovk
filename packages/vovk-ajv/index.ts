@@ -1,4 +1,4 @@
-import { Ajv, type Options } from 'ajv';
+import { Ajv, type Options, type ValidateFunction } from 'ajv';
 import _Ajv2020 from 'ajv/dist/2020.js';
 import _ajvErrors from 'ajv-errors';
 import _ajvFormats from 'ajv-formats';
@@ -21,14 +21,83 @@ export type VovkAjvConfig = {
   target?: 'draft-2020-12' | 'draft-07';
 };
 
-const createAjv = (options: NonNullable<Options>, target: NonNullable<VovkAjvConfig['target']>) => {
+type Target = NonNullable<VovkAjvConfig['target']>;
+
+const DEFAULT_OPTIONS: Options = {};
+
+const createAjv = (options: Options, target: Target) => {
   const AjvClass = target === 'draft-2020-12' ? Ajv2020 : Ajv;
-  const ajv = new AjvClass({ allErrors: true, ...options });
+  // a schema is not registered by its $id, so two handlers that share one can't collide in a shared instance
+  const ajv = new AjvClass({ allErrors: true, addUsedSchema: false, ...options });
   ajvFormats(ajv);
   ajvErrors(ajv);
   ajv.addKeyword('x-contentType');
   ajv.addKeyword('x-tsType');
   return ajv;
+};
+
+type AjvInstance = ReturnType<typeof createAjv>;
+
+type CachedAjv = { ajv: AjvInstance; validators: WeakMap<object, ValidateFunction> };
+
+// one Ajv per options object and draft, each compiling a schema object once
+const cache = new WeakMap<Options, Partial<Record<Target, CachedAjv>>>();
+
+// formats ajv-formats doesn't know, such as Zod's cuid, nanoid or e164, pass instead of failing compilation;
+// Zod emits a pattern for most of them, which is still checked
+const allowUnknownFormats = (ajv: AjvInstance, schema: unknown) => {
+  if (typeof schema !== 'object' || schema === null) return;
+  for (const [key, value] of Object.entries(schema)) {
+    if (key === 'format' && typeof value === 'string') {
+      if (!ajv.formats[value]) ajv.addFormat(value, true);
+    } else {
+      allowUnknownFormats(ajv, value);
+    }
+  }
+};
+
+const getValidator = (schema: VovkJSONSchemaBase, options: Options, target: Target) => {
+  const byTarget = cache.get(options) ?? {};
+  cache.set(options, byTarget);
+  const cached = byTarget[target] ?? { ajv: createAjv(options, target), validators: new WeakMap() };
+  byTarget[target] = cached;
+
+  let validator = cached.validators.get(schema);
+  if (!validator) {
+    allowUnknownFormats(cached.ajv, schema);
+    validator = cached.ajv.compile(schema);
+    cached.validators.set(schema, validator);
+  }
+  return { ajv: cached.ajv, validator };
+};
+
+// a file schema is { type: 'string', format: 'binary' }, which a File can't match, so it's checked as this string
+const BINARY_PLACEHOLDER = '<binary>';
+
+const toValidatable = (value: unknown): unknown =>
+  value instanceof Blob ? BINARY_PLACEHOLDER : Array.isArray(value) ? value.map(toValidatable) : value;
+
+const hasBinary = (value: unknown): boolean => value instanceof Blob || (Array.isArray(value) && value.some(hasBinary));
+
+// copied only when it holds files, so Ajv options that edit the data in place, such as useDefaults, still apply
+const withBinaryPlaceholders = (input: unknown) =>
+  typeof input === 'object' && input !== null && !Array.isArray(input) && Object.values(input).some(hasBinary)
+    ? Object.fromEntries(Object.entries(input).map(([key, value]) => [key, toValidatable(value)]))
+    : input;
+
+// a repeated key becomes an array, the way the server parses a form
+const formToObject = (form: FormData | URLSearchParams) => {
+  const result: Record<string, unknown> = {};
+  for (const [key, value] of form.entries()) {
+    const entry = toValidatable(value);
+    if (!Object.hasOwn(result, key)) {
+      result[key] = entry;
+      continue;
+    }
+    const existing = result[key];
+    result[key] = Array.isArray(existing) ? [...existing, entry] : [existing, entry];
+  }
+  return result;
 };
 
 const validate = ({
@@ -43,63 +112,33 @@ const validate = ({
   schema: VovkJSONSchemaBase;
   type: 'body' | 'query' | 'params';
   endpoint: string;
-  options: VovkAjvConfig['options'] | undefined;
+  options: Options;
   target: VovkAjvConfig['target'] | undefined;
 }) => {
-  if (input && schema) {
-    if (input instanceof Blob) {
-      return; // skip validation for binary data
-    }
-    const schemaTarget = schema.$schema?.includes('://json-schema.org/draft-07/schema') ? 'draft-07' : 'draft-2020-12';
-    const ajv = createAjv(options ?? {}, target ?? schemaTarget);
-    if (input instanceof FormData || input instanceof URLSearchParams) {
-      const formDataEntries = Array.from(input.entries());
-      const result: Record<string, unknown> = {};
+  // binary data is not validated
+  if (!input || !schema || input instanceof Blob) return;
+  const schemaTarget = schema.$schema?.includes('://json-schema.org/draft-07/schema') ? 'draft-07' : 'draft-2020-12';
+  const { ajv, validator } = getValidator(schema, options, target ?? schemaTarget);
+  const data =
+    input instanceof FormData || input instanceof URLSearchParams ? formToObject(input) : withBinaryPlaceholders(input);
 
-      formDataEntries.forEach(([key, value]) => {
-        // Process the value (handle Blobs/Files)
-        let processedValue: unknown;
-        if (value instanceof Blob) {
-          processedValue = '<binary>';
-        } else if (Array.isArray(value)) {
-          processedValue = value.map((item) => (item instanceof Blob ? '<binary>' : item));
-        } else {
-          processedValue = value;
-        }
-
-        // Handle duplicate keys
-        if (key in result) {
-          // If the key already exists
-          if (Array.isArray(result[key])) {
-            // If it's already an array, push to it
-            result[key].push(processedValue);
-          } else {
-            // If it's not an array yet, convert it to an array with both values
-            result[key] = [result[key], processedValue];
-          }
-        } else {
-          // First occurrence of this key
-          result[key] = processedValue;
-        }
-      });
-
-      input = result;
-    }
-    const isValid = ajv.validate(schema, input);
-    if (!isValid) {
-      throw new HttpException(HttpStatus.NULL, `Client-side validation failed. Invalid ${type}: ${ajv.errorsText()}`, {
-        input,
-        errors: ajv.errors,
+  if (!validator(data)) {
+    throw new HttpException(
+      HttpStatus.NULL,
+      `Client-side validation failed. Invalid ${type}: ${ajv.errorsText(validator.errors)}`,
+      {
+        input: data,
+        errors: validator.errors,
         endpoint,
-      });
-    }
+      }
+    );
   }
 };
 
 const getConfig = (schema: VovkSchema) => {
   const config = schema.meta?.config?.libs?.ajv as VovkAjvConfig | undefined;
 
-  const options = config?.options ?? {};
+  const options = config?.options ?? DEFAULT_OPTIONS;
   const target = config?.target;
 
   return { options, target };
