@@ -24,7 +24,7 @@ describe('Multitenant', async () => {
   await it('should bypass processing for schema endpoints', async () => {
     const result = multitenant({
       ...testConfig,
-      requestUrl: 'https://example.com/api/something_schema_',
+      requestUrl: 'https://example.com/api/admin/_schema_',
       requestHost: 'example.com',
     });
 
@@ -105,6 +105,51 @@ describe('Multitenant', async () => {
     assert.strictEqual(result.action, 'rewrite');
     assert.strictEqual(result.destination, 'https://admin.example.com/admin');
     assert.strictEqual(result.subdomains, null);
+  });
+
+  await it('should bypass only a _schema_ path segment', async () => {
+    const result = multitenant({
+      ...testConfig,
+      requestUrl: 'https://admin.example.com/secret_schema_',
+      requestHost: 'admin.example.com',
+    });
+
+    assert.strictEqual(result.action, 'rewrite');
+    assert.strictEqual(result.destination, 'https://admin.example.com/admin/secret_schema_');
+  });
+
+  await it('should match the host case-insensitively', async () => {
+    const result = multitenant({
+      ...testConfig,
+      requestUrl: 'https://Admin.Example.com/api/users',
+      requestHost: 'Admin.Example.com',
+    });
+
+    assert.strictEqual(result.action, 'rewrite');
+    assert.strictEqual(result.destination, 'https://admin.example.com/api/admin/users');
+  });
+
+  await it('should take only a DNS label as a wildcard value', async () => {
+    for (const requestHost of ['%2e%2e.customer.example.com', 'a?b#c.customer.example.com']) {
+      const result = multitenant({
+        ...testConfig,
+        requestUrl: 'https://x.customer.example.com/settings',
+        requestHost,
+      });
+
+      assert.strictEqual(result.action, null, requestHost);
+      assert.strictEqual(result.destination, null, requestHost);
+    }
+  });
+
+  await it('should replace the placeholders of the target path only', async () => {
+    const result = multitenant({
+      ...testConfig,
+      requestUrl: 'https://acme.customer.example.com/api/[customer_name]',
+      requestHost: 'acme.customer.example.com',
+    });
+
+    assert.strictEqual(result.destination, 'https://acme.customer.example.com/api/customer/[customer_name]');
   });
 
   await it('should return null action when no rules match', async () => {
