@@ -110,9 +110,10 @@ export function getBodyKind(schema: VovkJSONSchemaBase | undefined): BodyKind {
   // a form without multipart holds no files, so the generated struct is sent urlencoded
   if (ct?.includes('application/x-www-form-urlencoded')) return 'urlencoded';
   if (schema.format === 'binary' || schema.contentEncoding === 'binary') return 'binary';
-  if (ct?.some((c: string) => c.startsWith('text/'))) return 'text';
-  // a declared non JSON content type on a scalar body means raw bytes, e.g. application/octet-stream or image/png
+  // an object or an array goes out as JSON, whatever else the procedure declares
   const isStructured = schema.type === 'object' || schema.type === 'array' || !!schema.properties;
+  if (!isStructured && ct?.some((c: string) => c.startsWith('text/'))) return 'text';
+  // a declared non JSON content type on a scalar body means raw bytes, e.g. application/octet-stream or image/png
   const isJSONContentType = (c: string) => c === '*/*' || c === 'application/json' || c.endsWith('+json');
   if (!isStructured && ct?.length && !ct.some(isJSONContentType)) return 'binary';
   return 'json';
@@ -815,9 +816,14 @@ export function convertJSONSchemasToRustTypes({
       emitNamed(defSchema, defName, handlerMod, { ...ctx, enclosing: key });
     }
 
-    if (slotName === 'body' && getBodyKind(schema) === 'form') {
+    const bodyKind = slotName === 'body' ? getBodyKind(schema) : null;
+    if (bodyKind === 'form') {
       handlerMod.code += generateDocComment(schema, 1, pad);
       handlerMod.code += `${indent(1, pad)}pub use reqwest::multipart::Form as body;\n`;
+    } else if (bodyKind === 'text' || bodyKind === 'binary') {
+      // sent as is, so a schema without a type, as when only the content type is declared, still takes text or bytes
+      handlerMod.code += generateDocComment(schema, 1, pad);
+      handlerMod.code += `${indent(1, pad)}pub type body = ${bodyKind === 'text' ? 'String' : 'Vec<u8>'};\n`;
     } else {
       emitNamed(schema, slotName, handlerMod, ctx);
     }

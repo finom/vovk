@@ -125,6 +125,18 @@ pub mod test_client_validation {
         }
     }
 
+    // a text body is a String and a binary one bytes, whatever its schema says; a body that only declares its
+    // content type has no schema; an object goes out as JSON when JSON is declared
+    #[test]
+    fn test_body_types_follow_how_the_body_is_sent() {
+        let _ = shapes_rpc::declared_text_only("a".to_string(), (), (), None, None, false);
+        let _ = shapes_rpc::declared_xml_only(b"<a/>".to_vec(), (), (), None, None, false);
+        let _ = shapes_rpc::declared_image_only(vec![0], (), (), None, None, false);
+        let _ = shapes_rpc::text_enum("a".to_string(), (), (), None, None, false);
+        let body = shapes_rpc::object_as_json_or_text_::body { a: "a".to_string() };
+        let _ = shapes_rpc::object_as_json_or_text(body, (), (), None, None, false);
+    }
+
     #[tokio::test]
     async fn test_schemas_are_read_as_2020_12() {
         let tuple = shapes_rpc::tuple_::body { t: ("a".to_string(), 1.5) };

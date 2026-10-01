@@ -1806,6 +1806,78 @@
               "unevaluatedProperties": false
             }
           }
+        },
+        "declaredTextOnly": {
+          "path": "declared-text-only",
+          "httpMethod": "POST",
+          "validation": {
+            "body": {
+              "x-contentType": [
+                "text/plain"
+              ]
+            }
+          }
+        },
+        "declaredXmlOnly": {
+          "path": "declared-xml-only",
+          "httpMethod": "POST",
+          "validation": {
+            "body": {
+              "x-contentType": [
+                "application/xml"
+              ]
+            }
+          }
+        },
+        "declaredImageOnly": {
+          "path": "declared-image-only",
+          "httpMethod": "POST",
+          "validation": {
+            "body": {
+              "x-contentType": [
+                "image/*"
+              ]
+            }
+          }
+        },
+        "textEnum": {
+          "path": "text-enum",
+          "httpMethod": "POST",
+          "validation": {
+            "body": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "string",
+              "enum": [
+                "a",
+                "b"
+              ],
+              "x-contentType": [
+                "text/plain"
+              ]
+            }
+          }
+        },
+        "objectAsJsonOrText": {
+          "path": "object-as-json-or-text",
+          "httpMethod": "POST",
+          "validation": {
+            "body": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "object",
+              "properties": {
+                "a": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "a"
+              ],
+              "x-contentType": [
+                "application/json",
+                "text/plain"
+              ]
+            }
+          }
         }
       }
     }
