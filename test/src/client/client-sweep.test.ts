@@ -199,6 +199,17 @@ describe('Client sweep', () => {
       });
     });
 
+    it('Sends a lone surrogate in the query or a param as U+FFFD', async () => {
+      // a string cut inside an emoji, which encodeURIComponent refuses
+      const cut = '👋'.slice(0, 1);
+
+      deepStrictEqual(await ClientSweepRPC.getQuery({ query: { q: `a${cut}`, [cut]: 'x' } }), {
+        q: 'a\uFFFD',
+        '\uFFFD': 'x',
+      });
+      deepStrictEqual(await ClientSweepRPC.getUserPosts({ params: { id: `a${cut}` } }), { id: 'a\uFFFD' });
+    });
+
     it('Converts an object body to form fields', async () => {
       const result = await ClientSweepRPC.postFormEntries({
         body: {

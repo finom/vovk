@@ -11,7 +11,7 @@ import { deepExtend } from '../utils/deep-extend.js';
 import { defaultHandler } from './default-handler.js';
 import { defaultStreamHandler } from './default-stream-handler.js';
 import { fetcher as defaultFetcher } from './fetcher.js';
-import { serializeQuery } from './serialize-query.js';
+import { encodeURIComponentWellFormed, serializeQuery } from './serialize-query.js';
 
 export type { CombinedSpec, VovkHandlerSchema, VovkRequest };
 
@@ -35,7 +35,7 @@ const getHandlerPath = <T extends ControllerStaticMethod>(endpoint: string, para
       );
     }
     // encode so a value stays one path segment, the callback form also keeps $& from being a replacement pattern
-    result = result.replaceAll(placeholder, () => encodeURIComponent(segment));
+    result = result.replaceAll(placeholder, () => encodeURIComponentWellFormed(segment));
   }
   return result;
 };

@@ -1,5 +1,9 @@
 import type { KnownAny } from '../types/utils.js';
 
+// a lone surrogate, as in a string cut inside an emoji, can't be percent-encoded: like a URL does, it becomes U+FFFD
+export const encodeURIComponentWellFormed = (value: string) =>
+  encodeURIComponent(value.replace(/[\uD800-\uDFFF]/gu, '\uFFFD'));
+
 // recursively builds "key=value" strings, key grows like 'user', 'user[0]', 'user[0][name]'
 function buildParams(key: string, value: KnownAny, isToJSONResult = false): string[] {
   if (value === null || value === undefined) {
@@ -33,7 +37,7 @@ function buildParams(key: string, value: KnownAny, isToJSONResult = false): stri
     });
   }
 
-  return [`${encodeURIComponent(key)}=${encodeURIComponent(String(value))}`];
+  return [`${encodeURIComponentWellFormed(key)}=${encodeURIComponentWellFormed(String(value))}`];
 }
 
 // nested object to a bracket query string (no leading "?"),
