@@ -142,8 +142,7 @@ export function convertJSONSchemaToPythonDataType(options: ConvertOptions): stri
   };
   const namedTypeNames = new Map<string, string>();
 
-  // the classes and aliases of one call share the class body of the namespace, so their names are unique together;
-  // a property path or a schema name such as "google.protobuf.Timestamp" may hold characters a name can't;
+  // one call's classes and aliases share the namespace's class body, so their names are unique together;
   // one leading underscore, as Python mangles __names inside a class body
   const usedNames = new Set<string>([className]);
   function uniqueName(base: string): string {
@@ -159,9 +158,8 @@ export function convertJSONSchemaToPythonDataType(options: ConvertOptions): stri
     return ref.startsWith('#/') ? ref.split('/').pop() : undefined;
   }
 
-  // a name is marked in the expressions buildType returns and written where it lands: a TypedDict annotation is
-  // evaluated later and names it in full, an alias is evaluated at once in the class body, so it names it as a local,
-  // or as Any while its definition is still being built
+  // buildType marks the names it writes: a TypedDict annotation is evaluated later and takes the full name,
+  // an alias is evaluated at once in the class body and takes the local one, or Any while it is still being built
   const unfinished = new Set<string>();
   // a NUL never reaches a type expression: identifiers are sanitized and literals are JSON-escaped
   const MARK = '\u0000';
