@@ -1,6 +1,5 @@
 import { HttpException } from '../core/http-exception.js';
 import { HttpStatus } from '../types/enums.js';
-import type { KnownAny } from '../types/utils.js';
 
 // form encoding, as URLSearchParams and GET forms send it, where "+" is a space
 function decodeQueryComponent(component: string): string {
@@ -39,130 +38,48 @@ function parseKey(key: string): string[] {
   return segments;
 }
 
-// past this an index becomes an object key, like qs does, so a short query cannot size a huge array
-const ARRAY_LIMIT = 100;
+type QueryNode = string | QueryContainer;
 
-// digits only, Number() would take "-1" and "1e2" and then drop the value on an array
-function isArrayIndex(segment: string): boolean {
-  return /^\d+$/.test(segment) && Number(segment) <= ARRAY_LIMIT;
-}
+// built as Maps, so no key can reach a prototype; containers become arrays or objects at the end
+type QueryContainer = Map<string, QueryNode>;
 
-// which container the next segment needs, "" is a push and so wants an array too
-function wantsArray(segment: unknown): boolean {
-  return typeof segment === 'string' && (segment === '' || isArrayIndex(segment));
-}
-
-// the existing container under a key, or null; never an inherited member such as valueOf, which every object
-// shares with the whole process, and never a scalar, which cannot take a nested key
-function ownContainer(node: KnownAny, key: string | number): object | null {
-  if (!Object.hasOwn(node, key)) return null;
-  const value = node[key];
-  return value !== null && typeof value === 'object' ? value : null;
-}
-
-// sets a value at a segment path: numeric => array index, "" => array push, else object property
-function setValue(obj: Record<string, unknown>, path: string[], value: unknown): void {
-  let current: KnownAny = obj;
-  let parent: KnownAny = null;
-  let parentKey: string | number = '';
-
-  // an array only keeps numeric indices, any other key is dropped on serialization,
-  // so replace the array with an object before setting one
-  const demoteArray = () => {
-    if (!Array.isArray(current)) return;
-    const replacement: Record<string, unknown> = {};
-    const source = current as unknown as Record<string, unknown>;
-    for (const key of Object.keys(source)) replacement[key] = source[key];
-    if (parent) parent[parentKey] = replacement;
-    current = replacement;
-  };
-
-  for (let i = 0; i < path.length; i++) {
-    const segment = path[i];
-
-    // If we're at the last segment, set the value
+// sets a value at a segment path, "" is a push: the key after the ones the container already holds
+function setValue(root: QueryContainer, path: string[], value: string): void {
+  let container = root;
+  path.forEach((segment, i) => {
+    const key = segment === '' ? String(container.size) : segment;
     if (i === path.length - 1) {
-      if (segment === '') {
-        // Empty bracket => push
-        if (!Array.isArray(current)) {
-          current = [];
-        }
-        current.push(value);
-      } else if (isArrayIndex(segment)) {
-        // Numeric segment => array index
-        const idx = Number(segment);
-        if (!Array.isArray(current)) {
-          current = [];
-        }
-        current[idx] = value;
-      } else {
-        // Object property
-        demoteArray();
-        current[segment] = value;
-      }
-    } else {
-      // Not the last segment: descend into existing structure or create it
-      const nextSegment = path[i + 1];
-
-      if (segment === '') {
-        // Empty bracket => push
-        if (!Array.isArray(current)) {
-          // Convert the current node into an array, if not one
-          current = [];
-        }
-        // If we are not at the last path, we need a placeholder object or array
-        // for the next segment. We'll push something and move current to that.
-        if (current.length === 0) {
-          // nothing in array yet
-          current.push(wantsArray(nextSegment) ? [] : {});
-        } else if (wantsArray(nextSegment)) {
-          // next is numeric => we want an array
-          if (!Array.isArray(current[current.length - 1])) {
-            current[current.length - 1] = [];
-          }
-        } else {
-          // next is not numeric => we want an object
-          if (typeof current[current.length - 1] !== 'object') {
-            current[current.length - 1] = {};
-          }
-        }
-        parent = current;
-        parentKey = current.length - 1;
-        current = current[current.length - 1];
-      } else if (isArrayIndex(segment)) {
-        // segment is numeric => array index
-        const idx = Number(segment);
-        if (!Array.isArray(current)) {
-          current = [];
-        }
-        if (!ownContainer(current, idx)) {
-          // Create placeholder for next segment
-          current[idx] = wantsArray(nextSegment) ? [] : {};
-        }
-        parent = current;
-        parentKey = idx;
-        current = current[idx];
-      } else {
-        // segment is an object key
-        demoteArray();
-        if (!ownContainer(current, segment)) {
-          // Create placeholder
-          current[segment] = wantsArray(nextSegment) ? [] : {};
-        }
-        parent = current;
-        parentKey = segment;
-        current = current[segment];
-      }
+      container.set(key, value);
+      return;
     }
+    // a scalar under the key can't take a nested key, so a container replaces it
+    const existing = container.get(key);
+    const next = existing instanceof Map ? existing : new Map<string, QueryNode>();
+    container.set(key, next);
+    container = next;
+  });
+}
+
+// a container whose keys are exactly 0..n-1 is an array, any other is an object: an index can't size an
+// array beyond the pairs that fill it, and a record with numeric keys such as { 7: 'on' } stays a record
+function toValue(node: QueryNode): unknown {
+  if (typeof node === 'string') return node;
+  const entries = [...node].map(([key, child]) => [key, toValue(child)] as const);
+  const isArray = entries.every(([key]) => /^(0|[1-9]\d*)$/.test(key) && Number(key) < entries.length);
+  if (isArray) {
+    const array: unknown[] = new Array(entries.length);
+    for (const [key, value] of entries) array[Number(key)] = value;
+    return array;
   }
+  return Object.fromEntries(entries);
 }
 
 // bracket query string to a nested object, supports "a[b][0]=value", "arr[]=1&arr[]=2" etc,
 // e.g. "x=xx&y[0]=yy&z[f]=x&z[d][x]=ee" => { x: "xx", y: ["yy"], z: { f: "x", d: { x: "ee" } } }
 export function parseQuery(queryString: string): Record<string, unknown> {
-  const result: Record<string, unknown> = {};
+  const root: QueryContainer = new Map();
 
-  if (!queryString) return result;
+  if (!queryString) return {};
 
   // Split into key=value pairs
   const pairs = queryString
@@ -181,11 +98,12 @@ export function parseQuery(queryString: string): Record<string, unknown> {
     // Parse bracket notation
     const pathSegments = parseKey(decodedKey);
 
-    if (pathSegments.some((segment) => FORBIDDEN_KEYS.has(segment))) continue;
+    // a key that starts with a bracket has no name to set
+    if (pathSegments[0] === '' || pathSegments.some((segment) => FORBIDDEN_KEYS.has(segment))) continue;
 
-    // Insert into the result object
-    setValue(result, pathSegments, decodedVal);
+    setValue(root, pathSegments, decodedVal);
   }
 
-  return result;
+  // the query itself is always an object, even with keys such as "0"
+  return Object.fromEntries([...root].map(([key, node]) => [key, toValue(node)]));
 }

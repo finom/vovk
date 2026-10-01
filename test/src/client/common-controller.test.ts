@@ -502,6 +502,23 @@ describe('Client with composed RPC client', () => {
     });
   });
 
+  it('Reads an array of any length and keeps a record with numeric keys', async () => {
+    const getURL = CommonControllerRPC.getNestedQuery.getURL as (options: { apiRoot: string }) => string;
+    const endpoint = getURL({ apiRoot });
+    const long = Array.from({ length: 150 }, (_, i) => `long[${i}]=${i}`).join('&');
+    const response = await fetch(`${endpoint}?${long}&record[7]=on&record[42]=off&reversed[1]=b&reversed[0]=a`);
+
+    strictEqual(response.status, 200);
+
+    const { query } = (await response.json()) as { query: Record<string, unknown> };
+
+    deepStrictEqual(query, {
+      long: Array.from({ length: 150 }, (_, i) => String(i)),
+      record: { '7': 'on', '42': 'off' },
+      reversed: ['a', 'b'],
+    });
+  });
+
   it('Handles JSONL response', async () => {
     const result = await CommonControllerRPC.getJsonlResponse({
       apiRoot,
