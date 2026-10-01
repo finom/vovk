@@ -184,4 +184,45 @@ pub mod test_requests {
 
         assert_eq!(data, json!({"isError": false, "data": 1}));
     }
+
+    // calls share a connection: a client per call would open one per call
+    #[tokio::test]
+    async fn test_connection_reuse() {
+        use std::sync::atomic::{AtomicUsize, Ordering};
+        use std::sync::Arc;
+        use tokio::io::{AsyncReadExt, AsyncWriteExt};
+
+        let listener = tokio::net::TcpListener::bind("127.0.0.1:0").await.unwrap();
+        let api_root = format!("http://{}/api", listener.local_addr().unwrap());
+        let connections = Arc::new(AtomicUsize::new(0));
+        let accepted = connections.clone();
+
+        tokio::spawn(async move {
+            while let Ok((mut socket, _)) = listener.accept().await {
+                accepted.fetch_add(1, Ordering::SeqCst);
+                tokio::spawn(async move {
+                    let mut pending = Vec::new();
+                    let mut buffer = [0; 1024];
+                    while let Ok(read @ 1..) = socket.read(&mut buffer).await {
+                        pending.extend_from_slice(&buffer[..read]);
+                        // a GET has no body, so a blank line ends each request
+                        while let Some(end) = pending.windows(4).position(|window| window == b"\r\n\r\n") {
+                            pending.drain(..end + 4);
+                            let response = "HTTP/1.1 200 OK\r\ncontent-type: application/json\r\ncontent-length: 2\r\n\r\n{}";
+                            if socket.write_all(response.as_bytes()).await.is_err() {
+                                return;
+                            }
+                        }
+                    }
+                });
+            }
+        });
+
+        for _ in 0..3 {
+            let data = rust_sweep_rpc::get_is_error_data((), (), (), None, Some(&api_root), false).await.unwrap();
+            assert_eq!(data, json!({}));
+        }
+
+        assert_eq!(connections.load(Ordering::SeqCst), 1);
+    }
 }

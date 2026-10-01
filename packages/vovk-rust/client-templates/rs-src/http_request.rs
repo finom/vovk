@@ -5,6 +5,7 @@ use std::collections::HashMap;
 use std::error::Error;
 use std::fmt;
 use std::pin::Pin;
+use std::sync::{Arc, Mutex};
 use jsonschema::{Draft, Validator};
 use serde_json::Value;
 use urlencoding;
@@ -78,6 +79,17 @@ static FULL_SCHEMA: Lazy<Result<Value, String>> = Lazy::new(|| {
         .map_err(|e| format!("Failed to read schema: {}", e))
 });
 
+// segment, controller, handler and slot
+type ValidatorKey = (&'static str, &'static str, &'static str, &'static str);
+
+// each schema is compiled on its first use
+static VALIDATORS: Lazy<Mutex<HashMap<ValidatorKey, Arc<Validator>>>> = Lazy::new(|| Mutex::new(HashMap::new()));
+
+thread_local! {
+    // a pooled connection runs on the runtime that opened it, so each thread keeps its own client
+    static CLIENT: Client = Client::new();
+}
+
 // draft 7 only when the schema declares it, any other schema is read as 2020-12, as vovk-ajv does
 fn compile_schema(schema: &Value) -> Result<Validator, String> {
     let is_draft7 = schema
@@ -92,8 +104,19 @@ fn compile_schema(schema: &Value) -> Result<Validator, String> {
         .map_err(|e| e.to_string())
 }
 
-fn validate(schema: &Value, value: &Value, label: &str) -> Result<(), String> {
-    let validator = compile_schema(schema).map_err(|e| format!("Invalid {} schema: {}", label.to_lowercase(), e))?;
+fn validate(endpoint: &Endpoint, label: &'static str, schema: &Value, value: &Value) -> Result<(), String> {
+    let key = (endpoint.segment_name, endpoint.controller_name, endpoint.handler_name, label);
+    let cached = VALIDATORS.lock().unwrap_or_else(|e| e.into_inner()).get(&key).cloned();
+    let validator = match cached {
+        Some(validator) => validator,
+        None => {
+            let validator = Arc::new(
+                compile_schema(schema).map_err(|e| format!("Invalid {} schema: {}", label.to_lowercase(), e))?,
+            );
+            VALIDATORS.lock().unwrap_or_else(|e| e.into_inner()).insert(key, validator.clone());
+            validator
+        }
+    };
     let errors: Vec<String> = validator
         .iter_errors(value)
         .map(|err| format!("{}: {}", err.instance_path(), err))
@@ -230,7 +253,7 @@ where
         // a multipart, text or binary body is left to the server
         if let Some(body_schema) = validation.get("body") {
             if let Some(ref body_val) = body_value {
-                validate(body_schema, body_val, "Body")?;
+                validate(endpoint, "Body", body_schema, body_val)?;
             } else if matches!(body, RequestBody::None) && http_method != "GET" {
                 return Err("Body is required for validation but not provided".into());
             }
@@ -238,7 +261,7 @@ where
         
         if let Some(query_schema) = validation.get("query") {
             if let Some(ref query_val) = query_value {
-                validate(query_schema, query_val, "Query")?;
+                validate(endpoint, "Query", query_schema, query_val)?;
             } else {
                 return Err("Query is required for validation but not provided".into());
             }
@@ -246,7 +269,7 @@ where
         
         if let Some(params_schema) = validation.get("params") {
             if let Some(ref params_val) = params_value {
-                validate(params_schema, params_val, "Params")?;
+                validate(endpoint, "Params", params_schema, params_val)?;
             } else {
                 return Err("Params are required for validation but not provided".into());
             }
@@ -337,7 +360,7 @@ where
     };
 
     // Build the HTTP request
-    let client = Client::new();
+    let client = CLIENT.with(Client::clone);
     let request = client.request(method, &url).headers(headers_map);
 
     let request = match body {
