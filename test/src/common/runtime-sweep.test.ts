@@ -1,7 +1,17 @@
 import { deepStrictEqual, ok, rejects, strictEqual } from 'node:assert';
 import { describe, it } from 'node:test';
 import { forbidden, redirect, unauthorized } from 'next/dist/client/components/navigation.react-server.js';
-import { get, HttpException, HttpStatus, initSegment, multitenant, post, procedure, type VovkRequest } from 'vovk';
+import {
+  createDecorator,
+  get,
+  HttpException,
+  HttpStatus,
+  initSegment,
+  multitenant,
+  post,
+  procedure,
+  type VovkRequest,
+} from 'vovk';
 import { z } from 'zod';
 
 type Handlers = ReturnType<typeof initSegment>;
@@ -453,6 +463,39 @@ describe('Runtime sweep', () => {
       strictEqual(response.status, 400);
       strictEqual(message, `Validation failed. Invalid body: ${issues.join(', ')}, and 99980 more`);
       strictEqual(cause.issues.length, 20);
+    });
+
+    it('Validates a body that a decorator and the segment onBefore read first', async () => {
+      const ownerGuard = createDecorator(async (req: VovkRequest<{ ownerId: string }>, next) => {
+        const { ownerId } = await req.vovk.body();
+        if (ownerId !== 'me') throw new HttpException(HttpStatus.FORBIDDEN, 'Not yours');
+        return next();
+      });
+      class NoteController {
+        static create = procedure({ body: z.object({ ownerId: z.string(), title: z.string() }) }).handle(
+          async (req) => ({ body: await req.vovk.body(), text: await req.text() })
+        );
+      }
+      ownerGuard()(NoteController, 'create');
+      post('create')(NoteController, 'create');
+      const bodiesBefore: unknown[] = [];
+      const handlers = initSegment({
+        segmentName: 'notes',
+        controllers: { NoteController },
+        onBefore: async (req) => {
+          bodiesBefore.push(await req.vovk.body());
+        },
+      });
+      const text = JSON.stringify({ ownerId: 'me', title: 'Hello' });
+
+      const response = await call(handlers, 'POST', 'create', {
+        body: text,
+        headers: { 'content-type': 'application/json' },
+      });
+
+      strictEqual(response.status, 200);
+      deepStrictEqual(await response.json(), { body: { ownerId: 'me', title: 'Hello' }, text });
+      deepStrictEqual(bodiesBefore, [{ ownerId: 'me', title: 'Hello' }]);
     });
   });
 

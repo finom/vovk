@@ -1,5 +1,6 @@
 import { HttpException } from '../core/http-exception.js';
 import { HttpStatus } from '../types/enums.js';
+import { bufferBody } from './buffer-body.js';
 import { getMediaType } from './get-media-type.js';
 import { parseForm } from './parse-form.js';
 
@@ -35,6 +36,9 @@ export async function parseBody(
   if (contentType && !mediaType) {
     throw new HttpException(HttpStatus.UNSUPPORTED_MEDIA_TYPE, `Unsupported media type: ${contentType}`);
   }
+
+  // every reader shares one copy: a decorator or onBefore may read the body before a procedure validates it
+  await bufferBody(req);
 
   // no Content-Type, application/json or a +json suffix type (e.g. application/ld+json, application/vnd.api+json) → object
   if (!mediaType || mediaType === 'application/json' || mediaType.endsWith('+json')) {
