@@ -18,7 +18,7 @@ class HttpException(Exception):
         super().__init__(response_body['message'])
         self.message = response_body['message']
         self.status_code = response_body['statusCode']
-        self.cause = 'cause' in response_body and response_body['cause']
+        self.cause = response_body.get('cause')
 
 class ApiClient:
     @staticmethod
@@ -131,6 +131,7 @@ class ApiClient:
             
         Raises:
             ValueError: If validation fails or required parameters are missing
+            HttpException: If the response status is 400 or higher
             requests.RequestException: If the request fails
         """
         if not url:
@@ -251,18 +252,38 @@ class ApiClient:
 
         # Handle response based on content type
         content_type = response.headers.get('Content-Type', '')
-        
+
+        if response.status_code >= 400:
+            raise self._to_http_exception(response, content_type)
+
         if 'application/jsonl' in content_type:
             return self._stream_jsonl(response)
-        
+
         elif 'application/json' in content_type:
-            result = response.json()
-            if 'isError' in result:
-                raise HttpException(result)
-            return result
-        
+            # an empty body, such as a 204 answer has, holds no value
+            return response.json() if response.content else None
+
         # Default to returning raw content if content type is not recognized
         return response.text
+
+    @staticmethod
+    def _to_http_exception(response: Response, content_type: str) -> HttpException:
+        # a proxy's error page or a plain text error has no JSON envelope, its text is the message
+        text = response.text
+        body: Any = None
+        if 'json' in content_type:
+            try:
+                body = json.loads(text)
+            except ValueError:
+                pass
+        envelope: Dict[str, Any] = body if isinstance(body, dict) else {}
+        message = envelope.get('message')
+        return HttpException({
+            'message': message if isinstance(message, str) else text or response.reason or 'Unknown error',
+            'statusCode': response.status_code,
+            'isError': True,
+            'cause': envelope.get('cause'),
+        })
 
     def _build_query_string(self, data: dict[str, Any], prefix: str = '') -> str:
         """

@@ -159,6 +159,11 @@ class TestValidation(unittest.TestCase):
         self.assertEqual(context.exception.status_code, 500)
         self.assertEqual(str(context.exception), "Internal server error")
 
+    def test_falsy_output(self) -> None:
+        self.assertIs(WithValidationRPC.handle_falsy_output(query={"type": "boolean"}), False)
+        self.assertEqual(WithValidationRPC.handle_falsy_output(query={"type": "number"}), 0)
+        self.assertEqual(WithValidationRPC.handle_falsy_output(query={"type": "string"}), '')
+
     def test_form(self) -> None:
         data: WithValidationRPC.HandleMultipartDataOnlyOutput = WithValidationRPC.handle_multipart_data_only(
             body={"hello": "world"},
