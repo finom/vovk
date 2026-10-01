@@ -1,3 +1,6 @@
+import { HttpException } from '../core/http-exception.js';
+import { HttpStatus } from '../types/enums.js';
+import { getMediaType } from './get-media-type.js';
 import { parseForm } from './parse-form.js';
 
 const formTypes = ['multipart/form-data', 'application/x-www-form-urlencoded'];
@@ -21,31 +24,44 @@ export const textTypes = [
   'application/x-jsonlines',
 ] as const;
 
-export const textSuffixPattern = /\+(xml|text|yaml|json-seq)\b/;
-
-const includes = (ct: string, types: readonly string[]) => types.some((t) => ct.includes(t));
+export const textSuffixPattern = /\+(xml|text|yaml|json-seq)$/;
 
 export async function parseBody(
   req: Request
 ): Promise<Record<string, unknown> | FormData | URLSearchParams | string | File> {
   const contentType = req.headers?.get('content-type');
+  const mediaType = contentType ? getMediaType(contentType) : null;
 
-  // application/json or +json suffix types (e.g. application/ld+json, application/vnd.api+json) → object
-  if (!contentType || contentType.includes('application/json') || contentType.includes('+json')) {
-    const body = await req.json();
+  if (contentType && !mediaType) {
+    throw new HttpException(HttpStatus.UNSUPPORTED_MEDIA_TYPE, `Unsupported media type: ${contentType}`);
+  }
+
+  // no Content-Type, application/json or a +json suffix type (e.g. application/ld+json, application/vnd.api+json) → object
+  if (!mediaType || mediaType === 'application/json' || mediaType.endsWith('+json')) {
+    let body: Record<string, unknown>;
+    try {
+      body = await req.json();
+    } catch (e) {
+      if (e instanceof SyntaxError) throw new HttpException(HttpStatus.BAD_REQUEST, `Invalid JSON body: ${e.message}`);
+      throw e;
+    }
     req.json = () => Promise.resolve(body);
     return body;
   }
 
   // multipart/form-data → FormData
-  if (includes(contentType, formTypes)) {
+  if (formTypes.includes(mediaType)) {
     const body = await req.formData();
     req.formData = () => Promise.resolve(body);
     return parseForm(body);
   }
 
   // text/* or known text-based application types → string
-  if (contentType.startsWith('text/') || includes(contentType, textTypes) || textSuffixPattern.test(contentType)) {
+  if (
+    mediaType.startsWith('text/') ||
+    (textTypes as readonly string[]).includes(mediaType) ||
+    textSuffixPattern.test(mediaType)
+  ) {
     const body = await req.text();
     req.text = () => Promise.resolve(body);
     return body;
@@ -56,5 +72,5 @@ export async function parseBody(
   const fileName = disposition?.match(/filename="(.+?)"/)?.[1] ?? 'file';
   const body = await req.blob();
   req.blob = () => Promise.resolve(body);
-  return new File([body], fileName, { type: contentType });
+  return new File([body], fileName, { type: contentType ?? undefined });
 }

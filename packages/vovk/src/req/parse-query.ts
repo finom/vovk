@@ -1,4 +1,15 @@
+import { HttpException } from '../core/http-exception.js';
+import { HttpStatus } from '../types/enums.js';
 import type { KnownAny } from '../types/utils.js';
+
+// form encoding, as URLSearchParams and GET forms send it, where "+" is a space
+function decodeQueryComponent(component: string): string {
+  try {
+    return decodeURIComponent(component.replace(/\+/g, ' '));
+  } catch {
+    throw new HttpException(HttpStatus.BAD_REQUEST, `Malformed query string: ${component}`);
+  }
+}
 
 // segments that would let a query string reach Object.prototype, such pairs are dropped like qs does
 const FORBIDDEN_KEYS = new Set(['__proto__', 'constructor', 'prototype']);
@@ -164,8 +175,8 @@ export function parseQuery(queryString: string): Record<string, unknown> {
     const rawKey = eqIndex === -1 ? pair : pair.slice(0, eqIndex);
     const rawVal = eqIndex === -1 ? '' : pair.slice(eqIndex + 1);
 
-    const decodedKey = decodeURIComponent(rawKey);
-    const decodedVal = decodeURIComponent(rawVal);
+    const decodedKey = decodeQueryComponent(rawKey);
+    const decodedVal = decodeQueryComponent(rawVal);
 
     // Parse bracket notation
     const pathSegments = parseKey(decodedKey);
