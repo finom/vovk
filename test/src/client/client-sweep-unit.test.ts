@@ -2,7 +2,7 @@ import { deepStrictEqual, ok, rejects, strictEqual } from 'node:assert';
 import { createRequire } from 'node:module';
 import { describe, it } from 'node:test';
 import vm from 'node:vm';
-import { HttpException, progressive } from 'vovk';
+import { createFetcher, HttpException, progressive } from 'vovk';
 import { createRPC } from 'vovk/create-rpc';
 import { deepExtend, readableStreamToAsyncIterable, type VovkStreamAsyncIterable } from 'vovk/internal';
 import { validateOnClient } from '../../../packages/vovk-ajv/index.js';
@@ -20,6 +20,37 @@ const splitInsideEmoji = (text: string) => {
   const bytes = new TextEncoder().encode(text);
   const cut = bytes.indexOf(0xf0) + 2;
   return [bytes.slice(0, cut), bytes.slice(cut)];
+};
+
+type TestHandlers = Record<string, { path: string; httpMethod: string; validation?: object }>;
+
+type TestCall = ((input?: object) => Promise<unknown>) & { getURL: (input?: object) => string };
+
+// an RPC module over a hand-written schema, the requests go to whatever fetch is stubbed in
+const rpcOf = (handlers: TestHandlers, ...rest: unknown[]) => {
+  const schema = {
+    segments: {
+      '': {
+        segmentName: '',
+        emitSchema: true,
+        controllers: { TestRPC: { rpcModuleName: 'TestRPC', prefix: 'test', handlers } },
+      },
+    },
+  };
+  return (createRPC as (...args: unknown[]) => unknown)(schema, '', 'TestRPC', ...rest) as Record<string, TestCall>;
+};
+
+const withFetch = async <T>(
+  stub: (url: string, init: RequestInit) => Response | Promise<Response>,
+  run: () => Promise<T>
+): Promise<T> => {
+  const original = globalThis.fetch;
+  globalThis.fetch = stub as unknown as typeof fetch;
+  try {
+    return await run();
+  } finally {
+    globalThis.fetch = original;
+  }
 };
 
 describe('Client sweep, pure functions', () => {
@@ -171,6 +202,41 @@ describe('Client sweep, pure functions', () => {
         { body: fileSchema },
         { fullSchema, endpoint: '/x' }
       );
+    });
+  });
+
+  describe('fetcher', () => {
+    const handlers = { get: { path: '', httpMethod: 'GET' } };
+
+    it('Runs every callback when one unsubscribes itself', async () => {
+      const fetcher = createFetcher();
+      const calls: string[] = [];
+      const offError = fetcher.onError(() => {
+        calls.push('error 1');
+        offError();
+      });
+      fetcher.onError(() => {
+        calls.push('error 2');
+      });
+      const offSuccess = fetcher.onSuccess(() => {
+        calls.push('success 1');
+        offSuccess();
+      });
+      fetcher.onSuccess(() => {
+        calls.push('success 2');
+      });
+      const rpc = rpcOf(handlers, fetcher);
+
+      await withFetch(
+        () => Response.json({ message: 'teapot' }, { status: 418 }),
+        () => rejects(rpc.get(), HttpException)
+      );
+      await withFetch(
+        () => Response.json({ ok: true }),
+        () => rpc.get()
+      );
+
+      deepStrictEqual(calls, ['error 1', 'error 2', 'success 1', 'success 2']);
     });
   });
 });

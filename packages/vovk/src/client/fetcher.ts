@@ -217,7 +217,7 @@ export function createFetcher<T>({
       if (contentType?.startsWith('application/jsonl')) {
         // route mid-stream errors to onError callbacks, which otherwise never see them
         respData = wrapStreamErrors(defaultStreamHandler({ response, abortController }), async (error) => {
-          for (const cb of onErrorCallbacks) {
+          for (const cb of [...onErrorCallbacks]) {
             await cb(error as HttpException, inputOptions, { response, init: requestInit, respData, schema });
           }
         });
@@ -235,13 +235,14 @@ export function createFetcher<T>({
         ? await transformResponse(respData, inputOptions, { response, init: requestInit, schema })
         : respData;
 
-      for (const cb of onSuccessCallbacks) {
+      // a copy, so a callback that unsubscribes itself doesn't make the next one skip
+      for (const cb of [...onSuccessCallbacks]) {
         await cb(respData, inputOptions, { response, init: requestInit, schema });
       }
 
       return [respData, response];
     } catch (error) {
-      for (const cb of onErrorCallbacks) {
+      for (const cb of [...onErrorCallbacks]) {
         await cb(error as HttpException, inputOptions, { response, init: requestInit, respData, schema });
       }
 
