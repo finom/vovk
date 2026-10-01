@@ -1,4 +1,3 @@
-import type { NextResponse } from 'next/server.js';
 import type { defaultHandler } from '../client/default-handler.js';
 import type { defaultStreamHandler } from '../client/default-stream-handler.js';
 import type { JSONLinesResponder } from '../core/json-lines-responder.js';
@@ -11,60 +10,75 @@ import type {
 } from './core.js';
 import type { HttpMethod } from './enums.js';
 import type { VovkRequest } from './request.js';
-import type { IsEmptyObject, KnownAny, Prettify } from './utils.js';
+import type { IsAny, IsEmptyObject, KnownAny, Prettify } from './utils.js';
 import type { BodyTypeFromContentType, ContentType, VovkValidateOnClient } from './validation.js';
 
 type OmitNullable<T> = {
   [K in keyof T as T[K] extends null | undefined ? never : K]: T[K];
 };
 
+type MetaInput = { meta?: { [key: string]: KnownAny } };
+
+type QueryInput<TQuery> = TQuery extends Record<KnownAny, KnownAny> ? { query: TQuery } : unknown;
+
+type ParamsInput<TParams> = TParams extends Record<KnownAny, KnownAny> ? { params: TParams } : unknown;
+
+// a procedure takes the input types of its schemas
+type ProcedureInput<TTypes> = TTypes extends {
+  bodyInput: infer TBody;
+  queryInput: infer TQuery;
+  paramsInput: infer TParams;
+  contentType: infer CT extends ContentType[];
+}
+  ? (unknown extends TBody
+      ? // no body schema: a declared content type other than JSON still takes a body
+        CT[number] extends 'application/json'
+        ? unknown
+        : { body?: BodyTypeFromContentType<CT, unknown> }
+      : { body: BodyTypeFromContentType<CT, TBody> }) &
+      QueryInput<TQuery> &
+      ParamsInput<TParams> &
+      MetaInput
+  : unknown;
+
 export type StaticMethodInput<
   T extends ((req: VovkRequest<KnownAny, KnownAny, KnownAny>, params: KnownAny) => KnownAny) & {
     __types?: {
+      body: unknown;
       contentType: ContentType[];
     };
   },
 > = OmitNullable<
-  (Parameters<T>[0] extends VovkRequest<infer TBody, infer TQuery, infer TParams>
-    ? (T['__types'] extends { contentType: infer CT extends ContentType[] }
-        ? unknown extends TBody
-          ? unknown
-          : {
-              body: BodyTypeFromContentType<CT, TBody>;
-            }
-        : TBody extends Record<KnownAny, KnownAny>
-          ? {
-              body: TBody;
-            }
-          : unknown) &
-        (TQuery extends Record<KnownAny, KnownAny>
-          ? {
-              query: TQuery;
-            }
-          : unknown) &
-        (TParams extends Record<KnownAny, KnownAny>
-          ? {
-              params: TParams;
-            }
-          : unknown) & { meta?: { [key: string]: KnownAny } }
-    : unknown) &
-    (Parameters<T>[1] extends Record<KnownAny, KnownAny> ? { params: Parameters<T>[1] } : unknown)
+  T extends { __types: { bodyInput: unknown } }
+    ? ProcedureInput<T['__types']>
+    : (Parameters<T>[0] extends VovkRequest<infer TBody, infer TQuery, infer TParams>
+        ? (TBody extends Record<KnownAny, KnownAny> ? { body: TBody } : unknown) &
+            QueryInput<TQuery> &
+            ParamsInput<TParams> &
+            MetaInput
+        : unknown) &
+        (Parameters<T>[1] extends Record<KnownAny, KnownAny> ? { params: Parameters<T>[1] } : unknown)
 >;
 
 type ToPromise<T> = T extends PromiseLike<unknown> ? T : Promise<T>;
 
+// the dispose symbols where the lib has them (esnext.disposable), so a project on an older lib still compiles
+type DisposeSymbol = SymbolConstructor extends { readonly dispose: infer S extends symbol } ? S : never;
+type AsyncDisposeSymbol = SymbolConstructor extends { readonly asyncDispose: infer S extends symbol } ? S : never;
+
 export type VovkStreamAsyncIterable<T> = {
   status: number;
   asPromise: () => Promise<T[]>;
-  [Symbol.dispose](): Promise<void> | void;
-  [Symbol.asyncDispose](): Promise<void> | void;
   [Symbol.asyncIterator](): AsyncIterator<T>;
   abortSilently: () => void;
   onIterate: (cb: (data: T, i: number) => void) => () => void;
   abortController: AbortController;
-};
+} & { [K in DisposeSymbol | AsyncDisposeSymbol]: () => Promise<void> | void };
 
-type IsNextJs = NextResponse extends Response ? true : false;
+// a Next.js response keeps its body type in a symbol-keyed property, read without importing next
+type NextResponseBody<R> = {
+  [K in keyof R]: K extends symbol ? (R[K] extends { cookies: unknown; body?: infer B } ? B : never) : never;
+}[keyof R];
 
 type ActualReturnType<T extends ControllerStaticMethod> = T extends {
   __handleFn: (...args: KnownAny[]) => infer R;
@@ -72,17 +86,39 @@ type ActualReturnType<T extends ControllerStaticMethod> = T extends {
   ? R
   : ReturnType<T>;
 
-type StaticMethodReturn<T extends ControllerStaticMethod> = IsNextJs extends true
-  ? ActualReturnType<T> extends NextResponse<infer U> | Promise<NextResponse<infer U>>
-    ? U
-    : ActualReturnType<T> extends Response | Promise<Response>
-      ? Awaited<ActualReturnType<T>>
-      : ActualReturnType<T>
+type StaticMethodReturn<T extends ControllerStaticMethod> = [IsAny<Awaited<ActualReturnType<T>>>] extends [true]
+  ? ActualReturnType<T>
   : ActualReturnType<T> extends Response | Promise<Response>
-    ? Awaited<ActualReturnType<T>>
+    ? [NextResponseBody<Awaited<ActualReturnType<T>>>] extends [never]
+      ? Awaited<ActualReturnType<T>>
+      : NextResponseBody<Awaited<ActualReturnType<T>>>
     : ActualReturnType<T>;
 
 type StaticMethodReturnPromise<T extends ControllerStaticMethod> = ToPromise<StaticMethodReturn<T>>;
+
+// the items a handler streams: from the iteration schema, else from a generator or JSONLinesResponder it returns
+type StreamItem<T extends ControllerStaticMethod> = T extends { __types: { iteration: infer U } }
+  ? unknown extends U
+    ? HandlerStreamItem<T>
+    : U
+  : HandlerStreamItem<T>;
+
+// a handler typed any or Promise<any> is not a stream; IsAny goes in a tuple because, for a type from a module
+// that isn't installed (next in a client bundle used without Next), it's any rather than true
+type HandlerStreamItem<T extends ControllerStaticMethod> = [IsAny<Awaited<ActualReturnType<T>>>] extends [true]
+  ? never
+  : ActualReturnType<T> extends
+        | Promise<JSONLinesResponder<infer U>>
+        | JSONLinesResponder<infer U>
+        | Iterator<infer U>
+        | AsyncIterator<infer U>
+    ? U
+    : never;
+
+// what a call resolves to without transform
+type ClientMethodData<T extends ControllerStaticMethod> = [StreamItem<T>] extends [never]
+  ? Awaited<StaticMethodReturn<T>>
+  : VovkStreamAsyncIterable<StreamItem<T>>;
 
 type StaticMethodOptions<
   T extends (
@@ -95,16 +131,7 @@ type StaticMethodOptions<
   F extends VovkFetcherOptions<KnownAny>,
 > = Partial<
   TFetcherOptions & {
-    transform: (
-      staticMethodReturn: T extends { __types: { iteration: infer U } }
-        ? unknown extends U
-          ? Awaited<StaticMethodReturn<T>>
-          : VovkStreamAsyncIterable<U>
-        : Awaited<StaticMethodReturn<T>> extends JSONLinesResponder<infer U>
-          ? VovkStreamAsyncIterable<U>
-          : Awaited<StaticMethodReturn<T>>,
-      resp: Response
-    ) => R;
+    transform: (staticMethodReturn: ClientMethodData<T>, resp: Response) => R;
     fetcher: VovkFetcher<F>;
   }
 >;
@@ -116,19 +143,13 @@ export type ClientMethodReturn<
   ) => undefined | object | JSONLinesResponder<TStreamIteration> | Promise<JSONLinesResponder<TStreamIteration>>,
   TStreamIteration,
   R,
-> = R extends object
-  ? Promise<Awaited<R>>
-  : T extends { __types: { iteration: infer U } }
-    ? unknown extends U
+> = [IsAny<R>] extends [true]
+  ? Promise<R>
+  : unknown extends R // no transform, or one that returns unknown
+    ? [StreamItem<T>] extends [never]
       ? StaticMethodReturnPromise<T>
-      : Promise<VovkStreamAsyncIterable<U>>
-    : ActualReturnType<T> extends
-          | Promise<JSONLinesResponder<infer U>>
-          | JSONLinesResponder<infer U>
-          | Iterator<infer U>
-          | AsyncIterator<infer U>
-      ? Promise<VovkStreamAsyncIterable<U>>
-      : StaticMethodReturnPromise<T>;
+      : Promise<VovkStreamAsyncIterable<StreamItem<T>>>
+    : Promise<Awaited<R>>;
 
 export type ClientMethod<
   T extends ((
@@ -148,7 +169,7 @@ export type ClientMethod<
   TStreamIteration extends KnownAny = unknown,
 > = (IsEmptyObject<StaticMethodInput<T>> extends true
   ? <R, F extends VovkFetcherOptions<KnownAny> = VovkFetcherOptions<TFetcherOptions>>(
-      options?: Prettify<StaticMethodOptions<T, TFetcherOptions, TStreamIteration, R, F>>
+      options?: Prettify<StaticMethodInput<T> & StaticMethodOptions<T, TFetcherOptions, TStreamIteration, R, F>>
     ) => ClientMethodReturn<T, TStreamIteration, R>
   : <R, F extends VovkFetcherOptions<KnownAny> = VovkFetcherOptions<TFetcherOptions>>(
       options: Prettify<StaticMethodInput<T> & StaticMethodOptions<T, TFetcherOptions, TStreamIteration, R, F>>
@@ -179,8 +200,23 @@ type OmitNever<T> = {
   [K in keyof T as T[K] extends never ? never : K]: T[K];
 };
 
+// a handler takes a request or nothing, so a static helper such as formatName(name: string) gets no RPC method
+type IsHandler<F> = F extends () => unknown
+  ? true
+  : F extends (req: infer R, ...args: KnownAny[]) => unknown
+    ? unknown extends R
+      ? true
+      : [R] extends [Request]
+        ? true
+        : false
+    : false;
+
 type VovkClientWithNever<T, TFetcherOptions extends { [key: string]: KnownAny }> = {
-  [K in keyof T]: T[K] extends (...args: KnownAny) => KnownAny ? ClientMethod<T[K], TFetcherOptions> : never;
+  [K in keyof T]: T[K] extends (...args: KnownAny) => KnownAny
+    ? IsHandler<T[K]> extends true
+      ? ClientMethod<T[K], TFetcherOptions>
+      : never
+    : never;
 };
 
 export type VovkRPCModule<T, TFetcherOptions extends { [key: string]: KnownAny }> = OmitNever<

@@ -1,6 +1,15 @@
 import assert from 'node:assert';
 import { describe, it } from 'node:test';
-import { deriveTools, procedure, ToModelOutput, toDownloadResponse, type VovkOutput } from 'vovk';
+import {
+  deriveTools,
+  HttpException,
+  JSONLinesResponder,
+  procedure,
+  ToModelOutput,
+  toDownloadResponse,
+  type VovkOutput,
+} from 'vovk';
+import { createRPC } from 'vovk/create-rpc';
 import type { MCPModelOutput, StandardToolV0 } from 'vovk/internal';
 import { z } from 'zod';
 
@@ -586,6 +595,122 @@ describe('deriveTools', () => {
     });
   });
 
+  describe('Tool names', () => {
+    const returnsOne = procedure({ operationObject: { description: 'd' } }).handle(async () => 1);
+
+    it('Replaces the characters a model API refuses', () => {
+      const [tool] = deriveTools({ modules: { $Store: { $get: returnsOne } } });
+
+      assert.strictEqual(tool.name, '_Store__get');
+    });
+
+    it('Cuts a name to 64 characters, ending with a hash of the whole name', () => {
+      const moduleName = 'AdministrationBackOfficeControllerForTheInternalTeamRPC';
+      const [first, second] = deriveTools({
+        modules: { [moduleName]: { getUsersWithTheirRoles: returnsOne, getUsersWithTheirGroups: returnsOne } },
+      }).map(({ name }) => name);
+
+      assert.strictEqual(first.length, 64);
+      assert.match(first, /^AdministrationBackOfficeControllerForTheInternalTeamRPC_[0-9a-f]{8}$/);
+      assert.notStrictEqual(first, second);
+    });
+
+    it('Throws when two tools get the same name', () => {
+      assert.throws(
+        () => deriveTools({ modules: { A_B: { c: returnsOne }, A: { B_c: returnsOne } } }),
+        /"A_B_c".*A_B\.c.*A\.B_c/
+      );
+    });
+  });
+
+  describe('Error responses', () => {
+    const notFound = procedure({ operationObject: { description: 'd' } }).handle(async () =>
+      Response.json({ message: 'User not found' }, { status: 404 })
+    );
+    const forbidden = procedure({ operationObject: { description: 'd' } }).handle(
+      async () => new Response('Forbidden', { status: 403 })
+    );
+
+    it('Gives the model the error of an error status and calls onError', async () => {
+      const calls: string[] = [];
+      const [notFoundTool, forbiddenTool] = deriveTools({
+        modules: { MyModule: { notFound, forbidden } },
+        onExecute: () => calls.push('onExecute'),
+        onError: (error) => {
+          assert.ok(error instanceof HttpException);
+          calls.push(`onError ${error.statusCode} ${error.message}`);
+        },
+      });
+
+      assert.deepStrictEqual(await notFoundTool.execute({}), { error: 'User not found' });
+      assert.deepStrictEqual(await forbiddenTool.execute({}), { error: 'Forbidden' });
+      assert.deepStrictEqual(calls, ['onError 404 User not found', 'onError 403 Forbidden']);
+    });
+
+    it('Marks the MCP output of an error status as an error and calls onError', async () => {
+      const calls: string[] = [];
+      const [tool] = deriveTools({
+        modules: { MyModule: { notFound } },
+        toModelOutput: ToModelOutput.MCP,
+        onExecute: () => calls.push('onExecute'),
+        onError: () => calls.push('onError'),
+      });
+
+      assert.deepStrictEqual(await tool.execute({}), {
+        content: [{ type: 'text', text: '{"message":"User not found"}' }],
+        isError: true,
+      });
+      assert.deepStrictEqual(calls, ['onError']);
+    });
+  });
+
+  describe('JSONLinesResponder results', () => {
+    const returnsResponder = procedure({ operationObject: { description: 'd' } }).handle(async (req) => {
+      const responder = new JSONLinesResponder<{ n: number }>(req);
+      void (async () => {
+        await responder.send({ n: 1 });
+        await responder.send({ n: 2 });
+        await responder.close();
+      })();
+      return responder;
+    });
+
+    const failingResponder = procedure({ operationObject: { description: 'd' } }).handle(async (req) => {
+      const responder = new JSONLinesResponder<{ n: number }>(req);
+      void (async () => {
+        await responder.send({ n: 1 });
+        responder.throw(new Error('stream broke'));
+      })();
+      return responder;
+    });
+
+    it('Collects the lines a responder sends', async () => {
+      const [tool] = deriveTools({ modules: { MyModule: { returnsResponder } } });
+
+      assert.deepStrictEqual(await tool.execute({}), [{ n: 1 }, { n: 2 }]);
+    });
+
+    it('Gives the MCP formatter the lines', async () => {
+      const [tool] = deriveTools({ modules: { MyModule: { returnsResponder } }, toModelOutput: ToModelOutput.MCP });
+
+      assert.deepStrictEqual(await tool.execute({}), {
+        content: [{ type: 'text', text: '[{"n":1},{"n":2}]' }],
+        structuredContent: { items: [{ n: 1 }, { n: 2 }] },
+      });
+    });
+
+    it('Reports the error a responder throws', async () => {
+      const errors: string[] = [];
+      const [tool] = deriveTools({
+        modules: { MyModule: { failingResponder } },
+        onError: (error) => errors.push(error.message),
+      });
+
+      assert.deepStrictEqual(await tool.execute({}), { error: 'stream broke' });
+      assert.deepStrictEqual(errors, ['stream broke']);
+    });
+  });
+
   describe('onExecute and onError', () => {
     const throwingProcedure = procedure({
       operationObject: { description: 'throwingProcedure description' },
@@ -631,6 +756,65 @@ describe('deriveTools', () => {
       await tool.execute({ body: { foo: 'ok' } });
 
       assert.deepStrictEqual(calls, ['onExecute']);
+    });
+  });
+
+  describe('Input', () => {
+    it('Runs a tool without input when execute gets undefined', async () => {
+      const calls: string[] = [];
+      const noInput = procedure({ operationObject: { description: 'd' } }).handle(async () => ({ ok: true }));
+      const [tool] = deriveTools({
+        modules: { MyModule: { noInput } },
+        onExecute: () => calls.push('onExecute'),
+        onError: () => calls.push('onError'),
+      });
+
+      assert.deepStrictEqual(await tool.execute(undefined as never), { ok: true });
+      assert.deepStrictEqual(calls, ['onExecute']);
+    });
+  });
+
+  describe('meta and OpenAPI mixins', () => {
+    const segment = (segmentType: string, forceApiRoot?: string) => ({
+      segmentName: 'external',
+      segmentType,
+      emitSchema: true,
+      forceApiRoot,
+      controllers: {
+        ReposAPI: {
+          rpcModuleName: 'ReposAPI',
+          prefix: '',
+          handlers: {
+            getRepo: { path: 'repos/{repo}', httpMethod: 'GET', operationObject: { summary: 'Get a repo' } },
+          },
+        },
+      },
+    });
+
+    const sentMeta = async (segmentType: string, forceApiRoot?: string) => {
+      const schema = { segments: { external: segment(segmentType, forceApiRoot) } };
+      const ReposAPI = (createRPC as (...args: unknown[]) => Record<string, unknown>)(schema, 'external', 'ReposAPI');
+      const [tool] = deriveTools({ modules: { ReposAPI }, meta: { sessionToken: 'secret' } });
+      const original = globalThis.fetch;
+      const headers: (string | null)[] = [];
+      globalThis.fetch = (async (_url: string, init: RequestInit) => {
+        headers.push(new Headers(init.headers).get('x-meta'));
+        return Response.json({ id: 1 });
+      }) as typeof fetch;
+      try {
+        await tool.execute({ params: { repo: 'vovk' } });
+      } finally {
+        globalThis.fetch = original;
+      }
+      return headers;
+    };
+
+    it('Sends meta to an RPC module of the app', async () => {
+      assert.deepStrictEqual(await sentMeta('segment'), ['{"sessionToken":"secret"}']);
+    });
+
+    it("Doesn't send meta to a mixin, whose host is a third party", async () => {
+      assert.deepStrictEqual(await sentMeta('mixin', 'https://api.example.com'), [null]);
     });
   });
 

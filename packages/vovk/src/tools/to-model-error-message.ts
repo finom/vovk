@@ -12,3 +12,23 @@ export function toModelErrorMessage(error: Error): string {
   }
   return error.message;
 }
+
+const parseJSON = (text: string): unknown => {
+  try {
+    return JSON.parse(text);
+  } catch {
+    return null;
+  }
+};
+
+/** What an error Response says went wrong: a JSON body's message, detail or title, else the body text. */
+export async function responseErrorMessage(response: Response): Promise<string> {
+  const text = await response.text();
+  const mediaType = response.headers.get('content-type')?.split(';')[0].trim().toLowerCase() ?? '';
+  if (mediaType === 'application/json' || mediaType.endsWith('+json')) {
+    const body = parseJSON(text) as { message?: unknown; detail?: unknown; title?: unknown } | null;
+    const message = body?.message ?? body?.detail ?? body?.title;
+    if (typeof message === 'string') return message;
+  }
+  return text || `Request failed with status ${response.status}`;
+}

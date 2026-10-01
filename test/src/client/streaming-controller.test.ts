@@ -48,7 +48,7 @@ describe('Streaming', () => {
     deepStrictEqual(collected, expected);
   });
 
-  it('Should consume streaming multiple times', async () => {
+  it('Should consume a stream once', async () => {
     const tokens = ['token1', 'token2\n', 'token3'].map((token) => ({ token }));
     const expected = tokens.map((token) => ({ ...token, query: 'queryValue' }));
     const expectedCollected: typeof expected = [];
@@ -63,6 +63,7 @@ describe('Streaming', () => {
       expectedCollected.push(message);
     }
 
+    // the items are not kept once every running iteration has passed them
     for await (const message of resp) {
       expectedCollected.push(message);
     }
@@ -70,7 +71,7 @@ describe('Streaming', () => {
     null as unknown as VovkYieldType<typeof StreamingController.postWithStreaming> satisfies Token;
     null as unknown as VovkYieldType<typeof StreamingControllerRPC.postWithStreaming> satisfies Token;
 
-    deepStrictEqual(expectedCollected, [...expected, ...expected]);
+    deepStrictEqual(expectedCollected, expected);
   });
 
   it('Should consume streaming multiple times at the same time', async () => {

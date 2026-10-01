@@ -5,7 +5,8 @@
     "outDir": "dist",
     "noEmit": false,
     "declaration": true,
-    "resolveJsonModule": false
+    "resolveJsonModule": false,
+    "types": ["node"]
   },
-  "include": ["src/**/*.ts", "./src/next-compat.d.ts"]
+  "include": ["src/**/*.ts"]
 }

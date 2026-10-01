@@ -24,6 +24,11 @@ export default class ClientSweepController {
     return req.vovk.query();
   }
 
+  @get('query')
+  static getQuery(req: VovkRequest<null, Record<string, unknown>>) {
+    return req.vovk.query();
+  }
+
   @get('content-type')
   static getContentType(req: VovkRequest) {
     return { contentType: req.headers.get('content-type') };
@@ -39,6 +44,37 @@ export default class ClientSweepController {
   static postContentType(req: VovkRequest<{ hello: string }>) {
     return { contentType: req.headers.get('content-type') };
   }
+
+  // a declared content type without a body schema, as on the /content-type docs page
+  @post('xml')
+  static postXml = procedure({ contentType: 'application/xml' }).handle(async (req) => {
+    const xml: string = await req.vovk.body();
+    return { xml, contentType: req.headers.get('content-type') };
+  });
+
+  @post('image')
+  static postImage = procedure({ contentType: 'image/*' }).handle(async (req) => {
+    const file: File = await req.vovk.body();
+    return { name: file.name, type: file.type, size: file.size };
+  });
+
+  @post('pdf')
+  static postPdf = procedure({ contentType: 'application/pdf' }).handle(async (req) => {
+    const file: File = await req.vovk.body();
+    return { type: file.type, size: file.size };
+  });
+
+  @post('octet')
+  static postOctet = procedure({ contentType: 'application/octet-stream' }).handle(async (req) => {
+    const file: File = await req.vovk.body();
+    return { type: file.type, size: file.size };
+  });
+
+  @post('json-string')
+  static postJsonString = procedure({ body: z.string() }).handle(async (req) => ({
+    body: await req.vovk.body(),
+    contentType: req.headers.get('content-type'),
+  }));
 
   @get('text-error')
   static getTextError() {
@@ -91,6 +127,21 @@ export default class ClientSweepController {
   }).handle(async (req) => {
     const form = await req.formData();
     return Array.from(form.entries(), ([key, value]) => [key, describeEntry(value)]);
+  });
+
+  @post('json-or-form')
+  static postJsonOrForm = procedure({
+    contentType: ['application/json', 'multipart/form-data'],
+    body: z.union([
+      z.object({ n: z.number(), tags: z.array(z.string()), nested: z.object({ a: z.boolean() }) }),
+      z.object({ file: z.file() }),
+    ]),
+  }).handle(async (req) => {
+    const body = await req.vovk.body();
+    return {
+      body: 'file' in body ? { file: describeEntry(body.file) } : body,
+      contentType: req.headers.get('content-type')?.split(';')[0],
+    };
   });
 
   @post('url-encoded')

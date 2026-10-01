@@ -31,7 +31,8 @@ type DeepPartial<T> = {
   [P in keyof T]?: T[P] extends (infer U)[] ? DeepPartial<U>[] : T[P] extends object ? DeepPartial<T[P]> : T[P];
 };
 
-type SpecificValue = Buffer | Date | RegExp;
+// a Node Buffer is a Uint8Array, so the declaration needs no Node types
+type SpecificValue = Date | RegExp | Uint8Array;
 
 // Buffer is a Node global, a browser or React Native bundle has none
 function isBuffer(val: unknown): val is Buffer {
@@ -51,9 +52,7 @@ function isPlainObject(val: object): boolean {
 
 function cloneSpecificValue(val: SpecificValue): SpecificValue {
   if (isBuffer(val)) {
-    const x = Buffer.alloc ? Buffer.alloc(val.length) : Buffer.from(val);
-    val.copy(x);
-    return x;
+    return Buffer.from(val);
   } else if (val instanceof Date) {
     return new Date(val.getTime());
   } else if (val instanceof RegExp) {

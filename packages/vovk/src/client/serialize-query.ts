@@ -1,24 +1,32 @@
 import type { KnownAny } from '../types/utils.js';
 
+// a lone surrogate, as in a string cut inside an emoji, can't be percent-encoded: like a URL does, it becomes U+FFFD
+export const encodeURIComponentWellFormed = (value: string) =>
+  encodeURIComponent(value.replace(/[\uD800-\uDFFF]/gu, '\uFFFD'));
+
 // recursively builds "key=value" strings, key grows like 'user', 'user[0]', 'user[0][name]'
-function buildParams(key: string, value: KnownAny): string[] {
+function buildParams(key: string, value: KnownAny, isToJSONResult = false): string[] {
   if (value === null || value === undefined) {
     return []; // skip null/undefined values entirely
   }
 
-  // as JSON.stringify does: an ISO string, or nothing for an invalid date
-  if (value instanceof Date) {
-    return buildParams(key, value.toJSON());
+  // as JSON.stringify does, a value with toJSON is sent as its result, once: a Date as an ISO string or nothing
+  // when invalid, a URL as its href, a dayjs or Temporal value as its string
+  if (!isToJSONResult && typeof value.toJSON === 'function') {
+    return buildParams(key, value.toJSON(), true);
   }
 
   // If value is an object or array, we need to recurse
   if (typeof value === 'object') {
     // Array case
     if (Array.isArray(value)) {
-      // index-based brackets: ['aa', 'bb'] + 'foo' -> "foo[0]=aa&foo[1]=bb"
-      return value.flatMap((v, i) => {
-        const newKey = `${key}[${i}]`;
-        return buildParams(newKey, v);
+      // index-based brackets: ['aa', 'bb'] + 'foo' -> "foo[0]=aa&foo[1]=bb"; an item that sends nothing, such as
+      // null or {}, takes no index, since the server reads indexes with a gap as an object
+      let index = 0;
+      return value.flatMap((v) => {
+        const params = buildParams(`${key}[${index}]`, v);
+        if (params.length) index++;
+        return params;
       });
     }
 
@@ -29,7 +37,7 @@ function buildParams(key: string, value: KnownAny): string[] {
     });
   }
 
-  return [`${encodeURIComponent(key)}=${encodeURIComponent(String(value))}`];
+  return [`${encodeURIComponentWellFormed(key)}=${encodeURIComponentWellFormed(String(value))}`];
 }
 
 // nested object to a bracket query string (no leading "?"),

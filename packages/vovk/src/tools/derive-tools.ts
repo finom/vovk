@@ -1,4 +1,7 @@
-import type { VovkHandlerSchema } from '../types/core.js';
+import { readableStreamToAsyncIterable } from '../client/default-stream-handler.js';
+import { HttpException } from '../core/http-exception.js';
+import { JSONLinesResponder } from '../core/json-lines-responder.js';
+import type { VovkHandlerSchema, VovkSegmentSchema } from '../types/core.js';
 import type { VovkRequest } from '../types/request.js';
 import type { StandardToolV0 } from '../types/standard-tool.js';
 import type { ToModelOutputFn } from '../types/tools.js';
@@ -9,6 +12,7 @@ import {
 } from '../validation/json-schema-only-spec.js';
 import type { procedure } from '../validation/procedure.js';
 import { validationSchemasObjectToSingleValidationSchema } from '../validation/validation-schemas-object-to-single-validation-schema.js';
+import { responseErrorMessage } from './to-model-error-message.js';
 import { ToModelOutput } from './to-model-output.js';
 import type { DefaultModelOutput } from './to-model-output-default.js';
 
@@ -19,6 +23,7 @@ type Handler = ((...args: unknown[]) => unknown) & {
   fn?: (input: unknown) => [unknown, Pick<VovkRequest, 'vovk'> | null];
   isRPC?: boolean;
   schema?: VovkHandlerSchema;
+  segmentSchema?: Pick<VovkSegmentSchema, 'segmentType'>;
   definition?: Parameters<typeof procedure>[0];
 };
 
@@ -32,6 +37,26 @@ type CallerInput<TOutput, TFormattedOutput> = {
   handlerName: string;
   moduleName: string;
   toModelOutput: ToModelOutputFn<unknown, TOutput, TFormattedOutput>;
+};
+
+const MAX_TOOL_NAME_LENGTH = 64;
+
+// FNV-1a, tells apart two names cut to the same prefix
+const hashName = (name: string) => {
+  let hash = 0x811c9dc5;
+  for (let i = 0; i < name.length; i++) {
+    hash ^= name.charCodeAt(i);
+    hash = Math.imul(hash, 0x01000193);
+  }
+  return (hash >>> 0).toString(16).padStart(8, '0');
+};
+
+// model APIs take a name of up to 64 characters from A-Z, a-z, 0-9, _ and -
+const toToolName = (name: string) => {
+  const safeName = name.replace(/[^A-Za-z0-9_-]/g, '_');
+  return safeName.length > MAX_TOOL_NAME_LENGTH
+    ? `${safeName.slice(0, MAX_TOOL_NAME_LENGTH - 9)}_${hashName(name)}`
+    : safeName;
 };
 
 function isAsyncIterable(value: unknown): value is AsyncIterable<unknown> {
@@ -54,7 +79,8 @@ async function caller<TOutput, TFormattedOutput>(
         body,
         query,
         params,
-        meta,
+        // an OpenAPI mixin calls a third-party host, the app's meta stays home
+        meta: handler.segmentSchema?.segmentType === 'mixin' ? undefined : meta,
       });
     } else if (handler.fn) {
       [result, req] = await handler.fn({
@@ -68,6 +94,21 @@ async function caller<TOutput, TFormattedOutput>(
       throw new Error(
         `Unable to call handler "${handlerName}". It's neither RPC nor controller method with "fn" interface.`
       );
+    }
+
+    // an error status fails the call, the formatter still gets the Response to show its body
+    if (result instanceof Response && !result.ok) {
+      const error = new HttpException(result.status, await responseErrorMessage(result.clone()));
+      return [
+        await toModelOutput(result as TOutput, tool as StandardToolV0<unknown, TOutput, TFormattedOutput>, req),
+        req,
+        error,
+      ];
+    }
+
+    // a responder streams the lines a client would read
+    if (result instanceof JSONLinesResponder && result.readableStream) {
+      result = readableStreamToAsyncIterable({ readableStream: result.readableStream });
     }
 
     // a streaming handler yields its items, collect them so the model sees data instead of an iterator
@@ -127,7 +168,7 @@ const makeTool = <TOutput, TFormattedOutput>({
   }
   const { schema, definition } = handler;
 
-  const name = schema?.operationObject?.['x-tool']?.name ?? `${moduleName}_${handlerName}`;
+  const name = toToolName(schema?.operationObject?.['x-tool']?.name ?? `${moduleName}_${handlerName}`);
 
   const inputSchemas = Object.fromEntries(
     (['body', 'query', 'params'] as const).map((key) => [key, definition?.[key]]).filter(([, value]) => Boolean(value))
@@ -150,7 +191,8 @@ const makeTool = <TOutput, TFormattedOutput>({
     (schema?.validation?.output ? jsonSchemaToJSONSchemaOnlySpec({ jsonSchema: schema.validation.output }) : undefined);
 
   const execute = async (input: { body?: unknown; query?: unknown; params?: unknown }): Promise<TFormattedOutput> => {
-    const { body, query, params } = input;
+    // a tool without input may be called with nothing
+    const { body, query, params } = input ?? {};
 
     const callerInput: CallerInput<TOutput, TFormattedOutput> = {
       schema,
@@ -265,6 +307,9 @@ export function deriveTools<TOutput = unknown, TFormattedOutput = unknown>(optio
     onError = () => {},
   } = options;
 
+  // tool name to the module and handler it came from
+  const sources = new Map<string, string>();
+
   return Object.entries(
     (modules as Record<string, Record<string, Handler & { schema?: VovkHandlerSchema }>>) ?? {}
   ).flatMap(([moduleName, module]) => {
@@ -272,8 +317,8 @@ export function deriveTools<TOutput = unknown, TFormattedOutput = unknown>(optio
       .filter(
         ([, handler]) => handler?.schema?.operationObject && !handler?.schema?.operationObject?.['x-tool']?.hidden
       )
-      .map(([handlerName]) =>
-        makeTool<TOutput, TFormattedOutput>({
+      .map(([handlerName]) => {
+        const tool = makeTool<TOutput, TFormattedOutput>({
           moduleName,
           handlerName,
           module,
@@ -281,7 +326,16 @@ export function deriveTools<TOutput = unknown, TFormattedOutput = unknown>(optio
           toModelOutput,
           onExecute,
           onError,
-        })
-      );
+        });
+        const source = `${moduleName}.${handlerName}`;
+        const taken = sources.get(tool.name);
+        if (taken) {
+          throw new Error(
+            `Tool name "${tool.name}" is derived for both ${taken} and ${source}. Set another one with x-tool.name.`
+          );
+        }
+        sources.set(tool.name, source);
+        return tool;
+      });
   });
 }
