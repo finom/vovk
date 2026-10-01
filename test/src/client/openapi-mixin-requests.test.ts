@@ -77,6 +77,11 @@ describe('OpenAPI mixin requests', () => {
     strictEqual(queryOf(listPets.getURL({ query: { tags: [], ids: [], filter: {}, limit: undefined } })), '');
   });
 
+  it('Sends a lone surrogate as U+FFFD and a value with toJSON as its JSON form', () => {
+    const url = listPets.getURL({ query: { tags: ['ab\uD83D', new URL('https://x.test/a')] } });
+    strictEqual(queryOf(url), 'tags=ab%EF%BF%BD&tags=https%3A%2F%2Fx.test%2Fa');
+  });
+
   it('Sends a form body property in the style its encoding declares', async () => {
     const { createCustomer } = mixinModule({
       '/v1/customers': {

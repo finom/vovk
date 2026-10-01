@@ -1,4 +1,5 @@
 import type { VovkHandlerSchema } from '../types/core.js';
+import { encodeURIComponentWellFormed } from './serialize-query.js';
 
 // OpenAPI's serialization of a query parameter or of a form body property
 export type OpenAPIStyle = { style?: string; explode?: boolean };
@@ -11,21 +12,29 @@ const DELIMITERS: Record<string, string> = { form: ',', spaceDelimited: ' ', pip
 const isObject = (value: unknown): value is object =>
   typeof value === 'object' && value !== null && !(value instanceof Date);
 
-// a date as ISO and an object as JSON, as JSON.stringify writes them; null and undefined are left out
-const toPart = (value: unknown): string | null => {
+// a value with toJSON (a Date, a URL) is sent as JSON.stringify would write it
+const fromJSON = (value: unknown): unknown =>
+  typeof (value as { toJSON?: unknown } | null)?.toJSON === 'function'
+    ? (value as { toJSON: () => unknown }).toJSON()
+    : value;
+
+// an object as JSON, as JSON.stringify writes it; null and undefined are left out
+const toPart = (given: unknown): string | null => {
+  const value = fromJSON(given);
   if (value === null || value === undefined) return null;
-  if (value instanceof Date) return value.toJSON();
   return isObject(value) ? JSON.stringify(value) : String(value);
 };
 
 // deepObject: a bracket for every nested key, an array item by its index
-function toDeepFields(key: string, value: unknown): Field[] {
+function toDeepFields(key: string, given: unknown): Field[] {
+  const value = fromJSON(given);
   if (isObject(value)) return Object.entries(value).flatMap(([k, v]) => toDeepFields(`${key}[${k}]`, v));
   const part = toPart(value);
   return part === null ? [] : [{ key, parts: [part], delimiter: '' }];
 }
 
-function toFields(name: string, value: unknown, { style = 'form', explode = style === 'form' }: OpenAPIStyle): Field[] {
+function toFields(name: string, given: unknown, { style = 'form', explode = style === 'form' }: OpenAPIStyle): Field[] {
+  const value = fromJSON(given);
   if (style === 'deepObject' && isObject(value)) return toDeepFields(name, value);
   const delimiter = DELIMITERS[style] ?? ',';
   if (isObject(value)) {
@@ -44,7 +53,7 @@ function toFields(name: string, value: unknown, { style = 'form', explode = styl
 
 // a space is %20, the other delimiters stay as they are, so an encoded one inside a value isn't read as a delimiter
 const encodeField = ({ key, parts, delimiter }: Field) =>
-  `${encodeURIComponent(key)}=${parts.map(encodeURIComponent).join(delimiter === ' ' ? '%20' : delimiter)}`;
+  `${encodeURIComponentWellFormed(key)}=${parts.map(encodeURIComponentWellFormed).join(delimiter === ' ' ? '%20' : delimiter)}`;
 
 /**
  * The serializers of an OpenAPI mixin method: the query and a urlencoded body go out as the document declares,
