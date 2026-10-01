@@ -1,9 +1,9 @@
-use std::fs::File;
-use std::io::BufReader;
-use std::path::Path;
 use std::collections::HashMap;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
+
+// compiled in: a binary deployed without the source tree still has it
+const SCHEMA_JSON: &str = include_str!("schema.json");
 
 /// Validation schema structure
 #[derive(Debug, Deserialize, Serialize)]
@@ -69,20 +69,7 @@ pub struct VovkSchema {
     pub segments: HashMap<String, VovkSegmentSchema>,
 }
 
-/// Read the complete Vovk schema from a JSON file
+/// Read the complete Vovk schema, embedded from schema.json
 pub fn read_full_schema() -> Result<VovkSchema, Box<dyn std::error::Error>> {
-    // Get the path to the project root (where Cargo.toml is)
-    let manifest_dir = env!("CARGO_MANIFEST_DIR");
-    
-    // Build the full path to the data file
-    let json_path = Path::new(manifest_dir).join("src/schema.json");
-
-    // Open the file
-    let file = File::open(&json_path)?;
-    let reader = BufReader::new(file);
-    
-    // Parse the JSON
-    let schema: VovkSchema = serde_json::from_reader(reader)?;
-     
-    Ok(schema)
+    Ok(serde_json::from_str(SCHEMA_JSON)?)
 }

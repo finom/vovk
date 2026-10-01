@@ -48,7 +48,7 @@ dist_rust/
   src/http_request.rs       # HTTP handling
   src/lib.rs                # RPC functions + types
   src/read_full_schema.rs   # Schema utilities
-  src/schema.json           # Vovk schema (read at runtime via CARGO_MANIFEST_DIR/src/schema.json)
+  src/schema.json           # Vovk schema (compiled into the crate with include_str!)
   Cargo.toml                # edition = "2021"
   README.md
 ```
