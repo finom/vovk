@@ -5,7 +5,7 @@ from urllib.parse import quote
 import jsonschema
 from jsonschema import FormatChecker
 from requests.models import Response
-from typing import Dict, Optional, Any, Generator, Literal, List, TypedDict
+from typing import Dict, Optional, Any, Generator, Literal, List, Tuple, TypedDict
 
 class HttpExceptionResponseBody(TypedDict):
     cause: Any
@@ -32,17 +32,30 @@ class ApiClient:
         with open(schema_path, "r", encoding="utf-8") as f:
             return json.load(f)
 
-    def __init__(self, api_root: str):
+    def __init__(self, api_root: str, segments: Optional[Dict[str, Tuple[str, str]]] = None):
         """
-        Initialize the API client with a base URL and default HTTP method.
-        
+        Initialize the API client with a base URL.
+
         Args:
             api_root: The base URL for all API requests
-            default_http_method: Default HTTP method to use if not specified
+            segments: Per segment, the root its URLs start with and the segment's path after that root
         """
         self.api_root = api_root
+        self.segments = segments or {}
         self.full_schema: Dict[str, Any] = ApiClient._load_full_schema()
-    
+
+    def _segment_base(self, segment_name: str) -> Tuple[str, str]:
+        if segment_name in self.segments:
+            return self.segments[segment_name]
+        # a mixin's URLs start at the server of its API, without a segment name
+        force_api_root = self.full_schema['segments'][segment_name].get('forceApiRoot')
+        return (force_api_root, '') if force_api_root else (self.api_root, segment_name)
+
+    @staticmethod
+    def _join_url(root: str, *parts: str) -> str:
+        # a slash at the end of the root or around a part must not double the one the join adds
+        return '/'.join(part for part in [root.rstrip('/'), *(part.strip('/') for part in parts)] if part)
+
     def request(
         self,
         segment_name: str,
@@ -66,14 +79,11 @@ class ApiClient:
         controller = schema['controllers'][rpc_name]
         handlers = controller['handlers']
         handler = handlers[handler_name]
-        prefix = controller['prefix']
-        handler_path = handler['path']
         http_method = handler['httpMethod']
         validation = handler.get('validation', {})
 
-        api_root = api_root if api_root else self.api_root
-
-        url = '/'.join(filter(None, [api_root, segment_name, prefix, handler_path]))
+        default_root, segment_path = self._segment_base(segment_name)
+        url = self._join_url(api_root or default_root, segment_path, controller.get('prefix') or '', handler['path'])
 
         return self.make_api_request(
             url=url,

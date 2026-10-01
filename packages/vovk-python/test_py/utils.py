@@ -1,8 +1,57 @@
 
-from typing import Any, Dict, Union
+import json
+from contextlib import contextmanager
+from typing import Any, Callable, Dict, Iterator, List, Tuple, Union
+from unittest import mock
+
+import requests
+from requests.adapters import HTTPAdapter
+from requests.structures import CaseInsensitiveDict
+from requests.utils import get_encoding_from_headers
 
 def noop(*args: Any) -> None: # type: ignore
     pass
+
+# status, headers and the body, whole or as the chunks it arrives in
+FakeResponse = Tuple[int, Dict[str, str], Union[bytes, List[bytes]]]
+
+class FakeBody:
+    def __init__(self, chunks: List[bytes]) -> None:
+        self.chunks = chunks
+
+    def stream(self, amt: int = 0, decode_content: bool = True) -> Iterator[bytes]:
+        yield from self.chunks
+
+    def close(self) -> None:
+        pass
+
+class Sent:
+    def __init__(self, request: requests.PreparedRequest, options: Dict[str, Any]) -> None:
+        self.request = request
+        self.options = options
+
+@contextmanager
+def fake_transport(respond: Callable[[requests.PreparedRequest], FakeResponse]) -> Iterator[List[Sent]]:
+    """Answers every request with respond(request) instead of the network, and records what was sent."""
+    sent: List[Sent] = []
+
+    def send(adapter: HTTPAdapter, request: requests.PreparedRequest, **options: Any) -> requests.Response:
+        sent.append(Sent(request, options))
+        status, headers, body = respond(request)
+        response = requests.Response()
+        response.status_code = status
+        response.headers = CaseInsensitiveDict(headers)
+        response.encoding = get_encoding_from_headers(response.headers)
+        response.raw = FakeBody(body if isinstance(body, list) else [body])
+        response.url = request.url or ''
+        response.request = request
+        return response
+
+    with mock.patch.object(HTTPAdapter, 'send', send):
+        yield sent
+
+def json_response(data: Any, status: int = 200) -> Callable[[requests.PreparedRequest], FakeResponse]:
+    return lambda request: (status, {'Content-Type': 'application/json'}, json.dumps(data).encode())
 
 def get_constraining_object(key: Union[str, None]) -> Dict[str, Any]:
     # Object that satisfies all validation requirements
