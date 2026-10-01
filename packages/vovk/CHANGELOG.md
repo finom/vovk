@@ -19,7 +19,13 @@ A cleanup major: removals and renames, no new APIs.
 
 - `HttpStatus.TOO_MANY_TRequestS` renamed to `TOO_MANY_REQUESTS` ([c739e4b](https://github.com/finom/vovk/commit/c739e4bc))
 - Production error responses carry no internal detail; `onError` still receives the full error ([d0be248](https://github.com/finom/vovk/commit/d0be2482), [419cf7f](https://github.com/finom/vovk/commit/419cf7f6))
-- A declared `contentType` is enforced even without a body schema; disabling body validation opts out ([444644b](https://github.com/finom/vovk/commit/444644b8), [27edb95](https://github.com/finom/vovk/commit/27edb95e))
+- A declared `contentType` is enforced even without a body schema; disabling body validation opts out ([444644b](https://github.com/finom/vovk/commit/444644b8), [27edb95](https://github.com/finom/vovk/commit/27edb95e)); a request without a body skips the check ([#35](https://github.com/finom/vovk/pull/35))
+- Failed `output` or `iteration` validation is an internal error: 500 in production, the issues stay on the server ([#35](https://github.com/finom/vovk/pull/35))
+- Only an `HttpException` sets the status and keeps its message; any other error answers 500 and is masked in production, for AI tools too ([#35](https://github.com/finom/vovk/pull/35))
+- `Content-Type` must name one media type, compared case-insensitively; a list answers 415 ([#35](https://github.com/finom/vovk/pull/35))
+- The handler's second argument is the validated params ([#35](https://github.com/finom/vovk/pull/35))
+- The client throws `HttpException` for a non-JSON response with a status of 400 or more, sends no `content-type` without a body, and sends a string body as the declared text type ([#35](https://github.com/finom/vovk/pull/35))
+- HEAD requests fall back to the GET route ([#35](https://github.com/finom/vovk/pull/35))
 
 ### Fixed
 
@@ -34,12 +40,27 @@ A cleanup major: removals and renames, no new APIs.
 - Derived tools materialize `Response` and generator results, and failures reach `onError` ([7b7f1b8](https://github.com/finom/vovk/commit/7b7f1b87), [ff18ee5](https://github.com/finom/vovk/commit/ff18ee5d))
 - Derived path/query parameters and `components.schemas` merge with user-declared ones ([d86bae0](https://github.com/finom/vovk/commit/d86bae0b), [6a174ac](https://github.com/finom/vovk/commit/6a174ac1))
 - Malformed `x-meta` responds 400, `x-meta` is allowed in default CORS headers, non-ASCII meta is escaped ([5327a32](https://github.com/finom/vovk/commit/5327a327), [e34acae](https://github.com/finom/vovk/commit/e34acaea), [be58398](https://github.com/finom/vovk/commit/be583983))
+- JSON Lines: backpressure, the generator is returned when the client goes away, falsy items and split multi-byte characters survive, error lines carry `statusCode` ([#35](https://github.com/finom/vovk/pull/35))
+- `notFound()`, `forbidden()` and `unauthorized()` reach Next.js instead of answering 500 ([#35](https://github.com/finom/vovk/pull/35))
+- Malformed JSON, form and query input answers 400 ([#35](https://github.com/finom/vovk/pull/35))
+- Routing: several params in one segment, a dynamic parent folder, `.auto()` with a params schema, a controller in two segments; route errors reach `onError` ([#35](https://github.com/finom/vovk/pull/35))
+- CORS: PATCH in the allowed methods, the auto preflight skips auth hooks, headers apply to immutable responses ([#35](https://github.com/finom/vovk/pull/35))
+- An empty multitenant `from` prefix matches every path ([#35](https://github.com/finom/vovk/pull/35))
+- Client: `deepExtend` without `Buffer` and across VM realms, the URL built from validated input, typed form conversion, `apiRoot` without a leading slash, `Date` in the query ([#35](https://github.com/finom/vovk/pull/35))
+- OpenAPI keeps unions, nullables and recursive schemas, names refs per handler and honors `segmentNameOverride` ([#35](https://github.com/finom/vovk/pull/35))
+- Mixins: only HTTP methods become operations, path-level parameters merge in, `+json` and charset bodies are read, server variables are substituted, bodies are typed ([#35](https://github.com/finom/vovk/pull/35))
+- Derived tool input schemas resolve their `$defs`; MCP output is valid for empty results and `+json` responses ([#35](https://github.com/finom/vovk/pull/35))
+- The package ships the MIT license instead of a copy of package.json, and no stale modules from older builds ([#35](https://github.com/finom/vovk/pull/35))
 
 ### Security
 
 - `x-tsType` is stripped from third-party OpenAPI specs on ingestion; a crafted value could inject executable code into the generated client ([c5e63cd](https://github.com/finom/vovk/commit/c5e63cd7))
 - Query parsing hardened: prototype-polluting keys dropped, pairs split at the first `=`, a large index cannot size a huge array ([46aaadf](https://github.com/finom/vovk/commit/46aaadf7), [03522f3](https://github.com/finom/vovk/commit/03522f3f), [14bbc17](https://github.com/finom/vovk/commit/14bbc179))
 - A non-index bracket key such as `?a[-1]=x` no longer discards the value; it becomes an object key, matching `qs`
+- Query keys naming inherited members (`hasOwnProperty[call]=1`) no longer write onto shared built-ins; a form `__proto__` field is skipped ([#35](https://github.com/finom/vovk/pull/35))
+- A `Content-Type` list such as `text/plain; x=1,application/json` is refused, so a cross-origin request can't reach a JSON handler without a preflight ([#35](https://github.com/finom/vovk/pull/35))
+- Route params are copied per request, and a literal `{param}` URL no longer runs a handler with empty params ([#35](https://github.com/finom/vovk/pull/35))
+- The client refuses empty, `.` and `..` path params, also percent-encoded ([#35](https://github.com/finom/vovk/pull/35))
 
 ### Upgrading from 3.x
 
@@ -49,6 +70,8 @@ A cleanup major: removals and renames, no new APIs.
 4. If you used `createTool` / `VovkTool` / `inputSchemas`, move to the `StandardToolV0` shape.
 5. If you relied on error responses carrying internal messages in production, read them from `onError` instead.
 6. The composed client no longer comes from the `vovk-client` package; see the `vovk-cli` changelog.
+7. A handler that read raw strings from its second argument now gets the validated params, coerced types included.
+8. Throw `HttpException` for an expected error: another error with a `statusCode` now answers 500.
 
 ## 3.7.0 - 2026-06-11
 
