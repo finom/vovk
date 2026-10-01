@@ -267,6 +267,59 @@ describe('openAPIToVovkSchema — Mixins type names', () => {
   });
 });
 
+describe('openAPIToVovkSchema — request styles', () => {
+  it('Keeps the style and explode a query parameter declares', () => {
+    const { listThings } = handlersOf({
+      paths: {
+        '/things': {
+          parameters: [{ name: 'tags', in: 'query', style: 'form', explode: false, schema: { type: 'array' } }],
+          get: {
+            operationId: 'listThings',
+            parameters: [
+              { name: 'filter', in: 'query', style: 'deepObject', schema: { type: 'object' } },
+              { name: 'limit', in: 'query', schema: { type: 'integer' } },
+            ],
+            responses: { '200': {} },
+          },
+        },
+      },
+    });
+    deepStrictEqual(listThings.misc.queryStyles, {
+      tags: { style: 'form', explode: false },
+      filter: { style: 'deepObject' },
+    });
+  });
+
+  it('Keeps the style and explode of a form body property', () => {
+    const { createThing } = handlersOf({
+      paths: {
+        '/things': {
+          post: {
+            operationId: 'createThing',
+            requestBody: {
+              content: {
+                'application/x-www-form-urlencoded; charset=utf-8': {
+                  schema: { type: 'object' },
+                  encoding: { metadata: { style: 'deepObject', explode: true }, file: { contentType: 'image/png' } },
+                },
+              },
+            },
+            responses: { '200': {} },
+          },
+        },
+      },
+    });
+    deepStrictEqual(createThing.misc.formStyles, { metadata: { style: 'deepObject', explode: true } });
+  });
+
+  it('Adds no styles to an operation that declares none', () => {
+    const { listThings } = handlersOf({
+      paths: { '/things': { get: { operationId: 'listThings', responses: { '200': {} } } } },
+    });
+    deepStrictEqual(listThings.misc, { isOpenAPIMixin: true, originalPath: '/things' });
+  });
+});
+
 describe('openAPIToVovkSchema — server URL', () => {
   it('Substitutes the default of every server variable', () => {
     const segment = convert({

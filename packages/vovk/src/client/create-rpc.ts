@@ -12,6 +12,7 @@ import { defaultHandler } from './default-handler.js';
 import { defaultStreamHandler } from './default-stream-handler.js';
 import { fetcher as defaultFetcher } from './fetcher.js';
 import { serializeQuery } from './serialize-query.js';
+import { getStyledSerializers } from './serialize-styled.js';
 
 export type { CombinedSpec, VovkHandlerSchema, VovkRequest };
 
@@ -23,10 +24,11 @@ const isUnsafeSegment = (value: string) => /^(?:\.|%2e){0,2}$/i.test(value);
 const getHandlerPath = <T extends ControllerStaticMethod>(
   endpoint: string,
   params?: VovkControllerParams<T>,
-  query?: VovkControllerQuery<T>
+  query?: VovkControllerQuery<T>,
+  toQueryString: (query: Record<string, unknown>) => string = serializeQuery
 ) => {
   let result = endpoint;
-  const queryStr = query ? serializeQuery(query) : null;
+  const queryStr = query ? toQueryString(query) : null;
   for (const [key, value] of Object.entries(params ?? {})) {
     const placeholder = `{${key}}`;
     // a missing value keeps its placeholder, which the fetcher reports
@@ -61,9 +63,15 @@ const isFormSource = (body: unknown): body is Record<string, unknown> =>
   !(body instanceof FormData || body instanceof URLSearchParams || body instanceof Blob);
 
 // urlencoded when the procedure takes no multipart, since then the server answers multipart with 415
-const toFormBody = (source: Record<string, unknown>, contentTypes: string[]) => {
+const toFormBody = (
+  source: Record<string, unknown>,
+  contentTypes: string[],
+  // a style applies to an urlencoded body only, as OpenAPI defines
+  appendStyledField?: (form: URLSearchParams, key: string, value: unknown) => boolean
+) => {
   const form = contentTypes.includes('multipart/form-data') ? new FormData() : new URLSearchParams();
   for (const [key, value] of Object.entries(source)) {
+    if (form instanceof URLSearchParams && appendStyledField?.(form, key, value)) continue;
     for (const item of Array.isArray(value) ? value : [value]) {
       const formValue = toFormValue(item);
       if (formValue === null) continue;
@@ -112,6 +120,8 @@ export const createRPC = <T, OPTS extends Record<string, KnownAny> = Record<stri
 
   for (const [staticMethodName, handlerSchema] of Object.entries(controllerSchema.handlers ?? {})) {
     const { path, httpMethod, validation } = handlerSchema;
+    // an OpenAPI mixin sends its query and form body in the styles its document declares
+    const styled = getStyledSerializers(handlerSchema);
     const getURL = ({ apiRoot, params, query }: { apiRoot?: string; params?: unknown; query?: unknown } = {}) => {
       apiRoot = apiRoot ?? originalApiRoot;
       // a root without a host is a path on the current origin, so "api" must not become the protocol-relative "//api"
@@ -119,7 +129,7 @@ export const createRPC = <T, OPTS extends Record<string, KnownAny> = Record<stri
       const endpoint = [
         apiRoot,
         forceApiRoot ? '' : segmentNamePath,
-        getHandlerPath([controllerPrefix, path].filter(Boolean).join('/'), params, query),
+        getHandlerPath([controllerPrefix, path].filter(Boolean).join('/'), params, query, styled?.serializeQuery),
       ]
         .filter(Boolean)
         .join('/')
@@ -150,7 +160,7 @@ export const createRPC = <T, OPTS extends Record<string, KnownAny> = Record<stri
       // an object sent as form data is validated as the object, so numbers and arrays keep their types
       const formSource =
         contentTypes.some((type) => FORM_CONTENT_TYPES.includes(type)) && isFormSource(input.body) ? input.body : null;
-      const body = formSource ? toFormBody(formSource, contentTypes) : input.body;
+      const body = formSource ? toFormBody(formSource, contentTypes, styled?.appendFormField) : input.body;
 
       const validate: Parameters<typeof fetcher>[0]['validate'] = async (
         validationInput,
@@ -170,7 +180,7 @@ export const createRPC = <T, OPTS extends Record<string, KnownAny> = Record<stri
           const validated =
             (await validateOnClient(toValidate, validation, { fullSchema: schema, endpoint })) ?? toValidate;
           return validatesFormSource && isFormSource(validated.body)
-            ? { ...validated, body: toFormBody(validated.body, contentTypes) }
+            ? { ...validated, body: toFormBody(validated.body, contentTypes, styled?.appendFormField) }
             : validated;
         }
 

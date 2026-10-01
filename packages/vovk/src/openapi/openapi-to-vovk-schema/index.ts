@@ -30,6 +30,18 @@ const BODY_CONTENT_TYPES: ContentType[] = [
 
 const mediaTypeEssence = (mediaType: string) => mediaType.split(';')[0].trim().toLowerCase();
 
+// the style and explode each field declares, for the client to serialize the request with; null when none does
+function pickStyles(fields: [string, { style?: string; explode?: boolean } | undefined][]) {
+  const styles = Object.fromEntries(
+    fields.flatMap(([name, { style, explode } = {}]) =>
+      style === undefined && explode === undefined
+        ? []
+        : [[name, { ...(style !== undefined && { style }), ...(explode !== undefined && { explode }) }]]
+    )
+  );
+  return Object.keys(styles).length ? styles : null;
+}
+
 // success body: 200/201, then other 2xx, then the 2XX wildcard
 // exact media type first, then +json suffix; `default` is the error shape, skip it
 function makeResponseSchemaPicker(operation: OperationObject) {
@@ -226,6 +238,12 @@ export function openAPIToVovkSchema({
       const body: VovkJSONSchemaBase | null =
         bodySchemas.length > 1 ? { anyOf: bodySchemas } : (bodySchemas[0] ?? null);
       const bodyContentTypes = bodySchemas.flatMap((s) => s['x-contentType'] ?? []);
+      const queryStyles = pickStyles(queryProperties.map((p) => [p.name, p]));
+      // OpenAPI applies a style to an urlencoded body only
+      const formEncoding = Object.entries(requestBodyContent).find(
+        ([mediaType]) => mediaTypeEssence(mediaType) === 'application/x-www-form-urlencoded'
+      )?.[1]?.encoding;
+      const formStyles = pickStyles(Object.entries(formEncoding ?? {}));
       const pickResponseSchema = makeResponseSchemaPicker(operation);
       const output = pickResponseSchema(['application/json'], '+json');
       const iteration = pickResponseSchema(['application/jsonl', 'application/jsonlines']);
@@ -241,6 +259,8 @@ export function openAPIToVovkSchema({
         misc: {
           isOpenAPIMixin: true,
           originalPath: path,
+          ...(queryStyles && { queryStyles }),
+          ...(formStyles && { formStyles }),
         },
       };
       handlers[handlerName] = handler;
