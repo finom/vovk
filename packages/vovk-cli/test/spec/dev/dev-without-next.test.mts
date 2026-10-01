@@ -134,4 +134,31 @@ await describe('vovk dev in a project without Next.js', async () => {
     assert.deepStrictEqual(Object.keys(rootSchema.controllers), ['UserRPC'], dev.getOutput());
     assert.match(dev.getOutput(), /A segment can't be named "root"/);
   });
+
+  await it('Drops a removed segment from the client', async () => {
+    const server = await startSchemaServer({ '': makeSegmentSchema(''), foo: makeSegmentSchema('foo', 'FooRPC') });
+    await createProject(projectDir, {
+      'package.json': { name: 'app', version: '1.0.0', type: 'module' },
+      'vovk.config.mjs': `export default ${JSON.stringify({ composedClient: { prettifyClient: false } })};`,
+      'src/app/api/[[...vovk]]/route.ts': '',
+      'src/app/api/foo/[[...vovk]]/route.ts': '',
+    });
+    const readClient = () => fs.readFile(path.join(projectDir, 'src/client/index.ts'), 'utf-8');
+    const dev = startCLI(['dev', '--log-level', 'debug'], { cwd: projectDir, env: { PORT: server.port } });
+
+    try {
+      await dev.waitForOutput(/Composed client is generated/);
+      assert.match(await readClient(), /FooRPC/);
+
+      const since = dev.getOutput().length;
+      await fs.rm(path.join(projectDir, 'src/app/api/foo'), { recursive: true });
+      await dev.waitForOutput(/Composed client (is generated|is up to date)/, 20_000, since);
+    } finally {
+      await dev.stop();
+      await server.close();
+    }
+
+    assert.doesNotMatch(await readClient(), /FooRPC/, dev.getOutput());
+    assert.match(await readClient(), /UserRPC/);
+  });
 });

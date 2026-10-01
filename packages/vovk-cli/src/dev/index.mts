@@ -156,6 +156,7 @@ export class VovkDev {
           this.#segments = this.#segments.filter((s) => s.segmentName !== segmentName);
           log.info(`${formatLoggedSegmentName(segmentName, { upperFirst: true })} has been removed`);
           log.debug(`Full list of segments: ${this.#segments.map((s) => s.segmentName).join(', ')}`);
+          this.#dropRemovedSegments();
 
           void debouncedEnsureSchemaFiles(
             this.#projectInfo,
@@ -279,6 +280,28 @@ export class VovkDev {
       this.#segments = await locateSegments({ dir: apiDirAbsolutePath, config, log });
     } catch (error) {
       log.error((error as Error).message);
+    }
+    this.#dropRemovedSegments();
+  }
+
+  // a removed or renamed segment leaves the generated client
+  #dropRemovedSegments() {
+    const removedNames = Object.keys(this.#schemaSegments).filter(
+      (name) => !this.#segments.some((s) => s.segmentName === name)
+    );
+    for (const name of removedNames) {
+      delete this.#schemaSegments[name];
+    }
+    if (removedNames.length) {
+      this.#generateIfComplete();
+    }
+  }
+
+  // a client generated before every segment sent its schema would lack the others
+  #generateIfComplete() {
+    if (this.#segments.every((s) => this.#schemaSegments[s.segmentName])) {
+      this.#projectInfo.log.debug(`All segments with "emitSchema" have schema.`);
+      this.#generate();
     }
   }
 
@@ -451,10 +474,7 @@ export class VovkDev {
       );
     }
 
-    if (this.#segments.every((s) => this.#schemaSegments[s.segmentName])) {
-      log.debug(`All segments with "emitSchema" have schema.`);
-      this.#generate();
-    }
+    this.#generateIfComplete();
   }
 
   async start({ exit }: { exit: boolean }) {

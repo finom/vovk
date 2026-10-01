@@ -37,14 +37,15 @@ export function startCLI(args: string[], { cwd, env }: { cwd: string; env?: Node
   return {
     getOutput: () => output,
     exitCode,
-    waitForOutput(pattern: RegExp, timeoutMs = 20_000) {
+    // since: an output length, to wait for output printed after that point
+    waitForOutput(pattern: RegExp, timeoutMs = 20_000, since = 0) {
       return new Promise<void>((resolve, reject) => {
         const timer = setTimeout(() => {
           listeners.delete(check);
           reject(new Error(`Timed out waiting for ${pattern}. Output:\n${output}`));
         }, timeoutMs);
         const check = () => {
-          if (!pattern.test(output)) return;
+          if (!pattern.test(output.slice(since))) return;
           clearTimeout(timer);
           listeners.delete(check);
           resolve();
