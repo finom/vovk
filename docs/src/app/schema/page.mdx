@@ -127,14 +127,16 @@ import { schema } from '@client/root/schema';
 
 Example of a segment schema file:
 
-```js filename=".vovk-schema/segments/foo.json"
+```js filename=".vovk-schema/foo.json"
 {
   // Segment schema version
-  "$schema": "https://vovk.dev/api/spec/v3/segment.json",
+  "$schema": "https://vovk.dev/api/schema/v3/segment.json",
   // vovkInit function option that defines is the schema going to be emitted for this segment
   "emitSchema": true,
   // Segment name, for the root segment it's an empty string
   "segmentName": "foo",
+  // "segment", or "mixin" for an OpenAPI mixin
+  "segmentType": "segment",
   // List of controllers as key-value pairs for fast access
   // Key is a name of the variable that's going to be exported from "@/client"
   // Value is controller information

@@ -6,7 +6,8 @@ export function getMetaSchema({ config }: { config: VovkStrictConfig }): VovkMet
   return {
     $schema: VovkSchemaIdEnum.META,
     config: config
-      ? pick(config, [...(config.exposeConfigKeys as (keyof VovkConfig)[]), '$schema'])
+      ? // every client builds its URLs from rootEntry, so it's exposed whatever exposeConfigKeys lists
+        pick(config, [...(config.exposeConfigKeys as (keyof VovkConfig)[]), 'rootEntry', '$schema'])
       : {
           $schema: VovkSchemaIdEnum.CONFIG,
         },

@@ -1,8 +1,10 @@
 import assert from 'node:assert';
 import { describe, it } from 'node:test';
 import type { JSONSchema7 } from 'json-schema';
+import camelCase from 'lodash/camelCase.js';
+import upperFirst from 'lodash/upperFirst.js';
 import type { OpenAPIObject } from 'openapi3-ts/oas31';
-import { openAPIToVovkSchema } from 'vovk/internal';
+import { openAPIToVovkSchema, toTypeName } from 'vovk/internal';
 import { compileJSONSchemaToTypeScriptType } from '../../../dist/utils/compile-json-schema-to-typescript-type.mjs';
 import { normalizeOpenAPIMixin } from '../../../dist/utils/normalize-openapi-mixin.mjs';
 
@@ -89,5 +91,29 @@ await describe('OpenAPI mixin with the default method names', async () => {
     );
     assert.match(declaration, /^export type _2FaConfig = /);
     assert.strictEqual(bodyType(updateUsers2faById.validation.body), 'export type Body = Mixins.Api._2FaConfig;');
+  });
+});
+
+await describe('OpenAPI mixin names', async () => {
+  await it('Makes a camel-case-operation-id method name that starts with a digit an identifier', async () => {
+    const { getMethodName } = await normalizeOpenAPIMixin({
+      mixinModule: { source: { object: spec }, getMethodName: 'camel-case-operation-id' },
+      log: console as never,
+    });
+    const name = getMethodName({
+      operationObject: { operationId: '2fa_verify' },
+      method: 'POST',
+      path: '/2fa',
+      openAPIObject: spec,
+    } as never);
+    assert.strictEqual(name, '_2FaVerify');
+  });
+
+  await it('Gives an ASCII name the type name lodash gave it', () => {
+    const names = ['petstore', 'userID', 'HTTPResponse', 'ABC1', 'HTTP2Server', 'v2-api', '1st', "dont's", 'x$y'];
+    for (const name of names) {
+      const lodashName = upperFirst(camelCase(name));
+      assert.strictEqual(toTypeName(name), /^\d/.test(lodashName) ? `_${lodashName}` : lodashName, name);
+    }
   });
 });

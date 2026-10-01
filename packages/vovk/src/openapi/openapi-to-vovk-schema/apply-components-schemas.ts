@@ -1,7 +1,6 @@
 import type { ComponentsObject } from 'openapi3-ts/oas31';
 import type { VovkJSONSchemaBase } from '../../types/json-schema.js';
-import { camelCase } from '../../utils/camel-case.js';
-import { upperFirst } from '../../utils/upper-first.js';
+import { toTypeName, toTypeNames } from '../../utils/to-identifier.js';
 
 // fast clone JSON object while ignoring Date, RegExp, and Function types
 function cloneJSON(obj: unknown): unknown {
@@ -15,10 +14,15 @@ function cloneJSON(obj: unknown): unknown {
   return result;
 }
 
-// the type name vovk-cli declares for a component: PascalCase, a leading digit gets an underscore
-function toComponentTypeName(componentName: string): string {
-  const typeName = upperFirst(camelCase(componentName));
-  return /^[\p{L}_$]/u.test(typeName) ? typeName : `_${typeName}`;
+// the names vovk-cli declares in mixins.d.ts, computed once per components object
+const componentTypeNames = new WeakMap<object, Map<string, string>>();
+function getComponentTypeNames(components: NonNullable<ComponentsObject['schemas']>) {
+  let typeNames = componentTypeNames.get(components);
+  if (!typeNames) {
+    typeNames = toTypeNames(Object.keys(components));
+    componentTypeNames.set(components, typeNames);
+  }
+  return typeNames;
 }
 
 export function applyComponentsSchemas(
@@ -31,6 +35,8 @@ export function applyComponentsSchemas(
 ): VovkJSONSchemaBase {
   const key = 'components/schemas';
   if (!components || !Object.keys(components).length) return schema;
+  const mixinTypeName = toTypeName(mixinName);
+  const typeNames = getComponentTypeNames(components);
 
   // Create a deep copy of the schema
   const result = cloneJSON(schema) as VovkJSONSchemaBase;
@@ -58,9 +64,10 @@ export function applyComponentsSchemas(
 
     if ($ref && typeof $ref === 'string' && $ref.startsWith(`#/${key}/`)) {
       const componentName = $ref.replace(`#/${key}/`, '');
-      if (components?.[componentName]) {
+      const typeName = typeNames.get(componentName);
+      if (typeName && components?.[componentName]) {
         // Set `x-tsType` so TS resolves the ref without local `$defs`.
-        newObj['x-tsType'] ??= `Mixins.${upperFirst(camelCase(mixinName))}.${toComponentTypeName(componentName)}`;
+        newObj['x-tsType'] ??= `Mixins.${mixinTypeName}.${typeName}`;
 
         if (emitDefs) {
           // Self-contained slot: local $defs + embedded closure.

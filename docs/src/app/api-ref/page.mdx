@@ -661,6 +661,10 @@ Object that represents a [fetcher](#fetcher) function used to make API requests.
 
 See the [fetcher docs](/imports#fetcher) for more information.
 
+### `VovkStreamAsyncIterable`
+
+The stream a client method returns for a [JSON Lines](/jsonlines) response: an async iterable of the items with `status`, `asPromise`, `onIterate`, `abortController` and `abortSilently`. Generated clients use it in their method types, OpenAPI mixins included.
+
 ### `VovkValidateOnClient`
 
 Function type that represents the client-side validation function created by [createValidateOnClient](#createvalidateonclient).
