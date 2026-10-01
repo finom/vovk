@@ -5,6 +5,7 @@ import type { ProjectInfo } from '../get-project-info/index.mjs';
 import { chalkHighlightThing } from '../utils/chalk-highlight-thing.mjs';
 import { formatLoggedSegmentName } from '../utils/format-logged-segment-name.mjs';
 import { getFileSystemEntryType } from '../utils/get-file-system-entry-type.mjs';
+import { assertSegmentName } from '../utils/locate-segments.mjs';
 import { prettify } from '../utils/prettify.mjs';
 
 export async function newSegment({
@@ -26,6 +27,7 @@ export async function newSegment({
   }
 
   const absoluteSegmentRoutePath = path.join(apiDirAbsolutePath, segmentName, '[[...vovk]]/route.ts');
+  assertSegmentName(segmentName, path.join(apiDirAbsolutePath, segmentName));
 
   if (!overwrite && (await getFileSystemEntryType(absoluteSegmentRoutePath))) {
     log.error(

@@ -1,10 +1,38 @@
 import assert from 'node:assert';
+import fs from 'node:fs/promises';
 import path from 'node:path';
-import { describe, it } from 'node:test';
+import { after, describe, it } from 'node:test';
 import { getLogger } from '../../../dist/utils/get-logger.mjs';
 import { locateSegments } from '../../../dist/utils/locate-segments.mjs';
 
+const tmpDir = path.join(process.cwd(), 'tmp_locate_segments');
+
+after(async () => {
+  await fs.rm(tmpDir, { recursive: true, force: true });
+});
+
 await describe('locateSegment', async () => {
+  await it('Rejects a segment named like the root segment files', async () => {
+    for (const segmentDir of ['root', '', 'foo/root']) {
+      const routeFilePath = path.join(tmpDir, segmentDir, '[[...vovk]]', 'route.ts');
+      await fs.mkdir(path.dirname(routeFilePath), { recursive: true });
+      await fs.writeFile(routeFilePath, '');
+    }
+
+    await assert.rejects(locateSegments({ dir: tmpDir, config: null, log: getLogger('warn') }), (error: Error) => {
+      assert.match(error.message, /A segment can't be named "root"/);
+      assert.ok(error.message.includes(`Rename ${path.join(tmpDir, 'root')}.`), error.message);
+      return true;
+    });
+
+    await fs.rm(path.join(tmpDir, 'root'), { recursive: true });
+    const results = await locateSegments({ dir: tmpDir, config: null, log: getLogger('warn') });
+    assert.deepStrictEqual(
+      results.map(({ segmentName }) => segmentName),
+      ['', 'foo/root']
+    );
+  });
+
   await it('Locates segments properly', async () => {
     const rootDirectory = path.join(import.meta.dirname, '../../data/segments');
     const results = await locateSegments({ dir: rootDirectory, config: null, log: getLogger('debug') });

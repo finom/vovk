@@ -33,4 +33,16 @@ await describe('vovk new in a project without Next.js', async () => {
       /import InboxController from '\.\.\/\.\.\/\.\.\/\.\.\/elsewhere\/inbox\/inbox-controller';/
     );
   });
+
+  await it('Refuses a segment named "root"', async () => {
+    await assert.rejects(
+      runCLI(['new', 'segment', 'root'], { cwd: projectDir }),
+      (error: Error & { stderr: string }) => {
+        assert.match(error.stderr, /A segment can't be named "root"/);
+        return true;
+      }
+    );
+
+    await assert.rejects(fs.stat(path.join(projectDir, 'src/app/api/root')), { code: 'ENOENT' });
+  });
 });
