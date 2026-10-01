@@ -25,7 +25,7 @@
     "ncu": "npm-check-updates -u"
   },
   "dependencies": {
-    "next": "16.3.0",
+    "next": "^16.3.6",
     "prettier": "^3.9.6",
     "react": "19.2.8",
     "react-dom": "19.2.8",
