@@ -6,6 +6,9 @@ export function schemaToTsType(jsonSchema: VovkJSONSchemaBase | boolean): string
   if (jsonSchema === null || jsonSchema === undefined) return 'unknown';
   if (typeof jsonSchema !== 'object') return 'unknown';
 
+  // a mixin component ref carries its Mixins type
+  if (typeof jsonSchema['x-tsType'] === 'string') return jsonSchema['x-tsType'];
+
   // Handle const
   if ('const' in jsonSchema) {
     return JSON.stringify(jsonSchema.const);
