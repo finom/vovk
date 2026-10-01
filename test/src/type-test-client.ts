@@ -1,6 +1,9 @@
+import { NextResponse } from 'next/server.js';
 import { createFetcher, procedure, type VovkRequest } from 'vovk';
 import { createRPC } from 'vovk/create-rpc';
 import type { VovkFetcherOptions } from 'vovk/internal';
+// @ts-expect-error a module that isn't installed, as next is for a client bundle used without Next
+import type { MissingResponse } from 'vovk-missing-module';
 import { z } from 'zod';
 
 // Type checks for RPC modules: the test app's tsc run fails if a line without @ts-expect-error doesn't compile
@@ -125,4 +128,49 @@ export async function generatorWithoutIterationSchema() {
   for await (const item of stream) item.token satisfies string;
   // @ts-expect-error the stream is not an async generator
   stream.next;
+}
+
+// ====== Response bodies ======
+
+class ResponseController {
+  // biome-ignore lint/suspicious/noExplicitAny: a handler typed any is not a stream
+  static async anyResult(): Promise<any> {
+    return { a: 1 };
+  }
+
+  static async nextJson() {
+    return NextResponse.json({ hello: 'world' });
+  }
+
+  static async download() {
+    return new Response('a,b', { headers: { 'content-type': 'text/csv' } });
+  }
+}
+
+export async function responseBodies() {
+  const rpc = createRPC<typeof ResponseController>({}, '', 'ResponseRPC');
+
+  const anyResult = await rpc.anyResult();
+  anyResult.a satisfies number;
+  const json = await rpc.nextJson();
+  json.hello satisfies string;
+  // @ts-expect-error the body type, not a stream
+  json.asPromise;
+  const download = await rpc.download();
+  download satisfies Response;
+}
+
+// a type from a module that isn't installed is the error type, an any that IsAny can't tell apart in a plain check
+declare class MissingTypeController {
+  static missing(): MissingResponse<{ hello: string }>;
+  static missingPromise(): Promise<MissingResponse<{ hello: string }>>;
+}
+
+export async function unresolvedResponseType() {
+  const rpc = createRPC<typeof MissingTypeController>({}, '', 'MissingRPC');
+
+  const result = await rpc.missing();
+  result.hello;
+  const fromPromise = await rpc.missingPromise();
+  fromPromise.hello;
 }

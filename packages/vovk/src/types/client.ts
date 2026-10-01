@@ -1,4 +1,3 @@
-import type { NextResponse } from 'next/server.js';
 import type { defaultHandler } from '../client/default-handler.js';
 import type { defaultStreamHandler } from '../client/default-stream-handler.js';
 import type { JSONLinesResponder } from '../core/json-lines-responder.js';
@@ -68,7 +67,10 @@ export type VovkStreamAsyncIterable<T> = {
   abortController: AbortController;
 };
 
-type IsNextJs = NextResponse extends Response ? true : false;
+// a Next.js response keeps its body type in a symbol-keyed property, read without importing next
+type NextResponseBody<R> = {
+  [K in keyof R]: K extends symbol ? (R[K] extends { cookies: unknown; body?: infer B } ? B : never) : never;
+}[keyof R];
 
 type ActualReturnType<T extends ControllerStaticMethod> = T extends {
   __handleFn: (...args: KnownAny[]) => infer R;
@@ -76,14 +78,12 @@ type ActualReturnType<T extends ControllerStaticMethod> = T extends {
   ? R
   : ReturnType<T>;
 
-type StaticMethodReturn<T extends ControllerStaticMethod> = IsNextJs extends true
-  ? ActualReturnType<T> extends NextResponse<infer U> | Promise<NextResponse<infer U>>
-    ? U
-    : ActualReturnType<T> extends Response | Promise<Response>
-      ? Awaited<ActualReturnType<T>>
-      : ActualReturnType<T>
+type StaticMethodReturn<T extends ControllerStaticMethod> = [IsAny<Awaited<ActualReturnType<T>>>] extends [true]
+  ? ActualReturnType<T>
   : ActualReturnType<T> extends Response | Promise<Response>
-    ? Awaited<ActualReturnType<T>>
+    ? [NextResponseBody<Awaited<ActualReturnType<T>>>] extends [never]
+      ? Awaited<ActualReturnType<T>>
+      : NextResponseBody<Awaited<ActualReturnType<T>>>
     : ActualReturnType<T>;
 
 type StaticMethodReturnPromise<T extends ControllerStaticMethod> = ToPromise<StaticMethodReturn<T>>;
@@ -95,12 +95,15 @@ type StreamItem<T extends ControllerStaticMethod> = T extends { __types: { itera
     : U
   : HandlerStreamItem<T>;
 
-type HandlerStreamItem<T extends ControllerStaticMethod> =
-  ActualReturnType<T> extends
-    | Promise<JSONLinesResponder<infer U>>
-    | JSONLinesResponder<infer U>
-    | Iterator<infer U>
-    | AsyncIterator<infer U>
+// a handler typed any or Promise<any> is not a stream; IsAny goes in a tuple because, for a type from a module
+// that isn't installed (next in a client bundle used without Next), it's any rather than true
+type HandlerStreamItem<T extends ControllerStaticMethod> = [IsAny<Awaited<ActualReturnType<T>>>] extends [true]
+  ? never
+  : ActualReturnType<T> extends
+        | Promise<JSONLinesResponder<infer U>>
+        | JSONLinesResponder<infer U>
+        | Iterator<infer U>
+        | AsyncIterator<infer U>
     ? U
     : never;
 
@@ -132,14 +135,13 @@ export type ClientMethodReturn<
   ) => undefined | object | JSONLinesResponder<TStreamIteration> | Promise<JSONLinesResponder<TStreamIteration>>,
   TStreamIteration,
   R,
-> =
-  IsAny<R> extends true
-    ? Promise<R>
-    : unknown extends R // no transform, or one that returns unknown
-      ? [StreamItem<T>] extends [never]
-        ? StaticMethodReturnPromise<T>
-        : Promise<VovkStreamAsyncIterable<StreamItem<T>>>
-      : Promise<Awaited<R>>;
+> = [IsAny<R>] extends [true]
+  ? Promise<R>
+  : unknown extends R // no transform, or one that returns unknown
+    ? [StreamItem<T>] extends [never]
+      ? StaticMethodReturnPromise<T>
+      : Promise<VovkStreamAsyncIterable<StreamItem<T>>>
+    : Promise<Awaited<R>>;
 
 export type ClientMethod<
   T extends ((
