@@ -219,17 +219,16 @@ class ApiClient:
                 data=body,
                 stream=True # Always stream for consistent handling
             )
-        elif TIsForm:
-            # When the content type is multipart/form-data and no files are provided,
-            # convert body fields to multipart tuples via the files parameter
-            # to force requests to use multipart encoding instead of application/x-www-form-urlencoded
-            if TIsMultipart and not files and body and isinstance(body, dict):
-                multipart_fields = [(k, (None, str(v))) for k, v in body.items()]
+        elif TIsForm and isinstance(body, dict):
+            fields = self._to_form_fields(body)
+            if TIsMultipart:
+                # a (None, text) part is a plain field, and makes requests send multipart even without a file
+                file_parts = list(files.items()) if isinstance(files, dict) else list(files or [])
                 response = requests.request(
                     method=http_method.upper(),
                     url=processed_url,
                     headers=request_headers,
-                    files=multipart_fields,
+                    files=[(key, (None, text)) for key, text in fields] + file_parts,
                     stream=True # Always stream for consistent handling
                 )
             else:
@@ -238,9 +237,18 @@ class ApiClient:
                     url=processed_url,
                     headers=request_headers,
                     files=files,
-                    data=body,
+                    data=fields,
                     stream=True # Always stream for consistent handling
                 )
+        elif TIsForm:
+            response = requests.request(
+                method=http_method.upper(),
+                url=processed_url,
+                headers=request_headers,
+                files=files,
+                data=body,
+                stream=True # Always stream for consistent handling
+            )
         else:
             response = requests.request(
                 method=http_method.upper(),
@@ -284,6 +292,24 @@ class ApiClient:
             'isError': True,
             'cause': envelope.get('cause'),
         })
+
+    @staticmethod
+    def _to_form_fields(body: Dict[str, Any]) -> List[Tuple[str, str]]:
+        # as the TypeScript client sends a form: None is left out, a list is one field per item,
+        # a boolean is true or false and any other object is JSON
+        fields: List[Tuple[str, str]] = []
+        for key, value in body.items():
+            for item in value if isinstance(value, (list, tuple)) else [value]:
+                if item is None:
+                    continue
+                if isinstance(item, bool):
+                    text = 'true' if item else 'false'
+                elif isinstance(item, (dict, list, tuple)):
+                    text = json.dumps(item, separators=(',', ':'), ensure_ascii=False)
+                else:
+                    text = str(item)
+                fields.append((key, text))
+        return fields
 
     def _build_query_string(self, data: dict[str, Any], prefix: str = '') -> str:
         """

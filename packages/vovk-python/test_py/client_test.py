@@ -1,10 +1,20 @@
 import json
 import unittest
-from typing import Any
-from generated_python_client.src.test_generated_python_client import ClientSweepRPC, HttpException, PetstoreAPI
-from utils import fake_transport, json_response
+from io import BytesIO
+from typing import Any, Dict
+from generated_python_client.src.test_generated_python_client import (
+    ClientSweepRPC,
+    HttpException,
+    PetstoreAPI,
+    WithValidationRPC,
+)
+from utils import fake_transport, form_fields, json_response
 
 FAKE_ROOT = 'http://fake.test/api'
+
+FORM_BODY: Dict[str, Any] = {'hello': 'world', 'flag': False, 'count': 5, 'tags': ['a', 'b'], 'meta': {'x': 1}, 'nick': None}
+# as the TypeScript client sends it: None left out, one field per list item, booleans as JSON writes them, objects as JSON
+FORM_FIELDS = [('hello', 'world'), ('flag', 'false'), ('count', '5'), ('tags', 'a'), ('tags', 'b'), ('meta', '{"x":1}')]
 
 
 class TestClient(unittest.TestCase):
@@ -46,6 +56,25 @@ class TestClient(unittest.TestCase):
 
     def test_form_body_without_properties(self) -> None:
         self.assertEqual(ClientSweepRPC.post_form_entries(body={'hello': 'world'}), [['hello', 'world']])
+
+    def test_form_fields(self) -> None:
+        entries = ClientSweepRPC.post_form_entries(body=FORM_BODY)
+        self.assertEqual([tuple(entry) for entry in entries], FORM_FIELDS)
+
+    def test_form_fields_next_to_a_file(self) -> None:
+        with fake_transport(json_response({})) as sent:
+            WithValidationRPC.handle_multipart_data_with_file(
+                body=FORM_BODY,  # type: ignore
+                query={'search': 'value'},
+                files={'file': ('a.txt', BytesIO(b'x'), 'text/plain')},
+                disable_client_validation=True,
+            )
+        self.assertEqual(form_fields(sent[0].request), [*FORM_FIELDS, ('file', 'file:a.txt')])
+
+    def test_url_encoded_fields(self) -> None:
+        with fake_transport(json_response({})) as sent:
+            ClientSweepRPC.post_url_encoded(body=FORM_BODY, disable_client_validation=True)  # type: ignore
+        self.assertEqual(form_fields(sent[0].request), FORM_FIELDS)
 
     def test_array_body(self) -> None:
         with fake_transport(json_response(None)) as sent:

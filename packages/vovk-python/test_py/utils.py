@@ -1,8 +1,11 @@
 
 import json
 from contextlib import contextmanager
+from email.parser import BytesParser
+from email.policy import HTTP
 from typing import Any, Callable, Dict, Iterator, List, Tuple, Union
 from unittest import mock
+from urllib.parse import parse_qsl
 
 import requests
 from requests.adapters import HTTPAdapter
@@ -52,6 +55,22 @@ def fake_transport(respond: Callable[[requests.PreparedRequest], FakeResponse]) 
 
 def json_response(data: Any, status: int = 200) -> Callable[[requests.PreparedRequest], FakeResponse]:
     return lambda request: (status, {'Content-Type': 'application/json'}, json.dumps(data).encode())
+
+def form_fields(request: requests.PreparedRequest) -> List[Tuple[str, str]]:
+    """The fields of a sent form body, a file as file:<filename>."""
+    content_type = request.headers['Content-Type']
+    body = request.body or b''
+    raw = body if isinstance(body, bytes) else body.encode()
+    if content_type.startswith('application/x-www-form-urlencoded'):
+        return parse_qsl(raw.decode(), keep_blank_values=True)
+    message = BytesParser(policy=HTTP).parsebytes(f'Content-Type: {content_type}\r\n\r\n'.encode() + raw)
+    return [
+        (
+            str(part.get_param('name', header='content-disposition')),
+            f'file:{part.get_filename()}' if part.get_filename() else part.get_payload(decode=True).decode(),
+        )
+        for part in message.iter_parts()
+    ]
 
 def get_constraining_object(key: Union[str, None]) -> Dict[str, Any]:
     # Object that satisfies all validation requirements
