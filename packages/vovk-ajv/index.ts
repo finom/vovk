@@ -65,6 +65,40 @@ const allowUnknownFormats = (ajv: AjvInstance, schema: unknown) => {
   }
 };
 
+// keywords whose value is a schema or a list of them, and those whose value maps names to schemas
+// biome-ignore format: a word list
+const SUBSCHEMA_KEYWORDS = new Set([
+  'items', 'prefixItems', 'additionalItems', 'contains', 'additionalProperties', 'unevaluatedItems',
+  'unevaluatedProperties', 'propertyNames', 'not', 'if', 'then', 'else', 'allOf', 'anyOf', 'oneOf',
+]);
+const SUBSCHEMA_MAP_KEYWORDS = new Set(['properties', 'patternProperties', 'dependentSchemas', '$defs', 'definitions']);
+
+// OpenAPI 3.0 writes an exclusive bound as a boolean next to minimum or maximum, JSON Schema as the bound itself
+const toNumericBounds = (schema: unknown): unknown => {
+  if (typeof schema !== 'object' || schema === null || Array.isArray(schema)) return schema;
+  const result: Record<string, unknown> = { ...schema };
+  for (const [key, value] of Object.entries(result)) {
+    if (SUBSCHEMA_KEYWORDS.has(key)) {
+      result[key] = Array.isArray(value) ? value.map(toNumericBounds) : toNumericBounds(value);
+    } else if (SUBSCHEMA_MAP_KEYWORDS.has(key) && typeof value === 'object' && value !== null) {
+      result[key] = Object.fromEntries(Object.entries(value).map(([name, sub]) => [name, toNumericBounds(sub)]));
+    }
+  }
+  for (const [exclusive, bound] of [
+    ['exclusiveMinimum', 'minimum'],
+    ['exclusiveMaximum', 'maximum'],
+  ]) {
+    if (typeof result[exclusive] !== 'boolean') continue;
+    if (result[exclusive] && typeof result[bound] === 'number') {
+      result[exclusive] = result[bound];
+      delete result[bound];
+    } else {
+      delete result[exclusive];
+    }
+  }
+  return result;
+};
+
 const getValidator = (schema: VovkJSONSchemaBase, options: Options, target: Target, description: string) => {
   const byTarget = cache.get(options) ?? {};
   cache.set(options, byTarget);
@@ -75,7 +109,7 @@ const getValidator = (schema: VovkJSONSchemaBase, options: Options, target: Targ
   if (validator === undefined) {
     allowUnknownFormats(cached.ajv, schema);
     try {
-      validator = cached.ajv.compile(schema);
+      validator = cached.ajv.compile(toNumericBounds(schema) as VovkJSONSchemaBase);
     } catch (error) {
       console.warn(`🐺 Client-side validation of ${description} is skipped, Ajv can't compile its schema:`, error);
       validator = null;

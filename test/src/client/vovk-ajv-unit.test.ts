@@ -57,4 +57,21 @@ describe('vovk-ajv', () => {
       await rejects(validateBody({ v: invalid }, schema), /data\/v must match pattern/);
     }
   });
+
+  it('Reads the boolean exclusive bounds of OpenAPI 3.0', async () => {
+    const schema = {
+      type: 'object',
+      properties: {
+        age: { type: 'integer', minimum: 0, exclusiveMinimum: true },
+        price: { type: 'number', maximum: 10, exclusiveMaximum: false },
+        name: { type: 'string', nullable: true },
+      },
+    };
+
+    await validateBody({ age: 1, price: 10, name: null }, schema);
+    await rejects(validateBody({ age: 0 }, schema), /data\/age must be > 0/);
+    await rejects(validateBody({ price: 11 }, schema), /data\/price must be <= 10/);
+    // the schema the client holds stays as it is
+    strictEqual(schema.properties.age.exclusiveMinimum, true);
+  });
 });
