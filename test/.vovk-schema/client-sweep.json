@@ -50,6 +50,10 @@
           "path": "query-echo",
           "httpMethod": "GET"
         },
+        "getQuery": {
+          "path": "query",
+          "httpMethod": "GET"
+        },
         "getContentType": {
           "path": "content-type",
           "httpMethod": "GET"
@@ -69,6 +73,60 @@
         },
         "postContentType": {
           "path": "content-type",
+          "httpMethod": "POST"
+        },
+        "postXml": {
+          "validation": {
+            "body": {
+              "x-contentType": [
+                "application/xml"
+              ]
+            }
+          },
+          "path": "xml",
+          "httpMethod": "POST"
+        },
+        "postImage": {
+          "validation": {
+            "body": {
+              "x-contentType": [
+                "image/*"
+              ]
+            }
+          },
+          "path": "image",
+          "httpMethod": "POST"
+        },
+        "postPdf": {
+          "validation": {
+            "body": {
+              "x-contentType": [
+                "application/pdf"
+              ]
+            }
+          },
+          "path": "pdf",
+          "httpMethod": "POST"
+        },
+        "postOctet": {
+          "validation": {
+            "body": {
+              "x-contentType": [
+                "application/octet-stream"
+              ]
+            }
+          },
+          "path": "octet",
+          "httpMethod": "POST"
+        },
+        "postJsonString": {
+          "validation": {
+            "body": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "string"
+            }
+          },
+          "path": "json-string",
           "httpMethod": "POST"
         },
         "getTextError": {
@@ -110,6 +168,64 @@
             }
           },
           "path": "form-entries",
+          "httpMethod": "POST"
+        },
+        "postJsonOrForm": {
+          "validation": {
+            "body": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "anyOf": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "n": {
+                      "type": "number"
+                    },
+                    "tags": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "nested": {
+                      "type": "object",
+                      "properties": {
+                        "a": {
+                          "type": "boolean"
+                        }
+                      },
+                      "required": [
+                        "a"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "n",
+                    "tags",
+                    "nested"
+                  ]
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "file": {
+                      "type": "string",
+                      "format": "binary",
+                      "contentEncoding": "binary"
+                    }
+                  },
+                  "required": [
+                    "file"
+                  ]
+                }
+              ],
+              "x-contentType": [
+                "application/json",
+                "multipart/form-data"
+              ]
+            }
+          },
+          "path": "json-or-form",
           "httpMethod": "POST"
         },
         "postUrlEncoded": {

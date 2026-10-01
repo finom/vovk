@@ -17,6 +17,9 @@ const getReservedPaths = (overrides: Config['overrides']): string[] => {
   return Object.keys(overrides).filter((key) => !key.includes('[') && !key.includes(']')); // Filter out dynamic paths
 };
 
+// a placeholder takes one DNS label, which can't hold "..", "/", "?" or "#" to leave the rewrite path
+const DNS_LABEL = '([a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?)';
+
 /**
  * Convert a pattern with [placeholders] to a regex pattern and extract placeholder names
  */
@@ -25,7 +28,7 @@ const patternToRegex = (pattern: string): { regex: RegExp; paramNames: string[] 
   const regexPattern = pattern
     .replace(/\[([^\]]+)\]/g, (_, name) => {
       paramNames.push(name);
-      return '([^.]+)';
+      return DNS_LABEL;
     })
     .replace(/\./g, '\\.'); // Escape dots in the pattern
 
@@ -40,14 +43,18 @@ const patternToRegex = (pattern: string): { regex: RegExp; paramNames: string[] 
  * @see https://vovk.dev/multitenant
  */
 export function multitenant(config: Config) {
-  const { requestUrl, requestHost, targetHost, overrides } = config;
+  const { requestUrl, overrides } = config;
+  // host names are case-insensitive
+  const requestHost = config.requestHost.toLowerCase();
+  const targetHost = config.targetHost.toLowerCase();
 
   // Parse the URL
   const urlObj = new URL(requestUrl);
   const pathname = urlObj.pathname.slice(1); // Remove leading slash
+  const pathSegments = pathname.split('/').filter(Boolean);
 
-  // Skip processing for paths ending with "_schema_"
-  if (pathname.endsWith('_schema_')) {
+  // Skip processing for the schema endpoint of a segment, which the dev CLI reads
+  if (pathSegments.at(-1) === '_schema_') {
     return {
       action: null,
       destination: null,
@@ -55,8 +62,6 @@ export function multitenant(config: Config) {
       subdomains: null,
     };
   }
-
-  const pathSegments = pathname.split('/').filter(Boolean);
 
   // Get reserved paths
   const reservedPaths = getReservedPaths(overrides);
@@ -116,14 +121,12 @@ export function multitenant(config: Config) {
         if (rule.from === '' || pathname === rule.from || pathname.startsWith(`${rule.from}/`)) {
           // Replace path with the destination
           const restPath = pathname.slice(rule.from.length).replace(/^\//, '');
-          let destination = [rule.to, restPath].filter(Boolean).join('/');
-
-          // Replace any dynamic parameters in destination
-          if (Object.keys(params).length > 0) {
-            Object.entries(params).forEach(([key, value]) => {
-              destination = destination.replace(`[${key}]`, value);
-            });
-          }
+          // the placeholders of the target path, a [name] in the request path stays as it is
+          const to = Object.entries(params).reduce(
+            (path, [key, value]) => path.replaceAll(`[${key}]`, encodeURIComponent(value)),
+            rule.to
+          );
+          const destination = [to, restPath].filter(Boolean).join('/');
 
           // Only return non-null subdomains if we have wildcard parameters
           const wildcardSubdomains = paramNames.length > 0 ? params : null;

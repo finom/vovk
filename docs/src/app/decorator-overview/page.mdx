@@ -32,7 +32,7 @@ export default class UserController {
 
 **Options:**
 
-- `cors?: boolean` — adds CORS headers and handles OPTIONS automatically.
+- `cors?: boolean` — adds CORS headers and handles OPTIONS automatically, for the methods of that path that set it.
 - `headers?: Record<string, string>` — custom response headers. See [Response Headers](/response#headers) for dynamic headers.
 - `staticParams?: Record<string, string>[]` — (`@get` only) static params for `generateStaticParams()`. See [Static Segment](/static-segment) for details.
 

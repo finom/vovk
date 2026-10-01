@@ -24,6 +24,14 @@
     "test": "npm run unit:ts && PORT=3210 npm run generate && npm run build --prefix ../../test && PORT=3210 concurrently 'node ../../scripts/wait-for-url.mjs http://localhost:3210/api/foo/client/common/nested-query && npm run unit:py' 'npm run start --prefix ../../test' --kill-others --success first"
   },
   "main": "./index.js",
+  "peerDependencies": {
+    "vovk": ">=3.7.0 || ^4.0.0-0"
+  },
+  "peerDependenciesMeta": {
+    "vovk": {
+      "optional": true
+    }
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/finom/vovk.git",

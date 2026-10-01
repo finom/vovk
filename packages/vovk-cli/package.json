@@ -43,8 +43,11 @@
     "url": "https://github.com/finom/vovk/issues"
   },
   "homepage": "https://vovk.dev",
+  "engines": {
+    "node": "^22.22.2 || ^24.15.0 || >=26.0.0"
+  },
   "peerDependencies": {
-    "vovk": ">=3.0.0 || ^4.0.0-beta.0"
+    "vovk": ">=3.7.0 || ^4.0.0-0"
   },
   "dependencies": {
     "@iarna/toml": "^2.2.5",

@@ -1,5 +1,24 @@
-export async function bufferBody<T extends Request>(req: T): Promise<T> {
-  const buffer = await req.arrayBuffer();
+const buffered = new WeakMap<Request, Promise<Request>>();
+
+/**
+ * Reads the body once and makes every body method replay it, so a decorator, the segment's onBefore, a procedure
+ * and the handler can each read it. Calls after the first share its copy.
+ */
+export function bufferBody<T extends Request>(req: T): Promise<T> {
+  let promise = buffered.get(req);
+  if (!promise) {
+    promise = replayBody(req);
+    buffered.set(req, promise);
+  }
+  return promise as Promise<T>;
+}
+
+async function replayBody<T extends Request>(req: T): Promise<T> {
+  const hasBody = req.body !== null;
+  const blob = await req.blob();
+  const contentType = req.headers?.get('content-type');
+  // a Response parses the copy as the request would, form boundary and charset included
+  const replay = () => new Response(blob, contentType ? { headers: { 'content-type': contentType } } : undefined);
 
   Object.defineProperty(req, 'bodyUsed', {
     get: () => false,
@@ -7,29 +26,16 @@ export async function bufferBody<T extends Request>(req: T): Promise<T> {
   });
 
   Object.defineProperty(req, 'body', {
-    get: () =>
-      new ReadableStream({
-        start(controller) {
-          controller.enqueue(new Uint8Array(buffer.slice(0)));
-          controller.close();
-        },
-      }),
+    get: () => (hasBody ? replay().body : null),
     configurable: true,
   });
 
-  req.json = async () => JSON.parse(new TextDecoder().decode(buffer));
-  req.text = async () => new TextDecoder().decode(buffer);
-  req.blob = async () => new Blob([buffer.slice(0)]);
-  req.arrayBuffer = async () => buffer.slice(0);
-  req.bytes = async () => new Uint8Array(buffer.slice(0));
-  req.formData = async () => {
-    const r = new Request('http://localhost', {
-      method: req.method,
-      headers: req.headers,
-      body: buffer.slice(0),
-    });
-    return r.formData();
-  };
+  req.json = () => replay().json();
+  req.text = () => replay().text();
+  req.blob = async () => blob;
+  req.arrayBuffer = () => blob.arrayBuffer();
+  req.bytes = () => replay().bytes();
+  req.formData = () => replay().formData();
 
   return req;
 }

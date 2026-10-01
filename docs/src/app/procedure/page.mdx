@@ -135,12 +135,16 @@ export default class UserController {
 
 `VovkRequest` extends `Request` but doesn't extend `NextRequest` in order to keep the **vovk** package independent of **next** package. However, it replicates the documented `NextRequest` properties such as `cookies` (with `get`, `getAll`, `set`, `delete`, `has`, `clear` methods) and `nextUrl` (with `basePath`, `buildId`, `pathname`, `search`, and typed `searchParams`).
 
+`searchParams` holds the raw URL, so its types follow what the URL carries: a required string field keeps its type, any other field is a string, and `get` may return `null` for an optional field, an array or an object (the client sends an array as `tags[0]=a`, under keys of its own). The parsed query comes from [`req.vovk.query()`](/req-vovk).
+
 <a name="procedure"></a>
 ## `procedure` Function
 
 The `procedure` function turns a static method into a **typed, validated callable**. It accepts validation schemas for body, query, params, and output — using any library that implements both [Standard Schema](https://standardschema.dev/schema) and [Standard JSON Schema](https://standardschema.dev/json-schema), such as [Zod](https://zod.dev/), [Valibot](https://valibot.com/), or [Arktype](https://arktype.io/).
 
-It returns an object with a `.handle()` method that accepts the actual async handler. The handler receives a type-enhanced request as `VovkRequest<TBody, TQuery, TParams>{:ts}` and the validated `params: TParams{:ts}` value as the second argument.
+With these three libraries, a type that JSON Schema can't describe, such as a `Date{:ts}` or a `bigint{:ts}`, is emitted as `{}` (any value). The server still validates it, but client-side validation and the [Python](/python) and [Rust](/rust) clients accept any value there.
+
+It returns an object with a `.handle()` method that accepts the actual async handler. The handler receives a type-enhanced request as `VovkRequest<TBody, TQuery, TParams>{:ts}` and the validated `params: TParams{:ts}` value as the second argument. Without a `params` schema, the second argument and `req.vovk.params()` hold the route params as strings, typed `Record<string, string>{:ts}`.
 
 ```ts showLineNumbers copy filename="src/modules/user/user-controller.ts"
 import { procedure, prefix, put } from 'vovk';
@@ -220,11 +224,15 @@ See the [Decorators Overview](/decorator-overview) page for more details on when
 
 Use `body`, `query`, and `params` to provide input validation schemas. These validate incoming request data before it reaches the controller handler.
 
+A request without a body is validated as `undefined{:ts}`, so an optional schema such as `z.object({ ... }).optional(){:ts}` lets the client leave the body out.
+
+Data that fails validation gets a `400` response. Its message and its `cause.issues` hold the first 20 issues, and the message says how many more there are.
+
 #### `output` and `iteration`
 
 Use `output` and `iteration` to provide output validation schemas. `output` is for regular JSON responses, while `iteration` is for [JSON Lines](/jsonlines). Both are optional and don't affect generated RPC typings, but they enable key features like [OpenAPI](/openapi), [AI tools](/tools), and for [Python](/python), [Rust](/rust), and future clients. These schemas are not used for client-side validation.
 
-A response that fails `output` or `iteration` validation is a bug in the handler, not in the request. It is thrown as a plain `Error{:ts}`, without a status code: in production the client gets `500` "Internal server error", and the validation issues stay on the server, where the segment's [`onError`](/segment) receives them as the error's `cause`. In development the message names the failing fields.
+A response that fails `output` or `iteration` validation is a bug in the handler, not in the request. It is thrown as a plain `Error{:ts}`, without a status code: in production the client gets `500` "Internal server error", and the validation issues stay on the server, where the segment's [`onError`](/segment) receives the first 20 of them as the error's `cause`. In development the message names the failing fields.
 
 #### `contentType`
 

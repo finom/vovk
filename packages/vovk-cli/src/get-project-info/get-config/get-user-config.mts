@@ -6,8 +6,6 @@ import vm from 'node:vm';
 import type { VovkConfig } from 'vovk';
 import { getConfigAbsolutePaths } from './get-config-absolute-paths.mjs';
 
-const isVMModulesEnabled = typeof vm.SourceTextModule !== 'undefined';
-
 export async function getUserConfig({
   configPath: givenConfigPath,
   cwd,
@@ -41,55 +39,19 @@ export async function getUserConfig({
 async function getLoadersForExtension(configPath: string): Promise<Array<() => Promise<VovkConfig>>> {
   const ext = extname(configPath).toLowerCase();
   const code = await readFile(configPath, 'utf-8');
+  // vm.Script can't run import() without --experimental-vm-modules, so such a config is imported by Node,
+  // which also resolves what it imports from the config file
   const hasDynamicImport = /\bimport\s*\(/.test(code);
 
-  // If config has dynamic imports and flag is not enabled, skip VM loaders entirely
-  const canUseVM = isVMModulesEnabled || !hasDynamicImport;
-
-  switch (ext) {
-    case '.mjs':
-      return canUseVM
-        ? [() => importWithVMModule(configPath, code), () => importWithCacheBuster(configPath)]
-        : [() => importWithCacheBuster(configPath)];
-    case '.cjs':
-      return canUseVM
-        ? [() => importWithVMCommonJS(configPath, code), () => importWithCacheBuster(configPath)]
-        : [() => importWithCacheBuster(configPath)];
-    default:
-      return canUseVM
-        ? [
-            () => importWithVMCommonJS(configPath, code),
-            () => importWithVMModule(configPath, code),
-            () => importWithCacheBuster(configPath),
-          ]
-        : [() => importWithCacheBuster(configPath)];
+  if (ext === '.mjs' || hasDynamicImport) {
+    return [() => importWithCacheBuster(configPath)];
   }
+
+  // a .js config may be CommonJS in an ES module package, the vm runs it as CommonJS anyway
+  return [() => importWithVMCommonJS(configPath, code), () => importWithCacheBuster(configPath)];
 }
 
-function createDynamicImportHandler(context: vm.Context) {
-  return async (specifier: string) => {
-    const imported = await import(specifier);
-
-    const exportNames = Object.keys(imported);
-    const syntheticModule = new vm.SyntheticModule(
-      exportNames,
-      function () {
-        for (const name of exportNames) {
-          this.setExport(name, imported[name]);
-        }
-      },
-      { context, identifier: specifier }
-    );
-
-    await syntheticModule.link(() => {
-      throw new Error('Nested linking not supported');
-    });
-    await syntheticModule.evaluate();
-
-    return syntheticModule;
-  };
-}
-
+// evaluates the file on every call, so vovk dev picks up an edited config
 async function importWithVMCommonJS(configPath: string, code: string): Promise<VovkConfig> {
   const require = createRequire(configPath);
   const moduleObj = { exports: {} as VovkConfig };
@@ -117,7 +79,6 @@ async function importWithVMCommonJS(configPath: string, code: string): Promise<V
 
   const script = new vm.Script(code, {
     filename: configPath,
-    importModuleDynamically: createDynamicImportHandler(context),
   });
 
   script.runInContext(context);
@@ -125,61 +86,14 @@ async function importWithVMCommonJS(configPath: string, code: string): Promise<V
   return moduleObj.exports;
 }
 
-async function importWithVMModule(configPath: string, code: string): Promise<VovkConfig> {
-  if (!isVMModulesEnabled) {
-    throw new Error('vm.SourceTextModule not available');
-  }
-
-  const configUrl = pathToFileURL(configPath).href;
-
-  const context = vm.createContext({
-    console,
-    process,
-    Buffer,
-    URL,
-    URLSearchParams,
-    setTimeout,
-    setInterval,
-    setImmediate,
-    clearTimeout,
-    clearInterval,
-    clearImmediate,
-  });
-
-  const module = new vm.SourceTextModule(code, {
-    context,
-    identifier: configUrl,
-    initializeImportMeta(meta) {
-      meta.url = configUrl;
-    },
-    importModuleDynamically: createDynamicImportHandler(context),
-  });
-
-  await module.link(async (specifier) => {
-    const imported = await import(specifier);
-
-    const exportNames = Object.keys(imported);
-    const syntheticModule = new vm.SyntheticModule(
-      exportNames,
-      function () {
-        for (const name of exportNames) {
-          this.setExport(name, imported[name]);
-        }
-      },
-      { context, identifier: specifier }
-    );
-
-    return syntheticModule;
-  });
-
-  await module.evaluate();
-
-  return (module.namespace as { default: VovkConfig }).default;
-}
+// unique per load: two loads in the same millisecond would share a timestamp and the cached module
+let importCount = 0;
 
 async function importWithCacheBuster(configPath: string): Promise<VovkConfig> {
-  const cacheBuster = Date.now();
+  const cacheBuster = `${Date.now()}-${++importCount}`;
   const configPathUrl = pathToFileURL(configPath).href;
+  // the query makes an ES module evaluate again, a CommonJS one comes from the require cache unless it's dropped
+  delete createRequire(configPath).cache[configPath];
   const { default: userConfig } = (await import(`${configPathUrl}?cache=${cacheBuster}`)) as { default: VovkConfig };
   return userConfig;
 }

@@ -1,11 +1,10 @@
 import path from 'node:path';
 import type { LogLevelNames } from 'loglevel';
 import type { VovkConfig } from 'vovk';
-import { VovkSchemaIdEnum, type VovkStrictConfig } from 'vovk/internal';
+import { type VovkOpenAPIMixin, VovkSchemaIdEnum, type VovkStrictConfig } from 'vovk/internal';
 import type { VovkEnv } from '../../types.mjs';
 import { chalkHighlightThing } from '../../utils/chalk-highlight-thing.mjs';
 import { getLogger } from '../../utils/get-logger.mjs';
-import { normalizeOpenAPIMixin } from '../../utils/normalize-openapi-mixin.mjs';
 import { getRelativeSrcRoot } from './get-relative-src-root.mjs';
 import { BuiltInTemplateName, getTemplateDefs } from './get-template-defs.mjs';
 import { getUserConfig } from './get-user-config.mjs';
@@ -24,6 +23,7 @@ export async function getConfig({
   configAbsolutePaths: string[];
   userConfig: VovkConfig | null;
   log: ReturnType<typeof getLogger>;
+  openAPIMixins: Record<string, VovkOpenAPIMixin>;
 }> {
   const { configAbsolutePaths, error, userConfig } = await getUserConfig({
     configPath,
@@ -45,6 +45,7 @@ export async function getConfig({
   const clientTemplateDefs = getTemplateDefs(conf.clientTemplateDefs);
 
   const srcRoot = await getRelativeSrcRoot({ cwd });
+  const segmentConfigs = conf.outputConfig?.segments ?? {};
 
   const config: VovkStrictConfig = {
     $schema: VovkSchemaIdEnum.CONFIG,
@@ -99,18 +100,12 @@ export async function getConfig({
     outputConfig: {
       ...conf.outputConfig,
       origin: (env.VOVK_ORIGIN ?? conf?.outputConfig?.origin ?? '').replace(/\/$/, ''), // Remove trailing slash
+      // the mixins come back with loadOpenAPIMixins, which fetches their specs for client generation only
       segments: Object.fromEntries(
-        await Promise.all(
-          Object.entries(conf.outputConfig?.segments ?? {}).map(async ([key, value]) => [
-            key,
-            {
-              ...value,
-              openAPIMixin: value.openAPIMixin
-                ? await normalizeOpenAPIMixin({ mixinModule: value.openAPIMixin, log, cwd })
-                : undefined,
-            },
-          ])
-        )
+        Object.entries(segmentConfigs).map(([segmentName, { openAPIMixin: _openAPIMixin, ...segmentConfig }]) => [
+          segmentName,
+          segmentConfig,
+        ])
       ),
     },
   };
@@ -127,5 +122,11 @@ export async function getConfig({
     log.warn(`No config file found at ${chalkHighlightThing(`${cwd}/`)}. Using default values.`);
   }
 
-  return { config, srcRoot, configAbsolutePaths, userConfig, log };
+  const openAPIMixins = Object.fromEntries(
+    Object.entries(segmentConfigs).flatMap(([segmentName, { openAPIMixin }]) =>
+      openAPIMixin ? [[segmentName, openAPIMixin]] : []
+    )
+  );
+
+  return { config, srcRoot, configAbsolutePaths, userConfig, log, openAPIMixins };
 }

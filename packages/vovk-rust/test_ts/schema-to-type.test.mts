@@ -122,6 +122,10 @@ describe('convertJSONSchemasToRustTypes', () => {
     assert.ok(output.includes('pub required2: i64,'));
     assert.ok(output.includes('pub optional1: Option<String>,'));
     assert.ok(output.includes('pub optional2: Option<bool>,'));
+    // an unset optional field is left out instead of being sent as null
+    const skip = '#[serde(default, skip_serializing_if = "Option::is_none")]';
+    assert.ok(output.includes(`${skip}\n    pub optional1: Option<String>,`), output);
+    assert.ok(!output.includes(`${skip}\n    pub required1:`), output);
   });
 
   test('enum generation', () => {
@@ -440,7 +444,7 @@ describe('schema text never leaves its literal', () => {
 });
 
 describe('type arrays', () => {
-  test('["T", "null"] is an optional T, and several types stay untyped', () => {
+  test('["T", "null"] is an optional T, and several types are untyped', () => {
     const output = convertJSONSchemasToRustTypes({
       schemas: {
         output: {
@@ -459,10 +463,11 @@ describe('type arrays', () => {
     });
 
     assert.ok(output.includes('pub n: Option<i64>,'), output);
-    assert.ok(output.includes('pub s: Option<String>,'), output);
+    assert.ok(output.includes('pub s: Option<output_::s>,') && output.includes('pub enum s {'), output);
     assert.ok(output.includes('pub mixed: serde_json::Value,'), output);
     assert.ok(output.includes('pub list: Option<Vec<String>>,'), output);
-    assert.ok(output.includes('pub objects: Option<serde_json::Value>,'), output);
+    assert.ok(output.includes('pub objects: Option<Vec<output_::objectsItem>>,'), output);
+    assert.ok(output.includes('pub struct objectsItem {'), output);
   });
 
   test('a bare $ref slot names the referenced type', () => {
@@ -475,5 +480,127 @@ describe('type arrays', () => {
 
     assert.ok(output.includes('pub struct Thing'), output);
     assert.ok(output.includes('pub type body = Thing;'), output);
+  });
+});
+
+describe('schema shapes', () => {
+  const convert = (schemas: Record<string, VovkJSONSchemaBase>) =>
+    convertJSONSchemasToRustTypes({ schemas, rootName: 'test' });
+
+  test('every type a field refers to is defined', () => {
+    const output = convert({
+      body: {
+        type: 'object',
+        properties: {
+          a: { type: 'array', items: { type: 'string', enum: ['x', 'y'] } },
+          e: { anyOf: [{ type: 'string', enum: ['a', 'b'] }, { type: 'null' }] },
+          m: {
+            type: 'array',
+            items: { type: 'array', items: { type: 'object', properties: { x: { type: 'number' } } } },
+          },
+          u: { anyOf: [{ type: 'string', enum: ['p', 'q'] }, { type: 'number' }] },
+        },
+        required: ['a', 'e', 'm', 'u'],
+      },
+    });
+
+    assert.ok(output.includes('pub a: Vec<body_::aItem>,') && output.includes('pub enum aItem {'), output);
+    assert.ok(output.includes('pub e: Option<body_::e>,') && output.includes('pub enum e {'), output);
+    assert.ok(
+      output.includes('pub m: Vec<Vec<body_::mItemItem>>,') && output.includes('pub struct mItemItem {'),
+      output
+    );
+    assert.ok(output.includes('Variant0(u_::Variant0),') && output.includes('pub enum Variant0 {'), output);
+  });
+
+  test('named schemas of any shape are types', () => {
+    const output = convert({
+      body: {
+        type: 'object',
+        properties: { tags: { $ref: '#/$defs/Tags' }, meta: { $ref: '#/$defs/Meta' }, n: { $ref: '#/$defs/Name' } },
+        required: ['tags', 'meta', 'n'],
+        $defs: {
+          Tags: { type: 'array', items: { type: 'string' } },
+          Meta: { type: 'object', additionalProperties: { type: 'string' } },
+          Name: { type: ['string', 'null'] },
+        },
+      },
+      output: {
+        type: 'array',
+        items: { $ref: '#/$defs/user-profile' },
+        $defs: { 'user-profile': { type: 'object', properties: { name: { type: 'string' } } } },
+      },
+    });
+
+    assert.ok(output.includes('pub type Tags = Vec<String>;'), output);
+    assert.ok(output.includes('pub type Meta = std::collections::HashMap<String, String>;'), output);
+    assert.ok(output.includes('pub type Name = Option<String>;'), output);
+    assert.ok(output.includes('pub type output = Vec<user_profile>;'), output);
+  });
+
+  test('a named type keeps clear of the slot names and of the names Rust code relies on', () => {
+    const output = convert({
+      body: {
+        type: 'object',
+        properties: { x: { $ref: '#/$defs/body' }, String: { type: 'object', properties: { s: { type: 'string' } } } },
+        required: ['x', 'String'],
+        $defs: { body: { type: 'object', properties: { y: { type: 'string' } } } },
+      },
+    });
+
+    assert.ok(output.includes('pub struct body_2 {') && output.includes('pub x: body_2,'), output);
+    assert.ok(output.includes('pub String: body_::String_,') && output.includes('pub struct String_ {'), output);
+  });
+
+  test('numbers are f64, any value is serde_json::Value, a closed tuple is a tuple', () => {
+    const output = convert({
+      output: {
+        type: 'object',
+        properties: {
+          price: { type: 'number', minimum: 0, maximum: 1e9 },
+          meta: {},
+          t: {
+            type: 'array',
+            prefixItems: [{ type: 'string' }, { type: 'number' }],
+            items: false,
+            minItems: 2,
+            maxItems: 2,
+          },
+          open: { type: 'array', prefixItems: [{ type: 'string' }] },
+        },
+        required: ['price', 'meta', 't', 'open'],
+      },
+    });
+
+    assert.ok(output.includes('pub price: f64,'), output);
+    assert.ok(output.includes('pub meta: serde_json::Value,'), output);
+    assert.ok(output.includes('pub t: (String, f64),'), output);
+    assert.ok(output.includes('pub open: Vec<serde_json::Value>,'), output);
+  });
+
+  test('an enum of mixed values reads the others by type', () => {
+    const output = convert({
+      output: { type: 'object', properties: { m: { enum: ['a', 1, true] } }, required: ['m'] },
+    });
+
+    assert.ok(output.includes('#[serde(rename = "a")]\n      a,'), output);
+    assert.ok(output.includes('#[serde(untagged)]\n      Number(serde_json::Number),'), output);
+    assert.ok(output.includes('#[serde(untagged)]\n      Boolean(bool),'), output);
+  });
+
+  test('literals and comments keep carriage returns and direction controls out', () => {
+    const output = convert({
+      body: {
+        type: 'object',
+        description: 'Name \u202eevil',
+        properties: { 'a\rb': { type: 'string', enum: ['x\u202ey'] } },
+        required: ['a\rb'],
+      },
+    });
+
+    assert.ok(output.includes('#[serde(rename = "a\\u{d}b")]'), output);
+    assert.ok(output.includes('#[serde(rename = "x\\u{202e}y")]'), output);
+    assert.ok(output.includes('/// Name  evil'), output);
+    assert.ok(!/[\r\u202e]/u.test(output), output);
   });
 });

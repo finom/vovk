@@ -14,10 +14,7 @@
     "jsx": "preserve",
     "incremental": true,
     "noEmit": true,
-    "declaration": true,
-    "paths": {
-      "next/*": ["./test/node_modules/next/*"]
-    }
+    "declaration": true
   },
   "exclude": ["node_modules", "**/dist/**"],
   "include": [

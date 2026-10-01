@@ -249,3 +249,132 @@ describe('vovkSchemaToOpenAPI — paths', () => {
     deepStrictEqual(Object.keys(openAPIObject.paths ?? {}), ['/api/things/{id}']);
   });
 });
+
+describe('vovkSchemaToOpenAPI — parameters', () => {
+  const parametersOf = (validation: Obj, path = '{id}') =>
+    toOpenAPI({ getThing: { path, httpMethod: 'GET', validation } }).paths[`/api/things/${path}`].get
+      .parameters as Obj[];
+
+  it('Requires a path parameter the params schema leaves optional', () => {
+    const parameters = parametersOf({ params: { type: 'object', properties: { id: { type: 'string' } } } });
+    deepStrictEqual(parameters, [{ name: 'id', in: 'path', required: true, schema: { type: 'string' } }]);
+  });
+
+  it('Declares a path parameter that no params schema describes', () => {
+    deepStrictEqual(parametersOf({}, '{id}/items/{itemId}'), [
+      { name: 'id', in: 'path', required: true, schema: { type: 'string' } },
+      { name: 'itemId', in: 'path', required: true, schema: { type: 'string' } },
+    ]);
+  });
+
+  it('Lists the parameters of a query or params schema that refers to a component', () => {
+    const parameters = parametersOf({
+      query: {
+        $ref: '#/$defs/ListQuery',
+        $defs: {
+          ListQuery: { type: 'object', properties: { page: { type: 'number' } }, required: ['page'] },
+        },
+      },
+      params: {
+        $ref: '#/$defs/ItemParams',
+        $defs: { ItemParams: { type: 'object', properties: { id: { type: 'string' } }, required: ['id'] } },
+      },
+    });
+    deepStrictEqual(
+      parameters.map(({ name, in: location, required }) => ({ name, in: location, required })),
+      [
+        { name: 'page', in: 'query', required: true },
+        { name: 'id', in: 'path', required: true },
+      ]
+    );
+  });
+
+  it('Sends an object query parameter as deepObject, the way the server reads it', () => {
+    const parameters = parametersOf(
+      {
+        query: {
+          type: 'object',
+          properties: {
+            filter: { type: 'object', properties: { status: { type: 'string' } } },
+            maybe: { anyOf: [{ type: 'object', properties: { a: { type: 'string' } } }, { type: 'null' }] },
+            tags: { type: 'array', items: { type: 'string' } },
+            page: { type: 'integer' },
+          },
+        },
+      },
+      'list'
+    );
+    deepStrictEqual(
+      parameters.map(({ name, style, explode }) => ({ name, style, explode })),
+      [
+        { name: 'filter', style: 'deepObject', explode: true },
+        { name: 'maybe', style: 'deepObject', explode: true },
+        { name: 'tags', style: undefined, explode: undefined },
+        { name: 'page', style: undefined, explode: undefined },
+      ]
+    );
+  });
+});
+
+describe('vovkSchemaToOpenAPI — component names', () => {
+  it('Gives a component a name OpenAPI accepts', () => {
+    const openAPI = toOpenAPI({
+      createUser: {
+        path: '',
+        httpMethod: 'POST',
+        validation: {
+          body: {
+            type: 'object',
+            properties: { profile: { $ref: '#/$defs/User Profile' }, tag: { $ref: '#/$defs/api~1v1.Tag' } },
+            $defs: { 'User Profile': { type: 'object' }, 'api/v1.Tag': { type: 'string' } },
+          },
+        },
+      },
+    });
+    assertRefsResolve(openAPI);
+    for (const name of Object.keys(openAPI.components.schemas)) ok(/^[a-zA-Z0-9.\-_]+$/.test(name), name);
+    const { schema } = openAPI.paths['/api/things'].post.requestBody.content['application/json'];
+    deepStrictEqual(schema.properties, {
+      profile: { $ref: '#/components/schemas/User_Profile' },
+      tag: { $ref: '#/components/schemas/api_v1.Tag' },
+    });
+  });
+
+  it('Keeps a schema the config declares and names the derived one of the same name apart', () => {
+    const declaredUser = { type: 'object', properties: { legacy: { type: 'boolean' } } };
+    const openAPI = toOpenAPI(
+      {
+        createUser: {
+          path: '',
+          httpMethod: 'POST',
+          validation: {
+            body: {
+              type: 'object',
+              properties: { user: { $ref: '#/$defs/User' } },
+              $defs: { User: { type: 'object', properties: { name: { type: 'string' } } } },
+            },
+          },
+        },
+      },
+      { config: { outputConfig: { openAPIObject: { components: { schemas: { User: declaredUser } } } } } }
+    );
+    assertRefsResolve(openAPI);
+    deepStrictEqual(openAPI.components.schemas.User, declaredUser);
+    const { schema } = openAPI.paths['/api/things'].post.requestBody.content['application/json'];
+    const derived = openAPI.components.schemas[schema.properties.user.$ref.split('/').pop()];
+    deepStrictEqual(derived, { type: 'object', properties: { name: { type: 'string' } } });
+  });
+});
+
+describe('vovkSchemaToOpenAPI — JSON Lines', () => {
+  it('Gives a JSON Lines response an example of three lines and leaves the item schema as it is', () => {
+    const item = { type: 'object', properties: { n: { type: 'number' } }, required: ['n'] };
+    const openAPI = toOpenAPI({ stream: { path: 'stream', httpMethod: 'GET', validation: { iteration: item } } });
+    const media = openAPI.paths['/api/things/stream'].get.responses[200].content['application/jsonl'];
+    deepStrictEqual(media.schema, item);
+    deepStrictEqual(
+      media.example.split('\n').map((line: string) => JSON.parse(line)),
+      [{ n: 0 }, { n: 0 }, { n: 0 }]
+    );
+  });
+});

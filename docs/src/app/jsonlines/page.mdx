@@ -112,12 +112,14 @@ for await (const { message } of stream) {
 The iterable (represented as `stream` above), besides `Symbol.asyncIterator`, `Symbol.dispose`, and `Symbol.asyncDispose`, also provides:
 
 - `status`: The HTTP response status (e.g., 200 for OK, 404 for Not Found).
-- `asPromise`: A promise that resolves with an array of all emitted values when the stream completes.
+- `asPromise`: A promise that resolves with an array of all emitted values when the stream completes. Every call gets the same items.
 - `onIterate`: Registers a callback for each iteration.
 - `abortController`: An `AbortController` instance to abort the stream. When the stream is closed with `abortController.abort()`, it throws an `AbortError` on the stream reader that can be caught on the client side via error `cause` property.
 - `abortSilently`: A method to abort the stream without throwing an error on the stream reader. This is useful when you want to stop processing the stream gracefully.
 
 The `using` statement ensures the stream is aborted with `stream.abortSilently('Stream disposed')` when it goes out of scope.
+
+The client reads the response only as fast as the iteration takes items, so a slow consumer slows the stream down instead of buffering it. An item is kept until every running iteration has passed it: iterations that run at the same time each get all items, an iteration that starts later begins at the oldest kept item, and iterating a consumed stream again yields nothing. After a `break`, the items already read stay for a later iteration or `asPromise()`. A line that isn't JSON, such as a last line the connection cut short, ends the iteration with an error.
 
 ```ts showLineNumbers copy
 console.log('Response status:', stream.status);
@@ -194,10 +196,10 @@ The constructor accepts two optional parameters:
 
 The responder instance provides the following members:
 
-- `send(item: T): Promise<void>` – Sends a JSON line to the client. The item is validated (if `iteration` is present; by default only the first item is validated unless `validateEachIteration: true` is set), serialized to JSON and followed by a newline character.
-- `close(): void` – Closes the response stream, indicating that no more data will be sent.
-- `throw(err: Error): void` – Sends an error message to the client and closes the stream. The error line is `{"isError":true,"reason":"…"}`, plus the `statusCode` of an `HttpException{:ts}`; the client rethrows it as an `HttpException{:ts}` with that status. In production, an error that is not an `HttpException{:ts}` reads "Internal server error".
-- `isClosed: boolean` – Whether the stream is closed: by `close()`, `throw()`, or the client going away. `send()` waits while the client reads slower than the handler writes, and a generator handler is stopped, with its `finally` run, when the client disconnects.
+- `send(item: T): Promise<void>` – Sends a JSON line to the client. The item is validated (if `iteration` is present; by default only the first item is validated unless `validateEachIteration: true` is set), serialized to JSON and followed by a newline character. Lines go out in call order, also when `send()` is not awaited. A send that fails, on iteration validation or with an item JSON can't serialize, ends the stream as `throw()` does, and the segment's `onError` receives the error.
+- `close(): Promise<void>` – Closes the response stream once the lines sent before it are out. A line sent after `close()` is dropped.
+- `throw(err: Error): Promise<void>` – Sends an error line after the lines sent before it and closes the stream; a line sent after `throw()` is dropped. The error line is `{"isError":true,"reason":"…"}`, plus the `statusCode` of an `HttpException{:ts}`; the client rethrows it as an `HttpException{:ts}` with that status. In production, an error that is not an `HttpException{:ts}` reads "Internal server error".
+- `isClosed: boolean` – Whether the stream is closed: by `close()` or `throw()`, from the moment either is called, by a failed send, or by the client going away. `send()` waits while the client reads slower than the handler writes, and a generator handler is stopped, with its `finally` run, when the client disconnects or an item fails.
 - `response: Response` – The underlying `Response` object that will be returned from the Next.js route handler.
 - `headers: Record<string, string>` – The `content-type` for the response.
 - `readableStream: ReadableStream<Uint8Array>` – The readable stream used as the response body.

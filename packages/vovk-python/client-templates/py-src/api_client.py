@@ -5,7 +5,7 @@ from urllib.parse import quote
 import jsonschema
 from jsonschema import FormatChecker
 from requests.models import Response
-from typing import Dict, Optional, Any, Generator, Literal, List, TypedDict
+from typing import Dict, Optional, Any, Generator, Literal, List, Tuple, TypedDict, Union
 
 class HttpExceptionResponseBody(TypedDict):
     cause: Any
@@ -18,7 +18,7 @@ class HttpException(Exception):
         super().__init__(response_body['message'])
         self.message = response_body['message']
         self.status_code = response_body['statusCode']
-        self.cause = 'cause' in response_body and response_body['cause']
+        self.cause = response_body.get('cause')
 
 class ApiClient:
     @staticmethod
@@ -32,17 +32,34 @@ class ApiClient:
         with open(schema_path, "r", encoding="utf-8") as f:
             return json.load(f)
 
-    def __init__(self, api_root: str):
+    def __init__(self, api_root: str, segments: Optional[Dict[str, Tuple[str, str]]] = None):
         """
-        Initialize the API client with a base URL and default HTTP method.
-        
+        Initialize the API client with a base URL.
+
         Args:
             api_root: The base URL for all API requests
-            default_http_method: Default HTTP method to use if not specified
+            segments: Per segment, the root its URLs start with and the segment's path after that root
         """
         self.api_root = api_root
+        self.segments = segments or {}
         self.full_schema: Dict[str, Any] = ApiClient._load_full_schema()
-    
+        # one session keeps connections open between calls; set headers, auth or adapters on it
+        self.session = requests.Session()
+        # seconds to connect and to wait for each read, as requests takes it; None waits forever
+        self.timeout: Union[None, float, Tuple[float, float]] = (10, 300)
+
+    def _segment_base(self, segment_name: str) -> Tuple[str, str]:
+        if segment_name in self.segments:
+            return self.segments[segment_name]
+        # a mixin's URLs start at the server of its API, without a segment name
+        force_api_root = self.full_schema['segments'][segment_name].get('forceApiRoot')
+        return (force_api_root, '') if force_api_root else (self.api_root, segment_name)
+
+    @staticmethod
+    def _join_url(root: str, *parts: str) -> str:
+        # a slash at the end of the root or around a part must not double the one the join adds
+        return '/'.join(part for part in [root.rstrip('/'), *(part.strip('/') for part in parts)] if part)
+
     def request(
         self,
         segment_name: str,
@@ -66,14 +83,11 @@ class ApiClient:
         controller = schema['controllers'][rpc_name]
         handlers = controller['handlers']
         handler = handlers[handler_name]
-        prefix = controller['prefix']
-        handler_path = handler['path']
         http_method = handler['httpMethod']
         validation = handler.get('validation', {})
 
-        api_root = api_root if api_root else self.api_root
-
-        url = '/'.join(filter(None, [api_root, segment_name, prefix, handler_path]))
+        default_root, segment_path = self._segment_base(segment_name)
+        url = self._join_url(api_root or default_root, segment_path, controller.get('prefix') or '', handler['path'])
 
         return self.make_api_request(
             url=url,
@@ -121,6 +135,7 @@ class ApiClient:
             
         Raises:
             ValueError: If validation fails or required parameters are missing
+            HttpException: If the response status is 400 or higher
             requests.RequestException: If the request fails
         """
         if not url:
@@ -167,9 +182,9 @@ class ApiClient:
         if params:
             for key, value in params.items():
                 text = str(value)
-                # "." and ".." would leave the handler's path once the URL is normalized
-                if text in ('.', '..'):
-                    raise ValueError(f'Path parameter "{key}" cannot be "{text}"')
+                # "", "." and ".." would drop or climb a path segment and so reach another route
+                if text in ('', '.', '..'):
+                    raise ValueError(f'Path parameter "{key}" cannot be empty, "." or "..", got "{text}"')
                 processed_url = processed_url.replace(f"{{{key}}}", quote(text, safe=''))
         
         # Process query parameters if present
@@ -189,70 +204,88 @@ class ApiClient:
         if headers:
             request_headers.update(headers)
         
-        response: Response
+        # the body as requests takes it: data, files or json
+        payload: Dict[str, Any]
         if TIsText:
             request_headers['Content-Type'] = body_content_type # type: ignore
-            response = requests.request(
-                method=http_method.upper(),
-                url=processed_url,
-                headers=request_headers,
-                data=body.encode('utf-8') if isinstance(body, str) else body,
-                stream=True # Always stream for consistent handling
-            )
+            payload = {'data': body.encode('utf-8') if isinstance(body, str) else body}
         elif TIsBinary:
             request_headers['Content-Type'] = body_content_type # type: ignore
-            response = requests.request(
-                method=http_method.upper(),
-                url=processed_url,
-                headers=request_headers,
-                data=body,
-                stream=True # Always stream for consistent handling
-            )
-        elif TIsForm:
-            # When the content type is multipart/form-data and no files are provided,
-            # convert body fields to multipart tuples via the files parameter
-            # to force requests to use multipart encoding instead of application/x-www-form-urlencoded
-            if TIsMultipart and not files and body and isinstance(body, dict):
-                multipart_fields = [(k, (None, str(v))) for k, v in body.items()]
-                response = requests.request(
-                    method=http_method.upper(),
-                    url=processed_url,
-                    headers=request_headers,
-                    files=multipart_fields,
-                    stream=True # Always stream for consistent handling
-                )
+            payload = {'data': body}
+        elif TIsForm and isinstance(body, dict):
+            fields = self._to_form_fields(body)
+            if TIsMultipart:
+                # a (None, text) part is a plain field, and makes requests send multipart even without a file
+                file_parts = list(files.items()) if isinstance(files, dict) else list(files or [])
+                payload = {'files': [(key, (None, text)) for key, text in fields] + file_parts}
             else:
-                response = requests.request(
-                    method=http_method.upper(),
-                    url=processed_url,
-                    headers=request_headers,
-                    files=files,
-                    data=body,
-                    stream=True # Always stream for consistent handling
-                )
+                payload = {'files': files, 'data': fields}
+        elif TIsForm:
+            payload = {'files': files, 'data': body}
         else:
-            response = requests.request(
-                method=http_method.upper(),
-                url=processed_url,
-                headers=request_headers,
-                json=body,
-                stream=True # Always stream for consistent handling
-            )
+            payload = {'json': body}
+
+        response = self.session.request(
+            method=http_method.upper(),
+            url=processed_url,
+            headers=request_headers,
+            timeout=self.timeout,
+            stream=True, # Always stream for consistent handling
+            **payload,
+        )
 
         # Handle response based on content type
         content_type = response.headers.get('Content-Type', '')
-        
+
+        if response.status_code >= 400:
+            raise self._to_http_exception(response, content_type)
+
         if 'application/jsonl' in content_type:
             return self._stream_jsonl(response)
-        
+
         elif 'application/json' in content_type:
-            result = response.json()
-            if 'isError' in result:
-                raise HttpException(result)
-            return result
-        
+            # an empty body, such as a 204 answer has, holds no value
+            return response.json() if response.content else None
+
         # Default to returning raw content if content type is not recognized
         return response.text
+
+    @staticmethod
+    def _to_http_exception(response: Response, content_type: str) -> HttpException:
+        # a proxy's error page or a plain text error has no JSON envelope, its text is the message
+        text = response.text
+        body: Any = None
+        if 'json' in content_type:
+            try:
+                body = json.loads(text)
+            except ValueError:
+                pass
+        envelope: Dict[str, Any] = body if isinstance(body, dict) else {}
+        message = envelope.get('message')
+        return HttpException({
+            'message': message if isinstance(message, str) else text or response.reason or 'Unknown error',
+            'statusCode': response.status_code,
+            'isError': True,
+            'cause': envelope.get('cause'),
+        })
+
+    @staticmethod
+    def _to_form_fields(body: Dict[str, Any]) -> List[Tuple[str, str]]:
+        # as the TypeScript client sends a form: None is left out, a list is one field per item,
+        # a boolean is true or false and any other object is JSON
+        fields: List[Tuple[str, str]] = []
+        for key, value in body.items():
+            for item in value if isinstance(value, (list, tuple)) else [value]:
+                if item is None:
+                    continue
+                if isinstance(item, bool):
+                    text = 'true' if item else 'false'
+                elif isinstance(item, (dict, list, tuple)):
+                    text = json.dumps(item, separators=(',', ':'), ensure_ascii=False)
+                else:
+                    text = str(item)
+                fields.append((key, text))
+        return fields
 
     def _build_query_string(self, data: dict[str, Any], prefix: str = '') -> str:
         """
@@ -274,9 +307,12 @@ class ApiClient:
                 parts.append(self._build_query_string(value, new_prefix))
         
         elif isinstance(data, list): # type: ignore
-            for i, item in enumerate(data):
-                new_prefix = f"{prefix}[{i}]"
-                parts.append(self._build_query_string(item, new_prefix))
+            # an item that sends nothing, such as None, gives its index to the next one:
+            # the server reads indexes with a gap as an object
+            for item in data:
+                part = self._build_query_string(item, f"{prefix}[{len(parts)}]")
+                if part:
+                    parts.append(part)
         
         elif data is None:
             return ''
@@ -310,22 +346,22 @@ class ApiClient:
                 for i in range(len(lines) - 1):
                     line = lines[i].strip()
                     if line:
-                        try:
-                            yield json.loads(line)
-                        except json.JSONDecodeError:
-                            # Skip malformed JSON
-                            pass
+                        yield self._parse_jsonl_line(line)
                 
                 # Keep the last (potentially incomplete) line in the buffer
                 buffer = lines[-1]
         
-        # Process any remaining data in buffer
+        # Process any remaining data in buffer, a stream cut inside its last line fails here
         if buffer.strip():
-            try:
-                yield json.loads(buffer)
-            except json.JSONDecodeError:
-                # Skip malformed JSON
-                pass
+            yield self._parse_jsonl_line(buffer.strip())
+
+    @staticmethod
+    def _parse_jsonl_line(line: str) -> Any:
+        # a skipped line would make a broken stream look complete
+        try:
+            return json.loads(line)
+        except json.JSONDecodeError as error:
+            raise ValueError(f'Malformed JSON line in the stream: {line[:200]!r}') from error
             
     def _stream_jsonl(self, response: requests.Response) -> Generator[Dict[str, Any], None, None]:
         """
@@ -337,14 +373,18 @@ class ApiClient:
         Yields:
             Each parsed JSON object from the response
         """
-        for item in self._stream_jsonl_items(response):
-            if self._is_error_line(item):
-                reason = item['reason']
-                status_code = item.get('statusCode')
-                if isinstance(reason, str) and isinstance(status_code, int):
-                    raise HttpException({'message': reason, 'statusCode': status_code, 'isError': True, 'cause': None})
-                raise Exception(reason if isinstance(reason, str) else json.dumps(reason))
-            yield item
+        # closing gives the connection back to the session, also when iteration stops early
+        try:
+            for item in self._stream_jsonl_items(response):
+                if self._is_error_line(item):
+                    reason = item['reason']
+                    status_code = item.get('statusCode')
+                    if isinstance(reason, str) and isinstance(status_code, int):
+                        raise HttpException({'message': reason, 'statusCode': status_code, 'isError': True, 'cause': None})
+                    raise Exception(reason if isinstance(reason, str) else json.dumps(reason))
+                yield item
+        finally:
+            response.close()
 
     @staticmethod
     def _is_error_line(item: Any) -> bool:

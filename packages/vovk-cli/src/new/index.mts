@@ -6,7 +6,7 @@ import { newSegment } from './new-segment.mjs';
 export async function newComponents(
   components: string[],
   projectInfo: ProjectInfo,
-  { dryRun, outDir, templates, overwrite, noSegmentUpdate, empty, static: isStaticSegment }: NewOptions
+  { dryRun, outDir, templates, overwrite, segmentUpdate, empty, static: isStaticSegment }: NewOptions
 ) {
   if (components[0] === 'segment' || components[0] === 'segments') {
     // vovk new segment [segmentName]
@@ -40,7 +40,7 @@ export async function newComponents(
       outDir,
       templates,
       overwrite,
-      noSegmentUpdate,
+      segmentUpdate,
       dryRun,
       empty,
     });

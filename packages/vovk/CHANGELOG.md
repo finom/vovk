@@ -26,6 +26,16 @@ A cleanup major: removals and renames, no new APIs.
 - The handler's second argument is the validated params ([#35](https://github.com/finom/vovk/pull/35))
 - The client throws `HttpException` for a non-JSON response with a status of 400 or more, sends no `content-type` without a body, and sends a string body as the declared text type ([#35](https://github.com/finom/vovk/pull/35))
 - HEAD requests fall back to the GET route ([#35](https://github.com/finom/vovk/pull/35))
+- Repeated query keys collect into an array (`tag=a&tag=b` gives `['a','b']`), `[]` appends after the highest index, and `a[][b]=1&a[][c]=2` is one element again ([#40](https://github.com/finom/vovk/pull/40))
+- A known path called with another method answers 405 with `Allow` instead of 404 ([#40](https://github.com/finom/vovk/pull/40))
+- A CORS preflight approves only the methods whose route sets `cors`, and `access-control-allow-methods` lists only those ([#40](https://github.com/finom/vovk/pull/40))
+- Two handlers on one method and path throw when the class is defined; one path in two controllers of a segment answers 500 ([#40](https://github.com/finom/vovk/pull/40))
+- A request without a body is validated as `undefined`: an optional body can be left out, a required one answers 400 instead of 415 ([#40](https://github.com/finom/vovk/pull/40))
+- A type JSON Schema can't describe, such as `Date` or `bigint`, is emitted as `{}` instead of failing the segment's schema ([#40](https://github.com/finom/vovk/pull/40))
+- The JSON Lines client reads only as fast as the consumer takes items and drops the items every running iteration has passed, so a consumed stream iterated again yields nothing ([#40](https://github.com/finom/vovk/pull/40))
+- Client input types come from the schemas' input types, so `.default()` and `.transform()` work; `searchParams` is typed as the strings it returns; a handler without a params schema gets `Record<string, string>` ([#40](https://github.com/finom/vovk/pull/40))
+- Mixin requests follow the OpenAPI document's `style`, `explode` and `encoding`; without one, arrays repeat their key (`tags=a&tags=b`) ([#40](https://github.com/finom/vovk/pull/40))
+- The optional `next` peer dependency is gone, and the types no longer import `next` ([#40](https://github.com/finom/vovk/pull/40))
 
 ### Fixed
 
@@ -44,7 +54,7 @@ A cleanup major: removals and renames, no new APIs.
 - `notFound()`, `forbidden()` and `unauthorized()` reach Next.js instead of answering 500 ([#35](https://github.com/finom/vovk/pull/35))
 - Malformed JSON, form and query input answers 400 ([#35](https://github.com/finom/vovk/pull/35))
 - Routing: several params in one segment, a dynamic parent folder, `.auto()` with a params schema, a controller in two segments; route errors reach `onError` ([#35](https://github.com/finom/vovk/pull/35))
-- CORS: PATCH in the allowed methods, the auto preflight skips auth hooks, headers apply to immutable responses ([#35](https://github.com/finom/vovk/pull/35))
+- CORS: the auto preflight skips auth hooks, headers apply to immutable responses ([#35](https://github.com/finom/vovk/pull/35))
 - An empty multitenant `from` prefix matches every path ([#35](https://github.com/finom/vovk/pull/35))
 - Client: `deepExtend` without `Buffer` and across VM realms, the URL built from validated input, typed form conversion, `apiRoot` without a leading slash, `Date` in the query ([#35](https://github.com/finom/vovk/pull/35))
 - OpenAPI keeps unions, nullables and recursive schemas, names refs per handler and honors `segmentNameOverride` ([#35](https://github.com/finom/vovk/pull/35))
@@ -52,6 +62,17 @@ A cleanup major: removals and renames, no new APIs.
 - Derived tool input schemas resolve their `$defs`; MCP output is valid for empty results and `+json` responses ([#35](https://github.com/finom/vovk/pull/35))
 - The package ships the MIT license instead of a copy of package.json, and no stale modules from older builds ([#35](https://github.com/finom/vovk/pull/35))
 - Query arrays of any length parse as arrays, and a record with numeric keys (`record[7]=on`) stays an object ([#38](https://github.com/finom/vovk/pull/38))
+- Responses: a result that can't be serialized answers a JSON 500 through `onError`; 204, 205 and 304 have no body; a status outside 200-599 becomes 500 ([#40](https://github.com/finom/vovk/pull/40))
+- JSON Lines: `throw()` keeps its order and ends the stream, sends after `close()` are dropped, failed sends reach `onError`, `yield undefined` writes `null`, a sync generator works with an `iteration` schema, the generator is returned when `onSuccess` throws ([#40](https://github.com/finom/vovk/pull/40))
+- Routing: `.auto()` with `skipSchemaEmission: ['params']` keeps its params, param names such as `{user-id}`, `decorate()` inheritance in any order, long paths stay out of the match cache ([#40](https://github.com/finom/vovk/pull/40))
+- A guard or `onBefore` can read the body before validation, a chunked body counts as a body, and `filename*` names an uploaded file ([#40](https://github.com/finom/vovk/pull/40))
+- `controllersToStaticParams` fills the prefix params, and its declared return type is valid ([#40](https://github.com/finom/vovk/pull/40))
+- Client bodies follow the declared content type: strings, binary data, objects for a procedure that takes JSON and forms, and `contentType` without a body schema ([#40](https://github.com/finom/vovk/pull/40))
+- Client: HEAD and empty JSON responses give `null`, `+json` types are parsed, headers merge by name, `init.signal` works without `AbortSignal.any`, query arrays have no index gaps, `toJSON` values and lone surrogates are encoded, no trailing slash at a segment root, network errors keep their cause ([#40](https://github.com/finom/vovk/pull/40))
+- Types: `.transform()` to a primitive, generators without an `iteration` schema, `createRPC<T>` with one type argument, per-call `fetcher` and `validateOnClient`; the client entry points typecheck without Node types ([#40](https://github.com/finom/vovk/pull/40))
+- Tools: a JSON Lines responder's items reach the model, an error status is an error, tool names are sanitized, capped at 64 characters and deduplicated, `execute(undefined)` works ([#40](https://github.com/finom/vovk/pull/40))
+- OpenAPI output validates as 3.1: every path param is declared and required, `$ref` query and params schemas are resolved, object query params use `deepObject`, component names are sanitized ([#40](https://github.com/finom/vovk/pull/40))
+- Mixins: `Mixins` type names match on both sides (accents kept, collisions numbered), controllers carry `prefix` and `originalControllerName`, `VovkStreamAsyncIterable` is exported, `rootEntry` reaches the client ([#40](https://github.com/finom/vovk/pull/40))
 
 ### Security
 
@@ -62,6 +83,10 @@ A cleanup major: removals and renames, no new APIs.
 - A `Content-Type` list such as `text/plain; x=1,application/json` is refused, so a cross-origin request can't reach a JSON handler without a preflight ([#35](https://github.com/finom/vovk/pull/35))
 - Route params are copied per request, and a literal `{param}` URL no longer runs a handler with empty params ([#35](https://github.com/finom/vovk/pull/35))
 - The client refuses empty, `.` and `..` path params, also percent-encoded ([#35](https://github.com/finom/vovk/pull/35))
+- A 400 no longer grows with its input: a 1 MB body could produce a 91 MB response ([#40](https://github.com/finom/vovk/pull/40))
+- A query nested deeper than 32 levels answers 400 instead of overflowing the stack ([#40](https://github.com/finom/vovk/pull/40))
+- multitenant: hosts match case-insensitively, only a DNS label is a wildcard value (a `%2e%2e` label could leave the tenant folder), only a `_schema_` path segment skips the rewrite ([#40](https://github.com/finom/vovk/pull/40))
+- Derived tools send no `x-meta` to mixins, whose host is a third party ([#40](https://github.com/finom/vovk/pull/40))
 
 ### Upgrading from 3.x
 
@@ -73,6 +98,9 @@ A cleanup major: removals and renames, no new APIs.
 6. The composed client no longer comes from the `vovk-client` package; see the `vovk-cli` changelog.
 7. A handler that read raw strings from its second argument now gets the validated params, coerced types included.
 8. Throw `HttpException` for an expected error: another error with a `statusCode` now answers 500.
+9. A repeated query key now gives an array, so a plain string query field answers 400 for `tag=a&tag=b`.
+10. Read a JSON Lines stream once, or call `asPromise()`: a consumed stream iterated again yields nothing.
+11. `req.nextUrl.searchParams.get()` is typed as the string it returns; use `req.vovk.query()` for validated values.
 
 ## 3.7.0 - 2026-06-11
 

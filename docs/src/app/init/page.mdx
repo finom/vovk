@@ -18,6 +18,7 @@ Options:
   --skip-install                  skip installing dependencies
   --update-ts-config              update tsconfig.json
   --update-scripts <mode>         update package.json scripts ("implicit" or "explicit")
+  --bundle                        set up "tsdown" bundler
   --lang <languages...>           generate client for other programming languages by default ("py" for Python and "rs" for Rust are
                                   supported)
   --validation-library <library>  validation library to use ("zod", "valibot", "arktype"); set to "none" to skip
@@ -33,6 +34,8 @@ The `init` command sets up Vovk.ts in an existing Next.js project. It applies th
 ```sh npm2yarn copy
 npx vovk-cli init
 ```
+
+In a project that already has a [config](/config), `init` asks before it reinitializes the project (`--yes` doesn't ask). An existing config that differs from the new one is kept as a backup next to it, for example **vovk.config.mjs.bak**, so you can move your settings over.
 
 ## Available Flags
 
@@ -50,7 +53,7 @@ Sets the log level: `trace`, `debug`, `info`, `warn`, `error`. Default: `info`.
 
 ### `--use-npm`, `--use-yarn`, `--use-pnpm`, `--use-bun`
 
-Choose the package manager for installing dependencies to skip auto-detection.
+Choose the package manager for installing dependencies to skip auto-detection. Without these flags, `init` takes the `packageManager` field of **package.json**, then the project's lockfile (**pnpm-lock.yaml**, **yarn.lock**, **bun.lock**, **package-lock.json**), then the package manager that runs it (`pnpm dlx`, `yarn dlx`, `bunx`), and npm otherwise.
 
 ### `--skip-install`
 
@@ -65,8 +68,13 @@ Updates `tsconfig.json` with settings needed for Vovk.ts, such as `experimentalD
 Updates `package.json` scripts to run Next.js and Vovk.ts together. Modes:
 
 - `implicit` — runs the concurrently API under the hood.
-- `explicit` — uses the `concurrently` CLI.
-  The flag also sets `prebuild` to run `vovk generate` before `next build` to ensure the client is generated before building.
+- `explicit` — uses the `concurrently` CLI: `cross-env PORT=3000 concurrently "next dev" "vovk dev" --kill-others`. [cross-env](https://www.npmjs.com/package/cross-env) and double quotes let the script run on Windows too. `PORT` is the port from `next dev -p` when the old script has one.
+
+The flag also sets `prebuild` to run `vovk generate` before `next build` to ensure the client is generated before building. With `--bundle`, it adds a `bundle` script that runs `vovk bundle`. An existing `prebuild` or `bundle` script is kept, and the command is chained after it, for example `prisma generate && vovk generate`.
+
+### `--bundle`
+
+Sets up [tsdown](https://tsdown.dev/) to [bundle](/bundle) the TypeScript client: adds it to `devDependencies` and a `bundle.build` function to the config.
 
 ### `--lang <languages...>`
 
@@ -89,6 +97,8 @@ In that case, use the corresponding version suffix when running the command:
 ```sh npm2yarn copy
 npx vovk-cli init@draft --channel draft
 ```
+
+A Vovk.ts package with no release on the channel, such as **vovk-ajv** without a beta, is added at its `latest` version.
 
 ### `--dry-run`
 

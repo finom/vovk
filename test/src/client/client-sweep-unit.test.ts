@@ -1,8 +1,10 @@
 import { deepStrictEqual, ok, rejects, strictEqual } from 'node:assert';
 import { createRequire } from 'node:module';
 import { describe, it } from 'node:test';
+import { fileURLToPath } from 'node:url';
 import vm from 'node:vm';
-import { HttpException, progressive } from 'vovk';
+import ts from 'typescript';
+import { createFetcher, HttpException, progressive } from 'vovk';
 import { createRPC } from 'vovk/create-rpc';
 import { deepExtend, readableStreamToAsyncIterable, type VovkStreamAsyncIterable } from 'vovk/internal';
 import { validateOnClient } from '../../../packages/vovk-ajv/index.js';
@@ -20,6 +22,37 @@ const splitInsideEmoji = (text: string) => {
   const bytes = new TextEncoder().encode(text);
   const cut = bytes.indexOf(0xf0) + 2;
   return [bytes.slice(0, cut), bytes.slice(cut)];
+};
+
+type TestHandlers = Record<string, { path: string; httpMethod: string; validation?: object }>;
+
+type TestCall = ((input?: object) => Promise<unknown>) & { getURL: (input?: object) => string };
+
+// an RPC module over a hand-written schema, the requests go to whatever fetch is stubbed in
+const rpcOf = (handlers: TestHandlers, ...rest: unknown[]) => {
+  const schema = {
+    segments: {
+      '': {
+        segmentName: '',
+        emitSchema: true,
+        controllers: { TestRPC: { rpcModuleName: 'TestRPC', prefix: 'test', handlers } },
+      },
+    },
+  };
+  return (createRPC as (...args: unknown[]) => unknown)(schema, '', 'TestRPC', ...rest) as Record<string, TestCall>;
+};
+
+const withFetch = async <T>(
+  stub: (url: string, init: RequestInit) => Response | Promise<Response>,
+  run: () => Promise<T>
+): Promise<T> => {
+  const original = globalThis.fetch;
+  globalThis.fetch = stub as unknown as typeof fetch;
+  try {
+    return await run();
+  } finally {
+    globalThis.fetch = original;
+  }
 };
 
 describe('Client sweep, pure functions', () => {
@@ -105,6 +138,130 @@ describe('Client sweep, pure functions', () => {
       deepStrictEqual(await users, [1]);
     });
 
+    it('Reads the stream only as fast as the iteration takes items', async () => {
+      let pulls = 0;
+      const readableStream = new ReadableStream<Uint8Array>({
+        async pull(controller) {
+          await new Promise((resolve) => setTimeout(resolve, 1));
+          pulls++;
+          controller.enqueue(new TextEncoder().encode(`${JSON.stringify({ n: pulls })}\n`));
+        },
+      });
+      const iterable = readableStreamToAsyncIterable({ readableStream, abortController: new AbortController() });
+      let taken = 0;
+
+      for await (const _item of iterable) {
+        await new Promise((resolve) => setTimeout(resolve, 20));
+        if (++taken === 3) break;
+      }
+
+      ok(pulls <= taken + 2, `${pulls} lines read for ${taken} items`);
+    });
+
+    it('Keeps only the items a running iteration has not passed', async () => {
+      const iterable = readableStreamToAsyncIterable<{ n: number }>({
+        readableStream: streamOf([new TextEncoder().encode('{"n":1}\n{"n":2}\n{"n":3}\n')]),
+        abortController: new AbortController(),
+      });
+      const first = iterable[Symbol.asyncIterator]();
+
+      deepStrictEqual(await first.next(), { value: { n: 1 }, done: false });
+      // a later consumer starts at the oldest kept item
+      deepStrictEqual(await iterable.asPromise(), [{ n: 2 }, { n: 3 }]);
+      deepStrictEqual(await first.next(), { value: { n: 2 }, done: false });
+      deepStrictEqual(await first.next(), { value: { n: 3 }, done: false });
+      deepStrictEqual(await first.next(), { value: undefined, done: true });
+    });
+
+    it('Ends the stream with the error an onIterate callback throws', async () => {
+      const iterable = readableStreamToAsyncIterable({
+        readableStream: streamOf([new TextEncoder().encode('{"n":1}\n{"n":2}\n')]),
+        abortController: new AbortController(),
+      });
+      iterable.onIterate((_item, i) => {
+        if (i === 1) throw new Error('callback failed');
+      });
+
+      await rejects(iterable.asPromise(), /callback failed/);
+    });
+
+    it('Gives every asPromise() call the same items', async () => {
+      const iterable = readableStreamToAsyncIterable({
+        readableStream: streamOf([new TextEncoder().encode('{"n":1}\n{"n":2}\n')]),
+        abortController: new AbortController(),
+      });
+
+      deepStrictEqual(await iterable.asPromise(), [{ n: 1 }, { n: 2 }]);
+      deepStrictEqual(await iterable.asPromise(), [{ n: 1 }, { n: 2 }]);
+    });
+
+    it('Ends the stream with an error at a line that is not JSON', async () => {
+      const iterable = readableStreamToAsyncIterable({
+        readableStream: streamOf([new TextEncoder().encode('{"a":1}\nnot json\n{"a":2}\n')]),
+        abortController: new AbortController(),
+      });
+      const items: unknown[] = [];
+
+      await rejects(
+        async () => {
+          for await (const item of iterable) items.push(item);
+        },
+        (error: unknown) => {
+          ok(error instanceof Error && error.cause instanceof SyntaxError);
+          ok(error.message.startsWith('JSONLines stream error.'));
+          return true;
+        }
+      );
+      deepStrictEqual(items, [{ a: 1 }]);
+    });
+
+    it('Ends the stream with an error at a truncated last line', async () => {
+      const iterable = readableStreamToAsyncIterable({
+        readableStream: streamOf([new TextEncoder().encode('{"a":1}\n{"a":2')]),
+        abortController: new AbortController(),
+      });
+
+      await rejects(iterable.asPromise(), /JSONLines stream error/);
+    });
+
+    it('Skips blank lines', async () => {
+      const iterable = readableStreamToAsyncIterable({
+        readableStream: streamOf([new TextEncoder().encode('\n\n{"a":1}\r\n   \n\n{"a":2}\n')]),
+        abortController: new AbortController(),
+      });
+
+      deepStrictEqual(await iterable.asPromise(), [{ a: 1 }, { a: 2 }]);
+    });
+
+    it('Throws for an error line whose reason is null or 0', async () => {
+      const iterableOf = (line: string) =>
+        readableStreamToAsyncIterable({
+          readableStream: streamOf([new TextEncoder().encode(`{"n":1}\n${line}\n`)]),
+          abortController: new AbortController(),
+        });
+
+      await rejects(iterableOf('{"isError":true,"reason":null}').asPromise(), Error);
+      await rejects(iterableOf('{"isError":true,"reason":0}').asPromise(), (error: unknown) => error === 0);
+    });
+
+    it('Gives the items read before an early break to a later consumer', async () => {
+      const abortController = new AbortController();
+      const readableStream = new ReadableStream<Uint8Array>({
+        start(controller) {
+          // stays open, so only the iteration ends it
+          controller.enqueue(new TextEncoder().encode('{"n":1}\n{"n":2}\n{"n":3}\n'));
+        },
+      });
+      const iterable = readableStreamToAsyncIterable<{ n: number }>({ readableStream, abortController });
+
+      for await (const item of iterable) {
+        if (item.n === 1) break;
+      }
+
+      ok(abortController.signal.aborted);
+      deepStrictEqual(await iterable.asPromise(), [{ n: 2 }, { n: 3 }]);
+    });
+
     it('Throws a plain Error for an error line without a status', async () => {
       const iterable = readableStreamToAsyncIterable({
         readableStream: streamOf([new TextEncoder().encode('{"n":1}\n{"isError":true,"reason":"oh no"}\n')]),
@@ -171,6 +328,303 @@ describe('Client sweep, pure functions', () => {
         { body: fileSchema },
         { fullSchema, endpoint: '/x' }
       );
+    });
+  });
+
+  describe('fetcher', () => {
+    const handlers = { get: { path: '', httpMethod: 'GET' } };
+
+    it('Runs every callback when one unsubscribes itself', async () => {
+      const fetcher = createFetcher();
+      const calls: string[] = [];
+      const offError = fetcher.onError(() => {
+        calls.push('error 1');
+        offError();
+      });
+      fetcher.onError(() => {
+        calls.push('error 2');
+      });
+      const offSuccess = fetcher.onSuccess(() => {
+        calls.push('success 1');
+        offSuccess();
+      });
+      fetcher.onSuccess(() => {
+        calls.push('success 2');
+      });
+      const rpc = rpcOf(handlers, fetcher);
+
+      await withFetch(
+        () => Response.json({ message: 'teapot' }, { status: 418 }),
+        () => rejects(rpc.get(), HttpException)
+      );
+      await withFetch(
+        () => Response.json({ ok: true }),
+        () => rpc.get()
+      );
+
+      deepStrictEqual(calls, ['error 1', 'error 2', 'success 1', 'success 2']);
+    });
+
+    it('Keeps a network error as the cause', async () => {
+      const failure = new TypeError('fetch failed');
+
+      await withFetch(
+        () => Promise.reject(failure),
+        () =>
+          rejects(rpcOf(handlers).get(), (error: unknown) => {
+            ok(error instanceof HttpException);
+            strictEqual(error.statusCode, 0);
+            strictEqual(error.message, 'fetch failed /api/test');
+            strictEqual(error.cause, failure);
+            return true;
+          })
+      );
+    });
+
+    it('Rethrows an abort as is', async () => {
+      const controller = new AbortController();
+      const reason = new Error('Stopped by the user');
+      controller.abort(reason);
+
+      await withFetch(
+        (_url, init) => Promise.reject(init.signal?.reason),
+        () => rejects(rpcOf(handlers).get({ init: { signal: controller.signal } }), (error) => error === reason)
+      );
+    });
+
+    it('Forwards init.signal where AbortSignal.any is missing', async () => {
+      // React Native and Safari before 17.4 have no AbortSignal.any
+      const { any } = AbortSignal;
+      const controller = new AbortController();
+      let requestSignal: AbortSignal | null | undefined;
+
+      try {
+        Reflect.deleteProperty(AbortSignal, 'any');
+        const result = await withFetch(
+          (_url, init) => {
+            requestSignal = init.signal;
+            return Response.json({ ok: true });
+          },
+          () => rpcOf(handlers).get({ init: { signal: controller.signal } })
+        );
+
+        deepStrictEqual(result, { ok: true });
+      } finally {
+        AbortSignal.any = any;
+      }
+
+      strictEqual(requestSignal?.aborted, false);
+      controller.abort('stop');
+      strictEqual(requestSignal?.aborted, true);
+      strictEqual(requestSignal?.reason, 'stop');
+    });
+
+    it('Merges default and per-call headers by name, whatever their shape', async () => {
+      type WithDefaults = { withDefaults: (options: object) => WithDefaults } & Record<string, TestCall>;
+      const rpc = rpcOf(handlers) as unknown as WithDefaults;
+      const plainDefaults = rpc.withDefaults({ init: { headers: { Authorization: 'Bearer A' } } });
+      const headersDefaults = rpc.withDefaults({ init: { headers: new Headers({ authorization: 'Bearer A' }) } });
+      const chained = plainDefaults.withDefaults({ init: { headers: [['x-tenant', 't']] } });
+      const seen: { authorization?: string; requestId?: string; tenant?: string }[] = [];
+
+      await withFetch(
+        (_url, init) => {
+          const headers = new Headers(init.headers);
+          seen.push({
+            authorization: headers.get('authorization') ?? undefined,
+            requestId: headers.get('x-request-id') ?? undefined,
+            tenant: headers.get('x-tenant') ?? undefined,
+          });
+          return Response.json({});
+        },
+        async () => {
+          await plainDefaults.get({ init: { headers: { authorization: 'Bearer B' } } });
+          await plainDefaults.get({ init: { headers: new Headers({ 'x-request-id': '1' }) } });
+          await plainDefaults.get({ init: { headers: [['x-request-id', '1']] } });
+          await headersDefaults.get({ init: { headers: { 'x-request-id': '1' } } });
+          await chained.get({ init: { headers: { 'X-Tenant': 'u' } } });
+        }
+      );
+
+      deepStrictEqual(seen, [
+        { authorization: 'Bearer B', requestId: undefined, tenant: undefined },
+        { authorization: 'Bearer A', requestId: '1', tenant: undefined },
+        { authorization: 'Bearer A', requestId: '1', tenant: undefined },
+        { authorization: 'Bearer A', requestId: '1', tenant: undefined },
+        { authorization: 'Bearer A', requestId: undefined, tenant: 'u' },
+      ]);
+    });
+
+    it('Uses a fetcher given per call', async () => {
+      let isUsed = false;
+      const fetcher = createFetcher({
+        prepareRequestInit: (init) => {
+          isUsed = true;
+          return init;
+        },
+      });
+
+      await withFetch(
+        () => Response.json({}),
+        () => rpcOf(handlers).get({ fetcher })
+      );
+
+      strictEqual(isUsed, true);
+    });
+
+    it('Takes validateOnClient per call as a module promise', async () => {
+      const bodySchema = { type: 'object', properties: { name: { type: 'string' } }, required: ['name'] };
+      const rpc = rpcOf({ create: { path: '', httpMethod: 'POST', validation: { body: bodySchema } } });
+      const validateOnClientModule = import('../../../packages/vovk-ajv/index.js');
+
+      await withFetch(
+        () => Response.json({ ok: true }),
+        async () => {
+          deepStrictEqual(await rpc.create({ body: { name: 'a' }, validateOnClient: validateOnClientModule }), {
+            ok: true,
+          });
+          await rejects(
+            rpc.create({ body: {}, validateOnClient: validateOnClientModule }),
+            /Client-side validation failed\. Invalid body: data must have required property 'name'/
+          );
+        }
+      );
+    });
+
+    it('Adds the query to a handler at the segment root without a trailing slash', async () => {
+      const controllers = {
+        RootRPC: { rpcModuleName: 'RootRPC', prefix: '', handlers: { root: { path: '', httpMethod: 'GET' } } },
+      };
+      const schema = { segments: { bodies: { segmentName: 'bodies', emitSchema: true, controllers } } };
+      const { root } = (createRPC as (...args: unknown[]) => unknown)(schema, 'bodies', 'RootRPC') as Record<
+        string,
+        TestCall
+      >;
+      const urls: string[] = [];
+
+      await withFetch(
+        (url) => {
+          urls.push(url);
+          return Response.json({});
+        },
+        () => root({ query: { q: '1' } })
+      );
+
+      strictEqual(root.getURL({ query: { q: '1' } }), '/api/bodies?q=1');
+      strictEqual(
+        root.getURL({ apiRoot: 'https://example.com/api', query: { q: '1' } }),
+        'https://example.com/api/bodies?q=1'
+      );
+      strictEqual(root.getURL(), '/api/bodies');
+      deepStrictEqual(urls, ['/api/bodies?q=1']);
+    });
+
+    it('Gives null for a JSON response without a body', async () => {
+      const rpc = rpcOf({
+        exists: { path: '', httpMethod: 'HEAD' },
+        star: { path: 'star', httpMethod: 'PUT' },
+        empty: { path: 'empty', httpMethod: 'GET' },
+        stream: { path: 'stream', httpMethod: 'HEAD' },
+        missing: { path: 'missing', httpMethod: 'GET' },
+      });
+      const respond = (url: string): Response => {
+        const path = url.split('/').pop();
+        const contentType = path === 'stream' ? 'application/jsonl' : 'application/json; charset=utf-8';
+        const status = path === 'star' ? 204 : path === 'missing' ? 404 : 200;
+        const headers = { 'content-type': contentType, ...(path === 'empty' ? { 'content-length': '0' } : {}) };
+        // HEAD answers and 204 carry the content type but no body
+        return new Response(path === 'empty' ? '' : null, { status, headers });
+      };
+
+      await withFetch(respond, async () => {
+        strictEqual(await rpc.exists(), null);
+        strictEqual(await rpc.star(), null);
+        strictEqual(await rpc.empty(), null);
+        strictEqual(await rpc.stream(), null);
+        await rejects(rpc.missing(), (error) => error instanceof HttpException && error.statusCode === 404);
+      });
+    });
+
+    it('Parses any JSON media type in any case', async () => {
+      const contentTypes = [
+        'application/vnd.api+json',
+        'Application/JSON',
+        'APPLICATION/JSON; charset=UTF-8',
+        'application/problem+json',
+      ];
+
+      for (const contentType of contentTypes) {
+        const result = await withFetch(
+          () => new Response('{"a":1}', { headers: { 'content-type': contentType } }),
+          () => rpcOf(handlers).get()
+        );
+
+        deepStrictEqual(result, { a: 1 }, contentType);
+      }
+    });
+
+    it('Reads the message of a problem+json error', async () => {
+      const problem = { type: 'about:blank', title: 'Bad thing', detail: 'The thing is bad', status: 400 };
+
+      await withFetch(
+        () =>
+          new Response(JSON.stringify(problem), {
+            status: 400,
+            headers: { 'content-type': 'application/problem+json' },
+          }),
+        () =>
+          rejects(rpcOf(handlers).get(), (error: unknown) => {
+            ok(error instanceof HttpException);
+            strictEqual(error.statusCode, 400);
+            strictEqual(error.message, 'The thing is bad');
+            return true;
+          })
+      );
+    });
+
+    it('Streams JSON Lines whatever the case of the media type', async () => {
+      const stream = (await withFetch(
+        () => new Response('{"n":1}\n{"n":2}\n', { headers: { 'content-type': 'Application/JSONL; charset=utf-8' } }),
+        () => rpcOf(handlers).get()
+      )) as VovkStreamAsyncIterable<unknown>;
+
+      deepStrictEqual(await stream.asPromise(), [{ n: 1 }, { n: 2 }]);
+    });
+  });
+
+  describe('shipped types', () => {
+    it('Type-check the client entry points in a project without Node types or lib esnext', () => {
+      // a front-end project: no @types/node, ES2022 and DOM libs, library declarations checked
+      const fileName = fileURLToPath(new URL('./front-end-consumer.mts', import.meta.url));
+      const source = [
+        "import { createRPC } from 'vovk/create-rpc';",
+        "import { createFetcher, fetcher } from 'vovk/fetcher';",
+        "export const rpc = createRPC({}, '', 'UserRPC', fetcher);",
+        'export const custom = createFetcher<{ token?: string }>();',
+      ].join('\n');
+      const options: ts.CompilerOptions = {
+        strict: true,
+        noEmit: true,
+        skipLibCheck: false,
+        target: ts.ScriptTarget.ES2022,
+        lib: ['lib.es2022.d.ts', 'lib.dom.d.ts', 'lib.dom.iterable.d.ts'],
+        types: [],
+        module: ts.ModuleKind.Node16,
+        moduleResolution: ts.ModuleResolutionKind.Node16,
+      };
+      const host = ts.createCompilerHost(options);
+      const { fileExists, readFile, getSourceFile } = host;
+      host.fileExists = (name) => name === fileName || fileExists(name);
+      host.readFile = (name) => (name === fileName ? source : readFile(name));
+      host.getSourceFile = (name, ...rest) =>
+        name === fileName ? ts.createSourceFile(name, source, ts.ScriptTarget.ES2022) : getSourceFile(name, ...rest);
+      const program = ts.createProgram([fileName], options, host);
+      const diagnostics = ts.getPreEmitDiagnostics(program).map((diagnostic) => {
+        const message = ts.flattenDiagnosticMessageText(diagnostic.messageText, ' ');
+        return `${diagnostic.file?.fileName.split('/dist/').pop() ?? ''}: ${message}`;
+      });
+
+      deepStrictEqual(diagnostics, []);
     });
   });
 });

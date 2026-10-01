@@ -22,6 +22,14 @@ const LANGS = ['py', 'rs'];
 const UPDATE_SCRIPTS_MODES = ['implicit', 'explicit'];
 const CHANNELS = ['latest', 'beta', 'draft'];
 
+// vovk.config.mjs.bak, then vovk.config.mjs.bak.1 and so on, an earlier backup is never overwritten
+async function getBackupPath(filePath: string) {
+  for (let index = 0; ; index++) {
+    const backupPath = `${filePath}.bak${index ? `.${index}` : ''}`;
+    if (!(await getFileSystemEntryType(backupPath))) return backupPath;
+  }
+}
+
 export class Init {
   root!: string;
   log!: ReturnType<typeof getLogger>;
@@ -62,14 +70,6 @@ export class Init {
       devDependencies.push('vovk-rust');
     }
 
-    // delete older config files
-    if (configPaths.length) {
-      if (!dryRun) await Promise.all(configPaths.map((configPath) => fs.rm(configPath)));
-      log.debug(
-        `${dryRun ? 'Dry run: would delete' : 'Deleted'} existing config file${configPaths.length > 1 ? 's' : ''} at ${configPaths.join(', ')}`
-      );
-    }
-
     if (validationLibrary) {
       dependencies.push(
         ...({
@@ -93,7 +93,7 @@ export class Init {
         log.error(`Failed to update scripts at package.json: ${(error as Error).message}`);
       }
       if (updateScripts === 'explicit') {
-        devDependencies.push('concurrently');
+        devDependencies.push('concurrently', 'cross-env');
       }
     }
 
@@ -116,7 +116,16 @@ export class Init {
 
     if (!dryRun && pkgJson) {
       let depsUpdated = false;
-      const packageManager = getPackageManager({ useNpm, useYarn, usePnpm, useBun, pkgJson, log });
+      const packageManager = getPackageManager({
+        useNpm,
+        useYarn,
+        usePnpm,
+        useBun,
+        pkgJson,
+        log,
+        root,
+        userAgent: process.env.npm_config_user_agent,
+      });
       try {
         await updateDependenciesWithoutInstalling({
           log,
@@ -172,11 +181,25 @@ export class Init {
     }
 
     try {
-      const { configAbsolutePath } = await createConfig({
+      const { configAbsolutePath, configStr } = await createConfig({
         root,
         log,
-        options: { validationLibrary, channel, bundle, lang, dryRun },
+        options: { validationLibrary, channel, bundle, lang },
       });
+
+      // a config init didn't write this way is kept as a backup, so customizations can be moved over
+      for (const configPath of configPaths) {
+        const isSameConfig =
+          configPath === configAbsolutePath && (await fs.readFile(configPath, 'utf-8').catch(() => null)) === configStr;
+        if (isSameConfig) continue;
+        const backupPath = await getBackupPath(configPath);
+        if (!dryRun) await fs.rename(configPath, backupPath);
+        log.warn(
+          `${dryRun ? 'Dry run: would move' : 'Moved'} the existing config ${chalkHighlightThing(configPath)} to ${chalkHighlightThing(backupPath)}`
+        );
+      }
+
+      if (!dryRun) await fs.writeFile(configAbsolutePath, configStr, 'utf-8');
 
       log.info(
         `Config ${dryRun ? 'would be created (dry run)' : 'created successfully'} at ${chalkHighlightThing(configAbsolutePath)}`
@@ -335,12 +358,12 @@ export class Init {
             {
               name: 'Yes, use "concurrently" implicitly',
               value: 'implicit' as const,
-              description: `The ${chalk.cyanBright.bold(`"dev"`)} script will use concurrently API to run "next dev" and "vovk dev" commands at the same time. It will automatically find an available port, running ${chalk.cyanBright.bold(`"${getDevScript(pkgJson, 'implicit')}"`)}. The ${chalk.cyanBright.bold(`"prebuild"`)} script will be set to ${chalk.cyanBright.bold(`"vovk generate"`)}`,
+              description: `The ${chalk.cyanBright.bold(`"dev"`)} script will use concurrently API to run "next dev" and "vovk dev" commands at the same time. It will automatically find an available port, running ${chalk.cyanBright.bold(`"${getDevScript(pkgJson, 'implicit')}"`)}. The ${chalk.cyanBright.bold(`"prebuild"`)} script will run ${chalk.cyanBright.bold(`"vovk generate"`)}`,
             },
             {
               name: 'Yes, use "concurrently" explicitly',
               value: 'explicit' as const,
-              description: `The ${chalk.cyanBright.bold(`"dev"`)} script will use pre-defined PORT variable to run "next dev" and "vovk dev" as "concurrently" CLI arguments ${chalk.cyanBright.bold(`"${getDevScript(pkgJson, 'explicit')}"`)}. The ${chalk.cyanBright.bold(`"prebuild"`)} script will be set to ${chalk.cyanBright.bold(`"vovk generate"`)}`,
+              description: `The ${chalk.cyanBright.bold(`"dev"`)} script will use pre-defined PORT variable to run "next dev" and "vovk dev" as "concurrently" CLI arguments ${chalk.cyanBright.bold(`"${getDevScript(pkgJson, 'explicit')}"`)}. The ${chalk.cyanBright.bold(`"prebuild"`)} script will run ${chalk.cyanBright.bold(`"vovk generate"`)}`,
             },
             {
               name: 'No',

@@ -122,16 +122,8 @@ await describe('CLI new controller and flags', async () => {
       `static createCoolRedChair = `,
       `static updateCoolRedChair = `,
     ]);
-    await assertFile('src/app/api/[[...vovk]]/route.ts', [
-      `import CoolRedChairController from '../../../modules/cool-red-chair/cool-red-chair-controller';`,
-      `const controllers = {
-        CoolRedChairRPC: CoolRedChairController,
-      };`,
-      `initSegment({
-        emitSchema: true,
-        controllers, 
-      });`,
-    ]);
+    await assertFile('src/app/api/[[...vovk]]/route.ts', [`const controllers = {};`]);
+    await assertFile('src/app/api/[[...vovk]]/route.ts', 'CoolRedChair', true);
   });
 
   it('New controller with --dry-run', async () => {

@@ -36,6 +36,41 @@ await describe('writeOneSegmentSchemaFile', async () => {
     assert.strictEqual(JSON.parse(written).segmentName, 'folder/segment');
   });
 
+  await it('Replaces a corrupt schema file and reports every controller as added', async () => {
+    await fs.writeFile(path.join(schemaOut, 'root.json'), '{"controllers": {');
+    const segmentSchema = {
+      ...makeSchema(''),
+      controllers: { UserRPC: { rpcModuleName: 'UserRPC', handlers: {} } },
+    };
+
+    const { diffResult } = await writeOneSegmentSchemaFile({
+      schemaOutAbsolutePath: schemaOut,
+      segmentSchema,
+      skipIfExists: false,
+    });
+
+    assert.deepStrictEqual(JSON.parse(await fs.readFile(path.join(schemaOut, 'root.json'), 'utf-8')), segmentSchema);
+    assert.deepStrictEqual(diffResult?.controllers.added, ['UserRPC']);
+  });
+
+  await it('Refuses a segment named like the root segment file', async () => {
+    const rootSchema = { ...makeSchema(''), controllers: { UserRPC: { rpcModuleName: 'UserRPC', handlers: {} } } };
+    await fs.writeFile(path.join(schemaOut, 'root.json'), JSON.stringify(rootSchema));
+
+    for (const segmentName of ['root', 'Root']) {
+      await assert.rejects(
+        writeOneSegmentSchemaFile({
+          schemaOutAbsolutePath: schemaOut,
+          segmentSchema: makeSchema(segmentName),
+          skipIfExists: false,
+        }),
+        new RegExp(`A segment can't be named "${segmentName}"`)
+      );
+    }
+
+    assert.deepStrictEqual(JSON.parse(await fs.readFile(path.join(schemaOut, 'root.json'), 'utf-8')), rootSchema);
+  });
+
   await it('Refuses a segment name that escapes the schema out dir', async () => {
     await fs.writeFile(path.join(root, 'package.json'), '{"name":"victim"}');
 

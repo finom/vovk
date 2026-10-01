@@ -13,7 +13,8 @@ import type { VovkRequest } from '../types/request.js';
 import { HttpException, isHttpException } from './http-exception.js';
 import { JSONLinesResponder, Responder } from './json-lines-responder.js';
 
-type Route = { staticMethod: RouteHandler; controller: VovkController };
+// conflictsWith: the other controllers whose own handler has the same method and path in the segment
+type Route = { staticMethod: RouteHandler; controller: VovkController; conflictsWith?: VovkController[] };
 
 // a route segment as the literals around its params: "{from}-{to}.json" is ['', '-', '.json'] around ['from', 'to']
 type ParamSegment = { literals: string[]; paramNames: string[] };
@@ -66,9 +67,9 @@ class VovkApp {
   private static getHeadersFromDecoratorOptions(options?: DecoratorOptions) {
     if (!options) return {};
 
+    // a preflight adds access-control-allow-methods, see #respondToPreflight
     const corsHeaders = {
       'access-control-allow-origin': '*',
-      'access-control-allow-methods': 'GET, POST, PUT, PATCH, DELETE, OPTIONS, HEAD',
       // x-meta is ours, the client sends it whenever meta is set
       'access-control-allow-headers': 'content-type, authorization, x-meta',
     };
@@ -92,6 +93,15 @@ class VovkApp {
       const copy = new Response(response.body, response);
       for (const [key, value] of missing) copy.headers.set(key, value);
       return copy;
+    }
+  }
+
+  // an error onError throws is logged, it doesn't replace the response
+  private static async callOnError(onError: SegmentHooks['onError'], error: unknown, req: VovkRequest) {
+    try {
+      await onError?.(error as Error, req);
+    } catch (onErrorError) {
+      console.error('An error caught in onError handler:', onErrorError);
     }
   }
 
@@ -134,26 +144,58 @@ class VovkApp {
   OPTIONS = async (req: Request, data: { params: Promise<Record<string, string[]>> }, segmentName: string) =>
     this.#callMethod({ httpMethod: HttpMethod.OPTIONS, req, params: await data.params, segmentName });
 
-  respond = async ({
+  // synchronous, so a body JSON can't serialize throws where the handler's errors are caught
+  respond = ({
     statusCode,
     responseBody,
     options,
+    headers,
   }: {
     req: Request;
     statusCode: HttpStatus;
     responseBody: unknown;
     options?: DecoratorOptions;
+    headers?: Record<string, string>;
   }) => {
-    const response = new Response(JSON.stringify(responseBody), {
+    // Response refuses a body with these statuses
+    const isNullBodyStatus = statusCode === 204 || statusCode === 205 || statusCode === 304;
+    const response = new Response(isNullBodyStatus ? null : JSON.stringify(responseBody), {
       status: statusCode,
       headers: {
         'content-type': 'application/json',
         ...VovkApp.getHeadersFromDecoratorOptions(options),
+        ...headers,
       },
     });
 
     return response;
   };
+
+  // the status, message and cause a caught error answers with
+  private static toErrorResponse(e: unknown) {
+    if (isHttpException(e)) {
+      // Response takes a status from 200 to 599 only
+      const isValidStatus = e.statusCode >= 200 && e.statusCode <= 599;
+      return {
+        statusCode: isValidStatus ? e.statusCode : HttpStatus.INTERNAL_SERVER_ERROR,
+        message: e.message,
+        cause: e.cause,
+      };
+    }
+
+    // anything but an HttpException is internal, in production its message and cause stay on the server
+    if (process.env.NODE_ENV === 'production') {
+      console.error('🐺 Unhandled error in a Vovk handler:', e);
+      return { statusCode: HttpStatus.INTERNAL_SERVER_ERROR, message: 'Internal server error' };
+    }
+    const { message, cause } = (e ?? {}) as { message?: unknown; cause?: unknown };
+    // a thrown value that is no Error, as a string, is the message itself
+    return {
+      statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+      message: typeof message === 'string' ? message : String(e),
+      cause,
+    };
+  }
 
   #respondWithError = ({
     req,
@@ -161,12 +203,14 @@ class VovkApp {
     message,
     options,
     cause,
+    headers,
   }: {
     req: Request;
     statusCode: HttpStatus;
     message: string;
     options?: DecoratorOptions;
     cause?: unknown;
+    headers?: Record<string, string>;
   }) => {
     return this.respond({
       req,
@@ -178,6 +222,7 @@ class VovkApp {
         isError: true,
       } satisfies VovkErrorResponse,
       options,
+      headers,
     });
   };
 
@@ -207,6 +252,8 @@ class VovkApp {
   #routeMatchCache = new WeakMap<object, Map<string, { route: string; params: Record<string, string> }>>();
   // concrete paths come from the URL, cap the per handlers map cache so it can't grow forever
   static #ROUTE_MATCH_CACHE_LIMIT = 1000;
+  // and in size: a longer path, as one with a long token in it, is matched each time
+  static #ROUTE_MATCH_CACHE_MAX_PATH_LENGTH = 256;
 
   #getRouteShape = (route: string) => {
     let shape = this.#routeShapeCache.get(route);
@@ -214,8 +261,9 @@ class VovkApp {
       const segments = route.split('/');
       const paramSegments = new Map<number, ParamSegment>();
       segments.forEach((segment, index) => {
-        // split keeps the captured names at the odd indexes, the literals around them at the even ones
-        const parts = segment.split(/\{(\w+)\}/);
+        // split keeps the captured names at the odd indexes, the literals around them at the even ones; a name is
+        // anything but braces, as the clients and OpenAPI substitute any {name}
+        const parts = segment.split(/\{([^{}]+)\}/);
         if (parts.length === 1) return;
         paramSegments.set(index, {
           literals: parts.filter((_, i) => i % 2 === 0),
@@ -260,9 +308,10 @@ class VovkApp {
     // a decoded "/" inside one segment makes the joined path ambiguous, /files/a%2Fb vs /files/a/b
     const hasEncodedSlash = path.some((segment) => segment.includes('/'));
     const pathStr = path.join('/');
+    const isCacheable = !hasEncodedSlash && pathStr.length <= VovkApp.#ROUTE_MATCH_CACHE_MAX_PATH_LENGTH;
 
     // Fast path: Check if this exact path has been matched before
-    let matchCache = hasEncodedSlash ? undefined : this.#routeMatchCache.get(handlers);
+    let matchCache = isCacheable ? this.#routeMatchCache.get(handlers) : undefined;
     const cachedMatch = matchCache?.get(pathStr);
     if (cachedMatch) {
       // a copy per request, a handler may change its params
@@ -295,7 +344,7 @@ class VovkApp {
       [methodKey] = methodKeys;
 
       // Cache successful matches, an ambiguous joined path must not become a cache key
-      if (methodKey && !hasEncodedSlash) {
+      if (methodKey && isCacheable) {
         if (!matchCache) {
           matchCache = new Map();
           this.#routeMatchCache.set(handlers, matchCache);
@@ -330,7 +379,13 @@ class VovkApp {
 
       Object.entries(staticMethods ?? {}).forEach(([path, staticMethod]) => {
         const fullPath = [prefix, path].filter(Boolean).join('/');
-        handlers[fullPath] = { staticMethod, controller };
+        const existing = handlers[fullPath];
+        // a route a child inherits is its parent's handler, which answers the same
+        const conflictsWith =
+          existing && existing.staticMethod !== staticMethod
+            ? [...(existing.conflictsWith ?? []), existing.controller]
+            : existing?.conflictsWith;
+        handlers[fullPath] = { staticMethod, controller, ...(conflictsWith ? { conflictsWith } : {}) };
       });
     });
 
@@ -342,6 +397,68 @@ class VovkApp {
     this.#allHandlers[segmentName] ??= {};
     this.#allHandlers[segmentName][httpMethod] = handlers;
     return handlers;
+  };
+
+  #findRoute = (httpMethod: HttpMethod, segmentName: string, path: string[]) => {
+    let found = this.#getHandler({ handlers: this.#getHandlers(httpMethod, segmentName), path });
+    // route.ts exports HEAD, so Next.js doesn't derive it from GET: a GET route answers it, HEAD drops the body
+    if (!found.handler && httpMethod === HttpMethod.HEAD) {
+      found = this.#getHandler({ handlers: this.#getHandlers(HttpMethod.GET, segmentName), path });
+    }
+
+    const { conflictsWith, controller } = found.handler ?? {};
+    if (conflictsWith && controller) {
+      const controllerNames = [...conflictsWith, controller].map(({ name }) => name).join(', ');
+      throw new HttpException(
+        HttpStatus.INTERNAL_SERVER_ERROR,
+        `Conflicting routes found: ${path.join('/')} in ${controllerNames}`
+      );
+    }
+    return found;
+  };
+
+  // the route of each method on a path, in the order the Allow header lists them
+  #getRoutesByMethod = (segmentName: string, path: string[]) => {
+    const routes = new Map<string, Route>();
+    for (const httpMethod of [
+      HttpMethod.GET,
+      HttpMethod.HEAD,
+      HttpMethod.POST,
+      HttpMethod.PUT,
+      HttpMethod.PATCH,
+      HttpMethod.DELETE,
+      HttpMethod.OPTIONS,
+    ]) {
+      const { handler } = this.#findRoute(httpMethod, segmentName, path);
+      if (handler) routes.set(httpMethod, handler);
+    }
+    return routes;
+  };
+
+  // the automatic preflight of the cors option: it approves and lists only the methods whose route on the path has
+  // cors, and it runs no hooks, since a preflight carries no credentials and an auth hook would reject it
+  #respondToPreflight = ({
+    req,
+    requestedMethod,
+    routes,
+  }: {
+    req: VovkRequest;
+    requestedMethod: string | null | undefined;
+    routes: Map<string, Route>;
+  }) => {
+    const corsRoutes = new Map([...routes].filter(([, { staticMethod }]) => staticMethod._options?.cors));
+
+    // a request without access-control-request-method is no preflight, it gets the headers of any cors route
+    const corsRoute = requestedMethod ? corsRoutes.get(requestedMethod) : corsRoutes.values().next().value;
+    if (!corsRoute) return null;
+
+    return this.respond({
+      req,
+      statusCode: HttpStatus.OK,
+      responseBody: null,
+      options: corsRoute.staticMethod._options,
+      headers: { 'access-control-allow-methods': [...corsRoutes.keys()].join(', ') },
+    });
   };
 
   #callMethod = async ({
@@ -382,23 +499,38 @@ class VovkApp {
     if (xMetaHeader) reqMeta(req, { xMetaHeader });
 
     let route: Route | null = null;
+    // the body of a result the catch answers instead, cancelled so what produces it stops
+    let unsentBody: ReadableStream | null = null;
 
     try {
-      let { handler, methodParams } = this.#getHandler({ handlers: this.#getHandlers(httpMethod, segmentName), path });
-
-      // route.ts exports HEAD, so Next.js doesn't derive it from GET: a GET route answers it, HEAD drops the body
-      if (!handler && httpMethod === HttpMethod.HEAD) {
-        ({ handler, methodParams } = this.#getHandler({
-          handlers: this.#getHandlers(HttpMethod.GET, segmentName),
-          path,
-        }));
-      }
+      const { handler, methodParams } = this.#findRoute(httpMethod, segmentName, path);
 
       if (!handler) {
+        const routes = this.#getRoutesByMethod(segmentName, path);
+        if (httpMethod === HttpMethod.OPTIONS) {
+          const requestedMethod = headerList?.get('access-control-request-method');
+          const preflight = this.#respondToPreflight({ req, requestedMethod, routes });
+          if (preflight) return preflight;
+        }
+
+        const at = segmentName === '' ? 'the root segment' : `segment '${segmentName}'`;
+        if (!routes.size) {
+          return this.#respondWithError({
+            req,
+            statusCode: HttpStatus.NOT_FOUND,
+            message: `Route '${path.join('/')}' is not found for ${httpMethod} method at ${at}`,
+          });
+        }
+
+        const allowedMethods = [...routes.keys()];
+        // a cors route answers the preflight
+        const hasCors = [...routes.values()].some(({ staticMethod }) => staticMethod._options?.cors);
+        if (hasCors && !routes.has(HttpMethod.OPTIONS)) allowedMethods.push(HttpMethod.OPTIONS);
         return this.#respondWithError({
           req,
-          statusCode: HttpStatus.NOT_FOUND,
-          message: `Route '${path.join('/')}' is not found for ${httpMethod} method at ${segmentName === '' ? 'the root segment' : `segment '${segmentName}'`}`,
+          statusCode: HttpStatus.METHOD_NOT_ALLOWED,
+          message: `Method ${httpMethod} is not allowed for route '${path.join('/')}' at ${at}`,
+          headers: { allow: allowedMethods.join(', ') },
         });
       }
 
@@ -414,20 +546,22 @@ class VovkApp {
         params: () => methodParams,
       };
 
-      // a preflight carries no credentials, so an auth hook would reject it and the browser would block the call
-      if (!staticMethod._isCorsPreflight) {
-        await staticMethod._options?.before?.call(controller, req);
-        await onBefore?.(req);
-      }
+      await staticMethod._options?.before?.call(controller, req);
+      await onBefore?.(req);
       // dispatch via the latest wrapper so decorators applied above the HTTP decorator still run
       const result = await (staticMethod._sourceMethod?.wrapper ?? staticMethod).call(controller, req, methodParams);
 
       if (result instanceof Response) {
+        unsentBody = result.body;
         await onSuccess?.(result, req);
         return VovkApp.withHeaders(result, headersFromDecoratorOptions);
       }
 
       if (result instanceof Responder) {
+        if (result instanceof JSONLinesResponder) {
+          result._onError = (error) => void VovkApp.callOnError(onError, error, req);
+        }
+        unsentBody = result.response.body;
         await onSuccess?.(result, req);
         return VovkApp.withHeaders(result.response, headersFromDecoratorOptions);
       }
@@ -449,27 +583,26 @@ class VovkApp {
               headers: { ...headersFromDecoratorOptions, ...headers },
             })
         );
+        responder._onError = (error) => void VovkApp.callOnError(onError, error, req);
 
         void (async () => {
           try {
             // send() waits while the client reads slower than the generator yields
             for await (const chunk of result as AsyncGenerator<unknown>) {
               await responder.send(chunk);
-              // the client went away: leaving the loop returns the iterator, so a generator's finally runs
+              // the client went away or a line failed: leaving the loop returns the iterator, so a generator's
+              // finally runs
               if (responder.isClosed) break;
             }
           } catch (e) {
             // the outer catch already returned the response, so onError has to run here
-            try {
-              await onError?.(e as HttpException, req);
-            } catch (onErrorError) {
-              console.error('An error caught in onError handler:', onErrorError);
-            }
+            await VovkApp.callOnError(onError, e, req);
             return responder.throw(e);
           }
 
           return responder.close();
         })();
+        unsentBody = responder.response.body;
         await onSuccess?.(responder, req);
         return responder.response;
       }
@@ -478,44 +611,21 @@ class VovkApp {
       await onSuccess?.(responseBody, req);
       return this.respond({ req, statusCode: 200, responseBody, options: staticMethod._options });
     } catch (e) {
-      const err = e as Error | null | undefined;
-      try {
-        await this.#getHooks(segmentName, route?.controller).onError?.(err as Error, req);
-      } catch (onErrorError) {
-        console.error('An error caught in onError handler:', onErrorError);
-      }
+      unsentBody?.cancel().catch(() => {});
+      const { onError } = this.#getHooks(segmentName, route?.controller);
+      await VovkApp.callOnError(onError, e, req);
 
       if (isNextNavigationError(e)) throw e;
 
       const options = route?.staticMethod._options;
 
-      if (isHttpException(e)) {
-        return this.#respondWithError({
-          req,
-          statusCode: e.statusCode || HttpStatus.INTERNAL_SERVER_ERROR,
-          message: e.message,
-          options,
-          cause: e.cause,
-        });
+      try {
+        return this.#respondWithError({ req, options, ...VovkApp.toErrorResponse(e) });
+      } catch (serializationError) {
+        // a cause JSON can't serialize, as a cycle or a BigInt, gives a plain 500
+        await VovkApp.callOnError(onError, serializationError, req);
+        return this.#respondWithError({ req, options, ...VovkApp.toErrorResponse(serializationError) });
       }
-
-      // anything but an HttpException is internal, in production its message and cause stay on the server
-      if (process.env.NODE_ENV === 'production') {
-        console.error('🐺 Unhandled error in a Vovk handler:', e);
-        return this.#respondWithError({
-          req,
-          statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
-          message: 'Internal server error',
-          options,
-        });
-      }
-      return this.#respondWithError({
-        req,
-        statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
-        message: err?.message as string,
-        options,
-        cause: err?.cause,
-      });
     }
   };
 }

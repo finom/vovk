@@ -12,25 +12,40 @@ imports: ['vovk-python']
     toPythonIdentifier: t.imports['vovk-python'].toPythonIdentifier,
     toPythonDocstringLines: t.imports['vovk-python'].toPythonDocstringLines,
     toPythonCommentText: t.imports['vovk-python'].toPythonCommentText
-}; %>
+};
+// the root a segment's URLs start with and the segment's path after it; a mixin's root is its API's server
+const segmentBases = Object.fromEntries(Object.entries(t.schema.segments).map(([segmentName, segment]) => {
+    const meta = t.segmentMeta[segment.segmentName] ?? {};
+    const path = segment.forceApiRoot ? '' : typeof meta.segmentNameOverride === 'string' ? meta.segmentNameOverride : segmentName;
+    return [segmentName, [meta.forceApiRoot ?? t.apiRoot ?? '', path]];
+}));
+const joinURL = (root, ...parts) => [root.replace(/\/+$/, ''), ...parts.map((part) => t._.trim(part ?? '', '/'))].filter(Boolean).join('/'); %>
 from __future__ import annotations
+import sys
 from typing import Any, Dict, List, Literal, Optional, Set, TypedDict, Union, Tuple, Generator, BinaryIO # type: ignore
 from .api_client import ApiClient, HttpException
 
+if sys.version_info >= (3, 11):
+    from typing import NotRequired
+else:
+    from typing_extensions import NotRequired
+
 HttpException = HttpException
 
-client = ApiClient(<%- vars.toPythonString(t.apiRoot ?? '') %>)
+client = ApiClient(<%- vars.toPythonString(t.apiRoot ?? '') %>, {
+<%- Object.entries(segmentBases).map(([segmentName, [root, path]]) => `    ${vars.toPythonString(segmentName)}: (${vars.toPythonString(root)}, ${vars.toPythonString(path)}),`).join('\n') %>
+})
 <% Object.entries(t.schema.segments).forEach(([segmentName, segment]) => {
-    Object.values(segment.controllers).forEach((controllerSchema) => { 
+    Object.values(segment.controllers).forEach((controllerSchema) => {
 const { rpcModuleName } = controllerSchema;
-const pyModuleName = vars.toPythonIdentifier(rpcModuleName); %> 
+const pyModuleName = vars.toPythonIdentifier(rpcModuleName); %>
 class <%- pyModuleName %>: <% Object.entries(controllerSchema.handlers).forEach(([handlerNameOriginal, handlerSchema]) => {
     const { validation, operationObject, httpMethod } = handlerSchema;
     const handlerNameOriginalCapitalized = vars.toPythonIdentifier(handlerNameOriginal.charAt(0).toUpperCase() + handlerNameOriginal.slice(1));
     const handlerName = vars.toPythonIdentifier(t._.snakeCase(handlerNameOriginal));
     const bodyKind = vars.getBodyKind(validation?.body);
     const firstContentType = validation?.body?.['x-contentType']?.[0] || 'application/octet-stream'; %>
-    # <%- vars.toPythonCommentText(`${rpcModuleName}.${handlerName} ${httpMethod} \`${[t.apiRoot, segmentName, controllerSchema.prefix, handlerSchema.path].filter(Boolean).join('/')}\``) %>
+    # <%- vars.toPythonCommentText(`${rpcModuleName}.${handlerName} ${httpMethod} \`${joinURL(...segmentBases[segmentName], controllerSchema.prefix, handlerSchema.path)}\``) %>
 <%- ([
         bodyKind === 'text' ? '' : bodyKind === 'binary' ? '' : vars.convertJSONSchemaToPythonDataType({ schema: validation?.body, namespace: pyModuleName, className: `${handlerNameOriginalCapitalized}Body`, pad: 4 }),
         vars.convertJSONSchemaToPythonFilesType({ schema: validation?.body, namespace: pyModuleName, className: `${handlerNameOriginalCapitalized}Files`, pad: 4 }),
@@ -43,8 +58,7 @@ class <%- pyModuleName %>: <% Object.entries(controllerSchema.handlers).forEach(
     def <%= handlerName %>(
 <%= [
             bodyKind === 'text' ? 'body: str,' : bodyKind === 'binary' ? 'body: bytes,' : '',
-            bodyKind === 'json' && validation?.body && vars.hasNormalData(validation.body) ? `body: ${handlerNameOriginalCapitalized}Body,` : '',
-            bodyKind === 'form' && validation?.body && vars.hasNormalData(validation.body) ? `body: ${handlerNameOriginalCapitalized}Body,` : '',
+            bodyKind === 'json' || (bodyKind === 'form' && vars.hasNormalData(validation.body)) ? `body: ${handlerNameOriginalCapitalized}Body,` : '',
             validation?.body && vars.hasFiles(validation.body) ? `files: ${handlerNameOriginalCapitalized}Files,` : '',
             validation?.query ? `query: ${handlerNameOriginalCapitalized}Query,` : '',
             validation?.params ? `params: ${handlerNameOriginalCapitalized}Params,` : ''
@@ -68,7 +82,7 @@ class <%- pyModuleName %>: <% Object.entries(controllerSchema.handlers).forEach(
             handler_name=<%- vars.toPythonString(handlerNameOriginal) %>,
 <%- [
                 bodyKind === 'text' || bodyKind === 'binary' ? 'body=body,' : '',
-                (bodyKind === 'json' || bodyKind === 'form') && validation?.body && vars.hasNormalData(validation.body) ? 'body=body,' : '',
+                bodyKind === 'json' || (bodyKind === 'form' && vars.hasNormalData(validation.body)) ? 'body=body,' : '',
                 validation?.body && vars.hasFiles(validation.body) ? 'files=files,' : '',
                 bodyKind === 'text' || bodyKind === 'binary' ? `body_content_type=${vars.toPythonString(firstContentType)},` : '',
                 validation?.query ? 'query=query,' : '',

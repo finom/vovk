@@ -1,14 +1,25 @@
+---
+imports: ['vovk/internal']
+---
 <%- t.getFirstLineBanner() %>
-import type { VovkRequest, VovkStreamAsyncIterable, KnownAny } from 'vovk';
+import type { VovkRequest, VovkStreamAsyncIterable } from 'vovk';
 
-<% const mixins = Object.values(t.schema.segments).filter((segment) => segment.emitSchema && segment.segmentType === 'mixin'); %>
+<% const { applyComponentsSchemas, toTypeName, toTypeNames } = t.imports['vovk/internal'];
+const mixins = Object.values(t.schema.segments).filter((segment) => segment.emitSchema && segment.segmentType === 'mixin');
+// the type names vovk gives the x-tsType of a component ref, and one namespace per handler
+const handlerNamespaces = new Map(
+  mixins.flatMap((segment) =>
+    Object.values(segment.controllers).map((controllerSchema) => [controllerSchema, toTypeNames(Object.keys(controllerSchema.handlers))])
+  )
+); %>
 
 export namespace Mixins {
   <% for (const segment of mixins) { %>
-    <% if(segment.meta?.openAPIObject?.components?.schemas) { %>
-      export namespace <%= t._.upperFirst(t._.camelCase(segment.segmentName)) %> {
-        <% for (const [componentName, componentSchema] of Object.entries(segment.meta.openAPIObject.components.schemas)) { %>
-          <%- t.compileJSONSchemaToTypeScriptType(componentSchema, componentName, segment.meta.openAPIObject.components, { dontCreateRefTypes: true }) %>
+    <% const schemas = segment.meta?.openAPIObject?.components?.schemas; %>
+    <% if (schemas) { const typeNames = toTypeNames(Object.keys(schemas)); %>
+      export namespace <%= toTypeName(segment.segmentName) %> {
+        <% for (const [componentName, componentSchema] of Object.entries(schemas)) { %>
+          <%- t.compileJSONSchemaToTypeScriptType(applyComponentsSchemas(componentSchema, schemas, segment.segmentName, false), typeNames.get(componentName), segment.meta.openAPIObject.components, { dontCreateRefTypes: true }) %>
         <% } %>
       }
     <% } %>
@@ -17,11 +28,11 @@ export namespace Mixins {
 
 export namespace Types {
   <% for (const segment of mixins) { %>
-    export namespace <%= t._.upperFirst(t._.camelCase(segment.segmentName)) %> {
-      <% for (const [controllerName, controllerSchema] of Object.entries(segment.controllers)) { %>
+    export namespace <%= toTypeName(segment.segmentName) %> {
+      <% for (const controllerSchema of Object.values(segment.controllers)) { %>
         export namespace <%= controllerSchema.rpcModuleName %> {
           <% for (const [handlerName, handlerSchema] of Object.entries(controllerSchema.handlers)) { %>
-            export namespace <%= t._.upperFirst(handlerName) %> {
+            export namespace <%= handlerNamespaces.get(controllerSchema).get(handlerName) %> {
               <%- t.compileJSONSchemaToTypeScriptType(handlerSchema.validation?.body, 'Body') %>
               <%- t.compileJSONSchemaToTypeScriptType(handlerSchema.validation?.query, 'Query') %>
               <%- t.compileJSONSchemaToTypeScriptType(handlerSchema.validation?.params, 'Params') %>
@@ -36,27 +47,26 @@ export namespace Types {
 }
 
 <% const getType = (segment, controllerSchema, handlerName, validationType) => {
-  const segmentNs = t._.upperFirst(t._.camelCase(segment.segmentName));
-  const controllerNs = controllerSchema.rpcModuleName;
-  const handlerNs = t._.upperFirst(handlerName);
-  const typeName = t._.upperFirst(validationType);
-  const handlerSchema = controllerSchema.handlers[handlerName];
-  if(handlerSchema.validation?.[validationType] ) {
-    return 'Types.' + segmentNs + '.' + controllerNs + '.' + handlerNs + '.' + typeName;
-  }
-  return 'null';
+  if (!controllerSchema.handlers[handlerName].validation?.[validationType]) return 'null';
+  return [
+    'Types',
+    toTypeName(segment.segmentName),
+    controllerSchema.rpcModuleName,
+    handlerNamespaces.get(controllerSchema).get(handlerName),
+    t._.upperFirst(validationType),
+  ].join('.');
 } %>
 
 export type Controllers = {
-    <% for (const segment of Object.values(t.schema.segments).filter((segment) => segment.emitSchema && segment.segmentType === 'mixin')) { %>
+    <% for (const segment of mixins) { %>
       <% for (const controllerSchema of Object.values(segment.controllers)) { %>
-      <%= controllerSchema.rpcModuleName %>: {
+      <%- JSON.stringify(controllerSchema.rpcModuleName) %>: {
         <% for (const [handlerName, handlerSchema] of Object.entries(controllerSchema.handlers)) { %>
-          <%= handlerName %>: (req: VovkRequest<
-            <%- getType(segment, controllerSchema, handlerName, 'body') %>, 
-            <%- getType(segment, controllerSchema, handlerName, 'query') %>, 
+          <%- JSON.stringify(handlerName) %>: (req: VovkRequest<
+            <%- getType(segment, controllerSchema, handlerName, 'body') %>,
+            <%- getType(segment, controllerSchema, handlerName, 'query') %>,
             <%- getType(segment, controllerSchema, handlerName, 'params')  %>
-          >) => <%- handlerSchema.validation?.output ? `Promise<${getType(segment, controllerSchema, handlerName, 'output')}>` : handlerSchema.validation?.iteration ? `Promise<VovkStreamAsyncIterable<${getType(segment, controllerSchema, handlerName, 'iteration')}>>` : 'Promise<KnownAny>' %>,
+          >) => <%- handlerSchema.validation?.output ? `Promise<${getType(segment, controllerSchema, handlerName, 'output')}>` : handlerSchema.validation?.iteration ? `Promise<VovkStreamAsyncIterable<${getType(segment, controllerSchema, handlerName, 'iteration')}>>` : 'Promise<any>' %>,
         <% } %>
       };
      <% } %>

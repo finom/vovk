@@ -8,6 +8,9 @@ import { vovkApp } from './vovk-app.js';
 
 const isClass = (func: unknown) => typeof func === 'function' && /class/.test(func.toString());
 
+// the handler name by method and path of each route a controller declares itself, not the ones it inherits
+const declaredRoutes = new WeakMap<VovkController, Map<string, string>>();
+
 const assignSchema = ({
   controller,
   propertyKey,
@@ -36,17 +39,17 @@ const assignSchema = ({
     );
   }
 
+  // the same handler again is fine: initSegment applies the decorate() decorators of a controller in every segment
+  const routes = declaredRoutes.get(controller) ?? new Map<string, string>();
+  declaredRoutes.set(controller, routes);
+  const declaredBy = routes.get(`${httpMethod} ${path}`);
+  if (declaredBy !== undefined && declaredBy !== propertyKey) {
+    throw new Error(`Duplicate route ${httpMethod} '${path}' in ${controller.name}: ${declaredBy} and ${propertyKey}`);
+  }
+  routes.set(`${httpMethod} ${path}`, propertyKey);
+
   const methods: Record<string, RouteHandler> = vovkApp.routes[httpMethod].get(controller) ?? {};
   vovkApp.routes[httpMethod].set(controller, methods);
-
-  if (options?.cors) {
-    const optionsMethods = vovkApp.routes.OPTIONS.get(controller) ?? {};
-    const preflight = (() => {}) as unknown as RouteHandler;
-    preflight._options = options;
-    preflight._isCorsPreflight = true;
-    optionsMethods[path] = preflight;
-    vovkApp.routes.OPTIONS.set(controller, optionsMethods);
-  }
 
   const originalMethod = controller[propertyKey] as ((...args: unknown[]) => unknown) & {
     _controller: VovkController;
@@ -111,13 +114,17 @@ function createHTTPDecorator<T extends HttpMethod>(httpMethod: T) {
   const auto = (options?: DecoratorOptions) => {
     function decorator(givenTarget: unknown, propertyKeyOrContext?: unknown): KnownAny {
       return applyDecoratorAdapter(givenTarget, propertyKeyOrContext, (controller, propertyKey) => {
+        type Source = { schema?: VovkHandlerSchema; definition?: Record<string, KnownAny> };
         // a procedure's schema reaches _handlers only once the HTTP decorator is applied, read it from the source method
-        const method = controller[propertyKey] as
-          | { schema?: VovkHandlerSchema; _sourceMethod?: { schema?: VovkHandlerSchema } }
-          | undefined;
-        const validation =
-          controller._handlers?.[propertyKey]?.validation ?? (method?._sourceMethod ?? method)?.schema?.validation;
-        const properties = Object.keys(validation?.params?.properties ?? {});
+        const method = controller[propertyKey] as (Source & { _sourceMethod?: Source }) | undefined;
+        const source = method?._sourceMethod ?? method;
+        const validation = controller._handlers?.[propertyKey]?.validation ?? source?.schema?.validation;
+        const definition = source?.definition;
+        // skipSchemaEmission leaves the params out of the schema, the path still needs them
+        const paramsSchema =
+          validation?.params ??
+          (definition?.params && definition.toJSONSchema?.(definition.params, { validationType: 'params' }));
+        const properties = Object.keys(paramsSchema?.properties ?? {});
         const kebabCasePath = toKebabCase(propertyKey);
         const path = properties.length
           ? `${kebabCasePath}/${properties.map((prop) => `{${prop}}`).join('/')}`

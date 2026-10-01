@@ -65,6 +65,23 @@ export type BodyTypeFromContentType<T extends ContentType[], TBody> = T[number] 
             : ArrayBuffer | Uint8Array | Blob
   : never;
 
+/** What req.vovk.body() parses a body of these content types into when there is no body schema. */
+export type ParsedBodyTypeFromContentType<T extends ContentType[]> = T[number] extends infer A
+  ? A extends '*/*' | 'application/json' | `${string}+json`
+    ? unknown
+    : A extends 'multipart/form-data' | 'application/x-www-form-urlencoded'
+      ? Record<string, FormDataEntryValue | FormDataEntryValue[]>
+      : A extends
+            | `text/${string}`
+            | TextLikeApplicationType
+            | `${string}+xml`
+            | `${string}+text`
+            | `${string}+yaml`
+            | `${string}+json-seq`
+        ? string
+        : File
+  : never;
+
 export type VovkTypedProcedure<
   T extends (...args: KnownAny[]) => unknown,
   B = unknown,

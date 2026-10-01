@@ -50,6 +50,21 @@ function wrapStreamErrors(
   });
 }
 
+// "Application/JSON; charset=utf-8" is "application/json"
+const getMediaType = (contentType: string | null | undefined) => contentType?.split(';')[0].trim().toLowerCase() ?? '';
+
+const isJSONMediaType = (mediaType: string) => mediaType === 'application/json' || mediaType.endsWith('+json');
+
+const JSON_LINES_MEDIA_TYPES = ['application/jsonl', 'application/jsonlines'];
+
+// AbortSignal.any is missing in React Native and Safari before 17.4, where the given signal aborts the controller
+function anySignal(controller: AbortController, signal: AbortSignal): AbortSignal {
+  if (typeof AbortSignal.any === 'function') return AbortSignal.any([controller.signal, signal]);
+  if (signal.aborted) controller.abort(signal.reason);
+  else signal.addEventListener('abort', () => controller.abort(signal.reason), { once: true });
+  return controller.signal;
+}
+
 export type { VovkFetcher };
 
 export type CreateFetcherOnSuccess<T> = (
@@ -69,19 +84,38 @@ export type CreateFetcherOnError<T> = (
   }
 ) => void | Promise<void>;
 
+const FORM_MEDIA_TYPES = ['multipart/form-data', 'application/x-www-form-urlencoded'];
+
+// a string goes out raw as the text type the procedure declares, e.g. application/jsonl; with JSON declared, or
+// nothing, it's a JSON value; a wildcard or form type says nothing about it, so it's text/plain
+const getStringBodyContentType = (declared: string[]) =>
+  declared.find((type) => !type.includes('*') && !FORM_MEDIA_TYPES.includes(type) && !isJSONMediaType(type)) ??
+  (!declared.length || declared.some(isJSONMediaType) ? 'application/json' : 'text/plain');
+
+const matchesMediaType = (type: string, pattern: string) =>
+  pattern === '*/*' || (pattern.endsWith('/*') ? type.startsWith(pattern.slice(0, -1)) : type === pattern);
+
+// bytes keep their own type when the procedure takes it; untyped bytes go out as the first type it declares,
+// image/* included, and a typed Blob as application/octet-stream when declared, any other mismatch is refused
+const getBinaryBodyContentType = (ownType: string, declared: string[]) => {
+  const type = ownType || 'application/octet-stream';
+  if (!declared.length || declared.some((pattern) => matchesMediaType(getMediaType(type), pattern))) return type;
+  if (ownType) return declared.includes('application/octet-stream') ? 'application/octet-stream' : type;
+  return (
+    declared.find((declaredType) => !declaredType.includes('*') && declaredType !== 'multipart/form-data') ??
+    declared.find((declaredType) => declaredType !== '*/*' && declaredType.endsWith('/*')) ??
+    type
+  );
+};
+
 /**
  * Creates a customizable fetcher function for client requests.
  * @see https://vovk.dev/imports
  */
-// a string body goes out as the type the procedure declares, e.g. application/jsonl, so the server accepts it;
-// a form, JSON or wildcard type says nothing about a string, so it falls back to text/plain
-const getStringBodyContentType = (schema: VovkHandlerSchema) => {
-  const declared = schema.validation?.body?.['x-contentType'] as string[] | undefined;
-  const isTextLike = (type: string) =>
-    !type.includes('*') &&
-    !['multipart/form-data', 'application/x-www-form-urlencoded', 'application/json'].includes(type) &&
-    !type.endsWith('+json');
-  return declared?.find(isTextLike) ?? 'text/plain';
+// spelled out, so the declaration a client bundle ships imports nothing from the server side of the package
+type CreatedFetcher<T> = VovkFetcher<VovkFetcherOptions<T>> & {
+  onSuccess(cb: CreateFetcherOnSuccess<T>): () => void;
+  onError(cb: CreateFetcherOnError<T>): () => void;
 };
 
 export function createFetcher<T>({
@@ -98,7 +132,7 @@ export function createFetcher<T>({
   ) => unknown | Promise<unknown>;
   onSuccess?: CreateFetcherOnSuccess<T>;
   onError?: CreateFetcherOnError<T>;
-} = {}) {
+} = {}): CreatedFetcher<T> {
   const onSuccessCallbacks: CreateFetcherOnSuccess<T>[] = onSuccessInit ? [onSuccessInit] : [];
   const onErrorCallbacks: CreateFetcherOnError<T>[] = onErrorInit ? [onErrorInit] : [];
   // fetcher uses HttpException class to throw errors of fake HTTP status 0 if client-side error occurs
@@ -146,7 +180,9 @@ export function createFetcher<T>({
         });
       }
 
+      const declaredContentTypes = ((schema.validation?.body?.['x-contentType'] ?? []) as string[]).map(getMediaType);
       const hasBody = body !== undefined && body !== null;
+      const isBinary = body instanceof Blob || body instanceof ArrayBuffer || ArrayBuffer.isView(body);
       const resolvedContentType = !hasBody
         ? undefined // no body, no content type: a cross-origin GET then needs no preflight
         : body instanceof FormData
@@ -154,12 +190,10 @@ export function createFetcher<T>({
           : body instanceof URLSearchParams
             ? 'application/x-www-form-urlencoded'
             : typeof body === 'string'
-              ? getStringBodyContentType(schema)
-              : body instanceof Blob
-                ? body.type || 'application/octet-stream'
-                : body instanceof ArrayBuffer || body instanceof Uint8Array
-                  ? 'application/octet-stream'
-                  : 'application/json';
+              ? getStringBodyContentType(declaredContentTypes)
+              : isBinary
+                ? getBinaryBodyContentType(body instanceof Blob ? body.type : '', declaredContentTypes)
+                : 'application/json';
       const resolvedFileName = body instanceof File ? body.name : undefined;
 
       // Default headers (lowercase keys)
@@ -179,14 +213,10 @@ export function createFetcher<T>({
         headers: { ...defaultHeaders, ...userHeaders },
       };
 
-      if (body instanceof FormData || body instanceof URLSearchParams) {
-        requestInit.body = body as BodyInit;
-      } else if (body instanceof Blob) {
-        requestInit.body = body as BodyInit;
-      } else if (body instanceof ArrayBuffer || body instanceof Uint8Array) {
+      if (body instanceof FormData || body instanceof URLSearchParams || isBinary) {
         requestInit.body = body as BodyInit;
       } else if (typeof body === 'string') {
-        requestInit.body = body;
+        requestInit.body = resolvedContentType === 'application/json' ? JSON.stringify(body) : body;
       } else if (hasBody) {
         requestInit.body = JSON.stringify(body);
       }
@@ -194,34 +224,30 @@ export function createFetcher<T>({
       const abortController = new AbortController();
 
       // keep the internal controller for stream disposal but let a user-provided init.signal abort too
-      requestInit.signal = init?.signal
-        ? AbortSignal.any([abortController.signal, init.signal])
-        : abortController.signal;
+      requestInit.signal = init?.signal ? anySignal(abortController, init.signal) : abortController.signal;
 
       requestInit = prepareRequestInit ? await prepareRequestInit(requestInit, inputOptions) : requestInit;
 
       try {
         response = await fetch(endpoint, requestInit);
       } catch (e) {
-        // handle network errors
-        throw new HttpException(HttpStatus.NULL, `${(e as Error)?.message ?? DEFAULT_ERROR_MESSAGE} ${endpoint}`, {
-          body,
-          query,
-          params,
-          endpoint,
-        });
+        // an abort, an AbortError or the caller's own reason, is not a network failure
+        if (requestInit.signal?.aborted) throw e;
+        throw new HttpException(HttpStatus.NULL, `${(e as Error)?.message ?? DEFAULT_ERROR_MESSAGE} ${endpoint}`, e);
       }
 
-      const contentType = interpretAs ?? response.headers.get('content-type');
+      const mediaType = getMediaType(interpretAs ?? response.headers.get('content-type'));
+      const isJSONLines = JSON_LINES_MEDIA_TYPES.includes(mediaType);
 
-      if (contentType?.startsWith('application/jsonl')) {
+      // a HEAD answer or a 204 has no body to stream, whatever the content type says
+      if (isJSONLines && response.body) {
         // route mid-stream errors to onError callbacks, which otherwise never see them
         respData = wrapStreamErrors(defaultStreamHandler({ response, abortController }), async (error) => {
-          for (const cb of onErrorCallbacks) {
+          for (const cb of [...onErrorCallbacks]) {
             await cb(error as HttpException, inputOptions, { response, init: requestInit, respData, schema });
           }
         });
-      } else if (contentType?.startsWith('application/json')) {
+      } else if (isJSONLines || isJSONMediaType(mediaType)) {
         respData = await defaultHandler({ response, schema });
       } else if (response.status >= 400) {
         // a proxy's error page or a plain text error; a lower non-ok status comes from redirect: 'manual' or no-cors
@@ -235,13 +261,14 @@ export function createFetcher<T>({
         ? await transformResponse(respData, inputOptions, { response, init: requestInit, schema })
         : respData;
 
-      for (const cb of onSuccessCallbacks) {
+      // a copy, so a callback that unsubscribes itself doesn't make the next one skip
+      for (const cb of [...onSuccessCallbacks]) {
         await cb(respData, inputOptions, { response, init: requestInit, schema });
       }
 
       return [respData, response];
     } catch (error) {
-      for (const cb of onErrorCallbacks) {
+      for (const cb of [...onErrorCallbacks]) {
         await cb(error as HttpException, inputOptions, { response, init: requestInit, respData, schema });
       }
 
@@ -271,4 +298,4 @@ export function createFetcher<T>({
  * Default fetcher implementation for client requests.
  * @see https://vovk.dev/imports
  */
-export const fetcher = createFetcher();
+export const fetcher: CreatedFetcher<unknown> = createFetcher();

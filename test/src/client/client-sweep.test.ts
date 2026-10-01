@@ -94,6 +94,50 @@ describe('Client sweep', () => {
       });
     });
 
+    it('Sends a body to a procedure that declares a content type but no body schema', async () => {
+      deepStrictEqual(ClientSweepRPC.postXml.schema.validation, { body: { 'x-contentType': ['application/xml'] } });
+      deepStrictEqual(await ClientSweepRPC.postXml({ body: '<a/>' }), { xml: '<a/>', contentType: 'application/xml' });
+      deepStrictEqual(await ClientSweepRPC.postImage({ body: new File(['png'], 'a.png', { type: 'image/png' }) }), {
+        name: 'a.png',
+        type: 'image/png',
+        size: 3,
+      });
+    });
+
+    it('Sends a string body as JSON when the procedure declares no text type', async () => {
+      deepStrictEqual(await ClientSweepRPC.postJsonString({ body: 'hello' }), {
+        body: 'hello',
+        contentType: 'application/json',
+      });
+    });
+
+    it('Sends a binary body as the type the procedure declares', async () => {
+      const bytes = new Uint8Array([37, 80, 68, 70]);
+      const pdf = { type: 'application/pdf', size: 4 };
+
+      deepStrictEqual(await ClientSweepRPC.postPdf({ body: bytes }), pdf);
+      deepStrictEqual(await ClientSweepRPC.postPdf({ body: bytes.buffer }), pdf);
+      deepStrictEqual(await ClientSweepRPC.postPdf({ body: new Blob([bytes]) }), pdf);
+      deepStrictEqual(
+        await ClientSweepRPC.postOctet({ body: new File([bytes], 'a.pdf', { type: 'application/pdf' }) }),
+        {
+          type: 'application/octet-stream',
+          size: 4,
+        }
+      );
+      deepStrictEqual(await ClientSweepRPC.postImage({ body: bytes }), { name: 'file', type: 'image/*', size: 4 });
+      deepStrictEqual(await ClientSweepRPC.postImage({ body: new File([bytes], 'a.png', { type: 'image/png' }) }), {
+        name: 'a.png',
+        type: 'image/png',
+        size: 4,
+      });
+      // a file of another type is not relabelled, the server refuses it
+      await rejects(
+        ClientSweepRPC.postPdf({ body: new File([bytes], 'a.txt', { type: 'text/plain' }) }),
+        isHttpException(415, 'Unsupported media type: text/plain')
+      );
+    });
+
     it('Sends a string body as the text type the procedure declares', async () => {
       deepStrictEqual(await ClientSweepRPC.postLines({ body: '{"a":1}\n{"a":2}\n' }), {
         contentType: 'application/jsonl',
@@ -107,6 +151,63 @@ describe('Client sweep', () => {
       });
 
       deepStrictEqual(result, { since: '1970-01-01T00:00:00.000Z', nested: { at: '1970-01-01T00:00:01.000Z' } });
+    });
+
+    it('Numbers query array items consecutively, leaving out the empty ones', async () => {
+      const query = {
+        tags: ['a', null, 'b'],
+        ids: [undefined, '2'],
+        items: [{}, { id: '1' }],
+        matrix: [[], ['x']],
+        dates: [new Date('invalid'), new Date(0)],
+        rows: [{ a: null }, { a: '1' }],
+      };
+
+      deepStrictEqual(await ClientSweepRPC.getQuery({ query }), {
+        tags: ['a', 'b'],
+        ids: ['2'],
+        items: [{ id: '1' }],
+        matrix: [['x']],
+        dates: ['1970-01-01T00:00:00.000Z'],
+        rows: [{ a: '1' }],
+      });
+      ok(
+        ClientSweepRPC.getQuery.getURL({ query: { tags: ['a', null, 'b'] } }).endsWith('?tags%5B0%5D=a&tags%5B1%5D=b')
+      );
+    });
+
+    it('Sends a query value with toJSON as its JSON form', async () => {
+      class Money {
+        amount = 5;
+        currency = 'EUR';
+        toJSON() {
+          return `${this.amount} ${this.currency}`;
+        }
+      }
+      const query = {
+        price: new Money(),
+        link: new URL('https://example.com/a?b=c'),
+        since: { $y: 2026, $M: 9, toJSON: () => '2026-10-01' },
+        range: { toJSON: () => ({ from: 1, to: [2, 3] }) },
+      };
+
+      deepStrictEqual(await ClientSweepRPC.getQuery({ query }), {
+        price: '5 EUR',
+        link: 'https://example.com/a?b=c',
+        since: '2026-10-01',
+        range: { from: '1', to: ['2', '3'] },
+      });
+    });
+
+    it('Sends a lone surrogate in the query or a param as U+FFFD', async () => {
+      // a string cut inside an emoji, which encodeURIComponent refuses
+      const cut = '👋'.slice(0, 1);
+
+      deepStrictEqual(await ClientSweepRPC.getQuery({ query: { q: `a${cut}`, [cut]: 'x' } }), {
+        q: 'a\uFFFD',
+        '\uFFFD': 'x',
+      });
+      deepStrictEqual(await ClientSweepRPC.getUserPosts({ params: { id: `a${cut}` } }), { id: 'a\uFFFD' });
     });
 
     it('Converts an object body to form fields', async () => {
@@ -134,6 +235,17 @@ describe('Client sweep', () => {
         ['count', '5'],
         ['flag', 'false'],
       ]);
+    });
+
+    it('Sends an object body as JSON when the procedure also takes JSON, and as a form when it holds a file', async () => {
+      deepStrictEqual(await ClientSweepRPC.postJsonOrForm({ body: { n: 1, tags: ['a'], nested: { a: true } } }), {
+        body: { n: 1, tags: ['a'], nested: { a: true } },
+        contentType: 'application/json',
+      });
+      deepStrictEqual(await ClientSweepRPC.postJsonOrForm({ body: { file: new File(['x'], 'a.txt') } }), {
+        body: { file: 'file:a.txt' },
+        contentType: 'multipart/form-data',
+      });
     });
 
     it('Sends an object body urlencoded when the procedure takes only urlencoded', async () => {

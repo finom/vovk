@@ -1,6 +1,6 @@
 # OpenAPI Specification and `@operation` Decorator
 
-Vovk.ts automatically generates an OpenAPI specification from procedures, using validation models to populate operation objects with `parameters`, `requestBody`, and `responses`. The `@operation` decorator lets you enrich operation objects with metadata such as `summary`, `description`, `tags`, and more. It accepts `OperationObject` type from [openapi3-ts/oas31](https://www.npmjs.com/package/openapi3-ts), enhanced with Vovk-specific `x-tool` poperty related to [deriveTools](/tools) function.
+Vovk.ts generates an OpenAPI specification from the procedures that have an operation object, using validation models to populate it with `parameters`, `requestBody`, and `responses`. The `@operation` decorator gives a procedure its operation object and enriches it with metadata such as `summary`, `description`, `tags`, and more; `@operation.tool` and `@operation.error` give it one too. A procedure without any of them is left out of the specification, and [deriveTools](/tools) makes no tool of it either. The decorator accepts `OperationObject` type from [openapi3-ts/oas31](https://www.npmjs.com/package/openapi3-ts), enhanced with Vovk-specific `x-tool` property related to [deriveTools](/tools) function.
 
 ```ts showLineNumbers copy filename="src/modules/user/user-controller.ts"
 import { procedure, put, prefix, operation } from 'vovk';
@@ -21,11 +21,13 @@ export default class UserController {
 
 The validation models, accepted by the [procedure](/procedure) are converted to OpenAPI operation objects according to the following mapping:
 
-- `params` → `parameters` with `in: "path"`
-- `query` → `parameters` with `in: "query"`
+- `params` → `parameters` with `in: "path"`, each one required; a `{name}` of the path that no `params` model describes is a string parameter
+- `query` → `parameters` with `in: "query"`; an object parameter gets `style: "deepObject"`, as the server reads `filter[status]=sold`
 - `body` → `requestBody` with the `application/json` (or custom `contentType`) content type
 - `output` → `responses` with status `200` and `application/json` content type
-- `iteration` → `responses` with status `200` and `application/jsonl` content type
+- `iteration` → `responses` with status `200` and `application/jsonl` content type, with an example of three lines; the server sends `text/plain` unless the `Accept` header includes `application/jsonl`
+
+A schema with an id, such as a Zod schema with `.meta({ id })`, goes to `components.schemas`. A name OpenAPI doesn't allow has its other characters replaced with `_` (`User Profile` becomes `User_Profile`), and a schema whose name another schema took, one of `openAPIObject.components` included, gets the RPC module, procedure and slot names in front: `UserRPCCreateUserBodyUser`.
 
 ## Configuring the OpenAPI Specification
 

@@ -3,9 +3,11 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import { describe, it } from 'node:test';
 import type { OpenAPIObject } from 'openapi3-ts/oas31';
+import { Project, ts } from 'ts-morph';
 import { HttpMethod, type VovkSchema } from 'vovk';
 import * as YAML from 'yaml';
 import { importFresh } from '../../lib/import-fresh.mts';
+import { createProject, runCLI, userSegmentSchema } from '../../lib/minimal-project.mts';
 import { runScript } from '../../lib/run-script.mts';
 
 const PORT = 3021;
@@ -496,5 +498,239 @@ await describe('OpenAPI flags', async () => {
     ok(typeof RPC1.postTest1 === 'function', 'RPC1.postTest1 should be a function');
     ok(typeof RPC2.postTest2 === 'function', 'RPC2.postTest2 should be a function');
     await fs.rm(generatedClientDir, { recursive: true, force: true });
+  });
+});
+
+// the diagnostics of the files in dir; declaration files are checked too, so an unresolved type can't turn into any
+function typecheck(rootFile: string, dir: string) {
+  const project = new Project({
+    compilerOptions: {
+      strict: true,
+      noEmit: true,
+      skipLibCheck: false,
+      target: ts.ScriptTarget.ES2022,
+      lib: ['lib.esnext.d.ts', 'lib.dom.d.ts', 'lib.dom.iterable.d.ts'],
+      module: ts.ModuleKind.NodeNext,
+      moduleResolution: ts.ModuleResolutionKind.NodeNext,
+      allowImportingTsExtensions: true,
+      resolveJsonModule: true,
+      types: ['node'],
+    },
+  });
+  project.addSourceFileAtPath(rootFile);
+  project.resolveSourceFileDependencies();
+  return project
+    .getPreEmitDiagnostics()
+    .map(({ compilerObject: { file, messageText } }) => ({ file: file?.fileName ?? '', messageText }))
+    .filter(({ file }) => file.startsWith(dir))
+    .map(
+      ({ file, messageText }) => `${path.relative(dir, file)}: ${ts.flattenDiagnosticMessageText(messageText, '\n')}`
+    );
+}
+
+await describe('Generated mixin client', async () => {
+  await it('typechecks with skipLibCheck false', async () => {
+    const spec: OpenAPIObject = {
+      openapi: '3.1.0',
+      info: { title: 'Events', version: '1.0.0' },
+      servers: [{ url: 'https://example.com/api' }],
+      paths: {
+        '/events': {
+          get: {
+            operationId: 'streamEvents',
+            responses: {
+              '200': {
+                description: 'ok',
+                content: { 'application/jsonl': { schema: { $ref: '#/components/schemas/Event' } } },
+              },
+            },
+          },
+        },
+        '/thing': {
+          get: {
+            operationId: 'getThing',
+            responses: {
+              '200': { description: 'ok', content: { 'application/json': { schema: { type: 'object' } } } },
+            },
+          },
+        },
+      },
+      components: {
+        schemas: { Event: { type: 'object', properties: { n: { type: 'number' } }, required: ['n'] } },
+      },
+    };
+    await fs.mkdir(artifactsDir, { recursive: true });
+    await fs.writeFile(path.join(artifactsDir, 'typed-spec.json'), JSON.stringify(spec));
+    const generatedClientDir = path.join(artifactsDir, `generated-client${Date.now()}`);
+
+    await runAtProjectDir(`../dist/index.mjs generate --openapi typed-spec.json --out ${generatedClientDir} --from ts`);
+
+    const consumer = path.join(generatedClientDir, 'consumer.ts');
+    await fs.writeFile(
+      consumer,
+      `import { api, type Mixins } from './index.ts';
+type IsAny<T> = 0 extends 1 & T ? true : false;
+export async function check() {
+  await api.getThing();
+  for await (const event of await api.streamEvents()) {
+    const typed: IsAny<typeof event> = false;
+    const n: number = event.n;
+    const declared: Mixins.Mixin.Event = event;
+    return [typed, n, declared];
+  }
+}
+`
+    );
+
+    deepStrictEqual(typecheck(consumer, generatedClientDir), []);
+    await fs.rm(generatedClientDir, { recursive: true, force: true });
+  });
+
+  await it('declares every Mixins type its methods refer to, whatever the names', async () => {
+    const names = ['Grüße', '用户', '1st', 'ABC1', 'user-profile', 'UserProfile', 'Pet', 'pet'];
+    const spec: OpenAPIObject = {
+      openapi: '3.1.0',
+      info: { title: 'Names', version: '1.0.0' },
+      servers: [{ url: 'https://example.com/api' }],
+      paths: {
+        '/2fa': {
+          post: {
+            operationId: '2fa_verify',
+            requestBody: { content: { 'application/json': { schema: { $ref: '#/components/schemas/pet' } } } },
+            responses: {
+              '200': {
+                description: 'ok',
+                content: {
+                  'application/json': {
+                    schema: {
+                      type: 'object',
+                      properties: Object.fromEntries(
+                        names.map((name, i) => [`p${i}`, { $ref: `#/components/schemas/${name}` }])
+                      ),
+                      required: names.map((_, i) => `p${i}`),
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+      components: {
+        schemas: Object.fromEntries(
+          names.map((name, i) => [name, { type: 'object', properties: { [`n${i}`]: { type: 'number' } } }])
+        ),
+      },
+    };
+    await fs.mkdir(artifactsDir, { recursive: true });
+    await fs.writeFile(path.join(artifactsDir, 'named-spec.json'), JSON.stringify(spec));
+    const generatedClientDir = path.join(artifactsDir, `generated-client${Date.now()}`);
+
+    await runAtProjectDir(
+      `../dist/index.mjs generate --openapi named-spec.json --openapi-mixin-name café-api --openapi-module-name NamesAPI --openapi-get-method-name camel-case-operation-id --out ${generatedClientDir} --from ts`
+    );
+
+    const consumer = path.join(generatedClientDir, 'consumer.ts');
+    await fs.writeFile(
+      consumer,
+      `import { NamesAPI } from './index.ts';
+type IsAny<T> = 0 extends 1 & T ? true : false;
+export async function check() {
+  const output = await NamesAPI._2FaVerify({ body: {} });
+  const typed: false[] = [${names.map((_, i) => `false as IsAny<typeof output.p${i}>`).join(', ')}];
+  return typed;
+}
+`
+    );
+
+    deepStrictEqual(typecheck(consumer, generatedClientDir), []);
+    await fs.rm(generatedClientDir, { recursive: true, force: true });
+  });
+});
+
+await describe('Mixin and module names', async () => {
+  const projectDir = path.join(path.resolve(import.meta.dirname, '../../..'), 'tmp_openapi_names');
+  const segment = (segmentName: string, rpcModuleName: string) => ({
+    ...userSegmentSchema,
+    segmentName,
+    controllers: { [rpcModuleName]: { ...userSegmentSchema.controllers.UserRPC, rpcModuleName } },
+  });
+  const project = (files: Record<string, string | object> = {}) =>
+    createProject(projectDir, {
+      'package.json': { name: 'app', version: '1.0.0', type: 'module' },
+      'vovk.config.mjs': 'export default { composedClient: { prettifyClient: false } };',
+      'spec.json': getSpec(),
+      '.vovk-schema/root.json': segment('', 'UserRPC'),
+      ...files,
+    });
+  const generate = (args: string[]) => runCLI(['generate', ...args], { cwd: projectDir });
+  const failure = async (args: string[]) => {
+    const error = await generate(args).then(
+      () => null,
+      (e: { stderr: string; stdout: string }) => e
+    );
+    ok(error, `generate ${args.join(' ')} succeeded`);
+    return `${error.stdout}${error.stderr}`;
+  };
+
+  await it('refuses a mixin named root, in any case', async () => {
+    await project();
+    for (const name of ['root', 'Root']) {
+      const output = await failure(['--openapi', 'spec.json', '--openapi-mixin-name', name]);
+      ok(output.includes(`Mixin "${name}"`), output);
+    }
+  });
+
+  await it('refuses a mixin named like a segment', async () => {
+    await project({ '.vovk-schema/foo.json': segment('foo', 'FooRPC') });
+    const output = await failure(['--openapi', 'spec.json', '--openapi-mixin-name', 'Foo']);
+    ok(output.includes('segment "foo"'), output);
+  });
+
+  await it('refuses two mixins with one name', async () => {
+    await project({
+      'vovk.config.mjs': `export default { outputConfig: { segments: { petstore: { openAPIMixin: { source: { file: './spec.json' }, getModuleName: 'PetstoreAPI' } } } } };`,
+    });
+    const output = await failure(['--openapi', 'spec.json', '--openapi-mixin-name', 'petstore']);
+    ok(output.includes('mixin "petstore"'), output);
+  });
+
+  await it('refuses two mixins whose types share a namespace', async () => {
+    await project();
+    const output = await failure([
+      ...['--openapi', 'spec.json', '--openapi', 'spec.json'],
+      ...['--openapi-mixin-name', 'my-api', '--openapi-mixin-name', 'myApi'],
+    ]);
+    ok(output.includes('Mixins.MyApi'), output);
+  });
+
+  await it('refuses a mixin module name that is not an identifier', async () => {
+    await project();
+    const output = await failure(['--openapi', 'spec.json', '--openapi-module-name', 'my-api']);
+    ok(output.includes('"my-api"'), output);
+  });
+
+  await it('refuses two segments that give the composed client one module name', async () => {
+    await project({ '.vovk-schema/tenant.json': segment('tenant', 'UserRPC') });
+    const output = await failure([]);
+    ok(output.includes('UserRPC'), output);
+    // a segmented client keeps each segment in its own folder
+    await generate(['--segmented-only']);
+  });
+
+  await it('names the module of a CLI mixin after it', async () => {
+    await project();
+    await generate([
+      ...['--openapi', 'spec.json', '--openapi', 'spec.json', '--openapi', 'spec.json', '--openapi', 'spec.json'],
+      ...['--openapi-mixin-name', 'petstore', '--openapi-mixin-name', 'my-store'],
+    ]);
+    const { schema } = await import(path.join(projectDir, 'client/schema.ts'));
+    deepStrictEqual(
+      ['petstore', 'my-store', 'mixin3', 'mixin4'].map((mixinName) =>
+        Object.keys(schema.segments[mixinName].controllers)
+      ),
+      [['petstore'], ['myStore'], ['api3'], ['api4']]
+    );
+    await fs.rm(projectDir, { recursive: true, force: true });
   });
 });

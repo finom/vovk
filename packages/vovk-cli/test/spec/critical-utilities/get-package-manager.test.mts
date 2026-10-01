@@ -1,6 +1,15 @@
 import assert from 'node:assert';
-import { describe, it } from 'node:test';
+import fs from 'node:fs/promises';
+import path from 'node:path';
+import { after, describe, it } from 'node:test';
 import { getInstallCommand, getPackageManager } from '../../../dist/init/install-dependencies.mjs';
+import { createProject } from '../../lib/minimal-project.mts';
+
+const tmpDir = path.join(process.cwd(), 'tmp_get_package_manager');
+
+after(async () => {
+  await fs.rm(tmpDir, { recursive: true, force: true });
+});
 
 // only the fields getPackageManager reads
 const asPkgJson = (packageManager?: string) =>
@@ -29,6 +38,35 @@ await describe('getPackageManager', async () => {
   await it('Explicit flags win over package.json', async () => {
     assert.strictEqual(getPackageManager({ useBun: true, pkgJson: asPkgJson('./evil@1.0.0') }), 'bun');
     assert.strictEqual(getPackageManager({ useNpm: true, pkgJson: asPkgJson('pnpm@8.6.0') }), 'npm');
+  });
+
+  await it('Reads the lockfile of the project', async () => {
+    await createProject(tmpDir, { 'pnpm-app/pnpm-lock.yaml': '', 'yarn-app/yarn.lock': '', 'bun-app/bun.lock': '' });
+
+    for (const packageManager of ['pnpm', 'yarn', 'bun']) {
+      const root = path.join(tmpDir, `${packageManager}-app`);
+      // the lockfile wins over the package manager that runs vovk init, as with npx in a pnpm project
+      assert.strictEqual(getPackageManager({ pkgJson: asPkgJson(), root, userAgent: 'npm/11.3.0' }), packageManager);
+    }
+    // package.json names it explicitly
+    assert.strictEqual(
+      getPackageManager({ pkgJson: asPkgJson('yarn@4.0.0'), root: path.join(tmpDir, 'pnpm-app') }),
+      'yarn'
+    );
+  });
+
+  await it('Takes the package manager that runs it when the project has no lockfile', async () => {
+    await createProject(tmpDir, { 'new-app/package.json': { name: 'app' } });
+    const root = path.join(tmpDir, 'new-app');
+
+    assert.strictEqual(
+      getPackageManager({ pkgJson: asPkgJson(), root, userAgent: 'pnpm/10.4.1 npm/? node/v24.1.0 darwin arm64' }),
+      'pnpm'
+    );
+    assert.strictEqual(
+      getPackageManager({ pkgJson: asPkgJson(), root, userAgent: 'evil/1.0.0 npm/? node/v24.1.0 darwin arm64' }),
+      'npm'
+    );
   });
 });
 

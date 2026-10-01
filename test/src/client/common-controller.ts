@@ -90,17 +90,15 @@ export default class CommonController {
   ) {
     const body = await req.json();
     const simpleQueryParam = req.nextUrl.searchParams.get('simpleQueryParam');
+    simpleQueryParam satisfies 'queryValue';
 
-    // check if forEach inferred properly
+    // the URL's own keys and values: a nested field goes as key[0]=…
     req.nextUrl.searchParams.forEach((value, key) => {
-      key satisfies 'simpleQueryParam';
-      value satisfies 'queryValue';
+      key satisfies string;
+      value satisfies string;
     });
-
-    // check if keys inferred properly
-    req.nextUrl.searchParams.keys() satisfies IterableIterator<'simpleQueryParam'>;
-    // check if values inferred properly
-    req.nextUrl.searchParams.values() satisfies IterableIterator<'queryValue'>;
+    req.nextUrl.searchParams.keys() satisfies IterableIterator<string>;
+    req.nextUrl.searchParams.values() satisfies IterableIterator<string>;
 
     return { params, body, query: { simpleQueryParam } };
   }

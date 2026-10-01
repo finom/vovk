@@ -1,7 +1,6 @@
 import type { JSONSchema7, JSONSchema7Definition } from 'json-schema';
-import camelCase from 'lodash/camelCase.js';
-import upperFirst from 'lodash/upperFirst.js';
 import type { OpenAPIObject } from 'openapi3-ts/oas31';
+import { toTypeName } from 'vovk/internal';
 
 interface CompileOptions {
   name: string;
@@ -318,10 +317,10 @@ function wrapUnionType(type: string): string {
   return type.includes('|') ? `(${type})` : type;
 }
 
-// PascalCase; a name that starts with a digit gets a leading underscore, as in the x-tsType of a mixin component ref
+// PascalCase, as vovk names the x-tsType of a mixin component ref;
+// a name that already is one is kept, so a name the caller made unique stays unique
 function sanitizeTypeName(name: string): string {
-  const typeName = upperFirst(camelCase(name));
-  return /^[\p{L}_$]/u.test(typeName) ? typeName : `_${typeName}`;
+  return /^[\p{Lu}\p{Lt}\p{Lo}\p{Lm}\p{Nl}_]\p{ID_Continue}*$/u.test(name) ? name : toTypeName(name);
 }
 
 // Utility function to escape JSDoc comment terminators in descriptions

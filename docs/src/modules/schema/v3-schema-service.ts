@@ -10,7 +10,7 @@ export default class V3SchemaService {
     ];
     return {
       $schema: 'https://json-schema.org/draft-07/schema',
-      $id: `https://vovk.dev/api/spec/v${VERSION}/segment.json`,
+      $id: `https://vovk.dev/api/schema/v${VERSION}/segment.json`,
       title: 'Vovk.ts segment definition',
       description: '',
       type: 'object',
@@ -131,7 +131,7 @@ export default class V3SchemaService {
   static getConfigDefinition(): JSONSchema7 {
     return {
       $schema: 'https://json-schema.org/draft-07/schema',
-      $id: `https://vovk.dev/api/spec/v${VERSION}/config.json`,
+      $id: `https://vovk.dev/api/schema/v${VERSION}/config.json`,
       title: 'Schema for Vovk config',
       description: '',
       type: 'object',
@@ -149,7 +149,7 @@ export default class V3SchemaService {
   static getMetaDefinition(): JSONSchema7 {
     return {
       $schema: 'https://json-schema.org/draft-07/schema',
-      $id: `https://vovk.dev/api/spec/v${VERSION}/meta.json`,
+      $id: `https://vovk.dev/api/schema/v${VERSION}/meta.json`,
       title: 'Schema for Vovk _meta.json file',
       description: 'Meta information',
       type: 'object',
@@ -170,14 +170,16 @@ export default class V3SchemaService {
   static getFullDefinition(): JSONSchema7 {
     return {
       $schema: 'https://json-schema.org/draft-07/schema',
-      $id: `https://vovk.dev/api/spec/v${VERSION}/schema.json`,
+      $id: `https://vovk.dev/api/schema/v${VERSION}/schema.json`,
       title: 'Vovk full schema definition',
-      description: 'Combined schema containing config and segments',
+      description: 'Combined schema containing segments and meta',
       type: 'object',
-      required: ['config', 'segments'],
+      required: ['segments'],
       properties: {
-        config: {
-          $ref: `https://vovk.dev/api/schema/v${VERSION}/config.json`,
+        $schema: {
+          type: 'string',
+          description: 'Schema URL',
+          enum: [`https://vovk.dev/api/schema/v${VERSION}/schema.json`],
         },
         segments: {
           type: 'object',
@@ -185,6 +187,9 @@ export default class V3SchemaService {
           additionalProperties: {
             $ref: `https://vovk.dev/api/schema/v${VERSION}/segment.json`,
           },
+        },
+        meta: {
+          $ref: `https://vovk.dev/api/schema/v${VERSION}/meta.json`,
         },
       },
     };

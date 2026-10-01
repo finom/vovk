@@ -48,7 +48,7 @@ dist_rust/
   src/http_request.rs       # HTTP handling
   src/lib.rs                # RPC functions + types
   src/read_full_schema.rs   # Schema utilities
-  src/schema.json           # Vovk schema (read at runtime via CARGO_MANIFEST_DIR/src/schema.json)
+  src/schema.json           # Vovk schema (compiled into the crate with include_str!)
   Cargo.toml                # edition = "2021"
   README.md
 ```
@@ -106,7 +106,7 @@ pub async fn update_user(
 ) -> Result<update_user_::output, HttpException>
 ```
 
-**Per-endpoint type variation** (verified in `packages/vovk-rust/client-templates/rsSrc/lib.rs.ejs:60-67`): each of `query`, `params` typed `<handler_name>_::query` / `_::params` **only when procedure declares validation for that key**; else slot is Rust unit type `()` → pass `()` at call site. `body` has three cases: `multipart/form-data` content-type → `reqwest::multipart::Form`; declared body validation (JSON / text / binary) → `<handler>_::body`; no body → `()`. So endpoint with no body/query/params signature:
+**Per-endpoint type variation** (verified in `packages/vovk-rust/client-templates/rsSrc/lib.rs.ejs:60-67`): each of `query`, `params` typed `<handler_name>_::query` / `_::params` **only when procedure declares validation for that key**; else slot is Rust unit type `()` → pass `()` at call site. `body` has three cases: `multipart/form-data` content-type → `reqwest::multipart::Form`; declared body validation (JSON / urlencoded form / text / binary) → `<handler>_::body`, which is `String` for a text type and `Vec<u8>` for a binary one; no body → `()`. A urlencoded form goes out with `.form()`, a text or binary body with the content type the procedure declares. So endpoint with no body/query/params signature:
 
 ```rust
 pub async fn ping(
@@ -161,7 +161,7 @@ Method names Rust-side snake_case; `user_rpc` module reflects `UserRPC` controll
 
 ## JSON Lines streaming
 
-Streaming endpoints return pinned boxed `Stream`:
+Streaming endpoints (those with an `iteration` schema) return pinned boxed `Stream`:
 
 ```rust
 pub async fn stream_tokens(
@@ -191,6 +191,8 @@ pub async fn consume_stream() -> Result<(), Box<dyn std::error::Error>> {
 }
 ```
 
+Without an `iteration` schema the call is not a stream: it reads the whole response and returns the items as a JSON array.
+
 See `jsonlines` skill for server side.
 
 ## Dependencies pulled in
@@ -199,15 +201,18 @@ Generated `Cargo.toml` brings (per hello-world):
 
 ```toml
 [dependencies]
-serde_json    = "1.0"
+serde_json    = "1.0.143"
 futures-util  = "0.3"
-jsonschema    = "0.17"
 urlencoding   = "2.1"
 once_cell     = "1.17"
 
 [dependencies.serde]
-version  = "1.0"
+version  = "1.0.164"
 features = ["derive"]
+
+[dependencies.jsonschema]
+version          = "0.57"
+default-features = false
 
 [dependencies.reqwest]
 version  = "0.12"
@@ -227,7 +232,7 @@ features = ["codec"]
 - **`tokio-util` (`codec`)** — line-delimited framing for JSON Lines decoding.
 - **`serde` (`derive`) + `serde_json`** — (de)serialization.
 - **`futures-util`** — streaming combinators (`StreamExt::next` etc).
-- **`jsonschema 0.17`** — client-side validation against `schema.json`.
+- **`jsonschema 0.57`** — client-side validation against `schema.json`: JSON Schema 2020-12 (draft 7 when a schema declares it), formats checked. Needs Rust 1.85+.
 - **`urlencoding`** + **`once_cell`** — internal utilities.
 
 ## Auth + base URL

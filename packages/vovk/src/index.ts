@@ -19,7 +19,7 @@ export { deriveTools } from './tools/derive-tools.js';
 
 // tools
 export { ToModelOutput } from './tools/to-model-output.js';
-export type { VovkFetcher } from './types/client.js';
+export type { VovkFetcher, VovkStreamAsyncIterable } from './types/client.js';
 export type { VovkConfig } from './types/config.js';
 export type { VovkSchema } from './types/core.js';
 // types

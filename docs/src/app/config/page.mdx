@@ -22,7 +22,7 @@ The configuration extends the `VovkConfig` type from the `vovk` package and expo
 <a name="exposeConfigKeys" />
 ### `exposeConfigKeys: boolean | string[]`
 
-Controls whether to emit config options to [.vovk-schema/\_meta.json](/schema). If `true`, emits all options. If set to an array of strings, emits only the listed options. Default: <nobr>`["libs", "rootEntry"]`</nobr>.
+Controls whether to emit config options to [.vovk-schema/\_meta.json](/schema). If `true`, emits all options. If set to an array of strings, emits only the listed options. `rootEntry` is emitted in any case: the generated clients build their URLs from it. Default: <nobr>`["libs", "rootEntry"]`</nobr>.
 
 <a name="clienttemplatedefs" />
 ### `clientTemplateDefs: object`
@@ -157,7 +157,7 @@ The `outputConfig` object customizes the generated client code by changing [impo
 
 #### `origin: string | null`
 
-Base origin used to generate client URLs. Defaults to `''` (relative URLs). To use absolute URLs, set it to your domain, e.g., `https://example.com`.
+Base origin used to generate client URLs. Defaults to `''` (relative URLs). To use absolute URLs, set it to your domain, e.g., `https://example.com`. An `outputConfig` that overrides this one, such as `composedClient.outputConfig`, can set `origin` to `null` or `''` to go back to relative URLs.
 
 #### `package: PackageJson & { py_name?: string; rs_name?: string }`
 

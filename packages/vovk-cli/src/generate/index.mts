@@ -7,8 +7,12 @@ import { chalkHighlightThing } from '../utils/chalk-highlight-thing.mjs';
 import { locateSegments } from '../utils/locate-segments.mjs';
 import { generate } from './generate.mjs';
 import { getProjectFullSchema } from './get-project-full-schema.mjs';
+import { omitRoutelessSegments } from './omit-routeless-segments.mjs';
 
 const THROTTLE_DELAY = 5000;
+
+// a writer that is not atomic truncates a file before writing it, so a change is read once the size stays the same
+const AWAIT_WRITE_FINISH = { stabilityThreshold: 300, pollInterval: 50 };
 
 export class VovkGenerate {
   #cliGenerateOptions: GenerateOptions;
@@ -46,7 +50,7 @@ export class VovkGenerate {
     const locatedSegments = await locateSegments({ dir: apiDirAbsolutePath, config, log });
     await generate({
       projectInfo: this.#projectInfo,
-      fullSchema,
+      fullSchema: omitRoutelessSegments(fullSchema, locatedSegments, this.#projectInfo),
       forceNothingWrittenLog: this.#forceNothingWrittenLog,
       cliGenerateOptions: this.#cliGenerateOptions,
       locatedSegments,
@@ -95,29 +99,35 @@ export class VovkGenerate {
       }
     };
 
+    const scheduleGeneration = () => {
+      const now = Date.now();
+
+      // generate immediately outside the throttle window, otherwise defer to the end of it
+      if (now - lastGenerationTime > throttleDelay) {
+        void generateCode();
+      } else if (!pendingTimer) {
+        pendingTimer = setTimeout(
+          () => {
+            pendingTimer = null;
+            void generateCode();
+          },
+          throttleDelay - (now - lastGenerationTime)
+        );
+      }
+    };
+
     chokidar
       .watch(schemaPath, {
         persistent: true,
         ignoreInitial: true,
+        awaitWriteFinish: AWAIT_WRITE_FINISH,
       })
+      // "ready" never reaches the "all" listener, and ignoreInitial skips the files already there
+      .on('ready', scheduleGeneration)
       .on('all', (event, path) => {
-        if (event === 'change' || event === 'add' || event === 'ready' || event === 'unlink') {
+        if (event === 'change' || event === 'add' || event === 'unlink') {
           log.debug(`Schema file ${event}: ${path}`);
-
-          const now = Date.now();
-
-          // generate immediately outside the throttle window, otherwise defer to the end of it
-          if (now - lastGenerationTime > throttleDelay) {
-            void generateCode();
-          } else if (!pendingTimer) {
-            pendingTimer = setTimeout(
-              () => {
-                pendingTimer = null;
-                void generateCode();
-              },
-              throttleDelay - (now - lastGenerationTime)
-            );
-          }
+          scheduleGeneration();
         }
       });
   }
@@ -162,6 +172,7 @@ export class VovkGenerate {
         cwd,
         persistent: true,
         ignoreInitial: false,
+        awaitWriteFinish: AWAIT_WRITE_FINISH,
       })
       .on('all', (event, path) => {
         if (event === 'change' || event === 'add' || event === 'ready' || event === 'unlink') {

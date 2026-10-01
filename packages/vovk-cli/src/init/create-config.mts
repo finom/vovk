@@ -1,4 +1,3 @@
-import fs from 'node:fs/promises';
 import path from 'node:path';
 import type { VovkConfig } from 'vovk';
 import type { VovkBundleConfig, VovkStrictConfig } from 'vovk/internal';
@@ -32,13 +31,14 @@ export const BUNDLE_BUILD_TSDOWN = async ({ entry, outDir }: Parameters<VovkStri
   });
 };
 
+// returns the config file to write, the caller writes it
 export async function createConfig({
   root,
-  options: { validationLibrary, bundle, lang, dryRun },
+  options: { validationLibrary, bundle, lang },
 }: {
   root: string;
   log: ReturnType<typeof getLogger>;
-  options: Pick<InitOptions, 'validationLibrary' | 'bundle' | 'lang' | 'channel' | 'dryRun'>;
+  options: Pick<InitOptions, 'validationLibrary' | 'bundle' | 'lang' | 'channel'>;
 }) {
   const config: VovkConfig = {};
   const dotConfigPath = path.join(root, '.config');
@@ -107,7 +107,5 @@ export default config;`;
 
   configStr = await prettify(configStr, configAbsolutePath);
 
-  if (!dryRun) await fs.writeFile(configAbsolutePath, configStr, 'utf-8');
-
-  return { configAbsolutePath };
+  return { configAbsolutePath, configStr };
 }

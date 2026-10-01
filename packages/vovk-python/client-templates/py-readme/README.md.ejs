@@ -12,6 +12,10 @@
 ```
 
 <% Object.entries(t.schema.segments).forEach(([segmentName, segment]) => {
+    // as the client builds it: a mixin's URLs start at its API's server, without a segment name
+    const meta = t.segmentMeta[segment.segmentName] ?? {};
+    const segmentPath = segment.forceApiRoot ? '' : typeof meta.segmentNameOverride === 'string' ? meta.segmentNameOverride : segmentName;
+    const segmentRoot = (meta.forceApiRoot ?? t.apiRoot ?? '').replace(/\/+$/, '');
     Object.values(segment.controllers).forEach((controllerSchema) => { %>
 
 ## <%= controllerSchema.rpcModuleName %>
@@ -21,8 +25,7 @@
 
 <%- handlerSchema.operationObject?.description ? `${handlerSchema.operationObject.description}` : '' %>
 
-<% const forceApiRoot = t.segmentMeta[segment.segmentName].forceApiRoot ?? controllerSchema.forceApiRoot; %>
-`<%= handlerSchema.httpMethod %> <%= [...(forceApiRoot ? [forceApiRoot] : [t.apiRoot, segmentName]), controllerSchema.prefix, handlerSchema.path].map((part, i) => i > 0 ? t._.trim(part, '/') : part).filter(Boolean).join('/') %>`
+`<%= handlerSchema.httpMethod %> <%= [segmentRoot, ...[segmentPath, controllerSchema.prefix, handlerSchema.path].map((part) => t._.trim(part ?? '', '/'))].filter(Boolean).join('/') %>`
 
 ```py
 <%- t.createCodeSamples({

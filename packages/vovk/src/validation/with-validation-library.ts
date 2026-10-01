@@ -18,12 +18,19 @@ type VovkRequestAny = VovkRequest<KnownAny, KnownAny, KnownAny>;
 
 type Meta = { __disableClientValidation?: boolean; [key: string]: KnownAny };
 
-// fetch() without a body sends no Content-Type, and no length or a length of 0
+// fetch() without a body sends no Content-Type, and no length or a length of 0; a chunked body has no length
 const hasBody = (req: VovkRequestAny) => {
   if (req.body === null) return false;
   const contentLength = req.headers?.get('content-length');
-  return !!req.headers?.get('content-type') || (!!contentLength && contentLength !== '0');
+  return (
+    !!req.headers?.get('content-type') ||
+    !!req.headers?.get('transfer-encoding') ||
+    (!!contentLength && contentLength !== '0')
+  );
 };
+
+// fn() calls made without a body, the local counterpart of a request without one
+const callsWithoutBody = new WeakSet<object>();
 
 export function withValidationLibrary<
   THandle extends VovkTypedProcedure<
@@ -117,11 +124,16 @@ export function withValidationLibrary<
     }
 
     if (iteration && !disableServerSideValidationKeys.includes('iteration')) {
-      // We assume `data` is an async iterable here; you might want to check that:
-      if (!data || (typeof data[Symbol.asyncIterator] !== 'function' && !(data instanceof JSONLinesResponder))) {
+      // a sync or an async iterable streams, as it does without an iteration schema; an array is sent as JSON
+      const isIterable =
+        typeof data === 'object' &&
+        data !== null &&
+        !Array.isArray(data) &&
+        (typeof data[Symbol.asyncIterator] === 'function' || typeof data[Symbol.iterator] === 'function');
+      if (!isIterable && !(data instanceof JSONLinesResponder)) {
         throw new HttpException(
           HttpStatus.INTERNAL_SERVER_ERROR,
-          'Data is not an async iterable, neither JSONLinesResponder but iteration validation is defined.'
+          'Data is neither an iterable nor a JSONLinesResponder, but iteration validation is defined.'
         );
       }
 
@@ -175,10 +187,16 @@ export function withValidationLibrary<
       }
 
       if (body && !disableServerSideValidationKeys.includes('body')) {
-        // a wrong content type gets its 415 before the body is read
-        validateContentType(req, contentType ?? ['application/json']);
-        if (typeof req.url === 'string') await bufferBody(req); // buffer the body to make it replayable for validation and actual parsing
-        const data = await req.vovk.body();
+        const isRequest = typeof req.url === 'string';
+        // a missing body has no content type to check and is validated as undefined, which an optional schema accepts
+        const hasNoBody = isRequest ? !hasBody(req) : callsWithoutBody.has(req);
+        let data: unknown;
+        if (!hasNoBody) {
+          // a wrong content type gets its 415 before the body is read
+          validateContentType(req, contentType ?? ['application/json']);
+          if (isRequest) await bufferBody(req); // buffer the body to make it replayable for validation and actual parsing
+          data = await req.vovk.body();
+        }
         const parsed = (await validate(data, body, { validationType: 'body', req })) ?? data;
         const instance = preferTransformed ? parsed : data;
         req.vovk.body = () => Promise.resolve(instance);
@@ -264,6 +282,7 @@ export function withValidationLibrary<
     };
 
     fakeReq.vovk.meta<Meta>({ __disableClientValidation: input?.disableClientValidation, ...input?.meta });
+    if (input?.body === undefined) callsWithoutBody.add(fakeReq);
 
     const result = (resultHandler.wrapper ?? resultHandler)(
       fakeReq as VovkRequestAny,
@@ -312,6 +331,9 @@ export function withValidationLibrary<
         enumerable: true,
         get: () => (bodyJSONSchema ??= getJSONSchema(body, 'body')),
       });
+    } else if (contentType && !skipSchemaEmissionKeys.includes('body')) {
+      // the declared types alone, so every client sends a body the server accepts
+      validation.body = { 'x-contentType': contentType };
     }
     if (query && !skipSchemaEmissionKeys.includes('query')) {
       let queryJSONSchema: unknown;

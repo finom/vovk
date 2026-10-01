@@ -25,10 +25,20 @@ type Target = NonNullable<VovkAjvConfig['target']>;
 
 const DEFAULT_OPTIONS: Options = {};
 
-const createAjv = (options: Options, target: Target) => {
+const createAjv = (options: Options, target: Target, isForm: boolean) => {
   const AjvClass = target === 'draft-2020-12' ? Ajv2020 : Ajv;
-  // a schema is not registered by its $id, so two handlers that share one can't collide in a shared instance
-  const ajv = new AjvClass({ allErrors: true, addUsedSchema: false, ...options });
+  const ajv = new AjvClass({
+    allErrors: true,
+    // a schema is not registered by its $id, so two handlers that share one can't collide in a shared instance
+    addUsedSchema: false,
+    // strict mode refuses keywords JSON Schema doesn't define, such as Zod's example or OpenAPI's discriminator and x-*
+    strict: false,
+    // with the u flag a pattern refuses escapes that JavaScript and Zod's regexes allow, such as \- or \_
+    unicodeRegExp: false,
+    // a form holds strings, so "5" is checked as the number the server reads it as
+    ...(isForm && { coerceTypes: true }),
+    ...options,
+  });
   ajvFormats(ajv);
   ajvErrors(ajv);
   ajv.addKeyword('x-contentType');
@@ -38,10 +48,14 @@ const createAjv = (options: Options, target: Target) => {
 
 type AjvInstance = ReturnType<typeof createAjv>;
 
-type CachedAjv = { ajv: AjvInstance; validators: WeakMap<object, ValidateFunction> };
+// null for a schema Ajv can't compile, which is left to the server
+type Validator = ValidateFunction | null;
 
-// one Ajv per options object and draft, each compiling a schema object once
-const cache = new WeakMap<Options, Partial<Record<Target, CachedAjv>>>();
+// Ajv keeps every function it compiles, so a schema compiles once per text, also when each call brings a new object
+type CachedAjv = { ajv: AjvInstance; validators: WeakMap<object, Validator>; byText: Map<string, Validator> };
+
+// one Ajv per options object, draft, and form or not
+const cache = new WeakMap<Options, Partial<Record<`${Target}${'' | ' form'}`, CachedAjv>>>();
 
 // formats ajv-formats doesn't know, such as Zod's cuid, nanoid or e164, pass instead of failing compilation;
 // Zod emits a pattern for most of them, which is still checked
@@ -56,16 +70,71 @@ const allowUnknownFormats = (ajv: AjvInstance, schema: unknown) => {
   }
 };
 
-const getValidator = (schema: VovkJSONSchemaBase, options: Options, target: Target) => {
-  const byTarget = cache.get(options) ?? {};
-  cache.set(options, byTarget);
-  const cached = byTarget[target] ?? { ajv: createAjv(options, target), validators: new WeakMap() };
-  byTarget[target] = cached;
+// keywords whose value is a schema or a list of them, and those whose value maps names to schemas
+// biome-ignore format: a word list
+const SUBSCHEMA_KEYWORDS = new Set([
+  'items', 'prefixItems', 'additionalItems', 'contains', 'additionalProperties', 'unevaluatedItems',
+  'unevaluatedProperties', 'propertyNames', 'not', 'if', 'then', 'else', 'allOf', 'anyOf', 'oneOf',
+]);
+const SUBSCHEMA_MAP_KEYWORDS = new Set(['properties', 'patternProperties', 'dependentSchemas', '$defs', 'definitions']);
+
+// OpenAPI 3.0 writes an exclusive bound as a boolean next to minimum or maximum, JSON Schema as the bound itself
+const toNumericBounds = (schema: unknown): unknown => {
+  if (typeof schema !== 'object' || schema === null || Array.isArray(schema)) return schema;
+  const result: Record<string, unknown> = { ...schema };
+  for (const [key, value] of Object.entries(result)) {
+    if (SUBSCHEMA_KEYWORDS.has(key)) {
+      result[key] = Array.isArray(value) ? value.map(toNumericBounds) : toNumericBounds(value);
+    } else if (SUBSCHEMA_MAP_KEYWORDS.has(key) && typeof value === 'object' && value !== null) {
+      result[key] = Object.fromEntries(Object.entries(value).map(([name, sub]) => [name, toNumericBounds(sub)]));
+    }
+  }
+  for (const [exclusive, bound] of [
+    ['exclusiveMinimum', 'minimum'],
+    ['exclusiveMaximum', 'maximum'],
+  ]) {
+    if (typeof result[exclusive] !== 'boolean') continue;
+    if (result[exclusive] && typeof result[bound] === 'number') {
+      result[exclusive] = result[bound];
+      delete result[bound];
+    } else {
+      delete result[exclusive];
+    }
+  }
+  return result;
+};
+
+const getValidator = (
+  schema: VovkJSONSchemaBase,
+  options: Options,
+  target: Target,
+  isForm: boolean,
+  description: string
+) => {
+  const instances = cache.get(options) ?? {};
+  cache.set(options, instances);
+  const key = isForm ? (`${target} form` as const) : target;
+  const cached = instances[key] ?? {
+    ajv: createAjv(options, target, isForm),
+    validators: new WeakMap(),
+    byText: new Map(),
+  };
+  instances[key] = cached;
 
   let validator = cached.validators.get(schema);
-  if (!validator) {
-    allowUnknownFormats(cached.ajv, schema);
-    validator = cached.ajv.compile(schema);
+  if (validator === undefined) {
+    const text = JSON.stringify(schema);
+    validator = cached.byText.get(text);
+    if (validator === undefined) {
+      allowUnknownFormats(cached.ajv, schema);
+      try {
+        validator = cached.ajv.compile(toNumericBounds(schema) as VovkJSONSchemaBase);
+      } catch (error) {
+        console.warn(`🐺 Client-side validation of ${description} is skipped, Ajv can't compile its schema:`, error);
+        validator = null;
+      }
+      cached.byText.set(text, validator);
+    }
     cached.validators.set(schema, validator);
   }
   return { ajv: cached.ajv, validator };
@@ -118,9 +187,17 @@ const validate = ({
   // binary data is not validated
   if (!input || !schema || input instanceof Blob) return;
   const schemaTarget = schema.$schema?.includes('://json-schema.org/draft-07/schema') ? 'draft-07' : 'draft-2020-12';
-  const { ajv, validator } = getValidator(schema, options, target ?? schemaTarget);
-  const data =
-    input instanceof FormData || input instanceof URLSearchParams ? formToObject(input) : withBinaryPlaceholders(input);
+  const isForm = input instanceof FormData || input instanceof URLSearchParams;
+  const { ajv, validator } = getValidator(
+    schema,
+    options,
+    target ?? schemaTarget,
+    isForm,
+    `the ${type} of ${endpoint}`
+  );
+  // the server validates the input anyway
+  if (!validator) return;
+  const data = isForm ? formToObject(input) : withBinaryPlaceholders(input);
 
   if (!validator(data)) {
     throw new HttpException(

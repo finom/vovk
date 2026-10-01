@@ -5,18 +5,32 @@ import matter from 'gray-matter';
 import _ from 'lodash';
 import type { PackageJson } from 'type-fest';
 import type { VovkSchema } from 'vovk';
-import { openAPIToVovkSchema, type VovkOpenAPIMixin, type VovkStrictConfig, vovkSchemaToOpenAPI } from 'vovk/internal';
+import {
+  openAPIToVovkSchema,
+  toIdentifier,
+  type VovkOpenAPIMixin,
+  type VovkStrictConfig,
+  vovkSchemaToOpenAPI,
+} from 'vovk/internal';
 import { ROOT_SEGMENT_FILE_NAME } from '../dev/write-one-segment-schema-file.mjs';
 import { BuiltInTemplateName } from '../get-project-info/get-config/get-template-defs.mjs';
 import type { ProjectInfo } from '../get-project-info/index.mjs';
 import type { GenerateOptions } from '../types.mjs';
 import { chalkHighlightThing } from '../utils/chalk-highlight-thing.mjs';
+import { hasGeneratedBanner } from '../utils/generated-banner.mjs';
 import type { Segment } from '../utils/locate-segments.mjs';
 import { normalizeOpenAPIMixin } from '../utils/normalize-openapi-mixin.mjs';
 import { pickSegmentFullSchema } from '../utils/pick-segment-full-schema.mjs';
 import { removeUnlistedDirectories } from '../utils/remove-unlisted-directories.mjs';
 import { getClientTemplateFiles } from './get-client-template-files.mjs';
-import { normalizeOutTemplatePath, writeOneClientFile } from './write-one-client-file.mjs';
+import { validateComposedModuleNames, validateMixinModuleNames, validateMixinNames } from './validate-client-names.mjs';
+import {
+  type ClientFile,
+  normalizeOutTemplatePath,
+  renderOneClientFile,
+  withSegmentPackageName,
+  writeClientFiles,
+} from './write-one-client-file.mjs';
 
 const getIncludedSegmentNames = (
   config: VovkStrictConfig,
@@ -123,6 +137,14 @@ function logClientGenerationResults({
   }
 }
 
+// a module is named after its mixin; mixins named by default, mixin and mixin2, give api and api2
+const toDefaultModuleName = (mixinName: string | undefined, i: number) =>
+  mixinName === undefined
+    ? `api${i > 0 ? i + 1 : ''}`
+    : /^[\p{ID_Start}$_][\p{ID_Continue}$]*$/u.test(mixinName)
+      ? mixinName
+      : toIdentifier(mixinName);
+
 const cliOptionsToOpenAPIMixins = ({
   openapiGetMethodName,
   openapiGetModuleName,
@@ -130,33 +152,23 @@ const cliOptionsToOpenAPIMixins = ({
   openapiSpec,
   openapiFallback,
   openapiMixinName,
-}: GenerateOptions): Record<string, NonNullable<VovkOpenAPIMixin>> => {
-  return Object.fromEntries(
-    (
-      openapiSpec?.map((spec, i) => {
-        return {
-          source:
-            spec.startsWith('http://') || spec.startsWith('https://')
-              ? { url: spec, fallback: openapiFallback?.[i] }
-              : { file: spec },
-          apiRoot: openapiRootUrl?.[i] ?? '',
-          getModuleName: openapiGetModuleName?.[i] ?? 'api',
-          getMethodName: (openapiGetMethodName?.[i] as 'auto') ?? 'auto',
-          mixinName: openapiMixinName?.[i] ?? `mixin${i > 0 ? i + 1 : ''}`,
-        };
-      }) || []
-    ).map(({ source, apiRoot, getModuleName, getMethodName, mixinName }) => [
+}: GenerateOptions): [string, NonNullable<VovkOpenAPIMixin>][] =>
+  (openapiSpec ?? []).map((spec, i) => {
+    const mixinName = openapiMixinName?.[i] ?? `mixin${i > 0 ? i + 1 : ''}`;
+    return [
       mixinName,
       {
-        source,
-        apiRoot,
-        getModuleName,
-        getMethodName,
+        source:
+          spec.startsWith('http://') || spec.startsWith('https://')
+            ? { url: spec, fallback: openapiFallback?.[i] }
+            : { file: spec },
+        apiRoot: openapiRootUrl?.[i] ?? '',
+        getModuleName: openapiGetModuleName?.[i] ?? toDefaultModuleName(openapiMixinName?.[i], i),
+        getMethodName: (openapiGetMethodName?.[i] as 'auto') ?? 'auto',
         mixinName,
       },
-    ])
-  );
-};
+    ];
+  });
 
 export async function generate({
   isEnsuringClient = false,
@@ -187,23 +199,28 @@ export async function generate({
   };
   const { config, cwd, log, srcRoot, vovkCliPackage, packageJson: projectPackageJson } = projectInfo;
 
-  Object.entries(config.outputConfig.segments ?? {})
-    .filter(([, segmentConfig]) => segmentConfig.openAPIMixin)
-    .forEach(([segmentName, segmentConfig]) => {
-      fullSchema.segments = {
-        ...fullSchema.segments,
-        // biome-ignore lint/style/noNonNullAssertion: TODO
-        [segmentName]: openAPIToVovkSchema({ ...segmentConfig.openAPIMixin!, segmentName }).segments[segmentName],
-      };
-    });
-
+  const configMixins = Object.entries(config.outputConfig.segments ?? {}).filter(
+    ([, segmentConfig]) => segmentConfig.openAPIMixin
+  );
   const cliMixins = cliOptionsToOpenAPIMixins(cliGenerateOptions ?? {});
+  validateMixinNames(
+    Object.keys(fullSchema.segments),
+    [...configMixins, ...cliMixins].map(([mixinName]) => mixinName)
+  );
+
+  configMixins.forEach(([segmentName, segmentConfig]) => {
+    fullSchema.segments = {
+      ...fullSchema.segments,
+      // biome-ignore lint/style/noNonNullAssertion: TODO
+      [segmentName]: openAPIToVovkSchema({ ...segmentConfig.openAPIMixin!, segmentName }).segments[segmentName],
+    };
+  });
 
   fullSchema.segments = {
     ...fullSchema.segments,
     ...Object.fromEntries(
       await Promise.all(
-        Object.entries(cliMixins).map(async ([mixinName, mixinModule]) => {
+        cliMixins.map(async ([mixinName, mixinModule]) => {
           return [
             mixinName,
             openAPIToVovkSchema({
@@ -215,10 +232,13 @@ export async function generate({
       )
     ),
   };
+  for (const [mixinName] of [...configMixins, ...cliMixins]) {
+    validateMixinModuleNames(mixinName, fullSchema.segments[mixinName]);
+  }
 
-  const moduleResolution = await getTsconfig(cwd)?.config?.compilerOptions?.moduleResolution?.toLowerCase();
-
-  const isNodeNextResolution = !moduleResolution || ['node16', 'nodenext'].includes(moduleResolution ?? '');
+  const { module, moduleResolution } = getTsconfig(cwd)?.config?.compilerOptions ?? {};
+  // without moduleResolution TypeScript resolves like Node.js only for a node16+ module; no tsconfig at all is a Next.js default
+  const isNodeNextResolution = /^node(16|18|20|next)$/i.test(moduleResolution ?? module ?? '');
   const isVovkProject = !!srcRoot;
   const isComposedEnabled =
     cliGenerateOptions?.composedOnly ||
@@ -232,9 +252,15 @@ export async function generate({
     !!cliGenerateOptions?.segmentedOut ||
     (config.segmentedClient?.enabled && !cliGenerateOptions?.composedOnly);
 
+  // nothing is written until every client is rendered, so a refused file leaves all of them as they were
+  const clientFiles: ClientFile[] = [];
+  // pruning and logging follow the writes
+  const afterWrite: (() => Promise<void>)[] = [];
+
   if (isComposedEnabled) {
     const now = Date.now();
     const segmentNames = getIncludedSegmentNames(config, fullSchema, 'composedClient', cliGenerateOptions);
+    validateComposedModuleNames(fullSchema, segmentNames);
     const { templateFiles: composedClientTemplateFiles, fromTemplates } = await getClientTemplateFiles({
       config,
       cwd,
@@ -281,7 +307,7 @@ export async function generate({
           return null;
         }
 
-        const { written } = await writeOneClientFile({
+        const clientFile = await renderOneClientFile({
           cwd,
           projectInfo,
           clientTemplateFile,
@@ -310,12 +336,12 @@ export async function generate({
           projectConfig: config,
         });
 
-        const outAbsoluteDir = path.resolve(cwd, outCwdRelativeDir);
+        clientFiles.push(clientFile);
 
         return {
-          written,
+          written: clientFile.needsWriting,
           templateName,
-          outAbsoluteDir,
+          outAbsoluteDir: path.resolve(cwd, outCwdRelativeDir),
           package: packageJson,
           origin,
         };
@@ -323,15 +349,17 @@ export async function generate({
     );
 
     if (composedClientTemplateFiles.length) {
-      logClientGenerationResults({
-        results: composedClientResults.filter((result): result is GenerationResult => !!result),
-        log,
-        isEnsuringClient,
-        forceNothingWrittenLog,
-        clientType: 'Composed',
-        startTime: now,
-        fromTemplates,
-      });
+      afterWrite.push(async () =>
+        logClientGenerationResults({
+          results: composedClientResults.filter((result): result is GenerationResult => !!result),
+          log,
+          isEnsuringClient,
+          forceNothingWrittenLog,
+          clientType: 'Composed',
+          startTime: now,
+          fromTemplates,
+        })
+      );
     } else {
       log.warn('No composed client template files found. Skipping composed client generation.');
     }
@@ -347,11 +375,6 @@ export async function generate({
       cliGenerateOptions,
       configKey: 'segmentedClient',
     });
-
-    // what a generated file may look like inside a segment directory, used to spare user files when pruning
-    const generatedRelPaths = segmentedClientTemplateFiles.map(({ templateFilePath, relativeDir }) =>
-      path.join(relativeDir, path.basename(templateFilePath).replace(/\.ejs$/, ''))
-    );
 
     const segmentedClientResults = await Promise.all(
       segmentedClientTemplateFiles.map(async (clientTemplateFile) => {
@@ -378,7 +401,7 @@ export async function generate({
             }
 
             const {
-              package: packageJson,
+              package: resolvedPackageJson,
               readme,
               origin,
               samples,
@@ -394,8 +417,12 @@ export async function generate({
               isBundle,
               projectPackageJson,
             });
+            // a name set in the segment's own config is used as is
+            const packageJson = config.outputConfig.segments?.[segmentName]?.package?.name
+              ? resolvedPackageJson
+              : withSegmentPackageName(resolvedPackageJson, segmentName);
 
-            const { written } = await writeOneClientFile({
+            const clientFile = await renderOneClientFile({
               cwd,
               projectInfo,
               clientTemplateFile,
@@ -424,21 +451,59 @@ export async function generate({
               projectConfig: config,
             });
 
+            clientFiles.push(clientFile);
+
             return {
-              written,
+              written: clientFile.needsWriting,
               templateName,
               package: packageJson,
               origin,
+              isStamped: hasGeneratedBanner(clientFile.content),
             };
           })
         );
-        const outAbsoluteDir = path.resolve(cwd, outCwdRelativeDir);
+        const rendered = results.filter((result): result is NonNullable<typeof result> => !!result);
 
-        // Remove unlisted directories in the output directory
+        return {
+          written: rendered.some(({ written }) => written),
+          templateName,
+          outAbsoluteDir: path.resolve(cwd, outCwdRelativeDir),
+          package: rendered[0]?.package || {},
+          origin: rendered[0]?.origin || '',
+          // what the file looks like inside a segment folder, the pruner tells generated files from user files by it
+          relPath: path.join(clientTemplateFile.relativeDir, path.basename(templateFilePath).replace(/\.ejs$/, '')),
+          isStamped: rendered.every(({ isStamped }) => isStamped),
+        };
+      })
+    );
+
+    // another configured output directory may sit inside a segmented one, it holds no segment
+    const configuredOutDirs = [
+      config.composedClient.outDir,
+      config.segmentedClient.outDir,
+      cliGenerateOptions?.composedOut,
+      cliGenerateOptions?.segmentedOut,
+      ...Object.values(config.clientTemplateDefs).flatMap((def) => [
+        def.composedClient?.outDir,
+        def.segmentedClient?.outDir,
+      ]),
+      config.bundle.outDir,
+      config.bundle.prebundleOutDir,
+    ].flatMap((dir) => (dir ? [path.resolve(cwd, dir)] : []));
+
+    // once every segment is written, remove the folders of segments that are gone from each output directory
+    afterWrite.push(async () => {
+      for (const [outAbsoluteDir, dirResults] of Object.entries(
+        _.groupBy(segmentedClientResults, ({ outAbsoluteDir }) => outAbsoluteDir)
+      )) {
         const skippedDirs = await removeUnlistedDirectories(
           outAbsoluteDir,
           segmentNames.map((s) => s || ROOT_SEGMENT_FILE_NAME),
-          generatedRelPaths
+          dirResults.map(({ relPath }) => relPath),
+          {
+            unstampedRelPaths: dirResults.filter(({ isStamped }) => !isStamped).map(({ relPath }) => relPath),
+            excludedDirs: configuredOutDirs.filter((dir) => dir !== outAbsoluteDir),
+          }
         );
 
         for (const skippedDir of skippedDirs) {
@@ -446,28 +511,26 @@ export async function generate({
             `Directory ${chalkHighlightThing(skippedDir)} is not a known segment but holds files or folders the generator did not write, so it is left untouched.`
           );
         }
-        return {
-          written: results.filter((result): result is GenerationResult => !!result).some(({ written }) => written),
-          templateName,
-          outAbsoluteDir,
-          package: results[0]?.package || {}, // TODO: Might be wrong in Python segmented client (unknown use case)
-          origin: results[0]?.origin || '',
-        };
-      })
-    );
+      }
 
-    if (segmentedClientTemplateFiles.length) {
-      logClientGenerationResults({
-        results: segmentedClientResults,
-        log,
-        isEnsuringClient,
-        forceNothingWrittenLog,
-        clientType: 'Segmented',
-        startTime: now,
-        fromTemplates,
-      });
-    } else {
+      if (segmentedClientTemplateFiles.length) {
+        logClientGenerationResults({
+          results: segmentedClientResults,
+          log,
+          isEnsuringClient,
+          forceNothingWrittenLog,
+          clientType: 'Segmented',
+          startTime: now,
+          fromTemplates,
+        });
+      }
+    });
+
+    if (!segmentedClientTemplateFiles.length) {
       log.warn('No segmented client template files found. Skipping segmented client generation.');
     }
   }
+
+  await writeClientFiles(clientFiles, { cwd, log, force: cliGenerateOptions?.force });
+  for (const step of afterWrite) await step();
 }

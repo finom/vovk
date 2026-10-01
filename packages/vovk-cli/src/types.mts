@@ -21,6 +21,7 @@ export interface DevOptions {
 
 export interface GenerateOptions {
   prettify?: boolean;
+  force?: boolean;
   configPath?: string;
   schemaPath?: string;
   origin?: string;
@@ -85,7 +86,8 @@ export interface NewOptions {
   templates?: string[];
   outDir?: string;
   overwrite?: boolean;
-  noSegmentUpdate?: boolean;
+  // false with --no-segment-update
+  segmentUpdate?: boolean;
   empty?: boolean;
   static?: boolean;
   logLevel?: LogLevelNames;

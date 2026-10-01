@@ -24,10 +24,30 @@ function convert(spec: Partial<OpenAPIObject>, options: Obj = {}) {
     segmentName: 'api',
     ...options,
   });
-  return schema.segments.api as Obj;
+  // the one segment, named by options.segmentName
+  return Object.values(schema.segments)[0] as Obj;
 }
 
 const handlersOf = (spec: Partial<OpenAPIObject>) => convert(spec).controllers.TestAPI.handlers as Obj;
+
+describe('openAPIToVovkSchema — controller fields', () => {
+  it('Gives every module the fields a client reads from a controller', () => {
+    const segment = convert(
+      {
+        paths: {
+          '/users': { get: { operationId: 'listUsers', responses: { '200': {} } } },
+          '/posts': { get: { operationId: 'listPosts', responses: { '200': {} } } },
+        },
+      },
+      { getModuleName: ({ path }: { path: string }) => (path === '/users' ? 'UsersAPI' : 'PostsAPI') }
+    );
+    for (const [key, controller] of Object.entries(segment.controllers as Obj)) {
+      strictEqual(controller.rpcModuleName, key);
+      strictEqual(controller.originalControllerName, key);
+      strictEqual(controller.prefix, '');
+    }
+  });
+});
 
 describe('openAPIToVovkSchema — Path Item fields', () => {
   const spec: Partial<OpenAPIObject> = {
@@ -155,6 +175,148 @@ describe('openAPIToVovkSchema — request body types', () => {
       'application/json': { schema: { $ref: '#/components/schemas/Thing' } },
     });
     strictEqual(body?.$ref, '#/$defs/Thing');
+  });
+});
+
+describe('openAPIToVovkSchema — Mixins type names', () => {
+  // the x-tsType of a ref to each component, in the order of the components
+  const typesOf = (componentNames: string[], options: Obj = {}) => {
+    const segment = convert(
+      {
+        components: { schemas: Object.fromEntries(componentNames.map((name) => [name, thing])) },
+        paths: {
+          '/things': {
+            get: {
+              operationId: 'getThings',
+              responses: {
+                '200': {
+                  content: {
+                    'application/json': {
+                      schema: {
+                        type: 'object',
+                        properties: Object.fromEntries(
+                          componentNames.map((name) => [name, { $ref: `#/components/schemas/${name}` }])
+                        ),
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+      options
+    );
+    const { properties } = segment.controllers.TestAPI.handlers.getThings.validation.output;
+    return componentNames.map((name) => properties[name]['x-tsType']);
+  };
+
+  it('Keeps the letters of any script', () => {
+    deepStrictEqual(typesOf(['Grüße', '用户', 'café-au-lait']), [
+      'Mixins.Api.Grüße',
+      'Mixins.Api.用户',
+      'Mixins.Api.CaféAuLait',
+    ]);
+  });
+
+  it('Names a component as lodash names an ASCII name', () => {
+    deepStrictEqual(typesOf(['ABC1', 'HTTP2Server', '1st', 'user_ID']), [
+      'Mixins.Api.Abc1',
+      'Mixins.Api.Http2Server',
+      'Mixins.Api._1st',
+      'Mixins.Api.UserId',
+    ]);
+  });
+
+  it('Gives a name without letters or digits a type name', () => {
+    deepStrictEqual(typesOf(['!!!']), ['Mixins.Api._']);
+  });
+
+  it('Numbers a component whose type name an earlier one took', () => {
+    deepStrictEqual(typesOf(['user-profile', 'UserProfile', 'UserProfile2']), [
+      'Mixins.Api.UserProfile',
+      'Mixins.Api.UserProfile3',
+      'Mixins.Api.UserProfile2',
+    ]);
+  });
+
+  it('Names the types from the components a pruned segment keeps', () => {
+    const segment = convert(
+      {
+        components: { schemas: { 'user-profile': thing, UserProfile: thing } },
+        paths: {
+          '/me': {
+            get: {
+              operationId: 'getMe',
+              responses: {
+                '200': { content: { 'application/json': { schema: { $ref: '#/components/schemas/UserProfile' } } } },
+              },
+            },
+          },
+        },
+      },
+      { pruneComponents: true }
+    );
+    deepStrictEqual(Object.keys(segment.meta.openAPIObject.components.schemas), ['UserProfile']);
+    strictEqual(segment.controllers.TestAPI.handlers.getMe.validation.output['x-tsType'], 'Mixins.Api.UserProfile');
+  });
+
+  it('Names the namespace after the mixin', () => {
+    deepStrictEqual(typesOf(['Thing'], { segmentName: 'café-api' }), ['Mixins.CaféApi.Thing']);
+  });
+});
+
+describe('openAPIToVovkSchema — request styles', () => {
+  it('Keeps the style and explode a query parameter declares', () => {
+    const { listThings } = handlersOf({
+      paths: {
+        '/things': {
+          parameters: [{ name: 'tags', in: 'query', style: 'form', explode: false, schema: { type: 'array' } }],
+          get: {
+            operationId: 'listThings',
+            parameters: [
+              { name: 'filter', in: 'query', style: 'deepObject', schema: { type: 'object' } },
+              { name: 'limit', in: 'query', schema: { type: 'integer' } },
+            ],
+            responses: { '200': {} },
+          },
+        },
+      },
+    });
+    deepStrictEqual(listThings.misc.queryStyles, {
+      tags: { style: 'form', explode: false },
+      filter: { style: 'deepObject' },
+    });
+  });
+
+  it('Keeps the style and explode of a form body property', () => {
+    const { createThing } = handlersOf({
+      paths: {
+        '/things': {
+          post: {
+            operationId: 'createThing',
+            requestBody: {
+              content: {
+                'application/x-www-form-urlencoded; charset=utf-8': {
+                  schema: { type: 'object' },
+                  encoding: { metadata: { style: 'deepObject', explode: true }, file: { contentType: 'image/png' } },
+                },
+              },
+            },
+            responses: { '200': {} },
+          },
+        },
+      },
+    });
+    deepStrictEqual(createThing.misc.formStyles, { metadata: { style: 'deepObject', explode: true } });
+  });
+
+  it('Adds no styles to an operation that declares none', () => {
+    const { listThings } = handlersOf({
+      paths: { '/things': { get: { operationId: 'listThings', responses: { '200': {} } } } },
+    });
+    deepStrictEqual(listThings.misc, { isOpenAPIMixin: true, originalPath: '/things' });
   });
 });
 

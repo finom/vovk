@@ -63,6 +63,8 @@ To pass flags to `next dev`, append them after `--`:
 npx vovk dev --https --next-dev -- --experimental-https --turbo
 ```
 
+A port passed this way (`-p 4000` or `--port 4000`) is used instead of the automatic one, for Next.js and for the schema requests.
+
 Internally, the implicit mode uses the concurrently API, making both approaches nearly identical.
 
 Read more about [HTTPS in development](/config#devhttps).
@@ -75,6 +77,8 @@ Use the `--exit` flag to terminate the processes started by `vovk dev` after the
 npx vovk dev --next-dev --exit
 ```
 
+The command exits with code 1 when a segment's schema can't be fetched after 5 retries or the client fails to generate.
+
 For convenience, add a dedicated script in `package.json`:
 
 ```json
@@ -83,7 +87,7 @@ For convenience, add a dedicated script in `package.json`:
     // ...
     "dev-exit": "vovk dev --next-dev --exit",
     // or
-    "dev-exit": "PORT=3000 concurrently 'vovk dev --exit' 'next dev' --kill-others"
+    "dev-exit": "cross-env PORT=3000 concurrently \"vovk dev --exit\" \"next dev\" --kill-others"
   }
 }
 ```

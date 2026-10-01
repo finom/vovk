@@ -270,7 +270,7 @@ Parameters:
 - `targetHost`: the canonical host for redirects/rewrites (your production domain or `localhost:3000` in development).
 - `overrides`: a map from tenant subdomain names to routing rules. Each rule is an array of objects with `from` (path prefix) and `to` (target path).
 
-For wildcard subdomains, use square‑bracket patterns (such as `[customer_name]`) to define the [Dynamic Segment](https://nextjs.org/docs/app/api-reference/file-conventions/dynamic-routes). The value is passed via `params`.
+For wildcard subdomains, use square‑bracket patterns (such as `[customer_name]`) to define the [Dynamic Segment](https://nextjs.org/docs/app/api-reference/file-conventions/dynamic-routes). The value is passed via `params`. A placeholder matches one DNS label (letters, digits and hyphens), and the host is matched case-insensitively, so a host such as `%2e%2e.customer.example.com` gets no rewrite.
 
 ```ts showLineNumbers copy filename="src/proxy.ts" source="examples/multitenant"
 import { type NextRequest, NextResponse } from 'next/server';

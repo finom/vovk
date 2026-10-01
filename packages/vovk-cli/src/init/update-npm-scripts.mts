@@ -1,4 +1,5 @@
 import type NPMCliPackageJson from '@npmcli/package-json';
+import { getNextDevPort } from '../dev/get-next-dev-port.mjs';
 
 export function getDevScript(pkgJson: NPMCliPackageJson, updateScriptsMode: 'implicit' | 'explicit') {
   const dev = pkgJson.content.scripts?.dev ?? 'next dev';
@@ -6,9 +7,18 @@ export function getDevScript(pkgJson: NPMCliPackageJson, updateScriptsMode: 'imp
     return dev; // Already has vovk dev
   }
   const nextDevFlags = dev.replace('next dev', '').trim();
+  // vovk dev requests the schema on PORT, next dev listens on -p when it's given
+  const port = getNextDevPort(nextDevFlags.split(/\s+/)) ?? '3000';
+  // cross-env and double quotes, so cmd.exe runs it too
   return updateScriptsMode === 'explicit'
-    ? `PORT=3000 concurrently '${dev}' 'vovk dev' --kill-others`
+    ? `cross-env PORT=${port} concurrently "${dev.replace(/"/g, '\\"')}" "vovk dev" --kill-others`
     : `vovk dev --next-dev${nextDevFlags ? ` -- ${nextDevFlags}` : ''}`;
+}
+
+// a script the project already has keeps running, the vovk command runs after it
+function chainScript(script: string | undefined, command: string) {
+  if (!script) return command;
+  return script.includes(command) ? script : `${script} && ${command}`;
 }
 
 export async function updateNPMScripts({
@@ -21,12 +31,13 @@ export async function updateNPMScripts({
   bundle?: boolean;
   updateScriptsMode: 'implicit' | 'explicit';
 }) {
+  const scripts = pkgJson.content.scripts;
   pkgJson.update({
     scripts: {
-      ...pkgJson.content.scripts,
+      ...scripts,
       dev: getDevScript(pkgJson, updateScriptsMode),
-      prebuild: 'vovk generate',
-      ...(bundle ? { bundle: 'vovk bundle' } : {}),
+      prebuild: chainScript(scripts?.prebuild, 'vovk generate'),
+      ...(bundle ? { bundle: chainScript(scripts?.bundle, 'vovk bundle') } : {}),
     },
   });
 
