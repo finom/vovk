@@ -3,7 +3,7 @@ import type { VovkHandlerSchema } from '../internal.js';
 import type { ClientMethod, VovkFetcher, VovkFetcherOptions, VovkRPCModule } from '../types/client.js';
 import type { ControllerStaticMethod, VovkSchema } from '../types/core.js';
 import { type HttpMethod, HttpStatus } from '../types/enums.js';
-import type { VovkControllerParams, VovkControllerQuery } from '../types/inference.js';
+import type { VovkControllerParams } from '../types/inference.js';
 import type { VovkRequest } from '../types/request.js';
 import type { KnownAny } from '../types/utils.js';
 import type { CombinedSpec, VovkValidateOnClient } from '../types/validation.js';
@@ -20,13 +20,8 @@ const trimPath = (path: string) => path.trim().replace(/^\/|\/$/g, '');
 // "", "." and ".." (also percent-encoded) would drop or climb a path segment and so reach another route
 const isUnsafeSegment = (value: string) => /^(?:\.|%2e){0,2}$/i.test(value);
 
-const getHandlerPath = <T extends ControllerStaticMethod>(
-  endpoint: string,
-  params?: VovkControllerParams<T>,
-  query?: VovkControllerQuery<T>
-) => {
+const getHandlerPath = <T extends ControllerStaticMethod>(endpoint: string, params?: VovkControllerParams<T>) => {
   let result = endpoint;
-  const queryStr = query ? serializeQuery(query) : null;
   for (const [key, value] of Object.entries(params ?? {})) {
     const placeholder = `{${key}}`;
     // a missing value keeps its placeholder, which the fetcher reports
@@ -42,7 +37,7 @@ const getHandlerPath = <T extends ControllerStaticMethod>(
     // encode so a value stays one path segment, the callback form also keeps $& from being a replacement pattern
     result = result.replaceAll(placeholder, () => encodeURIComponent(segment));
   }
-  return `${result}${queryStr ? `?${queryStr}` : ''}`;
+  return result;
 };
 
 const FORM_CONTENT_TYPES = ['multipart/form-data', 'application/x-www-form-urlencoded'];
@@ -145,12 +140,15 @@ export const createRPC = <T, OPTS extends Record<string, KnownAny> = VovkFetcher
       const endpoint = [
         apiRoot,
         forceApiRoot ? '' : segmentNamePath,
-        getHandlerPath([controllerPrefix, path].filter(Boolean).join('/'), params, query),
+        getHandlerPath([controllerPrefix, path].filter(Boolean).join('/'), params),
       ]
         .filter(Boolean)
         .join('/')
         .replace(/([^:])\/+/g, '$1/'); // replace // by / but not for protocols (http://, https://)
-      return hasHost ? endpoint : `/${endpoint.replace(/^\/+/, '')}`;
+      // the query goes after the joined path, so a handler at the segment root gets no trailing slash
+      const queryStr = query ? serializeQuery(query as Record<string, unknown>) : '';
+      const url = hasHost ? endpoint : `/${endpoint.replace(/^\/+/, '')}`;
+      return queryStr ? `${url}?${queryStr}` : url;
     };
 
     const handler = (async (

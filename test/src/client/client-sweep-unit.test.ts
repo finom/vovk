@@ -365,6 +365,34 @@ describe('Client sweep, pure functions', () => {
       );
     });
 
+    it('Adds the query to a handler at the segment root without a trailing slash', async () => {
+      const controllers = {
+        RootRPC: { rpcModuleName: 'RootRPC', prefix: '', handlers: { root: { path: '', httpMethod: 'GET' } } },
+      };
+      const schema = { segments: { bodies: { segmentName: 'bodies', emitSchema: true, controllers } } };
+      const { root } = (createRPC as (...args: unknown[]) => unknown)(schema, 'bodies', 'RootRPC') as Record<
+        string,
+        TestCall
+      >;
+      const urls: string[] = [];
+
+      await withFetch(
+        (url) => {
+          urls.push(url);
+          return Response.json({});
+        },
+        () => root({ query: { q: '1' } })
+      );
+
+      strictEqual(root.getURL({ query: { q: '1' } }), '/api/bodies?q=1');
+      strictEqual(
+        root.getURL({ apiRoot: 'https://example.com/api', query: { q: '1' } }),
+        'https://example.com/api/bodies?q=1'
+      );
+      strictEqual(root.getURL(), '/api/bodies');
+      deepStrictEqual(urls, ['/api/bodies?q=1']);
+    });
+
     it('Gives null for a JSON response without a body', async () => {
       const rpc = rpcOf({
         exists: { path: '', httpMethod: 'HEAD' },
