@@ -18,6 +18,13 @@ type VovkRequestAny = VovkRequest<KnownAny, KnownAny, KnownAny>;
 
 type Meta = { __disableClientValidation?: boolean; [key: string]: KnownAny };
 
+// fetch() without a body sends no Content-Type, and no length or a length of 0
+const hasBody = (req: VovkRequestAny) => {
+  if (req.body === null) return false;
+  const contentLength = req.headers?.get('content-length');
+  return !!req.headers?.get('content-type') || (!!contentLength && contentLength !== '0');
+};
+
 export function withValidationLibrary<
   THandle extends VovkTypedProcedure<
     (req: KnownAny, params: KnownAny) => KnownAny,
@@ -161,9 +168,9 @@ export function withValidationLibrary<
     // the handler gets the validated params as its second argument, the same value req.vovk.params() returns
     let validatedParams = handlerParams;
     if (!__disableClientValidation) {
-      // a declared contentType is enforced even with no body schema to validate against,
+      // a declared contentType is enforced even with no body schema to validate against, unless there is no body;
       // disabling body validation still opts out of it, same as in the body branch below
-      if (contentType && !body && !disableServerSideValidationKeys.includes('body')) {
+      if (contentType && !body && !disableServerSideValidationKeys.includes('body') && hasBody(req)) {
         validateContentType(req, contentType);
       }
 
