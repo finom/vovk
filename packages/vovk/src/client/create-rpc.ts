@@ -98,7 +98,7 @@ const mergeOptions = <T>(...layers: unknown[]): T => {
  * Creates a client-side RPC module for interacting with server-side controllers.
  * @see https://vovk.dev/typescript
  */
-export const createRPC = <T, OPTS extends Record<string, KnownAny> = Record<string, never>>(
+export const createRPC = <T, OPTS extends Record<string, KnownAny> = VovkFetcherOptions<unknown>>(
   givenSchema: unknown,
   segmentName: string,
   rpcModuleName: string,

@@ -1,4 +1,4 @@
-import { procedure } from 'vovk';
+import { procedure, type VovkRequest } from 'vovk';
 import { createRPC } from 'vovk/create-rpc';
 import type { VovkFetcherOptions } from 'vovk/internal';
 
@@ -31,4 +31,27 @@ export async function contentTypeWithoutBodySchema(file: File) {
   await rpc.uploadImage({ body: 'text' });
   // @ts-expect-error a procedure with neither a body schema nor a declared content type takes no body
   await rpc.ping({ body: {} });
+}
+
+// ====== createRPC with one type argument ======
+
+class PlainController {
+  static list = procedure().handle(async () => [1, 2]);
+
+  static getHello(_req: VovkRequest) {
+    return { hello: 'world' };
+  }
+
+  static ping() {
+    return { ok: true };
+  }
+
+  static plain = async (_req: VovkRequest<{ a: number }, { q: string }>) => ({ hello: 'world' });
+}
+
+export async function oneTypeArgument() {
+  const rpc = createRPC<typeof PlainController>({}, '', 'PlainRPC');
+
+  await rpc.list();
+  await rpc.plain({ body: { a: 1 }, query: { q: 'x' }, apiRoot: '/api' });
 }
