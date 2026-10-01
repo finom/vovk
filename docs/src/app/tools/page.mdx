@@ -44,7 +44,7 @@ The `deriveTools` function accepts an options object with the following properti
 - `toModelOutput?: ToModelOutputFn<TInput, TOutput, TFormattedOutput>{:ts}` - optional function to format the output returned to the LLM. Can be set to a custom function or one of the built-in formatters, defined in `ToModelOutput` object, exported from `vovk`, such as 
   - `ToModelOutput.MCP` for MCP formatting.
   - `ToModelOutput.DEFAULT` that's used by default when `toModelOutput` is not provided.
-- `meta?: Record<string, unknown>{:ts}` - optional metadata passed to each controller/RPC method. The meta can be read on the back end using [req.vovk.meta](/req-vovk#meta). When passed to a controller procedure, it's merged with procedure-level meta normally. When passed to an RPC method, it's available as `xMetaHeader` key.
+- `meta?: Record<string, unknown>{:ts}` - optional metadata passed to each controller/RPC method. The meta can be read on the back end using [req.vovk.meta](/req-vovk#meta). When passed to a controller procedure, it's merged with procedure-level meta normally. When passed to an RPC method, it's available as `xMetaHeader` key. [OpenAPI mixins](/mixins) don't get it, as their hosts are third parties.
 
 ## Custom Operation Attributes with `x-tool` or `@operation.tool` Decorator
 

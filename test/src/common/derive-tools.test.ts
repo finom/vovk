@@ -1,6 +1,7 @@
 import assert from 'node:assert';
 import { describe, it } from 'node:test';
 import { deriveTools, procedure, ToModelOutput, toDownloadResponse, type VovkOutput } from 'vovk';
+import { createRPC } from 'vovk/create-rpc';
 import type { MCPModelOutput, StandardToolV0 } from 'vovk/internal';
 import { z } from 'zod';
 
@@ -646,6 +647,50 @@ describe('deriveTools', () => {
 
       assert.deepStrictEqual(await tool.execute(undefined as never), { ok: true });
       assert.deepStrictEqual(calls, ['onExecute']);
+    });
+  });
+
+  describe('meta and OpenAPI mixins', () => {
+    const segment = (segmentType: string, forceApiRoot?: string) => ({
+      segmentName: 'external',
+      segmentType,
+      emitSchema: true,
+      forceApiRoot,
+      controllers: {
+        ReposAPI: {
+          rpcModuleName: 'ReposAPI',
+          prefix: '',
+          handlers: {
+            getRepo: { path: 'repos/{repo}', httpMethod: 'GET', operationObject: { summary: 'Get a repo' } },
+          },
+        },
+      },
+    });
+
+    const sentMeta = async (segmentType: string, forceApiRoot?: string) => {
+      const schema = { segments: { external: segment(segmentType, forceApiRoot) } };
+      const ReposAPI = (createRPC as (...args: unknown[]) => Record<string, unknown>)(schema, 'external', 'ReposAPI');
+      const [tool] = deriveTools({ modules: { ReposAPI }, meta: { sessionToken: 'secret' } });
+      const original = globalThis.fetch;
+      const headers: (string | null)[] = [];
+      globalThis.fetch = (async (_url: string, init: RequestInit) => {
+        headers.push(new Headers(init.headers).get('x-meta'));
+        return Response.json({ id: 1 });
+      }) as typeof fetch;
+      try {
+        await tool.execute({ params: { repo: 'vovk' } });
+      } finally {
+        globalThis.fetch = original;
+      }
+      return headers;
+    };
+
+    it('Sends meta to an RPC module of the app', async () => {
+      assert.deepStrictEqual(await sentMeta('segment'), ['{"sessionToken":"secret"}']);
+    });
+
+    it("Doesn't send meta to a mixin, whose host is a third party", async () => {
+      assert.deepStrictEqual(await sentMeta('mixin', 'https://api.example.com'), [null]);
     });
   });
 

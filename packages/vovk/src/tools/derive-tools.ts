@@ -1,4 +1,4 @@
-import type { VovkHandlerSchema } from '../types/core.js';
+import type { VovkHandlerSchema, VovkSegmentSchema } from '../types/core.js';
 import type { VovkRequest } from '../types/request.js';
 import type { StandardToolV0 } from '../types/standard-tool.js';
 import type { ToModelOutputFn } from '../types/tools.js';
@@ -19,6 +19,7 @@ type Handler = ((...args: unknown[]) => unknown) & {
   fn?: (input: unknown) => [unknown, Pick<VovkRequest, 'vovk'> | null];
   isRPC?: boolean;
   schema?: VovkHandlerSchema;
+  segmentSchema?: Pick<VovkSegmentSchema, 'segmentType'>;
   definition?: Parameters<typeof procedure>[0];
 };
 
@@ -54,7 +55,8 @@ async function caller<TOutput, TFormattedOutput>(
         body,
         query,
         params,
-        meta,
+        // an OpenAPI mixin calls a third-party host, the app's meta stays home
+        meta: handler.segmentSchema?.segmentType === 'mixin' ? undefined : meta,
       });
     } else if (handler.fn) {
       [result, req] = await handler.fn({
