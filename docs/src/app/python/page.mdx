@@ -469,6 +469,17 @@ if __name__ == "__main__":
         print(f"Error: {e}")
 ```
 
+### Timeout and Session
+
+All calls share one `requests.Session`, so connections stay open between them. The client waits 10 seconds to connect and 300 seconds for each read. Both are attributes of the module-level `client`:
+
+```py
+from package_name import client
+
+client.timeout = 30  # seconds, or a (connect, read) tuple; None waits forever
+client.session.headers["Authorization"] = "Bearer ..."
+```
+
 ## Roadmap/bugs
 
 - ✨ Generate importable types for named schemas defined in `components/schemas`.

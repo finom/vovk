@@ -5,7 +5,7 @@ from urllib.parse import quote
 import jsonschema
 from jsonschema import FormatChecker
 from requests.models import Response
-from typing import Dict, Optional, Any, Generator, Literal, List, Tuple, TypedDict
+from typing import Dict, Optional, Any, Generator, Literal, List, Tuple, TypedDict, Union
 
 class HttpExceptionResponseBody(TypedDict):
     cause: Any
@@ -43,6 +43,10 @@ class ApiClient:
         self.api_root = api_root
         self.segments = segments or {}
         self.full_schema: Dict[str, Any] = ApiClient._load_full_schema()
+        # one session keeps connections open between calls; set headers, auth or adapters on it
+        self.session = requests.Session()
+        # seconds to connect and to wait for each read, as requests takes it; None waits forever
+        self.timeout: Union[None, float, Tuple[float, float]] = (10, 300)
 
     def _segment_base(self, segment_name: str) -> Tuple[str, str]:
         if segment_name in self.segments:
@@ -200,63 +204,35 @@ class ApiClient:
         if headers:
             request_headers.update(headers)
         
-        response: Response
+        # the body as requests takes it: data, files or json
+        payload: Dict[str, Any]
         if TIsText:
             request_headers['Content-Type'] = body_content_type # type: ignore
-            response = requests.request(
-                method=http_method.upper(),
-                url=processed_url,
-                headers=request_headers,
-                data=body.encode('utf-8') if isinstance(body, str) else body,
-                stream=True # Always stream for consistent handling
-            )
+            payload = {'data': body.encode('utf-8') if isinstance(body, str) else body}
         elif TIsBinary:
             request_headers['Content-Type'] = body_content_type # type: ignore
-            response = requests.request(
-                method=http_method.upper(),
-                url=processed_url,
-                headers=request_headers,
-                data=body,
-                stream=True # Always stream for consistent handling
-            )
+            payload = {'data': body}
         elif TIsForm and isinstance(body, dict):
             fields = self._to_form_fields(body)
             if TIsMultipart:
                 # a (None, text) part is a plain field, and makes requests send multipart even without a file
                 file_parts = list(files.items()) if isinstance(files, dict) else list(files or [])
-                response = requests.request(
-                    method=http_method.upper(),
-                    url=processed_url,
-                    headers=request_headers,
-                    files=[(key, (None, text)) for key, text in fields] + file_parts,
-                    stream=True # Always stream for consistent handling
-                )
+                payload = {'files': [(key, (None, text)) for key, text in fields] + file_parts}
             else:
-                response = requests.request(
-                    method=http_method.upper(),
-                    url=processed_url,
-                    headers=request_headers,
-                    files=files,
-                    data=fields,
-                    stream=True # Always stream for consistent handling
-                )
+                payload = {'files': files, 'data': fields}
         elif TIsForm:
-            response = requests.request(
-                method=http_method.upper(),
-                url=processed_url,
-                headers=request_headers,
-                files=files,
-                data=body,
-                stream=True # Always stream for consistent handling
-            )
+            payload = {'files': files, 'data': body}
         else:
-            response = requests.request(
-                method=http_method.upper(),
-                url=processed_url,
-                headers=request_headers,
-                json=body,
-                stream=True # Always stream for consistent handling
-            )
+            payload = {'json': body}
+
+        response = self.session.request(
+            method=http_method.upper(),
+            url=processed_url,
+            headers=request_headers,
+            timeout=self.timeout,
+            stream=True, # Always stream for consistent handling
+            **payload,
+        )
 
         # Handle response based on content type
         content_type = response.headers.get('Content-Type', '')
@@ -397,14 +373,18 @@ class ApiClient:
         Yields:
             Each parsed JSON object from the response
         """
-        for item in self._stream_jsonl_items(response):
-            if self._is_error_line(item):
-                reason = item['reason']
-                status_code = item.get('statusCode')
-                if isinstance(reason, str) and isinstance(status_code, int):
-                    raise HttpException({'message': reason, 'statusCode': status_code, 'isError': True, 'cause': None})
-                raise Exception(reason if isinstance(reason, str) else json.dumps(reason))
-            yield item
+        # closing gives the connection back to the session, also when iteration stops early
+        try:
+            for item in self._stream_jsonl_items(response):
+                if self._is_error_line(item):
+                    reason = item['reason']
+                    status_code = item.get('statusCode')
+                    if isinstance(reason, str) and isinstance(status_code, int):
+                        raise HttpException({'message': reason, 'statusCode': status_code, 'isError': True, 'cause': None})
+                    raise Exception(reason if isinstance(reason, str) else json.dumps(reason))
+                yield item
+        finally:
+            response.close()
 
     @staticmethod
     def _is_error_line(item: Any) -> bool:

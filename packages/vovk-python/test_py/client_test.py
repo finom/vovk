@@ -2,11 +2,14 @@ import json
 import unittest
 from io import BytesIO
 from typing import Any, Dict, List
+from unittest import mock
+import requests
 from generated_python_client.src.test_generated_python_client import (
     ClientSweepRPC,
     HttpException,
     PetstoreAPI,
     WithValidationRPC,
+    client,
 )
 from utils import fake_transport, form_fields, json_response
 
@@ -72,6 +75,31 @@ class TestClient(unittest.TestCase):
                 for item in ClientSweepRPC.get_falsy_items(api_root=FAKE_ROOT):
                     items.append(item)
         self.assertEqual(items, [{'i': 1}, {'i': 2}])
+
+    def test_one_session_for_every_call(self) -> None:
+        sessions: List[requests.Session] = []
+        send = requests.Session.send
+
+        def spy(session: requests.Session, request: requests.PreparedRequest, **options: Any) -> requests.Response:
+            sessions.append(session)
+            return send(session, request, **options)
+
+        with mock.patch.object(requests.Session, 'send', spy), fake_transport(json_response({})):
+            ClientSweepRPC.get_content_type(api_root=FAKE_ROOT)
+            ClientSweepRPC.get_content_type(api_root=FAKE_ROOT)
+        self.assertIs(sessions[0], sessions[1])
+
+    def test_timeout(self) -> None:
+        with fake_transport(json_response({})) as sent:
+            ClientSweepRPC.get_content_type(api_root=FAKE_ROOT)
+            default = client.timeout
+            client.timeout = 5
+            try:
+                ClientSweepRPC.get_content_type(api_root=FAKE_ROOT)
+            finally:
+                client.timeout = default
+        self.assertEqual(sent[0].options['timeout'], (10, 300))
+        self.assertEqual(sent[1].options['timeout'], 5)
 
     def test_form_body_without_properties(self) -> None:
         self.assertEqual(ClientSweepRPC.post_form_entries(body={'hello': 'world'}), [['hello', 'world']])
