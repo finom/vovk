@@ -58,12 +58,12 @@ class TestTypes(unittest.TestCase):
         # requests picks a urllib3 itself, and rfc3987 is GPL-3.0
         self.assertNotIn('urllib3', names)
         self.assertNotIn('rfc3987', names)
-        # the client's annotations need Python 3.9
+        # the client's annotations need Python 3.9; mypy checks for the Python it runs on, as mypy 2.4 refuses 3.9
         self.assertEqual(pyproject['project']['requires-python'], '>=3.9')
-        self.assertEqual(pyproject['tool']['mypy']['python_version'], '3.9')
+        self.assertNotIn('python_version', pyproject['tool']['mypy'])
         setup = configparser.ConfigParser()
         setup.read(os.path.join(PACKAGE_DIR, 'setup.cfg'))
-        self.assertEqual(setup['mypy']['python_version'], '3.9')
+        self.assertNotIn('python_version', setup['mypy'])
 
 
 if __name__ == "__main__":

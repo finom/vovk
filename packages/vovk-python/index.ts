@@ -265,9 +265,10 @@ export function convertJSONSchemaToPythonDataType(options: ConvertOptions): stri
 
       unfinished.add(localName);
       const built = buildType(namedSchemas[refName], localName.slice(1), localName);
-      // non-object definitions (enums, primitives) need an alias to keep the reference valid
+      // non-object definitions (enums, primitives) need an alias to keep the reference valid; in a class body mypy
+      // takes `Name = str` for a variable, `Name: TypeAlias = str` for a type
       if (built !== reference(localName)) {
-        classDefinitions.push(`${localName} = ${settle(built, true)}`);
+        classDefinitions.push(`${localName}: TypeAlias = ${settle(built, true)}`);
       }
       unfinished.delete(localName);
 
@@ -416,7 +417,7 @@ export function convertJSONSchemaToPythonDataType(options: ConvertOptions): stri
     );
 
   if (!isTypedDictTop) {
-    classDefinitions.push(`${className} = ${settle(topLevelTypeName, true)}`);
+    classDefinitions.push(`${className}: TypeAlias = ${settle(topLevelTypeName, true)}`);
   }
 
   // If there are no non-file properties, return an empty TypedDict

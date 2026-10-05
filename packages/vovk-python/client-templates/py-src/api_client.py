@@ -97,7 +97,8 @@ class ApiClient:
         current_dir = os.path.dirname(__file__)
         schema_path = os.path.join(current_dir, "schema.json")
         with open(schema_path, "r", encoding="utf-8") as f:
-            return json.load(f)
+            schema: Dict[str, Any] = json.load(f)
+            return schema
 
     def __init__(self, api_root: str, segments: Optional[Dict[str, Tuple[str, str]]] = None):
         """

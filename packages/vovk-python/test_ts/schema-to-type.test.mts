@@ -23,7 +23,7 @@ test('convertJSONSchemaToPythonDataType - simple types', async (t) => {
       pad: 0,
     });
 
-    assert.equal(result, 'MyString = str');
+    assert.equal(result, 'MyString: TypeAlias = str');
   });
 
   await t.test('converts integer schema', () => {
@@ -34,7 +34,7 @@ test('convertJSONSchemaToPythonDataType - simple types', async (t) => {
       pad: 0,
     });
 
-    assert.equal(result, 'MyInteger = int');
+    assert.equal(result, 'MyInteger: TypeAlias = int');
   });
 
   await t.test('converts number schema', () => {
@@ -45,7 +45,7 @@ test('convertJSONSchemaToPythonDataType - simple types', async (t) => {
       pad: 0,
     });
 
-    assert.equal(result, 'MyNumber = float');
+    assert.equal(result, 'MyNumber: TypeAlias = float');
   });
 
   await t.test('converts boolean schema', () => {
@@ -56,7 +56,7 @@ test('convertJSONSchemaToPythonDataType - simple types', async (t) => {
       pad: 0,
     });
 
-    assert.equal(result, 'MyBoolean = bool');
+    assert.equal(result, 'MyBoolean: TypeAlias = bool');
   });
 
   await t.test('converts null schema', () => {
@@ -67,7 +67,7 @@ test('convertJSONSchemaToPythonDataType - simple types', async (t) => {
       pad: 0,
     });
 
-    assert.equal(result, 'MyNull = None');
+    assert.equal(result, 'MyNull: TypeAlias = None');
   });
 });
 
@@ -83,7 +83,7 @@ test('convertJSONSchemaToPythonDataType - array types', async (t) => {
       pad: 0,
     });
 
-    assert.equal(result, 'StringArray = List[str]');
+    assert.equal(result, 'StringArray: TypeAlias = List[str]');
   });
 
   await t.test('converts array of any type', () => {
@@ -96,7 +96,7 @@ test('convertJSONSchemaToPythonDataType - array types', async (t) => {
       pad: 0,
     });
 
-    assert.equal(result, 'AnyArray = List[Any]');
+    assert.equal(result, 'AnyArray: TypeAlias = List[Any]');
   });
 
   await t.test('converts tuple type', () => {
@@ -111,7 +111,7 @@ test('convertJSONSchemaToPythonDataType - array types', async (t) => {
       pad: 0,
     });
 
-    assert.equal(result, 'MyTuple = Tuple[str, int, bool]');
+    assert.equal(result, 'MyTuple: TypeAlias = Tuple[str, int, bool]');
   });
 });
 
@@ -127,7 +127,7 @@ test('convertJSONSchemaToPythonDataType - enum types', async (t) => {
       pad: 0,
     });
 
-    assert.equal(result, 'StringEnum = Literal["one", "two", "three"]');
+    assert.equal(result, 'StringEnum: TypeAlias = Literal["one", "two", "three"]');
   });
 
   await t.test('converts numeric enum', () => {
@@ -141,7 +141,7 @@ test('convertJSONSchemaToPythonDataType - enum types', async (t) => {
       pad: 0,
     });
 
-    assert.equal(result, 'NumericEnum = Literal[1, 2, 3]');
+    assert.equal(result, 'NumericEnum: TypeAlias = Literal[1, 2, 3]');
   });
 });
 
@@ -156,7 +156,7 @@ test('convertJSONSchemaToPythonDataType - union types', async (t) => {
       pad: 0,
     });
 
-    assert.equal(result, 'OptionalString = Union[str, None]');
+    assert.equal(result, 'OptionalString: TypeAlias = Union[str, None]');
   });
 
   await t.test('converts union with oneOf', () => {
@@ -169,7 +169,7 @@ test('convertJSONSchemaToPythonDataType - union types', async (t) => {
       pad: 0,
     });
 
-    assert.equal(result, 'StringOrInt = Union[str, int]');
+    assert.equal(result, 'StringOrInt: TypeAlias = Union[str, int]');
   });
 
   await t.test('converts union with anyOf', () => {
@@ -182,7 +182,7 @@ test('convertJSONSchemaToPythonDataType - union types', async (t) => {
       pad: 0,
     });
 
-    assert.equal(result, 'MixedTypes = Union[str, int, bool]');
+    assert.equal(result, 'MixedTypes: TypeAlias = Union[str, int, bool]');
   });
 });
 
@@ -426,7 +426,7 @@ test('convertJSONSchemaToPythonDataType - error handling', async (t) => {
       pad: 0,
     });
 
-    assert.equal(result, 'EmptySchema = Any');
+    assert.equal(result, 'EmptySchema: TypeAlias = Any');
   });
 
   await t.test('handles null schema', () => {
@@ -757,7 +757,7 @@ test('convertJSONSchemaToPythonDataType - $refs', async (t) => {
       pad: 0,
     });
 
-    assert.ok(result.includes('_Body_Kind = Literal["a", "b"]'), result);
+    assert.ok(result.includes('_Body_Kind: TypeAlias = Literal["a", "b"]'), result);
     assert.ok(result.includes('kind: Rpc._Body_Kind'), result);
   });
 
@@ -791,7 +791,7 @@ test('convertJSONSchemaToPythonDataType - $refs', async (t) => {
     assert.ok(!result.includes('.protobuf.') && !result.includes('user-profile'), result);
     assert.ok(result.includes('class _Body_google_protobuf_Timestamp(TypedDict):'), result);
     assert.ok(result.includes('ts: Rpc._Body_google_protobuf_Timestamp'), result);
-    assert.ok(result.includes('_Body_user_profile = Literal["a", "b"]'), result);
+    assert.ok(result.includes('_Body_user_profile: TypeAlias = Literal["a", "b"]'), result);
   });
 });
 
@@ -827,7 +827,7 @@ test('getBodyKind', async (t) => {
         className: 'Body',
         pad: 0,
       }),
-      'Body = Any'
+      'Body: TypeAlias = Any'
     );
   });
 });
@@ -878,7 +878,7 @@ test('schema text never leaves its literal', async (t) => {
       pad: 0,
     });
 
-    assert.equal(result, 'Kind = Literal["say \\"hi\\"", True, None, 1.5]');
+    assert.equal(result, 'Kind: TypeAlias = Literal["say \\"hi\\"", True, None, 1.5]');
   });
 
   await t.test('names the helpers for templates', () => {
@@ -1003,7 +1003,7 @@ test('bodies without top-level properties', async (t) => {
       pad: 0,
     });
 
-    assert.equal(result, 'Body = Dict[str, float]');
+    assert.equal(result, 'Body: TypeAlias = Dict[str, float]');
   });
 
   await t.test('a record of any values is a Dict of Any', () => {
@@ -1053,7 +1053,7 @@ test('recursive definitions', async (t) => {
 
     assert.equal(
       result,
-      `_Body___schema0 = Union[str, float, bool, None, List[Any], Dict[str, Any]]
+      `_Body___schema0: TypeAlias = Union[str, float, bool, None, List[Any], Dict[str, Any]]
 class Body(TypedDict):
     data: Rpc._Body___schema0`
     );
@@ -1077,7 +1077,7 @@ class Body(TypedDict):
 
     assert.equal(
       result,
-      `_Body_Forest = List[Any]
+      `_Body_Forest: TypeAlias = List[Any]
 class _Body_Tree(TypedDict):
     children: Rpc._Body_Forest
 class Body(TypedDict):
@@ -1106,7 +1106,7 @@ class Body(TypedDict):
       result,
       `class _Body_Node(TypedDict):
     next: Union[Rpc._Body_Node, None]
-Body = _Body_Node`
+Body: TypeAlias = _Body_Node`
     );
   });
 });
