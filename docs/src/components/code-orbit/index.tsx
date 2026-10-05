@@ -62,7 +62,7 @@ const SNIPPETS = [
     label: 'AI Tools',
     lang: 'ts',
     color: '#10b981',
-    code: `const { tools } =\n  deriveTools({\n    modules:\n      { UserRPC } });`,
+    code: `const tools =\n  deriveTools({\n    modules:\n      { UserRPC } });`,
   },
   {
     label: 'README (RS)',

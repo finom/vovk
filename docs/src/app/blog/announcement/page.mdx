@@ -108,8 +108,8 @@ const pet = await PetstoreAPI.getPetById({ params: { petId: 1 } });
 Derive AI tools from controllers and API modules alike:
 
 ```ts
-const { tools } = deriveTools({ modules: { UserRPC, TaskController, PetstoreAPI } });
-console.log(tools); // [{ name, description, parameters, execute }, ...]
+const tools = deriveTools({ modules: { UserRPC, TaskController, PetstoreAPI } });
+console.log(tools); // [{ name, description, inputSchema, execute, ... }, ...]
 ```
 
 Execute procedures locally for SSR — no HTTP overhead:

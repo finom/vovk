@@ -147,7 +147,7 @@ export default class TelegramService {
     // Get chat history
     const history = await this.getChatHistory(chatId);
     const messages = [...this.formatHistoryForVercelAI(history), { role: 'user', content: userMessage } as const];
-    const { tools } = deriveTools({
+    const tools = deriveTools({
       modules: {
         UserController,
         TaskController,
@@ -162,12 +162,13 @@ export default class TelegramService {
       stopWhen: stepCountIs(16),
       tools: {
         ...Object.fromEntries(
-          tools.map(({ name, execute, description, parameters }) => [
+          tools.map(({ name, execute, description, inputSchema }) => [
             name,
             tool({
               execute,
               description,
-              inputSchema: jsonSchema(parameters as JSONSchema7),
+              // the SDK takes Standard Schema as is; a procedure without input has no schema
+              inputSchema: inputSchema ?? z.object({}),
             }),
           ])
         ),
