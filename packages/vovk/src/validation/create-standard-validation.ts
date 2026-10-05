@@ -165,8 +165,9 @@ export function createStandardValidation({
       body: Received<TBody, TPreferTransformed>;
       query: Received<TQuery, TPreferTransformed>;
       params: Received<TParams, TPreferTransformed>;
-      output: unknown extends CombinedSpec.InferOutput<TOutput> ? KnownAny : CombinedSpec.InferOutput<TOutput>;
-      iteration: TIteration extends CombinedSpec ? CombinedSpec.InferOutput<TIteration> : KnownAny;
+      // what is sent, as the handler gives it with preferTransformed: false
+      output: unknown extends CombinedSpec.InferOutput<TOutput> ? KnownAny : Received<TOutput, TPreferTransformed>;
+      iteration: Received<TIteration, TPreferTransformed>;
       contentType: NormalizeContentType<TContentType>;
       // what a caller sends: a default, a coercion or a transform makes it differ from what the handler gets
       input: ProcedureInput<TBody, TQuery, TParams, NormalizeContentType<TContentType>>;
@@ -177,16 +178,16 @@ export function createStandardValidation({
       <TTransformed>(
         input: TFnInput & {
           transform: (
-            data: FnResult<THandleFn, CombinedSpec.InferOutput<TIteration>>,
+            data: FnResult<THandleFn, Received<TIteration, TPreferTransformed>>,
             fakeReq: Pick<TReq, 'vovk'>
           ) => TTransformed;
         }
       ): Promise<TTransformed>;
       // a type argument sets the result, the type the caller expects doesn't
-      <TReturnType = FnResult<THandleFn, CombinedSpec.InferOutput<TIteration>>>(
+      <TReturnType = FnResult<THandleFn, Received<TIteration, TPreferTransformed>>>(
         ...input: FnArgs<TFnInput>
       ): Promise<Awaited<NoInference<TReturnType>>>;
-      (...input: FnArgs<TFnInput>): Promise<FnResult<THandleFn, CombinedSpec.InferOutput<TIteration>>>;
+      (...input: FnArgs<TFnInput>): Promise<FnResult<THandleFn, Received<TIteration, TPreferTransformed>>>;
     };
     definition: KnownAny;
     schema: KnownAny;
@@ -226,7 +227,7 @@ export function createStandardValidation({
           TReq,
           THandleFn
         >
-      : // the schema validates what the handler returns, so the handler returns its input; fn() gets its output
+      : // the schema validates what the handler returns, so the handler returns its input; fn() gets what is sent
         (
           fn: (
             req: TReq,
@@ -244,7 +245,7 @@ export function createStandardValidation({
           (
             req: TReq,
             params: HandlerParams<TParams, TPreferTransformed>
-          ) => HandleReturnType<CombinedSpec.InferOutput<TOutput>, CombinedSpec.InferOutput<TIteration>>
+          ) => HandleReturnType<Received<TOutput, TPreferTransformed>, Received<TIteration, TPreferTransformed>>
         >;
   };
 
