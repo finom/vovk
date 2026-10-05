@@ -161,7 +161,7 @@ Every group of controllers lives in a [segment](/segment) — a Next.js catch-al
 ```ts filename="src/app/api/[[...vovk]]/route.ts"
 const controllers = { UserRPC: UserController };
 export type Controllers = typeof controllers;
-export const { GET, POST, PUT, DELETE } = initSegment({ controllers });
+export const { GET, POST, PATCH, PUT, HEAD, OPTIONS, DELETE } = initSegment({ controllers });
 ```
 
 ### Schema emission

@@ -25,7 +25,7 @@ Optional Catch-All Segments are used insted of [Catch-All Segments](https://next
 
 ## Creating Segments
 
-Initialize a segment by calling `initSegment` in **route.ts** and export the returned route handlers (`GET`, `POST`, etc.). The function accepts:
+Initialize a segment by calling `initSegment` in **route.ts** and export the returned route handlers: `GET`, `POST`, `PATCH`, `PUT`, `HEAD`, `OPTIONS` and `DELETE`. A method the file doesn't export never reaches Vovk.ts: Next.js answers `PATCH` with `405`, and a CORS preflight (`OPTIONS`) without CORS headers. The function accepts:
 
 - `controllers` — an object with controllers used by the segment. Object keys define generated RPC module names (use a random name if `emitSchema` is `false`); values are the controllers.
 - `segmentName` — the segment name. Defaults to an empty string for the root segment.
@@ -65,7 +65,7 @@ const controllers = {
 export type Controllers = typeof controllers;
 
 // export the Next.js route handlers
-export const { GET, POST, PUT, DELETE } = initSegment({
+export const { GET, POST, PATCH, PUT, HEAD, OPTIONS, DELETE } = initSegment({
   controllers,
 });
 ```
@@ -93,7 +93,7 @@ For non-root segments, provide `segmentName` to `initSegment`:
 ```ts showLineNumbers copy filename="src/app/api/foo/[[...vovk]]/route.ts"
 // ...
 
-export const { GET, POST, PUT, DELETE } = initSegment({
+export const { GET, POST, PATCH, PUT, HEAD, OPTIONS, DELETE } = initSegment({
   segmentName: 'foo',
   controllers,
 });

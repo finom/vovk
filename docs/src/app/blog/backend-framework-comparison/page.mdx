@@ -166,7 +166,7 @@ import UserController from '@/modules/user/user-controller';
 
 const controllers = { UserRPC: UserController };
 export type Controllers = typeof controllers;
-export const { GET, POST, PUT, DELETE, PATCH } = initSegment({ controllers });
+export const { GET, POST, PATCH, PUT, HEAD, OPTIONS, DELETE } = initSegment({ controllers });
 ```
 
 *Source: [vovk.dev/segment](https://vovk.dev/segment)*
