@@ -168,11 +168,16 @@ export class JSONLinesResponder<T> extends Responder {
       console.error('🐺 Unhandled error in a Vovk stream:', e);
       return JSON.stringify({ isError: true, reason: 'Internal server error' } satisfies StreamAbortMessage);
     }
-    // the client takes a line for an error only with these keys, and statusCode only as a number
+    // the client takes a line for an error only with these keys, and statusCode only as a number; a status outside
+    // 200-599 is 500, as on a JSON response
     const errorLine: StreamAbortMessage = {
       isError: true,
       reason: e instanceof Error ? e.message : e,
-      ...(isHttpException(e) && typeof e.statusCode === 'number' ? { statusCode: e.statusCode } : {}),
+      ...(isHttpException(e) && typeof e.statusCode === 'number'
+        ? {
+            statusCode: e.statusCode >= 200 && e.statusCode <= 599 ? e.statusCode : HttpStatus.INTERNAL_SERVER_ERROR,
+          }
+        : {}),
     };
     try {
       return JSON.stringify(errorLine);
