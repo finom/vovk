@@ -38,7 +38,7 @@ Because we use [Prisma](https://www.prisma.io/) as our ORM, we can use [Prisma E
 > - All write operations must select the `updatedAt` field for change detection to work properly.
 > - The list of supported write operations is limited to `create`, `update`, `upsert`, and `delete` for simplicity. Read operations are passed through as-is. For more complex operations, additional handling or abstraction is required.
 
-```ts showLineNumbers copy filename="src/modules/database/database-service.ts" source="examples/realtime-kanban" {20,124}
+```ts showLineNumbers copy filename="src/modules/database/database-service.ts" source="examples/realtime-kanban" {23,127}
 import { PrismaNeon } from '@prisma/adapter-neon';
 import { PrismaClient } from '@prisma/client';
 import type { BaseEntity } from '@/types';
