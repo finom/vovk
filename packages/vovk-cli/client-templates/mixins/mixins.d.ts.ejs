@@ -62,11 +62,20 @@ export type Controllers = {
       <% for (const controllerSchema of Object.values(segment.controllers)) { %>
       <%- JSON.stringify(controllerSchema.rpcModuleName) %>: {
         <% for (const [handlerName, handlerSchema] of Object.entries(controllerSchema.handlers)) { %>
-          <%- JSON.stringify(handlerName) %>: (req: VovkRequest<
+          <%- JSON.stringify(handlerName) %>: ((req: VovkRequest<
             <%- getType(segment, controllerSchema, handlerName, 'body') %>,
             <%- getType(segment, controllerSchema, handlerName, 'query') %>,
             <%- getType(segment, controllerSchema, handlerName, 'params')  %>
-          >) => <%- handlerSchema.validation?.output ? `Promise<${getType(segment, controllerSchema, handlerName, 'output')}>` : handlerSchema.validation?.iteration ? `Promise<VovkStreamAsyncIterable<${getType(segment, controllerSchema, handlerName, 'iteration')}>>` : 'Promise<any>' %>,
+          >) => <%- handlerSchema.validation?.output ? `Promise<${getType(segment, controllerSchema, handlerName, 'output')}>` : handlerSchema.validation?.iteration ? `Promise<VovkStreamAsyncIterable<${getType(segment, controllerSchema, handlerName, 'iteration')}>>` : 'Promise<any>' %>) & {
+            __types: {
+              body: <%- getType(segment, controllerSchema, handlerName, 'body') %>;
+              query: <%- getType(segment, controllerSchema, handlerName, 'query') %>;
+              params: <%- getType(segment, controllerSchema, handlerName, 'params') %>;
+              output: <%- handlerSchema.validation?.output ? getType(segment, controllerSchema, handlerName, 'output') : 'unknown' %>;
+              iteration: <%- handlerSchema.validation?.iteration ? getType(segment, controllerSchema, handlerName, 'iteration') : 'unknown' %>;
+              contentType: <%- JSON.stringify(handlerSchema.validation?.body?.['x-contentType'] ?? ['application/json']) %>;
+            };
+          },
         <% } %>
       };
      <% } %>
