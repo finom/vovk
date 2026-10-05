@@ -4,8 +4,8 @@ description: "Full documentation for the Vovk.ts framework, excluding the Realti
 see_also:
   label: "Realtime Kanban Context"
   url: https://vovk.dev/context/realtime-ui.md
-chars: 408557
-est_tokens: 102140
+chars: 402082
+est_tokens: 100521
 ---
 
 Page: https://vovk.dev
@@ -522,9 +522,9 @@ npm i -D concurrently cross-env
 - [vovk dev](https://vovk.dev/dev)
 - [vovk generate](https://vovk.dev/generate)
 
-## Enable decorators (optional)
+## Enable decorators
 
-In your **tsconfig.json**, set `"experimentalDecorators"` to `true`.
+In your **tsconfig.json**, set `"experimentalDecorators"` to `true`. `vovk init` sets it too.
 
 ```json
 {
@@ -535,7 +535,7 @@ In your **tsconfig.json**, set `"experimentalDecorators"` to `true`.
 }
 ```
 
-This is required only if you want to use decorators in your controllers and procedures. As an alternative you can use `decorate(...)` from the library to achieve the same result without enabling decorators. See [Decorators Overview](https://vovk.dev/decorator-overview) for details.
+A webpack build needs the flag: without it, `next build --webpack` fails, and webpack is the default build of Next.js 15. Turbopack, the default of Next.js 16, compiles Vovk.ts decorators with or without it, and TypeScript 5.0+ type-checks them either way. See [Decorators Overview](https://vovk.dev/decorator-overview) for the decorators Vovk.ts provides.
 
 ## Create a controller
 
@@ -693,11 +693,11 @@ The plugin ships fifteen topic-based skills covering every layer of Vovk.ts:
 
 - **`vovk:init`** — initialize Vovk.ts in a Next.js App Router project, or scaffold a fresh Next.js app and run `vovk init` on top.
 - **`vovk:base`** — foundational rules loaded alongside any other vovk:* skill: commit policy for `.vovk-schema/`, runtime requirements, template names, `_schema_` endpoint, brief API + type-inference surface (`VovkBody`, `VovkOutput`, …).
-- **`vovk:config`** — `vovk.config.{mjs,cjs,js}` shape, every config key + default (`rootEntry`, `schemaOutDir`, `composedClient`, `segmentedClient`, `clientTemplateDefs`, `outputConfig`, `bundle`, …), `tsconfig.json` setup, and the `decorate()` alternative for projects without `experimentalDecorators`.
+- **`vovk:config`** — `vovk.config.{mjs,cjs,js}` shape, every config key + default (`rootEntry`, `schemaOutDir`, `composedClient`, `segmentedClient`, `clientTemplateDefs`, `outputConfig`, `bundle`, …), and `tsconfig.json` setup.
 - **`vovk:segment`** — segments (root, named, static), `initSegment`, segment priority, `generateStaticParams`.
 - **`vovk:multitenant`** — multi-tenant routing via subdomains: `multitenant()` proxy, `overrides` shape, per-tenant segments and frontend pages, wildcard DNS.
 - **`vovk:procedure`** — procedures, validation (Zod / Valibot / ArkType), controllers, HTTP decorators, `req.vovk`, error handling, content types, `.fn()` for SSR / server components / server actions.
-- **`vovk:decorators`** — built-in and custom decorators (`createDecorator`), authorization patterns, `req.vovk.meta()`, stacking order, `decorate()` for projects without `experimentalDecorators`.
+- **`vovk:decorators`** — built-in and custom decorators (`createDecorator`), authorization patterns, `req.vovk.meta()`, stacking order.
 - **`vovk:rpc`** — generated RPC client (`@/client`), composed vs segmented clients, call shape, `customFetcher`, error rethrow, type inference from client methods.
 - **`vovk:jsonlines`** — JSON Lines streaming: generator handlers, `JSONLinesResponder`, `progressive()`, client async iteration, `using`, `asPromise`, abort.
 - **`vovk:openapi`** — OpenAPI 3.x generation: `@operation` metadata, `outputConfig.openAPIObject`, per-segment overrides, Scalar docs, `_schema_` endpoint.
@@ -1140,50 +1140,6 @@ For separating business logic into its own layer, see [Services](https://vovk.de
 
 A procedure created with `procedure()` does not need an HTTP decorator to work. Without one, it remains a typed validated callable usable via [`.fn()`](https://vovk.dev/fn) — for SSR, server components, server actions, AI tool execution, and so on. The decorator is what additionally mounts the procedure as an HTTP endpoint and makes it appear in the generated RPC client. See [Calling Procedures Locally](https://vovk.dev/fn) for the full reference and patterns like binding standalone procedures into a controller later.
 
-### Alternative: `decorate` Syntax
-
-If you prefer not to use decorators, you can define procedures using the `decorate` function. `decorate` returns an object with a `.handle()` method for the handler. The controller prefix is defined as a `static prefix` property. This produces the same result as decorators in terms of functionality, types, and generated RPC modules.
-
-```ts showLineNumbers copy filename="src/modules/user/user-controller.ts"
-import { decorate, procedure, put, operation } from 'vovk';
-import { z } from 'zod';
-
-class UserController {
-  static prefix = 'users';
-
-  static updateUser = decorate(
-    put('{id}'),
-    operation({ summary: 'Update user' }),
-    procedure({
-      params: z.object({ id: z.uuid() }),
-      body: z.object({ email: z.email() }),
-      query: z.object({ notify: z.enum(['email', 'push', 'none']) }),
-      output: z.object({ success: z.boolean() }),
-    }),
-  ).handle(async (req, { id }) => {
-    const { email } = await req.vovk.body();
-    const { notify } = req.vovk.query();
-    // ...
-  });
-}
-
-export default UserController;
-```
-
-The `decorate` function applies decorators in the same order as the stacked decorator syntax — the last decorator listed (closest to the handler) is applied first. For handlers without validation, pass a plain async function to `.handle()`:
-
-```ts showLineNumbers copy
-static listUsers = decorate(
-  get(),
-).handle(
-  async (req: VovkRequest) => {
-    // ...
-  }
-);
-```
-
-See the [Decorators Overview](https://vovk.dev/decorator-overview) page for more details on when to use decorators vs `decorate`.
-
 ### `procedure` Options
 
 #### `body`, `query`, and `params`
@@ -1217,7 +1173,7 @@ Disables server-side validation for the specified library. Provide a boolean to 
 
 #### `skipSchemaEmission`
 
-Skips emitting JSON Schema for the handler. Provide a boolean to skip entirely, or an array of validation types (`body`, `query`, `params`, `output`, `iteration`). This does not change RPC typings but disables features that depend on emitted schemas, including client-side validation.
+Skips emitting JSON Schema for the handler. Provide a boolean to skip entirely, or an array of validation types (`body`, `query`, `params`, `output`, `iteration`). This does not change RPC typings but disables features that depend on emitted schemas, including client-side validation. The declared `contentType` is still emitted, since the clients encode the body by it.
 
 #### `validateEachIteration`
 
@@ -1363,6 +1319,8 @@ export default class UserController {
   }
 }
 ```
+
+Once a body schema or `req.vovk.body()` has read the body, the body methods of `req`, `req.body` and `req.clone()` replay it. To forward the request, use `new Request(url, req)` or pass `body: req.body` to `fetch()`. `new Request(req)` and `fetch(req)` take the request's own body, which is read by then, and throw.
 
 ## `req.vovk.query()`
 
@@ -2252,7 +2210,7 @@ export default class UserController {
 
 For any content type that doesn't fall into the above categories—such as `application/octet-stream`, `image/*`, `video/*`, `application/pdf`, etc.—the body is parsed into a `File{:ts}` on the server. On the client side, the `body` accepts `File | ArrayBuffer | Uint8Array | Blob{:ts}`.
 
-Bytes without a type, such as an `ArrayBuffer{:ts}`, a `Uint8Array{:ts}` or a `Blob{:ts}` with an empty `type`, are sent as the first declared type, so an `image/*` procedure receives them as `image/*`. A `File{:ts}` or a typed `Blob{:ts}` is sent as its own type, and the server refuses a type the procedure doesn't declare, unless it declares `application/octet-stream`, which takes any file.
+Bytes without a type, such as an `ArrayBuffer{:ts}`, a `Uint8Array{:ts}` or a `Blob{:ts}` with an empty `type`, are sent as the first declared type that isn't JSON, a form or a wildcard, such as `image/png`, else as a wildcard other than `*/*`, such as `image/*`. Without either, they are sent as `application/octet-stream` to a procedure that takes any type (`*/*`), and otherwise as the JSON or URL-encoded type it declares. A `File{:ts}` or a typed `Blob{:ts}` is sent as its own type, and the server refuses a type the procedure doesn't declare, unless it declares `application/octet-stream`, which takes any file.
 
 The server names the `File{:ts}` after the request's `Content-Disposition` header, reading `filename*` before `filename`, and calls it `file` without one. The TypeScript client sends that header for a `File{:ts}` body. The name is client input, as is the name of a file in form data: never use it as a path.
 
@@ -3679,7 +3637,7 @@ Page: https://vovk.dev/decorator-overview
 
 # Decorators Overview
 
-Vovk.ts uses decorators to attach metadata and behavior to controller methods. This page gives a comprehensive overview of all built-in decorators, the `decorate` alternative, and guidance on when to use each approach.
+Vovk.ts uses decorators to attach metadata and behavior to controllers and their procedures. This page lists the built-in decorators and shows how to write your own.
 
 ## HTTP Method Decorators
 
@@ -3795,136 +3753,6 @@ export default class UserController {
     const { userId } = req.vovk.meta();
     // ...
   }
-}
-```
-
-## `decorate` Function
-
-The `decorate` function provides an alternative to the stacked decorator syntax. Instead of using `@decorator` annotations, you pass decorator results to `decorate` (which returns `{ handle }`). The controller prefix is defined via `static prefix`. This is useful when you want to avoid decorators entirely or need more flexibility in how procedures are defined.
-
-```ts showLineNumbers copy
-import { decorate, get, post, operation, HttpStatus, procedure } from 'vovk';
-import { z } from 'zod';
-
-class UserController {
-  static prefix = 'users';
-
-  static updateUser = decorate(
-    post('{id}'),
-    operation({
-      summary: 'Update user',
-      description: 'Updates a user by ID',
-    }),
-    operation.error(HttpStatus.BAD_REQUEST, 'Invalid input'),
-    procedure({
-      params: z.object({ id: z.string() }),
-      body: z.object({ email: z.email() }),
-      query: z.object({ notify: z.enum(['email', 'push', 'none']) }),
-    }),
-  ).handle(async (req, { id }) => {
-    const body = await req.vovk.body();
-    const { notify } = req.vovk.query();
-    return { id, ...body, notify };
-  });
-}
-
-export default UserController;
-```
-
-All arguments to `decorate` are decorator results; `decorate` returns an object with a `.handle()` method that accepts the handler (or a `procedure` can be included as one of the arguments). The prefix is set as a `static prefix` property on the class — equivalent to using the `@prefix()` decorator.
-
-### With Custom Decorators
-
-Custom decorators created with `createDecorator` work with `decorate` as well:
-
-```ts showLineNumbers copy
-static getUser = decorate(
-  get('{id}'),
-  authGuard(),
-).handle(async (req: VovkRequest) => {
-  const { userId } = req.vovk.meta();
-  // ...
-});
-```
-
-### Without Validation
-
-For handlers that don't need validation, pass a plain function to `.handle()`:
-
-```ts showLineNumbers copy
-static listUsers = decorate(
-  get(),
-).handle(
-  async () => {
-    return [];
-  }
-);
-```
-
-## Decorator Syntax vs `decorate`
-
-Both approaches produce identical results in terms of functionality, types, and generated RPC modules. Choose based on your preference and project conventions.
-
-### When to Use Decorators
-
-- You're already using TypeScript decorators in your project.
-- You prefer the visual separation of concerns that stacked decorators provide.
-- You want the most concise syntax for simple procedures.
-
-```ts showLineNumbers copy
-@operation({ summary: 'Get user' })
-@get('{id}')
-@authGuard()
-static getUser = procedure({
-  params: z.object({ id: z.string() }),
-}).handle(async (req, { id }) => {
-  return { id };
-});
-```
-
-### When to Use `decorate`
-
-- You want to avoid decorators (`experimentalDecorators` or TC39 Stage 3).
-- You prefer a functional composition style.
-- You want all metadata for a procedure in one expression.
-
-```ts showLineNumbers copy
-class UserController {
-  static prefix = 'users';
-
-  static getUser = decorate(
-    get('{id}'),
-    authGuard(),
-    operation({ summary: 'Get user' }),
-    procedure({
-      params: z.object({ id: z.string() }),
-    }),
-  ).handle(async (req, { id }) => {
-    return { id };
-  });
-}
-
-export default UserController;
-```
-
-### Mixing Both
-
-You can mix decorator and `decorate` syntax within the same controller:
-
-```ts showLineNumbers copy
-@prefix('users')
-export default class UserController {
-  // Decorator syntax
-  @get()
-  static listUsers = procedure().handle(async () => []);
-
-  // decorate syntax
-  static getUser = decorate(
-    get('{id}'),
-    procedure({
-      params: z.object({ id: z.string() }),
-    }),
-  ).handle(async (req, { id }) => ({ id }));
 }
 ```
 
@@ -9844,7 +9672,7 @@ The function accepts:
 
 - `segmentName?: string{:ts}` – the segment name used in the route. Defaults to an empty string (the root segment).
 - `controllers: Record<string, Function>{:ts}` – a record of controllers.
-- `exposeValidation?: boolean` – set to `false` to hide validation logic from client-side code. Defaults to `true`.
+- `exposeValidation?: boolean` – set to `false` to hide validation logic from client-side code. The declared content types stay in the schema, since the clients encode a body by them. Defaults to `true`.
 - `emitSchema?: boolean{:ts}` – set to `false` to skip emitting the schema for the segment. Defaults to `true`.
 - `onError?: (err: Error, req: VovkRequest) => void | Promise{:ts}` – called when a controller throws. Can be used for logging. The second argument can be used to access the request URL, authorization data, and other request details.
 
@@ -10025,57 +9853,6 @@ export default class MyController {
 ```
 
 See the [decorator docs](https://vovk.dev/decorator) for more details.
-
-### `decorate`
-
-Applies decorator results to a handler without using decorator syntax, providing an alternative to the stacked decorator syntax. Returns an object with a `.handle()` method.
-
-**Arguments:**
-
-- `...decorators: Function[]{:ts}` – one or more decorator results (e.g. `get('path')`, `operation(...)`, `myCustomDecorator(...)`, `procedure(...)`).
-
-**Returns:** an object with a `.handle(handler)` method, which takes the handler. Pass `procedure(...)` without its own `.handle()`: the handler given to `decorate(...).handle()` becomes the procedure's handler.
-
-The controller prefix can be defined as a `static prefix` property on the class instead of using the `@prefix()` decorator:
-
-```ts showLineNumbers copy
-import { decorate, post, get, operation, HttpStatus, procedure } from 'vovk';
-import { z } from 'zod';
-
-class UserController {
-  static prefix = 'users';
-
-  // With procedure validation
-  static updateUser = decorate(
-    post('{id}'),
-    operation({
-      summary: 'Update user',
-      description: 'Updates a user by ID',
-    }),
-    operation.error(HttpStatus.BAD_REQUEST, 'Invalid input'),
-    procedure({
-      params: z.object({ id: z.string() }),
-      body: z.object({ email: z.email() }),
-      query: z.object({ notify: z.enum(['email', 'push', 'none']) }),
-    }),
-  ).handle(async (req, { id }) => {
-    const body = await req.vovk.body();
-    const { notify } = req.vovk.query();
-    return { id, ...body, notify };
-  });
-
-  // Without validation
-  static listUsers = decorate(
-    get(),
-  ).handle(async () => {
-    return [];
-  });
-}
-
-export default UserController;
-```
-
-Decorator application follows the same order as the stacked syntax: the last decorator in the list (closest to the handler) is applied first. See [Decorators Overview](https://vovk.dev/decorator-overview) for guidance on choosing between `decorate` and decorator syntax.
 
 ### `fetcher`
 
