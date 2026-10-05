@@ -92,6 +92,25 @@ await describe('vovk new in a project without Next.js', async () => {
     }
   });
 
+  await it('Imports modules with .js under nodenext without allowImportingTsExtensions', async () => {
+    await createProject(projectDir, {
+      'package.json': { name: 'app', version: '1.0.0', type: 'module' },
+      // a relative import needs an extension under nodenext, and .ts needs allowImportingTsExtensions
+      'tsconfig.json': { compilerOptions: { module: 'nodenext', moduleResolution: 'nodenext' } },
+      'vovk.config.mjs': 'export default {};',
+      'src/app/layout.tsx': '',
+    });
+
+    await runCLI(['new', 'segment'], { cwd: projectDir });
+    await runCLI(['new', 'controller', 'service', 'user'], { cwd: projectDir });
+
+    assert.match(
+      await read('src/app/api/[[...vovk]]/route.ts'),
+      /import UserController from '\.\.\/\.\.\/\.\.\/modules\/user\/user-controller\.js';/
+    );
+    assert.match(await read('src/modules/user/user-controller.ts'), /from '\.\/user-service\.js';/);
+  });
+
   await it('Works offline with a remote OpenAPI mixin in the config', async () => {
     // nothing listens there, like a spec host out of reach
     const specUrl = `http://127.0.0.1:${await getFreePort()}/openapi.json`;

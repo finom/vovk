@@ -1,4 +1,4 @@
-import { deepStrictEqual, strictEqual } from 'node:assert';
+import { deepStrictEqual, ok, strictEqual } from 'node:assert';
 import { describe, it } from 'node:test';
 import type { PackageJson } from 'type-fest';
 import { resolveGeneratorConfigValues, type VovkOutputConfig, type VovkStrictConfig } from 'vovk/internal';
@@ -586,6 +586,20 @@ describe('resolveGeneratorConfigValues', () => {
 
       // Should return empty string when all are null
       strictEqual(result.origin, '');
+    });
+
+    it('should give the OpenAPI info a version when no package.json version is set', () => {
+      const result = resolveGeneratorConfigValues({
+        config: undefined,
+        outputConfigs: [],
+        isBundle: false,
+        segmentName: null,
+        projectPackageJson: { name: 'app' },
+      });
+
+      // OpenAPI requires info.version
+      strictEqual(typeof result.openAPIObject.info.version, 'string');
+      ok(result.openAPIObject.info.version);
     });
 
     it('should handle OpenAPI object defaults correctly', () => {

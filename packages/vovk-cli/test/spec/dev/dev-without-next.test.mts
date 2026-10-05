@@ -11,6 +11,7 @@ import {
   getFakeNextBin,
   getFreePort,
   makeSegmentSchema,
+  runCLI,
   startCLI,
   startSchemaServer,
   userSegmentSchema,
@@ -19,6 +20,19 @@ import {
 const projectDir = path.join(process.cwd(), 'tmp_dev_without_next');
 const exists = (filePath: string) => fs.stat(filePath).then(Boolean, () => false);
 const hasOpenSSL = spawnSync('openssl', ['version']).status === 0;
+
+// a mixin read from a file, so it needs no network
+const petstoreSpec = {
+  openapi: '3.1.0',
+  info: { title: 'Petstore', version: '1.0.0' },
+  servers: [{ url: 'https://petstore.example.com' }],
+  paths: { '/pets': { get: { operationId: 'listPets', responses: { 200: { description: 'OK' } } } } },
+};
+const petstoreMixin = {
+  petstore: {
+    openAPIMixin: { source: { file: './petstore.json' }, getModuleName: 'PetstoreAPI', getMethodName: 'auto' },
+  },
+};
 
 after(async () => {
   await fs.rm(projectDir, { recursive: true, force: true });
@@ -362,5 +376,82 @@ await describe('vovk dev in a project without Next.js', async () => {
 
     const rootSchema = JSON.parse(await fs.readFile(path.join(projectDir, '.vovk-schema/root.json'), 'utf-8'));
     assert.deepStrictEqual(Object.keys(rootSchema.controllers), ['UserRPC'], dev.getOutput());
+  });
+
+  await it('Starts with includeSegments or excludeSegments that name an OpenAPI mixin', async () => {
+    const server = await startSchemaServer({ '': makeSegmentSchema('') });
+    try {
+      for (const [segmentsOption, expectedModules] of [
+        [{ includeSegments: ['', 'petstore'] }, ['UserRPC', 'PetstoreAPI']],
+        [{ excludeSegments: ['petstore'] }, ['UserRPC']],
+      ] as const) {
+        await createProject(projectDir, {
+          'package.json': { name: 'app', version: '1.0.0', type: 'module' },
+          'vovk.config.mjs': `export default ${JSON.stringify({
+            composedClient: { prettifyClient: false, ...segmentsOption },
+            outputConfig: { segments: petstoreMixin },
+          })};`,
+          'petstore.json': petstoreSpec,
+          'src/app/api/[[...vovk]]/route.ts': '',
+        });
+
+        const dev = startCLI(['dev', '--exit'], { cwd: projectDir, env: { PORT: server.port } });
+
+        assert.strictEqual(await dev.exitCode, 0, dev.getOutput());
+        const index = await fs.readFile(path.join(projectDir, 'src/client/index.ts'), 'utf-8');
+        for (const moduleName of ['UserRPC', 'PetstoreAPI']) {
+          const isExpected = (expectedModules as readonly string[]).includes(moduleName);
+          assert.strictEqual(index.includes(`export const ${moduleName}`), isExpected, index);
+        }
+      }
+    } finally {
+      await server.close();
+    }
+  });
+
+  await it('Keeps the segmented client of an OpenAPI mixin when it starts', async () => {
+    await createProject(projectDir, {
+      'package.json': { name: 'app', version: '1.0.0', type: 'module' },
+      'vovk.config.mjs': `export default ${JSON.stringify({
+        composedClient: { enabled: false },
+        segmentedClient: { enabled: true, prettifyClient: false, outDir: 'seg' },
+        outputConfig: { segments: petstoreMixin },
+      })};`,
+      'petstore.json': petstoreSpec,
+      'src/app/api/[[...vovk]]/route.ts': '',
+      '.vovk-schema/root.json': makeSegmentSchema(''),
+    });
+    await runCLI(['generate'], { cwd: projectDir });
+    const mixinIndex = path.join(projectDir, 'seg/petstore/index.ts');
+    assert.ok(await exists(mixinIndex));
+
+    // nothing answers the schema requests, so only the start can change the client
+    const dev = startCLI(['dev'], { cwd: projectDir, env: { PORT: await getFreePort() } });
+    try {
+      await dev.waitForOutput(/Ready in/);
+    } finally {
+      await dev.stop();
+    }
+
+    assert.ok(await exists(mixinIndex), dev.getOutput());
+    assert.match(await fs.readFile(mixinIndex, 'utf-8'), /export const PetstoreAPI/);
+  });
+
+  await it('Generates the client of a project whose only segment is an OpenAPI mixin', async () => {
+    await createProject(projectDir, {
+      'package.json': { name: 'app', version: '1.0.0', type: 'module' },
+      'vovk.config.mjs': `export default ${JSON.stringify({
+        composedClient: { prettifyClient: false },
+        outputConfig: { segments: petstoreMixin },
+      })};`,
+      'petstore.json': petstoreSpec,
+      'src/app/page.tsx': 'export default function Page() { return null; }',
+    });
+
+    const dev = startCLI(['dev', '--exit'], { cwd: projectDir, env: { PORT: await getFreePort() } });
+
+    assert.strictEqual(await dev.exitCode, 0, dev.getOutput());
+    const index = await fs.readFile(path.join(projectDir, 'src/client/index.ts'), 'utf-8');
+    assert.ok(index.includes('export const PetstoreAPI'), `${index}\n${dev.getOutput()}`);
   });
 });
