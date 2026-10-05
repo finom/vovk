@@ -1,5 +1,7 @@
 import { deepStrictEqual, ok, strictEqual } from 'node:assert';
 import fs from 'node:fs/promises';
+import http from 'node:http';
+import type { AddressInfo } from 'node:net';
 import path from 'node:path';
 import { describe, it } from 'node:test';
 import type { OpenAPIObject } from 'openapi3-ts/oas31';
@@ -10,9 +12,27 @@ import { importFresh } from '../../lib/import-fresh.mts';
 import { createProject, runCLI, userSegmentSchema } from '../../lib/minimal-project.mts';
 import { runScript } from '../../lib/run-script.mts';
 
-const PORT = 3021;
-
 const artifactsDir = path.join(path.resolve(import.meta.dirname, '../../..'), 'tmp_artifacts_dir');
+
+// serves the artifacts folder on a port the OS picks, so a server left from another test can't hold it
+async function serveArtifacts() {
+  const server = http.createServer((req, res) => {
+    const { pathname } = new URL(req.url ?? '/', 'http://localhost');
+    fs.readFile(path.join(artifactsDir, decodeURIComponent(pathname))).then(
+      (body) => res.end(body),
+      () => res.writeHead(404).end()
+    );
+  });
+  await new Promise<void>((resolve) => server.listen(0, resolve));
+
+  return {
+    origin: `http://localhost:${(server.address() as AddressInfo).port}`,
+    async close() {
+      server.closeAllConnections();
+      await new Promise((resolve) => server.close(resolve));
+    },
+  };
+}
 
 function runAtProjectDir(command: string, options?: Omit<Parameters<typeof runScript>[1], 'cwd'>) {
   return runScript(command, { cwd: artifactsDir, ...options });
@@ -252,15 +272,14 @@ await describe('OpenAPI flags', async () => {
   });
 
   await it('can use JSON URL and write fallback', async () => {
-    const httpServer = runAtProjectDir(`npx http-server ${artifactsDir} -p ${PORT} --cors`);
-    await new Promise((resolve) => setTimeout(resolve, 2000));
+    const specServer = await serveArtifacts();
     const generatedClientDir = path.join(artifactsDir, `generated-client${Date.now()}`);
 
     try {
       await writeSpec();
 
       await runAtProjectDir(
-        `../dist/index.mjs generate --openapi http://localhost:${PORT}/spec.json --out ${generatedClientDir} --from ts --openapi-fallback fallback.json`
+        `../dist/index.mjs generate --openapi ${specServer.origin}/spec.json --out ${generatedClientDir} --from ts --openapi-fallback fallback.json`
       );
 
       const { schema } = await import(path.join(generatedClientDir, 'index.ts'));
@@ -270,25 +289,24 @@ await describe('OpenAPI flags', async () => {
       strictEqual(fallback.openapi, '3.1.0');
       strictEqual(fallback.paths['/test']?.post?.operationId, 'postTest');
     } catch (e) {
-      await httpServer.kill();
+      await specServer.close();
       await fs.rm(generatedClientDir, { recursive: true });
       throw e;
     }
 
-    await httpServer.kill();
+    await specServer.close();
     await fs.rm(generatedClientDir, { recursive: true });
   });
 
   await it('can use YAML URL and write fallback', async () => {
-    const httpServer = runAtProjectDir(`npx http-server ${artifactsDir} -p ${PORT} --cors`);
-    await new Promise((resolve) => setTimeout(resolve, 2000));
+    const specServer = await serveArtifacts();
     const generatedClientDir = path.join(artifactsDir, `generated-client${Date.now()}`);
 
     try {
       await writeSpec({}, 'yaml');
 
       await runAtProjectDir(
-        `../dist/index.mjs generate --openapi http://localhost:${PORT}/spec.yaml --out ${generatedClientDir} --from ts --openapi-fallback fallback.yaml`
+        `../dist/index.mjs generate --openapi ${specServer.origin}/spec.yaml --out ${generatedClientDir} --from ts --openapi-fallback fallback.yaml`
       );
 
       const { schema } = await import(path.join(generatedClientDir, 'index.ts'));
@@ -298,12 +316,12 @@ await describe('OpenAPI flags', async () => {
       strictEqual(fallback.openapi, '3.1.0');
       strictEqual(fallback.paths['/test']?.post?.operationId, 'postTest');
     } catch (e) {
-      await httpServer.kill();
+      await specServer.close();
       await fs.rm(generatedClientDir, { recursive: true });
       throw e;
     }
 
-    await httpServer.kill();
+    await specServer.close();
     await fs.rm(generatedClientDir, { recursive: true });
   });
 
@@ -342,12 +360,11 @@ await describe('OpenAPI flags', async () => {
   });
 
   await it('can watch JSON URL and regenerate on spec change', async () => {
-    const httpServer = runAtProjectDir(`npx http-server ${artifactsDir} -p ${PORT} --cors`);
-    await new Promise((resolve) => setTimeout(resolve, 2000));
+    const specServer = await serveArtifacts();
     const generatedClientDir = path.join(artifactsDir, `generated-client${Date.now()}`);
 
     const watch = runAtProjectDir(
-      `../dist/index.mjs generate --openapi http://localhost:${PORT}/spec.json --out ${generatedClientDir} --from ts --watch 1`
+      `../dist/index.mjs generate --openapi ${specServer.origin}/spec.json --out ${generatedClientDir} --from ts --watch 1`
     );
 
     try {
@@ -369,14 +386,14 @@ await describe('OpenAPI flags', async () => {
       strictEqual(schema2.segments.mixin.controllers.api.handlers.postTest2.httpMethod, HttpMethod.POST);
     } catch (e) {
       await watch.kill();
-      await httpServer.kill();
+      await specServer.close();
 
       await fs.rm(generatedClientDir, { recursive: true, force: true });
       throw e;
     }
 
     await watch.kill();
-    await httpServer.kill();
+    await specServer.close();
 
     await fs.rm(generatedClientDir, { recursive: true, force: true });
   });
@@ -416,12 +433,11 @@ await describe('OpenAPI flags', async () => {
   });
 
   await it('can watch YAML URL and regenerate on spec change', async () => {
-    const httpServer = runAtProjectDir(`npx http-server ${artifactsDir} -p ${PORT} --cors`);
-    await new Promise((resolve) => setTimeout(resolve, 2000));
+    const specServer = await serveArtifacts();
     const generatedClientDir = path.join(artifactsDir, `generated-client${Date.now()}`);
 
     const watch = runAtProjectDir(
-      `../dist/index.mjs generate --openapi http://localhost:${PORT}/spec.yaml --out ${generatedClientDir} --from ts --watch 1`
+      `../dist/index.mjs generate --openapi ${specServer.origin}/spec.yaml --out ${generatedClientDir} --from ts --watch 1`
     );
 
     try {
@@ -443,14 +459,14 @@ await describe('OpenAPI flags', async () => {
       strictEqual(schema2.segments.mixin.controllers.api.handlers.postTest2.httpMethod, HttpMethod.POST);
     } catch (e) {
       await watch.kill();
-      await httpServer.kill();
+      await specServer.close();
 
       await fs.rm(generatedClientDir, { recursive: true, force: true });
       throw e;
     }
 
     await watch.kill();
-    await httpServer.kill();
+    await specServer.close();
 
     await fs.rm(generatedClientDir, { recursive: true, force: true });
   });

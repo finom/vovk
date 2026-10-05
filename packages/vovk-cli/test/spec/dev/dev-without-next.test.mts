@@ -115,7 +115,7 @@ await describe('vovk dev in a project without Next.js', async () => {
       'src/app/layout.tsx': '',
     });
 
-    const dev = startCLI(['dev'], { cwd: projectDir, env: { PORT: '3314' } });
+    const dev = startCLI(['dev'], { cwd: projectDir, env: { PORT: await getFreePort() } });
 
     try {
       await dev.waitForOutput(/Ready in/);
@@ -140,7 +140,7 @@ await describe('vovk dev in a project without Next.js', async () => {
 
     const dev = startCLI(['dev', '--schema-out', schemaOut, '--log-level', 'debug'], {
       cwd: projectDir,
-      env: { PORT: '3314' },
+      env: { PORT: await getFreePort() },
     });
 
     try {
