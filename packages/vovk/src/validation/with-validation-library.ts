@@ -2,6 +2,7 @@ import { HttpException } from '../core/http-exception.js';
 import { JSONLinesResponder, setResponderHooks } from '../core/json-lines-responder.js';
 import { setHandlerSchema } from '../core/set-handler-schema.js';
 import { bufferBody } from '../req/buffer-body.js';
+import { getMediaType } from '../req/get-media-type.js';
 import { parseForm } from '../req/parse-form.js';
 import { reqMeta } from '../req/req-meta.js';
 import { validateContentType } from '../req/validate-content-type.js';
@@ -31,6 +32,14 @@ const hasBody = (req: VovkRequestAny) => {
 
 // fn() calls made without a body, the local counterpart of a request without one
 const callsWithoutBody = new WeakSet<object>();
+
+// a buffered body read as JSON that has no bytes, as fetch() sends a JSON content type for a call without a body
+const isEmptyJSONBody = async (req: VovkRequestAny) => {
+  const contentType = req.headers.get('content-type');
+  const mediaType = contentType ? getMediaType(contentType) : null;
+  const isJSON = !contentType || mediaType === 'application/json' || !!mediaType?.endsWith('+json');
+  return isJSON && (await req.blob()).size === 0;
+};
 
 export function withValidationLibrary<
   THandle extends VovkTypedProcedure<
@@ -204,7 +213,8 @@ export function withValidationLibrary<
           // a wrong content type gets its 415 before the body is read
           validateContentType(req, contentType ?? ['application/json']);
           if (isRequest) await bufferBody(req); // buffer the body to make it replayable for validation and actual parsing
-          data = await req.vovk.body();
+          // an empty JSON body is no body, empty text or an empty file is one
+          if (!isRequest || !(await isEmptyJSONBody(req))) data = await req.vovk.body();
         }
         const parsed = (await validate(data, body, { validationType: 'body', req })) ?? data;
         const instance = preferTransformed ? parsed : data;
