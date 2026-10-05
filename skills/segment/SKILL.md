@@ -161,6 +161,8 @@ import HelloController from '../../../../modules/hello/hello-controller';
 const controllers = { HelloRPC: HelloController };
 export type Controllers = typeof controllers;
 
+export const dynamic = 'force-static'; // without it, next build renders the route per request
+
 export function generateStaticParams() {
   return controllersToStaticParams(controllers);
 }

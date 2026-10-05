@@ -303,6 +303,8 @@ Function that generates an API surface at build time (static params) instead of 
 // ...
 export type Controllers = typeof controllers;
 
+export const dynamic = 'force-static';
+
 export function generateStaticParams() {
   return controllersToStaticParams(controllers);
 }
