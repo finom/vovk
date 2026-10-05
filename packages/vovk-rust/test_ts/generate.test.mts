@@ -38,6 +38,38 @@ const userController = (handlers: Record<string, unknown>) => ({
 
 const listUsers = userController({ list: { httpMethod: 'GET', path: '', validation: {} } });
 
+// an OpenAPI document from a third party may hold any JSON as a title, a summary or a description
+const numericTexts = {
+  openapi: '3.1.0',
+  info: { title: 'Things', version: '1.0.0' },
+  servers: [{ url: 'https://api.example.com' }],
+  paths: {
+    '/thing': {
+      get: {
+        operationId: 'getThing',
+        summary: 5,
+        description: 6,
+        responses: {
+          200: {
+            description: 'ok',
+            content: { 'application/json': { schema: { $ref: '#/components/schemas/Thing' } } },
+          },
+        },
+      },
+    },
+  },
+  components: {
+    schemas: {
+      Thing: {
+        type: 'object',
+        title: 1,
+        description: 123,
+        properties: { a: { type: 'string', title: 2, description: 123 } },
+      },
+    },
+  },
+};
+
 describe('the generated crate', () => {
   test('handler names that are alike in snake_case get a function and a types module each', () => {
     const idSchema = { type: 'object', properties: { id: { type: 'string' } }, required: ['id'] };
@@ -56,6 +88,14 @@ describe('the generated crate', () => {
     assert.strictEqual(functions.length, new Set(functions).size, `functions: ${functions.join(', ')}`);
     assert.strictEqual(modules.length, new Set(modules).size, `modules: ${modules.join(', ')}`);
     assert.deepStrictEqual(handlers.toSorted(), ['getUserByID', 'getUserById']);
+  });
+
+  test('a title or description that is not a string', () => {
+    const source = generate(listUsers, {
+      segments: { things: { openAPIMixin: { source: { object: numericTexts }, getModuleName: 'ThingsAPI' } } },
+    })('src/lib.rs');
+
+    assert.match(source, /pub async fn get_thing\(/);
   });
 
   test('the README adds the crate as a dependency: it is a library', () => {

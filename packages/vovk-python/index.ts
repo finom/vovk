@@ -33,9 +33,10 @@ export function toPythonIdentifier(name: string, used?: Set<string>): string {
   return candidate;
 }
 
-// lines for a """ docstring: a quote or a backslash would end the string or start an escape
-export function toPythonDocstringLines(text: string): string[] {
-  return text
+// lines for a """ docstring: a quote or a backslash would end the string or start an escape; a third-party OpenAPI
+// document may hold a number or any other JSON as a title or a description, which is written as text
+export function toPythonDocstringLines(text: unknown): string[] {
+  return String(text)
     .replace(/\\/g, '\\\\')
     .replace(/"/g, '\\"')
     .split(/\r\n|\r|\n/)

@@ -42,12 +42,62 @@ const controller = (name: string, handlers: Record<string, unknown>) => ({
 
 const idSchema = { type: 'object', properties: { id: { type: 'string' } }, required: ['id'] };
 
+// an OpenAPI document from a third party may hold any JSON as a title, a summary or a description
+const numericTexts = {
+  openapi: '3.1.0',
+  info: { title: 'Things', version: '1.0.0' },
+  servers: [{ url: 'https://api.example.com' }],
+  paths: {
+    '/thing': {
+      get: {
+        operationId: 'getThing',
+        summary: 5,
+        description: 6,
+        responses: {
+          200: {
+            description: 'ok',
+            content: { 'application/json': { schema: { $ref: '#/components/schemas/Thing' } } },
+          },
+        },
+      },
+    },
+  },
+  components: {
+    schemas: {
+      Thing: {
+        type: 'object',
+        title: 1,
+        description: 123,
+        properties: { a: { type: 'string', title: 2, description: 123 } },
+      },
+    },
+  },
+};
+
 test('a controller without handlers', { skip: !hasPython && 'python3 not found' }, () => {
   // as `vovk new controller post --empty` leaves it
   const file = generate({
     UserRPC: controller('User', { list: { httpMethod: 'GET', path: '', validation: {} } }),
     PostRPC: controller('Post', {}),
   });
+
+  const result = spawnSync(
+    'python3',
+    [
+      '-c',
+      'import ast, sys; ast.parse(open(sys.argv[1], encoding="utf-8").read(), sys.argv[1])',
+      file('src/app/__init__.py'),
+    ],
+    { encoding: 'utf-8' }
+  );
+  assert.equal(result.status, 0, result.stderr);
+});
+
+test('a title or description that is not a string', { skip: !hasPython && 'python3 not found' }, () => {
+  const file = generate(
+    { UserRPC: controller('User', { list: { httpMethod: 'GET', path: '', validation: {} } }) },
+    { segments: { things: { openAPIMixin: { source: { object: numericTexts }, getModuleName: 'ThingsAPI' } } } }
+  );
 
   const result = spawnSync(
     'python3',

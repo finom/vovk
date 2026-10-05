@@ -202,9 +202,11 @@ export function generateDocComment(schema: VovkJSONSchemaBase, level: number, pa
 const BIDI_CONTROLS = /[\u202A-\u202E\u2066-\u2069]/gu;
 
 // Schema text may come from a third-party OpenAPI document: a line break would end a comment and start code,
-// and rustc rejects a bare carriage return inside a doc comment
-export function toRustDocLines(text: string): string[] {
-  return text.split(/\r\n|\r|\n/).map((line) => line.replace(/\p{Cc}/gu, ' ').replace(BIDI_CONTROLS, ' '));
+// and rustc rejects a bare carriage return inside a doc comment; a number or any other JSON there is written as text
+export function toRustDocLines(text: unknown): string[] {
+  return String(text)
+    .split(/\r\n|\r|\n/)
+    .map((line) => line.replace(/\p{Cc}/gu, ' ').replace(BIDI_CONTROLS, ' '));
 }
 
 export function toRustCommentText(text: string): string {
