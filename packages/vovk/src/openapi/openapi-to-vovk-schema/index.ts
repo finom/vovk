@@ -235,9 +235,10 @@ export function openAPIToVovkSchema({
 
       const requestBodyContent = inlineRefs<RequestBodyObject>(operation.requestBody, openAPIObject)?.content ?? {};
       const bodySchemas = pickBodySchemas(requestBodyContent);
-      const body: VovkJSONSchemaBase | null =
-        bodySchemas.length > 1 ? { anyOf: bodySchemas } : (bodySchemas[0] ?? null);
       const bodyContentTypes = bodySchemas.flatMap((s) => s['x-contentType'] ?? []);
+      // the clients pick the encoding from the body's own x-contentType, as for a procedure that takes several
+      const body: VovkJSONSchemaBase | null =
+        bodySchemas.length > 1 ? { anyOf: bodySchemas, 'x-contentType': bodyContentTypes } : (bodySchemas[0] ?? null);
       const queryStyles = pickStyles(queryProperties.map((p) => [p.name, p]));
       // OpenAPI applies a style to an urlencoded body only
       const formEncoding = Object.entries(requestBodyContent).find(
