@@ -114,6 +114,30 @@ describe('the generated crate', () => {
     assert.match(packageTable, /^resolver = "3"$/m, cargoToml);
   });
 
+  test('the README headings name the functions the crate has', () => {
+    const read = generate(
+      userController({
+        getUserByID: { httpMethod: 'GET', path: 'by-id', validation: {} },
+        getUserById: { httpMethod: 'POST', path: 'by-id', validation: {} },
+        httpRequest: { httpMethod: 'GET', path: 'request', validation: {} },
+        type: { httpMethod: 'GET', path: 'type', validation: {} },
+      })
+    );
+    const readme = read('README.md');
+    const headings = [...readme.matchAll(/^### (.+)$/gm)].map(([, heading]) => heading);
+    const functions = [...read('src/lib.rs').matchAll(/^ {4}pub async fn (\w+)\(/gm)].map(
+      ([, name]) => `user_rpc::${name}`
+    );
+
+    assert.deepStrictEqual(headings, functions);
+    assert.deepStrictEqual(headings, [
+      'user_rpc::get_user_by_id',
+      'user_rpc::get_user_by_id_2',
+      'user_rpc::http_request_2',
+      'user_rpc::type_',
+    ]);
+  });
+
   test('the README starts with readme.banner', () => {
     const readme = generate(listUsers, { readme: { banner: 'Banner line' } })('README.md');
     const bannerAt = readme.indexOf('Banner line');

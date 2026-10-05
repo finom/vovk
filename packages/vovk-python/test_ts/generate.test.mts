@@ -169,6 +169,23 @@ test('handler names that are alike in snake_case get a method each', () => {
   assert.deepEqual(handlers.toSorted(), ['getUserByID', 'getUserById']);
 });
 
+test('the README headings name the methods the package has', () => {
+  const file = generate({
+    UserRPC: controller('User', {
+      getUserByID: { httpMethod: 'GET', path: 'by-id', validation: { query: idSchema } },
+      getUserById: { httpMethod: 'POST', path: 'by-id', validation: { body: idSchema } },
+      import: { httpMethod: 'POST', path: 'import', validation: {} },
+    }),
+  });
+  const readme = fs.readFileSync(file('README.md'), 'utf-8');
+  const source = fs.readFileSync(file('src/app/__init__.py'), 'utf-8');
+  const headings = [...readme.matchAll(/^### (.+)$/gm)].map(([, heading]) => heading);
+  const methods = [...source.matchAll(/^ {4}def (\w+)\(/gm)].map(([, name]) => `UserRPC.${name}`);
+
+  assert.deepEqual(headings, methods);
+  assert.deepEqual(headings, ['UserRPC.get_user_by_id', 'UserRPC.get_user_by_id_2', 'UserRPC.import_']);
+});
+
 test('the README starts with readme.banner', () => {
   const file = generate(
     { UserRPC: controller('User', { list: { httpMethod: 'GET', path: '', validation: {} } }) },

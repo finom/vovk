@@ -33,6 +33,13 @@ export function toPythonIdentifier(name: string, used?: Set<string>): string {
   return candidate;
 }
 
+// the method of each handler of a class, by handler name: in schema order, a name already taken gets the first free
+// suffix, so getUserByID and getUserById become get_user_by_id and get_user_by_id_2
+export function getMethodNames(handlerNames: string[], toSnakeCase: (name: string) => string): Map<string, string> {
+  const used = new Set<string>();
+  return new Map(handlerNames.map((name) => [name, toPythonIdentifier(toSnakeCase(name), used)]));
+}
+
 // lines for a """ docstring: a quote or a backslash would end the string or start an escape; a third-party OpenAPI
 // document may hold a number or any other JSON as a title or a description, which is written as text
 export function toPythonDocstringLines(text: unknown): string[] {

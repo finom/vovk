@@ -241,6 +241,14 @@ export function toRustIdent(value: unknown, used?: Set<string>): string {
   return ident;
 }
 
+// the function of each handler of a module, by handler name: in schema order, a name already taken gets the first
+// free suffix, so getUserByID and getUserById become get_user_by_id and get_user_by_id_2; the module imports
+// http_request and http_request_stream, so those names are taken
+export function getFunctionNames(handlerNames: string[], toSnakeCase: (name: string) => string): Map<string, string> {
+  const used = new Set(['http_request', 'http_request_stream']);
+  return new Map(handlerNames.map((name) => [name, toRustIdent(toSnakeCase(name), used)]));
+}
+
 function decodePointerSegment(segment: string): string {
   let decoded = segment;
   try {
