@@ -85,6 +85,9 @@ export class VovkDev {
   // a 404 comes back on every attempt, so it's reported once per URL
   #notFoundEndpoints = new Set<string>();
 
+  // requested again on the next change in a watched folder, the fix can be in any file
+  #failedSegmentNames = new Set<string>();
+
   constructor({ schemaOut, devHttps, logLevel }: Pick<DevOptions, 'schemaOut' | 'devHttps' | 'logLevel'>) {
     this.#schemaOut = schemaOut || null;
     // null when the flag is omitted so config.devHttps can take effect
@@ -179,6 +182,7 @@ export class VovkDev {
           );
         }
       })
+      .on('all', () => this.#requestFailedSchemas())
       .on('ready', () => {
         callback();
         log.debug('Segments watcher is ready');
@@ -219,6 +223,7 @@ export class VovkDev {
           void this.#requestSchema(segmentName);
         }
       })
+      .on('all', () => this.#requestFailedSchemas())
       .on('ready', () => {
         callback();
         log.debug('Modules watcher is ready');
@@ -370,6 +375,21 @@ export class VovkDev {
   }
 
   #requestSchema = debounceWithArgs(async (segmentName: string) => {
+    const result = await this.#fetchSchema(segmentName);
+    if (result.isError || result.isRefused) this.#failedSegmentNames.add(segmentName);
+    else this.#failedSegmentNames.delete(segmentName);
+    return result;
+  }, 500);
+
+  #requestFailedSchemas() {
+    for (const segmentName of this.#failedSegmentNames) {
+      if (this.#segments.some((s) => s.segmentName === segmentName)) void this.#requestSchema(segmentName);
+      else this.#failedSegmentNames.delete(segmentName);
+    }
+  }
+
+  // isError: no schema came back; isRefused: one came back that can't be used
+  async #fetchSchema(segmentName: string): Promise<{ isError: boolean; isRefused?: boolean }> {
     const { log, port, config } = this.#projectInfo;
     const devHttps = this.#devHttps ?? config.devHttps;
     const endpoint = getSchemaEndpoint({
@@ -421,7 +441,7 @@ export class VovkDev {
         log.error(`Error parsing schema for ${formatLoggedSegmentName(segmentName)}: ${(error as Error)?.message}`);
       }
 
-      await this.#handleSegmentSchema(segmentName, segmentSchema);
+      if (!(await this.#handleSegmentSchema(segmentName, segmentSchema))) return { isError: false, isRefused: true };
     } catch (error) {
       log.error(
         `Error requesting schema for ${formatLoggedSegmentName(segmentName)} at ${endpoint}: ${(error as Error)?.message}`
@@ -431,7 +451,7 @@ export class VovkDev {
     }
 
     return { isError: false };
-  }, 500);
+  }
 
   #generate = debounce(async () => {
     const fullSchema = {
@@ -459,11 +479,12 @@ export class VovkDev {
     if (this.#exit) process.exitCode = 1;
   }
 
-  async #handleSegmentSchema(segmentName: string, segmentSchema: VovkSegmentSchema | null) {
+  // false when the schema can't be used
+  async #handleSegmentSchema(segmentName: string, segmentSchema: VovkSegmentSchema | null): Promise<boolean> {
     const { log, config, cwd } = this.#projectInfo;
     if (!segmentSchema) {
       log.warn(`${formatLoggedSegmentName(segmentName, { upperFirst: true })} schema is null`);
-      return;
+      return false;
     }
 
     log.debug(`Handling received schema from ${formatLoggedSegmentName(segmentName)}`);
@@ -472,7 +493,7 @@ export class VovkDev {
       assertSegmentName(segmentName);
     } catch (error) {
       log.error((error as Error).message);
-      return;
+      return false;
     }
 
     // the write path is built from segmentName, an http response must not name a different segment
@@ -480,7 +501,7 @@ export class VovkDev {
       log.error(
         `Schema for ${formatLoggedSegmentName(segmentName)} reported a different segment name ${JSON.stringify(segmentSchema.segmentName)}, ignoring it`
       );
-      return;
+      return false;
     }
 
     const schemaOutAbsolutePath = path.resolve(cwd, this.#schemaOut ?? config.schemaOutDir);
@@ -488,7 +509,7 @@ export class VovkDev {
 
     if (!segment) {
       log.warn(`${formatLoggedSegmentName(segmentName)} not found`);
-      return;
+      return true;
     }
 
     this.#schemaSegments[segmentName] = segmentSchema;
@@ -513,6 +534,7 @@ export class VovkDev {
     }
 
     this.#generateIfComplete();
+    return true;
   }
 
   async start({ exit }: { exit: boolean }) {

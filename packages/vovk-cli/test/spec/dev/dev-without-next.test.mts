@@ -595,6 +595,38 @@ await describe('vovk dev in a project without Next.js', async () => {
     }
   });
 
+  await it('Requests a failed schema again once a file outside the modules folder changes', async () => {
+    const schemas: Record<string, object> = {
+      '': segmentWith('', { UserRPC: { className: 'UserController', handlers: ['getUser'] } }),
+    };
+    const server = await startSchemaServer(schemas);
+    await createProject(projectDir, {
+      'package.json': { name: 'app', version: '1.0.0', type: 'module' },
+      'vovk.config.mjs': configFile({ composedClient: { prettifyClient: false } }),
+      'src/app/api/[[...vovk]]/route.ts': "import { limit } from './limit';\n",
+      'src/app/api/[[...vovk]]/limit.ts': 'export const limit = 10;\n',
+    });
+    const dev = startCLI(['dev'], { cwd: projectDir, env: { PORT: server.port } });
+
+    try {
+      await dev.waitForOutput(/Composed client is generated/);
+      // the route doesn't compile meanwhile, so its schema request gets a 404
+      delete schemas[''];
+      const since = dev.getOutput().length;
+      await fs.appendFile(path.join(projectDir, 'src/app/api/[[...vovk]]/route.ts'), '// edited\n');
+      await dev.waitForOutput(/got 404/, 20_000, since);
+      // the fix lands in a file next to the route
+      schemas[''] = segmentWith('', { UserRPC: { className: 'UserController', handlers: ['getUser', 'listUsers'] } });
+      await fs.writeFile(path.join(projectDir, 'src/app/api/[[...vovk]]/limit.ts'), 'export const limit = 20;\n');
+
+      const isUpdated = await waitUntil(async () => (await readFile('.vovk-schema/root.json')).includes('listUsers'));
+      assert.ok(isUpdated, dev.getOutput());
+    } finally {
+      await dev.stop();
+      await server.close();
+    }
+  });
+
   await it('Keeps the client in step with the other segments while one segment has no schema', async () => {
     // the new segment "v2" doesn't compile, so the dev server has no schema for it
     const schemas: Record<string, object> = { '': makeSegmentSchema('') };
