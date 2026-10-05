@@ -97,10 +97,14 @@ export async function getClientTemplateFiles({
         files = [{ filePath: templateAbsolutePath, isSingleFileTemplate: true }];
       } else {
         // the pattern stays relative: glob reads "\" and brackets in a path as pattern syntax
-        files = (await glob('**/*.*', { cwd: templateAbsolutePath, absolute: true, nodir: true })).map((filePath) => ({
-          filePath,
-          isSingleFileTemplate: false,
-        }));
+        const filePaths = await glob('**/*', {
+          cwd: templateAbsolutePath,
+          absolute: true,
+          nodir: true,
+          dot: true,
+          ignore: '**/.DS_Store',
+        });
+        files = filePaths.map((filePath) => ({ filePath, isSingleFileTemplate: false }));
       }
 
       if (files.length === 0) {
