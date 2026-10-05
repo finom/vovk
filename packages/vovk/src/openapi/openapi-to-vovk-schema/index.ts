@@ -30,6 +30,9 @@ const BODY_CONTENT_TYPES: ContentType[] = [
   'application/octet-stream',
 ];
 
+// the media types every client reads as JSON Lines, matched without parameters
+const JSON_LINES_MEDIA_TYPES = ['application/jsonl', 'application/jsonlines', 'application/x-ndjson'];
+
 const mediaTypeEssence = (mediaType: string) => mediaType.split(';')[0].trim().toLowerCase();
 
 // the style and explode each field declares, for the client to serialize the request with; null when none does
@@ -249,7 +252,7 @@ export function openAPIToVovkSchema({
       const formStyles = pickStyles(Object.entries(formEncoding ?? {}));
       const pickResponseSchema = makeResponseSchemaPicker(operation, openAPIObject);
       const output = pickResponseSchema(['application/json'], '+json');
-      const iteration = pickResponseSchema(['application/jsonl', 'application/jsonlines']);
+      const iteration = pickResponseSchema(JSON_LINES_MEDIA_TYPES);
 
       if (errorMessageKey) {
         operation['x-errorMessageKey'] = errorMessageKey;
