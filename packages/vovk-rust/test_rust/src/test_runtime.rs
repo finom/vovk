@@ -10,6 +10,22 @@ pub mod test_runtime {
         )
     }
 
+    // a file comes back as a base64 string, the one form a JSON value holds at about its size; text as a string
+    #[tokio::test]
+    async fn test_download() {
+        use client_runtime_rpc::get_download_::{query as Query, query_::kind as Kind};
+
+        let root = api_root();
+        let download = |kind: Kind, size: &str| {
+            client_runtime_rpc::get_download((), Query { kind, size: size.to_string() }, (), None, Some(&root), false)
+        };
+
+        // bytes 0 to 4, valid UTF-8 as they are
+        assert_eq!(download(Kind::binary, "5").await.unwrap(), "AAECAwQ=");
+        assert_eq!(download(Kind::binary, "1024").await.unwrap().as_str().map(str::len), Some(1368));
+        assert_eq!(download(Kind::csv, "0").await.unwrap(), "name,city\nZoë,東京\n");
+    }
+
     // a token read from a file keeps its line break: the call must not go out without the header
     #[tokio::test]
     async fn test_header_value_with_a_line_break() {

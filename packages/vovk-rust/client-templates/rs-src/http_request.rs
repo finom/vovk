@@ -406,6 +406,16 @@ fn is_json_lines(media_type: &str) -> bool {
     matches!(media_type, "application/jsonl" | "application/jsonlines" | "application/x-ndjson")
 }
 
+// text/* or any type that names a charset
+fn is_text(response: &reqwest::Response, media_type: &str) -> bool {
+    media_type.starts_with("text/")
+        || response
+            .headers()
+            .get(reqwest::header::CONTENT_TYPE)
+            .and_then(|v| v.to_str().ok())
+            .is_some_and(|v| v.split(';').skip(1).any(|p| p.trim().to_ascii_lowercase().starts_with("charset=")))
+}
+
 // as the TypeScript client reads an error: the JSON message, else the detail or title of a problem document, else the
 // text a proxy sent; the cause is the body's cause, or the whole JSON body
 fn error_from_body(body: &[u8], media_type: &str, status: reqwest::StatusCode, location: Option<&str>) -> HttpException {
@@ -432,19 +442,35 @@ fn error_from_body(body: &[u8], media_type: &str, status: reqwest::StatusCode, l
     HttpException::new(message, status_code, cause)
 }
 
-// a success that is not JSON: an empty body is null, text is a string unless the type wants JSON, bytes are a byte list
-fn read_non_json<T: DeserializeOwned>(body: &[u8], status_code: i32) -> Result<T, HttpException> {
+// a text success that is not JSON: an empty body is null, text is a string unless the output type wants JSON
+fn read_text<T: DeserializeOwned>(text: &str, status_code: i32) -> Result<T, HttpException> {
     let to_error = |e: serde_json::Error| HttpException::new(e.to_string(), status_code, None);
-    if body.is_empty() {
+    if text.is_empty() {
         return serde_json::from_value(Value::Null).map_err(to_error);
     }
-    match std::str::from_utf8(body) {
-        Ok(text) => serde_json::from_value(Value::String(text.to_string()))
-            .or_else(|e| serde_json::from_str(text).map_err(|_| e))
-            .map_err(to_error),
-        Err(_) => serde_json::from_value(Value::Array(body.iter().map(|byte| Value::from(*byte)).collect()))
-            .map_err(to_error),
+    serde_json::from_value(Value::String(text.to_string()))
+        .or_else(|e| serde_json::from_str(text).map_err(|_| e))
+        .map_err(to_error)
+}
+
+// a success of any other type, as a file: an empty body is null, the bytes are a base64 string, the one form a JSON
+// value holds at about their size
+fn read_bytes<T: DeserializeOwned>(body: &[u8], status_code: i32) -> Result<T, HttpException> {
+    let value = if body.is_empty() { Value::Null } else { Value::String(base64(body)) };
+    serde_json::from_value(value).map_err(|e| HttpException::new(e.to_string(), status_code, None))
+}
+
+// standard base64 with padding
+fn base64(bytes: &[u8]) -> String {
+    const ALPHABET: &[u8; 64] = b"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+    let mut out = String::with_capacity(bytes.len().div_ceil(3) * 4);
+    for chunk in bytes.chunks(3) {
+        let n = (chunk[0] as u32) << 16 | (*chunk.get(1).unwrap_or(&0) as u32) << 8 | *chunk.get(2).unwrap_or(&0) as u32;
+        for i in 0..4 {
+            out.push(if i <= chunk.len() { ALPHABET[(n >> (18 - 6 * i) & 63) as usize] as char } else { '=' });
+        }
     }
+    out
 }
 
 // Main request function for regular (non-streaming) responses
@@ -489,6 +515,12 @@ where
     let media_type = media_type(&response);
     let location = location(&response);
 
+    // decoded by the charset it names, UTF-8 by default
+    if status.is_success() && !is_json(&media_type) && !is_json_lines(&media_type) && is_text(&response, &media_type) {
+        let text = response.text().await.map_err(|e| HttpException::new(e.to_string(), status_code, None))?;
+        return read_text(&text, status_code);
+    }
+
     let bytes = response
         .bytes()
         .await
@@ -523,7 +555,7 @@ where
         return serde_json::from_slice::<T>(&bytes).map_err(|e| HttpException::new(e.to_string(), status_code, None));
     }
 
-    read_non_json(&bytes, status_code)
+    read_bytes(&bytes, status_code)
 }
 
 // Request function specifically for streaming responses
