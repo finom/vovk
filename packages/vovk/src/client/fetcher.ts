@@ -3,6 +3,7 @@ import type { VovkFetcher, VovkFetcherOptions, VovkStreamAsyncIterable } from '.
 import type { VovkHandlerSchema } from '../types/core.js';
 import { HttpStatus } from '../types/enums.js';
 import { fileNameToDisposition } from '../utils/file-name-to-disposition.js';
+import { takesNullBody } from './takes-null-body.js';
 export const DEFAULT_ERROR_MESSAGE = 'Unknown error at default fetcher';
 
 // header values must be ByteString, escape non-ASCII as \uXXXX which JSON.parse reads natively
@@ -55,7 +56,8 @@ const getMediaType = (contentType: string | null | undefined) => contentType?.sp
 
 const isJSONMediaType = (mediaType: string) => mediaType === 'application/json' || mediaType.endsWith('+json');
 
-const JSON_LINES_MEDIA_TYPES = ['application/jsonl', 'application/jsonlines'];
+// the Python and Rust clients and the OpenAPI mixin importer use the same list
+const JSON_LINES_MEDIA_TYPES = ['application/jsonl', 'application/jsonlines', 'application/x-ndjson'];
 
 // AbortSignal.any is missing in React Native and Safari before 17.4, where the given signal aborts the controller
 function anySignal(controller: AbortController, signal: AbortSignal): AbortSignal {
@@ -180,8 +182,12 @@ export function createFetcher<T>({
         });
       }
 
-      const declaredContentTypes = ((schema.validation?.body?.['x-contentType'] ?? []) as string[]).map(getMediaType);
-      const hasBody = body !== undefined && body !== null;
+      const bodySchema = schema.validation?.body;
+      // a body schema that declares no content type takes JSON, as the server checks it
+      const declaredContentTypes = (
+        (bodySchema?.['x-contentType'] ?? (bodySchema ? ['application/json'] : [])) as string[]
+      ).map(getMediaType);
+      const hasBody = body !== undefined && (body !== null || takesNullBody(bodySchema));
       const isBinary = body instanceof Blob || body instanceof ArrayBuffer || ArrayBuffer.isView(body);
       const resolvedContentType = !hasBody
         ? undefined // no body, no content type: a cross-origin GET then needs no preflight
@@ -198,7 +204,7 @@ export function createFetcher<T>({
 
       // Default headers (lowercase keys)
       const defaultHeaders: Record<string, string> = {
-        accept: 'application/jsonl, application/json',
+        accept: [...JSON_LINES_MEDIA_TYPES, 'application/json'].join(', '),
         ...(resolvedContentType ? { 'content-type': resolvedContentType } : {}),
         ...(resolvedFileName ? { 'content-disposition': fileNameToDisposition(resolvedFileName) } : {}),
         ...(meta ? { 'x-meta': toAsciiJson(meta) } : {}),

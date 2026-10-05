@@ -208,7 +208,7 @@ Fetcher = client's core primitive — function (`VovkFetcher<TFetcherOptions>`) 
 Response-shape dispatch by content type:
 
 - `application/json` → parsed JSON (typed as procedure's output schema).
-- `application/jsonl` / `application/jsonlines` → disposable async iterable (see `jsonlines` skill).
+- `application/jsonl` / `application/jsonlines` / `application/x-ndjson` → disposable async iterable (see `jsonlines` skill).
 - Other content types → raw `Response` object — caller reads text, binary, or streams it.
 
 You **extend** default rather than rewriting via `createFetcher`:
