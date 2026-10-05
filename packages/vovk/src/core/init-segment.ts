@@ -6,7 +6,7 @@ import { trimPath } from '../utils/trim-path.js';
 import { applyDecorateDecorators } from './decorate.js';
 import { clonedControllers } from './decorators.js';
 import { getSchema } from './get-schema.js';
-import { getCatchAllPath, vovkApp } from './vovk-app.js';
+import { getCatchAllPath, type RouteParams, vovkApp } from './vovk-app.js';
 
 // a controller keeps its own handlers and routes over its parent's
 const copyFromParent = (controller: VovkController, parent: VovkController) => {
@@ -74,7 +74,7 @@ export const initSegment = (options: {
     onBefore: options.onBefore,
   });
 
-  async function GET_DEV(req: Request, data: { params: Promise<Record<string, string[]>> }) {
+  async function GET_DEV(req: Request, data: { params: Promise<RouteParams> }) {
     const params = await data.params;
     if (getCatchAllPath(params)[0] === '_schema_') {
       const schema = await getSchema(options);
@@ -95,8 +95,5 @@ export const initSegment = (options: {
     DELETE: (req, data) => vovkApp.DELETE(req, data, segmentName),
     HEAD: (req, data) => vovkApp.HEAD(req, data, segmentName),
     OPTIONS: (req, data) => vovkApp.OPTIONS(req, data, segmentName),
-  } satisfies Record<
-    HttpMethod,
-    (req: Request, data: { params: Promise<Record<string, string[]>> }) => Promise<unknown>
-  >;
+  } satisfies Record<HttpMethod, (req: Request, data: { params: Promise<RouteParams> }) => Promise<unknown>>;
 };
