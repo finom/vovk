@@ -1,6 +1,4 @@
 #!/usr/bin/env node
-export type { VovkEnv } from './types.mjs';
-
 // no static imports: on an older Node.js a dependency throws while it loads, before this check could run
 const MIN_NODE_MAJOR = 22;
 
