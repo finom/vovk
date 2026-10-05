@@ -71,7 +71,7 @@ const config = {
 export default config;
 ```
 
-**Bake prod API URL** via `clientTemplateDefs.rs.outputConfig.origin` — generated crate uses this by default. Pattern from hello-world:
+**Bake prod API URL** via `clientTemplateDefs.rs.outputConfig.origin` — generated crate uses this by default. Required: crate sends calls to an absolute URL, so without an origin every call needs `api_root`, and `vovk generate` warns. Pattern from hello-world:
 
 ```ts
 // vovk.config.js
@@ -117,7 +117,7 @@ pub async fn ping(
 ) -> Result<serde_json::Value, HttpException>
 ```
 
-**Method names** lodash `snakeCase(handlerName)` — `getUser` → `get_user`, `findPetsByStatus` → `find_pets_by_status`, `UserRPC` (module) → `user_rpc`.
+**Method names** lodash `snakeCase(handlerName)` — `getUser` → `get_user`, `findPetsByStatus` → `find_pets_by_status`, `UserRPC` (module) → `user_rpc`. Types of `update_user` live in module `update_user_`. Names alike in snake_case (`getUserByID`, `getUserById`) get the first free suffix, per module in schema order: `get_user_by_id`, `get_user_by_id_2`. `http_request` and `http_request_stream` count as taken (the module imports them).
 
 **Nested types** use `_::` module syntax. `body.profile` typed `update_user_::body_::profile`. How generator flattens deep JSON Schema into Rust modules.
 
@@ -232,7 +232,7 @@ features = ["codec"]
 - **`tokio-util` (`codec`)** — line-delimited framing for JSON Lines decoding.
 - **`serde` (`derive`) + `serde_json`** — (de)serialization.
 - **`futures-util`** — streaming combinators (`StreamExt::next` etc).
-- **`jsonschema 0.57`** — client-side validation against `schema.json`: JSON Schema 2020-12 (draft 7 when a schema declares it), formats checked. Needs Rust 1.85+.
+- **`jsonschema 0.57`** — client-side validation against `schema.json`: JSON Schema 2020-12 (draft 7 when a schema declares it), formats checked. Crate builds on Rust 1.86 (`rust-version = "1.85"`, resolver 3); a consumer on edition 2021 without `resolver = "3"` gets newer deps that need Rust 1.88.
 - **`urlencoding`** + **`once_cell`** — internal utilities.
 
 ## Auth + base URL
@@ -328,5 +328,6 @@ Add module to `src/lib.rs`: `pub mod api;`.
 - **`text/plain` and `application/octet-stream` body params not fully supported** — JSON is solid path today.
 - **Named schemas in `components/schemas` don't yet produce importable shared types** — roadmap. Every call site gets own scoped types.
 - **Streaming needs `futures::StreamExt`** — forget import → `.next()` won't compile.
+- **Multipart file names** without `"`, `\`, or line breaks — reqwest escapes them with a backslash, server keeps it in the name; a `"` makes the form unreadable. Field names go out as written.
 - **Regen on schema changes.** CI should regen as part of build, same as TS/Python.
 - **Don't hand-edit generated files.** Put shared utilities alongside, not inside, generated crate.
