@@ -2,6 +2,7 @@ import assert from 'node:assert';
 import { describe, it } from 'node:test';
 import {
   decorate,
+  del,
   deriveTools,
   get,
   HttpException,
@@ -954,6 +955,22 @@ describe('deriveTools', () => {
       assert.deepStrictEqual(
         { path, httpMethod, summary: operationObject?.summary },
         { path: '{id}', httpMethod: 'PUT', summary: 'Update user' }
+      );
+    });
+
+    it("Keeps the procedure's own operation next to the decorator's", () => {
+      class TaskController {
+        static deleteTask = decorate(
+          del('{id}'),
+          operation({ summary: 'Delete task' }),
+          procedure({ operationObject: { description: 'Deletes a task by its ID' } })
+        ).handle(async () => null);
+      }
+      initSegment({ segmentName: 'derive-tools-merge', controllers: { TaskRPC: TaskController } });
+
+      assert.deepStrictEqual(
+        deriveTools({ modules: { TaskController } }).map(({ description }) => description),
+        ['Delete task\nDeletes a task by its ID']
       );
     });
   });

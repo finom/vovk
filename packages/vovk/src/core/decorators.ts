@@ -69,7 +69,6 @@ const assignSchema = ({
   originalMethod._sourceMethod = originalMethod._sourceMethod ?? originalMethod;
   const schema = originalMethod._sourceMethod._getSchema?.(controller);
   // TODO: Some of these assignments probably not needed anymore
-  originalMethod.schema = schema;
   originalMethod.fn = originalMethod._sourceMethod?.fn;
   originalMethod.definition = originalMethod._sourceMethod?.definition;
   originalMethod._sourceMethod.wrapper = originalMethod;
@@ -82,6 +81,8 @@ const assignSchema = ({
       httpMethod,
     },
   };
+  // the schema of the RPC method, with what the decorators applied before this one added
+  originalMethod.schema = controller._handlers[propertyKey];
 
   methods[path] = originalMethod as RouteHandler;
   methods[path]._options = options;
