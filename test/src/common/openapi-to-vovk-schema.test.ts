@@ -198,6 +198,65 @@ describe('openAPIToVovkSchema — pruneComponents', () => {
     ok(reattached.$defs?.Nested, 'transitive Nested re-embedded after pruning');
   });
 
+  // the schemas a pruned segment keeps when getUser answers with these responses
+  function keptSchemas(responses: Obj, components: Obj) {
+    const segment = openAPIToVovkSchema({
+      apiRoot: 'https://api.example.com',
+      source: {
+        object: {
+          openapi: '3.1.0',
+          info: { title: 'Refs', version: '1.0.0' },
+          paths: { '/user': { get: { operationId: 'getUser', responses } } },
+          components,
+        },
+      },
+      getModuleName: () => 'Test',
+      getMethodName: ({ operationObject }: { operationObject: { operationId?: string } }) =>
+        operationObject.operationId ?? 'op',
+      segmentName: 'api',
+      pruneComponents: true,
+    } as unknown as Parameters<typeof openAPIToVovkSchema>[0]).segments.api as Seg;
+    return Object.keys(segment.meta.openAPIObject.components.schemas).sort();
+  }
+
+  const jsonResponse = (ref: string) => ({
+    description: 'a response',
+    content: { 'application/json': { schema: { $ref: ref } } },
+  });
+
+  it('reads a $ref by its full path, not by its last segment', () => {
+    const kept = keptSchemas(
+      { '200': { $ref: '#/components/responses/User' } },
+      {
+        schemas: {
+          User: { type: 'object', properties: { legacy: { type: 'boolean' } } },
+          UserBody: { type: 'object', properties: { id: { type: 'string' } } },
+        },
+        responses: { User: jsonResponse('#/components/schemas/UserBody') },
+      }
+    );
+    deepStrictEqual(kept, ['UserBody'], 'the response User refers to UserBody, the schema User is unused');
+  });
+
+  it('keeps the schemas a kept operation reaches through other components', () => {
+    const kept = keptSchemas(
+      {
+        '200': jsonResponse('#/components/schemas/UserBody'),
+        '404': { $ref: '#/components/responses/NotFound' },
+      },
+      {
+        schemas: {
+          UserBody: { type: 'object', properties: { id: { type: 'string' } } },
+          Problem: { type: 'object', properties: { detail: { $ref: '#/components/schemas/Detail' } } },
+          Detail: { type: 'string' },
+          Orphan: { type: 'boolean' },
+        },
+        responses: { NotFound: jsonResponse('#/components/schemas/Problem') },
+      }
+    );
+    deepStrictEqual(kept, ['Detail', 'Problem', 'UserBody'], 'Problem and Detail come through the 404 response');
+  });
+
   it('does not mutate the input spec', () => {
     build({ filterOperations: () => false, pruneComponents: true });
     deepStrictEqual(

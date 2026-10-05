@@ -303,7 +303,7 @@ export function openAPIToVovkSchema({
     pruneComponents && noPathsOpenAPIObject.components?.schemas
       ? pruneComponentsSchemas(
           operations.map(({ handler, slots }) => [handler.operationObject, slots]),
-          noPathsOpenAPIObject.components.schemas
+          noPathsOpenAPIObject.components
         )
       : componentsSchemas;
 
