@@ -58,7 +58,9 @@ export function createDecorator<TArgs extends unknown[], TRequest = VovkRequest>
         // TODO define internal method type
         (originalMethod as unknown as { _controller: VovkController })._controller = controller;
 
-        const handlerSchema: VovkHandlerSchema | null = controller._handlers?.[propertyKey] ?? null;
+        // before the HTTP decorator, the procedure's own schema is the one to add to
+        const handlerSchema: VovkHandlerSchema | null =
+          controller._handlers?.[propertyKey] ?? originalMethod.schema ?? null;
         const initResultReturn = initHandler?.call(controller, ...args);
         const initResult =
           typeof initResultReturn === 'function'

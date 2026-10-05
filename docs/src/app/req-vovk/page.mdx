@@ -23,6 +23,8 @@ export default class UserController {
 }
 ```
 
+Once a body schema or `req.vovk.body()` has read the body, the body methods of `req`, `req.body` and `req.clone()` replay it. To forward the request, use `new Request(url, req)` or pass `body: req.body` to `fetch()`. `new Request(req)` and `fetch(req)` take the request's own body, which is read by then, and throw.
+
 <a name="query"></a>
 ## `req.vovk.query()`
 

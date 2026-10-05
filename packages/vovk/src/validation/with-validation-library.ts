@@ -419,8 +419,8 @@ export function withValidationLibrary<
         enumerable: true,
         get: () => (bodyJSONSchema ??= getJSONSchema(body, 'body')),
       });
-    } else if (contentType && !skipSchemaEmissionKeys.includes('body')) {
-      // the declared types alone, so every client sends a body the server accepts
+    } else if (contentType) {
+      // the declared types alone, also when the body schema is skipped, so every client sends a body the server accepts
       validation.body = { 'x-contentType': contentType };
     }
     if (query && !skipSchemaEmissionKeys.includes('query')) {

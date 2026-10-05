@@ -256,7 +256,7 @@ Disables server-side validation for the specified library. Provide a boolean to 
 
 #### `skipSchemaEmission`
 
-Skips emitting JSON Schema for the handler. Provide a boolean to skip entirely, or an array of validation types (`body`, `query`, `params`, `output`, `iteration`). This does not change RPC typings but disables features that depend on emitted schemas, including client-side validation.
+Skips emitting JSON Schema for the handler. Provide a boolean to skip entirely, or an array of validation types (`body`, `query`, `params`, `output`, `iteration`). This does not change RPC typings but disables features that depend on emitted schemas, including client-side validation. The declared `contentType` is still emitted, since the clients encode the body by it.
 
 #### `validateEachIteration`
 

@@ -1,12 +1,16 @@
 import assert from 'node:assert';
 import { describe, it } from 'node:test';
 import {
+  del,
   deriveTools,
   get,
   HttpException,
+  initSegment,
   JSONLinesResponder,
   operation,
+  prefix,
   procedure,
+  put,
   ToModelOutput,
   toDownloadResponse,
   type VovkOutput,
@@ -1008,6 +1012,56 @@ describe('deriveTools', () => {
         .map((i) => (i.path?.[0] as { key?: string } | undefined)?.key);
       assert.ok(missingKeys.includes('query'));
       assert.ok(missingKeys.includes('params'));
+    });
+  });
+
+  describe('Controllers with operation() applied before the HTTP decorator', () => {
+    class UserController {
+      static updateUser = procedure({
+        params: z.object({ id: z.string() }),
+        body: z.object({ email: z.string() }),
+      }).handle(async (req, { id }) => ({ id, ...(await req.vovk.body()) }));
+
+      static getUser = procedure({ params: z.object({ id: z.string() }) }).handle(async (_req, { id }) => ({ id }));
+    }
+    prefix('users')(UserController);
+    // @put('{id}') and @get('{id}') written above @operation(): stacked decorators apply bottom-up
+    operation({ summary: 'Update user' })(UserController, 'updateUser');
+    put('{id}')(UserController, 'updateUser');
+    operation({ summary: 'Get user' })(UserController, 'getUser');
+    get('{id}')(UserController, 'getUser');
+    initSegment({ segmentName: 'derive-tools', controllers: { UserRPC: UserController } });
+
+    it('Derives their tools', () => {
+      assert.deepStrictEqual(
+        deriveTools({ modules: { UserController } }).map(({ name }) => name),
+        ['UserController_updateUser', 'UserController_getUser']
+      );
+    });
+
+    it('Gives the method the schema of its RPC method', () => {
+      const { path, httpMethod, operationObject } = UserController.updateUser.schema;
+
+      assert.deepStrictEqual(
+        { path, httpMethod, summary: operationObject?.summary },
+        { path: '{id}', httpMethod: 'PUT', summary: 'Update user' }
+      );
+    });
+
+    it("Keeps the procedure's own operation next to the decorator's", () => {
+      class TaskController {
+        static deleteTask = procedure({ operationObject: { description: 'Deletes a task by its ID' } }).handle(
+          async () => null
+        );
+      }
+      operation({ summary: 'Delete task' })(TaskController, 'deleteTask');
+      del('{id}')(TaskController, 'deleteTask');
+      initSegment({ segmentName: 'derive-tools-merge', controllers: { TaskRPC: TaskController } });
+
+      assert.deepStrictEqual(
+        deriveTools({ modules: { TaskController } }).map(({ description }) => description),
+        ['Delete task\nDeletes a task by its ID']
+      );
     });
   });
 });

@@ -9,7 +9,6 @@ import {
   cloneControllerMetadata,
   controllersToStaticParams,
   createDecorator,
-  decorate,
   del,
   get,
   HttpException,
@@ -23,6 +22,7 @@ import {
   procedure,
   type VovkRequest,
 } from 'vovk';
+import { createRPC } from 'vovk/create-rpc';
 import { z } from 'zod';
 
 type Handlers = ReturnType<typeof initSegment>;
@@ -402,6 +402,38 @@ describe('Runtime sweep', () => {
       });
     });
 
+    it('Has no decorate() export', async () => {
+      const vovk = await import('vovk');
+
+      strictEqual('decorate' in vovk, false);
+    });
+
+    it('Routes by @prefix() and ignores a static prefix field', async () => {
+      class StaticPrefixController {
+        static prefix = 'ignored';
+
+        static list() {
+          return 'static';
+        }
+      }
+      get('list')(StaticPrefixController, 'list');
+      class DecoratedPrefixController {
+        static list() {
+          return 'decorated';
+        }
+      }
+      get('list')(DecoratedPrefixController, 'list');
+      prefix('decorated')(DecoratedPrefixController);
+      const handlers = initSegment({
+        segmentName: 'static-prefix-field',
+        controllers: { StaticPrefixRPC: StaticPrefixController, DecoratedPrefixRPC: DecoratedPrefixController },
+      });
+
+      strictEqual((await call(handlers, 'GET', 'list')).status, 200);
+      strictEqual((await call(handlers, 'GET', 'ignored/list')).status, 404);
+      deepStrictEqual(await (await call(handlers, 'GET', 'decorated/list')).json(), 'decorated');
+    });
+
     it('Answers a path two controllers of a segment declare with a JSON error and calls onError', async () => {
       const errors: string[] = [];
       class FirstController {
@@ -519,16 +551,25 @@ describe('Runtime sweep', () => {
       deepStrictEqual(await response.json(), { 'user-id': '42' });
     });
 
-    it('Serves the routes a decorate() controller inherits over two levels in any controller order', async () => {
+    it('Serves the routes a controller inherits over two levels in any controller order', async () => {
       class GrandparentController {
-        static a = decorate(get('a')).handle(async () => 'a');
+        static a() {
+          return 'a';
+        }
       }
+      get('a')(GrandparentController, 'a');
       class ParentController extends GrandparentController {
-        static b = decorate(get('b')).handle(async () => 'b');
+        static b() {
+          return 'b';
+        }
       }
+      get('b')(ParentController, 'b');
       class ChildController extends ParentController {
-        static c = decorate(get('c')).handle(async () => 'c');
+        static c() {
+          return 'c';
+        }
       }
+      get('c')(ChildController, 'c');
       prefix('child')(ChildController);
       // the child comes first
       const handlers = initSegment({
@@ -1182,6 +1223,45 @@ describe('Runtime sweep', () => {
       deepStrictEqual(bodiesBefore, [{ ownerId: 'me', title: 'Hello' }]);
     });
 
+    it('Lets a decorator copy a request whose body was validated, to forward or log it', async () => {
+      const forward = createDecorator(async (req, next) => {
+        const result = await next();
+        const upstream = 'http://upstream.example/notes';
+        return {
+          result,
+          cloned: await req.clone().text(),
+          copied: await new Request(upstream, req).text(),
+          // as fetch(upstream, init) builds its request
+          forwarded: await new Request(upstream, {
+            method: req.method,
+            headers: req.headers,
+            body: req.body,
+            duplex: 'half',
+          } as RequestInit).text(),
+        };
+      });
+      class ForwardController {
+        static create = procedure({ body: z.object({ title: z.string() }) }).handle(async (req) => req.vovk.body());
+      }
+      forward()(ForwardController, 'create');
+      post('create')(ForwardController, 'create');
+      const handlers = initSegment({ segmentName: 'forward', controllers: { ForwardController } });
+      const text = JSON.stringify({ title: 'Hello' });
+
+      const response = await call(handlers, 'POST', 'create', {
+        body: text,
+        headers: { 'content-type': 'application/json' },
+      });
+
+      strictEqual(response.status, 200);
+      deepStrictEqual(await response.json(), {
+        result: { title: 'Hello' },
+        cloned: text,
+        copied: text,
+        forwarded: text,
+      });
+    });
+
     it('Validates a missing body as undefined, so an optional body can be left out', async () => {
       class DraftController {
         static optional = procedure({ body: z.object({ title: z.string() }).optional() }).handle(async (req) => ({
@@ -1410,6 +1490,119 @@ describe('Runtime sweep', () => {
     });
   });
 
+  // a client sends a body as the content type the schema declares for it, which a hidden body schema must keep
+  describe('Content types of a hidden body schema', () => {
+    const defineController = (skipSchemaEmission?: ['body']) => {
+      class ImportController {
+        static csv = procedure({ contentType: 'text/csv', body: z.string(), skipSchemaEmission }).handle(
+          async (req) => ({ rows: (await req.vovk.body()).split('\n').length })
+        );
+
+        static form = procedure({
+          contentType: 'multipart/form-data',
+          body: z.object({ name: z.string() }),
+          skipSchemaEmission,
+        }).handle(async (req) => req.vovk.body());
+
+        static pdf = procedure({ contentType: 'application/pdf', body: z.file(), skipSchemaEmission }).handle(
+          async (req) => ({ size: (await req.vovk.body()).size })
+        );
+      }
+      post('csv')(ImportController, 'csv');
+      post('form')(ImportController, 'form');
+      post('pdf')(ImportController, 'pdf');
+      return ImportController;
+    };
+
+    // the results of the calls of an RPC module built from the schema the segment serves, as the generated client is
+    const callThroughClient = async (
+      segmentName: string,
+      ImportController: ReturnType<typeof defineController>,
+      exposeValidation?: boolean
+    ) => {
+      let handlers = {} as Handlers;
+      await withNodeEnv('development', async () => {
+        handlers = initSegment({ segmentName, controllers: { ImportRPC: ImportController }, exposeValidation });
+      });
+      const { schema } = await (await call(handlers, 'GET', '_schema_')).json();
+      // the body schema itself stays hidden
+      for (const { validation } of Object.values<{ validation?: { body?: object } }>(
+        schema.controllers.ImportRPC.handlers
+      )) {
+        ok(!validation?.body || !('type' in validation.body));
+      }
+      const ImportRPC = createRPC<typeof ImportController>(
+        { segments: { [segmentName]: schema } },
+        segmentName,
+        'ImportRPC',
+        undefined,
+        { apiRoot: 'http://localhost/api' }
+      );
+      const original = globalThis.fetch;
+      // routed as Next.js routes app/api/<segmentName>/[[...vovk]]/route.ts
+      globalThis.fetch = (async (url: string, init: RequestInit) => {
+        const req = new Request(url, init);
+        const path = new URL(req.url).pathname.split('/').slice(3);
+        return handlers[req.method as keyof Handlers](req, { params: Promise.resolve({ vovk: path }) });
+      }) as typeof fetch;
+      const outcome = (promise: Promise<unknown>) =>
+        promise.catch((error: HttpException) => `${error.statusCode} ${error.message}`);
+      try {
+        return await Promise.all([
+          outcome(ImportRPC.csv({ body: 'a,b\nc,d' })),
+          outcome(ImportRPC.form({ body: { name: 'me' } })),
+          outcome(ImportRPC.pdf({ body: new File(['%PDF'], 'report.pdf') })),
+        ]);
+      } finally {
+        globalThis.fetch = original;
+      }
+    };
+    const results = [{ rows: 2 }, { name: 'me' }, { size: 4 }];
+
+    it('Reach the client when exposeValidation is false', async () => {
+      deepStrictEqual(await callThroughClient('hidden-validation', defineController(), false), results);
+    });
+
+    it('Reach the client when skipSchemaEmission skips the body', async () => {
+      deepStrictEqual(await callThroughClient('skipped-body', defineController(['body'])), results);
+    });
+
+    it('Leave out the content type of a body whose JSON Schema cannot be built when exposeValidation is false', async () => {
+      const throwConversion = (): Record<string, unknown> => {
+        throw new Error('No JSON Schema for this type');
+      };
+      // a Standard Schema whose JSON Schema conversion throws
+      const opaque = {
+        '~standard': {
+          version: 1 as const,
+          vendor: 'opaque',
+          validate: (value: unknown) => ({ value }),
+          jsonSchema: { input: throwConversion, output: throwConversion },
+        },
+      };
+      class OpaqueController {
+        static upload = procedure({ contentType: 'text/csv', body: opaque }).handle(async () => ({ ok: true }));
+      }
+      post('upload')(OpaqueController, 'upload');
+      let handlers = {} as Handlers;
+      await withNodeEnv('development', async () => {
+        handlers = initSegment({
+          segmentName: 'opaque-body',
+          controllers: { OpaqueRPC: OpaqueController },
+          exposeValidation: false,
+        });
+      });
+
+      const response = await call(handlers, 'GET', '_schema_');
+
+      strictEqual(response.status, 200);
+      deepStrictEqual((await response.json()).schema.controllers.OpaqueRPC.handlers.upload, {
+        path: 'upload',
+        httpMethod: 'POST',
+      });
+    });
+  });
+
   describe('Query', () => {
     class SearchController {
       static search(req: VovkRequest) {
@@ -1448,6 +1641,12 @@ describe('Runtime sweep', () => {
         filter: { status: ['open', 'closed'] },
         page: ['2'],
       });
+    });
+
+    it('Keeps a plain value given before the same key with []', async () => {
+      const response = await call(handlers, 'GET', 'search?x=1&x[]=2&y=1&y[]=2&y[]=3');
+
+      deepStrictEqual(await response.json(), { x: ['1', '2'], y: ['1', '2', '3'] });
     });
 
     it('Appends [] after the highest index', async () => {
@@ -1556,6 +1755,135 @@ describe('Runtime sweep', () => {
 
       strictEqual(result.action, 'rewrite');
       strictEqual(result.destination, 'https://admin.example.com/admin/settings/users?tab=2');
+    });
+  });
+
+  // SEC-01: grouping repeated field names by copying the array on every repeat cost O(N^2), so a few hundred KB of
+  // `a&a&...` blocked the server for seconds before validation, on any endpoint that reads a form body
+  describe('Form body with a repeated field name', () => {
+    class RepeatedFieldController {
+      static form = procedure({
+        contentType: 'application/x-www-form-urlencoded',
+        body: z.object({ name: z.string() }),
+      }).handle(async (req: VovkRequest<{ name: string }>) => ({ name: (await req.vovk.body()).name }));
+    }
+    post('form')(RepeatedFieldController, 'form');
+    const handlers = initSegment({ segmentName: 'repeated-field', controllers: { RepeatedFieldController } });
+
+    it('parses a body that repeats one field name 100000 times in linear time', async () => {
+      const body = `${'a&'.repeat(100_000)}name=x`;
+      const started = Date.now();
+      const response = await call(handlers, 'POST', 'form', {
+        headers: { 'content-type': 'application/x-www-form-urlencoded' },
+        body,
+      });
+      const elapsed = Date.now() - started;
+
+      strictEqual(response.status, 200);
+      deepStrictEqual(await response.json(), { name: 'x' });
+      // the same byte count with distinct names parses in tens of ms; the quadratic path takes several seconds
+      ok(elapsed < 3000, `parsing ${Math.round(body.length / 1024)} KB of repeated keys took ${elapsed} ms`);
+    });
+  });
+
+  describe('Decorators without experimentalDecorators', () => {
+    // without the flag, SWC (Turbopack) applies 2018-09 decorators: each gets a descriptor, the class reaches a finisher
+    type Descriptor2018 = { finisher?: (klass: unknown) => void };
+    const decorate2018 = (decorator: unknown, descriptor: object) =>
+      ((decorator as (descriptor: object) => Descriptor2018 | undefined)(descriptor) ?? descriptor) as Descriptor2018;
+
+    it('Applies @prefix() given a class descriptor', async () => {
+      class HelloController {
+        static getHello() {
+          return { greeting: 'Hello, World!' };
+        }
+      }
+      const results = [
+        decorate2018(get('greeting'), {
+          kind: 'method',
+          key: 'getHello',
+          placement: 'static',
+          descriptor: Object.getOwnPropertyDescriptor(HelloController, 'getHello'),
+        }),
+        decorate2018(prefix('greetings'), { kind: 'class', elements: [] }),
+      ];
+      for (const { finisher } of results) finisher?.(HelloController);
+      const handlers = initSegment({ segmentName: 'decorators-2018', controllers: { HelloRPC: HelloController } });
+
+      const response = await call(handlers, 'GET', 'greetings/greeting');
+
+      strictEqual(response.status, 200);
+      deepStrictEqual(await response.json(), { greeting: 'Hello, World!' });
+    });
+
+    it('Applies @cloneControllerMetadata() given a class descriptor', async () => {
+      class ParentController {
+        static getA() {
+          return { from: 'parent' };
+        }
+      }
+      decorate2018(get('a'), {
+        kind: 'method',
+        key: 'getA',
+        placement: 'static',
+        descriptor: Object.getOwnPropertyDescriptor(ParentController, 'getA'),
+      }).finisher?.(ParentController);
+      class ChildController extends ParentController {
+        static getB() {
+          return { from: 'child' };
+        }
+      }
+      // the member finishers run before the class ones, as in the 2018-09 helper
+      const results = [
+        decorate2018(get('b'), {
+          kind: 'method',
+          key: 'getB',
+          placement: 'static',
+          descriptor: Object.getOwnPropertyDescriptor(ChildController, 'getB'),
+        }),
+        decorate2018(cloneControllerMetadata(), { kind: 'class', elements: [] }),
+      ];
+      for (const { finisher } of results) finisher?.(ChildController);
+      // the parent is in no segment: only the clone serves its route
+      const handlers = initSegment({
+        segmentName: 'decorators-2018-clone',
+        controllers: { ChildRPC: ChildController },
+      });
+
+      const inherited = await call(handlers, 'GET', 'a');
+      const own = await call(handlers, 'GET', 'b');
+
+      strictEqual(inherited.status, 200);
+      deepStrictEqual(await inherited.json(), { from: 'parent' });
+      strictEqual(own.status, 200);
+      deepStrictEqual(await own.json(), { from: 'child' });
+    });
+  });
+
+  describe('Form data from another realm', () => {
+    it('Keeps an uploaded file the global File class does not recognize', async () => {
+      class UploadController {
+        static upload = procedure({ contentType: 'multipart/form-data' }).handle(async (req) => {
+          const { file } = (await req.vovk.body()) as { file: unknown };
+          return { type: typeof file, size: file instanceof Blob ? file.size : null };
+        });
+      }
+      post('upload')(UploadController, 'upload');
+      const handlers = initSegment({ segmentName: 'realm-upload', controllers: { UploadController } });
+      const form = new FormData();
+      form.append('file', new Blob(['hello']), 'hello.txt');
+      // the edge runtime of Next.js 15.0 hands out form files that are Blobs but not instances of its global File
+      const { File: NativeFile } = globalThis;
+      globalThis.File = class File extends Blob {} as unknown as typeof NativeFile;
+
+      try {
+        const response = await call(handlers, 'POST', 'upload', { body: form });
+
+        strictEqual(response.status, 200);
+        deepStrictEqual(await response.json(), { type: 'object', size: 5 });
+      } finally {
+        globalThis.File = NativeFile;
+      }
     });
   });
 });

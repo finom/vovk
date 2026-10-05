@@ -1,11 +1,10 @@
 import type { VovkController } from '../types/core.js';
 import type { HttpMethod } from '../types/enums.js';
 import type { VovkRequest } from '../types/request.js';
-import type { KnownAny, StaticClass } from '../types/utils.js';
+import type { StaticClass } from '../types/utils.js';
 import { trimPath } from '../utils/trim-path.js';
-import type { DecorateMetadata } from './decorate.js';
 import { getSchema } from './get-schema.js';
-import { getCatchAllPath, vovkApp } from './vovk-app.js';
+import { getCatchAllPath, type RouteParams, vovkApp } from './vovk-app.js';
 
 export const initSegment = (options: {
   segmentName?: string;
@@ -36,19 +35,7 @@ export const initSegment = (options: {
     controller._onSuccess = options?.onSuccess;
     controller._onBefore = options?.onBefore;
 
-    // Apply deferred decorate() decorator appliers in reverse order (bottom-up, matching stacked decorator semantics)
-    for (const key of Object.getOwnPropertyNames(controller)) {
-      const appliers = ((controller[key] as KnownAny)?._decorateMetadata as DecorateMetadata | undefined)
-        ?.decoratorAppliers;
-      if (appliers) {
-        for (let i = appliers.length - 1; i >= 0; i--) {
-          appliers[i](controller, key);
-        }
-      }
-    }
-
-    // Re-clone metadata if this controller extends another registered controller
-    // (cloneControllerMetadata() runs at class-definition time, before decorate() metadata is applied)
+    // a controller that extends another one in the segment serves its parent's routes too
     const parent = Object.getPrototypeOf(controller) as VovkController;
     if (controllerSet.has(parent) && parent._handlers) {
       controller._handlers = { ...parent._handlers, ...controller._handlers };
@@ -66,7 +53,7 @@ export const initSegment = (options: {
     onBefore: options.onBefore,
   });
 
-  async function GET_DEV(req: Request, data: { params: Promise<Record<string, string[]>> }) {
+  async function GET_DEV(req: Request, data: { params: Promise<RouteParams> }) {
     const params = await data.params;
     if (getCatchAllPath(params)[0] === '_schema_') {
       const schema = await getSchema(options);
@@ -87,8 +74,5 @@ export const initSegment = (options: {
     DELETE: (req, data) => vovkApp.DELETE(req, data, segmentName),
     HEAD: (req, data) => vovkApp.HEAD(req, data, segmentName),
     OPTIONS: (req, data) => vovkApp.OPTIONS(req, data, segmentName),
-  } satisfies Record<
-    HttpMethod,
-    (req: Request, data: { params: Promise<Record<string, string[]>> }) => Promise<unknown>
-  >;
+  } satisfies Record<HttpMethod, (req: Request, data: { params: Promise<RouteParams> }) => Promise<unknown>>;
 };

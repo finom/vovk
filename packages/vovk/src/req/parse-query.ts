@@ -56,11 +56,13 @@ function setEntry(container: QueryContainer, key: string, node: QueryNode): void
   if (isIndex(key)) container.nextIndex = Math.max(container.nextIndex, Number(key) + 1);
 }
 
-// the container under a key; a scalar there can't take a nested key, so a container replaces it
+// the container under a key; a scalar there can't take a nested key, so a container replaces it and keeps the scalar
+// as its first element, as appendValue does
 function getContainer(container: QueryContainer, key: string): QueryContainer {
   const existing = container.get(key);
   if (existing instanceof QueryContainer) return existing;
   const next = new QueryContainer();
+  if (existing !== undefined) setEntry(next, '0', existing);
   setEntry(container, key, next);
   return next;
 }
