@@ -4,8 +4,9 @@ import { Ajv } from 'ajv';
 import { Ajv2020 } from 'ajv/dist/2020.js';
 import { deriveTools, procedure } from 'vovk';
 import { createRPC } from 'vovk/create-rpc';
-import { openAPIToVovkSchema, validationSchemasObjectToSingleValidationSchema } from 'vovk/internal';
+import { openAPIToVovkSchema } from 'vovk/internal';
 import { z } from 'zod';
+import { validationSchemasObjectToSingleValidationSchema } from '../../../packages/vovk/dist/validation/validation-schemas-object-to-single-validation-schema.js';
 
 type Tool = ReturnType<typeof deriveTools>[number];
 

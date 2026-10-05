@@ -4,11 +4,21 @@ import { describe, it } from 'node:test';
 import { fileURLToPath } from 'node:url';
 import vm from 'node:vm';
 import ts from 'typescript';
-import { HttpException, initSegment, post, prefix, procedure, progressive, type VovkRequest } from 'vovk';
+import {
+  HttpException,
+  initSegment,
+  post,
+  prefix,
+  procedure,
+  progressive,
+  type VovkRequest,
+  type VovkStreamAsyncIterable,
+} from 'vovk';
 import { createRPC } from 'vovk/create-rpc';
 import { createFetcher } from 'vovk/fetcher';
-import { deepExtend, readableStreamToAsyncIterable, type VovkStreamAsyncIterable } from 'vovk/internal';
+import { deepExtend } from 'vovk/internal';
 import { z } from 'zod';
+import { readableStreamToAsyncIterable } from '../../../packages/vovk/dist/client/default-stream-handler.js';
 import { validateOnClient } from '../../../packages/vovk-ajv/index.js';
 
 const streamOf = (chunks: Uint8Array[]) =>

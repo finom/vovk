@@ -2,10 +2,10 @@ import { NextResponse } from 'next/server.js';
 import { procedure, type VovkBody, type VovkParams, type VovkQuery, type VovkRequest } from 'vovk';
 import { createRPC } from 'vovk/create-rpc';
 import { createFetcher } from 'vovk/fetcher';
-import type { VovkFetcherOptions } from 'vovk/internal';
 // @ts-expect-error a module that isn't installed, as next is for a client bundle used without Next
 import type { MissingResponse } from 'vovk-missing-module';
 import { z } from 'zod';
+import type { VovkFetcherOptions } from '../../packages/vovk/dist/types/client.js';
 
 // Type checks for RPC modules: the test app's tsc run fails if a line without @ts-expect-error doesn't compile
 

@@ -17,8 +17,8 @@ import {
   type VovkOutput,
 } from 'vovk';
 import { createRPC } from 'vovk/create-rpc';
-import type { MCPModelOutput } from 'vovk/internal';
 import { z } from 'zod';
+import type { MCPModelOutput } from '../../../packages/vovk/dist/tools/to-model-output-mcp.js';
 
 describe('deriveTools', () => {
   const outputSchema = z.object({ foo: z.string().max(5), inputMeta: z.string().optional() });

@@ -3,12 +3,8 @@ import { createRequire } from 'node:module';
 import { describe, test } from 'node:test';
 import ts from 'typescript';
 import type { VovkJSONSchemaBase } from 'vovk';
-import {
-  createCodeSamples,
-  openAPIToVovkSchema,
-  type VovkControllerSchema,
-  type VovkHandlerSchema,
-} from 'vovk/internal';
+import type { VovkHandlerSchema } from 'vovk/create-rpc';
+import { createCodeSamples, openAPIToVovkSchema, type VovkControllerSchema } from 'vovk/internal';
 import { toPythonIdentifier } from '../../../packages/vovk-python/index.js';
 import { toRustIdent } from '../../../packages/vovk-rust/index.js';
 

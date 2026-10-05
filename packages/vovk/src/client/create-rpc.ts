@@ -14,7 +14,7 @@ import { encodeURIComponentWellFormed, serializeQuery } from './serialize-query.
 import { fromJSON, getStyledSerializers } from './serialize-styled.js';
 import { takesNullBody } from './takes-null-body.js';
 
-export type { CombinedSpec, VovkHandlerSchema, VovkRequest };
+export type { CombinedSpec, VovkHandlerSchema, VovkRequest, VovkRPCModule };
 
 const trimPath = (path: string) => path.trim().replace(/^\/|\/$/g, '');
 
