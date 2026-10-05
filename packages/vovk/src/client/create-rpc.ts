@@ -135,7 +135,9 @@ export const createRPC = <T, OPTS extends Record<string, KnownAny> = VovkFetcher
 
   const forceApiRoot = segmentSchema.forceApiRoot;
   const configRootEntry = schema.meta?.config?.rootEntry;
-  const originalApiRoot = forceApiRoot ?? options?.apiRoot ?? (configRootEntry ? `/${configRootEntry}` : '/api');
+  // an empty rootEntry serves the API from the root of the origin
+  const originalApiRoot =
+    forceApiRoot ?? options?.apiRoot ?? (typeof configRootEntry === 'string' ? `/${configRootEntry}` : '/api');
 
   for (const [staticMethodName, handlerSchema] of Object.entries(controllerSchema.handlers ?? {})) {
     const { path, httpMethod, validation } = handlerSchema;
