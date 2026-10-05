@@ -36,6 +36,8 @@ export type {
 export type { VovkJSONSchemaBase } from './types/json-schema.js';
 export type { VovkRequest } from './types/request.js';
 export type { StandardToolV0 } from './types/standard-tool.js';
+export type { VovkNoInference } from './types/utils.js';
+export type { VovkNoSchema, VovkProcedureInput } from './types/validation.js';
 
 // validation
 export { procedure } from './validation/procedure.js';
