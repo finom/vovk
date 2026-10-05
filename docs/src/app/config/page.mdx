@@ -147,7 +147,7 @@ If `"libs"` is present in [exposeConfigKeys](#exposeConfigKeys), it is emitted t
 import { schema, UserRPC } from '@/client';
 
 console.log(schema.meta.config.libs.ajv.options.strict);
-console.log(UserRPC.updateUser.fullSchema.meta.config.libs.ajv.target);
+console.log(UserRPC.updateUser.fullSchema.meta?.config.libs?.ajv.target);
 ```
 
 <a name="outputconfig" />
