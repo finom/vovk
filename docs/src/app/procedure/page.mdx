@@ -13,12 +13,15 @@ A **procedure** is one such member: a single endpoint definition, typically deco
 Pick the bare style for simple cases; reach for `procedure()` whenever you want validation or a transport-agnostic callable.
 
 ```ts showLineNumbers copy filename="src/modules/user/user-controller.ts"
-import { put, prefix } from 'vovk';
+import { put, prefix, type VovkRequest } from 'vovk';
 
 @prefix('users') // optional prefix for all routes in this controller
 export default class UserController {
   @put('{id}')
-  static async updateUser(req: NextRequest, { id }: { id: string }) {
+  static async updateUser(
+    req: VovkRequest<{ email: string }, { notify: 'email' | 'push' | 'none' }>,
+    { id }: { id: string }
+  ) {
     const data = await req.json();
     // ...
   }
@@ -52,6 +55,8 @@ const updatedUser = await UserRPC.updateUser({
   body: userData,
 });
 ```
+
+The RPC method takes `body` and `query` because the request is typed with [`VovkRequest`](#vovkrequest-type); with `NextRequest` it takes `params` only.
 
 For more information, see [TypeScript Client](/typescript).
 
