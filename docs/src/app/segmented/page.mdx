@@ -169,10 +169,10 @@ By default, the segmented client is generated in the `./src/client` folder (or `
 
 When you import an RPC module from one of the `.ts` files, the import tree includes only the schema and RPC modules for that segment. For example, importing `UserRPC` from the `customer` segment pulls in `.vovk-schema/customer.json` only; `.vovk-schema/admin.json` and other segment files are not included.
 
-```ts showLineNumbers copy filename="src/client/customer/index.ts"
+```ts showLineNumbers copy
 import { UserRPC } from '@/client/customer'; // import tree will contain customer.json
 
-await UserRPC.getUser({ id: '123' });
+await UserRPC.getUser({ params: { id: '123' } });
 ```
 
 The segmented client also applicable to [Rust](/rust) and [Python](/python) templates, though use cases are less common. Each segment folder then holds a whole package, `Cargo.toml` or `pyproject.toml` included, named after the project's package and the segment: for a project named `app`, the `foo` segment's package is `app_foo` and the root segment's is `app_root`. A `package.name` set for the segment in [outputConfig.segments](/config#segments) is used as is.
