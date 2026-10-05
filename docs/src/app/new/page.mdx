@@ -350,7 +350,7 @@ It creates **user-cart-controller.ts** and **user-cart-service.ts** in **/src/mo
 ```ts showLineNumbers copy filename="src/modules/user-cart/user-cart-controller.ts"
 import { procedure, prefix, get, put, post, del, operation } from 'vovk';
 import { type } from 'arktype';
-import UserCartService from './user-cart-service.ts';
+import UserCartService from './user-cart-service';
 
 @prefix('user-carts')
 export default class UserCartController {
@@ -407,7 +407,7 @@ export default class UserCartController {
 <Tabs.Tab>
 ```ts showLineNumbers copy filename="src/modules/user-cart/user-cart-service.ts"
 import type { VovkBody, VovkParams } from 'vovk';
-import type UserCartController from './user-cart-controller.ts';
+import type UserCartController from './user-cart-controller';
 
 export default class UserCartService {
   static getUserCarts = () => {
@@ -446,7 +446,7 @@ The updated segment file:
 
 ```ts showLineNumbers copy filename="src/app/api/[[...vovk]]/route.ts"
 import { initSegment } from 'vovk';
-import UserCartController from '../../../modules/user-cart/user-cart-controller.ts';
+import UserCartController from '../../../modules/user-cart/user-cart-controller';
 const controllers = {
   UserCartRPC: UserCartController,
 };
