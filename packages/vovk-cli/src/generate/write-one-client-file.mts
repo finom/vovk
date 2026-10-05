@@ -11,6 +11,8 @@ import type { VovkSchema } from 'vovk';
 import {
   createCodeSamples,
   reattachMixinDefs,
+  toUnderscoredPackageName,
+  type VovkPackageJson,
   type VovkReadmeConfig,
   type VovkSamplesConfig,
   VovkSchemaIdEnum,
@@ -28,21 +30,6 @@ import { prettify, warnIfPrettierMissing } from '../utils/prettify.mjs';
 import { toImportPath, toPosixPath } from '../utils/to-import-path.mjs';
 import type { ClientTemplateFile } from './get-client-template-files.mjs';
 import { getTemplateClientImports } from './get-template-client-imports.mjs';
-
-// Python and Rust keywords, neither language takes one as a module or package name
-const KEYWORDS = new Set(
-  `False None True and as assert async await break class continue def del elif else except finally for from global if
-  import in is lambda nonlocal not or pass raise return try while with yield abstract become box const crate do dyn
-  enum extern false final fn gen impl let loop macro match mod move mut override priv pub ref self Self static struct
-  super trait true type typeof unsafe unsized use virtual where`.split(/\s+/)
-);
-
-// a valid Python import name and Cargo package name: "@acme/web-app" becomes "acme_web_app"
-export function toUnderscoredPackageName(name: string | undefined): string {
-  const underscored = name?.replace(/^@/, '').replace(/[^A-Za-z0-9_]/g, '_') || 'my_package_name';
-  if (/^\d/.test(underscored)) return `pkg_${underscored}`;
-  return KEYWORDS.has(underscored) ? `${underscored}_pkg` : underscored;
-}
 
 // a module a template names in its front matter comes from the project, a global or npx vovk-cli can't reach it;
 // vovk itself stays the CLI's own, which the built-in templates expect
@@ -71,14 +58,33 @@ export function getOutputConfigs(
   ];
 }
 
-export function normalizeOutTemplatePath(out: string, packageJson: PackageJson): string {
-  return out.replace('[package_name]', toUnderscoredPackageName(packageJson.name));
+// a Python or Rust package goes by py_name or rs_name when the config sets it
+const getUnderscoredPackageName = (packageJson: VovkPackageJson, packageNameKey?: 'py_name' | 'rs_name') =>
+  (packageNameKey && packageJson[packageNameKey]) || toUnderscoredPackageName(packageJson.name);
+
+export function normalizeOutTemplatePath(
+  out: string,
+  packageJson: VovkPackageJson,
+  packageNameKey?: 'py_name' | 'rs_name'
+): string {
+  return out.replace('[package_name]', getUnderscoredPackageName(packageJson, packageNameKey));
 }
 
-// a segmented client puts a package into each segment folder, so each one needs a name of its own
-export function withSegmentPackageName<T extends PackageJson>(packageJson: T, segmentName: string): T {
-  if (!packageJson.name) return packageJson;
-  return { ...packageJson, name: `${packageJson.name}-${(segmentName || ROOT_SEGMENT_FILE_NAME).replace(/\//g, '-')}` };
+// a segmented client puts a package into each segment folder, so each one needs a name of its own;
+// a name set in the segment's own config is used as is
+export function withSegmentPackageName<T extends VovkPackageJson>(
+  packageJson: T,
+  segmentName: string,
+  segmentPackageJson: VovkPackageJson = {}
+): T {
+  const suffix = (segmentName || ROOT_SEGMENT_FILE_NAME).replace(/\//g, '-');
+  const result = { ...packageJson };
+  if (packageJson.name && !segmentPackageJson.name) result.name = `${packageJson.name}-${suffix}`;
+  for (const key of ['py_name', 'rs_name'] as const) {
+    const name = packageJson[key];
+    if (name && !segmentPackageJson[key]) result[key] = toUnderscoredPackageName(`${name}-${suffix}`);
+  }
+  return result;
 }
 
 export interface ClientFile {
@@ -137,7 +143,7 @@ export async function renderOneClientFile({
     content: string;
   };
   openAPIObject: OpenAPIObject;
-  package: PackageJson;
+  package: VovkPackageJson;
   readme: VovkReadmeConfig;
   samples: VovkSamplesConfig;
   reExports: VovkStrictConfig['outputConfig']['reExports'];
@@ -159,13 +165,13 @@ export async function renderOneClientFile({
 }) {
   const { config, log } = projectInfo;
 
-  const { templateFilePath, relativeDir } = clientTemplateFile;
+  const { templateFilePath, relativeDir, packageNameKey } = clientTemplateFile;
   const locatedSegmentsByName = _.keyBy(locatedSegments, 'segmentName');
   // a segmented client renders a whole client into each segment folder, required templates included
   const segmentDir = typeof segmentName === 'string' ? segmentName || ROOT_SEGMENT_FILE_NAME : '';
   const outDir = path.resolve(
     cwd,
-    normalizeOutTemplatePath(path.join(outCwdRelativeDir, segmentDir, relativeDir), packageJson)
+    normalizeOutTemplatePath(path.join(outCwdRelativeDir, segmentDir, relativeDir), packageJson, packageNameKey)
   );
   const outPath = path.join(outDir, path.basename(templateFilePath).replace('.ejs', ''));
 
@@ -200,7 +206,7 @@ export async function renderOneClientFile({
     hasMixins,
     isVovkProject,
     package: packageJson,
-    underscoredPackageName: toUnderscoredPackageName(packageJson.name),
+    underscoredPackageName: getUnderscoredPackageName(packageJson, packageNameKey),
     readme,
     samples,
     reExports,

@@ -439,10 +439,11 @@ export async function generate({
               isBundle,
               projectPackageJson,
             });
-            // a name set in the segment's own config is used as is
-            const packageJson = config.outputConfig.segments?.[segmentName]?.package?.name
-              ? resolvedPackageJson
-              : withSegmentPackageName(resolvedPackageJson, segmentName);
+            const packageJson = withSegmentPackageName(
+              resolvedPackageJson,
+              segmentName,
+              config.outputConfig.segments?.[segmentName]?.package
+            );
 
             const clientFile = await renderOneClientFile({
               cwd,

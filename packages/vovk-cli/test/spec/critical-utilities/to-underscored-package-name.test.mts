@@ -1,6 +1,7 @@
 import assert from 'node:assert';
 import { describe, it } from 'node:test';
-import { normalizeOutTemplatePath, toUnderscoredPackageName } from '../../../dist/generate/write-one-client-file.mjs';
+import { toUnderscoredPackageName } from 'vovk/internal';
+import { normalizeOutTemplatePath } from '../../../dist/generate/write-one-client-file.mjs';
 
 await describe('toUnderscoredPackageName', async () => {
   await it('Turns an npm name into a Python and Cargo package name', () => {

@@ -1,6 +1,7 @@
 import type { VovkSamplesConfig } from '../types/config.js';
 import type { VovkControllerSchema, VovkHandlerSchema } from '../types/core.js';
 import type { VovkJSONSchemaBase } from '../types/json-schema.js';
+import { toUnderscoredPackageName } from '../utils/to-underscored-package-name.js';
 import { objectToCode } from './object-to-code.js';
 import { getSampleValue, schemaToCode } from './schema-to-code.js';
 
@@ -390,10 +391,9 @@ export function createCodeSamples({
   const hasArg = !!queryValidation || !!bodyValidation || !!paramsValidation || !!config?.apiRoot || !!config?.headers;
   const rpcName = controllerSchema.rpcModuleName;
   const packageName = packageJson?.name || '@/client';
-  // snake fallback avoids invalid "@/client" in py/rs imports
-  const packageNameSnake = toSnakeCase(packageJson?.name || 'client');
-  const pyPackageName = packageJson?.py_name ?? packageNameSnake;
-  const rsPackageName = packageJson?.rs_name ?? packageNameSnake;
+  // the names the generated Python and Rust packages go by
+  const pyPackageName = packageJson?.py_name ?? toUnderscoredPackageName(packageJson?.name);
+  const rsPackageName = packageJson?.rs_name ?? toUnderscoredPackageName(packageJson?.name);
 
   const commonParams: CodeGenerationParams = {
     handlerName,
