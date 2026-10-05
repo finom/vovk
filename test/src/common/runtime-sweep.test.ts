@@ -1529,4 +1529,32 @@ describe('Runtime sweep', () => {
       strictEqual(result.destination, 'https://admin.example.com/admin/settings/users?tab=2');
     });
   });
+
+  // SEC-01: grouping repeated field names by copying the array on every repeat cost O(N^2), so a few hundred KB of
+  // `a&a&...` blocked the server for seconds before validation, on any endpoint that reads a form body
+  describe('Form body with a repeated field name', () => {
+    class RepeatedFieldController {
+      static form = procedure({
+        contentType: 'application/x-www-form-urlencoded',
+        body: z.object({ name: z.string() }),
+      }).handle(async (req: VovkRequest<{ name: string }>) => ({ name: (await req.vovk.body()).name }));
+    }
+    post('form')(RepeatedFieldController, 'form');
+    const handlers = initSegment({ segmentName: 'repeated-field', controllers: { RepeatedFieldController } });
+
+    it('parses a body that repeats one field name 100000 times in linear time', async () => {
+      const body = `${'a&'.repeat(100_000)}name=x`;
+      const started = Date.now();
+      const response = await call(handlers, 'POST', 'form', {
+        headers: { 'content-type': 'application/x-www-form-urlencoded' },
+        body,
+      });
+      const elapsed = Date.now() - started;
+
+      strictEqual(response.status, 200);
+      deepStrictEqual(await response.json(), { name: 'x' });
+      // the same byte count with distinct names parses in tens of ms; the quadratic path takes several seconds
+      ok(elapsed < 3000, `parsing ${Math.round(body.length / 1024)} KB of repeated keys took ${elapsed} ms`);
+    });
+  });
 });

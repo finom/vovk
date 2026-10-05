@@ -13,8 +13,10 @@ export async function parseForm<T>(body: FormData): Promise<T> {
       continue;
     }
 
+    // appended in place: copying the array on every repeat makes a body that repeats one name quadratic
     const existing = formData[key];
-    formData[key] = (Array.isArray(existing) ? [...existing, entry] : [existing, entry]) as string[] | File[];
+    if (Array.isArray(existing)) (existing as (string | File)[]).push(entry);
+    else formData[key] = [existing, entry] as string[] | File[];
   }
 
   return formData as T;
