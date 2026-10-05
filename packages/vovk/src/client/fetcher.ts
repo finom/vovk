@@ -55,7 +55,8 @@ const getMediaType = (contentType: string | null | undefined) => contentType?.sp
 
 const isJSONMediaType = (mediaType: string) => mediaType === 'application/json' || mediaType.endsWith('+json');
 
-const JSON_LINES_MEDIA_TYPES = ['application/jsonl', 'application/jsonlines'];
+// the Python and Rust clients and the OpenAPI mixin importer use the same list
+const JSON_LINES_MEDIA_TYPES = ['application/jsonl', 'application/jsonlines', 'application/x-ndjson'];
 
 // AbortSignal.any is missing in React Native and Safari before 17.4, where the given signal aborts the controller
 function anySignal(controller: AbortController, signal: AbortSignal): AbortSignal {
@@ -198,7 +199,7 @@ export function createFetcher<T>({
 
       // Default headers (lowercase keys)
       const defaultHeaders: Record<string, string> = {
-        accept: 'application/jsonl, application/json',
+        accept: [...JSON_LINES_MEDIA_TYPES, 'application/json'].join(', '),
         ...(resolvedContentType ? { 'content-type': resolvedContentType } : {}),
         ...(resolvedFileName ? { 'content-disposition': fileNameToDisposition(resolvedFileName) } : {}),
         ...(meta ? { 'x-meta': toAsciiJson(meta) } : {}),
