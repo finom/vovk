@@ -421,7 +421,7 @@ Under the hood, it uses [reqwest](https://docs.rs/reqwest/latest/reqwest/) for H
 
 A function without an output schema returns a `serde_json::Value`: the parsed JSON, or `null` for an empty body. A response of a `text/*` type, or of any type with a charset, is a string, decoded as UTF-8 unless the charset names another encoding. Any other response, such as a file, is a string that holds its bytes in base64.
 
-A failed call returns an `HttpException`. Its `status_code()` is the response status, or 0 when the call failed before a response came, for example on client-side validation; `message()` and `cause()` hold the error the server sent.
+A failed call returns an `HttpException`. Its `status_code()` is the response status, or 0 when the call failed before a response came, for example on client-side validation; `message()` and `cause()` hold the error the server sent. When no response came or it broke off, `source()` is the `reqwest::Error`, without the URL.
 
 ### JSON Lines Endpoints
 

@@ -21,11 +21,23 @@ pub struct HttpException {
     message: String,
     status_code: i32,
     cause: Option<Value>,
+    // the error behind a call that got no response or a broken one, such as reqwest's
+    #[serde(skip)]
+    source: Option<Box<dyn Error + Send + Sync>>,
 }
 
 impl HttpException {
     fn new(message: impl Into<String>, status_code: i32, cause: Option<Value>) -> Self {
-        HttpException { message: message.into(), status_code, cause }
+        HttpException { message: message.into(), status_code, cause, source: None }
+    }
+
+    // a reqwest error without its URL, whose query may hold a token
+    fn from_reqwest(error: reqwest::Error, status_code: i32) -> Self {
+        Self::with_source(error.without_url(), status_code)
+    }
+
+    fn with_source(error: impl Error + Send + Sync + 'static, status_code: i32) -> Self {
+        HttpException { message: error.to_string(), status_code, cause: None, source: Some(Box::new(error)) }
     }
 
     /// The error message
@@ -50,7 +62,11 @@ impl fmt::Display for HttpException {
     }
 }
 
-impl Error for HttpException {}
+impl Error for HttpException {
+    fn source(&self) -> Option<&(dyn Error + 'static)> {
+        self.source.as_deref().map(|error| error as &(dyn Error + 'static))
+    }
+}
 
 /// Where a handler is: the segment's root, its path in the URL and the names that find it in the schema
 pub struct Endpoint {
@@ -500,17 +516,9 @@ where
         headers,
         api_root,
         disable_client_validation,
-    ).map_err(|e| HttpException {
-        message: e.to_string(),
-        status_code: 0,
-        cause: None,
-    })?;
+    ).map_err(|e| HttpException::new(e.to_string(), 0, None))?;
 
-    let response = request.send().await.map_err(|e| HttpException {
-        message: e.to_string(),
-        status_code: 0,
-        cause: None,
-    })?;
+    let response = request.send().await.map_err(|e| HttpException::from_reqwest(e, 0))?;
 
     let status = response.status();
     let status_code = status.as_u16() as i32;
@@ -519,14 +527,11 @@ where
 
     // decoded by the charset it names, UTF-8 by default
     if status.is_success() && !is_json(&media_type) && !is_json_lines(&media_type) && is_text(&response, &media_type) {
-        let text = response.text().await.map_err(|e| HttpException::new(e.to_string(), status_code, None))?;
+        let text = response.text().await.map_err(|e| HttpException::from_reqwest(e, status_code))?;
         return read_text(&text, status_code);
     }
 
-    let bytes = response
-        .bytes()
-        .await
-        .map_err(|e| HttpException::new(e.to_string(), status_code, None))?;
+    let bytes = response.bytes().await.map_err(|e| HttpException::from_reqwest(e, status_code))?;
 
     // a 2xx body may hold any keys; a redirect reqwest didn't follow, as for a multipart body it can't send again,
     // is an error like any other status
@@ -585,17 +590,9 @@ where
         headers,
         api_root,
         disable_client_validation,
-    ).map_err(|e| HttpException {
-        message: e.to_string(),
-        status_code: 0,
-        cause: None,
-    })?;
+    ).map_err(|e| HttpException::new(e.to_string(), 0, None))?;
 
-    let response = request.send().await.map_err(|e| HttpException {
-        message: e.to_string(),
-        status_code: 0,
-        cause: None,
-    })?;
+    let response = request.send().await.map_err(|e| HttpException::from_reqwest(e, 0))?;
 
     let status = response.status();
     let status_code = status.as_u16() as i32;
@@ -609,7 +606,7 @@ where
 
     let byte_stream = response
         .bytes_stream()
-        .map_err(|e| std::io::Error::new(std::io::ErrorKind::Other, e));
+        .map_err(|e| std::io::Error::new(std::io::ErrorKind::Other, e.without_url()));
 
     let reader = StreamReader::new(byte_stream);
     let lines = FramedRead::new(reader, LinesCodec::new());
@@ -624,18 +621,11 @@ where
 
                 match serde_json::from_str::<Value>(trimmed) {
                     Ok(value) => Some(Ok(value)),
-                    Err(e) => Some(Err(HttpException {
-                        message: e.to_string(),
-                        status_code,
-                        cause: None,
-                    })),
+                    Err(e) => Some(Err(HttpException::new(e.to_string(), status_code, None))),
                 }
             }
-            Err(e) => Some(Err(HttpException {
-                message: e.to_string(),
-                status_code,
-                cause: None,
-            })),
+            // a stream cut or broken on the way
+            Err(e) => Some(Err(HttpException::with_source(e, status_code))),
         }
     });
 
@@ -644,11 +634,7 @@ where
             if is_error_line(&value) {
                 Err(error_from_line(&value, status_code))
             } else {
-                serde_json::from_value::<T>(value).map_err(|e| HttpException {
-                    message: e.to_string(),
-                    status_code,
-                    cause: None,
-                })
+                serde_json::from_value::<T>(value).map_err(|e| HttpException::new(e.to_string(), status_code, None))
             }
         })
     });

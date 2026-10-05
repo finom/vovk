@@ -75,5 +75,7 @@ pub mod test_runtime {
         }
         assert_eq!(error.status_code(), 0);
         assert!(text.to_lowercase().contains("refused"), "{}", text);
+        // a URL may hold a token in its query
+        assert!(!error.message().contains(&api_root), "{}", error);
     }
 }
