@@ -661,6 +661,28 @@ await describe('vovk dev in a project without Next.js', async () => {
     }
   });
 
+  await it('Requests the schema of a route file added to a folder that is already there', async () => {
+    const server = await startSchemaServer({ '': makeSegmentSchema(''), v2: makeSegmentSchema('v2', 'V2RPC') });
+    await createProject(projectDir, {
+      'package.json': { name: 'app', version: '1.0.0', type: 'module' },
+      'vovk.config.mjs': configFile({ composedClient: { prettifyClient: false } }),
+      'src/app/api/[[...vovk]]/route.ts': '',
+      'src/app/api/v2/[[...vovk]]/.gitkeep': '',
+    });
+    const dev = startCLI(['dev'], { cwd: projectDir, env: { PORT: server.port } });
+
+    try {
+      await dev.waitForOutput(/Composed client is generated/);
+      await fs.writeFile(path.join(projectDir, 'src/app/api/v2/[[...vovk]]/route.ts'), '');
+
+      const isGenerated = await waitUntil(async () => (await readFile('src/client/index.ts')).includes('V2RPC'));
+      assert.ok(isGenerated, dev.getOutput());
+    } finally {
+      await dev.stop();
+      await server.close();
+    }
+  });
+
   await it('Requests the schema when a validation module next to a controller changes', async () => {
     const withQuery = (keys: string[]) => {
       const schema = segmentWith('', { UserRPC: { className: 'UserController', handlers: ['listUsers'] } });

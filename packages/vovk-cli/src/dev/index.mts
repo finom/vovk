@@ -21,10 +21,14 @@ import { debounceWithArgs } from '../utils/debounce-with-args.mjs';
 import { formatLoggedSegmentName } from '../utils/format-logged-segment-name.mjs';
 import { locateSegments, type Segment } from '../utils/locate-segments.mjs';
 import { toPosixPath } from '../utils/to-import-path.mjs';
-import { debouncedEnsureSchemaFiles, ensureSchemaFiles } from './ensure-schema-files.mjs';
+import { debouncedEnsureSchemaFiles, ensureSchemaFiles, getPlaceholderSchema } from './ensure-schema-files.mjs';
 import { logDiffResult } from './log-diff-result.mjs';
 import { writeMetaJson } from './write-meta-json.mjs';
-import { assertSegmentName, writeOneSegmentSchemaFile } from './write-one-segment-schema-file.mjs';
+import {
+  assertSegmentName,
+  ROOT_SEGMENT_FILE_NAME,
+  writeOneSegmentSchemaFile,
+} from './write-one-segment-schema-file.mjs';
 
 // chokidar reports native paths, so both separators are accepted
 export const SEGMENT_ROUTE_FILE_REGEX = /[\\/]?\[\[\.\.\.[a-zA-Z-_]+\]\][\\/]route\.ts$/;
@@ -100,6 +104,10 @@ export class VovkDev {
     return this.#schemaOut ? path.resolve(this.#projectInfo.cwd, this.#schemaOut) : undefined;
   }
 
+  #getSchemaOutAbsolutePath() {
+    return path.resolve(this.#projectInfo.cwd, this.#schemaOut ?? this.#projectInfo.config.schemaOutDir);
+  }
+
   #watchSegments = (callback: () => void) => {
     const { cwd, log, config, apiDirAbsolutePath } = this.#projectInfo;
     if (!apiDirAbsolutePath) {
@@ -136,6 +144,7 @@ export class VovkDev {
               ];
           log.info(`${capitalize(formatLoggedSegmentName(segmentName))} has been added`);
           log.debug(`Full list of segments: ${this.#segments.map((s) => s.segmentName).join(', ')}`);
+          void this.#requestSchema(segmentName);
 
           void debouncedEnsureSchemaFiles(
             this.#projectInfo,
@@ -376,10 +385,33 @@ export class VovkDev {
 
   #requestSchema = debounceWithArgs(async (segmentName: string) => {
     const result = await this.#fetchSchema(segmentName);
-    if (result.isError || result.isRefused) this.#failedSegmentNames.add(segmentName);
-    else this.#failedSegmentNames.delete(segmentName);
+    if (result.isError || result.isRefused) {
+      this.#failedSegmentNames.add(segmentName);
+      await this.#useLastKnownSchema(segmentName);
+    } else {
+      this.#failedSegmentNames.delete(segmentName);
+    }
     return result;
   }, 500);
+
+  // a segment without a schema would hold back the client of the others; --exit generates from fresh schemas only
+  async #useLastKnownSchema(segmentName: string) {
+    const isMissing = () =>
+      !this.#schemaSegments[segmentName] && this.#segments.some((s) => s.segmentName === segmentName);
+    if (this.#exit || !isMissing()) return;
+    const schemaFilePath = path.join(this.#getSchemaOutAbsolutePath(), `${segmentName || ROOT_SEGMENT_FILE_NAME}.json`);
+    const lastKnown = await fs
+      .readFile(schemaFilePath, 'utf-8')
+      .then((text) => JSON.parse(text) as VovkSegmentSchema | null)
+      .catch(() => null);
+    // a schema may have come in meanwhile
+    if (!isMissing()) return;
+    this.#schemaSegments[segmentName] =
+      lastKnown?.controllers && (lastKnown.segmentName ?? '') === segmentName
+        ? lastKnown
+        : getPlaceholderSchema(segmentName);
+    this.#generateIfComplete();
+  }
 
   #requestFailedSchemas() {
     for (const segmentName of this.#failedSegmentNames) {

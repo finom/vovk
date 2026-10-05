@@ -1,11 +1,16 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import debounce from 'lodash/debounce.js';
-import { VovkSchemaIdEnum } from 'vovk/internal';
+import { VovkSchemaIdEnum, type VovkSegmentSchema } from 'vovk/internal';
 import type { ProjectInfo } from '../get-project-info/index.mjs';
 import { formatLoggedSegmentName } from '../utils/format-logged-segment-name.mjs';
 import { writeMetaJson } from './write-meta-json.mjs';
 import { META_FILE_NAME, ROOT_SEGMENT_FILE_NAME, writeOneSegmentSchemaFile } from './write-one-segment-schema-file.mjs';
+
+// what a segment's schema file holds until the dev server sends the segment's schema
+export function getPlaceholderSchema(segmentName: string): VovkSegmentSchema {
+  return { $schema: VovkSchemaIdEnum.SEGMENT, emitSchema: false, segmentName, segmentType: 'segment', controllers: {} };
+}
 
 /**
  * Ensure that the schema files are created to avoid any import errors.
@@ -25,13 +30,7 @@ export async function ensureSchemaFiles(
     segmentNames.map(async (segmentName) => {
       const { isCreated } = await writeOneSegmentSchemaFile({
         schemaOutAbsolutePath,
-        segmentSchema: {
-          $schema: VovkSchemaIdEnum.SEGMENT,
-          emitSchema: false,
-          segmentName,
-          segmentType: 'segment',
-          controllers: {},
-        },
+        segmentSchema: getPlaceholderSchema(segmentName),
         skipIfExists: true,
       });
 
