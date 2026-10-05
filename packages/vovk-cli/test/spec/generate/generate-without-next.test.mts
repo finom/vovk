@@ -744,6 +744,24 @@ imports:
     });
   });
 
+  await it('Refuses two templates that write the same file into one --out folder', async () => {
+    await createProject(projectDir, {
+      'package.json': { name: 'app', version: '1.0.0', type: 'module' },
+      'vovk.config.mjs': configFile({ composedClient: { prettifyClient: false } }),
+      '.vovk-schema/root.json': userSegmentSchema,
+    });
+
+    await assert.rejects(
+      runCLI(['generate', '--from', 'py', '--from', 'rs', '--out', 'x'], { cwd: projectDir }),
+      (error: Error) => {
+        assert.ok(error.message.includes(path.join('x', 'README.md')), error.message);
+        assert.ok(error.message.includes('pyReadme') && error.message.includes('rsReadme'), error.message);
+        return true;
+      }
+    );
+    await assert.rejects(fs.access(path.join(projectDir, 'x')));
+  });
+
   await it('Gives the OpenAPI document and the Python package a version when package.json has none', async () => {
     await createProject(projectDir, {
       'package.json': { name: 'app', type: 'module' },

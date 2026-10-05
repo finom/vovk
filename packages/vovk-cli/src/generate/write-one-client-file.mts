@@ -81,6 +81,7 @@ export function withSegmentPackageName<T extends PackageJson>(packageJson: T, se
 }
 
 export interface ClientFile {
+  templateName: string;
   outPath: string;
   content: string;
   // null when there is no file yet
@@ -309,7 +310,13 @@ export async function renderOneClientFile({
   // a placeholder never replaces a generated file
   const needsWriting = isEnsuringClient ? !existingContent : existingContent !== rendered;
 
-  return { outPath, content: rendered, existingContent, needsWriting } satisfies ClientFile;
+  return {
+    templateName: clientTemplateFile.templateName,
+    outPath,
+    content: rendered,
+    existingContent,
+    needsWriting,
+  } satisfies ClientFile;
 }
 
 // the files that would replace one vovk-cli can't tell it generated: it stamps every file that can hold a comment,
@@ -337,6 +344,18 @@ export async function writeClientFiles(
   clientFiles: ClientFile[],
   { cwd, log, force = false }: { cwd: string; log: ProjectInfo['log']; force?: boolean }
 ) {
+  // two templates that write one file would overwrite each other
+  const templateNames = new Map<string, string>();
+  for (const { outPath, templateName } of clientFiles) {
+    const otherTemplateName = templateNames.get(outPath) ?? templateName;
+    if (otherTemplateName !== templateName) {
+      throw new Error(
+        `Templates "${otherTemplateName}" and "${templateName}" both write ${path.relative(cwd, outPath)}. Give them separate output directories.`
+      );
+    }
+    templateNames.set(outPath, templateName);
+  }
+
   const foreignFiles = force ? [] : findForeignClientFiles(clientFiles);
 
   if (foreignFiles.length) {
