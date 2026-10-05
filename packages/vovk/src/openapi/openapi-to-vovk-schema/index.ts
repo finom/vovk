@@ -17,6 +17,7 @@ import type { VovkJSONSchemaBase } from '../../types/json-schema.js';
 import type { ContentType } from '../../types/validation.js';
 import { applyComponentsSchemas } from './apply-components-schemas.js';
 import { inlineRefs } from './inline-refs.js';
+import { normalizeOpenAPI30 } from './normalize-openapi-30.js';
 import { pruneComponentsSchemas } from './prune-components-schemas.js';
 
 // the Path Item fields that hold an operation; fetch refuses TRACE, so it has no client method
@@ -148,6 +149,7 @@ export function openAPIToVovkSchema({
   segmentName = segmentName ?? '';
   // x-tsType is emitted verbatim into the generated client, only ours may reach it
   openAPIObject = stripXTsType(openAPIObject);
+  if (String(openAPIObject.openapi).startsWith('3.0')) openAPIObject = normalizeOpenAPI30(openAPIObject);
   const forceApiRoot =
     apiRoot ||
     (resolveServerURL(openAPIObject.servers?.[0]) ??

@@ -449,6 +449,9 @@ describe('openAPIToVovkSchema — OpenAPI 3.0 keywords', () => {
                     score: { type: 'number', maximum: 10, exclusiveMaximum: true },
                     rank: { type: 'number', minimum: 1, exclusiveMinimum: false },
                     thing: { $ref: '#/components/schemas/Thing' },
+                    status: { type: 'string', enum: ['open', 'done'], nullable: true },
+                    parent: { $ref: '#/components/schemas/Thing', nullable: true },
+                    owner: { allOf: [{ $ref: '#/components/schemas/Thing' }], nullable: true },
                   },
                 },
               },
@@ -471,14 +474,19 @@ describe('openAPIToVovkSchema — OpenAPI 3.0 keywords', () => {
   } as unknown as Parameters<typeof openAPIToVovkSchema>[0]).segments.api.controllers.Things.handlers as Obj;
 
   // whether JSON Schema 2020-12 lets the schema take null: every keyword that applies to null has to
-  const admitsNull = (schema: Obj): boolean =>
-    (schema.type === undefined || [schema.type].flat().includes('null')) &&
-    (schema.enum === undefined || schema.enum.includes(null)) &&
-    (!('const' in schema) || schema.const === null) &&
-    (schema.anyOf === undefined || schema.anyOf.some(admitsNull)) &&
-    (schema.oneOf === undefined || schema.oneOf.filter(admitsNull).length === 1) &&
-    (schema.allOf === undefined || schema.allOf.every(admitsNull)) &&
-    (schema.not === undefined || !admitsNull(schema.not));
+  const admitsNull = (schema: Obj, defs: Obj = {}): boolean => {
+    const admits = (subschema: Obj) => admitsNull(subschema, defs);
+    return (
+      (schema.$ref === undefined || admits(defs[schema.$ref.replace('#/$defs/', '')])) &&
+      (schema.type === undefined || [schema.type].flat().includes('null')) &&
+      (schema.enum === undefined || schema.enum.includes(null)) &&
+      (!('const' in schema) || schema.const === null) &&
+      (schema.anyOf === undefined || schema.anyOf.some(admits)) &&
+      (schema.oneOf === undefined || schema.oneOf.filter(admits).length === 1) &&
+      (schema.allOf === undefined || schema.allOf.every(admits)) &&
+      (schema.not === undefined || !admits(schema.not))
+    );
+  };
 
   const booleanBounds = (value: unknown, path = ''): string[] => {
     if (!value || typeof value !== 'object') return [];
@@ -502,5 +510,13 @@ describe('openAPIToVovkSchema — OpenAPI 3.0 keywords', () => {
     ok(admitsNull(body.properties.name), JSON.stringify(body.properties.name));
     ok(admitsNull(body.$defs.Thing.properties.note), JSON.stringify(body.$defs.Thing.properties.note));
     ok(!admitsNull(body.properties.score));
+  });
+
+  it('lets a nullable enum, $ref or allOf take null', () => {
+    const { properties, $defs } = handlers.createThing.validation.body;
+    deepStrictEqual(properties.status, { type: ['string', 'null'], enum: ['open', 'done', null] });
+    ok(admitsNull(properties.parent, $defs), JSON.stringify(properties.parent));
+    ok(admitsNull(properties.owner, $defs), JSON.stringify(properties.owner));
+    ok(!admitsNull(properties.thing, $defs));
   });
 });
