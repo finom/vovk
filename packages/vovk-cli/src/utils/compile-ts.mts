@@ -170,7 +170,8 @@ function compileSchemaWithType(schema: JSONSchema7, name: string, context: Compi
     case 'boolean':
       return 'boolean';
     case 'string':
-      return 'string';
+      // binary data, such as a file in a form body
+      return schema.format === 'binary' ? 'Blob' : 'string';
     case 'number':
       return 'number';
     case 'integer':
