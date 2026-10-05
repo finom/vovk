@@ -548,7 +548,8 @@ export class VovkDev {
     }
 
     this.#schemaSegments[segmentName] = segmentSchema;
-    if (segmentSchema.emitSchema) {
+    // written with emitSchema off too, so vovk generate leaves the segment out of the client
+    if (segmentSchema.emitSchema || isEmpty(segmentSchema.controllers)) {
       const now = Date.now();
       const { diffResult } = await writeOneSegmentSchemaFile({
         schemaOutAbsolutePath,
@@ -562,7 +563,7 @@ export class VovkDev {
         logDiffResult(segment.segmentName, diffResult, this.#projectInfo);
         log.info(`Schema for ${formatLoggedSegmentName(segment.segmentName)} has been updated in ${timeTook}ms`);
       }
-    } else if (segmentSchema && !isEmpty(segmentSchema.controllers)) {
+    } else {
       log.error(
         `Non-empty schema provided for ${formatLoggedSegmentName(segment.segmentName)} but "emitSchema" is false`
       );
