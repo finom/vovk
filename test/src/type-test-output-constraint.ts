@@ -1,4 +1,5 @@
 import { procedure, type VovkBody, type VovkOutput, type VovkParams } from 'vovk';
+import { createRPC } from 'vovk/create-rpc';
 import { z } from 'zod';
 
 // ====== Builder pattern tests (with output type checking) ======
@@ -200,6 +201,46 @@ export function fnResultTypes() {
   items satisfies Promise<AsyncIterable<{ item: boolean }>>;
 }
 
+// Test 14: the result type comes from the handler, not from the type the caller expects
+export async function fnResultNotFromContext() {
+  // @ts-expect-error fn() resolves to { q: string }
+  const wrongPromise: Promise<string> = FnResultController.echo.fn({ query: { q: 'x' } });
+  // @ts-expect-error fn() resolves to { q: string }
+  const wrongValue: number = await FnResultController.echo.fn({ query: { q: 'x' } });
+  // @ts-expect-error fn() resolves to { q: string }
+  (await FnResultController.echo.fn({ query: { q: 'x' } })) satisfies { other: boolean };
+  // a type argument still sets it
+  const explicit = await FnResultController.echo.fn<{ q: string }>({ query: { q: 'x' } });
+  explicit.q satisfies string;
+  return [wrongPromise, wrongValue];
+}
+
+// ====== preferTransformed: false sends what the handler returns ======
+
+// Test 15: the output and the iteration items are the schema's input, not what its transform makes
+class UntransformedResultController {
+  static count = procedure({
+    output: z.object({ n: z.number().transform(String) }),
+    preferTransformed: false,
+  }).handle(async () => ({ n: 1 }));
+
+  static items = procedure({
+    iteration: z.object({ n: z.number().transform(String) }),
+    preferTransformed: false,
+  }).handle(async function* () {
+    yield { n: 1 };
+  });
+}
+
+export async function untransformedResults() {
+  (await UntransformedResultController.count.fn()).n satisfies number;
+  for await (const item of await UntransformedResultController.items.fn()) item.n satisfies number;
+
+  const rpc = createRPC<typeof UntransformedResultController>({}, '', 'UntransformedResultRPC');
+  (await rpc.count()).n satisfies number;
+  for await (const item of await rpc.items()) item.n satisfies number;
+}
+
 export {
   FnResultController,
   noOptions,
@@ -215,6 +256,7 @@ export {
   test3,
   test4,
   test5,
+  UntransformedResultController,
   untransformedTypes,
   withParamsSchema,
 };
