@@ -5,6 +5,7 @@ import json
 import codecs
 import functools
 import requests
+from http.cookiejar import DefaultCookiePolicy
 from urllib.parse import quote
 from jsonschema import FormatChecker, validators
 from jsonschema.exceptions import ValidationError, best_match
@@ -105,6 +106,8 @@ class ApiClient:
         self.full_schema: Dict[str, Any] = ApiClient._load_full_schema()
         # one session keeps connections open between calls; set headers, auth or adapters on it
         self.session = requests.Session()
+        # every call and thread shares the session: a cookie a response sets isn't kept for later calls, one set by hand is
+        self.session.cookies.set_policy(DefaultCookiePolicy(allowed_domains=[]))
         # seconds to connect and to wait for each read, as requests takes it; None waits forever
         self.timeout: Union[None, float, Tuple[float, float]] = (10, 300)
 

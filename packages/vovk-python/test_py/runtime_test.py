@@ -81,6 +81,15 @@ class TestRuntime(unittest.TestCase):
             client.session.cookies.clear()
         self.assertEqual(data, {'cookie': None, 'authorization': 'Bearer another-user'})
 
+    # a cookie the caller sets on the session goes with every call
+    def test_a_cookie_set_on_the_session_is_sent(self) -> None:
+        client.session.cookies.set('session', 'mine')
+        try:
+            data = ClientRuntimeRPC.get_request_headers()
+        finally:
+            client.session.cookies.clear()
+        self.assertEqual(data, {'cookie': 'session=mine', 'authorization': None})
+
     # the TypeScript client reads a 16 MB item in well under a second
     def test_large_stream_item(self) -> None:
         size = 8 * 1024 * 1024

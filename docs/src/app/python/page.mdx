@@ -488,6 +488,8 @@ client.timeout = 30  # seconds, or a (connect, read) tuple; None waits forever
 client.session.headers["Authorization"] = "Bearer ..."
 ```
 
+The session keeps no cookie a response sets, since one client serves every call and thread. A cookie set by hand, as `client.session.cookies.set("session", "...")`, goes with every call. To keep the cookies responses set, call `client.session.cookies.set_policy(http.cookiejar.DefaultCookiePolicy())`.
+
 ## Roadmap/bugs
 
 - ✨ Generate importable types for named schemas defined in `components/schemas`.
