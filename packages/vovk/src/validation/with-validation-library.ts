@@ -1,5 +1,5 @@
 import { HttpException } from '../core/http-exception.js';
-import { JSONLinesResponder } from '../core/json-lines-responder.js';
+import { JSONLinesResponder, setResponderHooks } from '../core/json-lines-responder.js';
 import { setHandlerSchema } from '../core/set-handler-schema.js';
 import { bufferBody } from '../req/buffer-body.js';
 import { parseForm } from '../req/parse-form.js';
@@ -99,6 +99,20 @@ export function withValidationLibrary<
     skipSchemaEmission === false ? [] : skipSchemaEmission === true ? validationTypes : (skipSchemaEmission ?? []);
   const outputHandler = async (req: VovkRequestAny, handlerParams: Parameters<THandle>[1]) => {
     const { __disableClientValidation } = req.vovk.meta<Meta>();
+    const onBeforeSend =
+      iteration && !disableServerSideValidationKeys.includes('iteration') && !__disableClientValidation
+        ? async (item: unknown, i: number) => {
+            let parsed: unknown;
+            if (validateEachIteration || i === 0) {
+              parsed = (await validate(item, iteration, { validationType: 'iteration', req, status: 200, i })) ?? item;
+            } else {
+              parsed = item;
+            }
+            return preferTransformed ? parsed : item;
+          }
+        : undefined;
+    // a responder made with req checks a line the handler sends before it returns the responder
+    if (onBeforeSend) setResponderHooks(req, { onBeforeSend });
     const data = await handle(req, handlerParams);
     if (__disableClientValidation) {
       return data;
@@ -138,15 +152,8 @@ export function withValidationLibrary<
       }
 
       if (data instanceof JSONLinesResponder) {
-        data.onBeforeSend = async (item, i) => {
-          let parsed: unknown;
-          if (validateEachIteration || i === 0) {
-            parsed = (await validate(item, iteration, { validationType: 'iteration', req, status: 200, i })) ?? item;
-          } else {
-            parsed = item;
-          }
-          return preferTransformed ? parsed : item;
-        };
+        // one made without req gets the check here
+        if (onBeforeSend) data.onBeforeSend = onBeforeSend;
 
         return data;
       }

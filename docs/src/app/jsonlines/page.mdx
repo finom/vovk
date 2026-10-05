@@ -191,7 +191,7 @@ const responder = new JSONLinesResponder<IterationType>(req, ({ readableStream, 
 
 The constructor accepts two optional parameters:
 
-- `request?: Request | null` – The incoming request object. If provided, it checks for `Accept: application/jsonl` header to create `headers` record for the response with `Content-Type: application/jsonl`. If not provided or the header is missing, it defaults to `text/plain`.
+- `request?: Request | null` – The incoming request object. If provided, it checks for `Accept: application/jsonl` header to create `headers` record for the response with `Content-Type: application/jsonl`. If not provided or the header is missing, it defaults to `text/plain`. In a procedure with `iteration`, the request also lets the responder validate a line sent before the handler returns it.
 - `getResponse?: (responder: JSONLinesResponder<T>) => Response` – A function that allows to construct a custom `Response` object. Allows to set custom headers or other response options. If not provided, `Response` is created internally with default headers.
 
 The responder instance provides the following members:

@@ -11,7 +11,7 @@ import type {
 import { HttpMethod, HttpStatus } from '../types/enums.js';
 import type { VovkRequest } from '../types/request.js';
 import { HttpException, isHttpException } from './http-exception.js';
-import { JSONLinesResponder, Responder } from './json-lines-responder.js';
+import { JSONLinesResponder, Responder, setResponderHooks } from './json-lines-responder.js';
 
 // conflictsWith: the other controllers whose own handler has the same method and path in the segment
 type Route = { staticMethod: RouteHandler; controller: VovkController; conflictsWith?: VovkController[] };
@@ -547,6 +547,7 @@ class VovkApp {
         meta: <T = unknown>(meta?: T | null) => reqMeta<T>(req, meta),
         params: () => methodParams,
       };
+      setResponderHooks(req, { onError: (error) => void VovkApp.callOnError(onError, error, req) });
 
       await staticMethod._options?.before?.call(controller, req);
       await onBefore?.(req);
