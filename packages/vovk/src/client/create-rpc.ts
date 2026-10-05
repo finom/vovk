@@ -11,7 +11,7 @@ import { defaultHandler } from './default-handler.js';
 import { defaultStreamHandler } from './default-stream-handler.js';
 import { fetcher as defaultFetcher } from './fetcher.js';
 import { encodeURIComponentWellFormed, serializeQuery } from './serialize-query.js';
-import { getStyledSerializers } from './serialize-styled.js';
+import { fromJSON, getStyledSerializers } from './serialize-styled.js';
 
 export type { CombinedSpec, VovkHandlerSchema, VovkRequest };
 
@@ -22,8 +22,10 @@ const isUnsafeSegment = (value: string) => /^(?:\.|%2e){0,2}$/i.test(value);
 
 const getHandlerPath = <T extends ControllerStaticMethod>(endpoint: string, params?: VovkControllerParams<T>) => {
   let result = endpoint;
-  for (const [key, value] of Object.entries(params ?? {})) {
+  for (const [key, given] of Object.entries(params ?? {})) {
     const placeholder = `{${key}}`;
+    // as in the query, a Date is written as its ISO string, an invalid one as nothing
+    const value = fromJSON(given);
     // a missing value keeps its placeholder, which the fetcher reports
     if (!result.includes(placeholder) || value === undefined || value === null) continue;
     const segment = String(value);
