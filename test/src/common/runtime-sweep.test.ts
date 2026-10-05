@@ -461,6 +461,26 @@ describe('Runtime sweep', () => {
       deepStrictEqual(errors, [message, message]);
     });
 
+    it('Names the member and the argument of a decorate() decorator that throws, with its error as the cause', () => {
+      class SyncMiddlewareController {
+        static list = decorate(get('list'), (req: Request, next: () => unknown) => {
+          if (!req.headers.get('authorization')) throw new HttpException(HttpStatus.UNAUTHORIZED, 'No authorization');
+          return next();
+        }).handle(async () => []);
+      }
+      throws(
+        () => initSegment({ segmentName: 'sync-middleware', controllers: { SyncMiddlewareController } }),
+        (error: Error) => {
+          ok(error.cause instanceof TypeError);
+          strictEqual(
+            error.message,
+            `SyncMiddlewareController.list: decorate() argument 2 threw: ${error.cause.message}`
+          );
+          return true;
+        }
+      );
+    });
+
     it('Answers a path two controllers of a segment declare with a JSON error and calls onError', async () => {
       const errors: string[] = [];
       class FirstController {

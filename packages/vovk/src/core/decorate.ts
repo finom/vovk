@@ -26,7 +26,12 @@ const isThenable = (value: unknown) =>
 // the position is the decorator's argument of decorate(), which an error names with the member
 function applyDecorator(controller: KnownAny, key: string, decorator: DecoratorApplier, position: number) {
   const where = `${controller.name}.${key}: decorate() argument ${position}`;
-  const result = decorator(controller, key);
+  let result: unknown;
+  try {
+    result = decorator(controller, key);
+  } catch (error) {
+    throw new Error(`${where} threw: ${error instanceof Error ? error.message : String(error)}`, { cause: error });
+  }
   if (isThenable(result)) {
     // a middleware run as a decorator rejects: handled here, so no unhandled rejection is reported
     Promise.resolve(result).catch(() => {});
