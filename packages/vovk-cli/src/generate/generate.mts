@@ -22,10 +22,11 @@ import type { Segment } from '../utils/locate-segments.mjs';
 import { normalizeOpenAPIMixin } from '../utils/normalize-openapi-mixin.mjs';
 import { pickSegmentFullSchema } from '../utils/pick-segment-full-schema.mjs';
 import { removeUnlistedDirectories } from '../utils/remove-unlisted-directories.mjs';
-import { getClientTemplateFiles } from './get-client-template-files.mjs';
+import { type ClientTemplateFile, getClientTemplateFiles } from './get-client-template-files.mjs';
 import { validateComposedModuleNames, validateMixinModuleNames, validateMixinNames } from './validate-client-names.mjs';
 import {
   type ClientFile,
+  getOutputConfigs,
   normalizeOutTemplatePath,
   renderOneClientFile,
   withSegmentPackageName,
@@ -36,21 +37,25 @@ const getIncludedSegmentNames = (
   config: VovkStrictConfig,
   fullSchema: VovkSchema,
   configKey: 'segmentedClient' | 'composedClient',
-  cliGenerateOptions: GenerateOptions | undefined
+  cliGenerateOptions: GenerateOptions | undefined,
+  { templateName, templateDef }: Pick<ClientTemplateFile, 'templateName' | 'templateDef'>
 ) => {
   const segments = Object.values(fullSchema.segments);
   const cliIncludeSegments =
     cliGenerateOptions?.[configKey === 'segmentedClient' ? 'segmentedIncludeSegments' : 'composedIncludeSegments'];
   const cliExcludeSegments =
     cliGenerateOptions?.[configKey === 'segmentedClient' ? 'segmentedExcludeSegments' : 'composedExcludeSegments'];
-  // CLI options win as a pair so config exclude cannot conflict with CLI include
-  const isFromCli = !!(cliIncludeSegments?.length || cliExcludeSegments?.length);
-  const includeSegments = isFromCli ? cliIncludeSegments : config[configKey].includeSegments;
-  const excludeSegments = isFromCli ? cliExcludeSegments : config[configKey].excludeSegments;
+  const templateOptions = templateDef[configKey];
+  // a pair wins as a whole so one source's exclude cannot conflict with another's include:
+  // CLI options first, then the template's own, then the root config
+  const [{ includeSegments, excludeSegments }, where] =
+    cliIncludeSegments?.length || cliExcludeSegments?.length
+      ? [{ includeSegments: cliIncludeSegments, excludeSegments: cliExcludeSegments }, 'as CLI options']
+      : templateOptions?.includeSegments?.length || templateOptions?.excludeSegments?.length
+        ? [templateOptions, `in "${configKey}" of template "${templateName}"`]
+        : [config[configKey], `in "${configKey}" config`];
   if (includeSegments?.length && excludeSegments?.length) {
-    throw new Error(
-      `Both includeSegments and excludeSegments are set ${isFromCli ? 'as CLI options' : `in "${configKey}" config`}. Please use only one of them.`
-    );
+    throw new Error(`Both includeSegments and excludeSegments are set ${where}. Please use only one of them.`);
   }
   const segmentExists = (segmentName: string) => segments.some(({ segmentName: sName }) => sName === segmentName);
 
@@ -259,8 +264,6 @@ export async function generate({
 
   if (isComposedEnabled) {
     const now = Date.now();
-    const segmentNames = getIncludedSegmentNames(config, fullSchema, 'composedClient', cliGenerateOptions);
-    validateComposedModuleNames(fullSchema, segmentNames);
     const { templateFiles: composedClientTemplateFiles, fromTemplates } = await getClientTemplateFiles({
       config,
       cwd,
@@ -268,10 +271,20 @@ export async function generate({
       cliGenerateOptions,
       configKey: 'composedClient',
     });
+    const segmentNamesOf = new Map(
+      composedClientTemplateFiles.map((file) => [
+        file,
+        getIncludedSegmentNames(config, fullSchema, 'composedClient', cliGenerateOptions, file),
+      ])
+    );
+    for (const segmentNames of _.uniqBy([...segmentNamesOf.values()], (names) => names.join('\0'))) {
+      validateComposedModuleNames(fullSchema, segmentNames);
+    }
 
     const composedClientResults = await Promise.all(
       composedClientTemplateFiles.map(async (clientTemplateFile) => {
         const { templateFilePath, templateName, templateDef, outCwdRelativeDir } = clientTemplateFile;
+        const segmentNames = segmentNamesOf.get(clientTemplateFile) ?? [];
         const templateContent = await fs.readFile(templateFilePath, 'utf-8');
 
         const matterResult = templateFilePath.endsWith('.ejs')
@@ -294,7 +307,7 @@ export async function generate({
           config: projectInfo.config,
           rootEntry: config.rootEntry,
           schema: fullSchema,
-          outputConfigs: [config.composedClient.outputConfig ?? {}, templateDef.outputConfig ?? {}],
+          outputConfigs: getOutputConfigs(config, templateDef, 'composedClient'),
           forceOutputConfigs: [{ origin: cliGenerateOptions?.origin }],
           projectPackageJson,
           isBundle,
@@ -312,7 +325,10 @@ export async function generate({
           projectInfo,
           clientTemplateFile,
           fullSchema: composedFullSchema,
-          prettifyClient: cliGenerateOptions?.prettify ?? config.composedClient.prettifyClient,
+          prettifyClient:
+            cliGenerateOptions?.prettify ??
+            templateDef.composedClient?.prettifyClient ??
+            config.composedClient.prettifyClient,
           segmentName: null,
           templateContent,
           matterResult,
@@ -367,7 +383,6 @@ export async function generate({
 
   if (isSegmentedEnabled) {
     const now = Date.now();
-    const segmentNames = getIncludedSegmentNames(config, fullSchema, 'segmentedClient', cliGenerateOptions);
     const { templateFiles: segmentedClientTemplateFiles, fromTemplates } = await getClientTemplateFiles({
       config,
       cwd,
@@ -379,6 +394,13 @@ export async function generate({
     const segmentedClientResults = await Promise.all(
       segmentedClientTemplateFiles.map(async (clientTemplateFile) => {
         const { templateFilePath, templateName, templateDef, outCwdRelativeDir } = clientTemplateFile;
+        const segmentNames = getIncludedSegmentNames(
+          config,
+          fullSchema,
+          'segmentedClient',
+          cliGenerateOptions,
+          clientTemplateFile
+        );
         const templateContent = await fs.readFile(templateFilePath, 'utf-8');
 
         const matterResult = templateFilePath.endsWith('.ejs')
@@ -412,7 +434,7 @@ export async function generate({
               schema: fullSchema,
               rootEntry: config.rootEntry,
               segmentName,
-              outputConfigs: [config.segmentedClient.outputConfig ?? {}, templateDef.outputConfig ?? {}],
+              outputConfigs: getOutputConfigs(config, templateDef, 'segmentedClient'),
               forceOutputConfigs: [{ origin: cliGenerateOptions?.origin }],
               isBundle,
               projectPackageJson,
@@ -427,7 +449,10 @@ export async function generate({
               projectInfo,
               clientTemplateFile,
               fullSchema: segmentedFullSchema,
-              prettifyClient: cliGenerateOptions?.prettify ?? config.segmentedClient.prettifyClient,
+              prettifyClient:
+                cliGenerateOptions?.prettify ??
+                templateDef.segmentedClient?.prettifyClient ??
+                config.segmentedClient.prettifyClient,
               segmentName,
               templateContent,
               matterResult,
@@ -467,6 +492,7 @@ export async function generate({
         return {
           written: rendered.some(({ written }) => written),
           templateName,
+          segmentNames,
           outAbsoluteDir: path.resolve(cwd, outCwdRelativeDir),
           package: rendered[0]?.package || {},
           origin: rendered[0]?.origin || '',
@@ -498,7 +524,7 @@ export async function generate({
       )) {
         const skippedDirs = await removeUnlistedDirectories(
           outAbsoluteDir,
-          segmentNames.map((s) => s || ROOT_SEGMENT_FILE_NAME),
+          _.uniq(dirResults.flatMap(({ segmentNames }) => segmentNames)).map((s) => s || ROOT_SEGMENT_FILE_NAME),
           dirResults.map(({ relPath }) => relPath),
           {
             unstampedRelPaths: dirResults.filter(({ isStamped }) => !isStamped).map(({ relPath }) => relPath),

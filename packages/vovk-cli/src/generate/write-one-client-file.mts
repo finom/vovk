@@ -57,6 +57,19 @@ async function importTemplateModule(specifier: string, cwd: string): Promise<unk
   return import(resolved ? pathToFileURL(resolved).href : specifier);
 }
 
+// a template's own client options extend the root ones
+export function getOutputConfigs(
+  config: VovkStrictConfig,
+  templateDef: VovkStrictConfig['clientTemplateDefs'][string],
+  configKey: 'composedClient' | 'segmentedClient'
+) {
+  return [
+    config[configKey].outputConfig ?? {},
+    templateDef[configKey]?.outputConfig ?? {},
+    templateDef.outputConfig ?? {},
+  ];
+}
+
 export function normalizeOutTemplatePath(out: string, packageJson: PackageJson): string {
   return out.replace('[package_name]', toUnderscoredPackageName(packageJson.name));
 }
@@ -214,7 +227,7 @@ export async function renderOneClientFile({
         outCwdRelativeDir,
         relativeDir,
         segmentName,
-        outputConfigs: [projectConfig[configKey].outputConfig ?? {}, templateDef.outputConfig ?? {}],
+        outputConfigs: getOutputConfigs(projectConfig, templateDef, configKey),
       })
     ),
     segmentImports: Object.fromEntries(
@@ -226,7 +239,7 @@ export async function renderOneClientFile({
           isBundle,
           outCwdRelativeDir,
           relativeDir,
-          outputConfigs: [projectConfig[configKey].outputConfig ?? {}, templateDef.outputConfig ?? {}],
+          outputConfigs: getOutputConfigs(projectConfig, templateDef, configKey),
         });
         const imports =
           configKey === 'composedClient' ? clientImports.composedClient : clientImports.segmentedClient[sName];
