@@ -45,7 +45,7 @@ export function compileTs(options: CompileOptions): string {
         .map(([, typeDecl]) => typeDecl)
         .join('\n\n');
 
-  const comment = isSchema(schema) && schema.description ? `/** ${escapeJSDocComment(schema.description)} */\n` : '';
+  const comment = isSchema(schema) ? toJSDocComment(schema.description) : '';
   return compiledRefs
     ? `${compiledRefs}\n\n${comment}export type ${mainTypeName} = ${mainType};`
     : `${comment}export type ${mainTypeName} = ${mainType};`;
@@ -218,9 +218,7 @@ function handleRef(ref: string, context: CompileContext, typeName = refToTypeNam
 
   // Compile the referenced schema
   const compiledType = compileSchema(referencedSchema, typeName, context);
-  const description = referencedSchema.description
-    ? `/** ${escapeJSDocComment(referencedSchema.description)} */\n`
-    : '';
+  const description = toJSDocComment(referencedSchema.description);
   context.compiledRefs.set(ref, `${description}export type ${typeName} = ${compiledType};`);
 
   // Mark as completed
@@ -293,7 +291,8 @@ function handleObject(schema: JSONSchema7, name: string, context: CompileContext
       const propType = compileSchema(propSchema, nestedTypeName, context);
       const safePropName = /^[a-zA-Z_$][a-zA-Z0-9_$]*$/.test(propName) ? propName : JSON.stringify(propName);
       // Add JSDoc comment if description is present
-      const comment = propSchema.description ? `\n/** ${escapeJSDocComment(propSchema.description)} */\n` : '';
+      const jsDocComment = toJSDocComment(propSchema.description);
+      const comment = jsDocComment && `\n${jsDocComment}`;
       props.push(`${comment}${safePropName}${isRequired ? '' : '?'}: ${propType}`);
       propTypes.push(propType, ...(isRequired ? [] : ['undefined']));
     }
@@ -368,8 +367,8 @@ function sanitizeTypeName(name: string): string {
   return /^[\p{Lu}\p{Lt}\p{Lo}\p{Lm}\p{Nl}_]\p{ID_Continue}*$/u.test(name) ? name : toTypeName(name);
 }
 
-// Utility function to escape JSDoc comment terminators in descriptions
-function escapeJSDocComment(description: string | undefined): string {
-  if (!description) return '';
-  return description.replace(/\*\//g, '*\\/');
+// a spec may hold a description that isn't a string, it gets no comment
+function toJSDocComment(description: unknown): string {
+  if (typeof description !== 'string' || !description) return '';
+  return `/** ${description.replace(/\*\//g, '*\\/')} */\n`;
 }

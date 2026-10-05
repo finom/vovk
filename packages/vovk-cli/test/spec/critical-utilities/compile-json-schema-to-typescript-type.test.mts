@@ -137,6 +137,16 @@ await describe('compileJSONSchemaToTypeScriptType', async () => {
     );
   });
 
+  await it('Leaves out a description that is not a string', () => {
+    const schema = {
+      type: 'object',
+      description: 1,
+      properties: { a: { type: 'string', description: 123 }, d: { $ref: '#/$defs/D' } },
+      $defs: { D: { type: 'string', description: 5 } },
+    };
+    assert.strictEqual(compile(schema as unknown as JSONSchema7, 'T'), 'export type T = { a?: string; d?: D };');
+  });
+
   await it('Gives a name that starts with a digit a leading underscore, in declarations and refs', () => {
     assert.strictEqual(compile({ type: 'string' }, '2FAConfig'), 'export type _2FaConfig = string;');
     assert.strictEqual(
