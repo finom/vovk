@@ -483,6 +483,68 @@ function responseHandler(name: string): Obj {
 
 const okProperties = { ok: { type: 'boolean' } };
 
+describe('openAPIToVovkSchema — form body x-tsType', () => {
+  // a form body's x-tsType is built from its schema
+  function formBodyTsType(schema: Obj): string {
+    const segment = openAPIToVovkSchema({
+      apiRoot: 'https://api.example.com',
+      source: {
+        object: {
+          openapi: '3.1.0',
+          info: { title: 'Forms', version: '1.0.0' },
+          paths: {
+            '/things': {
+              post: {
+                operationId: 'createThing',
+                requestBody: { content: { 'multipart/form-data': { schema } } },
+                responses: { '200': { description: 'ok' } },
+              },
+            },
+          },
+        },
+      },
+      getModuleName: () => 'Test',
+      getMethodName: ({ operationObject }: { operationObject: { operationId?: string } }) =>
+        operationObject.operationId ?? 'op',
+      segmentName: 'api',
+    } as unknown as Parameters<typeof openAPIToVovkSchema>[0]).segments.api as Seg;
+    return segment.controllers.Test.handlers.createThing.validation.body['x-tsType'];
+  }
+
+  // each level builds the object type of the next once per type it lists, 2^depth times without the fix
+  for (const type of [
+    ['object', 'object'],
+    ['object', 'array'],
+  ]) {
+    it(`grows with the schema for nested objects of type ${JSON.stringify(type)}`, () => {
+      let schema: Obj = { type: 'string' };
+      for (let i = 0; i < 16; i++) schema = { type, properties: { a: schema } };
+      const tsType = formBodyTsType(schema);
+      ok(
+        tsType.length < JSON.stringify(schema).length,
+        `a ${JSON.stringify(schema).length}-char schema gave a ${tsType.length}-char type`
+      );
+    });
+  }
+
+  it('keeps the types of an ordinary type list', () => {
+    const tsType = formBodyTsType({
+      type: 'object',
+      properties: {
+        n: { type: ['integer', 'null'] },
+        s: { type: ['string', 'number'] },
+        o: { type: ['object', 'null'], properties: { a: { type: 'string' } } },
+        l: { type: ['array', 'null'], items: { type: 'string' } },
+      },
+      required: ['n'],
+    });
+    strictEqual(
+      tsType,
+      'FormData | { n: (number | null); s?: (string | number); o?: ({ a?: string } | null); l?: (string[] | null) }'
+    );
+  });
+});
+
 describe('openAPIToVovkSchema — success response selection', () => {
   it('reads the 2XX wildcard status', () => {
     deepStrictEqual(responseHandler('wildcard').validation.output.properties, okProperties);

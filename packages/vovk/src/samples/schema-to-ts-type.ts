@@ -1,5 +1,22 @@
 import type { VovkJSONSchemaBase } from 'vovk';
 
+const PRIMITIVE_TYPES = new Set(['string', 'number', 'integer', 'boolean', 'null']);
+
+const isObjectType = (schema: VovkJSONSchemaBase, type: unknown) =>
+  type === 'object' || !!schema.properties || schema.additionalProperties !== undefined;
+
+const isArrayType = (schema: VovkJSONSchemaBase, type: unknown) =>
+  type === 'array' || !!schema.items || !!schema.prefixItems;
+
+// a type list builds each type once: building the object or array type of the schema once per type that leads to it
+// would double the work at every level of nesting
+const typeListKey = (schema: VovkJSONSchemaBase, type: unknown): string => {
+  if (PRIMITIVE_TYPES.has(type as string)) return type as string;
+  if (isObjectType(schema, type)) return 'object';
+  if (isArrayType(schema, type)) return 'array';
+  return String(type);
+};
+
 export function schemaToTsType(jsonSchema: VovkJSONSchemaBase | boolean): string {
   if (jsonSchema === true) return 'unknown';
   if (jsonSchema === false) return 'never';
@@ -44,10 +61,12 @@ export function schemaToTsType(jsonSchema: VovkJSONSchemaBase | boolean): string
 
   // Handle type as array (union of types)
   if (Array.isArray(jsonSchema.type)) {
-    const types = jsonSchema.type.map((t: string) =>
-      schemaToTsType({ ...jsonSchema, type: t as VovkJSONSchemaBase['type'] })
-    );
-    return types.length ? `(${types.join(' | ')})` : 'unknown';
+    const types = new Map<string, string>();
+    for (const t of jsonSchema.type) {
+      const key = typeListKey(jsonSchema, t);
+      if (!types.has(key)) types.set(key, schemaToTsType({ ...jsonSchema, type: t }));
+    }
+    return types.size ? `(${[...types.values()].join(' | ')})` : 'unknown';
   }
 
   const type = jsonSchema.type;
@@ -59,7 +78,7 @@ export function schemaToTsType(jsonSchema: VovkJSONSchemaBase | boolean): string
   if (type === 'null') return 'null';
 
   // Object
-  if (type === 'object' || jsonSchema.properties || jsonSchema.additionalProperties !== undefined) {
+  if (isObjectType(jsonSchema, type)) {
     const props = jsonSchema.properties || {};
     const required: string[] = jsonSchema.required || [];
     const propEntries = Object.entries(props);
@@ -94,7 +113,7 @@ export function schemaToTsType(jsonSchema: VovkJSONSchemaBase | boolean): string
   }
 
   // Array
-  if (type === 'array' || jsonSchema.items || jsonSchema.prefixItems) {
+  if (isArrayType(jsonSchema, type)) {
     // Tuple (prefixItems)
     if (jsonSchema.prefixItems) {
       const tupleTypes = jsonSchema.prefixItems.map((s: VovkJSONSchemaBase) => schemaToTsType(s));
