@@ -8,6 +8,7 @@ from generated_python_client.src.test_generated_python_client import (
     ClientSweepRPC,
     HttpException,
     PetstoreAPI,
+    RustSweepRPC,
     WithValidationRPC,
     client,
 )
@@ -163,6 +164,9 @@ class TestClient(unittest.TestCase):
             [request.request.url for request in sent],
             ['https://petstore.test/v1/pets/5/vaccinated/true', 'https://petstore.test/v1/pets/2.5/vaccinated/false'],
         )
+
+    def test_query_numbers_as_javascript_writes_them(self) -> None:
+        self.assertEqual(RustSweepRPC.get_numeric_query(query={'limit': 10.0}), {'search': '?limit=10'})
 
     def test_json_lines_media_types(self) -> None:
         for media_type in ['application/jsonl', 'application/jsonlines', 'application/x-ndjson']:

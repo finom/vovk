@@ -22,6 +22,14 @@ class HttpException(Exception):
         self.status_code = response_body['statusCode']
         self.cause = response_body.get('cause')
 
+def _to_text(value: Any) -> str:
+    # a scalar as JavaScript writes it: true and false, and a whole number without .0
+    if isinstance(value, bool):
+        return 'true' if value else 'false'
+    if isinstance(value, float) and value.is_integer() and abs(value) < 2 ** 53:
+        return str(int(value))
+    return str(value)
+
 @functools.lru_cache(maxsize=None)
 def _compile_pattern(pattern: str) -> Optional['re.Pattern[str]']:
     try:
@@ -210,7 +218,7 @@ class ApiClient:
         processed_url = url
         if params:
             for key, value in params.items():
-                text = str(value)
+                text = _to_text(value)
                 # "", "." and ".." would drop or climb a path segment and so reach another route
                 if text in ('', '.', '..'):
                     raise ValueError(f'Path parameter "{key}" cannot be empty, "." or "..", got "{text}"')
@@ -307,12 +315,10 @@ class ApiClient:
             for item in value if isinstance(value, (list, tuple)) else [value]:
                 if item is None:
                     continue
-                if isinstance(item, bool):
-                    text = 'true' if item else 'false'
-                elif isinstance(item, (dict, list, tuple)):
+                if isinstance(item, (dict, list, tuple)):
                     text = json.dumps(item, separators=(',', ':'), ensure_ascii=False)
                 else:
-                    text = str(item)
+                    text = _to_text(item)
                 fields.append((key, text))
         return fields
 
@@ -347,8 +353,7 @@ class ApiClient:
             return ''
 
         else:
-            # booleans as JSON writes them, the way the TypeScript client sends them
-            text = ('true' if data else 'false') if isinstance(data, bool) else str(data)
+            text = _to_text(data)
             return f"{quote(prefix, safe='')}={quote(text, safe='')}"
         
         return "&".join(part for part in parts if part)
