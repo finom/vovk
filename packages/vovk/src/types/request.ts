@@ -1,4 +1,4 @@
-import type { KnownAny } from './utils.js';
+import type { IsAny, KnownAny } from './utils.js';
 
 /**
  * Represents a cookie object
@@ -29,6 +29,27 @@ type SearchParamValue<T, KEY extends keyof T> =
           ? string | null
           : RawSearchParamValue<T[KEY]>;
 
+// a query type keys get, getAll and has; without one, as in a handler without a query schema, any key goes
+type IsQueryTyped<T> =
+  IsAny<T> extends true ? true : unknown extends T ? false : [T] extends [null | undefined] ? false : true;
+
+type SearchParamKey<T> = IsQueryTyped<T> extends true ? keyof T & string : string;
+
+// the raw URL: values are strings, and an array or an object goes as tags[0]=…, under keys of its own
+type SearchParams<T> = {
+  get: <KEY extends SearchParamKey<T>>(
+    key: KEY
+  ) => IsQueryTyped<T> extends true ? SearchParamValue<T, KEY & keyof T> : string | null;
+  getAll: <KEY extends SearchParamKey<T>>(
+    key: KEY
+  ) => IsQueryTyped<T> extends true ? RawSearchParamValue<SearchParamItem<T[KEY & keyof T]>>[] : string[];
+  has: <KEY extends SearchParamKey<T>>(key: KEY, value?: string) => boolean;
+  entries: () => IterableIterator<[string, string]>;
+  forEach: (callbackfn: (value: string, key: string) => void) => void;
+  keys: () => IterableIterator<string>;
+  values: () => IterableIterator<string>;
+};
+
 /**
  * The Vovk.ts request object extending Next.js's NextRequest, generics: TBody, TQuery, TParams.
  * TBodyInput and TQueryInput are what the client sent, before a schema's defaults and transforms.
@@ -55,19 +76,7 @@ export interface VovkRequest<
     buildId: string | undefined;
     pathname: string;
     search: string;
-    // the raw URL: values are strings, and an array or an object goes as tags[0]=…, under keys of its own
-    searchParams: {
-      get: <KEY extends keyof RawQuery<TQueryInput, TQuery>>(
-        key: KEY
-      ) => SearchParamValue<RawQuery<TQueryInput, TQuery>, KEY>;
-      getAll: <KEY extends keyof RawQuery<TQueryInput, TQuery>>(
-        key: KEY
-      ) => RawSearchParamValue<SearchParamItem<RawQuery<TQueryInput, TQuery>[KEY]>>[];
-      entries: () => IterableIterator<[string, string]>;
-      forEach: (callbackfn: (value: string, key: string) => void) => void;
-      keys: () => IterableIterator<string>;
-      values: () => IterableIterator<string>;
-    };
+    searchParams: SearchParams<RawQuery<TQueryInput, TQuery>>;
   };
   vovk: {
     body: () => Promise<TBody>;
