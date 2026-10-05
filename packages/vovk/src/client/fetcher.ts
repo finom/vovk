@@ -181,7 +181,11 @@ export function createFetcher<T>({
         });
       }
 
-      const declaredContentTypes = ((schema.validation?.body?.['x-contentType'] ?? []) as string[]).map(getMediaType);
+      const bodySchema = schema.validation?.body;
+      // a body schema that declares no content type takes JSON, as the server checks it
+      const declaredContentTypes = (
+        (bodySchema?.['x-contentType'] ?? (bodySchema ? ['application/json'] : [])) as string[]
+      ).map(getMediaType);
       const hasBody = body !== undefined && body !== null;
       const isBinary = body instanceof Blob || body instanceof ArrayBuffer || ArrayBuffer.isView(body);
       const resolvedContentType = !hasBody
