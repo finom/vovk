@@ -4,7 +4,7 @@ import { toTypeName } from 'vovk/internal';
 
 interface CompileOptions {
   name: string;
-  schema: JSONSchema7 & { components?: OpenAPIObject['components'] };
+  schema: (JSONSchema7 & { components?: OpenAPIObject['components'] }) | boolean;
   refs?: Map<string, JSONSchema7>;
   dontCreateRefTypes?: boolean; // New option
 }
@@ -22,12 +22,13 @@ export function compileTs(options: CompileOptions): string {
     refsInProgress: new Set(),
   };
 
+  const { schema } = options;
   // Collect all definitions from the schema
-  collectDefinitions(options.schema, context.refs);
+  if (isSchema(schema)) collectDefinitions(schema, context.refs);
 
   // Ensure the main type name is valid
   const mainTypeName = sanitizeTypeName(options.name);
-  const mainType = compileSchema(options.schema, mainTypeName, context);
+  const mainType = compileSchema(schema, mainTypeName, context);
 
   // Compile all referenced types, unless dontCreateRefTypes is set
   const compiledRefs = options.dontCreateRefTypes
@@ -36,9 +37,10 @@ export function compileTs(options: CompileOptions): string {
         .map(([, typeDecl]) => typeDecl)
         .join('\n\n');
 
+  const comment = isSchema(schema) && schema.description ? `/** ${escapeJSDocComment(schema.description)} */\n` : '';
   return compiledRefs
-    ? `${compiledRefs}\n\n${options.schema.description ? `/** ${escapeJSDocComment(options.schema.description)} */\n` : ''}export type ${mainTypeName} = ${mainType};`
-    : `${options.schema.description ? `/** ${escapeJSDocComment(options.schema.description)} */\n` : ''}export type ${mainTypeName} = ${mainType};`;
+    ? `${compiledRefs}\n\n${comment}export type ${mainTypeName} = ${mainType};`
+    : `${comment}export type ${mainTypeName} = ${mainType};`;
 }
 
 function collectDefinitions(schema: JSONSchema7, refs: Map<string, JSONSchema7>) {
@@ -101,8 +103,9 @@ function isSchema(value: JSONSchema7Definition | boolean): value is JSONSchema7 
 }
 
 function compileSchema(schema: JSONSchema7Definition | boolean, name: string, context: CompileContext): string {
+  // true allows any value, false none
   if (typeof schema === 'boolean') {
-    return schema ? 'any' : 'never';
+    return schema ? 'unknown' : 'never';
   }
 
   const type = compileSchemaType(schema, name, context);

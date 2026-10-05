@@ -114,7 +114,7 @@ await describe('compileJSONSchemaToTypeScriptType', async () => {
 
   // an OpenAPI 3.1 component or response may be a boolean schema
   await it('Compiles a boolean schema', () => {
-    assert.strictEqual(compile(true as unknown as JSONSchema7, 'T'), 'export type T = any;');
+    assert.strictEqual(compile(true as unknown as JSONSchema7, 'T'), 'export type T = unknown;');
     assert.strictEqual(compile(false as unknown as JSONSchema7, 'T'), 'export type T = never;');
   });
 
