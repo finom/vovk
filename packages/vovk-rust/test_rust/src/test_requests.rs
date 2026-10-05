@@ -320,6 +320,15 @@ pub mod test_requests {
         assert_eq!(data, json!({"body": {"n": 5, "flag": true, "tags": ["a", "b"]}, "contentType": "application/json"}));
     }
 
+    // a field of a branch may hold a file, so the function takes a form: the file branch goes out as one
+    #[tokio::test]
+    async fn test_json_or_form_body_with_a_file() {
+        let form = multipart::Form::new().part("file", multipart::Part::bytes(b"x".to_vec()).file_name("a.txt"));
+        let data = client_sweep_rpc::post_json_or_form(form, (), (), None, Some(&api_root()), false).await.unwrap();
+
+        assert_eq!(data, json!({"body": {"file": "file:a.txt"}, "contentType": "multipart/form-data"}));
+    }
+
     // the path has {id}, the procedure has no params schema
     #[tokio::test]
     async fn test_params_without_a_schema() {

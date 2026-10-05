@@ -93,6 +93,48 @@ test('a controller without handlers', { skip: !hasPython && 'python3 not found' 
   assert.equal(result.status, 0, result.stderr);
 });
 
+test('a body that may hold a file takes files after the arguments every call needs', {
+  skip: !hasPython && 'python3 not found',
+}, () => {
+  const file = generate({
+    UserRPC: controller('User', {
+      upload: {
+        httpMethod: 'POST',
+        path: '{id}',
+        validation: {
+          body: {
+            anyOf: [
+              { type: 'object', properties: { n: { type: 'number' } }, required: ['n'] },
+              { type: 'object', properties: { file: { type: 'string', format: 'binary' } }, required: ['file'] },
+            ],
+            'x-contentType': ['application/json', 'multipart/form-data'],
+          },
+          query: idSchema,
+          params: idSchema,
+        },
+      },
+    }),
+  });
+  const source = fs.readFileSync(file('src/app/__init__.py'), 'utf-8');
+  const result = spawnSync(
+    'python3',
+    [
+      '-c',
+      'import ast, sys; ast.parse(open(sys.argv[1], encoding="utf-8").read(), sys.argv[1])',
+      file('src/app/__init__.py'),
+    ],
+    { encoding: 'utf-8' }
+  );
+
+  // an argument without a default after one with a default is a SyntaxError
+  assert.equal(result.status, 0, result.stderr);
+  assert.match(
+    source,
+    /body: UploadBody,\n +query: UploadQuery,\n +params: UploadParams,\n +files: Optional\[UploadFiles\] = None,/
+  );
+  assert.match(source, /^ {12}files=files,$/m);
+});
+
 test('a title or description that is not a string', { skip: !hasPython && 'python3 not found' }, () => {
   const file = generate(
     { UserRPC: controller('User', { list: { httpMethod: 'GET', path: '', validation: {} } }) },

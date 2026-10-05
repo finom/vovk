@@ -160,6 +160,11 @@ class TestClient(unittest.TestCase):
             body = {'n': 1, 'tags': ['a'], 'nested': {'a': True}}
             self.assertEqual(ClientSweepRPC.post_json_or_form(body=body), {'body': body, 'contentType': 'application/json'})
 
+    def test_form_or_json_body_with_a_file(self) -> None:
+        # the file branch of a JSON-or-file body: the files go out as a form, the object branch as JSON
+        data = ClientSweepRPC.post_json_or_form(body={}, files={'file': ('a.txt', BytesIO(b'x'))})
+        self.assertEqual(data, {'body': {'file': 'file:a.txt'}, 'contentType': 'multipart/form-data'})
+
     def test_params_without_a_schema(self) -> None:
         # the path has {id}, the procedure has no params schema
         self.assertEqual(ClientSweepRPC.get_user_posts(params={'id': '42'}), {'id': '42'})

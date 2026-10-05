@@ -2,6 +2,7 @@ import { strict as assert } from 'node:assert';
 import { test } from 'node:test';
 import type { VovkJSONSchemaBase } from 'vovk';
 import {
+  areFilesOptional,
   convertJSONSchemaToPythonDataType,
   convertJSONSchemaToPythonFilesType,
   getBodyKind,
@@ -927,6 +928,59 @@ test('allOf and $ref bodies', async (t) => {
         'class Files(TypedDict):'
       )
     );
+  });
+});
+
+test('files in a union branch, behind a $ref or in a list', async (t) => {
+  const file = { type: 'string', format: 'binary' } as const;
+  // as z.union([z.object({ n: z.number() }), z.object({ file: z.file() })]) emits it
+  const fileOrJSON: VovkJSONSchemaBase = {
+    anyOf: [
+      { type: 'object', properties: { n: { type: 'number' } }, required: ['n'] },
+      { type: 'object', properties: { file }, required: ['file'] },
+    ],
+    'x-contentType': ['application/json', 'multipart/form-data'],
+  };
+  const upload: VovkJSONSchemaBase = { type: 'object', properties: { file }, required: ['file'] };
+
+  await t.test('are found as the Rust client finds them', () => {
+    assert.equal(hasFiles(fileOrJSON), true);
+    assert.equal(hasFiles({ type: 'object', properties: { files: { type: 'array', items: file } } }), true);
+    assert.equal(
+      hasFiles({ type: 'object', properties: { file: { $ref: '#/$defs/File' } }, $defs: { File: file } }),
+      true
+    );
+    assert.equal(hasFiles({ type: 'object', properties: { file: { anyOf: [file, { type: 'null' }] } } }), true);
+    assert.equal(
+      hasFiles({ type: 'object', properties: { file: { type: 'string', contentEncoding: 'binary' } } }),
+      true
+    );
+    assert.equal(hasFiles({ allOf: [{ $ref: '#/$defs/Upload' }], $defs: { Upload: upload } }), true);
+    assert.equal(
+      hasFiles({ anyOf: [{ type: 'object', properties: { n: { type: 'number' } } }, { type: 'string' }] }),
+      false
+    );
+  });
+
+  await t.test('may be left out when a branch holds none', () => {
+    assert.equal(areFilesOptional(fileOrJSON), true);
+    assert.equal(areFilesOptional(upload), false);
+    assert.equal(
+      areFilesOptional({ allOf: [upload, { type: 'object', properties: { n: { type: 'number' } } }] }),
+      false
+    );
+  });
+
+  await t.test('make a files type of the fields of every branch', () => {
+    const result = convertJSONSchemaToPythonFilesType({
+      schema: fileOrJSON,
+      namespace: 'Rpc',
+      className: 'Files',
+      pad: 0,
+    });
+
+    assert.ok(result.includes('class Files(TypedDict):'), result);
+    assert.match(result, /^ {4}file: Union\[BinaryIO/m);
   });
 });
 

@@ -98,14 +98,59 @@ function resolveTopLevelRef(schema: VovkJSONSchemaBase): VovkJSONSchemaBase {
   return (name && (schema.$defs?.[name] ?? schema.definitions?.[name])) || schema;
 }
 
+const MAX_FILE_SEARCH_DEPTH = 16;
+
+// the schema a local $ref points at
+function resolveLocalRef(ref: string, root: VovkJSONSchemaBase): VovkJSONSchemaBase | undefined {
+  if (!ref.startsWith('#')) return undefined;
+  let current: unknown = root;
+  for (const part of ref.slice(1).split('/').filter(Boolean)) {
+    if (!current || typeof current !== 'object') return undefined;
+    current = (current as Record<string, unknown>)[part.replace(/~1/g, '/').replace(/~0/g, '~')];
+  }
+  return current && typeof current === 'object' ? (current as VovkJSONSchemaBase) : undefined;
+}
+
+// a field that goes in files: a file, or a list or a union that may be one, as the Rust client decides
+function isFileField(s: VovkJSONSchemaBase | undefined, root: VovkJSONSchemaBase, depth = 0): boolean {
+  if (!s || typeof s !== 'object' || depth > MAX_FILE_SEARCH_DEPTH) return false;
+  if (s.$ref) return isFileField(resolveLocalRef(s.$ref, root), root, depth + 1);
+  if (s.format === 'binary' || s.contentEncoding === 'binary') return true;
+  const items = s.items && typeof s.items === 'object' ? [s.items].flat() : [];
+  return [...items, ...(s.anyOf ?? []), ...(s.oneOf ?? [])].some(
+    (branch) => typeof branch === 'object' && isFileField(branch, root, depth + 1)
+  );
+}
+
+// the objects a body may be: itself and every branch of its unions and intersections
+function bodyObjects(s: VovkJSONSchemaBase | undefined, root: VovkJSONSchemaBase, depth = 0): VovkJSONSchemaBase[] {
+  if (!s || typeof s !== 'object' || depth > MAX_FILE_SEARCH_DEPTH) return [];
+  if (s.$ref) return bodyObjects(resolveLocalRef(s.$ref, root), root, depth + 1);
+  const branches = [...(s.allOf ?? []), ...(s.anyOf ?? []), ...(s.oneOf ?? [])];
+  return [s, ...branches.flatMap((branch) => bodyObjects(branch, root, depth + 1))];
+}
+
+function fileFieldsOf(s: VovkJSONSchemaBase | undefined, root: VovkJSONSchemaBase) {
+  return bodyObjects(s, root).flatMap((object) =>
+    Object.entries(object.properties ?? {}).filter(([, prop]) => isFileField(prop, root))
+  );
+}
+
 export function hasFiles(schema: VovkJSONSchemaBase): boolean {
-  return Object.values(resolveTopLevelRef(schema).properties ?? {}).some((prop) => isFileUploadSchema(prop));
+  return fileFieldsOf(schema, schema).length > 0;
+}
+
+// a call may send no files when a branch of the body holds none, as a JSON-or-file union
+export function areFilesOptional(schema: VovkJSONSchemaBase): boolean {
+  const [target] = bodyObjects(schema, schema);
+  const branches = target?.anyOf ?? target?.oneOf;
+  return !!branches?.some((branch) => !fileFieldsOf(branch, schema).length);
 }
 
 export function hasNormalData(schema: VovkJSONSchemaBase): boolean {
   const { properties } = resolveTopLevelRef(schema);
   // without listed properties, as in an array, a union or a record, any of it may be data
-  return !properties || Object.values(properties).some((prop) => !isFileUploadSchema(prop));
+  return !properties || Object.values(properties).some((prop) => !isFileField(prop, schema));
 }
 
 /**
@@ -318,7 +363,7 @@ export function convertJSONSchemaToPythonDataType(options: ConvertOptions): stri
           const required = new Set(s.required || []);
           // file upload properties go to the Files type
           const fields = Object.entries(s.properties || {})
-            .filter(([, propSchema]) => !isFileUploadSchema(propSchema))
+            .filter(([, propSchema]) => !isFileField(propSchema, schema))
             .map(([propName, propSchema]) => {
               const childType = buildType(propSchema, `${propNameForParent}_${propName}`);
               // a key that may be missing, not one that may be None
@@ -381,19 +426,23 @@ export function convertJSONSchemaToPythonDataType(options: ConvertOptions): stri
 
 export function convertJSONSchemaToPythonFilesType(options: ConvertOptions): string {
   const { className, pad } = options;
-  const schema = options.schema && resolveTopLevelRef(options.schema);
-
-  if (schema?.type !== 'object') {
-    // Files must be in an object schema
-    return '';
-  }
+  if (!options.schema) return '';
+  const schema = resolveTopLevelRef(options.schema);
 
   const lines: string[] = [];
-  const props = schema.properties || {};
-  const required = new Set(schema.required || []);
-
-  // Filter to only file upload properties
-  const fileProps = Object.entries(props).filter(([, propSchema]) => isFileUploadSchema(propSchema));
+  // the file fields of the body and of each branch of it; one is required when every branch with it requires it
+  const objects = bodyObjects(options.schema, options.schema);
+  const fileProps: [string, VovkJSONSchemaBase][] = [];
+  for (const [name, prop] of fileFieldsOf(options.schema, options.schema)) {
+    if (!fileProps.some(([seen]) => seen === name)) fileProps.push([name, prop]);
+  }
+  const required = new Set(
+    fileProps
+      .map(([name]) => name)
+      .filter((name) =>
+        objects.every((object) => !object.properties || !(name in object.properties) || object.required?.includes(name))
+      )
+  );
 
   if (fileProps.length === 0) {
     return '';

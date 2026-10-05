@@ -6,6 +6,7 @@ imports: ['vovk-python']
     convertJSONSchemaToPythonDataType: t.imports['vovk-python'].convertJSONSchemaToPythonDataType,
     convertJSONSchemaToPythonFilesType: t.imports['vovk-python'].convertJSONSchemaToPythonFilesType,
     hasFiles: t.imports['vovk-python'].hasFiles,
+    areFilesOptional: t.imports['vovk-python'].areFilesOptional,
     hasNormalData: t.imports['vovk-python'].hasNormalData,
     getBodyKind: t.imports['vovk-python'].getBodyKind,
     getTextContentType: t.imports['vovk-python'].getTextContentType,
@@ -50,7 +51,9 @@ class <%- pyModuleName %>: <% if (!Object.keys(controllerSchema.handlers).length
     const bodyKind = vars.getBodyKind(validation?.body);
     const bodyContentType = bodyKind === 'text' ? vars.getTextContentType(validation?.body) : validation?.body?.['x-contentType']?.[0] || 'application/octet-stream';
     // a path with {name} placeholders takes params, with or without a params schema
-    const paramsType = validation?.params ? `${handlerNameOriginalCapitalized}Params` : /\{[^}]+\}/.test(`${controllerSchema.prefix ?? ''}/${handlerSchema.path}`) ? 'Dict[str, str]' : null; %>
+    const paramsType = validation?.params ? `${handlerNameOriginalCapitalized}Params` : /\{[^}]+\}/.test(`${controllerSchema.prefix ?? ''}/${handlerSchema.path}`) ? 'Dict[str, str]' : null;
+    // files a call may leave out, as for a JSON-or-file union, come after the arguments every call takes
+    const files = validation?.body && vars.hasFiles(validation.body) ? (vars.areFilesOptional(validation.body) ? 'optional' : 'required') : null; %>
     # <%- vars.toPythonCommentText(`${rpcModuleName}.${handlerName} ${httpMethod} \`${joinURL(...segmentBases[segmentName], controllerSchema.prefix, handlerSchema.path)}\``) %>
 <%- ([
         bodyKind === 'text' ? '' : bodyKind === 'binary' ? '' : vars.convertJSONSchemaToPythonDataType({ schema: validation?.body, namespace: pyModuleName, className: `${handlerNameOriginalCapitalized}Body`, pad: 4 }),
@@ -65,9 +68,10 @@ class <%- pyModuleName %>: <% if (!Object.keys(controllerSchema.handlers).length
 <%= [
             bodyKind === 'text' ? 'body: str,' : bodyKind === 'binary' ? 'body: bytes,' : '',
             bodyKind === 'json' || (bodyKind === 'form' && vars.hasNormalData(validation.body)) ? `body: ${handlerNameOriginalCapitalized}Body,` : '',
-            validation?.body && vars.hasFiles(validation.body) ? `files: ${handlerNameOriginalCapitalized}Files,` : '',
+            files === 'required' ? `files: ${handlerNameOriginalCapitalized}Files,` : '',
             validation?.query ? `query: ${handlerNameOriginalCapitalized}Query,` : '',
-            paramsType ? `params: ${paramsType},` : ''
+            paramsType ? `params: ${paramsType},` : '',
+            files === 'optional' ? `files: Optional[${handlerNameOriginalCapitalized}Files] = None,` : ''
         ].filter(Boolean).map((s) => ' '.repeat(8) + s).join('\n') %>
         headers: Optional[Dict[str, str]] = None,
         api_root: Optional[str] = None,
@@ -89,7 +93,7 @@ class <%- pyModuleName %>: <% if (!Object.keys(controllerSchema.handlers).length
 <%- [
                 bodyKind === 'text' || bodyKind === 'binary' ? 'body=body,' : '',
                 bodyKind === 'json' || (bodyKind === 'form' && vars.hasNormalData(validation.body)) ? 'body=body,' : '',
-                validation?.body && vars.hasFiles(validation.body) ? 'files=files,' : '',
+                files ? 'files=files,' : '',
                 bodyKind === 'text' || bodyKind === 'binary' ? `body_content_type=${vars.toPythonString(bodyContentType)},` : '',
                 validation?.query ? 'query=query,' : '',
                 paramsType ? 'params=params,' : ''
