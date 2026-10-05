@@ -39,7 +39,8 @@ client = ApiClient(<%- vars.toPythonString(t.apiRoot ?? '') %>, {
     Object.values(segment.controllers).forEach((controllerSchema) => {
 const { rpcModuleName } = controllerSchema;
 const pyModuleName = vars.toPythonIdentifier(rpcModuleName); %>
-class <%- pyModuleName %>: <% Object.entries(controllerSchema.handlers).forEach(([handlerNameOriginal, handlerSchema]) => {
+class <%- pyModuleName %>: <% if (!Object.keys(controllerSchema.handlers).length) { %>
+    pass<% } %><% Object.entries(controllerSchema.handlers).forEach(([handlerNameOriginal, handlerSchema]) => {
     const { validation, operationObject, httpMethod } = handlerSchema;
     const handlerNameOriginalCapitalized = vars.toPythonIdentifier(handlerNameOriginal.charAt(0).toUpperCase() + handlerNameOriginal.slice(1));
     const handlerName = vars.toPythonIdentifier(t._.snakeCase(handlerNameOriginal));
