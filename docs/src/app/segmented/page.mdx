@@ -203,8 +203,9 @@ const config = {
     enabled: false, // default
     fromTemplates: ['ts'], // default
     outDir: './src/client', // default
-    includeSegments: ['foo'], // exclusive with `excludeSegments`
-    excludeSegments: ['bar'], // exclusive with `includeSegments`
+    includeSegments: ['foo'], // or excludeSegments: ['bar'], not both
   },
 };
+
+export default config;
 ```
