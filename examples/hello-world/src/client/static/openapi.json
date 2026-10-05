@@ -2,12 +2,12 @@
   "openapi": "3.1.0",
   "info": {
     "title": "\"Hello World\" app API",
+    "version": "1.0.0",
     "description": "API for \"Hello World\" app hosted at https://hello-world.vovk.dev/. Source code is available on Github https://github.com/finom/vovk/tree/main/examples/hello-world. For more information about this app, visit the documentation page https://vovk.dev/hello-world.",
     "license": {
       "name": "MIT",
       "url": "https://opensource.org/licenses/MIT"
-    },
-    "version": "1.0.0"
+    }
   },
   "servers": [
     {

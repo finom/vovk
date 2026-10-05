@@ -3,7 +3,7 @@ import { VovkNewDynamic } from './vovk-new-dynamic';
 
 # Controller & Procedure
 
-A **controller** in Vovk.ts is a class that groups endpoint logic as `static` members. The class is initialized (not instantiated) inside a [segment route](/segment) via [`initSegment`](/segment#initsegment) — that's how its members become reachable HTTP endpoints.
+A **controller** in Vovk.ts is a class that groups endpoint logic as `static` members. The class is initialized (not instantiated) inside a [segment route](/segment) via [`initSegment`](/segment#creating-segments) — that's how its members become reachable HTTP endpoints.
 
 A **procedure** is one such member: a single endpoint definition, typically decorated with an HTTP method like `@get()`, `@post()`, `@put()`, `@patch()`, or `@del()`. Vovk.ts supports two authoring styles, both of which compile to real Next.js Route Handlers:
 
@@ -13,12 +13,15 @@ A **procedure** is one such member: a single endpoint definition, typically deco
 Pick the bare style for simple cases; reach for `procedure()` whenever you want validation or a transport-agnostic callable.
 
 ```ts showLineNumbers copy filename="src/modules/user/user-controller.ts"
-import { put, prefix } from 'vovk';
+import { put, prefix, type VovkRequest } from 'vovk';
 
 @prefix('users') // optional prefix for all routes in this controller
 export default class UserController {
   @put('{id}')
-  static async updateUser(req: NextRequest, { id }: { id: string }) {
+  static async updateUser(
+    req: VovkRequest<{ email: string }, { notify: 'email' | 'push' | 'none' }>,
+    { id }: { id: string }
+  ) {
     const data = await req.json();
     // ...
   }
@@ -37,7 +40,7 @@ const controllers = {
 
 export type Controllers = typeof controllers;
 
-export const { GET, POST, PUT, DELETE } = initSegment({ controllers });
+export const { GET, POST, PATCH, PUT, HEAD, OPTIONS, DELETE } = initSegment({ controllers });
 ```
 
 The key of this object defines the name of the resulting RPC module variable used by the client side:
@@ -52,6 +55,8 @@ const updatedUser = await UserRPC.updateUser({
   body: userData,
 });
 ```
+
+The RPC method takes `body` and `query` because the request is typed with [`VovkRequest`](#vovkrequest-type); with `NextRequest` it takes `params` only.
 
 For more information, see [TypeScript Client](/typescript).
 
@@ -140,7 +145,7 @@ export default class UserController {
 <a name="procedure"></a>
 ## `procedure` Function
 
-The `procedure` function turns a static method into a **typed, validated callable**. It accepts validation schemas for body, query, params, and output — using any library that implements both [Standard Schema](https://standardschema.dev/schema) and [Standard JSON Schema](https://standardschema.dev/json-schema), such as [Zod](https://zod.dev/), [Valibot](https://valibot.com/), or [Arktype](https://arktype.io/).
+The `procedure` function turns a static method into a **typed, validated callable**. It accepts validation schemas for body, query, params, and output — using any library that implements both [Standard Schema](https://standardschema.dev/schema) and [Standard JSON Schema](https://standardschema.dev/json-schema), such as [Zod](https://zod.dev/), [Valibot](https://valibot.com/), or [Arktype](https://arktype.io/). A schema that implements Standard Schema alone, as Zod before 4.2 does, still validates, but `procedure(){:ts}` warns and emits its JSON Schema as `{}`.
 
 With these three libraries, a type that JSON Schema can't describe, such as a `Date{:ts}` or a `bigint{:ts}`, is emitted as `{}` (any value). The server still validates it, but client-side validation and the [Python](/python) and [Rust](/rust) clients accept any value there.
 
@@ -174,63 +179,19 @@ For separating business logic into its own layer, see [Services](/service).
 
 A procedure created with `procedure()` does not need an HTTP decorator to work. Without one, it remains a typed validated callable usable via [`.fn()`](/fn) — for SSR, server components, server actions, AI tool execution, and so on. The decorator is what additionally mounts the procedure as an HTTP endpoint and makes it appear in the generated RPC client. See [Calling Procedures Locally](/fn) for the full reference and patterns like binding standalone procedures into a controller later.
 
-### Alternative: `decorate` Syntax
-
-If you prefer not to use decorators, you can define procedures using the `decorate` function. `decorate` returns an object with a `.handle()` method for the handler. The controller prefix is defined as a `static prefix` property. This produces the same result as decorators in terms of functionality, types, and generated RPC modules.
-
-```ts showLineNumbers copy filename="src/modules/user/user-controller.ts"
-import { decorate, procedure, put, operation } from 'vovk';
-import { z } from 'zod';
-
-class UserController {
-  static prefix = 'users';
-
-  static updateUser = decorate(
-    put('{id}'),
-    operation({ summary: 'Update user' }),
-    procedure({
-      params: z.object({ id: z.uuid() }),
-      body: z.object({ email: z.email() }),
-      query: z.object({ notify: z.enum(['email', 'push', 'none']) }),
-      output: z.object({ success: z.boolean() }),
-    }),
-  ).handle(async (req, { id }) => {
-    const { email } = await req.vovk.body();
-    const { notify } = req.vovk.query();
-    // ...
-  });
-}
-
-export default UserController;
-```
-
-The `decorate` function applies decorators in the same order as the stacked decorator syntax — the last decorator listed (closest to the handler) is applied first. For handlers without validation, pass a plain async function to `.handle()`:
-
-```ts showLineNumbers copy
-static listUsers = decorate(
-  get(),
-).handle(
-  async (req: VovkRequest) => {
-    // ...
-  }
-);
-```
-
-See the [Decorators Overview](/decorator-overview) page for more details on when to use decorators vs `decorate`.
-
 ### `procedure` Options
 
 #### `body`, `query`, and `params`
 
 Use `body`, `query`, and `params` to provide input validation schemas. These validate incoming request data before it reaches the controller handler.
 
-A request without a body is validated as `undefined{:ts}`, so an optional schema such as `z.object({ ... }).optional(){:ts}` lets the client leave the body out.
+A request without a body is validated as `undefined{:ts}`, so an optional schema such as `z.object({ ... }).optional(){:ts}` lets the client leave the body out. So is an empty body with a JSON content type; an empty text or an empty file is a body.
 
-Data that fails validation gets a `400` response. Its message and its `cause.issues` hold the first 20 issues, and the message says how many more there are.
+Data that fails validation gets a `400` response. Its message and its `cause.issues` hold the first 20 issues, and the message says how many more there are. An issue keeps its `message`, its `path` as a list of keys, and the library's other fields that hold text, a number or a boolean, such as Zod's `code`; fields that copy the value that failed are left out.
 
 #### `output` and `iteration`
 
-Use `output` and `iteration` to provide output validation schemas. `output` is for regular JSON responses, while `iteration` is for [JSON Lines](/jsonlines). Both are optional and don't affect generated RPC typings, but they enable key features like [OpenAPI](/openapi), [AI tools](/tools), and for [Python](/python), [Rust](/rust), and future clients. These schemas are not used for client-side validation.
+Use `output` and `iteration` to provide output validation schemas. `output` is for regular JSON responses, while `iteration` is for [JSON Lines](/jsonlines). Both are optional. When given, the RPC method's result type follows `output`, and the type of its stream items follows `iteration`, instead of the handler's return type. They also enable key features like [OpenAPI](/openapi), [AI tools](/tools), and the [Python](/python), [Rust](/rust), and future clients. These schemas are not used for client-side validation. A procedure takes one or the other: `procedure(){:ts}` throws when it gets both.
 
 A response that fails `output` or `iteration` validation is a bug in the handler, not in the request. It is thrown as a plain `Error{:ts}`, without a status code: in production the client gets `500` "Internal server error", and the validation issues stay on the server, where the segment's [`onError`](/segment) receives the first 20 of them as the error's `cause`. In development the message names the failing fields.
 
@@ -251,19 +212,19 @@ Disables server-side validation for the specified library. Provide a boolean to 
 
 #### `skipSchemaEmission`
 
-Skips emitting JSON Schema for the handler. Provide a boolean to skip entirely, or an array of validation types (`body`, `query`, `params`, `output`, `iteration`). This does not change RPC typings but disables features that depend on emitted schemas, including client-side validation.
+Skips emitting JSON Schema for the handler. Provide a boolean to skip entirely, or an array of validation types (`body`, `query`, `params`, `output`, `iteration`). This does not change RPC typings but disables features that depend on emitted schemas, including client-side validation. The declared `contentType` is still emitted, since the clients encode the body by it.
 
 #### `validateEachIteration`
 
 Applies only to `iteration`. Controls whether to validate each item in the streamed response. By default, only the first `iteration` item is validated.
 
-#### `operation`
+#### `operationObject`
 
-Optionally provide an `operation` object to specify OAS details when the `@operation` decorator is not applicable—useful with [`fn`](/fn) on a regular function instead of a class method.
+Optionally provide an `operationObject` to specify OAS details when the `@operation` decorator is not applicable—useful with [`fn`](/fn) on a regular function instead of a class method.
 
 #### `preferTransformed = true`
 
-By default, methods provided by [`req.vovk`](/req-vovk) transform (but not the built-in Next.js functions such as `req.json()` or `req.nextUrl.searchParams.get()`) incoming data into the validation result shape. If you need raw I/O without transformations, set `preferTransformed` to `false`. This causes all features that rely on validation models (`body`, `query`, `params`, `output`, `iteration`) to return the original data format instead of the transformed one.
+By default, methods provided by [`req.vovk`](/req-vovk) transform (but not the built-in Next.js functions such as `req.json()` or `req.nextUrl.searchParams.get()`) incoming data into the validation result shape. If you need raw I/O without transformations, set `preferTransformed` to `false`. This causes all features that rely on validation models (`body`, `query`, `params`, `output`, `iteration`) to return the original data format instead of the transformed one. The JSON Schema emitted for `output` and `iteration` describes what the server sends: the transformed value, or with `preferTransformed: false` the original one.
 
 ### `procedure` Features
 

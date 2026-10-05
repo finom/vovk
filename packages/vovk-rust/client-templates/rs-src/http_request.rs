@@ -21,11 +21,23 @@ pub struct HttpException {
     message: String,
     status_code: i32,
     cause: Option<Value>,
+    // the error behind a call that got no response or a broken one, such as reqwest's
+    #[serde(skip)]
+    source: Option<Box<dyn Error + Send + Sync>>,
 }
 
 impl HttpException {
     fn new(message: impl Into<String>, status_code: i32, cause: Option<Value>) -> Self {
-        HttpException { message: message.into(), status_code, cause }
+        HttpException { message: message.into(), status_code, cause, source: None }
+    }
+
+    // a reqwest error without its URL, whose query may hold a token
+    fn from_reqwest(error: reqwest::Error, status_code: i32) -> Self {
+        Self::with_source(error.without_url(), status_code)
+    }
+
+    fn with_source(error: impl Error + Send + Sync + 'static, status_code: i32) -> Self {
+        HttpException { message: error.to_string(), status_code, cause: None, source: Some(Box::new(error)) }
     }
 
     /// The error message
@@ -50,7 +62,11 @@ impl fmt::Display for HttpException {
     }
 }
 
-impl Error for HttpException {}
+impl Error for HttpException {
+    fn source(&self) -> Option<&(dyn Error + 'static)> {
+        self.source.as_deref().map(|error| error as &(dyn Error + 'static))
+    }
+}
 
 /// Where a handler is: the segment's root, its path in the URL and the names that find it in the schema
 pub struct Endpoint {
@@ -63,6 +79,8 @@ pub struct Endpoint {
 }
 
 /// The request body, as the handler's content type sends it
+// a crate builds only the variants its procedures send
+#[allow(dead_code)]
 pub enum RequestBody<'a, B: ?Sized> {
     None,
     Json(&'a B),
@@ -336,14 +354,16 @@ where
         headers_map.insert("Content-Type", value);
     }
 
-    // Merge with user-provided headers if any
+    // a value goes out without the spaces, tabs and line breaks around it, as fetch sends it; a name or value that is
+    // still invalid fails the call, which otherwise would go out without it (the value stays out of the message)
     if let Some(provided_headers) = headers {
         for (key, value) in provided_headers {
-            if let Ok(header_name) = reqwest::header::HeaderName::from_bytes(key.as_bytes()) {
-                if let Ok(header_value) = reqwest::header::HeaderValue::from_str(value) {
-                    headers_map.insert(header_name, header_value);
-                }
-            }
+            let header_name = reqwest::header::HeaderName::from_bytes(key.as_bytes())
+                .map_err(|_| format!("Invalid header name {:?}", key))?;
+            let header_value =
+                reqwest::header::HeaderValue::from_str(value.trim_matches(|c| matches!(c, ' ' | '\t' | '\r' | '\n')))
+                    .map_err(|_| format!("Invalid value of header {:?}", key))?;
+            headers_map.insert(header_name, header_value);
         }
     }
 
@@ -367,12 +387,19 @@ where
         RequestBody::None => request,
         RequestBody::Json(_) => request.json(&body_value),
         RequestBody::UrlEncoded(_) => request.form(&to_form_fields(body_value.as_ref().unwrap_or(&Value::Null))?),
-        RequestBody::Multipart(form) => request.multipart(form),
+        // names go out raw in quotes, as browsers write them: the server reads no name*=utf-8''... form
+        RequestBody::Multipart(form) => request.multipart(form.percent_encode_noop()),
         RequestBody::Text(text, _) => request.body(text),
         RequestBody::Binary(bytes, _) => request.body(bytes),
     };
 
     Ok((request, http_method.to_string()))
+}
+
+// where a redirect points
+fn location(response: &reqwest::Response) -> Option<String> {
+    let value = response.headers().get(reqwest::header::LOCATION)?;
+    value.to_str().ok().map(str::to_string)
 }
 
 // "application/json; charset=utf-8" => "application/json"
@@ -394,44 +421,74 @@ fn is_json(media_type: &str) -> bool {
 }
 
 fn is_json_lines(media_type: &str) -> bool {
-    media_type == "application/jsonl" || media_type == "application/x-ndjson"
+    matches!(media_type, "application/jsonl" | "application/jsonlines" | "application/x-ndjson")
 }
 
-// the message of a JSON error, or the text a proxy sent
-fn error_from_body(body: &[u8], media_type: &str, status: reqwest::StatusCode) -> HttpException {
+// text/* or any type that names a charset
+fn is_text(response: &reqwest::Response, media_type: &str) -> bool {
+    media_type.starts_with("text/")
+        || response
+            .headers()
+            .get(reqwest::header::CONTENT_TYPE)
+            .and_then(|v| v.to_str().ok())
+            .is_some_and(|v| v.split(';').skip(1).any(|p| p.trim().to_ascii_lowercase().starts_with("charset=")))
+}
+
+// as the TypeScript client reads an error: the JSON message, else the detail or title of a problem document, else the
+// text a proxy sent; the cause is the body's cause, or the whole JSON body
+fn error_from_body(body: &[u8], media_type: &str, status: reqwest::StatusCode, location: Option<&str>) -> HttpException {
     let status_code = status.as_u16() as i32;
-    if is_json(media_type) {
-        if let Ok(value) = serde_json::from_slice::<Value>(body) {
-            let message = value
-                .get("message")
-                .and_then(|m| m.as_str())
-                .unwrap_or("Unknown error")
-                .to_string();
-            return HttpException::new(message, status_code, value.get("cause").cloned());
-        }
+    if let (true, Some(location)) = (status.is_redirection(), location) {
+        let reason = status.canonical_reason().unwrap_or("Redirect");
+        return HttpException::new(format!("{} to {} was not followed", reason, location), status_code, None);
     }
     let text = String::from_utf8_lossy(body).trim().to_string();
-    let message = if text.is_empty() {
-        status.canonical_reason().unwrap_or("Unknown error").to_string()
-    } else {
-        text
-    };
-    HttpException::new(message, status_code, None)
+    let json = if is_json(media_type) { serde_json::from_slice::<Value>(body).ok() } else { None };
+    let message = json
+        .as_ref()
+        .and_then(|value| ["message", "detail", "title"].iter().find_map(|key| value.get(*key)?.as_str()))
+        .map(str::to_string)
+        .unwrap_or(if text.is_empty() {
+            status.canonical_reason().unwrap_or("Unknown error").to_string()
+        } else {
+            text
+        });
+    let cause = json.map(|value| match value.get("cause") {
+        Some(cause) if !cause.is_null() => cause.clone(),
+        _ => value,
+    });
+    HttpException::new(message, status_code, cause)
 }
 
-// a success that is not JSON: an empty body is null, text is a string unless the type wants JSON, bytes are a byte list
-fn read_non_json<T: DeserializeOwned>(body: &[u8], status_code: i32) -> Result<T, HttpException> {
+// a text success that is not JSON: an empty body is null, text is a string unless the output type wants JSON
+fn read_text<T: DeserializeOwned>(text: &str, status_code: i32) -> Result<T, HttpException> {
     let to_error = |e: serde_json::Error| HttpException::new(e.to_string(), status_code, None);
-    if body.is_empty() {
+    if text.is_empty() {
         return serde_json::from_value(Value::Null).map_err(to_error);
     }
-    match std::str::from_utf8(body) {
-        Ok(text) => serde_json::from_value(Value::String(text.to_string()))
-            .or_else(|e| serde_json::from_str(text).map_err(|_| e))
-            .map_err(to_error),
-        Err(_) => serde_json::from_value(Value::Array(body.iter().map(|byte| Value::from(*byte)).collect()))
-            .map_err(to_error),
+    serde_json::from_value(Value::String(text.to_string()))
+        .or_else(|e| serde_json::from_str(text).map_err(|_| e))
+        .map_err(to_error)
+}
+
+// a success of any other type, as a file: an empty body is null, the bytes are a base64 string, the one form a JSON
+// value holds at about their size
+fn read_bytes<T: DeserializeOwned>(body: &[u8], status_code: i32) -> Result<T, HttpException> {
+    let value = if body.is_empty() { Value::Null } else { Value::String(base64(body)) };
+    serde_json::from_value(value).map_err(|e| HttpException::new(e.to_string(), status_code, None))
+}
+
+// standard base64 with padding
+fn base64(bytes: &[u8]) -> String {
+    const ALPHABET: &[u8; 64] = b"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+    let mut out = String::with_capacity(bytes.len().div_ceil(3) * 4);
+    for chunk in bytes.chunks(3) {
+        let n = (chunk[0] as u32) << 16 | (*chunk.get(1).unwrap_or(&0) as u32) << 8 | *chunk.get(2).unwrap_or(&0) as u32;
+        for i in 0..4 {
+            out.push(if i <= chunk.len() { ALPHABET[(n >> (18 - 6 * i) & 63) as usize] as char } else { '=' });
+        }
     }
+    out
 }
 
 // Main request function for regular (non-streaming) responses
@@ -459,30 +516,27 @@ where
         headers,
         api_root,
         disable_client_validation,
-    ).map_err(|e| HttpException {
-        message: e.to_string(),
-        status_code: 0,
-        cause: None,
-    })?;
+    ).map_err(|e| HttpException::new(e.to_string(), 0, None))?;
 
-    let response = request.send().await.map_err(|e| HttpException {
-        message: e.to_string(),
-        status_code: 0,
-        cause: None,
-    })?;
+    let response = request.send().await.map_err(|e| HttpException::from_reqwest(e, 0))?;
 
     let status = response.status();
     let status_code = status.as_u16() as i32;
     let media_type = media_type(&response);
+    let location = location(&response);
 
-    let bytes = response
-        .bytes()
-        .await
-        .map_err(|e| HttpException::new(e.to_string(), status_code, None))?;
+    // decoded by the charset it names, UTF-8 by default
+    if status.is_success() && !is_json(&media_type) && !is_json_lines(&media_type) && is_text(&response, &media_type) {
+        let text = response.text().await.map_err(|e| HttpException::from_reqwest(e, status_code))?;
+        return read_text(&text, status_code);
+    }
 
-    // only an error status makes an error, a 2xx body may hold any keys
-    if status.is_client_error() || status.is_server_error() {
-        return Err(error_from_body(&bytes, &media_type, status));
+    let bytes = response.bytes().await.map_err(|e| HttpException::from_reqwest(e, status_code))?;
+
+    // a 2xx body may hold any keys; a redirect reqwest didn't follow, as for a multipart body it can't send again,
+    // is an error like any other status
+    if !status.is_success() {
+        return Err(error_from_body(&bytes, &media_type, status, location.as_deref()));
     }
 
     if is_json_lines(&media_type) {
@@ -508,7 +562,7 @@ where
         return serde_json::from_slice::<T>(&bytes).map_err(|e| HttpException::new(e.to_string(), status_code, None));
     }
 
-    read_non_json(&bytes, status_code)
+    read_bytes(&bytes, status_code)
 }
 
 // Request function specifically for streaming responses
@@ -536,30 +590,23 @@ where
         headers,
         api_root,
         disable_client_validation,
-    ).map_err(|e| HttpException {
-        message: e.to_string(),
-        status_code: 0,
-        cause: None,
-    })?;
+    ).map_err(|e| HttpException::new(e.to_string(), 0, None))?;
 
-    let response = request.send().await.map_err(|e| HttpException {
-        message: e.to_string(),
-        status_code: 0,
-        cause: None,
-    })?;
+    let response = request.send().await.map_err(|e| HttpException::from_reqwest(e, 0))?;
 
     let status = response.status();
     let status_code = status.as_u16() as i32;
 
     if !status.is_success() {
         let media_type = media_type(&response);
+        let location = location(&response);
         let bytes = response.bytes().await.unwrap_or_default();
-        return Err(error_from_body(&bytes, &media_type, status));
+        return Err(error_from_body(&bytes, &media_type, status, location.as_deref()));
     }
 
     let byte_stream = response
         .bytes_stream()
-        .map_err(|e| std::io::Error::new(std::io::ErrorKind::Other, e));
+        .map_err(|e| std::io::Error::new(std::io::ErrorKind::Other, e.without_url()));
 
     let reader = StreamReader::new(byte_stream);
     let lines = FramedRead::new(reader, LinesCodec::new());
@@ -574,18 +621,11 @@ where
 
                 match serde_json::from_str::<Value>(trimmed) {
                     Ok(value) => Some(Ok(value)),
-                    Err(e) => Some(Err(HttpException {
-                        message: e.to_string(),
-                        status_code,
-                        cause: None,
-                    })),
+                    Err(e) => Some(Err(HttpException::new(e.to_string(), status_code, None))),
                 }
             }
-            Err(e) => Some(Err(HttpException {
-                message: e.to_string(),
-                status_code,
-                cause: None,
-            })),
+            // a stream cut or broken on the way
+            Err(e) => Some(Err(HttpException::with_source(e, status_code))),
         }
     });
 
@@ -594,11 +634,7 @@ where
             if is_error_line(&value) {
                 Err(error_from_line(&value, status_code))
             } else {
-                serde_json::from_value::<T>(value).map_err(|e| HttpException {
-                    message: e.to_string(),
-                    status_code,
-                    cause: None,
-                })
+                serde_json::from_value::<T>(value).map_err(|e| HttpException::new(e.to_string(), status_code, None))
             }
         })
     });
@@ -660,6 +696,7 @@ fn build_query_string(data: &Value, prefix: &str) -> String {
         _ => {
             let value_str = match data {
                 Value::String(s) => s.clone(),
+                Value::Number(n) => number_to_string(n),
                 _ => data.to_string(),
             };
             format!("{}={}", urlencoding::encode(prefix), urlencoding::encode(&value_str))

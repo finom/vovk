@@ -11,7 +11,7 @@ import type {
 import { HttpMethod, HttpStatus } from '../types/enums.js';
 import type { VovkRequest } from '../types/request.js';
 import { HttpException, isHttpException } from './http-exception.js';
-import { JSONLinesResponder, Responder } from './json-lines-responder.js';
+import { JSONLinesResponder, Responder, setResponderHooks } from './json-lines-responder.js';
 
 // conflictsWith: the other controllers whose own handler has the same method and path in the segment
 type Route = { staticMethod: RouteHandler; controller: VovkController; conflictsWith?: VovkController[] };
@@ -49,7 +49,9 @@ type SegmentHooks = {
 };
 
 // the catch-all is the one array param, a dynamic parent folder such as [lang] adds string params
-export const getCatchAllPath = (params: Record<string, string[] | string | undefined>) =>
+export type RouteParams = Record<string, string | string[] | undefined>;
+
+export const getCatchAllPath = (params: RouteParams) =>
   Object.values(params).find((value): value is string[] => Array.isArray(value)) ?? [];
 
 // redirect(), notFound(), forbidden() and unauthorized() from next/navigation throw these for Next.js to answer
@@ -122,26 +124,26 @@ class VovkApp {
     OPTIONS: new Map(),
   };
 
-  GET = async (req: Request, data: { params: Promise<Record<string, string[]>> }, segmentName: string) =>
+  GET = async (req: Request, data: { params: Promise<RouteParams> }, segmentName: string) =>
     this.#callMethod({ httpMethod: HttpMethod.GET, req, params: await data.params, segmentName });
 
-  POST = async (req: Request, data: { params: Promise<Record<string, string[]>> }, segmentName: string) =>
+  POST = async (req: Request, data: { params: Promise<RouteParams> }, segmentName: string) =>
     this.#callMethod({ httpMethod: HttpMethod.POST, req, params: await data.params, segmentName });
-  PUT = async (req: Request, data: { params: Promise<Record<string, string[]>> }, segmentName: string) =>
+  PUT = async (req: Request, data: { params: Promise<RouteParams> }, segmentName: string) =>
     this.#callMethod({ httpMethod: HttpMethod.PUT, req, params: await data.params, segmentName });
 
-  PATCH = async (req: Request, data: { params: Promise<Record<string, string[]>> }, segmentName: string) =>
+  PATCH = async (req: Request, data: { params: Promise<RouteParams> }, segmentName: string) =>
     this.#callMethod({ httpMethod: HttpMethod.PATCH, req, params: await data.params, segmentName });
 
-  DELETE = async (req: Request, data: { params: Promise<Record<string, string[]>> }, segmentName: string) =>
+  DELETE = async (req: Request, data: { params: Promise<RouteParams> }, segmentName: string) =>
     this.#callMethod({ httpMethod: HttpMethod.DELETE, req, params: await data.params, segmentName });
 
-  HEAD = async (req: Request, data: { params: Promise<Record<string, string[]>> }, segmentName: string) =>
+  HEAD = async (req: Request, data: { params: Promise<RouteParams> }, segmentName: string) =>
     VovkApp.withoutBody(
       await this.#callMethod({ httpMethod: HttpMethod.HEAD, req, params: await data.params, segmentName })
     );
 
-  OPTIONS = async (req: Request, data: { params: Promise<Record<string, string[]>> }, segmentName: string) =>
+  OPTIONS = async (req: Request, data: { params: Promise<RouteParams> }, segmentName: string) =>
     this.#callMethod({ httpMethod: HttpMethod.OPTIONS, req, params: await data.params, segmentName });
 
   // synchronous, so a body JSON can't serialize throws where the handler's errors are caught
@@ -173,7 +175,9 @@ class VovkApp {
 
   // the status, message and cause a caught error answers with
   private static toErrorResponse(e: unknown) {
-    if (isHttpException(e)) {
+    // status 0 is what a client throws for a call that got no response, its message and cause hold the URL and the
+    // input, so in production it is internal too
+    if (isHttpException(e) && !(e.statusCode === HttpStatus.NULL && process.env.NODE_ENV === 'production')) {
       // Response takes a status from 200 to 599 only
       const isValidStatus = e.statusCode >= 200 && e.statusCode <= 599;
       return {
@@ -375,7 +379,7 @@ class VovkApp {
       // a segment set up without initSegment names its controllers by _segmentName
       const isInSegment = segment ? segment.controllers.has(controller) : controller._segmentName === segmentName;
       if (!isInSegment) return;
-      const prefix = controller.prefix ?? '';
+      const prefix = controller._prefix ?? '';
 
       Object.entries(staticMethods ?? {}).forEach(([path, staticMethod]) => {
         const fullPath = [prefix, path].filter(Boolean).join('/');
@@ -469,7 +473,7 @@ class VovkApp {
   }: {
     httpMethod: HttpMethod;
     req: Request;
-    params: Record<string, string[]>;
+    params: RouteParams;
     segmentName: string;
   }) => {
     const req = request as VovkRequest;
@@ -545,6 +549,7 @@ class VovkApp {
         meta: <T = unknown>(meta?: T | null) => reqMeta<T>(req, meta),
         params: () => methodParams,
       };
+      setResponderHooks(req, { onError: (error) => void VovkApp.callOnError(onError, error, req) });
 
       await staticMethod._options?.before?.call(controller, req);
       await onBefore?.(req);

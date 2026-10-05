@@ -22,6 +22,9 @@ const controllers = {
 };
 
 export type Controllers = typeof controllers;
+
+export const dynamic = 'force-static';
+
 export function generateStaticParams() {
   return controllersToStaticParams(controllers);
 }

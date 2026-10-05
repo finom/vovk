@@ -100,13 +100,13 @@ import { schema } from '@/client';
 // or
 import { schema } from '@/client/schema'; // exports only the schema object (no RPC modules)
 
-import type { VovkSchema, VovkSegmentSchema } from 'vovk';
-
-console.log(schema satisfies VovkSchema); // full schema
-console.log(schema.segments.admin satisfies VovkSegmentSchema); // admin segment schema
+console.log(schema); // full schema
+console.log(schema.segments.admin); // admin segment schema
 ```
 
-The `schema` is also available in the [segmented client](/composed-and-segmented), containing exactly one segment:
+The `schema` object is typed from the JSON files it's built from, where every string field is a plain `string`, so it isn't assignable to the `VovkSchema` type, whose fields are literal unions.
+
+The `schema` is also available in the [segmented client](/segmented), containing exactly one segment:
 
 ```ts showLineNumbers copy
 {
@@ -168,7 +168,8 @@ Example of a segment schema file:
               },
               "required": ["foo"],
               "additionalProperties": false,
-              "x-contentType": true, // A vovk-specific field that indicates that the body Content-Type
+              // A procedure with a `contentType` option also gets "x-contentType" here,
+              // the list of accepted types, such as ["multipart/form-data"]; a JSON body has none
               "$schema": "https://json-schema.org/draft/2020-12/schema"
             },
             "query": {

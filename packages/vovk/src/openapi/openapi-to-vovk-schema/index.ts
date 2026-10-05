@@ -1,10 +1,12 @@
 import type {
   ComponentsObject,
   ContentObject,
+  OpenAPIObject,
   OperationObject,
   ParameterObject,
   PathItemObject,
   RequestBodyObject,
+  ResponseObject,
   ServerObject,
 } from 'openapi3-ts/oas31';
 import { schemaToTsType } from '../../samples/schema-to-ts-type.js';
@@ -13,8 +15,11 @@ import type { VovkHandlerSchema, VovkSchema } from '../../types/core.js';
 import { type HttpMethod, VovkSchemaIdEnum } from '../../types/enums.js';
 import type { VovkJSONSchemaBase } from '../../types/json-schema.js';
 import type { ContentType } from '../../types/validation.js';
+import { JSON_LINES_MEDIA_TYPES } from '../../utils/media-types.js';
 import { applyComponentsSchemas } from './apply-components-schemas.js';
 import { inlineRefs } from './inline-refs.js';
+import { mapSubschemas, SUBSCHEMA_MAP_KEYWORDS } from './map-subschemas.js';
+import { normalizeOpenAPI30 } from './normalize-openapi-30.js';
 import { pruneComponentsSchemas } from './prune-components-schemas.js';
 
 // the Path Item fields that hold an operation; fetch refuses TRACE, so it has no client method
@@ -44,7 +49,7 @@ function pickStyles(fields: [string, { style?: string; explode?: boolean } | und
 
 // success body: 200/201, then other 2xx, then the 2XX wildcard
 // exact media type first, then +json suffix; `default` is the error shape, skip it
-function makeResponseSchemaPicker(operation: OperationObject) {
+function makeResponseSchemaPicker(operation: OperationObject, openAPIObject: OpenAPIObject) {
   const responses = operation.responses ?? {};
   const codes = Object.keys(responses);
   const successCodes = [
@@ -55,8 +60,8 @@ function makeResponseSchemaPicker(operation: OperationObject) {
 
   return (exact: string[], suffix?: string): VovkJSONSchemaBase | null => {
     for (const code of successCodes) {
-      // ResponsesObject indexes to `any`, annotate to get typed media objects
-      const content: ContentObject | undefined = responses[code]?.content;
+      // a response may be a $ref to components/responses
+      const content = inlineRefs<ResponseObject>(responses[code], openAPIObject)?.content;
       if (!content) continue;
       for (const [mediaType, media] of Object.entries(content)) {
         if (exact.includes(mediaTypeEssence(mediaType)) && media?.schema) return media.schema as VovkJSONSchemaBase;
@@ -110,6 +115,26 @@ function withBodyTsType(body: VovkJSONSchemaBase, contentTypes: ContentType[]): 
   return { ...body, 'x-tsType': getTsTypeString(contentTypes, body) };
 }
 
+type Defs = VovkJSONSchemaBase['$defs'];
+
+// a property marked readOnly itself or through a component in $defs
+const isReadOnly = (property: VovkJSONSchemaBase | undefined, defs: Defs) =>
+  [property, property?.$ref ? defs?.[property.$ref.replace('#/$defs/', '')] : undefined].some(
+    (schema) => (schema as { readOnly?: unknown } | undefined)?.readOnly === true
+  );
+
+// OpenAPI: a readOnly property listed in required is required in a response only, the server assigns it
+function withoutReadOnlyRequired(schema: unknown, defs: Defs): unknown {
+  const result = mapSubschemas(schema, (subschema) => withoutReadOnlyRequired(subschema, defs)) as VovkJSONSchemaBase;
+  const { required, properties } = result ?? {};
+  if (Array.isArray(required) && properties) {
+    result.required = required.filter((name) => !isReadOnly(properties[name], defs));
+  }
+  return result;
+}
+
+const toRequestBody = (body: VovkJSONSchemaBase) => withoutReadOnlyRequired(body, body.$defs) as VovkJSONSchemaBase;
+
 // a server URL may hold `{name}` variables, each declares a default
 function resolveServerURL(server: ServerObject | undefined): string | undefined {
   return server?.url?.replace(/\{([^}]+)\}/g, (variable, name: string) => {
@@ -118,16 +143,16 @@ function resolveServerURL(server: ServerObject | undefined): string | undefined 
   });
 }
 
-// a spec is third party input, its x-tsType would land in the generated client as raw TS
-function stripXTsType<T>(value: T): T {
-  if (Array.isArray(value)) return value.map(stripXTsType) as T;
+// a spec is third party input, its x-tsType would land in the generated client as raw TS;
+// a key of a map such as properties is a name, not the keyword
+function stripXTsType<T>(value: T, isNameMap = false): T {
+  if (Array.isArray(value)) return value.map((item) => stripXTsType(item)) as T;
   if (!value || typeof value !== 'object') return value;
-  const result: Record<string, unknown> = {};
-  for (const [key, val] of Object.entries(value)) {
-    if (key === 'x-tsType') continue;
-    result[key] = stripXTsType(val);
-  }
-  return result as T;
+  return Object.fromEntries(
+    Object.entries(value)
+      .filter(([key]) => isNameMap || key !== 'x-tsType')
+      .map(([key, item]) => [key, stripXTsType(item, !isNameMap && SUBSCHEMA_MAP_KEYWORDS.has(key))])
+  ) as T;
 }
 
 export function openAPIToVovkSchema({
@@ -143,6 +168,7 @@ export function openAPIToVovkSchema({
   segmentName = segmentName ?? '';
   // x-tsType is emitted verbatim into the generated client, only ours may reach it
   openAPIObject = stripXTsType(openAPIObject);
+  if (String(openAPIObject.openapi).startsWith('3.0')) openAPIObject = normalizeOpenAPI30(openAPIObject);
   const forceApiRoot =
     apiRoot ||
     (resolveServerURL(openAPIObject.servers?.[0]) ??
@@ -235,18 +261,19 @@ export function openAPIToVovkSchema({
 
       const requestBodyContent = inlineRefs<RequestBodyObject>(operation.requestBody, openAPIObject)?.content ?? {};
       const bodySchemas = pickBodySchemas(requestBodyContent);
-      const body: VovkJSONSchemaBase | null =
-        bodySchemas.length > 1 ? { anyOf: bodySchemas } : (bodySchemas[0] ?? null);
       const bodyContentTypes = bodySchemas.flatMap((s) => s['x-contentType'] ?? []);
+      // the clients pick the encoding from the body's own x-contentType, as for a procedure that takes several
+      const body: VovkJSONSchemaBase | null =
+        bodySchemas.length > 1 ? { anyOf: bodySchemas, 'x-contentType': bodyContentTypes } : (bodySchemas[0] ?? null);
       const queryStyles = pickStyles(queryProperties.map((p) => [p.name, p]));
       // OpenAPI applies a style to an urlencoded body only
       const formEncoding = Object.entries(requestBodyContent).find(
         ([mediaType]) => mediaTypeEssence(mediaType) === 'application/x-www-form-urlencoded'
       )?.[1]?.encoding;
       const formStyles = pickStyles(Object.entries(formEncoding ?? {}));
-      const pickResponseSchema = makeResponseSchemaPicker(operation);
+      const pickResponseSchema = makeResponseSchemaPicker(operation, openAPIObject);
       const output = pickResponseSchema(['application/json'], '+json');
-      const iteration = pickResponseSchema(['application/jsonl', 'application/jsonlines']);
+      const iteration = pickResponseSchema(JSON_LINES_MEDIA_TYPES);
 
       if (errorMessageKey) {
         operation['x-errorMessageKey'] = errorMessageKey;
@@ -274,7 +301,7 @@ export function openAPIToVovkSchema({
     pruneComponents && noPathsOpenAPIObject.components?.schemas
       ? pruneComponentsSchemas(
           operations.map(({ handler, slots }) => [handler.operationObject, slots]),
-          noPathsOpenAPIObject.components.schemas
+          noPathsOpenAPIObject.components
         )
       : componentsSchemas;
 
@@ -289,7 +316,7 @@ export function openAPIToVovkSchema({
       }),
       ...(body && {
         // after applyComponentsSchemas, so component refs carry their Mixins type
-        body: withBodyTsType(applyComponentsSchemas(body, keptSchemas, segmentName), bodyContentTypes),
+        body: withBodyTsType(toRequestBody(applyComponentsSchemas(body, keptSchemas, segmentName)), bodyContentTypes),
       }),
       ...(output && {
         // Response slot: not validated + typed via x-tsType → skip $defs (dedup).

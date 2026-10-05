@@ -58,7 +58,8 @@ export default class StreamController {
 When used with a service, the iterable can be delegated using the `yield*` syntax:
 
 ```ts showLineNumbers copy filename="src/modules/stream/stream-controller.ts"
-import { procedure, prefix, post, type VovkIteration } from 'vovk';
+import { z } from 'zod';
+import { procedure, prefix, post } from 'vovk';
 import StreamService from './stream-service';
 
 @prefix('stream')
@@ -69,7 +70,7 @@ export default class StreamController {
     iteration: z.object({
       message: z.string(),
     }),
-  }).handle(function *() {
+  }).handle(async function* () {
     yield* StreamService.getJSONLines();
   });
 }
@@ -77,7 +78,7 @@ export default class StreamController {
 
 ```ts showLineNumbers copy filename="src/modules/stream/stream-service.ts"
 import type { VovkIteration } from 'vovk';
-import type { StreamController } from './stream-controller';
+import type StreamController from './stream-controller';
 
 export default class StreamService {
   static async *getJSONLines() {
@@ -191,14 +192,14 @@ const responder = new JSONLinesResponder<IterationType>(req, ({ readableStream, 
 
 The constructor accepts two optional parameters:
 
-- `request?: Request | null` – The incoming request object. If provided, it checks for `Accept: application/jsonl` header to create `headers` record for the response with `Content-Type: application/jsonl`. If not provided or the header is missing, it defaults to `text/plain`.
+- `request?: Request | null` – The incoming request object. If provided, it checks for `Accept: application/jsonl` header to create `headers` record for the response with `Content-Type: application/jsonl`. If not provided or the header is missing, it defaults to `text/plain`. The RPC client streams only a JSON Lines response and returns any other `Response` as is, so pass the request when the client reads the stream. In a procedure with `iteration`, the request also lets the responder validate a line sent before the handler returns it.
 - `getResponse?: (responder: JSONLinesResponder<T>) => Response` – A function that allows to construct a custom `Response` object. Allows to set custom headers or other response options. If not provided, `Response` is created internally with default headers.
 
 The responder instance provides the following members:
 
 - `send(item: T): Promise<void>` – Sends a JSON line to the client. The item is validated (if `iteration` is present; by default only the first item is validated unless `validateEachIteration: true` is set), serialized to JSON and followed by a newline character. Lines go out in call order, also when `send()` is not awaited. A send that fails, on iteration validation or with an item JSON can't serialize, ends the stream as `throw()` does, and the segment's `onError` receives the error.
 - `close(): Promise<void>` – Closes the response stream once the lines sent before it are out. A line sent after `close()` is dropped.
-- `throw(err: Error): Promise<void>` – Sends an error line after the lines sent before it and closes the stream; a line sent after `throw()` is dropped. The error line is `{"isError":true,"reason":"…"}`, plus the `statusCode` of an `HttpException{:ts}`; the client rethrows it as an `HttpException{:ts}` with that status. In production, an error that is not an `HttpException{:ts}` reads "Internal server error".
+- `throw(err: Error): Promise<void>` – Sends an error line after the lines sent before it and closes the stream; a line sent after `throw()` is dropped. The error line is `{"isError":true,"reason":"…"}`, plus the `statusCode` of an `HttpException{:ts}`, which is 500 for a status outside 200-599 as on a JSON response; the client rethrows it as an `HttpException{:ts}` with that status. The error of `notFound(){:ts}`, `forbidden(){:ts}` or `unauthorized(){:ts}` from `next/navigation`, which Next.js can no longer answer once the stream started, sends its status: 404, 403 or 401. In production, an error that is not an `HttpException{:ts}`, or is one with status 0, which a client throws for a call that got no response, reads "Internal server error".
 - `isClosed: boolean` – Whether the stream is closed: by `close()` or `throw()`, from the moment either is called, by a failed send, or by the client going away. `send()` waits while the client reads slower than the handler writes, and a generator handler is stopped, with its `finally` run, when the client disconnects or an item fails.
 - `response: Response` – The underlying `Response` object that will be returned from the Next.js route handler.
 - `headers: Record<string, string>` – The `content-type` for the response.
@@ -231,21 +232,26 @@ Tokens are sent with `JSONLinesResponder#send`, and when the stream completes, c
 The controller class returns an instance of `JSONLinesResponder`, and the streaming is performed in a floating Promise above the `return` statement.
 
 ```ts showLineNumbers copy
-import { prefix, get, JSONLinesResponder, type VovkRequest } from 'vovk';
+import { z } from 'zod';
+import { prefix, get, procedure, JSONLinesResponder } from 'vovk';
 import StreamService, { type Token } from './stream-service';
 
 @prefix('stream')
 export default class StreamController {
   @get('tokens')
-  static async streamTokens(req: Request) {
+  static streamTokens = procedure({
+    iteration: z.object({ message: z.string() }),
+  }).handle(async (req) => {
     const responder = new JSONLinesResponder<Token>(req);
 
     void StreamService.streamTokens(responder);
 
     return responder;
-  }
+  });
 }
 ```
+
+The `iteration` schema gives `Token` its type, in the service and in the RPC client.
 
 The `JSONLinesResponder` class also provides a `throw` method that safely closes the stream and causes the client to rethrow the received error.
 

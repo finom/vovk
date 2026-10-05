@@ -1,7 +1,8 @@
-import { deepStrictEqual, ok, strictEqual } from 'node:assert';
+import { deepStrictEqual, ok, rejects, strictEqual } from 'node:assert';
 import { afterEach, beforeEach, describe, it, mock } from 'node:test';
 import type { OpenAPIObject, SchemaObject } from 'openapi3-ts/oas31';
 import { openAPIToVovkSchema } from 'vovk/internal';
+import { validateOnClient } from '../../../packages/vovk-ajv/index.js';
 
 // biome-ignore lint/suspicious/noExplicitAny: loose test alias for readable assertions
 type Obj = Record<string, any>;
@@ -175,6 +176,100 @@ describe('openAPIToVovkSchema — request body types', () => {
       'application/json': { schema: { $ref: '#/components/schemas/Thing' } },
     });
     strictEqual(body?.$ref, '#/$defs/Thing');
+  });
+
+  // the clients pick the request encoding from the body's own x-contentType
+  it('Lists every content type of a body declared with several', () => {
+    const upload = {
+      type: 'object',
+      properties: { file: { type: 'string', format: 'binary' }, note: { type: 'string' } },
+    };
+    const body = bodyOf({ 'application/json': { schema: upload }, 'multipart/form-data': { schema: upload } });
+    deepStrictEqual(body?.['x-contentType'], ['application/json', 'multipart/form-data']);
+  });
+
+  it('Types a binary field of a form body as a Blob', () => {
+    const body = bodyOf({
+      'multipart/form-data': {
+        schema: {
+          type: 'object',
+          properties: { file: { type: 'string', format: 'binary' }, note: { type: 'string' } },
+          required: ['file'],
+        },
+      },
+    });
+    strictEqual(body?.['x-tsType'], 'FormData | { file: Blob; note?: string }');
+  });
+
+  // OpenAPI 3.0: a readOnly property listed in required is required in responses only
+  it("Doesn't require a read-only property in a request body", async () => {
+    const pet = {
+      type: 'object',
+      properties: { id: { type: 'integer', readOnly: true }, name: { type: 'string' } },
+      required: ['id', 'name'],
+    } satisfies SchemaObject;
+    const segment = convert({
+      openapi: '3.0.3',
+      components: { schemas: { Pet: pet } },
+      paths: {
+        '/pets': {
+          post: {
+            operationId: 'createPet',
+            requestBody: { content: { 'application/json': { schema: { $ref: '#/components/schemas/Pet' } } } },
+            responses: { '201': {} },
+          },
+        },
+      },
+    });
+    const { body } = segment.controllers.TestAPI.handlers.createPet.validation;
+    const validateBody = (value: unknown) =>
+      validateOnClient({ body: value }, { body }, { fullSchema: { $schema: '', segments: {} }, endpoint: '/pets' });
+
+    await validateBody({ name: 'Rex' });
+    await rejects(validateBody({ id: 1 }), /required property 'name'/);
+    // the component a response is typed from still requires the id
+    deepStrictEqual(segment.meta.openAPIObject.components.schemas.Pet.required, ['id', 'name']);
+  });
+});
+
+describe('openAPIToVovkSchema — response types', () => {
+  const user: SchemaObject = { type: 'object', properties: { id: { type: 'string' } } };
+  const components = {
+    schemas: { User: user },
+    responses: {
+      UserResponse: {
+        description: 'A user',
+        content: { 'application/json': { schema: { $ref: '#/components/schemas/User' } } },
+      },
+      UsersResponse: {
+        description: 'Users',
+        content: { 'application/jsonl': { schema: { $ref: '#/components/schemas/User' } } },
+      },
+    },
+  };
+  const segment = convert(
+    {
+      components,
+      paths: {
+        '/users/{id}': {
+          get: { operationId: 'getUser', responses: { '200': { $ref: '#/components/responses/UserResponse' } } },
+        },
+        '/users': {
+          get: { operationId: 'streamUsers', responses: { '200': { $ref: '#/components/responses/UsersResponse' } } },
+        },
+      },
+    },
+    { pruneComponents: true }
+  );
+  const { getUser, streamUsers } = segment.controllers.TestAPI.handlers;
+
+  it('Types a response given as a $ref to components/responses', () => {
+    strictEqual(getUser.validation?.output?.['x-tsType'], 'Mixins.Api.User');
+    deepStrictEqual(Object.keys(segment.meta.openAPIObject.components.schemas), ['User']);
+  });
+
+  it('Types a JSON Lines response given as a $ref to components/responses', () => {
+    strictEqual(streamUsers.validation?.iteration?.['x-tsType'], 'Mixins.Api.User');
   });
 });
 

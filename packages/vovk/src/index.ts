@@ -5,7 +5,6 @@ export { createFetcher, fetcher } from './client/fetcher.js';
 export { progressive } from './client/progressive.js';
 export { controllersToStaticParams } from './core/controllers-to-static-params.js';
 export { createDecorator } from './core/create-decorator.js';
-export { decorate } from './core/decorate.js';
 export { cloneControllerMetadata, del, get, head, options, patch, post, prefix, put } from './core/decorators.js';
 export { HttpException } from './core/http-exception.js';
 export { initSegment } from './core/init-segment.js';

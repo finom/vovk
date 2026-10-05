@@ -80,13 +80,13 @@ export default vovkConfig;
 
 There are two ways to run Vovk.ts and the Next.js server together: explicitly and implicitly. The explicit option uses the `concurrently` package to run both processes (you must set `PORT`). The implicit option lets the Vovk.ts CLI start Next.js for you; in that case, **vovk-cli** assigns the port automatically.
 
-The `prebuild` script runs `vovk generate` before `next build` so the client library is generated ahead of the Next.js build.
+The `prebuild` script runs `vovk generate` before `next build` so the client library is generated ahead of the Next.js build. Yarn 2+ doesn't run `pre` scripts: there, use `"build": "vovk generate && next build"` instead.
 
 <Tabs items={['Explicit', 'Implicit']} >
   <Tabs.Tab>
-    Install concurrently:
+    Install concurrently, and cross-env, which sets `PORT` on Windows too:
 ```sh npm2yarn copy
-npm i -D concurrently
+npm i -D concurrently cross-env
 ```
 
     Update the "dev" script in **package.json**:
@@ -94,7 +94,7 @@ npm i -D concurrently
     ```json
     "scripts": {
         "build": "next build",
-        "dev": "PORT=3000 concurrently 'vovk dev' 'next dev' --kill-others",
+        "dev": "cross-env PORT=3000 concurrently \"vovk dev\" \"next dev\" --kill-others",
         "prebuild": "vovk generate"
     }
     ```
@@ -119,9 +119,9 @@ npm i -D concurrently
 - [vovk dev](/dev)
 - [vovk generate](/generate)
 
-## Enable decorators (optional)
+## Enable decorators
 
-In your **tsconfig.json**, set `"experimentalDecorators"` to `true`.
+In your **tsconfig.json**, set `"experimentalDecorators"` to `true`. `vovk init` sets it too.
 
 ```json
 {
@@ -132,7 +132,7 @@ In your **tsconfig.json**, set `"experimentalDecorators"` to `true`.
 }
 ```
 
-This is required only if you want to use decorators in your controllers and procedures. As an alternative you can use `decorate(...)` from the library to achieve the same result without enabling decorators. See [Decorators Overview](/decorator-overview) for details.
+A webpack build needs the flag: without it, `next build --webpack` fails, and webpack is the default build of Next.js 15. Turbopack, the default of Next.js 16, compiles Vovk.ts decorators with or without it, and TypeScript 5.0+ type-checks them either way. See [Decorators Overview](/decorator-overview) for the decorators Vovk.ts provides.
 
 ## Create a controller
 
@@ -170,7 +170,7 @@ const controllers = { HelloRPC: HelloController };
 export type Controllers = typeof controllers;
 
 // export Next.js route handlers
-export const { GET, POST, PUT, DELETE } = initSegment({ controllers });
+export const { GET, POST, PATCH, PUT, HEAD, OPTIONS, DELETE } = initSegment({ controllers });
 ```
 
 **More info:**

@@ -13,7 +13,7 @@ const isObject = (value: unknown): value is object =>
   typeof value === 'object' && value !== null && !(value instanceof Date);
 
 // a value with toJSON (a Date, a URL) is sent as JSON.stringify would write it
-const fromJSON = (value: unknown): unknown =>
+export const fromJSON = (value: unknown): unknown =>
   typeof (value as { toJSON?: unknown } | null)?.toJSON === 'function'
     ? (value as { toJSON: () => unknown }).toJSON()
     : value;

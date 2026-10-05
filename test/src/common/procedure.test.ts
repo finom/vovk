@@ -167,6 +167,52 @@ describe('procedure features', async () => {
     assert.deepEqual({ ...body }, { toString: 't', tags: ['', 'b'] });
   });
 
+  it('Should parse a Blob, ArrayBuffer or typed array body of a binary content type into a File, as HTTP does', async () => {
+    const handler = procedure({ contentType: 'application/octet-stream', body: z.file() }).handle(async ({ vovk }) => {
+      const file = await vovk.body();
+      return { isFile: file instanceof File, size: file.size };
+    });
+
+    assert.deepEqual(await handler.fn({ body: new Blob(['abc']) }), { isFile: true, size: 3 });
+    assert.deepEqual(await handler.fn({ body: new ArrayBuffer(3) }), { isFile: true, size: 3 });
+    assert.deepEqual(await handler.fn({ body: new Uint8Array([1, 2, 3]) }), { isFile: true, size: 3 });
+  });
+
+  it('Should parse a URLSearchParams body into an object, as HTTP does', async () => {
+    const handler = procedure({
+      contentType: 'application/x-www-form-urlencoded',
+      body: z.object({ a: z.string(), tags: z.array(z.string()) }),
+    }).handle(({ vovk }) => vovk.body());
+
+    assert.deepEqual(await handler.fn({ body: new URLSearchParams('a=1&tags=x&tags=y') }), {
+      a: '1',
+      tags: ['x', 'y'],
+    });
+  });
+
+  it('Should parse a Blob body by the JSON or text content type the procedure declares, as HTTP does', async () => {
+    const json = procedure({ body: z.object({ a: z.string() }) }).handle(({ vovk }) => vovk.body());
+    const text = procedure({ contentType: 'text/plain', body: z.string() }).handle(({ vovk }) => vovk.body());
+
+    assert.deepEqual(await json.fn({ body: new Blob(['{"a":"1"}'], { type: 'application/json' }) }), { a: '1' });
+    assert.equal(await text.fn({ body: new Blob(['hello']) }), 'hello');
+  });
+
+  it('Should parse bytes for a procedure that takes JSON or a file into a File, as HTTP does', async () => {
+    const handler = procedure({
+      contentType: ['application/json', 'image/png'],
+      body: z.union([z.object({ url: z.string() }), z.file()]),
+    }).handle(async ({ vovk }) => {
+      const body = await vovk.body();
+      return { isFile: body instanceof File, type: body instanceof File ? body.type : null };
+    });
+
+    assert.deepEqual(await handler.fn({ body: new Uint8Array([137, 80, 78, 71]) }), {
+      isFile: true,
+      type: 'image/png',
+    });
+  });
+
   it('Should assign schema', async () => {
     assert.equal(handler.schema.validation?.body?.$schema, 'https://json-schema.org/draft/2020-12/schema');
     assert.equal(handler.schema.validation?.query?.$schema, 'https://json-schema.org/draft/2020-12/schema');
@@ -183,5 +229,58 @@ describe('procedure features', async () => {
     assert.deepEqual(zodHandler.schema.validation?.query?.properties, { from: {}, id: {}, ok: { type: 'string' } });
     assert.deepEqual(valibotHandler.schema.validation?.query?.properties, { from: {} });
     assert.deepEqual(arktypeHandler.schema.validation?.query?.properties, { from: {} });
+  });
+
+  it('Should warn once for each slot whose schema has no Standard JSON Schema', (t) => {
+    const warn = t.mock.method(console, 'warn', () => {});
+    // valibot without toStandardJsonSchema implements Standard Schema only, which the types refuse
+    const standardOnly = v.object({ a: v.string() }) as never;
+
+    procedure({ body: standardOnly, query: standardOnly, params: z.object({ id: z.string() }) }).handle(
+      async () => null
+    );
+
+    const messages = warn.mock.calls.map((call) => String(call.arguments[0]));
+    assert.strictEqual(messages.length, 2, messages.join('\n'));
+    assert.ok(/\bbody\b.*Standard JSON Schema.*\{\}/.test(messages[0]), messages[0]);
+    assert.ok(/\bquery\b.*Standard JSON Schema.*\{\}/.test(messages[1]), messages[1]);
+  });
+
+  it('Should emit the output schema of the value the server sends', async () => {
+    // the server sends the parsed value, where a default makes its key present
+    const user = z.object({ id: z.string(), status: z.enum(['active', 'archived']).default('active') });
+    const handler = procedure({ output: user }).handle(async () => ({ id: '1', status: 'active' as const }));
+    const untransformedHandler = procedure({ output: user, preferTransformed: false }).handle(async () => ({
+      id: '1',
+      status: 'active' as const,
+    }));
+
+    assert.deepEqual(untransformedHandler.schema.validation?.output?.required, ['id']);
+    assert.deepEqual(handler.schema.validation?.output?.required, ['id', 'status']);
+  });
+
+  it('Should emit the iteration schema of the value the server sends', async () => {
+    // a string the schema turns into a number
+    const tick = z.object({ count: z.string().pipe(z.coerce.number()) });
+    const handler = procedure({ iteration: tick, validateEachIteration: true }).handle(async function* () {
+      yield { count: '1' };
+    });
+    const untransformedHandler = procedure({
+      iteration: tick,
+      validateEachIteration: true,
+      preferTransformed: false,
+    }).handle(async function* () {
+      yield { count: '1' };
+    });
+    const collect = async (iterable: AsyncIterable<unknown>) => {
+      const items: unknown[] = [];
+      for await (const item of iterable) items.push(item);
+      return items;
+    };
+
+    assert.deepEqual(await collect(await handler.fn()), [{ count: 1 }]);
+    assert.deepEqual(await collect(await untransformedHandler.fn()), [{ count: '1' }]);
+    assert.deepEqual(untransformedHandler.schema.validation?.iteration?.properties?.count, { type: 'string' });
+    assert.deepEqual(handler.schema.validation?.iteration?.properties?.count, { type: 'number' });
   });
 });

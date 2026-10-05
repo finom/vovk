@@ -23,7 +23,7 @@ This guide walks you through implementing multitenancy in Next.js with a small a
 
 The live example is available at [multitenant.vovk.dev](https://multitenant.vovk.dev/), and the source code is in the [vovk-multitenant-example](https://github.com/finom/vovk/tree/main/examples/multitenant).
 
-Each tenant has its own root API endpoint under that domain’s `/api` path. For example, the customer tenant’s API lives at `customer.example.com/api`, and the admin tenant’s API at `admin.example.com/api`. These root endpoints are implemented as [segments](/segments) and rewritten at [Next.js proxy](https://nextjs.org/docs/app/getting-started/proxy) to the appropriate path based on the tenant subdomain.
+Each tenant has its own root API endpoint under that domain’s `/api` path. For example, the customer tenant’s API lives at `customer.example.com/api`, and the admin tenant’s API at `admin.example.com/api`. These root endpoints are implemented as [segments](/segment) and rewritten at [Next.js proxy](https://nextjs.org/docs/app/getting-started/proxy) to the appropriate path based on the tenant subdomain.
 
 On the frontend, use Next.js [dynamic routes](https://nextjs.org/docs/app/api-reference/file-conventions/dynamic-routes) for tenant‑specific paths. For example, a customer’s dedicated tenant page lives at `src/customer/[customer_name]/page.tsx`, and the admin tenant uses `src/admin/page.tsx`.
 
@@ -118,29 +118,29 @@ Use Next.js [dynamic routes](https://nextjs.org/docs/app/api-reference/file-conv
 
 ## Create Backend API Segments and Controllers
 
-After [setting up a Vovk.ts](/getting-started) app, the simplest approach is to use the Vovk.ts CLI to create segments and controllers. The CLI generates the necessary files so you can focus on business logic.
+After [setting up a Vovk.ts](/quick-install) app, the simplest approach is to use the Vovk.ts CLI to create segments and controllers. The CLI generates the necessary files so you can focus on business logic.
 
 First, create the API segments for each tenant. Each segment handles requests to its root API endpoint.
 
 ```sh npm2yarn copy
-npx vovk new segment # create the root segment at src/app/api/[[...vovk]]/route.ts
-npx vovk new segment admin # create "admin" segment at src/app/api/admin/[[...vovk]]/route.ts
-npx vovk new segment customer # create "customer" segment at src/app/api/customer/[[...vovk]]/route.ts
-npx vovk new segment customer/pro # create "customer/pro" segment at src/app/api/customer/pro/[[...vovk]]/route.ts
+npm exec -- vovk new segment # create the root segment at src/app/api/[[...vovk]]/route.ts
+npm exec -- vovk new segment admin # create "admin" segment at src/app/api/admin/[[...vovk]]/route.ts
+npm exec -- vovk new segment customer # create "customer" segment at src/app/api/customer/[[...vovk]]/route.ts
+npm exec -- vovk new segment customer/pro # create "customer/pro" segment at src/app/api/customer/pro/[[...vovk]]/route.ts
 ```
 
-Read more about Vovk.ts [segments](/segments).
+Read more about Vovk.ts [segments](/segment).
 
 Next, create controllers for each segment. For example, to create `ProductService` and `ProductController` for the root segment in `src/modules/product/`:
 
 ```sh npm2yarn copy
-npx vovk new controller service product
+npm exec -- vovk new controller service product
 ```
 
 Create `UserService` and `UserController` for the admin segment in `src/modules/admin/user/`:
 
 ```sh npm2yarn copy
-npx vovk new controller service admin/user
+npm exec -- vovk new controller service admin/user
 ```
 
 ## Enable Segmented Client
@@ -272,6 +272,8 @@ Parameters:
 
 For wildcard subdomains, use square‑bracket patterns (such as `[customer_name]`) to define the [Dynamic Segment](https://nextjs.org/docs/app/api-reference/file-conventions/dynamic-routes). The value is passed via `params`. A placeholder matches one DNS label (letters, digits and hyphens), and the host is matched case-insensitively, so a host such as `%2e%2e.customer.example.com` gets no rewrite.
 
+A rule rewrites a path prefix, so a host also reaches what is nested under its target: `acme.customer.example.com/api/pro` reaches the `customer/pro` segment, and `acme.customer.example.com/pro` the pro page.
+
 ```ts showLineNumbers copy filename="src/proxy.ts" source="examples/multitenant"
 import { type NextRequest, NextResponse } from 'next/server';
 import { multitenant } from 'vovk';
@@ -311,25 +313,20 @@ export default function proxy(request: NextRequest) {
     subdomains,
   });
 
-  let res: NextResponse;
-  if (action === 'rewrite' && destination) {
-    res = NextResponse.rewrite(new URL(destination));
-  } else if (action === 'redirect' && destination) {
-    res = NextResponse.redirect(new URL(destination));
-  } else {
-    res = NextResponse.next();
-  }
-
-  // not the best solution, but I couldn't find a better one
+  // the API reads the tenant from this header; only the proxy sets it, not the client
+  const headers = new Headers(request.headers);
+  headers.delete('x-subdomains');
   if (subdomains) {
-    res.cookies.set(
-      'x-subdomains',
-      new URLSearchParams(subdomains).toString(),
-      { expires: new Date(Date.now() + 3e3) },
-    );
+    headers.set('x-subdomains', new URLSearchParams(subdomains).toString());
   }
 
-  return res;
+  if (action === 'rewrite' && destination) {
+    return NextResponse.rewrite(new URL(destination), { request: { headers } });
+  }
+  if (action === 'redirect' && destination) {
+    return NextResponse.redirect(new URL(destination));
+  }
+  return NextResponse.next({ request: { headers } });
 }
 
 export const config = {
@@ -346,6 +343,8 @@ export const config = {
 };
 ```
 *[The code above is fetched from GitHub repository.](https://github.com/finom/vovk/blob/main/examples/multitenant/src/proxy.ts)*
+
+The proxy passes the captured `subdomains` to the API in an `x-subdomains` request header and drops one the client sent, so a client can't choose its tenant. The customer controllers read it with `headers()` from `next/headers`.
 
 ## Update Hosts for Local Development
 

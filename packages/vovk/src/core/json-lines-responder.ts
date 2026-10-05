@@ -1,4 +1,5 @@
 import type { StreamAbortMessage } from '../types/core.js';
+import { HttpStatus } from '../types/enums.js';
 import { isHttpException } from './http-exception.js';
 import '../utils/shim.js';
 
@@ -12,6 +13,24 @@ const HIGH_WATER_MARK = 64 * 1024;
 // before anything reads the stream, as while a handler sends before it returns the responder, send() waits only
 // past this, so the handler isn't stuck waiting for a read that can't start
 const UNREAD_LIMIT = 16 * 1024 * 1024;
+
+// the digests of notFound(), forbidden() and unauthorized() from next/navigation: once a stream started Next.js can't
+// answer them, so the error line carries their status
+const NAVIGATION_ERROR_LINES: Record<string, StreamAbortMessage> = {
+  'NEXT_HTTP_ERROR_FALLBACK;401': { isError: true, reason: 'Unauthorized', statusCode: HttpStatus.UNAUTHORIZED },
+  'NEXT_HTTP_ERROR_FALLBACK;403': { isError: true, reason: 'Forbidden', statusCode: HttpStatus.FORBIDDEN },
+  'NEXT_HTTP_ERROR_FALLBACK;404': { isError: true, reason: 'Not found', statusCode: HttpStatus.NOT_FOUND },
+};
+
+type ResponderHooks = { onBeforeSend?: (item: unknown, i: number) => unknown; onError?: (error: unknown) => void };
+
+// what vovk sets for a request before its handler runs, so a responder made with it checks and reports a line the
+// handler sends before it returns the responder
+const hooksByRequest = new WeakMap<object, ResponderHooks>();
+
+export function setResponderHooks(request: object, hooks: ResponderHooks) {
+  hooksByRequest.set(request, { ...hooksByRequest.get(request), ...hooks });
+}
 
 /**
  * Responder subclass for streaming JSON Lines. @see https://vovk.dev/jsonlines
@@ -95,6 +114,10 @@ export class JSONLinesResponder<T> extends Responder {
     // this will make promise on the client-side to resolve immediately, before sending the first JSON line
     this.controller?.enqueue(encoder?.encode(''));
 
+    const hooks = request ? hooksByRequest.get(request) : undefined;
+    if (hooks?.onBeforeSend) this.onBeforeSend = hooks.onBeforeSend as (item: T, i: number) => T | Promise<T>;
+    if (hooks?.onError) this._onError = hooks.onError;
+
     if (request?.signal?.aborted) this.abort();
     else request?.signal?.addEventListener('abort', this.abort, { once: true });
   }
@@ -161,16 +184,26 @@ export class JSONLinesResponder<T> extends Responder {
   }
 
   private toErrorLine(e: unknown) {
-    // same rule as a non streaming handler, an error other than an HttpException is internal
-    if (!isHttpException(e) && process.env.NODE_ENV === 'production') {
+    const digest = (e as { digest?: unknown } | null)?.digest;
+    if (typeof digest === 'string' && Object.hasOwn(NAVIGATION_ERROR_LINES, digest)) {
+      return JSON.stringify(NAVIGATION_ERROR_LINES[digest]);
+    }
+    // same rule as a non streaming handler: an error other than an HttpException is internal, and so is status 0,
+    // which a client throws for a call that got no response
+    if ((!isHttpException(e) || e.statusCode === HttpStatus.NULL) && process.env.NODE_ENV === 'production') {
       console.error('🐺 Unhandled error in a Vovk stream:', e);
       return JSON.stringify({ isError: true, reason: 'Internal server error' } satisfies StreamAbortMessage);
     }
-    // the client takes a line for an error only with these keys, and statusCode only as a number
+    // the client takes a line for an error only with these keys, and statusCode only as a number; a status outside
+    // 200-599 is 500, as on a JSON response
     const errorLine: StreamAbortMessage = {
       isError: true,
       reason: e instanceof Error ? e.message : e,
-      ...(isHttpException(e) && typeof e.statusCode === 'number' ? { statusCode: e.statusCode } : {}),
+      ...(isHttpException(e) && typeof e.statusCode === 'number'
+        ? {
+            statusCode: e.statusCode >= 200 && e.statusCode <= 599 ? e.statusCode : HttpStatus.INTERNAL_SERVER_ERROR,
+          }
+        : {}),
     };
     try {
       return JSON.stringify(errorLine);

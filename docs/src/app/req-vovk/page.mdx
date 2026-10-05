@@ -2,7 +2,7 @@
 
 While using built-in `NextRequest` functions like `req.json()` and `req.nextUrl.searchParams.get()` are sufficient for most use cases, Vovk.ts also patches the request object with `vovk` property that provides additional methods for more advanced input data handling. It covers the following scenarios:
 
-- Receive data parsed by the validation library (`req.json()` and `req.nextUrl.searchParams.get()` return data as is), unless `preferParsed` isn't set to `false`.
+- Receive data transformed by the validation library (`req.json()` and `req.nextUrl.searchParams.get()` return data as is), unless the procedure sets [`preferTransformed`](/procedure#prefertransformed--true) to `false`.
 - Implement nested query parameters parsing.
 - Read form data as a typed object, instead of `FormData`, provided by `req.formData()`.
 - Implement request metadata storage.
@@ -22,6 +22,8 @@ export default class UserController {
   }
 }
 ```
+
+Once a body schema or `req.vovk.body()` has read the body, the body methods of `req`, `req.body` and `req.clone()` replay it. To forward the request, use `new Request(url, req)` or pass `body: req.body` to `fetch()`. `new Request(req)` and `fetch(req)` take the request's own body, which is read by then, and throw.
 
 <a name="query"></a>
 ## `req.vovk.query()`
@@ -45,6 +47,7 @@ Nested data is serialized as a query string with square brackets, commonly refer
 - Indices `[0]` to `[n-1]`, none missing, make an array of any length; `[]` appends an element after the highest index.
 - Any other keys make an object: named keys (e.g., `[f]`, `[u]`), and numeric keys with gaps, so `record[7]=on` gives `{ record: { 7: "on" } }`.
 - A key given more than once collects its values into an array, so `tag=a&tag=b` gives `{ tag: ["a", "b"] }`. A repeated index names the same element, so its last value wins.
+- With a `query` schema in a [procedure](/procedure), a key given once where the schema takes an array is a one-item array, so `tag=a` gives `{ tag: ["a"] }`, as OpenAPI's default style sends it.
 - `[]` followed by more brackets adds to the last element until that element already has the key: `items[][name]=a&items[][price]=1&items[][name]=b` gives `{ items: [{ name: "a", price: "1" }, { name: "b" }] }`.
 - The structure can be nested up to 32 levels deep. A key with more brackets gets a 400 response.
 

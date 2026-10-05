@@ -70,16 +70,16 @@ export const VovkNewDynamic = () => {
       </div>
       <Tabs items={['npm', 'pnpm', 'yarn', 'bun']} className="mb-4">
         <Tabs.Tab>
-          <DynamicItem rootCommand="npx" command={command} comment={comment} />
+          <DynamicItem rootCommand="npm exec --" command={command} comment={comment} />
         </Tabs.Tab>
         <Tabs.Tab>
-          <DynamicItem rootCommand="pnpm dlx" command={command} comment={comment} />
+          <DynamicItem rootCommand="pnpm exec" command={command} comment={comment} />
         </Tabs.Tab>
         <Tabs.Tab>
-          <DynamicItem rootCommand="yarn dlx" command={command} comment={comment} />
+          <DynamicItem rootCommand="yarn" command={command} comment={comment} />
         </Tabs.Tab>
         <Tabs.Tab>
-          <DynamicItem rootCommand="bun x" command={command} comment={comment} />
+          <DynamicItem rootCommand="bunx" command={command} comment={comment} />
         </Tabs.Tab>
       </Tabs>
     </>

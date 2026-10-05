@@ -3,6 +3,13 @@ import type { VovkFetcher, VovkFetcherOptions, VovkStreamAsyncIterable } from '.
 import type { VovkHandlerSchema } from '../types/core.js';
 import { HttpStatus } from '../types/enums.js';
 import { fileNameToDisposition } from '../utils/file-name-to-disposition.js';
+import {
+  FORM_MEDIA_TYPES,
+  getBinaryContentType,
+  isJSONMediaType,
+  JSON_LINES_MEDIA_TYPES,
+} from '../utils/media-types.js';
+import { takesNullBody } from './takes-null-body.js';
 export const DEFAULT_ERROR_MESSAGE = 'Unknown error at default fetcher';
 
 // header values must be ByteString, escape non-ASCII as \uXXXX which JSON.parse reads natively
@@ -53,10 +60,6 @@ function wrapStreamErrors(
 // "Application/JSON; charset=utf-8" is "application/json"
 const getMediaType = (contentType: string | null | undefined) => contentType?.split(';')[0].trim().toLowerCase() ?? '';
 
-const isJSONMediaType = (mediaType: string) => mediaType === 'application/json' || mediaType.endsWith('+json');
-
-const JSON_LINES_MEDIA_TYPES = ['application/jsonl', 'application/jsonlines'];
-
 // AbortSignal.any is missing in React Native and Safari before 17.4, where the given signal aborts the controller
 function anySignal(controller: AbortController, signal: AbortSignal): AbortSignal {
   if (typeof AbortSignal.any === 'function') return AbortSignal.any([controller.signal, signal]);
@@ -84,29 +87,11 @@ export type CreateFetcherOnError<T> = (
   }
 ) => void | Promise<void>;
 
-const FORM_MEDIA_TYPES = ['multipart/form-data', 'application/x-www-form-urlencoded'];
-
 // a string goes out raw as the text type the procedure declares, e.g. application/jsonl; with JSON declared, or
 // nothing, it's a JSON value; a wildcard or form type says nothing about it, so it's text/plain
 const getStringBodyContentType = (declared: string[]) =>
   declared.find((type) => !type.includes('*') && !FORM_MEDIA_TYPES.includes(type) && !isJSONMediaType(type)) ??
   (!declared.length || declared.some(isJSONMediaType) ? 'application/json' : 'text/plain');
-
-const matchesMediaType = (type: string, pattern: string) =>
-  pattern === '*/*' || (pattern.endsWith('/*') ? type.startsWith(pattern.slice(0, -1)) : type === pattern);
-
-// bytes keep their own type when the procedure takes it; untyped bytes go out as the first type it declares,
-// image/* included, and a typed Blob as application/octet-stream when declared, any other mismatch is refused
-const getBinaryBodyContentType = (ownType: string, declared: string[]) => {
-  const type = ownType || 'application/octet-stream';
-  if (!declared.length || declared.some((pattern) => matchesMediaType(getMediaType(type), pattern))) return type;
-  if (ownType) return declared.includes('application/octet-stream') ? 'application/octet-stream' : type;
-  return (
-    declared.find((declaredType) => !declaredType.includes('*') && declaredType !== 'multipart/form-data') ??
-    declared.find((declaredType) => declaredType !== '*/*' && declaredType.endsWith('/*')) ??
-    type
-  );
-};
 
 /**
  * Creates a customizable fetcher function for client requests.
@@ -180,8 +165,12 @@ export function createFetcher<T>({
         });
       }
 
-      const declaredContentTypes = ((schema.validation?.body?.['x-contentType'] ?? []) as string[]).map(getMediaType);
-      const hasBody = body !== undefined && body !== null;
+      const bodySchema = schema.validation?.body;
+      // a body schema that declares no content type takes JSON, as the server checks it
+      const declaredContentTypes = (
+        (bodySchema?.['x-contentType'] ?? (bodySchema ? ['application/json'] : [])) as string[]
+      ).map(getMediaType);
+      const hasBody = body !== undefined && (body !== null || takesNullBody(bodySchema));
       const isBinary = body instanceof Blob || body instanceof ArrayBuffer || ArrayBuffer.isView(body);
       const resolvedContentType = !hasBody
         ? undefined // no body, no content type: a cross-origin GET then needs no preflight
@@ -192,13 +181,13 @@ export function createFetcher<T>({
             : typeof body === 'string'
               ? getStringBodyContentType(declaredContentTypes)
               : isBinary
-                ? getBinaryBodyContentType(body instanceof Blob ? body.type : '', declaredContentTypes)
+                ? getBinaryContentType(body instanceof Blob ? body.type : '', declaredContentTypes)
                 : 'application/json';
       const resolvedFileName = body instanceof File ? body.name : undefined;
 
       // Default headers (lowercase keys)
       const defaultHeaders: Record<string, string> = {
-        accept: 'application/jsonl, application/json',
+        accept: [...JSON_LINES_MEDIA_TYPES, 'application/json'].join(', '),
         ...(resolvedContentType ? { 'content-type': resolvedContentType } : {}),
         ...(resolvedFileName ? { 'content-disposition': fileNameToDisposition(resolvedFileName) } : {}),
         ...(meta ? { 'x-meta': toAsciiJson(meta) } : {}),

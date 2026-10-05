@@ -304,6 +304,28 @@ describe('convertJSONSchemasToRustTypes', () => {
     assert.ok(output.includes('pub type body = Vec<u8>;'), output);
   });
 
+  test('a form or JSON body goes out as JSON unless a field holds a file', () => {
+    const fields = { n: { type: 'number' }, tags: { type: 'array', items: { type: 'string' } } } as const;
+    const file = { type: 'string', format: 'binary' } as const;
+
+    for (const form of ['multipart/form-data', 'application/x-www-form-urlencoded']) {
+      const contentTypes = [form, 'application/json'];
+      assert.strictEqual(
+        getBodyKind({ type: 'object', properties: fields, 'x-contentType': contentTypes }),
+        'json',
+        form
+      );
+    }
+    assert.strictEqual(
+      getBodyKind({
+        type: 'object',
+        properties: { ...fields, file },
+        'x-contentType': ['multipart/form-data', 'application/json'],
+      }),
+      'form'
+    );
+  });
+
   test('anyOf/oneOf variants', () => {
     const schemas: Record<string, VovkJSONSchemaBase> = {
       VariantContainer: {

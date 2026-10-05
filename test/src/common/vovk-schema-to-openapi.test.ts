@@ -377,4 +377,29 @@ describe('vovkSchemaToOpenAPI — JSON Lines', () => {
       [{ n: 0 }, { n: 0 }, { n: 0 }]
     );
   });
+
+  it('Gives an item schema that uses $defs an example of its definitions', () => {
+    const task = {
+      type: 'object',
+      properties: { id: { type: 'string' }, done: { type: 'boolean' } },
+      required: ['id', 'done'],
+    };
+    const item = { $ref: '#/$defs/Task', $defs: { Task: task } };
+    const openAPI = toOpenAPI({ stream: { path: 'stream', httpMethod: 'GET', validation: { iteration: item } } });
+    const media = openAPI.paths['/api/things/stream'].get.responses[200].content['application/jsonl'];
+    deepStrictEqual(
+      media.example.split('\n').map((line: string) => JSON.parse(line)),
+      Array(3).fill({ id: 'string', done: true })
+    );
+  });
+
+  it('Keeps the example small when the item nests arrays with minItems', () => {
+    let item: Obj = { type: 'string' };
+    for (let i = 0; i < 10; i++) item = { type: 'array', minItems: 3, items: item };
+    const openAPI = toOpenAPI({ stream: { path: 'stream', httpMethod: 'GET', validation: { iteration: item } } });
+    const media = openAPI.paths['/api/things/stream'].get.responses[200].content['application/jsonl'];
+    // 3 items per level would make 3^10 strings in every line
+    ok(media.example.length < JSON.stringify(item).length * 50, `a ${media.example.length}-char example`);
+    deepStrictEqual(media.example.split('\n').length, 3);
+  });
 });

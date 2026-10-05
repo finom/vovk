@@ -1,5 +1,10 @@
+---
+imports: ['vovk-rust']
+---
 <%- t.getFirstLineBanner('html') %>
-# <%= t.underscoredPackageName %> v<%= t.package.version %> [![Rust](https://img.shields.io/badge/Rust-lang-000000.svg?style=flat&logo=rust)](https://www.rust-lang.org) [![Vovk.ts](https://badgen.net/badge/Built%20with/Vovk.ts/333333?icon=https://vovk.dev/icon-white.svg)](https://vovk.dev)
+<% if (t.readme.banner) { %><%- t.readme.banner %>
+
+<% } %># <%= t.underscoredPackageName %> v<%= t.package.version %> [![Rust](https://img.shields.io/badge/Rust-lang-000000.svg?style=flat&logo=rust)](https://www.rust-lang.org) [![Vovk.ts](https://badgen.net/badge/Built%20with/Vovk.ts/333333?icon=https://vovk.dev/icon-white.svg)](https://vovk.dev)
 
 <%- t.readme.description ?? (`${t.package.description ? `> ${t.package.description}` : ''}`) %>
 
@@ -7,18 +12,21 @@
 
 ```bash
 # Install the package
-<%= t.readme.installCommand ?? `cargo install ${t.underscoredPackageName}` %>
+<%= t.readme.installCommand ?? `cargo add ${t.underscoredPackageName}` %>
 ```
 
 <% Object.entries(t.schema.segments).forEach(([segmentName, segment]) => {
     const segmentMeta = t.segmentMeta?.[segmentName] ?? {};
     const apiRoot = segmentMeta.forceApiRoot ?? t.apiRoot ?? '';
     const segmentPath = segment.forceApiRoot ? '' : typeof segmentMeta.segmentNameOverride === 'string' ? segmentMeta.segmentNameOverride : segmentName;
-    Object.values(segment.controllers).forEach((controllerSchema) => { %>
+    Object.values(segment.controllers).forEach((controllerSchema) => {
+    // the names the crate has
+    const moduleName = t.imports['vovk-rust'].toRustIdent(t._.snakeCase(controllerSchema.rpcModuleName));
+    const functionNames = t.imports['vovk-rust'].getFunctionNames(Object.keys(controllerSchema.handlers), t._.snakeCase); %>
 
-## mod <%= t._.snakeCase(controllerSchema.rpcModuleName) %>
+## mod <%= moduleName %>
         <% Object.entries(controllerSchema.handlers).forEach(([handlerName, handlerSchema]) => { %>
-### <%= t._.snakeCase(controllerSchema.rpcModuleName) %>::<%= t._.snakeCase(handlerName) %>
+### <%= moduleName %>::<%= functionNames.get(handlerName) %>
 <%- handlerSchema.operationObject?.summary ? `> ${handlerSchema.operationObject.summary}` : '' %>
 
 <%- handlerSchema.operationObject?.description ? `${handlerSchema.operationObject.description}` : '' %>

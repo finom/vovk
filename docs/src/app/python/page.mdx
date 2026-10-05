@@ -17,7 +17,7 @@ npm install vovk-python --save-dev
 Create a Python package with the [CLI](/generate) command:
 
 ```sh npm2yarn copy
-npx vovk generate --from py --out ./python_package
+npm exec -- vovk generate --from py --out ./python_package
 ```
 
 This produces:
@@ -45,7 +45,7 @@ python3 -m build ./python_package --wheel --sdist && python3 -m twine upload ./p
 If you prefer generating source files to embed in another Python project, use the `pySrc` template:
 
 ```sh npm2yarn copy
-npx vovk generate --from pySrc --out ./python_src
+npm exec -- vovk generate --from pySrc --out ./python_src
 ```
 
 This generates:
@@ -69,9 +69,19 @@ const config = {
   composedClient: {
     fromTemplates: ['ts', 'py'], // keeps the default "ts" template
   },
+  clientTemplateDefs: {
+    py: {
+      extends: 'py', // extends the built-in "py" template
+      outputConfig: {
+        origin: 'https://example.com', // the server the Python client calls
+      },
+    },
+  },
 };
 export default config;
 ```
+
+The Python client sends its calls to an absolute URL, so it needs [`outputConfig.origin`](/config#outputconfig). Set on the `py` template, it leaves the TypeScript client's relative URLs as they are. Without an origin, `vovk generate` warns, and every call needs its own `api_root`.
 
 The [py](/templates#py) template (and others) has a default `outDir` (`./dist_python`) for composed clients. Override it via [template definitions](/templates#defs):
 
@@ -99,7 +109,7 @@ The snippets below are adapted from a real example described on the [Hello World
 
 A controller like this:
 
-<Tabs items={['UserController.ts', 'UserService.ts', 'route.ts']}>
+<Tabs items={['user-controller.ts', 'user-service.ts', 'route.ts']}>
 <Tabs.Tab>
 ```ts showLineNumbers copy filename="src/modules/user/user-controller.ts" source="examples/hello-world"
 import { operation, post, prefix, procedure } from 'vovk';
@@ -237,9 +247,9 @@ from typing import Any, Dict, List, Literal, Optional, Set, TypedDict, Union, Tu
 from .api_client import ApiClient, HttpException
 
 if sys.version_info >= (3, 11):
-    from typing import NotRequired
+    from typing import NotRequired, TypeAlias
 else:
-    from typing_extensions import NotRequired
+    from typing_extensions import NotRequired, TypeAlias
 
 HttpException = HttpException
 
@@ -307,9 +317,11 @@ class UserRPC:
         )
 ```
 
-All RPC modules are generated in `__init__.py`, which contains the RPC functions and the associated types. Types for nested structures are emitted as `TypedDict`s. A key the schema doesn't require is `NotRequired`, imported from `typing_extensions` before Python 3.11.
+All RPC modules are generated in `__init__.py`, which contains the RPC functions and the associated types. Types for nested structures are emitted as `TypedDict`s. A key the schema doesn't require is `NotRequired`, imported from `typing_extensions` before Python 3.11. A type that isn't a `TypedDict`, such as a `str` output, is a `TypeAlias`, imported the same way.
 
 Types for `body`, `query`, and `params` follow the pattern `[PascalCaseMethodName][InputType]`. For a method `updateUser`, you get `UpdateUserBody`, `UpdateUserQuery`, and `UpdateUserParams`.
+
+Method names are in snake_case: `UserRPC.updateUser` is `UserRPC.update_user`. They are per RPC class, in schema order: a name already taken gets the first free suffix, `_2`, `_3`, so `getUserByID` and `getUserById` give `get_user_by_id` and `get_user_by_id_2`.
 
 ```py
 from dist_python.src.vovk_hello_world import UserRPC
@@ -339,7 +351,9 @@ if __name__ == "__main__":
       print(f"Error: {e}")
 ```
 
-Under the hood, it uses [requests](https://pypi.org/project/requests/) for HTTP, [jsonschema](https://pypi.org/project/jsonschema/) for client-side validation, and other common libraries.
+Under the hood, it uses [requests](https://pypi.org/project/requests/) for HTTP, [jsonschema](https://pypi.org/project/jsonschema/) for client-side validation, and other common libraries. A `pattern` that Python's `re` can't compile, such as `\p{L}`, is left to the server.
+
+A call returns the parsed JSON, or `None` for an empty JSON body. A response of a `text/*` type, or of any type with a charset, comes back as `str`, decoded as UTF-8 unless the charset names another encoding. Any other response, such as a file, comes back as `bytes`.
 
 ### JSON Lines Endpoints
 
@@ -347,7 +361,7 @@ For continuous streaming with [JSON Lines](/jsonlines) endpoints, the Python cli
 
 A controller like this:
 
-<Tabs items={['StreamController.ts', 'StreamService.ts', 'route.ts']}>
+<Tabs items={['stream-controller.ts', 'stream-service.ts', 'route.ts']}>
 <Tabs.Tab>
 ```ts showLineNumbers copy filename="src/modules/stream/stream-controller.ts" source="examples/hello-world"
 import { get, operation, prefix, procedure } from 'vovk';
@@ -477,7 +491,7 @@ if __name__ == "__main__":
 
 ### Timeout and Session
 
-All calls share one `requests.Session`, so connections stay open between them. The client waits 10 seconds to connect and 300 seconds for each read. Both are attributes of the module-level `client`:
+All calls share one `requests.Session`, so connections stay open between them. The client waits 10 seconds to connect and 300 seconds for each read, and an upload fails when the server takes no data for 10 seconds. Both are attributes of the module-level `client`:
 
 ```py
 from package_name import client
@@ -485,6 +499,8 @@ from package_name import client
 client.timeout = 30  # seconds, or a (connect, read) tuple; None waits forever
 client.session.headers["Authorization"] = "Bearer ..."
 ```
+
+The session keeps no cookie a response sets, since one client serves every call and thread. A cookie set by hand, as `client.session.cookies.set("session", "...")`, goes with every call. To keep the cookies responses set, call `client.session.cookies.set_policy(http.cookiejar.DefaultCookiePolicy())`.
 
 ## Roadmap/bugs
 

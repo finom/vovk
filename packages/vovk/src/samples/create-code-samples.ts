@@ -2,18 +2,35 @@ import type { VovkSamplesConfig } from '../types/config.js';
 import type { VovkControllerSchema, VovkHandlerSchema } from '../types/core.js';
 import type { VovkJSONSchemaBase } from '../types/json-schema.js';
 import { toUnderscoredPackageName } from '../utils/to-underscored-package-name.js';
+import { getPythonClassName, getPythonMethodName, getRustFunctionName, getRustModuleName } from './client-names.js';
 import { objectToCode } from './object-to-code.js';
-import { getSampleValue, schemaToCode } from './schema-to-code.js';
-
-const toSnakeCase = (str: string) =>
-  str
-    .replace(/-/g, '_') // Replace hyphens with underscores
-    .replace(/([a-z0-9])([A-Z])/g, '$1_$2') // Add underscore between lowercase/digit and uppercase
-    .replace(/([A-Z])([A-Z])(?=[a-z])/g, '$1_$2') // Add underscore between uppercase letters if the second one is followed by a lowercase
-    .toLowerCase()
-    .replace(/^_/, ''); // Remove leading underscore
+import {
+  getDescription,
+  getSampleValue,
+  LINE_BREAK,
+  schemaToCode,
+  toCodeString,
+  toPythonString,
+} from './schema-to-code.js';
 
 const getIndentSpaces = (level: number): string => ' '.repeat(level);
+
+// a handler as the generated TypeScript client has it: by its own name, in brackets when that isn't an identifier
+const toTsMethod = (handlerName: string) =>
+  /^[\p{ID_Start}$_][\p{ID_Continue}$]*$/u.test(handlerName) ? `.${handlerName}` : `[${toCodeString(handlerName)}]`;
+
+// a third-party OpenAPI document may hold a media type that isn't a string, a sample leaves it out
+const getContentMediaType = (schema: VovkJSONSchemaBase) =>
+  typeof schema.contentMediaType === 'string' ? schema.contentMediaType : undefined;
+
+// a description in a line comment: every line after a break starts the comment again
+const commentText = (description: string, linePrefix: string) => description.split(LINE_BREAK).join(`\n${linePrefix}`);
+
+// text in a /* */ comment: */ would end the comment, and in Rust /* would open a nested one
+const inBlockComment = (text: string, nests = false) => {
+  const unclosed = text.replace(/\*\//g, '*\\/');
+  return nests ? unclosed.replace(/\/\*/g, '/\\*') : unclosed;
+};
 
 function isTextFormat(mimeType?: string): boolean {
   if (!mimeType) return false;
@@ -48,6 +65,9 @@ export type CodeSamplePackageJson = {
 
 type CodeGenerationParams = {
   handlerName: string;
+  // the handler's method in the client of the sample's language
+  methodName: string;
+  // the module in the client of the sample's language
   rpcName: string;
   packageName: string;
   queryValidation?: VovkJSONSchemaBase;
@@ -83,7 +103,7 @@ function generateTypeScriptCode({
     let formSample = '\nconst formData = new FormData();';
     for (const [key, prop] of Object.entries(schema.properties || {})) {
       const target = prop.oneOf?.[0] || prop.anyOf?.[0] || prop.allOf?.[0] || prop;
-      const desc = target.description ?? prop.description ?? undefined;
+      const desc = getDescription(target) ?? getDescription(prop);
       if (target.type === 'array' && target.items && typeof target.items !== 'boolean') {
         formSample += getTsFormAppend(target.items, key, desc);
         formSample += getTsFormAppend(target.items, key, desc);
@@ -97,18 +117,19 @@ function generateTypeScriptCode({
   const getTsFormAppend = (schema: VovkJSONSchemaBase, key: string, description?: string) => {
     let sampleValue: string;
     if (schema.type === 'string' && schema.format === 'binary') {
-      sampleValue = `new Blob(${isTextFormat(schema.contentMediaType) ? '["text_content"]' : '[binary_data]'}${
-        schema.contentMediaType ? `, { type: "${schema.contentMediaType}" }` : ''
+      const mediaType = getContentMediaType(schema);
+      sampleValue = `new Blob(${isTextFormat(mediaType) ? '["text_content"]' : '[binary_data]'}${
+        mediaType ? `, { type: ${toCodeString(mediaType)} }` : ''
       })`;
     } else if (schema.type === 'object') {
       sampleValue = '"object_unknown"';
     } else {
-      sampleValue = `"${getSampleValue(schema)}"`;
+      sampleValue = toCodeString(String(getSampleValue(schema)));
     }
 
-    const desc = schema.description ?? description;
+    const desc = getDescription(schema) ?? description;
 
-    return `\n${desc ? `// ${desc}\n` : ''}formData.append("${key}", ${sampleValue});`;
+    return `\n${desc ? `// ${commentText(desc, '// ')}\n` : ''}formData.append(${toCodeString(key)}, ${sampleValue});`;
   };
 
   const tsArgs = hasArg
@@ -117,7 +138,7 @@ ${[
   bodyValidation ? `    body: ${isForm(bodyValidation) ? 'formData' : getTsSample(bodyValidation)},` : null,
   queryValidation ? `    query: ${getTsSample(queryValidation)},` : null,
   paramsValidation ? `    params: ${getTsSample(paramsValidation)},` : null,
-  config?.apiRoot ? `    apiRoot: '${config.apiRoot}',` : null,
+  config?.apiRoot ? `    apiRoot: ${toCodeString(config.apiRoot, "'")},` : null,
   config?.headers
     ? `    init: {
       headers: ${objectToCode(config.headers, { stripQuotes: true, indent: 6, nestingIndent: 4 })}
@@ -129,15 +150,15 @@ ${[
 }`
     : '';
 
-  const TS_CODE = `import { ${rpcName} } from '${packageName}';
+  const TS_CODE = `import { ${rpcName} } from ${toCodeString(packageName, "'")};
 ${bodyValidation && isForm(bodyValidation) ? `${getTsFormSample(bodyValidation)}\n` : ''}
-${iterationValidation ? 'using' : 'const'} response = await ${rpcName}.${handlerName}(${tsArgs});
+${iterationValidation ? 'using' : 'const'} response = await ${rpcName}${toTsMethod(handlerName)}(${tsArgs});
 ${
   outputValidation
     ? `
 console.log(response); 
 /* 
-${getTsSample(outputValidation, 0)}
+${inBlockComment(getTsSample(outputValidation, 0))}
 */`
     : ''
 }${
@@ -146,7 +167,7 @@ ${getTsSample(outputValidation, 0)}
 for await (const item of response) {
     console.log(item); 
     /*
-    ${getTsSample(iterationValidation)}
+    ${inBlockComment(getTsSample(iterationValidation))}
     */
 }`
     : ''
@@ -156,7 +177,7 @@ for await (const item of response) {
 }
 
 function generatePythonCode({
-  handlerName,
+  methodName,
   rpcName,
   packageName,
   queryValidation,
@@ -174,21 +195,27 @@ function generatePythonCode({
       comment: '#',
       ignoreBinary: true,
       nestingIndent: 4,
+      python: true,
     });
-
-  const handlerNameSnake = toSnakeCase(handlerName);
+  // what comes back is described in a comment, as the TypeScript and Rust samples do
+  const commentOut = (code: string, indent = '') =>
+    code
+      .split('\n')
+      .map((line) => `${indent}# ${line}`.trimEnd())
+      .join('\n');
 
   const getFileTouple = (schema: VovkJSONSchemaBase) => {
-    return `('name.ext', BytesIO(${isTextFormat(schema.contentMediaType) ? '"text_content".encode("utf-8")' : 'binary_data'})${schema.contentMediaType ? `, "${schema.contentMediaType}"` : ''})`;
+    const mediaType = getContentMediaType(schema);
+    return `('name.ext', BytesIO(${isTextFormat(mediaType) ? '"text_content".encode("utf-8")' : 'binary_data'})${mediaType ? `, ${toPythonString(mediaType)}` : ''})`;
   };
   const getPyFiles = (schema: VovkJSONSchemaBase) => {
     return Object.entries(schema.properties ?? {}).reduce((acc, [key, prop]) => {
       const target = prop.oneOf?.[0] || prop.anyOf?.[0] || prop.allOf?.[0] || prop;
-      const desc = target.description ?? prop.description ?? undefined;
+      const desc = getDescription(target) ?? getDescription(prop);
 
       if (target.type === 'string' && target.format === 'binary') {
         acc.push(
-          `${desc ? `${getIndentSpaces(8)}# ${desc}\n` : ''}${getIndentSpaces(8)}('${key}', ${getFileTouple(target)})`
+          `${desc ? `${getIndentSpaces(8)}# ${commentText(desc, `${getIndentSpaces(8)}# `)}\n` : ''}${getIndentSpaces(8)}(${toPythonString(key, "'")}, ${getFileTouple(target)})`
         );
       } else if (
         target.type === 'array' &&
@@ -196,7 +223,7 @@ function generatePythonCode({
         typeof target.items !== 'boolean' &&
         target.items.format === 'binary'
       ) {
-        const val = `${desc ? `${getIndentSpaces(8)}# ${desc}\n` : ''}${getIndentSpaces(8)}('${key}', ${getFileTouple(target.items)})`;
+        const val = `${desc ? `${getIndentSpaces(8)}# ${commentText(desc, `${getIndentSpaces(8)}# `)}\n` : ''}${getIndentSpaces(8)}(${toPythonString(key, "'")}, ${getFileTouple(target.items)})`;
         acc.push(val, val);
       }
 
@@ -211,7 +238,7 @@ function generatePythonCode({
 
   const PY_CODE = `from ${packageName} import ${rpcName}
 ${bodyValidation && isForm(bodyValidation) ? 'from io import BytesIO\n' : ''}
-response = ${rpcName}.${handlerNameSnake}(${
+response = ${rpcName}.${methodName}(${
     hasArg
       ? '\n' +
         [
@@ -219,7 +246,7 @@ response = ${rpcName}.${handlerNameSnake}(${
           pyFilesArg,
           queryValidation ? `    query=${getPySample(queryValidation)},` : null,
           paramsValidation ? `    params=${getPySample(paramsValidation)},` : null,
-          config?.apiRoot ? `    api_root="${config.apiRoot}",` : null,
+          config?.apiRoot ? `    api_root=${toPythonString(config.apiRoot)},` : null,
           config?.headers
             ? `    headers=${objectToCode(config.headers, { stripQuotes: false, indent: 4, nestingIndent: 4 })},`
             : null,
@@ -230,12 +257,12 @@ response = ${rpcName}.${handlerNameSnake}(${
       : ''
   })
 
-${outputValidation ? `print(response)\n${getPySample(outputValidation, 0)}` : ''}${
+${outputValidation ? `print(response)\n${commentOut(getPySample(outputValidation, 0))}` : ''}${
   iterationValidation
     ? `for i, item in enumerate(response):
     print(f"iteration #{i}:\\n {item}")
     # iteration #0:
-    ${getPySample(iterationValidation)}`
+${commentOut(getPySample(iterationValidation, 0), '    ')}`
     : ''
 }`;
 
@@ -243,7 +270,7 @@ ${outputValidation ? `print(response)\n${getPySample(outputValidation, 0)}` : ''
 }
 
 function generateRustCode({
-  handlerName,
+  methodName,
   rpcName,
   packageName,
   queryValidation,
@@ -262,7 +289,7 @@ function generateRustCode({
     let formSample = 'let form = reqwest::multipart::Form::new()';
     for (const [key, prop] of Object.entries(schema.properties || {})) {
       const target = prop.oneOf?.[0] || prop.anyOf?.[0] || prop.allOf?.[0] || prop;
-      const desc = target.description ?? prop.description ?? undefined;
+      const desc = getDescription(target) ?? getDescription(prop);
       if (target.type === 'array' && target.items && typeof target.items !== 'boolean') {
         formSample += getRsFormPart(target.items, key, desc);
         formSample += getRsFormPart(target.items, key, desc);
@@ -276,28 +303,29 @@ function generateRustCode({
   const getRsFormPart = (schema: VovkJSONSchemaBase, key: string, description?: string) => {
     let sampleValue: string;
     if (schema.type === 'string' && schema.format === 'binary') {
-      sampleValue = isTextFormat(schema.contentMediaType)
+      const mediaType = getContentMediaType(schema);
+      sampleValue = isTextFormat(mediaType)
         ? 'reqwest::multipart::Part::text("text_content")'
         : 'reqwest::multipart::Part::bytes(binary_data)';
 
-      if (schema.contentMediaType) {
-        sampleValue += `.mime_str("${schema.contentMediaType}").unwrap()`;
+      if (mediaType) {
+        sampleValue += `.mime_str(${toCodeString(mediaType)}).unwrap()`;
       }
     } else if (schema.type === 'object') {
       sampleValue = '"object_unknown"';
     } else {
-      sampleValue = `"${getSampleValue(schema)}"`;
+      sampleValue = toCodeString(String(getSampleValue(schema)));
     }
 
-    const desc = schema.description ?? description;
+    const desc = getDescription(schema) ?? description;
 
-    return `\n${getIndentSpaces(4)}${desc ? `// ${desc}\n` : ''}${getIndentSpaces(4)}.part("${key}", ${sampleValue});`;
+    return `\n${getIndentSpaces(4)}${desc ? `// ${commentText(desc, `${getIndentSpaces(4)}// `)}\n` : ''}${getIndentSpaces(4)}.part(${toCodeString(key)}, ${sampleValue});`;
   };
 
   const getHashMapSample = (map: Record<string, unknown>, indent = 4) => {
     const entries = Object.entries(map)
       .map(([key, value]) => {
-        return `${getIndentSpaces(indent + 2)}("${key}".to_string(), "${value}".to_string())`;
+        return `${getIndentSpaces(indent + 2)}(${toCodeString(key)}.to_string(), ${toCodeString(String(value))}.to_string())`;
       })
       .join(',\n');
     return `Some(&HashMap::from([\n${entries}\n${getIndentSpaces(4)}]))`;
@@ -310,31 +338,28 @@ function generateRustCode({
     return serdeUnwrap(getRsJSONSample(schema));
   };
 
-  const handlerNameSnake = toSnakeCase(handlerName);
-  const rpcNameSnake = toSnakeCase(rpcName);
-
   const serdeUnwrap = (fake: string) => `from_value(json!(${fake})).unwrap()`;
 
-  const RS_CODE = `use ${packageName}::${rpcNameSnake};
+  const RS_CODE = `use ${packageName}::${rpcName};
 use serde_json::{ 
   from_value, 
   json 
 };
 ${iterationValidation ? 'use futures_util::StreamExt;\n' : ''}${bodyValidation && isForm(bodyValidation) ? `use reqwest::multipart;\n` : ''}#[tokio::main]
 async fn main() {${bodyValidation && isForm(bodyValidation) ? `\n  ${getRsFormSample(bodyValidation)}\n` : ''}
-  let response = ${rpcNameSnake}::${handlerNameSnake}(
+  let response = ${rpcName}::${methodName}(
     ${bodyValidation ? getBody(bodyValidation) : '()'}, /* body */ 
     ${queryValidation ? serdeUnwrap(getRsJSONSample(queryValidation)) : '()'}, /* query */ 
     ${paramsValidation ? serdeUnwrap(getRsJSONSample(paramsValidation)) : '()'}, /* params */ 
     ${config?.headers ? `${getHashMapSample(config.headers)}, /* headers */` : 'None, /* headers (HashMap) */ '}
-    ${config?.apiRoot ? `Some("${config.apiRoot}"), /* api_root */` : 'None, /* api_root */'}
+    ${config?.apiRoot ? `Some(${toCodeString(config.apiRoot)}), /* api_root */` : 'None, /* api_root */'}
     false, /* disable_client_validation */
   ).await;${
     outputValidation
       ? `\n\nmatch response {
     Ok(output) => println!("{:?}", output),
     /* 
-    output ${getRsOutputSample(outputValidation)} 
+    output ${inBlockComment(getRsOutputSample(outputValidation), true)} 
     */
     Err(e) => println!("error: {:?}", e),
   }`
@@ -349,7 +374,7 @@ async fn main() {${bodyValidation && isForm(bodyValidation) ? `\n  ${getRsFormSa
           Ok(value) => {
             println!("#{}: {:?}", i, value);
             /*
-            #0: iteration ${getRsOutputSample(iterationValidation, 8)}
+            #0: iteration ${inBlockComment(getRsOutputSample(iterationValidation, 8), true)}
             */
             i += 1;
           }
@@ -394,9 +419,11 @@ export function createCodeSamples({
   // the names the generated Python and Rust packages go by
   const pyPackageName = packageJson?.py_name ?? toUnderscoredPackageName(packageJson?.name);
   const rsPackageName = packageJson?.rs_name ?? toUnderscoredPackageName(packageJson?.name);
+  const handlerNames = Object.keys(controllerSchema.handlers ?? {});
 
   const commonParams: CodeGenerationParams = {
     handlerName,
+    methodName: handlerName,
     rpcName,
     packageName,
     queryValidation,
@@ -409,8 +436,18 @@ export function createCodeSamples({
   };
 
   const ts = generateTypeScriptCode(commonParams);
-  const py = generatePythonCode({ ...commonParams, packageName: pyPackageName });
-  const rs = generateRustCode({ ...commonParams, packageName: rsPackageName });
+  const py = generatePythonCode({
+    ...commonParams,
+    packageName: pyPackageName,
+    rpcName: getPythonClassName(rpcName),
+    methodName: getPythonMethodName(handlerName, handlerNames),
+  });
+  const rs = generateRustCode({
+    ...commonParams,
+    packageName: rsPackageName,
+    rpcName: getRustModuleName(rpcName),
+    methodName: getRustFunctionName(handlerName, handlerNames),
+  });
 
   return { ts, py, rs };
 }

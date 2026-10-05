@@ -36,25 +36,20 @@ export default function proxy(request: NextRequest) {
     subdomains,
   });
 
-  let res: NextResponse;
-  if (action === 'rewrite' && destination) {
-    res = NextResponse.rewrite(new URL(destination));
-  } else if (action === 'redirect' && destination) {
-    res = NextResponse.redirect(new URL(destination));
-  } else {
-    res = NextResponse.next();
-  }
-
-  // not the best solution, but I couldn't find a better one
+  // the API reads the tenant from this header; only the proxy sets it, not the client
+  const headers = new Headers(request.headers);
+  headers.delete('x-subdomains');
   if (subdomains) {
-    res.cookies.set(
-      'x-subdomains',
-      new URLSearchParams(subdomains).toString(),
-      { expires: new Date(Date.now() + 3e3) },
-    );
+    headers.set('x-subdomains', new URLSearchParams(subdomains).toString());
   }
 
-  return res;
+  if (action === 'rewrite' && destination) {
+    return NextResponse.rewrite(new URL(destination), { request: { headers } });
+  }
+  if (action === 'redirect' && destination) {
+    return NextResponse.redirect(new URL(destination));
+  }
+  return NextResponse.next({ request: { headers } });
 }
 
 export const config = {

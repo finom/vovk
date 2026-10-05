@@ -13,13 +13,16 @@ Vovk.ts preserves a consistent call signature for every method using a single ar
 ```ts showLineNumbers copy
 import { PetstoreAPI } from '@/client';
 
-await PetstoreAPI.updatePet({
-  params: { id: '123' }, // URL params (if any)
-  query: { hello: 'world' }, // Query params (if any)
-  body: { name: 'Doggo' }, // Request body (if any)
-  disableClientValidation: true, // Optional: disable client-side validation
+await PetstoreAPI.updatePetWithForm({
+  params: { petId: 1 }, // URL params (if any)
+  query: { name: 'Doggo', status: 'sold' }, // Query params (if any)
   init: { headers: { 'X-Custom-Header': 'value' } }, // Optional: fetch init
   apiRoot: 'https://api.example.com', // Optional: override API root URL
+});
+
+await PetstoreAPI.updatePet({
+  body: { id: 1, name: 'Doggo', photoUrls: [] }, // Request body (if any)
+  disableClientValidation: true, // Optional: disable client-side validation
 });
 ```
 
@@ -38,7 +41,7 @@ const PetstoreAPIWithAuth = PetstoreAPI.withDefaults({
 });
 
 await PetstoreAPIWithAuth.updatePet({
-  body: { name: 'Doggo' },
+  body: { name: 'Doggo', photoUrls: [] },
 });
 ```
 
@@ -94,7 +97,7 @@ const tools = deriveTools({
 });
 
 console.log(tools);
-// [{ execute: (llmInput) => {}, name: 'PetstoreAPI_updatePet', description: 'Update an existing pet by Id', parameters: { body: { ... } } }, ...]
+// [{ execute: (llmInput) => {}, name: 'PetstoreAPI_updatePet', description: 'Update an existing pet by Id', inputSchema: { ... } }, ...]
 ```
 
 ### Python and Rust Clients (Experimental)
@@ -235,7 +238,7 @@ This generates a single `PetstoreAPI` module with methods for each operation def
 ```ts showLineNumbers copy
 import { PetstoreAPI } from '@/client';
 
-await PetstoreAPI.getPets({ query: { limit: 10 } });
+await PetstoreAPI.findPetsByStatus({ query: { status: 'available' } });
 ```
 
 When `getModuleName` or `getMethodName` are functions, they receive:
@@ -292,15 +295,17 @@ import {
   GithubReposAPI,
   GithubPullsAPI,
   GithubActionsAPI,
-  GithubReleasesAPI,
   GithubUsersAPI
 } from '@/client';
 
 await GithubIssuesAPI.listForOrg({ params: { org: 'octocat' } });
-await GithubReposAPI.removeStatusCheckContexts({ params: { owner: 'octocat', repo: 'Hello-World', branch: 'main' } });
+await GithubReposAPI.removeStatusCheckContexts({
+  params: { owner: 'octocat', repo: 'Hello-World', branch: 'main' },
+  body: { contexts: ['ci/build'] },
+});
 await GithubPullsAPI.list({ params: { owner: 'octocat', repo: 'Hello-World' } });
-await GithubActionsAPI.listWorkflows({ params: { owner: 'octocat', repo: 'Hello-World' } });
-await GithubReleasesAPI.getLatestRelease({ params: { owner: 'octocat', repo: 'Hello-World' } });
+await GithubActionsAPI.listRepoWorkflows({ params: { owner: 'octocat', repo: 'Hello-World' } });
+await GithubReposAPI.getLatestRelease({ params: { owner: 'octocat', repo: 'Hello-World' } });
 await GithubUsersAPI.getAuthenticated();
 ```
 
@@ -371,18 +376,19 @@ By default, the [composed client](/composed) uses the [ts](/templates#ts) templa
 ```ts showLineNumbers copy
 import { PetstoreAPI, GithubIssuesAPI } from '@/client';
 
-await PetstoreAPI.getPets({ query: { limit: 10 } });
+await PetstoreAPI.findPetsByStatus({ query: { status: 'available' } });
 await GithubIssuesAPI.listForOrg({ params: { org: 'finom' } });
 ```
 
 The `Mixins` namespace contains types generated from `components/schemas` across all mixed OpenAPI specifications, providing an alternative to the inference. Each mixin gets a namespace, and each component a type, both named in PascalCase: the `petstore` mixin's `Pet` component is `Mixins.Petstore.Pet`. Letters of any script are kept, a name that would start with a digit gets a leading underscore (`2FAConfig` becomes `_2FaConfig`), and when two components get the same name, the later one in the document takes a number: `user-profile` and `UserProfile` become `UserProfile` and `UserProfile2`.
 
 ```ts showLineNumbers copy
+import type { VovkOutput } from 'vovk';
 import { PetstoreAPI, type Mixins } from '@/client';
 
-const pet: Mixins.Petstore.Pet = { id: 1, name: 'Doggo' };
+const pet: Mixins.Petstore.Pet = { id: 1, name: 'Doggo', photoUrls: [] };
 // Alternatively:
-const pet2: VovkOutput<typeof PetstoreAPI.getPet> = { id: 1, name: 'Doggo' };
+const pet2: VovkOutput<typeof PetstoreAPI.getPetById> = { id: 1, name: 'Doggo', photoUrls: [] };
 ```
 
 The output directory can be changed via `composedClient.outDir`:

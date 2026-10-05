@@ -88,6 +88,8 @@ export const UserRPC = createRPC<
 });
 ```
 
+The generated client imports `vovk` subpaths, such as `vovk/fetcher`, and JSON files with import attributes. It compiles on TypeScript 5.3+ with `"moduleResolution"` set to `"bundler"`, the Next.js default, `"node16"` or `"nodenext"`; under `"node"`, TypeScript can't find `vovk/fetcher`.
+
 ## RPC Method Options
 
 In addition to `body`, `params`, and `query`, every RPC method accepts a set of options. This list can be [extended via a custom `fetcher`](/imports#fetcher).
@@ -418,9 +420,9 @@ import { schema } from '@/client';
 This also works with the [segmented client](/segmented); in that case, both `openapi` and `schema` include data only for the selected segment:
 
 ```ts showLineNumbers copy
-import { openapi } from '@/client/admin/openapi.ts';
-import { schema } from '@/client/admin/schema.ts';
-import { schema } from '@/client/admin/index.ts';
+import { openapi } from '@/client/admin/openapi';
+import { schema } from '@/client/admin/schema';
+import { schema } from '@/client/admin';
 ```
 
 ## Used Templates

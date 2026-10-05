@@ -1,0 +1,7 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "strict": false
+  },
+  "include": ["src/type-test-non-strict.ts"]
+}

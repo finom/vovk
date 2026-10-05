@@ -44,4 +44,9 @@ export default class RustSweepController {
   static getQueryArray = procedure({
     query: z.object({ items: z.array(z.string().nullable()) }),
   }).handle((req) => req.vovk.query());
+
+  @get('numeric-query')
+  static getNumericQuery = procedure({
+    query: z.object({ limit: z.coerce.number() }),
+  }).handle((req) => ({ search: req.nextUrl.search }));
 }

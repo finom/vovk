@@ -8,6 +8,7 @@ from generated_python_client.src.test_generated_python_client import (
     ClientSweepRPC,
     HttpException,
     PetstoreAPI,
+    RustSweepRPC,
     WithValidationRPC,
     client,
 )
@@ -39,6 +40,22 @@ class TestClient(unittest.TestCase):
                 ClientSweepRPC.get_content_type(api_root=FAKE_ROOT)
         self.assertEqual(context.exception.status_code, 400)
         self.assertEqual(context.exception.message, '{"isError": true, "statusCode": 400}')
+
+    def test_json_error_with_a_detail_or_title(self) -> None:
+        # FastAPI's {"detail": ...} and an RFC 9457 problem document have no message key; the body is the cause
+        problem = {'type': 'https://example.com/probs/not-found', 'title': 'Not Found', 'status': 404, 'detail': 'Pet 42 does not exist'}
+        errors: List[Any] = [
+            ('application/json', {'detail': 'Item not found'}, 'Item not found'),
+            ('application/problem+json', problem, 'Pet 42 does not exist'),
+            ('application/problem+json', {'title': 'Not Found'}, 'Not Found'),
+        ]
+        for content_type, body, message in errors:
+            with self.subTest(body=body):
+                response = (404, {'Content-Type': content_type}, json.dumps(body).encode())
+                with fake_transport(lambda request: response), self.assertRaises(HttpException) as context:
+                    ClientSweepRPC.get_content_type(api_root=FAKE_ROOT)
+                error = context.exception
+                self.assertEqual((error.status_code, error.message, error.cause), (404, message, body))
 
     def test_text_error(self) -> None:
         with self.assertRaises(HttpException) as context:
@@ -133,6 +150,64 @@ class TestClient(unittest.TestCase):
             PetstoreAPI.update_pet(body={'name': 'Rex'})
         self.assertEqual(sent[0].request.headers['Content-Type'], 'application/json')
         self.assertEqual(json.loads(sent[0].request.body or ''), {'name': 'Rex'})
+
+    def test_form_or_json_body_without_a_file(self) -> None:
+        # a form sends every value as text, so typed fields keep their types only as JSON
+        body: Dict[str, Any] = {'n': 5, 'flag': True, 'tags': ['a', 'b']}
+        with self.subTest('urlencoded or JSON'):
+            self.assertEqual(ClientSweepRPC.post_form_or_json(body=body), {'body': body, 'contentType': 'application/json'})
+        with self.subTest('multipart or JSON'):
+            body = {'n': 1, 'tags': ['a'], 'nested': {'a': True}}
+            self.assertEqual(ClientSweepRPC.post_json_or_form(body=body), {'body': body, 'contentType': 'application/json'})
+
+    def test_form_or_json_body_with_a_file(self) -> None:
+        # the file branch of a JSON-or-file body: the files go out as a form, the object branch as JSON
+        data = ClientSweepRPC.post_json_or_form(body={}, files={'file': ('a.txt', BytesIO(b'x'))})
+        self.assertEqual(data, {'body': {'file': 'file:a.txt'}, 'contentType': 'multipart/form-data'})
+
+    def test_params_without_a_schema(self) -> None:
+        # the path has {id}, the procedure has no params schema
+        self.assertEqual(ClientSweepRPC.get_user_posts(params={'id': '42'}), {'id': '42'})
+
+    def test_text_body_content_type(self) -> None:
+        with self.subTest('a string goes out as the text type the procedure declares'):
+            data = ClientSweepRPC.post_string_json_or_text(body='héllo 日本')
+            self.assertEqual(data, {'body': 'héllo 日本', 'contentType': 'text/plain'})
+        with self.subTest('an object goes out as JSON, whatever text type the procedure also takes'):
+            data = ClientSweepRPC.post_object_text_or_json(body={'event': 'click'})
+            self.assertEqual(data, {'body': {'event': 'click'}, 'contentType': 'application/json'})
+
+    def test_path_params_as_javascript_writes_them(self) -> None:
+        with fake_transport(json_response(None)) as sent:
+            PetstoreAPI.set_pet_vaccinated(params={'petId': 5.0, 'vaccinated': True})
+            PetstoreAPI.set_pet_vaccinated(params={'petId': 2.5, 'vaccinated': False})
+        self.assertEqual(
+            [request.request.url for request in sent],
+            ['https://petstore.test/v1/pets/5/vaccinated/true', 'https://petstore.test/v1/pets/2.5/vaccinated/false'],
+        )
+
+    def test_query_numbers_as_javascript_writes_them(self) -> None:
+        self.assertEqual(RustSweepRPC.get_numeric_query(query={'limit': 10.0}), {'search': '?limit=10'})
+
+    def test_what_a_response_that_is_not_json_comes_back_as(self) -> None:
+        # bytes, unless the type is text/* or names a charset: then str, UTF-8 unless the charset says otherwise
+        cases: List[Any] = [
+            ('application/octet-stream', b'\x80\x81', b'\x80\x81'),
+            ('text/csv', 'Zoë'.encode('utf-8'), 'Zoë'),
+            ('text/plain; charset=iso-8859-1', 'Zoë'.encode('latin-1'), 'Zoë'),
+            ('application/xml; charset="utf-8"', '<a>Zoë</a>'.encode('utf-8'), '<a>Zoë</a>'),
+            ('application/problem+json', b'{"ok":true}', {'ok': True}),
+        ]
+        for content_type, body, expected in cases:
+            with self.subTest(content_type):
+                with fake_transport(lambda request: (200, {'Content-Type': content_type}, body)):
+                    self.assertEqual(ClientSweepRPC.get_content_type(api_root=FAKE_ROOT), expected)
+
+    def test_json_lines_media_types(self) -> None:
+        for media_type in ['application/jsonl', 'application/jsonlines', 'application/x-ndjson']:
+            with self.subTest(media_type):
+                with fake_transport(lambda request: (200, {'Content-Type': media_type}, b'{"n":1}\n{"n":2}\n')):
+                    self.assertEqual(list(ClientSweepRPC.get_falsy_items(api_root=FAKE_ROOT)), [{'n': 1}, {'n': 2}])
 
 
 if __name__ == "__main__":

@@ -32,7 +32,7 @@ When the controller is mounted in a [segment](/segment), the same procedure is a
 import { UserRPC } from '@/client';
 
 const user = await UserRPC.getUser({
-  params: { id: '69' },
+  params: { id: '123e4567-e89b-12d3-a456-426614174000' },
   disableClientValidation: true, // disables client-side validation
   meta: { hello: 'world' }, // available as xMetaHeader metadata
 });
@@ -46,7 +46,7 @@ Calling the procedure with `fn` runs it in the current evaluation context — no
 import UserController from '@/modules/user/user-controller';
 
 const user = await UserController.getUser.fn({
-  params: { id: '69' },
+  params: { id: '123e4567-e89b-12d3-a456-426614174000' },
   disableClientValidation: true, // disables validation
   meta: { hello: 'world' }, // available as root metadata
 });
@@ -65,7 +65,7 @@ import UserController from '@/modules/user/user-controller';
 
 export default async function UserPage() {
   const user = await UserController.getUser.fn({
-    params: { id: '69' },
+    params: { id: '123e4567-e89b-12d3-a456-426614174000' },
   });
 
   return (
@@ -103,13 +103,13 @@ const tools = deriveTools({
   modules: { UserController },
 });
 
-console.log(tools); // [{ name, description, parameters, execute }, ...]
+console.log(tools); // [{ name, description, inputSchema, execute, ... }, ...]
 ```
 
 <a name="rules"></a>
 ## Rules of Locally Called Procedures
 
-`fn` functions do not imitate the `Request` object but partially implement the `VovkRequest` interface by exposing only the [custom `vovk` property](/req-vovk) with `async vovk.body()`, `vovk.query()`, `vovk.params()`, and `vovk.meta()`. In other words, properties such as `req.url` or `req.headers` are not defined in the local procedure context. A suitable `req` signature looks like `Pick<VovkRequest<TBody, TQuery, TParams>, 'vovk'>{:ts}`.
+`fn` functions do not imitate the `Request` object but partially implement the `VovkRequest` interface by exposing only the [custom `vovk` property](/req-vovk) with `async vovk.body()`, `vovk.query()`, `vovk.params()`, and `vovk.meta()`. In other words, properties such as `req.url` or `req.headers` are not defined in the local procedure context. A suitable `req` signature looks like `Pick<VovkRequest<TBody, TQuery, TParams>, 'vovk'>{:ts}`. `vovk.body()` reads a `FormData{:ts}`, `URLSearchParams{:ts}`, `Blob{:ts}`, `ArrayBuffer{:ts}` or typed array body as the server reads a request that carries it, by the content type the RPC client would send; any other body is passed as it is.
 
 To ensure that the implemented HTTP handler can also be called with `fn`, you can use request object destructuring when defining the handler to use only the `vovk` property:
 
@@ -213,6 +213,8 @@ import UserProcedures from './user-procedures';
 @prefix('users')
 export default class UserController {
   @post('{id}')
-  static updateUser = UserProcedures.updateUser.bind(UserProcedures);
+  static updateUser = UserProcedures.updateUser;
 }
 ```
+
+Assign the procedure itself. `.bind()` returns a plain function: it has no `fn`, and the emitted schema loses the procedure's validation, which client-side validation, OpenAPI, the Python and Rust clients and AI tools read.

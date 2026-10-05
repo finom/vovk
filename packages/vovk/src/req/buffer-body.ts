@@ -2,7 +2,8 @@ const buffered = new WeakMap<Request, Promise<Request>>();
 
 /**
  * Reads the body once and makes every body method replay it, so a decorator, the segment's onBefore, a procedure
- * and the handler can each read it. Calls after the first share its copy.
+ * and the handler can each read it. Calls after the first share its copy. req.clone() and the body getter copy it too,
+ * new Request(req) can't: it takes the request's own body, which is read.
  */
 export function bufferBody<T extends Request>(req: T): Promise<T> {
   let promise = buffered.get(req);
@@ -36,6 +37,8 @@ async function replayBody<T extends Request>(req: T): Promise<T> {
   req.arrayBuffer = () => blob.arrayBuffer();
   req.bytes = () => replay().bytes();
   req.formData = () => replay().formData();
+  // a body given to the constructor skips the check that the request's own one is unread
+  if (hasBody) req.clone = () => new Request(req, { body: blob });
 
   return req;
 }

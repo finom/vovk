@@ -12,7 +12,7 @@
     "prebuild": "vovk generate && tsx ./scripts/generateContext/index.ts",
     "start": "next start",
     "lint": "biome check",
-    "output-cli": "FORCE_COLOR=1 npx vovk-cli init@draft --channel=draft | npx ansi-to-html > output.html",
+    "output-cli": "FORCE_COLOR=1 npx vovk-cli@beta init --channel=beta | npx ansi-to-html > output.html",
     "generate": "vovk generate",
     "postbuild": "pagefind --site .next/server/app --output-path out/_pagefind",
     "update-mdx-github-codeblocks": "tsx ./scripts/updateMDXFilesWithGithubContent.ts",

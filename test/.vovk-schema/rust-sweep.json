@@ -79,7 +79,8 @@
               },
               "required": [
                 "id"
-              ]
+              ],
+              "additionalProperties": false
             }
           },
           "path": "numeric/{id}",
@@ -136,6 +137,24 @@
             }
           },
           "path": "query-array",
+          "httpMethod": "GET"
+        },
+        "getNumericQuery": {
+          "validation": {
+            "query": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "object",
+              "properties": {
+                "limit": {
+                  "type": "number"
+                }
+              },
+              "required": [
+                "limit"
+              ]
+            }
+          },
+          "path": "numeric-query",
           "httpMethod": "GET"
         }
       }

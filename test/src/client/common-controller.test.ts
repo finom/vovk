@@ -137,7 +137,7 @@ describe('Client with composed RPC client', () => {
 
     ok(result.response instanceof Response, 'Response is instance of Response');
     deepStrictEqual(result.init.headers, {
-      accept: 'application/jsonl, application/json',
+      accept: 'application/jsonl, application/jsonlines, application/x-ndjson, application/json',
       'x-vovk-test': 'world',
       'x-vovk-fetcher-header': 'my-header-value',
       'x-success-message': 'Success',
@@ -477,13 +477,13 @@ describe('Client with composed RPC client', () => {
     deepStrictEqual(((await next.json()) as { query: Record<string, unknown> }).query, { safe: 'ok' });
   });
 
-  it('Turns a scalar into a container when a later key nests under it', async () => {
+  it('Turns a scalar into a container that keeps it when a later key nests under it', async () => {
     const getURL = CommonControllerRPC.getNestedQuery.getURL as (options: { apiRoot: string }) => string;
     const endpoint = getURL({ apiRoot });
     const response = await fetch(`${endpoint}?a=1&a[b]=2`);
 
     strictEqual(response.status, 200);
-    deepStrictEqual(((await response.json()) as { query: Record<string, unknown> }).query, { a: { b: '2' } });
+    deepStrictEqual(((await response.json()) as { query: Record<string, unknown> }).query, { a: { 0: '1', b: '2' } });
   });
 
   it('Does not let a query index size a huge array', async () => {

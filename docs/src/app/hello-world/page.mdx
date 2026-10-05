@@ -1,7 +1,5 @@
 import { Tabs } from 'nextra/components';
 import IFrame from './iframe';
-import Asciinema from '../../components/asciinema-player';
-import NoSSR from '../../components/no-ssr';
 
 # "Hello World" Example
 
@@ -16,7 +14,7 @@ The "Hello World" app at [hello-world.vovk.dev](https://hello-world.vovk.dev/) i
 - Back-end:
   - `UserController` with an `updateUser` method (POST `/api/users/{id}`).
   - `StreamController` with a JSONLines `streamTokens` handler (GET `/api/streams/tokens`).
-  - `OpenApiController` with `getSpec` (GET `/api/static/openapi/spec.json`), serving the generated OpenAPI spec. Documentation is viewable at the [`/openapi` page](https://hello-world.vovk.dev/openapi).
+  - `OpenApiController` with `getSpec` (GET `/api/static/openapi.json`), serving the generated OpenAPI spec. Documentation is viewable at the [`/openapi` page](https://hello-world.vovk.dev/openapi).
 - Front-end:
   - A form plus a JSONLines streaming demo above it.
 - Configuration:
@@ -50,10 +48,10 @@ Then open [http://localhost:3000](http://localhost:3000).
 - [Composed](/composed) and [segmented](/segmented) [TypeScript](/typescript) clients.
 - [JSONLines](/jsonlines) streaming.
 - [Type inference](/inference) between service and controller layers.
-- `useQuery` / `useMutation` usage with [`queryKey`](/typescript#querykey).
+- `useQuery` / `useMutation` usage with [`queryKey`](/typescript#react-query).
 - TypeScript client [bundle](/bundle) published on [npm](https://npmjs.com/package/vovk-hello-world) (see [bundlephobia](https://bundlephobia.com/package/vovk-hello-world)).
 - Experimental [Rust](/rust) and [Python](/python) clients published on [crates.io](https://crates.io/crates/vovk_hello_world) / [PyPI](https://pypi.org/project/vovk-hello-world/).
-- [OpenAPI spec](/openapi) served from a [static segment](/segment/introduction) and rendered via [Scalar](https://scalar.com/).
+- [OpenAPI spec](/openapi) served from a [static segment](/static-segment) and rendered via [Scalar](https://scalar.com/).
 
 ## Live Demo
 
@@ -69,7 +67,7 @@ The controller method uses `@post` to map POST and `procedure()` for Zod validat
 
 The service method infers parameter types from the procedure, returning the service method result directly and avoiding implicit `any` self-reference issues.
 
-<Tabs items={['UserController.ts', 'UserService.ts', 'route.ts']}>
+<Tabs items={['user-controller.ts', 'user-service.ts', 'route.ts']}>
 <Tabs.Tab>
 ```ts showLineNumbers copy filename="src/modules/user/user-controller.ts" source="examples/hello-world"
 import { operation, post, prefix, procedure } from 'vovk';
@@ -202,7 +200,7 @@ export const { GET, POST, PATCH, PUT, HEAD, OPTIONS, DELETE } = initSegment({
 
 `/api/streams/tokens` streams tokens using a controller generator method that delegates with `yield*` to the service. Each streamed item is validated via the `iteration` schema. Delays are simulated with `setTimeout`.
 
-<Tabs items={['StreamController.ts', 'StreamService.ts', 'route.ts']}>
+<Tabs items={['stream-controller.ts', 'stream-service.ts', 'route.ts']}>
 <Tabs.Tab>
 ```ts showLineNumbers copy filename="src/modules/stream/stream-controller.ts" source="examples/hello-world"
 import { get, operation, prefix, procedure } from 'vovk';
@@ -283,7 +281,7 @@ export const { GET, POST, PATCH, PUT, HEAD, OPTIONS, DELETE } = initSegment({
 
 The demo uses [@tanstack/react-query](https://www.npmjs.com/package/@tanstack/react-query) for both standard requests and streaming.
 
-<Tabs items={['index.tsx', 'UserFormDemo.tsx', 'StreamDemo.tsx']}>
+<Tabs items={['index.tsx', 'user-form-demo.tsx', 'stream-demo.tsx']}>
 <Tabs.Tab>
 ```ts showLineNumbers copy filename="src/components/demo/index.tsx" source="examples/hello-world"
 'use client';
@@ -626,8 +624,8 @@ The original package.json is used to populate metadata (`repository`, `homepage`
     "build": "next build",
     "start": "next start",
     "lint": "biome check",
-    "test:node": "node --experimental-strip-types --test --test-concurrency=1",
-    "test:python": "python3 -m pip install -q -r test/python/requirements.txt && python3 -m unittest discover -s test/python -p '*_test.py'",
+    "test:node": "tsx --test --test-concurrency=1",
+    "test:python": "python3 -m pip install -q -r test/python/requirements.txt && python3 -m unittest discover -s test/python -p local_test.py && python3 -m unittest discover -s test/python -p packaged_test.py",
     "test:rust": "RUST_BACKTRACE=full RUST_TEST_THREADS=1 cargo test --manifest-path ./test/rust/Cargo.toml --tests -- --nocapture --show-output",
     "pretest": "next build",
     "test": "concurrently 'next start' \"sleep 10 && printf '\\n\\033[1;96mNode tests\\033[0m\\n' && npm run test:node && printf '\\n\\033[1;96mPython tests\\033[0m\\n' && npm run test:python && printf '\\n\\033[1;96mRust tests\\033[0m\\n' && npm run test:rust\" --kill-others --success first",
@@ -659,7 +657,7 @@ The original package.json is used to populate metadata (`repository`, `homepage`
     "@tanstack/react-query": "^5.101.4",
     "ajv": "^8.20.0",
     "ajv-errors": "^3.0.0",
-    "next": "^16.3.0",
+    "next": "^16.3.6",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
     "vovk": "^4.0.0-beta.0",
@@ -676,6 +674,7 @@ The original package.json is used to populate metadata (`repository`, `homepage`
     "prettier": "^3.9.6",
     "tailwindcss": "^4.3.3",
     "tsdown": "^0.22.14",
+    "tsx": "^4.23.7",
     "typescript": "^5",
     "vovk-cli": "^0.3.0-beta.0",
     "vovk-hello-world-published": "npm:vovk-hello-world@^0.0.88",
@@ -692,7 +691,7 @@ The original package.json is used to populate metadata (`repository`, `homepage`
 
 The [OpenAPI specification](https://hello-world.vovk.dev/api/static/openapi.json) is served by a `GET` endpoint returning the generated spec (`openapi` from `@/client/openapi`).
 
-<Tabs items={['OpenApiController.ts', 'route.ts']}>
+<Tabs items={['openapi-controller.ts', 'route.ts']}>
 <Tabs.Tab>
 ```ts showLineNumbers copy filename="src/modules/static/openapi/openapi-controller.ts" source="examples/hello-world"
 import { get, operation } from 'vovk';
@@ -719,10 +718,13 @@ const controllers = {
 };
 
 export type Controllers = typeof controllers;
+
+export const dynamic = 'force-static';
+
 export function generateStaticParams() {
   return controllersToStaticParams(controllers);
 }
-export const { GET, OPTIONS } = initSegment({
+export const { GET } = initSegment({
   segmentName: 'static',
   emitSchema: true,
   controllers,
@@ -739,30 +741,16 @@ The spec includes Scalar‑compatible samples you can reuse immediately.
 <a name="bundle" />
 ## Building and Packaging
 
-<div className="mt-4">
-  <NoSSR>
-    <Asciinema src="/asciinema/hello-world-patch.cast" />
-  </NoSSR>
-</div>
-
 This example also demonstrates how to quickly produce distributable packages published on [npm](https://www.npmjs.com/package/vovk-hello-world), [PyPI](https://pypi.org/project/vovk-hello-world/), and [crates.io](https://crates.io/crates/vovk_hello_world). The provided [templates](/templates) compile ready-to-use packages with language-specific files such as [package.json](https://github.com/finom/vovk/blob/main/examples/hello-world/dist/package.json), [Cargo.toml](https://github.com/finom/vovk/blob/main/examples/hello-world/dist_rust/Cargo.toml), and [pyproject.toml](https://github.com/finom/vovk/blob/main/examples/hello-world/dist_python/pyproject.toml), as well as README files that use code samples served as API/client documentation.
 
-`npm run patch`:
-
-1. Verifies a clean working tree.
-2. Bumps the patch version.
-3. Triggers `postversion` to regenerate clients, bundle TypeScript, create package files and README files, publish all packages, and create a commit + tag.
+`vovk generate` writes the Python and Rust packages to **dist_python** and **dist_rust**, as `composedClient.fromTemplates` lists `py` and `rs`, and `vovk bundle` builds the npm package into **dist**. Each package is published with its own script:
 
 ```json
 "scripts": {
   // ...
   "publish:node": "npm publish ./dist",
   "publish:rust": "cargo publish --manifest-path dist_rust/Cargo.toml --allow-dirty",
-  "publish:python": "python3 -m build ./dist_python --wheel --sdist && python3 -m twine upload ./dist_python/dist/*",
-  "git-tag": "git add . && git commit -m \"chore: release v$(node -p \"require('./package.json').version\")\" && git tag v$(node -p \"require('./package.json').version\")",
-  "check-uncommitted": "git diff --quiet && git diff --cached --quiet || (echo '❌ Uncommitted changes!' && exit 1)",
-  "postversion": "vovk generate && vovk bundle && npm run publish:node && npm run publish:rust && npm run publish:python && npm run git-tag",
-  "patch": "npm run check-uncommitted && npm version patch --no-git-tag-version"
+  "publish:python": "python3 -m build ./dist_python --wheel --sdist && python3 -m twine upload ./dist_python/dist/*"
 }
 ```
 
@@ -821,12 +809,14 @@ The generated package files:
   </Tabs.Tab>
   <Tabs.Tab>
 ```toml showLineNumbers copy filename="dist_rust/Cargo.toml" source="examples/hello-world"
-# Generated by vovk-cli v0.0.1-beta.87 at 2026-03-10T14:02:59.112Z
+# Generated by vovk-cli v0.3.0-beta.0
 
 [package]
 name = "vovk_hello_world"
 version = "0.0.88"
 edition = "2021"
+rust-version = "1.85"
+resolver = "3"
 description = 'A "Hello World!" app built with Next.js, Vovk.ts and Zod. For details, visit https://vovk.dev/hello-world'
 license = "MIT"
 repository = "https://github.com/finom/vovk.git"
@@ -838,14 +828,13 @@ keywords = [ "vovk", "openapi", "zod", "api" ]
 bugs = "https://github.com/finom/vovk/issues"
 
 [dependencies]
-serde_json = "1.0"
+serde_json = "1.0.143"
 futures-util = "0.3"
-jsonschema = "0.17"
 urlencoding = "2.1"
 once_cell = "1.17"
 
   [dependencies.serde]
-  version = "1.0"
+  version = "1.0.164"
   features = [ "derive" ]
 
   [dependencies.reqwest]
@@ -859,12 +848,16 @@ once_cell = "1.17"
   [dependencies.tokio-util]
   version = "0.7"
   features = [ "codec" ]
+
+  [dependencies.jsonschema]
+  version = "0.57"
+  default-features = false
 ```
 *[The code above is fetched from GitHub repository.](https://github.com/finom/vovk/blob/main/examples/hello-world/dist_rust/Cargo.toml)*
   </Tabs.Tab>
   <Tabs.Tab>
 ```toml showLineNumbers copy filename="dist_python/pyproject.toml" source="examples/hello-world"
-# Generated by vovk-cli v0.0.1-beta.87 at 2026-03-10T14:02:59.110Z
+# Generated by vovk-cli v0.3.0-beta.0
 
 [build-system]
 requires = [ "hatchling" ]
@@ -874,9 +867,13 @@ build-backend = "hatchling.build"
 name = "vovk_hello_world"
 version = "0.0.88"
 description = 'A "Hello World!" app built with Next.js, Vovk.ts and Zod. For details, visit https://vovk.dev/hello-world'
-requires-python = ">=3.8"
+requires-python = ">=3.9"
 keywords = [ "vovk", "openapi", "zod", "api" ]
-dependencies = [ "requests", "jsonschema", "rfc3987", "urllib3==1.26.15" ]
+dependencies = [
+  "requests",
+  "jsonschema[format-nongpl]",
+  "typing_extensions>=4.0.0; python_version < '3.11'"
+]
 readme = "README.md"
 
   [project.license]
@@ -901,7 +898,6 @@ where = ["src"]
 "*" = ["py.typed"]
 
 [tool.mypy]
-python_version = "3.8"
 warn_return_any = true
 warn_unused_configs = true
 ```

@@ -1,0 +1,117 @@
+{
+  "$schema": "https://vovk.dev/api/schema/v3/segment.json",
+  "emitSchema": true,
+  "segmentName": "client-runtime",
+  "segmentType": "segment",
+  "controllers": {
+    "ClientRuntimeRPC": {
+      "rpcModuleName": "ClientRuntimeRPC",
+      "originalControllerName": "ClientRuntimeController",
+      "prefix": "runtime",
+      "handlers": {
+        "getDownload": {
+          "validation": {
+            "query": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "object",
+              "properties": {
+                "kind": {
+                  "type": "string",
+                  "enum": [
+                    "binary",
+                    "csv"
+                  ]
+                },
+                "size": {
+                  "type": "string",
+                  "pattern": "^\\d+$"
+                }
+              },
+              "required": [
+                "kind",
+                "size"
+              ]
+            }
+          },
+          "path": "download",
+          "httpMethod": "GET"
+        },
+        "getSetCookie": {
+          "path": "set-cookie",
+          "httpMethod": "GET"
+        },
+        "getRequestHeaders": {
+          "path": "request-headers",
+          "httpMethod": "GET"
+        },
+        "getBigItem": {
+          "validation": {
+            "query": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "object",
+              "properties": {
+                "size": {
+                  "type": "string",
+                  "pattern": "^\\d+$"
+                }
+              },
+              "required": [
+                "size"
+              ]
+            },
+            "iteration": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "value"
+              ]
+            }
+          },
+          "path": "big-item",
+          "httpMethod": "GET"
+        },
+        "getSlowItems": {
+          "validation": {
+            "query": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "object",
+              "properties": {
+                "count": {
+                  "type": "string",
+                  "pattern": "^\\d+$"
+                },
+                "pause": {
+                  "type": "string",
+                  "pattern": "^\\d+$"
+                }
+              },
+              "required": [
+                "count",
+                "pause"
+              ]
+            },
+            "iteration": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "object",
+              "properties": {
+                "value": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "value"
+              ]
+            }
+          },
+          "path": "slow-items",
+          "httpMethod": "GET"
+        }
+      }
+    }
+  }
+}

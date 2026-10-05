@@ -1,6 +1,6 @@
 'use client';
 import { useQuery } from '@tanstack/react-query';
-import { AdminRPC } from '@/client';
+import { AdminRPC } from '@/client/admin';
 import Demo from '@/components/demo';
 
 export default function AdminTenantPage() {

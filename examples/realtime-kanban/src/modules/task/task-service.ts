@@ -23,10 +23,11 @@ export default class TaskService {
   ) => {
     const task = await DatabaseService.prisma.task.create({ data });
 
+    // the row is saved either way; search skips it until an update brings its embedding
     await EmbeddingService.generateEntityEmbedding(
       task.entityType,
       task.id as TaskType['id'],
-    );
+    ).catch((error) => console.error('Embedding failed', error));
 
     return task as TaskType;
   };
@@ -40,7 +41,9 @@ export default class TaskService {
       data,
     });
 
-    await EmbeddingService.generateEntityEmbedding(task.entityType, id);
+    await EmbeddingService.generateEntityEmbedding(task.entityType, id).catch(
+      (error) => console.error('Embedding failed', error),
+    );
 
     return task as TaskType;
   };

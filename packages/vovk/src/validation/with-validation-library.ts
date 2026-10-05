@@ -1,7 +1,9 @@
 import { HttpException } from '../core/http-exception.js';
-import { JSONLinesResponder } from '../core/json-lines-responder.js';
+import { JSONLinesResponder, setResponderHooks } from '../core/json-lines-responder.js';
 import { setHandlerSchema } from '../core/set-handler-schema.js';
 import { bufferBody } from '../req/buffer-body.js';
+import { getMediaType } from '../req/get-media-type.js';
+import { parseBody } from '../req/parse-body.js';
 import { parseForm } from '../req/parse-form.js';
 import { reqMeta } from '../req/req-meta.js';
 import { validateContentType } from '../req/validate-content-type.js';
@@ -11,6 +13,9 @@ import type { VovkOperationObject } from '../types/operation.js';
 import type { VovkRequest } from '../types/request.js';
 import type { KnownAny } from '../types/utils.js';
 import type { BodyTypeFromContentType, ContentType, VovkTypedProcedure } from '../types/validation.js';
+import { fileNameToDisposition } from '../utils/file-name-to-disposition.js';
+import { isJSONObject } from '../utils/map-json-schema-refs.js';
+import { getBinaryContentType } from '../utils/media-types.js';
 
 const validationTypes: VovkValidationType[] = ['body', 'query', 'params', 'output', 'iteration'] as const;
 
@@ -31,6 +36,61 @@ const hasBody = (req: VovkRequestAny) => {
 
 // fn() calls made without a body, the local counterpart of a request without one
 const callsWithoutBody = new WeakSet<object>();
+
+// fn() reads a body as the server reads a request that carries it: a form or bytes by the content type the client
+// sends them with, any other value as it is
+const parseFnBody = async (body: unknown, contentType: string[] | undefined) => {
+  if (body instanceof FormData) return parseForm(body);
+  const isBytes = body instanceof Blob || body instanceof ArrayBuffer || ArrayBuffer.isView(body);
+  if (!isBytes && !(body instanceof URLSearchParams)) return body ?? null;
+  const declared = (contentType ?? ['application/json']).map((type) => type.toLowerCase());
+  const type =
+    body instanceof URLSearchParams
+      ? 'application/x-www-form-urlencoded'
+      : getBinaryContentType(body instanceof Blob ? body.type : '', declared);
+  const headers = {
+    'content-type': type,
+    ...(body instanceof File ? { 'content-disposition': fileNameToDisposition(body.name) } : {}),
+  };
+  return parseBody(new Request('http://localhost', { method: 'POST', body: body as BodyInit, headers }));
+};
+
+// whether a JSON Schema takes an array, or null, and no single value
+const takesArray = (schema: unknown): boolean => {
+  if (!isJSONObject(schema)) return false;
+  if (schema.type !== undefined) {
+    const types = [schema.type].flat();
+    return types.includes('array') && types.every((type) => type === 'array' || type === 'null');
+  }
+  const branches = schema.anyOf ?? schema.oneOf;
+  return (
+    Array.isArray(branches) &&
+    branches.some(takesArray) &&
+    branches.every((branch) => takesArray(branch) || (isJSONObject(branch) && branch.type === 'null'))
+  );
+};
+
+// a key given once is a string, so where the query schema takes an array, as in the OpenAPI form style a client sends
+// one item as tags=a, it is read as a one-item array; also in nested objects
+const withLoneValuesAsArrays = (query: unknown, schema: unknown): unknown => {
+  if (!isJSONObject(query) || !isJSONObject(schema) || !isJSONObject(schema.properties)) return query;
+  const { properties } = schema;
+  return Object.fromEntries(
+    Object.entries(query).map(([key, value]) => {
+      const property = Object.hasOwn(properties, key) ? properties[key] : undefined;
+      const isLoneItem = typeof value === 'string' && takesArray(property);
+      return [key, isLoneItem ? [value] : withLoneValuesAsArrays(value, property)];
+    })
+  );
+};
+
+// a buffered body read as JSON that has no bytes, as fetch() sends a JSON content type for a call without a body
+const isEmptyJSONBody = async (req: VovkRequestAny) => {
+  const contentType = req.headers.get('content-type');
+  const mediaType = contentType ? getMediaType(contentType) : null;
+  const isJSON = !contentType || mediaType === 'application/json' || !!mediaType?.endsWith('+json');
+  return isJSON && (await req.blob()).size === 0;
+};
 
 export function withValidationLibrary<
   THandle extends VovkTypedProcedure<
@@ -88,6 +148,10 @@ export function withValidationLibrary<
   preferTransformed: boolean | undefined;
   operationObject: VovkOperationObject | undefined;
 }) {
+  // refused where the procedure is defined, as the handler would run before the call fails
+  if (output && iteration) {
+    throw new Error("Output and iteration are mutually exclusive. You can't use them together.");
+  }
   preferTransformed = preferTransformed ?? true;
   const disableServerSideValidationKeys =
     disableServerSideValidation === false
@@ -97,29 +161,53 @@ export function withValidationLibrary<
         : (disableServerSideValidation ?? []);
   const skipSchemaEmissionKeys =
     skipSchemaEmission === false ? [] : skipSchemaEmission === true ? validationTypes : (skipSchemaEmission ?? []);
+  // made on the first request; a schema JSON Schema can't describe leaves the query as it is
+  let querySchema: unknown;
+  const getQuerySchema = () => {
+    if (querySchema === undefined) {
+      try {
+        querySchema = (query && toJSONSchema?.(query, { validationType: 'query' })) ?? null;
+      } catch {
+        querySchema = null;
+      }
+    }
+    return querySchema;
+  };
   const outputHandler = async (req: VovkRequestAny, handlerParams: Parameters<THandle>[1]) => {
     const { __disableClientValidation } = req.vovk.meta<Meta>();
+    const onBeforeSend =
+      iteration && !disableServerSideValidationKeys.includes('iteration') && !__disableClientValidation
+        ? async (item: unknown, i: number) => {
+            let parsed: unknown;
+            if (validateEachIteration || i === 0) {
+              parsed = (await validate(item, iteration, { validationType: 'iteration', req, status: 200, i })) ?? item;
+            } else {
+              parsed = item;
+            }
+            return preferTransformed ? parsed : item;
+          }
+        : undefined;
+    // a responder made with req checks a line the handler sends before it returns the responder
+    if (onBeforeSend) setResponderHooks(req, { onBeforeSend });
     const data = await handle(req, handlerParams);
     if (__disableClientValidation) {
       return data;
     }
-    if (output && iteration) {
-      throw new HttpException(
-        HttpStatus.INTERNAL_SERVER_ERROR,
-        "Output and iteration are mutually exclusive. You can't use them together."
-      );
-    }
 
     if (output && !disableServerSideValidationKeys.includes('output')) {
-      // only undefined means a missing return, falsy values like false or 0 are valid outputs
-      if (data === undefined) {
-        throw new HttpException(
-          HttpStatus.INTERNAL_SERVER_ERROR,
-          'Output is required. You probably forgot to return something from your handler.'
-        );
+      let parsed: unknown;
+      try {
+        parsed = (await validate(data, output, { validationType: 'output', req })) ?? data;
+      } catch (error) {
+        // undefined the schema refuses is a missing return; falsy values like false or 0 are outputs
+        if (data === undefined) {
+          throw new HttpException(
+            HttpStatus.INTERNAL_SERVER_ERROR,
+            'Output is required. You probably forgot to return something from your handler.'
+          );
+        }
+        throw error;
       }
-
-      const parsed = (await validate(data, output, { validationType: 'output', req })) ?? data;
       return preferTransformed ? parsed : data;
     }
 
@@ -138,15 +226,8 @@ export function withValidationLibrary<
       }
 
       if (data instanceof JSONLinesResponder) {
-        data.onBeforeSend = async (item, i) => {
-          let parsed: unknown;
-          if (validateEachIteration || i === 0) {
-            parsed = (await validate(item, iteration, { validationType: 'iteration', req, status: 200, i })) ?? item;
-          } else {
-            parsed = item;
-          }
-          return preferTransformed ? parsed : item;
-        };
+        // one made without req gets the check here
+        if (onBeforeSend) data.onBeforeSend = onBeforeSend;
 
         return data;
       }
@@ -165,7 +246,7 @@ export function withValidationLibrary<
           yield preferTransformed ? parsed : item;
         }
       })();
-    } else if (validateEachIteration) {
+    } else if (validateEachIteration && !iteration) {
       throw new HttpException(
         HttpStatus.INTERNAL_SERVER_ERROR,
         'validateEachIteration is set but iteration is not defined.'
@@ -195,7 +276,8 @@ export function withValidationLibrary<
           // a wrong content type gets its 415 before the body is read
           validateContentType(req, contentType ?? ['application/json']);
           if (isRequest) await bufferBody(req); // buffer the body to make it replayable for validation and actual parsing
-          data = await req.vovk.body();
+          // an empty JSON body is no body, empty text or an empty file is one
+          if (!isRequest || !(await isEmptyJSONBody(req))) data = await req.vovk.body();
         }
         const parsed = (await validate(data, body, { validationType: 'body', req })) ?? data;
         const instance = preferTransformed ? parsed : data;
@@ -203,7 +285,7 @@ export function withValidationLibrary<
       }
 
       if (query && !disableServerSideValidationKeys.includes('query')) {
-        const data = req.vovk.query();
+        const data = withLoneValuesAsArrays(req.vovk.query(), getQuerySchema());
         const parsed = (await validate(data, query, { validationType: 'query', req })) ?? data;
         const instance = preferTransformed ? parsed : data;
         req.vovk.query = () => instance;
@@ -259,22 +341,14 @@ export function withValidationLibrary<
   function fn<TReturnType = ReturnType<THandle>, TTransformed = never>(
     input?: FnInput | FnInputWithTransform<TTransformed>
   ): TReturnType | Promise<TTransformed> {
-    let bodyCache: unknown;
+    let parsedBody: Promise<unknown> | undefined;
 
     const fakeReq: Pick<
       VovkRequest<THandle['__types']['body'], THandle['__types']['query'], THandle['__types']['params']>,
       'vovk'
     > = {
       vovk: {
-        body: () => {
-          if (input && input.body instanceof FormData) {
-            bodyCache ??= parseForm(input.body);
-          } else {
-            bodyCache = input?.body;
-          }
-
-          return Promise.resolve(bodyCache ?? null);
-        },
+        body: () => (parsedBody ??= parseFnBody(input?.body, contentType)),
         query: () => input?.query ?? {},
         params: () => input?.params ?? {},
         meta: <T = KnownAny>(meta?: T | null) => reqMeta<T>(fakeReq, meta),
@@ -331,8 +405,8 @@ export function withValidationLibrary<
         enumerable: true,
         get: () => (bodyJSONSchema ??= getJSONSchema(body, 'body')),
       });
-    } else if (contentType && !skipSchemaEmissionKeys.includes('body')) {
-      // the declared types alone, so every client sends a body the server accepts
+    } else if (contentType) {
+      // the declared types alone, also when the body schema is skipped, so every client sends a body the server accepts
       validation.body = { 'x-contentType': contentType };
     }
     if (query && !skipSchemaEmissionKeys.includes('query')) {

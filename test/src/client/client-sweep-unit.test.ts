@@ -4,9 +4,19 @@ import { describe, it } from 'node:test';
 import { fileURLToPath } from 'node:url';
 import vm from 'node:vm';
 import ts from 'typescript';
-import { createFetcher, HttpException, progressive } from 'vovk';
+import {
+  createFetcher,
+  HttpException,
+  initSegment,
+  post,
+  prefix,
+  procedure,
+  progressive,
+  type VovkRequest,
+} from 'vovk';
 import { createRPC } from 'vovk/create-rpc';
 import { deepExtend, readableStreamToAsyncIterable, type VovkStreamAsyncIterable } from 'vovk/internal';
+import { z } from 'zod';
 import { validateOnClient } from '../../../packages/vovk-ajv/index.js';
 
 const streamOf = (chunks: Uint8Array[]) =>
@@ -55,6 +65,19 @@ const withFetch = async <T>(
   }
 };
 
+// a segment that answers the requests of rpcOf() in this process, routed as Next.js routes /api/[[...vovk]]
+const serve = (segmentName: string, controllers: Parameters<typeof initSegment>[0]['controllers']) => {
+  const handlers = initSegment({ segmentName, controllers });
+  return (url: string, init: RequestInit) => {
+    const req = new Request(new URL(url, 'http://localhost'), init);
+    // NextRequest's nextUrl, req.vovk.query() reads it
+    Object.defineProperty(req, 'nextUrl', { value: new URL(req.url) });
+    const vovk = new URL(req.url).pathname.split('/').slice(2).filter(Boolean).map(decodeURIComponent);
+    const method = (init.method ?? 'GET') as keyof typeof handlers;
+    return handlers[method](req, { params: Promise.resolve({ vovk }) }) as Promise<Response>;
+  };
+};
+
 describe('Client sweep, pure functions', () => {
   describe('deepExtend', () => {
     it('Merges an object made in another realm instead of replacing it', () => {
@@ -86,7 +109,7 @@ describe('Client sweep, pure functions', () => {
       const requests: string[] = [];
       const stubFetch = async (url: string, init: RequestInit) => {
         requests.push(`${url} ${init.body}`);
-        return { ...response, json: async () => ({ ok: true }) };
+        return { ...response, text: async () => '{"ok":true}' };
       };
       void [FormData, File, URLSearchParams];
       const { Buffer, fetch: originalFetch } = globalThis;
@@ -136,6 +159,73 @@ describe('Client sweep, pure functions', () => {
       const { users } = progressive(getStream) as unknown as { users: Promise<number[]> };
 
       deepStrictEqual(await users, [1]);
+    });
+
+    it('Lets progressive work where Promise.withResolvers is missing', async () => {
+      // Safari before 17.4, Chrome before 119 and Firefox before 121, which Next.js supports with no polyfill for it
+      const { withResolvers } = Promise;
+      const getStream = async () =>
+        readableStreamToAsyncIterable({
+          readableStream: streamOf([new TextEncoder().encode('{"users":[1]}\n{"tasks":[2]}\n')]),
+          abortController: new AbortController(),
+        }) as VovkStreamAsyncIterable<{ users: number[] } | { tasks: number[] }>;
+
+      try {
+        Reflect.deleteProperty(Promise, 'withResolvers');
+        const { users, tasks } = progressive(getStream) as unknown as Record<string, Promise<number[]>>;
+
+        deepStrictEqual(await users, [1]);
+        deepStrictEqual(await tasks, [2]);
+      } finally {
+        Promise.withResolvers = withResolvers;
+      }
+    });
+
+    it('Lets progressive take a key named after an Object.prototype member as any other key', async () => {
+      const progressiveOf = (text: string) =>
+        progressive(
+          async () =>
+            readableStreamToAsyncIterable({
+              readableStream: streamOf([new TextEncoder().encode(text)]),
+              abortController: new AbortController(),
+            }) as VovkStreamAsyncIterable<Record<string, unknown>>
+        ) as unknown as Record<string, Promise<unknown>>;
+      const read = (promise: unknown) =>
+        Promise.resolve(promise).then(
+          (value) => value,
+          (error: Error) => `rejected: ${error.message}`
+        );
+      // constructor, __proto__, toString, valueOf, hasOwnProperty…
+      const names = Object.getOwnPropertyNames(Object.prototype);
+      // what those keys reach through the prototype chain of a plain object
+      const targets = [
+        Object.prototype,
+        ...new Set(names.map((name) => Object.getOwnPropertyDescriptor(Object.prototype, name)?.value)),
+      ].filter((target) => typeof target === 'object' || typeof target === 'function');
+      const ownKeys = () => targets.map((target) => Object.getOwnPropertyNames(target).sort());
+      const keysBefore = ownKeys();
+
+      try {
+        const results: unknown[] = [];
+        for (const [i, name] of names.entries()) {
+          const result = progressiveOf(`{"${name}":${i}}\n{"users":[${i}]}\n`);
+          // the keys are taken right away, as a destructuring does
+          const [users, value] = [result.users, result[name]];
+          results.push([name, await read(users), await read(value)]);
+        }
+
+        deepStrictEqual(
+          { results, keys: ownKeys() },
+          { results: names.map((name, i) => [name, [i], i]), keys: keysBefore }
+        );
+      } finally {
+        // a key written to a shared object would leak into the other tests
+        targets.forEach((target, i) => {
+          for (const key of Object.getOwnPropertyNames(target)) {
+            if (!keysBefore[i].includes(key)) Reflect.deleteProperty(target, key);
+          }
+        });
+      }
     });
 
     it('Reads the stream only as fast as the iteration takes items', async () => {
@@ -519,6 +609,40 @@ describe('Client sweep, pure functions', () => {
       deepStrictEqual(urls, ['/api/bodies?q=1']);
     });
 
+    it('Calls the root of the origin when rootEntry is an empty string', async () => {
+      // rootEntry: '' serves the API from the domain root (/config#rootentry); the generated client passes no
+      // apiRoot without an origin, so the schema's rootEntry decides
+      const controllers = {
+        UserRPC: { rpcModuleName: 'UserRPC', prefix: 'users', handlers: { get: { path: '{id}', httpMethod: 'GET' } } },
+      };
+      const schema = {
+        segments: { '': { segmentName: '', emitSchema: true, controllers } },
+        meta: { config: { rootEntry: '' } },
+      };
+      const { get } = (createRPC as (...args: unknown[]) => unknown)(schema, '', 'UserRPC') as Record<string, TestCall>;
+      const urls: string[] = [];
+
+      await withFetch(
+        (url) => {
+          urls.push(url);
+          return Response.json({});
+        },
+        () => get({ params: { id: '1' } })
+      );
+
+      deepStrictEqual(
+        { getURL: get.getURL({ params: { id: '1' } }), urls },
+        { getURL: '/users/1', urls: ['/users/1'] }
+      );
+    });
+
+    it('Writes a Date param as its ISO string, as the query does', () => {
+      const { getDay } = rpcOf({ getDay: { path: 'days/{day}', httpMethod: 'GET' } });
+      const day = new Date('2026-10-02T10:20:30.456Z');
+
+      strictEqual(getDay.getURL({ params: { day } }), getDay.getURL({ params: { day: day.toISOString() } }));
+    });
+
     it('Gives null for a JSON response without a body', async () => {
       const rpc = rpcOf({
         exists: { path: '', httpMethod: 'HEAD' },
@@ -543,6 +667,16 @@ describe('Client sweep, pure functions', () => {
         strictEqual(await rpc.stream(), null);
         await rejects(rpc.missing(), (error) => error instanceof HttpException && error.statusCode === 404);
       });
+    });
+
+    it('Gives null for an empty JSON response sent without Content-Length', async () => {
+      // Next.js sends new Response(null) with a JSON content type chunked: a body with no bytes and no length
+      const chunked = () =>
+        new Response(new ReadableStream({ start: (controller) => controller.close() }), {
+          headers: { 'content-type': 'application/json' },
+        });
+
+      strictEqual(await withFetch(chunked, () => rpcOf(handlers).get()), null);
     });
 
     it('Parses any JSON media type in any case', async () => {
@@ -589,6 +723,233 @@ describe('Client sweep, pure functions', () => {
       )) as VovkStreamAsyncIterable<unknown>;
 
       deepStrictEqual(await stream.asPromise(), [{ n: 1 }, { n: 2 }]);
+    });
+
+    it('Streams an application/x-ndjson response as JSON Lines, as the Rust client does', async () => {
+      const result = await withFetch(
+        () => new Response('{"n":1}\n{"n":2}\n', { headers: { 'content-type': 'application/x-ndjson' } }),
+        () => rpcOf(handlers).get()
+      );
+
+      ok(!(result instanceof Response), 'The response is returned as is, not read as JSON Lines');
+      deepStrictEqual(await (result as VovkStreamAsyncIterable<unknown>).asPromise(), [{ n: 1 }, { n: 2 }]);
+    });
+
+    it('Sends null as a JSON body only to a body schema that accepts null', async () => {
+      const withBody = (body: object) => ({ path: '', httpMethod: 'POST', validation: { body } });
+      const object = { type: 'object', properties: { a: { type: 'string' } } };
+      const nullable = { anyOf: [object, { type: 'null' }] };
+      const rpc = rpcOf({
+        typeNull: withBody({ type: 'null' }),
+        typeList: withBody({ type: ['object', 'null'] }),
+        // OpenAPI 3.0, as a mixin carries it
+        nullableKeyword: withBody({ ...object, nullable: true }),
+        anyOf: withBody(nullable),
+        oneOf: withBody({ oneOf: nullable.anyOf }),
+        object: withBody(object),
+        contentTypeOnly: withBody({ 'x-contentType': ['application/json'] }),
+        multipart: withBody({ ...nullable, 'x-contentType': ['multipart/form-data'] }),
+      });
+      const sent: [string, unknown][] = [];
+
+      for (const name of Object.keys(rpc)) {
+        await withFetch(
+          (_url, init) => {
+            sent.push([name, init.body]);
+            return Response.json({});
+          },
+          () => rpc[name]({ body: null })
+        );
+      }
+
+      deepStrictEqual(sent, [
+        ['typeNull', 'null'],
+        ['typeList', 'null'],
+        ['nullableKeyword', 'null'],
+        ['anyOf', 'null'],
+        ['oneOf', 'null'],
+        ['object', undefined],
+        ['contentTypeOnly', undefined],
+        ['multipart', undefined],
+      ]);
+    });
+  });
+
+  describe('request bodies, sent to a segment in this process', () => {
+    it('Sends a null body to a procedure whose body is nullable', async () => {
+      class AssignController {
+        static assign = procedure({ body: z.object({ userId: z.string() }).nullable() }).handle(async (req) => ({
+          body: await req.vovk.body(),
+        }));
+      }
+      prefix('test')(AssignController);
+      post('assign')(AssignController, 'assign');
+      const segment = serve('nullable-body', { AssignController });
+      const rpc = rpcOf({
+        assign: { path: 'assign', httpMethod: 'POST', validation: AssignController.assign.schema.validation },
+      });
+
+      deepStrictEqual(await withFetch(segment, () => rpc.assign({ body: null })), { body: null });
+      deepStrictEqual(await withFetch(segment, () => rpc.assign({ body: { userId: 'u1' } })), {
+        body: { userId: 'u1' },
+      });
+    });
+
+    it('Sends no body for null to a procedure whose body is optional but not nullable', async () => {
+      // a model calling a derived tool sends null for a field it leaves out, and OpenAI's strict mode always does
+      class DraftController {
+        static save = procedure({ body: z.object({ title: z.string() }).optional() }).handle(async (req) => ({
+          body: (await req.vovk.body()) ?? 'none',
+          contentType: req.headers.get('content-type'),
+        }));
+      }
+      prefix('test')(DraftController);
+      post('drafts')(DraftController, 'save');
+      const segment = serve('optional-body', { DraftController });
+      const rpc = rpcOf({
+        save: { path: 'drafts', httpMethod: 'POST', validation: DraftController.save.schema.validation },
+      });
+      const validated: unknown[] = [];
+      const validateOnClient = (input: { body?: unknown }) => {
+        validated.push(input.body);
+        return input;
+      };
+
+      deepStrictEqual(await withFetch(segment, () => rpc.save({ body: null, validateOnClient })), {
+        body: 'none',
+        contentType: null,
+      });
+      // a custom validator sees no body either
+      deepStrictEqual(validated, [undefined]);
+    });
+
+    it('Sends a FormData body urlencoded when the procedure takes only urlencoded', async () => {
+      class LoginController {
+        static login = procedure({
+          contentType: 'application/x-www-form-urlencoded',
+          body: z.object({ username: z.string() }),
+        }).handle(async (req) => ({
+          body: await req.vovk.body(),
+          contentType: req.headers.get('content-type')?.split(';')[0],
+        }));
+      }
+      prefix('test')(LoginController);
+      post('login')(LoginController, 'login');
+      const segment = serve('urlencoded-form-data', { LoginController });
+      const rpc = rpcOf({
+        login: { path: 'login', httpMethod: 'POST', validation: LoginController.login.schema.validation },
+      });
+      // the client body types and the /content-type table allow FormData here
+      const form = new FormData();
+      form.append('username', 'ann');
+
+      deepStrictEqual(await withFetch(segment, () => rpc.login({ body: form })), {
+        body: { username: 'ann' },
+        contentType: 'application/x-www-form-urlencoded',
+      });
+    });
+
+    it('Sends an untyped Blob as JSON to a procedure that takes JSON by default', async () => {
+      const body = z.object({ title: z.string() });
+      const echo = async (req: VovkRequest) => ({
+        body: await req.vovk.body(),
+        contentType: req.headers.get('content-type')?.split(';')[0],
+      });
+      class NoteController {
+        static createJSON = procedure({ contentType: 'application/json', body }).handle(echo);
+        static create = procedure({ body }).handle(echo);
+      }
+      prefix('test')(NoteController);
+      post('notes-json')(NoteController, 'createJSON');
+      post('notes')(NoteController, 'create');
+      const segment = serve('default-json-blob', { NoteController });
+      const { createJSON, create } = NoteController;
+      const rpc = rpcOf({
+        createJSON: { path: 'notes-json', httpMethod: 'POST', validation: createJSON.schema.validation },
+        create: { path: 'notes', httpMethod: 'POST', validation: create.schema.validation },
+      });
+      const blob = new Blob([JSON.stringify({ title: 'hi' })]);
+      const sent = { body: { title: 'hi' }, contentType: 'application/json' };
+
+      // the /content-type table types a JSON body as TBody | Blob, and JSON is the default
+      deepStrictEqual(await withFetch(segment, () => rpc.createJSON({ body: blob })), sent);
+      deepStrictEqual(await withFetch(segment, () => rpc.create({ body: blob })), sent);
+    });
+
+    it('Sends bytes to a procedure that takes JSON or a file as the file type, as the Python and Rust clients do', async () => {
+      class AvatarController {
+        static upload = procedure({
+          contentType: ['application/json', 'image/png'],
+          body: z.union([z.object({ url: z.string() }), z.file()]),
+        }).handle(async (req) => ({
+          isFile: (await req.vovk.body()) instanceof File,
+          contentType: req.headers.get('content-type')?.split(';')[0],
+        }));
+      }
+      prefix('test')(AvatarController);
+      post('avatar')(AvatarController, 'upload');
+      const segment = serve('json-or-file', { AvatarController });
+      const rpc = rpcOf({
+        upload: { path: 'avatar', httpMethod: 'POST', validation: AvatarController.upload.schema.validation },
+      });
+      const png = new Uint8Array([137, 80, 78, 71]);
+
+      deepStrictEqual(await withFetch(segment, () => rpc.upload({ body: png })), {
+        isFile: true,
+        contentType: 'image/png',
+      });
+      deepStrictEqual(await withFetch(segment, () => rpc.upload({ body: new Blob([png]) })), {
+        isFile: true,
+        contentType: 'image/png',
+      });
+      // an object still goes as JSON
+      deepStrictEqual(await withFetch(segment, () => rpc.upload({ body: { url: 'a.png' } })), {
+        isFile: false,
+        contentType: 'application/json',
+      });
+    });
+
+    describe('the content type of bytes', () => {
+      const contentTypeOf = async (req: VovkRequest) => req.headers.get('content-type');
+      class BytesController {
+        static pngOrOctet = procedure({ contentType: ['image/png', 'application/octet-stream'] }).handle(contentTypeOf);
+        static anyApplication = procedure({ contentType: ['application/*'] }).handle(contentTypeOf);
+        static anyType = procedure({ contentType: ['*/*'] }).handle(contentTypeOf);
+      }
+      prefix('test')(BytesController);
+      post('png-or-octet')(BytesController, 'pngOrOctet');
+      post('any-application')(BytesController, 'anyApplication');
+      post('any-type')(BytesController, 'anyType');
+      const segment = serve('bytes-content-type', { BytesController });
+      const { pngOrOctet, anyApplication, anyType } = BytesController;
+      const rpc = rpcOf({
+        pngOrOctet: { path: 'png-or-octet', httpMethod: 'POST', validation: pngOrOctet.schema.validation },
+        anyApplication: { path: 'any-application', httpMethod: 'POST', validation: anyApplication.schema.validation },
+        anyType: { path: 'any-type', httpMethod: 'POST', validation: anyType.schema.validation },
+      });
+      const send = (name: string, body: unknown) => withFetch(segment, () => rpc[name]({ body }));
+      const png = new Uint8Array([137, 80, 78, 71]);
+
+      it('Sends untyped bytes as the first declared type, even when application/octet-stream is declared too', async () => {
+        strictEqual(await send('pngOrOctet', png), 'image/png');
+      });
+
+      it('Sends untyped bytes as the wildcard a procedure declares, application/* included', async () => {
+        strictEqual(await send('anyApplication', png.buffer), 'application/*');
+      });
+
+      it('Sends untyped bytes as application/octet-stream to a procedure that takes any type', async () => {
+        strictEqual(await send('anyType', new Blob([png])), 'application/octet-stream');
+      });
+
+      it('Sends a typed Blob as its own type when the procedure takes it', async () => {
+        strictEqual(
+          await send('pngOrOctet', new Blob([png], { type: 'application/octet-stream' })),
+          'application/octet-stream'
+        );
+        strictEqual(await send('anyApplication', new Blob(['%PDF'], { type: 'application/pdf' })), 'application/pdf');
+        strictEqual(await send('anyType', new Blob(['a,b'], { type: 'text/csv' })), 'text/csv');
+      });
     });
   });
 

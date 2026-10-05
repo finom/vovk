@@ -46,8 +46,8 @@ const config = {
     },
   },
   moduleTemplates: {
-    service: 'vovk-cli/module-templates/Service.ts.ejs',
-    controller: 'vovk-zod/module-templates/Controller.ts.ejs',
+    service: 'vovk-cli/module-templates/type/service.ts.ejs',
+    controller: 'vovk-cli/module-templates/zod/controller.ts.ejs',
   },
 };
 

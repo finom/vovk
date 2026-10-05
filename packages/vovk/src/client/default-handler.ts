@@ -13,9 +13,9 @@ export const defaultHandler = async ({ response, schema }: { response: Response;
   let result: unknown;
 
   try {
-    // HEAD answers, 204, 205 and 304 have no body, nor has one of zero length: nothing to parse
-    const isEmpty = response.body === null || response.headers.get('content-length') === '0';
-    result = isEmpty ? null : await response.json();
+    // HEAD answers, 204, 205 and 304 have no body, and one sent chunked may have no bytes and no length either
+    const text = response.body === null ? '' : await response.text();
+    result = text === '' ? null : JSON.parse(text);
   } catch (e) {
     // handle parsing errors
     throw new HttpException(response.status, (e as Error)?.message ?? DEFAULT_ERROR_MESSAGE);

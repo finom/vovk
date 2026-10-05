@@ -48,7 +48,7 @@ if (t.package.contributors && t.package.contributors.length) {
 data.project.dependencies = [
   "requests",
   "jsonschema[format-nongpl]",
-  // NotRequired is in typing from 3.11
+  // NotRequired is in typing from 3.11, TypeAlias from 3.10
   "typing_extensions>=4.0.0; python_version < '3.11'"
 ];
 
@@ -92,6 +92,5 @@ where = ["src"]
 "*" = ["py.typed"]
 
 [tool.mypy]
-python_version = "3.9"
 warn_return_any = true
 warn_unused_configs = true

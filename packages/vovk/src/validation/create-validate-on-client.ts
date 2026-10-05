@@ -28,7 +28,8 @@ function createValidateOnClient<TFetcherOptions>({
 }): VovkValidateOnClient<TFetcherOptions> {
   const validateOnClient = async function validateOnClient(input, validation, meta) {
     const newInput = { ...input };
-    if (input.body && validation.body) {
+    // '', 0, false and null are bodies to check, undefined is no body
+    if (input.body !== undefined && validation.body) {
       newInput.body = (await validate(input.body, validation.body, { ...meta, type: 'body' })) ?? input.body;
     }
 

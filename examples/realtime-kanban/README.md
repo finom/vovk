@@ -52,6 +52,18 @@ A built-in [text chat interface](https://vovk.dev/realtime-ui/text-ai) lets user
 
 <img src="https://raw.githubusercontent.com/finom/realtime-kanban/main/.repo-assets/kanban_text_chat.gif" alt="Chat-driven board updates with function calling" className='mt-4' />
 
+## Telegram bot
+
+The bot's webhook, `POST /api/bots/telegram/bot`, answers only when `TELEGRAM_BOT_TOKEN` and `TELEGRAM_WEBHOOK_SECRET` are set, and only to requests whose `X-Telegram-Bot-Api-Secret-Token` header holds the secret. `PASSWORD` doesn't cover it. Register the webhook with the same secret:
+
+```sh
+curl "https://api.telegram.org/bot$TELEGRAM_BOT_TOKEN/setWebhook" \
+  -d "url=https://your-app.example.com/api/bots/telegram/bot" \
+  -d "secret_token=$TELEGRAM_WEBHOOK_SECRET"
+```
+
+See the [Telegram article](https://vovk.dev/realtime-ui/telegram) for details.
+
 ## More info
 
 - [Overview](https://vovk.dev/realtime-ui/overview)

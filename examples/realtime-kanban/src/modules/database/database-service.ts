@@ -1,5 +1,6 @@
 import { PrismaNeon } from '@prisma/adapter-neon';
-import { PrismaClient } from '@prisma/client';
+import { Prisma, PrismaClient } from '@prisma/client';
+import { HttpException, HttpStatus } from 'vovk';
 import type { BaseEntity } from '@/types';
 import DatabaseEventsService, {
   type DBChange,
@@ -65,7 +66,12 @@ export default class DatabaseService {
                   `Unsupported database operation "${operation}" on model "${model}"`,
                 );
               }
-              const result = (await query(args)) as BaseEntity | BaseEntity[];
+              let result: BaseEntity | BaseEntity[];
+              try {
+                result = (await query(args)) as BaseEntity | BaseEntity[];
+              } catch (error) {
+                throw DatabaseService.toHttpException(error, model);
+              }
 
               const now = new Date().toISOString();
               let change: DBChange | null = null;
@@ -132,5 +138,26 @@ export default class DatabaseService {
           },
         },
       });
+  }
+
+  // a missing record, a taken unique value or a missing related record is the caller's error, not a 500
+  private static toHttpException(error: unknown, model: string) {
+    if (!(error instanceof Prisma.PrismaClientKnownRequestError)) return error;
+    switch (error.code) {
+      case 'P2025':
+        return new HttpException(HttpStatus.NOT_FOUND, `${model} not found`);
+      case 'P2002':
+        return new HttpException(
+          HttpStatus.CONFLICT,
+          `${model} with the same unique field already exists`,
+        );
+      case 'P2003':
+        return new HttpException(
+          HttpStatus.BAD_REQUEST,
+          `${model} refers to a record that doesn't exist`,
+        );
+      default:
+        return error;
+    }
   }
 }

@@ -4,7 +4,10 @@ const data = {
   package: {
     name: t.underscoredPackageName,
     version: t.package.version,
-    edition: "2021"
+    edition: "2021",
+    // the oldest Rust the crate builds on; resolver 3 picks dependency versions that build on it
+    "rust-version": "1.85",
+    resolver: "3"
   },
   dependencies: {
     // untagged variants, which mixed enums use, came in 1.0.164
