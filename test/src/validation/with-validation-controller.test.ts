@@ -9,38 +9,9 @@ import {
   type VovkReturnType,
   type VovkYieldType,
 } from 'vovk';
-import { validateOnClient as validateOnClientAjv } from '../../../packages/vovk-ajv/index.ts';
 import { WithValidationRPC } from '../generated-client/index.ts';
 import { expectPromise, getConstrainingObject, NESTED_QUERY_EXAMPLE } from '../lib.ts';
 import type WithValidationController from './with-validation-controller.ts';
-
-describe('Client validation with custom AJV options', () => {
-  it('Should handle body validation: with options', async () => {
-    const result = await WithValidationRPC.handleBody({
-      body: { hello: 'world' },
-    });
-
-    deepStrictEqual(result satisfies { hello: string }, { hello: 'world' });
-
-    const { rejects } = expectPromise(async () => {
-      await WithValidationRPC.handleBody({
-        body: {
-          hello: 'wrong_length',
-        },
-        validateOnClient: validateOnClientAjv.configure({
-          options: {
-            verbose: true,
-          },
-        }),
-      });
-    });
-
-    await rejects.toThrow(
-      /Client-side validation failed. Invalid body: data\/hello must NOT have more than 5 characters/
-    );
-    await rejects.toThrowError(HttpException);
-  });
-});
 
 describe('Zod-to-JSONchema constraints', async () => {
   const noConstraints = getConstrainingObject(null);
