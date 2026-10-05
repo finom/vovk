@@ -215,7 +215,7 @@ You **extend** default rather than rewriting via `createFetcher`:
 
 ```ts
 // src/lib/fetcher.ts
-import { createFetcher } from 'vovk';
+import { createFetcher } from 'vovk/fetcher';
 
 export const fetcher = createFetcher<{
   // Custom per-call options — become typed fields on every RPC method call site.
@@ -323,11 +323,11 @@ Keep fetcher focused on transport-layer concerns. Stateful things (request dedup
 
 Install `vovk-ajv`, set `outputConfig.imports.validateOnClient: 'vovk-ajv'`. Generated client validates `params` / `body` / `query` against procedure's schema **before** HTTP call — invalid inputs throw `HttpException(HttpStatus.NULL, ...)` locally (i.e. `statusCode === 0`, same as transport failures) instead of round-tripping.
 
-Roll your own validator via `createValidateOnClient` from `vovk` if Ajv isn't fit; point `imports.validateOnClient` at its module path:
+Roll your own validator via `createValidateOnClient` from `vovk/create-validate-on-client` if Ajv isn't fit; point `imports.validateOnClient` at its module path:
 
 ```ts
 // src/lib/validateOnClient.ts
-import { createValidateOnClient, HttpException, HttpStatus } from 'vovk';
+import { createValidateOnClient, HttpException, HttpStatus } from 'vovk/create-validate-on-client';
 
 export const validateOnClient = createValidateOnClient({
   validate: async (input, schema, meta) => {

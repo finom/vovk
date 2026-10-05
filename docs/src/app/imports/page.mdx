@@ -89,10 +89,10 @@ const user = await UserRPC.updateUser({
 
 ### `createFetcher`
 
-The file at `imports.fetcher` must export a `fetcher` variable. To simplify creating a custom fetcher, use `createFetcher` from `vovk`.
+The file at `imports.fetcher` must export a `fetcher` variable. To simplify creating a custom fetcher, use `createFetcher` from `vovk/fetcher`.
 
 ```ts showLineNumbers copy filename="./src/lib/fetcher.ts"
-import { createFetcher } from 'vovk';
+import { createFetcher } from 'vovk/fetcher';
 
 export const fetcher = createFetcher<{
   successMessage?: string; // "Successfully created a new user"
@@ -177,11 +177,11 @@ unsubError();
 
 ## `validateOnClient`
 
-`validateOnClient` defines how client-side validation is performed for RPC/API method input (`params`, `query`, `body`). Create it via `createValidateOnClient` from `vovk`. It accepts a `validate` function that receives the input data, the JSON schema, and metadata, and returns validated data or throws on failure. Validation runs only when both input and schema are provided.
+`validateOnClient` defines how client-side validation is performed for RPC/API method input (`params`, `query`, `body`). Create it via `createValidateOnClient` from `vovk/create-validate-on-client`. It accepts a `validate` function that receives the input data, the JSON schema, and metadata, and returns validated data or throws on failure. Validation runs only when both input and schema are provided.
 
 ```ts showLineNumbers copy filename="./src/lib/validate-on-client.ts"
 import { validateData } from 'some-json-validation-library';
-import { createValidateOnClient, HttpException, HttpStatus } from 'vovk';
+import { createValidateOnClient, HttpException, HttpStatus } from 'vovk/create-validate-on-client';
 
 export const validateOnClient = createValidateOnClient({
   validate: async (input, schema, meta) => {
