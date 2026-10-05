@@ -11,7 +11,7 @@ import type {
 import { HttpMethod, HttpStatus } from '../types/enums.js';
 import type { VovkRequest } from '../types/request.js';
 import { HttpException, isHttpException } from './http-exception.js';
-import { JSONLinesResponder, Responder } from './json-lines-responder.js';
+import { JSONLinesResponder, Responder, setResponderHooks } from './json-lines-responder.js';
 
 // conflictsWith: the other controllers whose own handler has the same method and path in the segment
 type Route = { staticMethod: RouteHandler; controller: VovkController; conflictsWith?: VovkController[] };
@@ -173,7 +173,9 @@ class VovkApp {
 
   // the status, message and cause a caught error answers with
   private static toErrorResponse(e: unknown) {
-    if (isHttpException(e)) {
+    // status 0 is what a client throws for a call that got no response, its message and cause hold the URL and the
+    // input, so in production it is internal too
+    if (isHttpException(e) && !(e.statusCode === HttpStatus.NULL && process.env.NODE_ENV === 'production')) {
       // Response takes a status from 200 to 599 only
       const isValidStatus = e.statusCode >= 200 && e.statusCode <= 599;
       return {
@@ -545,6 +547,7 @@ class VovkApp {
         meta: <T = unknown>(meta?: T | null) => reqMeta<T>(req, meta),
         params: () => methodParams,
       };
+      setResponderHooks(req, { onError: (error) => void VovkApp.callOnError(onError, error, req) });
 
       await staticMethod._options?.before?.call(controller, req);
       await onBefore?.(req);

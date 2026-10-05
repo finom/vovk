@@ -140,7 +140,7 @@ export default class UserController {
 <a name="procedure"></a>
 ## `procedure` Function
 
-The `procedure` function turns a static method into a **typed, validated callable**. It accepts validation schemas for body, query, params, and output — using any library that implements both [Standard Schema](https://standardschema.dev/schema) and [Standard JSON Schema](https://standardschema.dev/json-schema), such as [Zod](https://zod.dev/), [Valibot](https://valibot.com/), or [Arktype](https://arktype.io/).
+The `procedure` function turns a static method into a **typed, validated callable**. It accepts validation schemas for body, query, params, and output — using any library that implements both [Standard Schema](https://standardschema.dev/schema) and [Standard JSON Schema](https://standardschema.dev/json-schema), such as [Zod](https://zod.dev/), [Valibot](https://valibot.com/), or [Arktype](https://arktype.io/). A schema that implements Standard Schema alone, as Zod before 4.2 does, still validates, but `procedure(){:ts}` warns and emits its JSON Schema as `{}`.
 
 With these three libraries, a type that JSON Schema can't describe, such as a `Date{:ts}` or a `bigint{:ts}`, is emitted as `{}` (any value). The server still validates it, but client-side validation and the [Python](/python) and [Rust](/rust) clients accept any value there.
 
@@ -224,13 +224,13 @@ See the [Decorators Overview](/decorator-overview) page for more details on when
 
 Use `body`, `query`, and `params` to provide input validation schemas. These validate incoming request data before it reaches the controller handler.
 
-A request without a body is validated as `undefined{:ts}`, so an optional schema such as `z.object({ ... }).optional(){:ts}` lets the client leave the body out.
+A request without a body is validated as `undefined{:ts}`, so an optional schema such as `z.object({ ... }).optional(){:ts}` lets the client leave the body out. So is an empty body with a JSON content type; an empty text or an empty file is a body.
 
-Data that fails validation gets a `400` response. Its message and its `cause.issues` hold the first 20 issues, and the message says how many more there are.
+Data that fails validation gets a `400` response. Its message and its `cause.issues` hold the first 20 issues, and the message says how many more there are. An issue keeps its `message`, its `path` as a list of keys, and the library's other fields that hold text, a number or a boolean, such as Zod's `code`; fields that copy the value that failed are left out.
 
 #### `output` and `iteration`
 
-Use `output` and `iteration` to provide output validation schemas. `output` is for regular JSON responses, while `iteration` is for [JSON Lines](/jsonlines). Both are optional and don't affect generated RPC typings, but they enable key features like [OpenAPI](/openapi), [AI tools](/tools), and for [Python](/python), [Rust](/rust), and future clients. These schemas are not used for client-side validation.
+Use `output` and `iteration` to provide output validation schemas. `output` is for regular JSON responses, while `iteration` is for [JSON Lines](/jsonlines). Both are optional and don't affect generated RPC typings, but they enable key features like [OpenAPI](/openapi), [AI tools](/tools), and for [Python](/python), [Rust](/rust), and future clients. These schemas are not used for client-side validation. A procedure takes one or the other: `procedure(){:ts}` throws when it gets both.
 
 A response that fails `output` or `iteration` validation is a bug in the handler, not in the request. It is thrown as a plain `Error{:ts}`, without a status code: in production the client gets `500` "Internal server error", and the validation issues stay on the server, where the segment's [`onError`](/segment) receives the first 20 of them as the error's `cause`. In development the message names the failing fields.
 
@@ -263,7 +263,7 @@ Optionally provide an `operation` object to specify OAS details when the `@opera
 
 #### `preferTransformed = true`
 
-By default, methods provided by [`req.vovk`](/req-vovk) transform (but not the built-in Next.js functions such as `req.json()` or `req.nextUrl.searchParams.get()`) incoming data into the validation result shape. If you need raw I/O without transformations, set `preferTransformed` to `false`. This causes all features that rely on validation models (`body`, `query`, `params`, `output`, `iteration`) to return the original data format instead of the transformed one.
+By default, methods provided by [`req.vovk`](/req-vovk) transform (but not the built-in Next.js functions such as `req.json()` or `req.nextUrl.searchParams.get()`) incoming data into the validation result shape. If you need raw I/O without transformations, set `preferTransformed` to `false`. This causes all features that rely on validation models (`body`, `query`, `params`, `output`, `iteration`) to return the original data format instead of the transformed one. The JSON Schema emitted for `output` and `iteration` describes what the server sends: the transformed value, or with `preferTransformed: false` the original one.
 
 ### `procedure` Features
 

@@ -15,7 +15,7 @@ const libraryOptions: Record<string, Record<string, unknown>> = {
  */
 export const procedure = createStandardValidation({
   toJSONSchema: (schema: CombinedSpec, options) =>
-    schema['~standard']?.jsonSchema?.input({
+    schema['~standard']?.jsonSchema?.[options.io]({
       target: options.target ?? 'draft-2020-12',
       libraryOptions: libraryOptions[schema['~standard'].vendor],
     }) ?? {},
