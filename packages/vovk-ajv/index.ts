@@ -40,7 +40,7 @@ const regExp = Object.assign(
   { code: 'new RegExp' }
 );
 
-const createAjv = (options: Options, target: Target, isForm: boolean) => {
+const createAjv = (options: Options, target: Target, coercesStrings: boolean) => {
   const AjvClass = target === 'draft-2020-12' ? Ajv2020 : Ajv;
   const ajv = new AjvClass({
     allErrors: true,
@@ -48,8 +48,8 @@ const createAjv = (options: Options, target: Target, isForm: boolean) => {
     addUsedSchema: false,
     // strict mode refuses keywords JSON Schema doesn't define, such as Zod's example or OpenAPI's discriminator and x-*
     strict: false,
-    // a form holds strings, so "5" is checked as the number the server reads it as
-    ...(isForm && { coerceTypes: true }),
+    // a form, the query and params hold strings, so "5" is checked as the number the server reads it as
+    ...(coercesStrings && { coerceTypes: true }),
     ...options,
     code: { regExp, ...options.code },
   });
@@ -68,8 +68,8 @@ type Validator = ValidateFunction | null;
 // Ajv keeps every function it compiles, so a schema compiles once per text, also when each call brings a new object
 type CachedAjv = { ajv: AjvInstance; validators: WeakMap<object, Validator>; byText: Map<string, Validator> };
 
-// one Ajv per options object, draft, and form or not
-const cache = new WeakMap<Options, Partial<Record<`${Target}${'' | ' form'}`, CachedAjv>>>();
+// one Ajv per options object, draft, and whether it coerces strings
+const cache = new WeakMap<Options, Partial<Record<`${Target}${'' | ' coerced'}`, CachedAjv>>>();
 
 // formats ajv-formats doesn't know, such as Zod's cuid, nanoid or e164, pass instead of failing compilation;
 // Zod emits a pattern for most of them, which is still checked
@@ -122,14 +122,14 @@ const getValidator = (
   schema: VovkJSONSchemaBase,
   options: Options,
   target: Target,
-  isForm: boolean,
+  coercesStrings: boolean,
   description: string
 ) => {
   const instances = cache.get(options) ?? {};
   cache.set(options, instances);
-  const key = isForm ? (`${target} form` as const) : target;
+  const key = coercesStrings ? (`${target} coerced` as const) : target;
   const cached = instances[key] ?? {
-    ajv: createAjv(options, target, isForm),
+    ajv: createAjv(options, target, coercesStrings),
     validators: new WeakMap(),
     byText: new Map(),
   };
@@ -168,6 +168,17 @@ const withBinaryPlaceholders = (input: unknown) =>
     ? Object.fromEntries(Object.entries(input).map(([key, value]) => [key, toValidatable(value)]))
     : input;
 
+const isPlainObject = (value: unknown): value is Record<string, unknown> =>
+  typeof value === 'object' && value !== null && [Object.prototype, null].includes(Object.getPrototypeOf(value));
+
+// Ajv coerces in place, so the query and params are checked as a copy and sent as given
+const copyContainers = (value: unknown): unknown =>
+  Array.isArray(value)
+    ? value.map(copyContainers)
+    : isPlainObject(value)
+      ? Object.fromEntries(Object.entries(value).map(([key, item]) => [key, copyContainers(item)]))
+      : value;
+
 // a repeated key becomes an array, the way the server parses a form
 const formToObject = (form: FormData | URLSearchParams) => {
   const result: Record<string, unknown> = {};
@@ -202,16 +213,18 @@ const validate = ({
   if (!input || !schema || input instanceof Blob) return;
   const schemaTarget = schema.$schema?.includes('://json-schema.org/draft-07/schema') ? 'draft-07' : 'draft-2020-12';
   const isForm = input instanceof FormData || input instanceof URLSearchParams;
+  // a URL carries the query and params as strings
+  const isURLPart = type === 'query' || type === 'params';
   const { ajv, validator } = getValidator(
     schema,
     options,
     target ?? schemaTarget,
-    isForm,
+    isForm || isURLPart,
     `the ${type} of ${endpoint}`
   );
   // the server validates the input anyway
   if (!validator) return;
-  const data = isForm ? formToObject(input) : withBinaryPlaceholders(input);
+  const data = isForm ? formToObject(input) : isURLPart ? copyContainers(input) : withBinaryPlaceholders(input);
 
   if (!validator(data)) {
     throw new HttpException(
