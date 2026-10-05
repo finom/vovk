@@ -130,6 +130,22 @@ await describe('vovk generate in a project without Next.js', async () => {
     assert.strictEqual(await typecheckProject(projectDir), '');
   });
 
+  await it('Writes a client that type-checks under module node16', async () => {
+    await createProject(projectDir, {
+      'package.json': { name: 'app', version: '1.0.0', type: 'module' },
+      'tsconfig.json': {
+        compilerOptions: { module: 'node16', strict: true, noEmit: true, skipLibCheck: true, resolveJsonModule: true },
+        include: ['client'],
+      },
+      'vovk.config.mjs': configFile({ composedClient: { outDir: 'client', prettifyClient: false } }),
+      '.vovk-schema/root.json': userSegmentSchema,
+    });
+
+    await runCLI(['generate'], { cwd: projectDir });
+
+    assert.strictEqual(await typecheckProject(projectDir), '');
+  });
+
   await it('Resets the root origin to relative URLs with a client origin of null or an empty string', async () => {
     await createProject(projectDir, {
       'package.json': { name: 'app', version: '1.0.0', type: 'module' },

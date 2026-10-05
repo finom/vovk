@@ -22,6 +22,7 @@ import type { ProjectInfo } from '../get-project-info/index.mjs';
 import { chalkHighlightThing } from '../utils/chalk-highlight-thing.mjs';
 import { compileJSONSchemaToTypeScriptType } from '../utils/compile-json-schema-to-typescript-type.mjs';
 import { GENERATED_BANNER_PREFIX, hasGeneratedBanner } from '../utils/generated-banner.mjs';
+import { getJSONImportAttributes } from '../utils/get-ts-import-options.mjs';
 import type { Segment } from '../utils/locate-segments.mjs';
 import { prettify, warnIfPrettierMissing } from '../utils/prettify.mjs';
 import { toImportPath, toPosixPath } from '../utils/to-import-path.mjs';
@@ -111,6 +112,7 @@ export async function renderOneClientFile({
   locatedSegments,
   isNodeNextResolution,
   tsExtension,
+  tsModule,
   hasMixins,
   isVovkProject,
   vovkCliPackage,
@@ -145,6 +147,7 @@ export async function renderOneClientFile({
   locatedSegments: Segment[];
   isNodeNextResolution: boolean;
   tsExtension: string;
+  tsModule: string | undefined;
   hasMixins: boolean;
   isVovkProject: boolean;
   vovkCliPackage: PackageJson;
@@ -219,6 +222,7 @@ export async function renderOneClientFile({
       js: isNodeNextResolution ? '.js' : '',
       mjs: isNodeNextResolution ? '.mjs' : '',
     },
+    jsonImportAttributes: await getJSONImportAttributes(tsModule, outPath),
     schemaOutDir: toPosixPath(path.relative(outDir, path.resolve(cwd, cliSchemaPath ?? config.schemaOutDir))),
     // a segmented client sits one folder deeper, so its relative imports are resolved from there
     commonImports: (({ composedClient, segmentedClient }) =>

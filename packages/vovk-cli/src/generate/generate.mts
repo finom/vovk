@@ -241,7 +241,7 @@ export async function generate({
     validateMixinModuleNames(mixinName, fullSchema.segments[mixinName]);
   }
 
-  const { isNodeNextResolution, tsExtension } = getTsImportOptions(cwd);
+  const { module, isNodeNextResolution, tsExtension } = getTsImportOptions(cwd);
   const isVovkProject = !!srcRoot;
   const isComposedEnabled =
     cliGenerateOptions?.composedOnly ||
@@ -341,6 +341,7 @@ export async function generate({
           locatedSegments,
           isNodeNextResolution,
           tsExtension,
+          tsModule: module,
           hasMixins,
           isVovkProject,
           vovkCliPackage,
@@ -466,6 +467,7 @@ export async function generate({
               locatedSegments,
               isNodeNextResolution,
               tsExtension,
+              tsModule: module,
               hasMixins,
               isVovkProject,
               vovkCliPackage,
