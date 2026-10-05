@@ -1,5 +1,7 @@
 import assert from 'node:assert';
 import fs from 'node:fs/promises';
+import http from 'node:http';
+import type { AddressInfo } from 'node:net';
 import path from 'node:path';
 import { after, describe, it, mock } from 'node:test';
 import { updateDependenciesWithoutInstalling } from '../../../dist/init/update-dependencies-without-installing.mjs';
@@ -21,6 +23,50 @@ const distTags: Record<string, Record<string, string>> = {
   'vovk-cli': { latest: '0.2.0', beta: '0.3.0-beta.0' },
   'vovk-python': { latest: '0.0.3' },
 };
+
+// a registry, such as a company mirror, that has only the given packages
+async function startRegistry(packages: Record<string, Record<string, string>>) {
+  const server = http.createServer((req, res) => {
+    const name = decodeURIComponent(new URL(req.url ?? '/', 'http://localhost').pathname.slice(1));
+    const tags = packages[name];
+    const versions = Object.fromEntries(Object.values(tags ?? {}).map((version) => [version, { name, version }]));
+    res.writeHead(tags ? 200 : 404, { 'content-type': 'application/json' });
+    res.end(JSON.stringify(tags ? { name, 'dist-tags': tags, versions } : { error: 'Not found' }));
+  });
+  await new Promise<void>((resolve) => server.listen(0, '127.0.0.1', resolve));
+
+  return {
+    url: `http://127.0.0.1:${(server.address() as AddressInfo).port}/`,
+    close: () => {
+      server.closeAllConnections();
+      return new Promise((resolve) => server.close(resolve));
+    },
+  };
+}
+
+// npm is set up for the registry, as npx sets it from .npmrc, and registry.npmjs.org is out of reach
+async function withRegistry(registryUrl: string, run: () => Promise<void>) {
+  const env = { npm_config_registry: process.env.npm_config_registry, NODE_ENV: process.env.NODE_ENV };
+  const realFetch = globalThis.fetch;
+  const fetchMock = mock.method(globalThis, 'fetch', (input: string | URL | Request, init?: RequestInit) =>
+    new URL(input instanceof Request ? input.url : input).hostname === 'registry.npmjs.org'
+      ? Promise.reject(new TypeError('fetch failed'))
+      : realFetch(input, init)
+  );
+  process.env.npm_config_registry = registryUrl;
+  // test runs use the packages of this repo, the registry is what this test is about
+  process.env.NODE_ENV = 'production';
+
+  try {
+    await run();
+  } finally {
+    fetchMock.mock.restore();
+    for (const [key, value] of Object.entries(env)) {
+      if (value === undefined) delete process.env[key];
+      else process.env[key] = value;
+    }
+  }
+}
 
 await describe('updateDependenciesWithoutInstalling', async () => {
   await it('Takes the latest version of a package without the channel', async () => {
@@ -51,5 +97,60 @@ await describe('updateDependenciesWithoutInstalling', async () => {
     );
     assert.deepStrictEqual(dependencies, { vovk: '^4.0.0-beta.0', 'vovk-ajv': '^0.1.0' });
     assert.deepStrictEqual(devDependencies, { 'vovk-cli': '^0.3.0-beta.0', 'vovk-python': '^0.0.3' });
+  });
+
+  await it('Reads the dist-tags from the registry npm is configured with', async () => {
+    await createProject(projectDir, { 'package.json': { name: 'app', version: '1.0.0' } });
+    const registry = await startRegistry({
+      vovk: { latest: '4.0.0' },
+      'vovk-ajv': { latest: '0.2.0' },
+      'vovk-cli': { latest: '0.4.0' },
+    });
+
+    try {
+      await withRegistry(registry.url, () =>
+        updateDependenciesWithoutInstalling({
+          log,
+          dir: projectDir,
+          dependencyNames: ['vovk', 'vovk-ajv'],
+          devDependencyNames: ['vovk-cli'],
+          channel: 'latest',
+        })
+      );
+    } finally {
+      await registry.close();
+    }
+
+    const { dependencies, devDependencies } = JSON.parse(
+      await fs.readFile(path.join(projectDir, 'package.json'), 'utf-8')
+    );
+    assert.deepStrictEqual(dependencies, { vovk: '^4.0.0', 'vovk-ajv': '^0.2.0' });
+    assert.deepStrictEqual(devDependencies, { 'vovk-cli': '^0.4.0' });
+  });
+
+  await it('Fails when a package lookup fails', async () => {
+    await createProject(projectDir, { 'package.json': { name: 'app', version: '1.0.0' } });
+    // the registry has no vovk-ajv
+    const registry = await startRegistry({ vovk: { latest: '4.0.0' }, 'vovk-cli': { latest: '0.4.0' } });
+    const messages: string[] = [];
+    const recordingLog = { ...log, info: (message: string) => messages.push(message) } as typeof log;
+
+    try {
+      await assert.rejects(
+        withRegistry(registry.url, () =>
+          updateDependenciesWithoutInstalling({
+            log: recordingLog,
+            dir: projectDir,
+            dependencyNames: ['vovk', 'vovk-ajv'],
+            devDependencyNames: ['vovk-cli'],
+            channel: 'latest',
+          })
+        )
+      );
+    } finally {
+      await registry.close();
+    }
+
+    assert.doesNotMatch(messages.join('\n'), /Added/);
   });
 });

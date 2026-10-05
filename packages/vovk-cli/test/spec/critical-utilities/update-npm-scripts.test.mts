@@ -16,8 +16,8 @@ after(async () => {
 const withDevScript = (dev: string) =>
   ({ content: { name: 'app', scripts: { dev } } }) as unknown as Parameters<typeof getDevScript>[0];
 
-const updateScripts = async (scripts: Record<string, string>) => {
-  await createProject(projectDir, { 'package.json': { name: 'app', version: '1.0.0', scripts } });
+const updateScripts = async (scripts: Record<string, string>, packageJson: Record<string, unknown> = {}) => {
+  await createProject(projectDir, { 'package.json': { name: 'app', version: '1.0.0', ...packageJson, scripts } });
   await updateNPMScripts({
     pkgJson: await NPMCliPackageJson.load(projectDir),
     root: projectDir,
@@ -48,6 +48,17 @@ await describe('getDevScript', async () => {
     assert.match(getDevScript(withDevScript('next dev -p 4000'), 'explicit'), /PORT=4000 /);
     assert.match(getDevScript(withDevScript('next dev --turbopack'), 'explicit'), /PORT=3000 /);
   });
+
+  await it('Writes the explicit script for a dev script that runs more than next dev', () => {
+    // the implicit script hands everything after -- to next dev, so it only fits next dev and its flags
+    for (const dev of [
+      'prisma generate && next dev',
+      'dotenv -e .env.local -- next dev',
+      'cross-env NODE_OPTIONS=--inspect next dev',
+    ]) {
+      assert.strictEqual(getDevScript(withDevScript(dev), 'implicit'), getDevScript(withDevScript(dev), 'explicit'));
+    }
+  });
 });
 
 await describe('updateNPMScripts', async () => {
@@ -69,5 +80,11 @@ await describe('updateNPMScripts', async () => {
       prebuild: 'vovk generate',
       bundle: 'vovk bundle',
     });
+  });
+
+  await it('Generates the client in the build script under Yarn 2+, which never runs prebuild', async () => {
+    const scripts = await updateScripts({ build: 'next build' }, { packageManager: 'yarn@4.9.2' });
+
+    assert.strictEqual(scripts.build, 'vovk generate && next build');
   });
 });
