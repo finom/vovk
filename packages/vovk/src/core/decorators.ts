@@ -161,6 +161,9 @@ export const prefix = (givenPath = '') => {
   };
 };
 
+// initSegment copies a clone's parent's routes again, when the parent's decorate() decorators are applied
+export const clonedControllers = new WeakSet<object>();
+
 /**
  * Clones metadata from parent controller to child controller.
  */
@@ -168,6 +171,7 @@ export function cloneControllerMetadata() {
   return function inherit<T extends new (...args: KnownAny[]) => KnownAny>(c: T, _context?: KnownAny) {
     const parent = Object.getPrototypeOf(c) as VovkController;
     const controller = c as unknown as VovkController;
+    clonedControllers.add(controller);
     controller._handlers = { ...parent._handlers, ...controller._handlers };
     controller._handlersMetadata = { ...parent._handlersMetadata, ...controller._handlersMetadata };
 

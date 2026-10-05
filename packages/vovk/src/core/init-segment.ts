@@ -4,8 +4,27 @@ import type { VovkRequest } from '../types/request.js';
 import type { StaticClass } from '../types/utils.js';
 import { trimPath } from '../utils/trim-path.js';
 import { applyDecorateDecorators } from './decorate.js';
+import { clonedControllers } from './decorators.js';
 import { getSchema } from './get-schema.js';
 import { getCatchAllPath, vovkApp } from './vovk-app.js';
+
+// a controller keeps its own handlers and routes over its parent's
+const copyFromParent = (controller: VovkController, parent: VovkController) => {
+  controller._handlers = { ...parent._handlers, ...controller._handlers };
+  controller._handlersMetadata = { ...parent._handlersMetadata, ...controller._handlersMetadata };
+  for (const methods of Object.values(vovkApp.routes)) {
+    methods.set(controller, { ...(methods.get(parent) ?? {}), ...methods.get(controller) });
+  }
+};
+
+// the parent may be in no segment initialized so far, its decorate() decorators are applied here then
+const cloneFromParent = (controller: VovkController) => {
+  const parent = Object.getPrototypeOf(controller) as VovkController;
+  if (parent === Function.prototype) return;
+  applyDecorateDecorators(parent);
+  if (clonedControllers.has(parent)) cloneFromParent(parent);
+  copyFromParent(controller, parent);
+};
 
 export const initSegment = (options: {
   segmentName?: string;
@@ -38,15 +57,13 @@ export const initSegment = (options: {
 
     applyDecorateDecorators(controller);
 
-    // Re-clone metadata if this controller extends another registered controller
-    // (cloneControllerMetadata() runs at class-definition time, before decorate() metadata is applied)
+    // cloneControllerMetadata() runs at class definition, before decorate() decorators are applied: a clone takes its
+    // parent's routes again, wherever the parent is; a controller that extends another takes those of one in the segment
     const parent = Object.getPrototypeOf(controller) as VovkController;
-    if (controllerSet.has(parent) && parent._handlers) {
-      controller._handlers = { ...parent._handlers, ...controller._handlers };
-      controller._handlersMetadata = { ...parent._handlersMetadata, ...controller._handlersMetadata };
-      for (const methods of Object.values(vovkApp.routes)) {
-        methods.set(controller, { ...(methods.get(parent) ?? {}), ...methods.get(controller) });
-      }
+    if (clonedControllers.has(controller)) {
+      cloneFromParent(controller);
+    } else if (controllerSet.has(parent) && parent._handlers) {
+      copyFromParent(controller, parent);
     }
   }
 
