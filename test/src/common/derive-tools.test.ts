@@ -627,6 +627,18 @@ describe('deriveTools', () => {
     it('Collects the items of a sync generator handler', async () => {
       assert.deepStrictEqual(await syncGeneratorTool.execute({}), [{ n: 1 }, { n: 2 }]);
     });
+
+    // the server streams any iterable object but an array as JSON Lines, a string goes out as it is
+    it('Collects the items of a Set and keeps a string whole', async () => {
+      const returnsSet = procedure({ operationObject: { description: 'd' } }).handle(
+        async () => new Set([{ n: 1 }, { n: 2 }])
+      );
+      const returnsString = procedure({ operationObject: { description: 'd' } }).handle(async () => 'ab');
+      const [setTool, stringTool] = deriveTools({ modules: { MyModule: { returnsSet, returnsString } } });
+
+      assert.deepStrictEqual(await setTool.execute({}), [{ n: 1 }, { n: 2 }]);
+      assert.strictEqual(await stringTool.execute({}), 'ab');
+    });
   });
 
   describe('Tool names', () => {
@@ -850,13 +862,8 @@ describe('deriveTools', () => {
     get('users')(PlainController, 'updateUser');
     operation({ summary: 'Update user' })(PlainController, 'updateUser');
 
-    it('Is left out, or its call reports the error through onError', async () => {
-      const errors: string[] = [];
-      const tools = deriveTools({ modules: { PlainController }, onError: (error) => errors.push(error.message) });
-
-      for (const tool of tools) await tool.execute({});
-
-      assert.strictEqual(errors.length, tools.length);
+    it('Is left out of the tools', () => {
+      assert.deepStrictEqual(deriveTools({ modules: { PlainController } }), []);
     });
   });
 
