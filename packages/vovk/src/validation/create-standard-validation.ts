@@ -94,16 +94,11 @@ export function createStandardValidation({
     });
   }
 
-  // Compute handle return type: concrete when output schema exists, KnownAny otherwise
-  type HandleReturnType<TOutput extends CombinedSpec, TIteration extends CombinedSpec> =
-    unknown extends CombinedSpec.InferOutput<TOutput>
-      ? KnownAny
-      :
-          | CombinedSpec.InferOutput<TOutput>
-          | Promise<CombinedSpec.InferOutput<TOutput>>
-          | (unknown extends CombinedSpec.InferOutput<TIteration>
-              ? never
-              : AsyncGenerator<CombinedSpec.InferOutput<TIteration>>);
+  // the return of a handler with an output schema
+  type HandleReturnType<TOutputValue, TIterationValue> =
+    | TOutputValue
+    | Promise<TOutputValue>
+    | (unknown extends TIterationValue ? never : AsyncGenerator<TIterationValue>);
 
   // return type for procedure().handle(), stores THandleFn instead of ReturnType<THandleFn>
   // to avoid circular inference when the handler calls a service typed via the controller
@@ -189,8 +184,12 @@ export function createStandardValidation({
       ? <THandleFn extends (req: TReq, params: ParamsOutput<TParams>) => KnownAny>(
           fn: THandleFn
         ) => BuilderHandleReturn<TBody, TQuery, TParams, TOutput, TIteration, TContentType, TReq, THandleFn>
-      : (
-          fn: (req: TReq, params: ParamsOutput<TParams>) => HandleReturnType<TOutput, TIteration>
+      : // the schema validates what the handler returns, so the handler returns its input; fn() gets its output
+        (
+          fn: (
+            req: TReq,
+            params: ParamsOutput<TParams>
+          ) => HandleReturnType<CombinedSpec.InferInput<TOutput>, CombinedSpec.InferInput<TIteration>>
         ) => BuilderHandleReturn<
           TBody,
           TQuery,
@@ -199,7 +198,10 @@ export function createStandardValidation({
           TIteration,
           TContentType,
           TReq,
-          (req: TReq, params: ParamsOutput<TParams>) => HandleReturnType<TOutput, TIteration>
+          (
+            req: TReq,
+            params: ParamsOutput<TParams>
+          ) => HandleReturnType<CombinedSpec.InferOutput<TOutput>, CombinedSpec.InferOutput<TIteration>>
         >;
   };
 
