@@ -6,6 +6,7 @@ import time
 import unittest
 from contextlib import contextmanager
 from typing import Callable, Iterator, List, Tuple
+from urllib3.response import HTTPResponse
 from generated_python_client.src.test_generated_python_client import (
     ClientRuntimeRPC,
     ClientSweepRPC,
@@ -164,6 +165,9 @@ class TestRuntime(unittest.TestCase):
         self.assertEqual((data, received), ({'size': len(body)}, [len(body), len(body)]))
 
     # a body without chunked encoding ends when the connection closes, as an HTTP/1.0 proxy sends it
+    @unittest.skipUnless(
+        hasattr(HTTPResponse, 'read1'), 'urllib3 before 2.2 has no read1, so the client waits for 1024 bytes there'
+    )
     def test_stream_without_chunked_encoding_yields_each_item_as_it_comes(self) -> None:
         first_taken = threading.Event()
         second_sent = threading.Event()

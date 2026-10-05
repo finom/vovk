@@ -10,6 +10,7 @@ from urllib.parse import quote
 from jsonschema import FormatChecker, validators
 from jsonschema.exceptions import ValidationError, best_match
 from requests.models import Response
+from urllib3.exceptions import DecodeError, ProtocolError, ReadTimeoutError, SSLError
 from typing import Dict, Optional, Any, Generator, Iterator, Literal, List, Tuple, TypedDict, Union
 
 class HttpExceptionResponseBody(TypedDict):
@@ -408,7 +409,7 @@ class ApiClient:
         # JSON Lines is UTF-8, and application/x-ndjson comes without a charset that requests could decode it with
         decoder = codecs.getincrementaldecoder('utf-8')(errors='replace')
 
-        for chunk in response.iter_content(chunk_size=1024):
+        for chunk in self._chunks(response):
             *lines, rest = decoder.decode(chunk).split('\n')
             if lines:
                 lines[0] = ''.join(pieces) + lines[0]
@@ -424,6 +425,30 @@ class ApiClient:
         last = (''.join(pieces) + decoder.decode(b'', final=True)).strip()
         if last:
             yield self._parse_jsonl_line(last)
+
+    @staticmethod
+    def _chunks(response: requests.Response) -> Iterator[bytes]:
+        """The body as it arrives, also without chunked encoding, where reading 1024 bytes waits for all of them."""
+        read1 = getattr(response.raw, 'read1', None)
+        if read1 is None:
+            # urllib3 before 2.2 has no read1
+            yield from response.iter_content(chunk_size=1024)
+            return
+        # the errors iter_content raises
+        try:
+            while True:
+                chunk = read1(65536)
+                if not chunk:
+                    return
+                yield chunk
+        except ProtocolError as error:
+            raise requests.exceptions.ChunkedEncodingError(error)
+        except DecodeError as error:
+            raise requests.exceptions.ContentDecodingError(error)
+        except ReadTimeoutError as error:
+            raise requests.exceptions.ConnectionError(error)
+        except SSLError as error:
+            raise requests.exceptions.SSLError(error)
 
     @staticmethod
     def _parse_jsonl_line(line: str) -> Any:
