@@ -908,6 +908,49 @@ describe('Client sweep, pure functions', () => {
         contentType: 'application/json',
       });
     });
+
+    describe('the content type of bytes', () => {
+      const contentTypeOf = async (req: VovkRequest) => req.headers.get('content-type');
+      class BytesController {
+        static pngOrOctet = procedure({ contentType: ['image/png', 'application/octet-stream'] }).handle(contentTypeOf);
+        static anyApplication = procedure({ contentType: ['application/*'] }).handle(contentTypeOf);
+        static anyType = procedure({ contentType: ['*/*'] }).handle(contentTypeOf);
+      }
+      prefix('test')(BytesController);
+      post('png-or-octet')(BytesController, 'pngOrOctet');
+      post('any-application')(BytesController, 'anyApplication');
+      post('any-type')(BytesController, 'anyType');
+      const segment = serve('bytes-content-type', { BytesController });
+      const { pngOrOctet, anyApplication, anyType } = BytesController;
+      const rpc = rpcOf({
+        pngOrOctet: { path: 'png-or-octet', httpMethod: 'POST', validation: pngOrOctet.schema.validation },
+        anyApplication: { path: 'any-application', httpMethod: 'POST', validation: anyApplication.schema.validation },
+        anyType: { path: 'any-type', httpMethod: 'POST', validation: anyType.schema.validation },
+      });
+      const send = (name: string, body: unknown) => withFetch(segment, () => rpc[name]({ body }));
+      const png = new Uint8Array([137, 80, 78, 71]);
+
+      it('Sends untyped bytes as the first declared type, even when application/octet-stream is declared too', async () => {
+        strictEqual(await send('pngOrOctet', png), 'image/png');
+      });
+
+      it('Sends untyped bytes as the wildcard a procedure declares, application/* included', async () => {
+        strictEqual(await send('anyApplication', png.buffer), 'application/*');
+      });
+
+      it('Sends untyped bytes as application/octet-stream to a procedure that takes any type', async () => {
+        strictEqual(await send('anyType', new Blob([png])), 'application/octet-stream');
+      });
+
+      it('Sends a typed Blob as its own type when the procedure takes it', async () => {
+        strictEqual(
+          await send('pngOrOctet', new Blob([png], { type: 'application/octet-stream' })),
+          'application/octet-stream'
+        );
+        strictEqual(await send('anyApplication', new Blob(['%PDF'], { type: 'application/pdf' })), 'application/pdf');
+        strictEqual(await send('anyType', new Blob(['a,b'], { type: 'text/csv' })), 'text/csv');
+      });
+    });
   });
 
   describe('shipped types', () => {
