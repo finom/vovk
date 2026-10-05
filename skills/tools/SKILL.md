@@ -299,7 +299,7 @@ static listTasks = procedure({
               tasks.map(t => `- **${t.title}** (${t.status})`).join('\n'),
       }],
       structuredContent: { count: tasks.length, tasks }, // optional machine-readable companion
-      annotations: { audience: ['user'], priority: 5, lastModified: new Date().toISOString() },
+      annotations: { audience: ['user'], priority: 0.8, lastModified: new Date().toISOString() },
     },
   });
 
@@ -314,7 +314,7 @@ Useful patterns built on this seam:
 - **Soft-fail surfacing** — return normal payload (200 OK), set `isError: true` in `mcpOutput` → MCP client treats as error.
 - **Audience routing** — `annotations.audience: ['user']` exposes result in MCP client UI; `['assistant']` keeps model-only.
 
-Override keys (all optional, all merged shallowly):
+Override keys (all optional, all merged shallowly; `annotations` go on each content item that has none, as MCP annotates content items):
 
 | Key | Effect |
 |---|---|
@@ -322,7 +322,7 @@ Override keys (all optional, all merged shallowly):
 | `structuredContent` | Wholesale-replaces parsed structured payload. |
 | `isError: true` | Marks result as error to MCP client. |
 | `annotations.audience` | `('user' \| 'assistant')[]` — who should see result. |
-| `annotations.priority` | Number, relative importance hint. |
+| `annotations.priority` | Number from 0 (least important) to 1 (most important). |
 | `annotations.lastModified` | ISO timestamp. |
 
 ## Wire into LLM SDKs

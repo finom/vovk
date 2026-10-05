@@ -6,7 +6,7 @@ Controllers as well as generated RPC/API modules can be converted into AI tools 
 - RPC modules generated from controllers for HTTP calls or be used on front-end or other environments that support `fetch`.
 - Third-party OpenAPI-based modules (called [OpenAPI mixins](/mixins) in this documentation), enabling to combine back-end functionality with external APIs in a single agent.
 
-A tool comes from a [procedure](/procedure) or an RPC method. Other members of a module are left out.
+A tool comes from a [procedure](/procedure) or an RPC method that has an operation object, given by [`@operation`](/openapi), `@operation.tool` or `@operation.error`. Every [OpenAPI mixin](/mixins) method has one. Other members of a module are left out.
 
 ```ts showLineNumbers copy filename="src/modules/user/user-controller.ts"
 import { deriveTools } from 'vovk';
