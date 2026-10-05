@@ -52,8 +52,8 @@ export function schemaToTsType(jsonSchema: VovkJSONSchemaBase | boolean): string
 
   const type = jsonSchema.type;
 
-  // Primitives
-  if (type === 'string') return 'string';
+  // Primitives; a binary string is a file, which the client sends as a Blob
+  if (type === 'string') return jsonSchema.format === 'binary' ? 'Blob' : 'string';
   if (type === 'number' || type === 'integer') return 'number';
   if (type === 'boolean') return 'boolean';
   if (type === 'null') return 'null';
