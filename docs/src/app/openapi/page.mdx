@@ -22,7 +22,7 @@ export default class UserController {
 The validation models, accepted by the [procedure](/procedure) are converted to OpenAPI operation objects according to the following mapping:
 
 - `params` → `parameters` with `in: "path"`, each one required; a `{name}` of the path that no `params` model describes is a string parameter
-- `query` → `parameters` with `in: "query"`; an object parameter gets `style: "deepObject"`, as the server reads `filter[status]=sold`
+- `query` → `parameters` with `in: "query"`; an object parameter gets `style: "deepObject"`, as the server reads `filter[status]=sold`. An array parameter keeps the default style, `form` (`tags=a&tags=b`), and the server reads a lone `tags=a` as a one-item array. OpenAPI has no style for an array of objects: the server reads `items[0][a]=x`, the form vovk clients send
 - `body` → `requestBody` with the `application/json` (or custom `contentType`) content type
 - `output` → `responses` with status `200` and `application/json` content type
 - `iteration` → `responses` with status `200` and `application/jsonl` content type, with an example of three lines; the server sends `text/plain` unless the `Accept` header includes `application/jsonl`
@@ -123,7 +123,7 @@ export const GET = () => Response.json(openapi);
 You can also emit `openapi.json` as a standalone file with the [openapiJson](/templates#openapijson) template, without generating a client. Useful for serving the spec as a static asset or handing it to another tool:
 
 ```sh npm2yarn copy
-npx vovk generate --from openapiJson --out ./public
+npm exec -- vovk generate --from openapiJson --out ./public
 ```
 
 On the client side, you can use any OpenAPI documentation generator. [Scalar](https://www.npmjs.com/package/@scalar/api-reference-react) is a recommended choice as Vovk.ts generates code snippets for the generated RPC modules.

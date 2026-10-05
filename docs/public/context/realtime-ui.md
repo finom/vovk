@@ -4,8 +4,8 @@ description: "Walkthrough of the Realtime Kanban example app — a live-updating
 see_also:
   label: "Vovk.ts Docs Context"
   url: https://vovk.dev/context/docs.md
-chars: 111054
-est_tokens: 27764
+chars: 116206
+est_tokens: 29052
 ---
 
 Page: https://vovk.dev/realtime-ui
@@ -85,11 +85,20 @@ DATABASE_URL_UNPOOLED="postgresql://postgres:password@localhost:5432/realtime-ka
 REDIS_URL=redis://localhost:6379
 ```
 
-Run Docker containers and the development server:
+Start the Docker containers:
 
 ```bash copy
 docker-compose up -d
 ```
+
+Generate the Prisma client, the Zod schemas and the Vovk.ts client, then create the database tables:
+
+```bash copy
+npm run generate
+npx prisma migrate deploy
+```
+
+Start the development server:
 
 ```sh
 npm run dev
@@ -99,16 +108,17 @@ Open [http://localhost:3000](http://localhost:3000) in your browser to see the r
 
 The variables in the `.env` file are used as follows:
 
-- `OPENAI_API_KEY` – your OpenAI API key, required for AI features.
-- `DATABASE_URL` – the database connection string for Prisma ORM, used to instantiate the Prisma client in [DatabaseService.ts](https://github.com/finom/vovk/blob/main/examples/realtime-kanban/src/modules/database/DatabaseService.ts).
+- `OPENAI_API_KEY` – your OpenAI API key, required for AI features. Creating or updating a user or a task also calls the embeddings API: without a working key, the row is saved without an embedding, and search skips it until an update adds one.
+- `DATABASE_URL` – the database connection string for Prisma ORM, used to instantiate the Prisma client in [database-service.ts](https://github.com/finom/vovk/blob/main/examples/realtime-kanban/src/modules/database/database-service.ts).
 - `DATABASE_URL_UNPOOLED` – the database connection string for direct connections, used for migrations in [prisma.config.ts](https://github.com/finom/vovk/blob/main/examples/realtime-kanban/prisma.config.ts).
 - `REDIS_URL` – the Redis connection string for realtime features, explained in more detail in the [Polling](./polling) article.
 
 You can also define additional env variables in `.env`:
 
-- `PASSWORD` – a simple password protection for the app. It’s described in more detail in the [Authentication](./authentication) article.
+- `PASSWORD` – a simple password protection for the app's pages and API. It doesn't cover the MCP server or the Telegram webhook, which have their own keys below. It’s described in more detail in the [Authentication](./authentication) article.
 - `MCP_ACCESS_KEY` – a simple authorization key for the MCP server using the `?mcp_access_key=your_key` query param. If this variable is not set, no authorization is required. See the [MCP](./mcp) article for details.
 - `TELEGRAM_BOT_TOKEN` – enables the Telegram bot integration. See the [Telegram Integration](./telegram) article for more information.
+- `TELEGRAM_WEBHOOK_SECRET` – the secret Telegram sends with each webhook call. The webhook answers only when both Telegram variables are set.
 
 ---
 
@@ -126,11 +136,11 @@ To deploy the app with this setup, create a new project in Vercel, link it to a 
 
 Add `OPENAI_API_KEY` to the project environment variables. Other variables such as `DATABASE_URL` and `REDIS_URL` are created automatically by the integrations. 
 
-It’s also recommended to add a `PASSWORD` variable to enable simple (and free) password protection for the app. You can set it to any desired value.
+It’s also recommended to add a `PASSWORD` variable to enable simple (and free) password protection for the app's pages and API. You can set it to any desired value. It doesn't cover the MCP server or the Telegram webhook.
 
 For MCP protection, you can also add the `MCP_ACCESS_KEY` variable to enable basic authorization for the MCP server using the `?mcp_access_key=your_key` query param. If this variable is not set, no authorization is required.
 
-Finally, for Telegram bot integration, you can add the `TELEGRAM_BOT_TOKEN` variable if you want to use the Telegram bot feature. See the [Telegram integration](./telegram) article for more details.
+Finally, for Telegram bot integration, you can add the `TELEGRAM_BOT_TOKEN` and `TELEGRAM_WEBHOOK_SECRET` variables if you want to use the Telegram bot feature. The webhook answers only when both are set. See the [Telegram integration](./telegram) article for more details.
 
 If you run into issues, check the [.env.template](https://github.com/finom/vovk/blob/main/examples/realtime-kanban/.env.template) file for reference.
 
@@ -233,14 +243,17 @@ Before diving into the registry implementation, let's set up the [fetcher](https
 ```ts showLineNumbers copy filename="src/lib/fetcher.ts"
 export const fetcher = createFetcher<{ bypassRegistry?: boolean }>({
   onError: (error) => {
-    if (error.statusCode === HttpStatus.UNAUTHORIZED) {
+    if (
+      error.statusCode === HttpStatus.UNAUTHORIZED &&
+      typeof document !== 'undefined'
+    ) {
       document.location.href = '/login';
     }
   },
 });
 ```
 
-The `onError` handler redirects to the login page on authentication failures. The `bypassRegistry` generic parameter adds a type-safe option that callers can pass (e.g. `await UserRPC.getUsers({ bypassRegistry: true }){:ts}`) to skip registry processing for specific requests — useful for cases where you only need the raw response.
+The `onError` handler redirects to the login page on authentication failures in the browser. The Telegram mixin calls the same fetcher on the server, where there is no `document`, so the error is thrown as it is. The `bypassRegistry` generic parameter adds a type-safe option that callers can pass (e.g. `await UserRPC.getUsers({ bypassRegistry: true }){:ts}`) to skip registry processing for specific requests — useful for cases where you only need the raw response.
 
 Declare the fetcher in the [config](https://vovk.dev/config) so that it replaces the default one imported by the generated [client](https://vovk.dev/typescript):
 
@@ -251,7 +264,7 @@ const config = {
   outputConfig: {
     imports: {
       // ...
-      fetcher: './src/lib/fetcher.ts',
+      fetcher: './src/lib/fetcher',
     },
   },
 };
@@ -890,10 +903,11 @@ export default class UserService {
       },
     });
 
+    // the row is saved either way; search skips it until an update brings its embedding
     await EmbeddingService.generateEntityEmbedding(
       user.entityType,
       user.id as UserType['id'],
-    );
+    ).catch((error) => console.error('Embedding failed', error));
     return user as UserType;
   };
 
@@ -906,7 +920,9 @@ export default class UserService {
       data,
     });
 
-    await EmbeddingService.generateEntityEmbedding(user.entityType, id);
+    await EmbeddingService.generateEntityEmbedding(user.entityType, id).catch(
+      (error) => console.error('Embedding failed', error),
+    );
 
     return user as UserType;
   };
@@ -1064,10 +1080,11 @@ export default class TaskService {
   ) => {
     const task = await DatabaseService.prisma.task.create({ data });
 
+    // the row is saved either way; search skips it until an update brings its embedding
     await EmbeddingService.generateEntityEmbedding(
       task.entityType,
       task.id as TaskType['id'],
-    );
+    ).catch((error) => console.error('Embedding failed', error));
 
     return task as TaskType;
   };
@@ -1081,7 +1098,9 @@ export default class TaskService {
       data,
     });
 
-    await EmbeddingService.generateEntityEmbedding(task.entityType, id);
+    await EmbeddingService.generateEntityEmbedding(task.entityType, id).catch(
+      (error) => console.error('Embedding failed', error),
+    );
 
     return task as TaskType;
   };
@@ -1241,13 +1260,14 @@ Because we use [Prisma](https://www.prisma.io/) as our ORM, we can use [Prisma E
 > [!IMPORTANT]
 >
 > The existing implementation has the following limitations:
-> - Deletions need to be explicit, even if cascade deletions are handled automatically by the database. See the [`UserController.deleteUser`](https://github.com/finom/vovk/blob/main/examples/realtime-kanban/src/modules/user/UserService.ts) method for more details.
+> - Deletions need to be explicit, even if cascade deletions are handled automatically by the database. See the [`UserService.deleteUser`](https://github.com/finom/vovk/blob/main/examples/realtime-kanban/src/modules/user/user-service.ts) method for more details.
 > - All write operations must select the `updatedAt` field for change detection to work properly.
 > - The list of supported write operations is limited to `create`, `update`, `upsert`, and `delete` for simplicity. Read operations are passed through as-is. For more complex operations, additional handling or abstraction is required.
 
-```ts showLineNumbers copy filename="src/modules/database/database-service.ts" source="examples/realtime-kanban" {20,124}
+```ts showLineNumbers copy filename="src/modules/database/database-service.ts" source="examples/realtime-kanban" {24,133}
 import { PrismaNeon } from '@prisma/adapter-neon';
-import { PrismaClient } from '@prisma/client';
+import { Prisma, PrismaClient } from '@prisma/client';
+import { HttpException, HttpStatus } from 'vovk';
 import type { BaseEntity } from '@/types';
 import DatabaseEventsService, {
   type DBChange,
@@ -1313,7 +1333,12 @@ export default class DatabaseService {
                   `Unsupported database operation "${operation}" on model "${model}"`,
                 );
               }
-              const result = (await query(args)) as BaseEntity | BaseEntity[];
+              let result: BaseEntity | BaseEntity[];
+              try {
+                result = (await query(args)) as BaseEntity | BaseEntity[];
+              } catch (error) {
+                throw DatabaseService.toHttpException(error, model);
+              }
 
               const now = new Date().toISOString();
               let change: DBChange | null = null;
@@ -1380,6 +1405,27 @@ export default class DatabaseService {
           },
         },
       });
+  }
+
+  // a missing record, a taken unique value or a missing related record is the caller's error, not a 500
+  private static toHttpException(error: unknown, model: string) {
+    if (!(error instanceof Prisma.PrismaClientKnownRequestError)) return error;
+    switch (error.code) {
+      case 'P2025':
+        return new HttpException(HttpStatus.NOT_FOUND, `${model} not found`);
+      case 'P2002':
+        return new HttpException(
+          HttpStatus.CONFLICT,
+          `${model} with the same unique field already exists`,
+        );
+      case 'P2003':
+        return new HttpException(
+          HttpStatus.BAD_REQUEST,
+          `${model} refers to a record that doesn't exist`,
+        );
+      default:
+        return error;
+    }
   }
 }
 ```
@@ -1456,10 +1502,15 @@ export default class DatabaseEventsService {
       value: JSON.stringify({ id, entityType, date, type }),
     }));
 
-    // one multi(): batch ZADD + EXPIRE
+    // one multi(): batch ZADD, drop the entries older than the key's lifetime, EXPIRE
     await DatabaseEventsService.redisClient
       .multi()
       .zAdd(DatabaseEventsService.DB_KEY, entries)
+      .zRemRangeByScore(
+        DatabaseEventsService.DB_KEY,
+        '-inf',
+        Date.now() - DatabaseEventsService.INTERVAL * 60,
+      )
       .expire(
         DatabaseEventsService.DB_KEY,
         (DatabaseEventsService.INTERVAL * 60) / 1000,
@@ -1497,7 +1548,7 @@ export default class DatabaseEventsService {
 
 ## Polling controller and service
 
-With Redis change entries and the change emitter in place, we can implement a polling endpoint that streams updates to clients in real time. The `DatabasePollController` exposes a single [JSONLines](https://vovk.dev/jsonlines) endpoint, and `DatabasePollService` uses a [JSONLinesResponder](https://vovk.dev/jsonlines#jsonlinesresponder) instance (received from the controller) to send data to clients. The service closes the connection safely after 30 seconds, so clients should reconnect.
+With Redis change entries and the change emitter in place, we can implement a polling endpoint that streams updates to clients in real time. The `DatabasePollController` exposes a single [JSONLines](https://vovk.dev/jsonlines) endpoint, and `DatabasePollService` uses a [JSONLinesResponder](https://vovk.dev/jsonlines#jsonlinesresponder) instance (received from the controller) to send data to clients. The service closes the connection after 30 seconds, so clients should reconnect, and removes its change listener then, or at the first change after the client has left.
 
 ```ts showLineNumbers copy filename="src/modules/database/database-poll-service.ts" source="examples/realtime-kanban"
 import { forEach, groupBy } from 'lodash';
@@ -1514,58 +1565,71 @@ export default class PollService {
       VovkIteration<typeof DatabasePollController.poll>
     >,
   ) {
-    setTimeout(() => responder.close(), 30_000);
-
     let asOldAs = new Date();
     // 10 minutes ago; TODO: use latest update date from registry
     asOldAs.setMinutes(asOldAs.getMinutes() - 10);
 
-    DatabaseEventsService.emitter.on(
-      DatabaseEventsService.DB_KEY,
-      (changes) => {
-        const deleted = changes.filter((change) => change.type === 'delete');
-        const createdOrUpdated = changes.filter(
-          (change) => change.type === 'create' || change.type === 'update',
+    const onChanges = (changes: DBChange[]) => {
+      // the client left before the timeout
+      if (responder.isClosed) {
+        DatabaseEventsService.emitter.off(
+          DatabaseEventsService.DB_KEY,
+          onChanges,
+        );
+        return;
+      }
+      const deleted = changes.filter((change) => change.type === 'delete');
+      const createdOrUpdated = changes.filter(
+        (change) => change.type === 'create' || change.type === 'update',
+      );
+
+      for (const deletedEntity of deleted) {
+        void responder.send({
+          id: deletedEntity.id,
+          entityType: deletedEntity.entityType,
+          __isDeleted: true,
+        });
+      }
+      // group by entityType and date, so the date is maximum date for the given entity: { entityType: string, date: string }[]
+      forEach(groupBy(createdOrUpdated, 'entityType'), (changes) => {
+        const maxDateItem = changes.reduce(
+          (max, change) => {
+            const changeDate = new Date(change.date);
+            return changeDate.getTime() > new Date(max.date).getTime()
+              ? change
+              : max;
+          },
+          { date: new Date(0) } as unknown as DBChange,
         );
 
-        for (const deletedEntity of deleted) {
-          void responder.send({
-            id: deletedEntity.id,
-            entityType: deletedEntity.entityType,
-            __isDeleted: true,
-          });
-        }
-        // group by entityType and date, so the date is maximum date for the given entity: { entityType: string, date: string }[]
-        forEach(groupBy(createdOrUpdated, 'entityType'), (changes) => {
-          const maxDateItem = changes.reduce(
-            (max, change) => {
-              const changeDate = new Date(change.date);
-              return changeDate.getTime() > new Date(max.date).getTime()
-                ? change
-                : max;
-            },
-            { date: new Date(0) } as unknown as DBChange,
-          );
-
-          if (new Date(maxDateItem.date).getTime() > asOldAs.getTime()) {
-            void DatabaseService.prisma[maxDateItem.entityType as 'user']
-              .findMany({
-                where: {
-                  updatedAt: {
-                    gt: asOldAs,
-                  },
+        if (new Date(maxDateItem.date).getTime() > asOldAs.getTime()) {
+          void DatabaseService.prisma[maxDateItem.entityType as 'user']
+            .findMany({
+              where: {
+                updatedAt: {
+                  gt: asOldAs,
                 },
-              })
-              .then((entities) => {
-                for (const entity of entities) {
-                  void responder.send(entity);
-                }
-              });
-            asOldAs = new Date(maxDateItem.date);
-          }
-        });
-      },
-    );
+              },
+            })
+            .then((entities) => {
+              for (const entity of entities) {
+                void responder.send(entity);
+              }
+            });
+          asOldAs = new Date(maxDateItem.date);
+        }
+      });
+    };
+
+    DatabaseEventsService.emitter.on(DatabaseEventsService.DB_KEY, onChanges);
+
+    setTimeout(() => {
+      DatabaseEventsService.emitter.off(
+        DatabaseEventsService.DB_KEY,
+        onChanges,
+      );
+      responder.close();
+    }, 30_000);
   }
 }
 ```
@@ -1774,6 +1838,8 @@ export const sessionGuard = createDecorator(async (req, next) => {
 
 The `sessionGuard` decorator is applied to all procedures. The `typeof req.url !== 'undefined'{:ts}` check is required to distinguish between HTTP requests and [`fn`](https://vovk.dev/fn) invocations.
 
+The Telegram webhook doesn't use `sessionGuard`, as Telegram sends no session cookie. It checks Telegram's secret token instead; see the [Telegram](./telegram) article. The MCP server has its own `MCP_ACCESS_KEY`.
+
 ---
 
 Page: https://vovk.dev/realtime-ui/text-ai
@@ -1843,7 +1909,7 @@ export default class AiSdkController {
 
     const result = streamText({
       model: openai('gpt-5'),
-      system: 'You execute functions sequentially, one by one.',
+      instructions: 'You execute functions sequentially, one by one.',
       messages: await convertToModelMessages(messages),
       tools: toolSet,
       stopWhen: stepCountIs(16),
@@ -1864,7 +1930,7 @@ export default class AiSdkController {
 ```
 *[The code above is fetched from GitHub repository.](https://github.com/finom/vovk/blob/main/examples/realtime-kanban/src/modules/ai/ai-sdk-controller.ts)*
 
-The resulting endpoint is served at `/api/ai-sdk/tools`.
+The resulting endpoint is served at `/api/ai-sdk/function-calling`.
 
 ## Frontend Setup
 
@@ -1876,7 +1942,7 @@ On the frontend we’re going to use the AI SDK, represented by the [ai](https:/
 import { useChat } from '@ai-sdk/react';
 import { useState } from 'react';
 import { DefaultChatTransport } from 'ai';
-import { AiSdkRPC } from 'vovk-client';
+import { AiSdkRPC } from '@/client';
 import { Conversation, ConversationContent, ConversationEmptyState } from '@/components/ai-elements/conversation';
 import { useRegistry } from '@/hooks/use-registry';
 import useParseSDKToolCallOutputs from '@/hooks/use-parse-sdk-tool-call-outputs';
@@ -1886,7 +1952,7 @@ export function ExpandableChatDemo() {
 
   const { messages, sendMessage, status } = useChat({
     transport: new DefaultChatTransport({
-      api: AiSdkRPC.functionCalling.getURL(), // or "/api/ai-sdk/tools",
+      api: AiSdkRPC.functionCalling.getURL(), // or "/api/ai-sdk/function-calling",
     }),
     onToolCall: (toolCall) => {
       console.log('Tool call initiated:', toolCall);
@@ -1909,7 +1975,7 @@ export function ExpandableChatDemo() {
 }
 ```
 
-[Check the full code for the component here](https://github.com/finom/vovk/blob/main/examples/realtime-kanban/src/components/ExpandableChatDemo.tsx)
+[Check the full code for the component here](https://github.com/finom/vovk/blob/main/examples/realtime-kanban/src/components/expandable-chat-demo.tsx)
 
 The key part of the code is the `useParseSDKToolCallOutputs` hook, which extracts tool call outputs from assistant messages and passes them to the registry’s `parse` method. The registry processes the results and triggers UI updates accordingly. The hook also ensures that each tool call output is parsed only once by keeping track of parsed tool call IDs in a `Set`.
 
@@ -1951,9 +2017,11 @@ Without optimizations, the code can be reduced to this small snippet:
 
 ```ts showLineNumbers copy
 // ...
+const store = useRegistryStore();
+
 useEffect(() => {
-  useRegistry.getState().parse(messages);
-}, [messages]);
+  store.getState().parse(messages);
+}, [messages, store]);
 // ...
 ```
 
@@ -2236,7 +2304,7 @@ export default function useWebRTCAudioSession(
 
 ### Client-side Tools
 
-The `useWebRTCAudioSession` hook accepts a tools list derived via `deriveTools({ modules: { UserRPC, TaskRPC } }){:ts}`, and also custom client-side tools created with `createTool` for navigation, scrolling, and other UI interactions. The `getCurrentTime` and `partyMode` tools were borrowed from [this repository](https://github.com/cameronking4/openai-realtime-api-nextjs), which was used as an inspiration for this demo.
+The `useWebRTCAudioSession` hook accepts a tools list derived via `deriveTools({ modules: { UserRPC, TaskRPC } }){:ts}`, and also custom client-side tools created with `standardTool` from the [standard-tool](https://www.npmjs.com/package/standard-tool) package for navigation, scrolling, and other UI interactions. The `getCurrentTime` and `partyMode` tools were borrowed from [this repository](https://github.com/cameronking4/openai-realtime-api-nextjs), which was used as an inspiration for this demo.
 
 Since the component is mounted in [layout.tsx](https://github.com/finom/vovk/blob/main/examples/realtime-kanban/src/app/layout.tsx), the component state and WebRTC connection persist across page navigations within this route. This allows you to navigate the app via voice commands using the `navigateTo` tool, which in turn uses Next.js `useRouter` hook.
 
@@ -2351,7 +2419,7 @@ export default RealTimeDemo;
 ```
 *[The code above is fetched from GitHub repository.](https://github.com/finom/vovk/blob/main/examples/realtime-kanban/src/components/real-time-demo.tsx)*
 
-The code for the `Floaty` component is not shown here for brevity, but you can find it [in the repository](https://github.com/finom/vovk/blob/main/examples/realtime-kanban/src/components/Floaty.tsx).
+The code for the `Floaty` component is not shown here for brevity, but you can find it [in the repository](https://github.com/finom/vovk/blob/main/examples/realtime-kanban/src/components/floaty.tsx).
 
 With that, you now have a fully functional Realtime Voice AI interface that can interact with your application using natural language via voice, powered by OpenAI's Realtime API.
 
@@ -2487,7 +2555,7 @@ export default config;
 After running `vovk dev` or `vovk generate`, the `TelegramAPI` module is available for import from the generated client library.
 
 ```ts
-import { TelegramAPI } from 'vovk-client';
+import { TelegramAPI } from '@/client';
 
 await TelegramAPI.sendMessage({
   body: {
@@ -2501,7 +2569,7 @@ await TelegramAPI.sendMessage({
 Because the Telegram Bot API requires authentication via the bot token in the URL, the API module can be recreated with the `withDefaults` method to set the `apiRoot` permanently.
 
 ```ts
-import { TelegramAPI as TelegramRawAPI } from 'vovk-client';
+import { TelegramAPI as TelegramRawAPI } from '@/client';
 
 const TelegramAPI = TelegramRawAPI.withDefaults({
   apiRoot: 'https://api.telegram.org/bot<YOUR_BOT_TOKEN>',
@@ -2534,15 +2602,49 @@ The `TelegramController` class contains a single `handle` procedure, implementin
 
 ```ts showLineNumbers copy filename="src/modules/telegram/telegram-controller.ts" source="examples/realtime-kanban"
 import { post, prefix } from 'vovk';
+import { telegramGuard } from '@/decorators/telegram-guard';
 import TelegramService from './telegram-service';
 
 @prefix('telegram')
 export default class TelegramController {
   @post('bot')
+  @telegramGuard()
   static handle = TelegramService.handle.bind(TelegramService);
 }
 ```
 *[The code above is fetched from GitHub repository.](https://github.com/finom/vovk/blob/main/examples/realtime-kanban/src/modules/telegram/telegram-controller.ts)*
+
+The app's `PASSWORD` doesn't cover this endpoint, as Telegram sends no session cookie. The `telegramGuard` decorator checks the `X-Telegram-Bot-Api-Secret-Token` header instead: the endpoint answers `404` until both `TELEGRAM_BOT_TOKEN` and `TELEGRAM_WEBHOOK_SECRET` are set, and `401` to a request whose header doesn't hold the secret.
+
+```ts showLineNumbers copy filename="src/decorators/telegram-guard.ts" source="examples/realtime-kanban"
+import { timingSafeEqual } from 'node:crypto';
+import { createDecorator, HttpException, HttpStatus } from 'vovk';
+
+// Telegram sends the secret_token given to setWebhook in this header with every update
+export const telegramGuard = createDecorator(async (req, next) => {
+  const secret = process.env.TELEGRAM_WEBHOOK_SECRET;
+  if (!process.env.TELEGRAM_BOT_TOKEN || !secret) {
+    throw new HttpException(HttpStatus.NOT_FOUND, 'Not found');
+  }
+  const given = Buffer.from(
+    req.headers.get('x-telegram-bot-api-secret-token') ?? '',
+  );
+  const expected = Buffer.from(secret);
+  if (given.length !== expected.length || !timingSafeEqual(given, expected)) {
+    throw new HttpException(HttpStatus.UNAUTHORIZED, 'Unauthorized');
+  }
+  return next();
+});
+```
+*[The code above is fetched from GitHub repository.](https://github.com/finom/vovk/blob/main/examples/realtime-kanban/src/decorators/telegram-guard.ts)*
+
+Telegram sends the header once the webhook is registered with the same secret as `secret_token`. The secret can hold 1 to 256 characters: `A-Z`, `a-z`, `0-9`, `_` and `-`.
+
+```sh
+curl "https://api.telegram.org/bot$TELEGRAM_BOT_TOKEN/setWebhook" \
+  -d "url=https://your-app.example.com/api/bots/telegram/bot" \
+  -d "secret_token=$TELEGRAM_WEBHOOK_SECRET"
+```
 
 ## Service
 
@@ -2560,7 +2662,7 @@ export default class TelegramService {
     // Get chat history
     const history = await this.getChatHistory(chatId);
     const messages = [...this.formatHistoryForVercelAI(history), { role: 'user', content: userMessage } as const];
-    const { tools } = deriveTools({
+    const tools = deriveTools({
       modules: {
         UserController,
         TaskController,
@@ -2570,17 +2672,18 @@ export default class TelegramService {
     // Generate a response using Vercel AI SDK
     const { text } = await generateText({
       model: vercelOpenAI('gpt-5'),
-      system: systemPrompt,
+      instructions: systemPrompt,
       messages,
       stopWhen: stepCountIs(16),
       tools: {
         ...Object.fromEntries(
-          tools.map(({ name, execute, description, parameters }) => [
+          tools.map(({ name, execute, description, inputSchema }) => [
             name,
             tool({
               execute,
               description,
-              inputSchema: jsonSchema(parameters as JSONSchema7),
+              // the SDK takes Standard Schema as is; a procedure without input has no schema
+              inputSchema: inputSchema ?? z.object({}),
             }),
           ])
         ),
@@ -2619,6 +2722,6 @@ export default class TelegramService {
 }
 ```
 
-You can explore the full implementation of `TelegramService` in the [GitHub repository](https://github.com/finom/vovk/blob/main/examples/realtime-kanban/src/modules/telegram/TelegramService.ts), as it’s too long to fit here.
+You can explore the full implementation of `TelegramService` in the [GitHub repository](https://github.com/finom/vovk/blob/main/examples/realtime-kanban/src/modules/telegram/telegram-service.ts), as it’s too long to fit here.
 
 Now the app is ready to receive incoming messages from Telegram users, process them with AI, update the database and UI, and respond back to users.

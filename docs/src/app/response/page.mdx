@@ -119,6 +119,8 @@ export default class UserController {
 
 Both functions work by throwing an error, so you don’t need a `return` statement. TypeScript casts their return type as `never`. The same goes for `forbidden()` and `unauthorized()`: Vovk.ts rethrows these errors so Next.js answers them.
 
+Thrown in a [JSON Lines](/jsonlines) stream, after the response has started, they end the stream with an error line instead: `notFound()`, `forbidden()` and `unauthorized()` send their status, 404, 403 or 401, and `redirect()` is sent as any other error, "Internal server error" in production.
+
 See the [Next.js documentation](https://nextjs.org/docs/app/building-your-application/routing/redirecting) for more information.
 
 <a name="downloads"></a>

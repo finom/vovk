@@ -18,7 +18,7 @@
                 "email": {
                   "type": "string",
                   "format": "email",
-                  "pattern": "^(?!\\.)(?!.*\\.\\.)([A-Za-z0-9_'+\\-\\.]*)[A-Za-z0-9_+-]@([A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$",
+                  "pattern": "^(?:[A-Za-z0-9_'+\\-]+\\.)*[A-Za-z0-9_'+\\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$",
                   "description": "User email",
                   "examples": ["john@example.com", "jane@example.com"]
                 },
@@ -95,6 +95,7 @@
                 }
               },
               "required": ["success", "id", "notify"],
+              "additionalProperties": false,
               "description": "Response object"
             }
           },
@@ -124,6 +125,7 @@
                 }
               },
               "required": ["message"],
+              "additionalProperties": false,
               "description": "Streamed token object"
             }
           },

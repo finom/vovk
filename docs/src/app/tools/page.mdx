@@ -6,7 +6,7 @@ Controllers as well as generated RPC/API modules can be converted into AI tools 
 - RPC modules generated from controllers for HTTP calls or be used on front-end or other environments that support `fetch`.
 - Third-party OpenAPI-based modules (called [OpenAPI mixins](/mixins) in this documentation), enabling to combine back-end functionality with external APIs in a single agent.
 
-A tool comes from a [procedure](/procedure) or an RPC method. Other members of a module are left out.
+A tool comes from a [procedure](/procedure) or an RPC method that has an operation object, given by [`@operation`](/openapi), `@operation.tool` or `@operation.error`. Every [OpenAPI mixin](/mixins) method has one. Other members of a module are left out.
 
 ```ts showLineNumbers copy filename="src/modules/user/user-controller.ts"
 import { deriveTools } from 'vovk';
@@ -183,7 +183,7 @@ That's an example of Vercel AI SDK chat that uses `UserController` to derive too
 First, create an empty controller. The command will also update the root `route.ts` file.
 
 ```sh npm2yarn copy
-npx vovk new controller aiSdk --empty
+npm exec -- vovk new controller aiSdk --empty
 ```
 
 Paste the following into the newly created `src/modules/ai-sdk/ai-sdk-controller.ts`, adjusting imports as needed:
@@ -229,7 +229,7 @@ export default class AiSdkController {
 
     const result = streamText({
       model: openai('gpt-5-nano'),
-      system: 'You are a helpful assistant',
+      instructions: 'You are a helpful assistant',
       messages: await convertToModelMessages(messages),
       tools,
     });

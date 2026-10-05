@@ -6,6 +6,8 @@ Vovk.ts procedures expose an [`.fn` method](/fn) that calls the handler directly
 
 Any test runner works (Vitest, Jest, Node.js test runner, etc.). Examples below use Vitest.
 
+The `vovk` package is ES modules only. Jest set up with `next/jest` can't load it as is, so add `transpilePackages: ['vovk']` to the Next.js config.
+
 ## Testing with `.fn`
 
 Given a controller:

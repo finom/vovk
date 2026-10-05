@@ -13,13 +13,16 @@ Vovk.ts preserves a consistent call signature for every method using a single ar
 ```ts showLineNumbers copy
 import { PetstoreAPI } from '@/client';
 
-await PetstoreAPI.updatePet({
-  params: { id: '123' }, // URL params (if any)
-  query: { hello: 'world' }, // Query params (if any)
-  body: { name: 'Doggo' }, // Request body (if any)
-  disableClientValidation: true, // Optional: disable client-side validation
+await PetstoreAPI.updatePetWithForm({
+  params: { petId: 1 }, // URL params (if any)
+  query: { name: 'Doggo', status: 'sold' }, // Query params (if any)
   init: { headers: { 'X-Custom-Header': 'value' } }, // Optional: fetch init
   apiRoot: 'https://api.example.com', // Optional: override API root URL
+});
+
+await PetstoreAPI.updatePet({
+  body: { id: 1, name: 'Doggo', photoUrls: [] }, // Request body (if any)
+  disableClientValidation: true, // Optional: disable client-side validation
 });
 ```
 
@@ -296,7 +299,10 @@ import {
 } from '@/client';
 
 await GithubIssuesAPI.listForOrg({ params: { org: 'octocat' } });
-await GithubReposAPI.removeStatusCheckContexts({ params: { owner: 'octocat', repo: 'Hello-World', branch: 'main' } });
+await GithubReposAPI.removeStatusCheckContexts({
+  params: { owner: 'octocat', repo: 'Hello-World', branch: 'main' },
+  body: { contexts: ['ci/build'] },
+});
 await GithubPullsAPI.list({ params: { owner: 'octocat', repo: 'Hello-World' } });
 await GithubActionsAPI.listRepoWorkflows({ params: { owner: 'octocat', repo: 'Hello-World' } });
 await GithubReposAPI.getLatestRelease({ params: { owner: 'octocat', repo: 'Hello-World' } });

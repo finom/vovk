@@ -17,7 +17,7 @@ npm install vovk-python --save-dev
 Create a Python package with the [CLI](/generate) command:
 
 ```sh npm2yarn copy
-npx vovk generate --from py --out ./python_package
+npm exec -- vovk generate --from py --out ./python_package
 ```
 
 This produces:
@@ -45,7 +45,7 @@ python3 -m build ./python_package --wheel --sdist && python3 -m twine upload ./p
 If you prefer generating source files to embed in another Python project, use the `pySrc` template:
 
 ```sh npm2yarn copy
-npx vovk generate --from pySrc --out ./python_src
+npm exec -- vovk generate --from pySrc --out ./python_src
 ```
 
 This generates:
@@ -69,9 +69,19 @@ const config = {
   composedClient: {
     fromTemplates: ['ts', 'py'], // keeps the default "ts" template
   },
+  clientTemplateDefs: {
+    py: {
+      extends: 'py', // extends the built-in "py" template
+      outputConfig: {
+        origin: 'https://example.com', // the server the Python client calls
+      },
+    },
+  },
 };
 export default config;
 ```
+
+The Python client sends its calls to an absolute URL, so it needs [`outputConfig.origin`](/config#outputconfig). Set on the `py` template, it leaves the TypeScript client's relative URLs as they are. Without an origin, `vovk generate` warns, and every call needs its own `api_root`.
 
 The [py](/templates#py) template (and others) has a default `outDir` (`./dist_python`) for composed clients. Override it via [template definitions](/templates#defs):
 
@@ -311,6 +321,8 @@ All RPC modules are generated in `__init__.py`, which contains the RPC functions
 
 Types for `body`, `query`, and `params` follow the pattern `[PascalCaseMethodName][InputType]`. For a method `updateUser`, you get `UpdateUserBody`, `UpdateUserQuery`, and `UpdateUserParams`.
 
+Method names are in snake_case: `UserRPC.updateUser` is `UserRPC.update_user`. They are per RPC class, in schema order: a name already taken gets the first free suffix, `_2`, `_3`, so `getUserByID` and `getUserById` give `get_user_by_id` and `get_user_by_id_2`.
+
 ```py
 from dist_python.src.vovk_hello_world import UserRPC
 import vovk_hello_world
@@ -339,7 +351,7 @@ if __name__ == "__main__":
       print(f"Error: {e}")
 ```
 
-Under the hood, it uses [requests](https://pypi.org/project/requests/) for HTTP, [jsonschema](https://pypi.org/project/jsonschema/) for client-side validation, and other common libraries.
+Under the hood, it uses [requests](https://pypi.org/project/requests/) for HTTP, [jsonschema](https://pypi.org/project/jsonschema/) for client-side validation, and other common libraries. A `pattern` that Python's `re` can't compile, such as `\p{L}`, is left to the server.
 
 A call returns the parsed JSON, or `None` for an empty JSON body. A response of a `text/*` type, or of any type with a charset, comes back as `str`, decoded as UTF-8 unless the charset names another encoding. Any other response, such as a file, comes back as `bytes`.
 

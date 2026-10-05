@@ -16,6 +16,7 @@ JSON responses (including ones created with `Response` or `NextResponse`, and `+
 
 ```ts showLineNumbers copy
 export default class UserController {
+  @operation({ summary: 'Get user' })
   @get('{id}')
   static getUser = procedure().handle(async (req, { id }) => {
     return { hello: 'world' };
@@ -30,7 +31,7 @@ When the tool is executed with `ToModelOutput.MCP` formatter, the output will be
   "content": [
     {
       "type": "text",
-      "text": "{\"hello\":\"world\"}",
+      "text": "{\"hello\":\"world\"}"
     }
   ],
   "structuredContent": { "hello": "world" }
@@ -39,10 +40,11 @@ When the tool is executed with `ToModelOutput.MCP` formatter, the output will be
 
 ## Audio and Image Content
 
-If procedure returns a `Response` with `Content-Type` header set to `audio/*` or `image/*`, the output will be formatted accordingly.
+If procedure returns a `Response` with `Content-Type` header set to `audio/*` or `image/*`, the output will be formatted accordingly. Its `data` field holds the body in base64.
 
 ```ts showLineNumbers copy
 export default class MediaController {
+  @operation({ summary: 'Get image' })
   @get('image')
   static getImage = procedure().handle(() => {
     return new Response(buffer, {
@@ -59,7 +61,7 @@ When the tool is executed with `ToModelOutput.MCP` formatter, the output will be
   "content": [
     {
       "type": "image",
-      "data": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAA...",
+      "data": "iVBORw0KGgoAAAANSUhEUgAA...",
       "mimeType": "image/png"
     }
   ]
@@ -72,15 +74,17 @@ The response can be created with [`toDownloadResponse`](/response#downloads) uti
 import { toDownloadResponse } from 'vovk';
 
 export default class MediaController {
+  @operation({ summary: 'Get audio' })
   @get('audio')
   static getAudio = procedure().handle(() => {
-    return toDownloadResponse(buffer, { contentType: 'audio/mpeg' });
+    return toDownloadResponse(buffer, { type: 'audio/mpeg' });
   });
 }
 ```
 
 ```ts showLineNumbers copy
 export default class MediaController {
+  @operation({ summary: 'Get audio from a URL' })
   @get('from-url')
   static getAudioFromURL = procedure().handle(() => {
     return fetch('https://example.com/audio.mp3');
@@ -94,6 +98,7 @@ If procedure returns a `Response` with `Content-Type` header set to `text/*` or 
 
 ```ts showLineNumbers copy
 export default class TextController {
+  @operation({ summary: 'Get greeting' })
   @get('greeting')
   static getGreeting = procedure().handle(() => {
     return new Response('Hello, world!', {
@@ -118,14 +123,15 @@ When the tool is executed with `ToModelOutput.MCP` formatter, the output will be
 
 ## `annotations`
 
-Annotations can be added to the output by setting a special metadata key `mcpOutput` using [req.vovk.meta](/req-vovk#meta) function. This approach makes sure that if the procedure used as an endpoint, the response will not be affected.
+Annotations can be added to the output by setting a special metadata key `mcpOutput` using [req.vovk.meta](/req-vovk#meta) function. This approach makes sure that if the procedure used as an endpoint, the response will not be affected. MCP takes a `priority` from 0 (least important) to 1 (most important).
 
 ```ts showLineNumbers copy
 export default class AnnotatedController {
+  @operation({ summary: 'Get annotated image' })
   @get('annotated-image')
   static getAnnotatedImage = procedure().handle((req) => {
     req.vovk.meta({
-      mcpOutput: { annotations: { audience: ['user'], priority: 5 } },
+      mcpOutput: { annotations: { audience: ['user'], priority: 0.8 } },
     });
     return fetch('https://example.com/image.jpg');
   });
@@ -139,11 +145,11 @@ When the tool is executed with `ToModelOutput.MCP` formatter, each content item 
   "content": [
     {
       "type": "image",
-      "data": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD...",
+      "data": "/9j/4AAQSkZJRgABAQAAAQABAAD...",
       "mimeType": "image/jpeg",
       "annotations": {
         "audience": ["user"],
-        "priority": 5
+        "priority": 0.8
       }
     }
   ]

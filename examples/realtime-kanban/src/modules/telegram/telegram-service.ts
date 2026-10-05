@@ -251,7 +251,7 @@ export default class TelegramService {
     // Generate a response using Vercel AI SDK
     const { text } = await generateText({
       model: vercelOpenAI('gpt-5'),
-      system: systemPrompt,
+      instructions: systemPrompt,
       messages,
       stopWhen: stepCountIs(16),
       tools: {
