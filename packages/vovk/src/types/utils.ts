@@ -21,3 +21,6 @@ export type StaticClass = Function;
 export type IsAny<T> = 0 extends 1 & T ? true : false;
 
 export type IsNotAny<T> = IsAny<T> extends true ? false : true;
+
+// keeps T out of inference, as NoInfer does on TypeScript 5.4+, without raising the TypeScript version the types need
+export type NoInference<T> = [T][T extends unknown ? 0 : never];
