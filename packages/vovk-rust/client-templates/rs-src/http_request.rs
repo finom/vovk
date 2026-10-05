@@ -63,6 +63,8 @@ pub struct Endpoint {
 }
 
 /// The request body, as the handler's content type sends it
+// a crate builds only the variants its procedures send
+#[allow(dead_code)]
 pub enum RequestBody<'a, B: ?Sized> {
     None,
     Json(&'a B),
