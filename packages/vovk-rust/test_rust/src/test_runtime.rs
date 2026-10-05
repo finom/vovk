@@ -26,25 +26,33 @@ pub mod test_runtime {
         assert_eq!(download(Kind::csv, "0").await.unwrap(), "name,city\nZoë,東京\n");
     }
 
-    // a token read from a file keeps its line break: the call must not go out without the header
+    // a token read from a file keeps its line break: it goes out trimmed, as fetch sends it
     #[tokio::test]
     async fn test_header_value_with_a_line_break() {
         let mut headers = HashMap::new();
-        headers.insert("authorization".to_string(), "Bearer token\n".to_string());
+        headers.insert("authorization".to_string(), " Bearer token\r\n".to_string());
 
-        let result = client_runtime_rpc::get_request_headers(
-            (),
-            (),
-            (),
-            Some(&headers),
-            Some(&api_root()),
-            false,
-        )
-        .await;
+        let data = client_runtime_rpc::get_request_headers((), (), (), Some(&headers), Some(&api_root()), false)
+            .await
+            .unwrap();
 
-        // the client may refuse the value, or send it trimmed as fetch does
-        if let Ok(data) = result {
-            assert_eq!(data["authorization"], "Bearer token");
+        assert_eq!(data["authorization"], "Bearer token");
+    }
+
+    // a header that is still invalid fails the call before it goes out, and doesn't go out without the header
+    #[tokio::test]
+    async fn test_invalid_header() {
+        for (name, value) in [("authorization", "Bearer\ntoken"), ("x token", "secret")] {
+            let mut headers = HashMap::new();
+            headers.insert(name.to_string(), value.to_string());
+
+            let error = client_runtime_rpc::get_request_headers((), (), (), Some(&headers), Some(&api_root()), false)
+                .await
+                .unwrap_err();
+
+            assert_eq!(error.status_code(), 0);
+            assert!(error.message().contains(name), "{}", error);
+            assert!(!error.message().contains(value), "{}", error);
         }
     }
 

@@ -338,14 +338,16 @@ where
         headers_map.insert("Content-Type", value);
     }
 
-    // Merge with user-provided headers if any
+    // a value goes out without the spaces, tabs and line breaks around it, as fetch sends it; a name or value that is
+    // still invalid fails the call, which otherwise would go out without it (the value stays out of the message)
     if let Some(provided_headers) = headers {
         for (key, value) in provided_headers {
-            if let Ok(header_name) = reqwest::header::HeaderName::from_bytes(key.as_bytes()) {
-                if let Ok(header_value) = reqwest::header::HeaderValue::from_str(value) {
-                    headers_map.insert(header_name, header_value);
-                }
-            }
+            let header_name = reqwest::header::HeaderName::from_bytes(key.as_bytes())
+                .map_err(|_| format!("Invalid header name {:?}", key))?;
+            let header_value =
+                reqwest::header::HeaderValue::from_str(value.trim_matches(|c| matches!(c, ' ' | '\t' | '\r' | '\n')))
+                    .map_err(|_| format!("Invalid value of header {:?}", key))?;
+            headers_map.insert(header_name, header_value);
         }
     }
 
