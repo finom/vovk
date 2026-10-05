@@ -151,14 +151,9 @@ export default class TelegramService {
         }),
       }),
       model: vercelOpenAI('gpt-5'),
-      messages: [
-        ...messages,
-        {
-          role: 'system',
-          content:
-            'Determine the type of response: "text" or "voice" depending on the user request (if user sent voice message, it should be "voice"). The "processedText" should be the content to send: if it\'s a text message, format it properly for Telegram parse_mode HTML and include it here, if it\'s a voice message, include the text that will be converted to speech. Never include user IDs in the voice response.',
-        },
-      ],
+      instructions:
+        'Determine the type of response: "text" or "voice" depending on the user request (if user sent voice message, it should be "voice"). The "processedText" should be the content to send: if it\'s a text message, format it properly for Telegram parse_mode HTML and include it here, if it\'s a voice message, include the text that will be converted to speech. Never include user IDs in the voice response.',
+      messages,
     });
 
     console.log('{ type, processedText }:', { type, processedText });
