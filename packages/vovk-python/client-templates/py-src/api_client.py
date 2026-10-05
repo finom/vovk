@@ -1,6 +1,7 @@
 import os
 import re
 import json
+import codecs
 import functools
 import requests
 from urllib.parse import quote
@@ -21,6 +22,8 @@ class HttpException(Exception):
         self.message = response_body['message']
         self.status_code = response_body['statusCode']
         self.cause = response_body.get('cause')
+
+_JSON_LINES_MEDIA_TYPES = ('application/jsonl', 'application/jsonlines', 'application/x-ndjson')
 
 def _to_text(value: Any) -> str:
     # a scalar as JavaScript writes it: true and false, and a whole number without .0
@@ -277,7 +280,7 @@ class ApiClient:
         if response.status_code >= 400:
             raise self._to_http_exception(response, content_type)
 
-        if 'application/jsonl' in content_type:
+        if content_type.split(';')[0].strip().lower() in _JSON_LINES_MEDIA_TYPES:
             return self._stream_jsonl(response)
 
         elif 'application/json' in content_type:
@@ -370,10 +373,12 @@ class ApiClient:
             Each parsed JSON object from the response
         """
         buffer = ""
+        # JSON Lines is UTF-8, and application/x-ndjson comes without a charset that requests could decode it with
+        decoder = codecs.getincrementaldecoder('utf-8')(errors='replace')
         
-        for chunk in response.iter_content(chunk_size=1024, decode_unicode=True):
+        for chunk in response.iter_content(chunk_size=1024):
             if chunk:
-                buffer += chunk
+                buffer += decoder.decode(chunk)
                 lines = buffer.split('\n')
                 
                 # Process all complete lines
@@ -385,6 +390,7 @@ class ApiClient:
                 # Keep the last (potentially incomplete) line in the buffer
                 buffer = lines[-1]
         
+        buffer += decoder.decode(b'', final=True)
         # Process any remaining data in buffer, a stream cut inside its last line fails here
         if buffer.strip():
             yield self._parse_jsonl_line(buffer.strip())

@@ -395,7 +395,7 @@ fn is_json(media_type: &str) -> bool {
 }
 
 fn is_json_lines(media_type: &str) -> bool {
-    media_type == "application/jsonl" || media_type == "application/x-ndjson"
+    matches!(media_type, "application/jsonl" | "application/jsonlines" | "application/x-ndjson")
 }
 
 // the message of a JSON error, or the text a proxy sent
