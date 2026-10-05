@@ -332,9 +332,15 @@ export function vovkSchemaToOpenAPI({
                       content: {
                         'application/jsonl': {
                           schema: iterationValidation,
-                          // the body is lines of items, an example of the schema is one item
+                          // the body is lines of items, an example of the schema is one item; its refs point at the components
                           example: Array(3)
-                            .fill(JSON.stringify(schemaToObject(iterationValidation)))
+                            .fill(
+                              JSON.stringify(
+                                schemaToObject(iterationValidation, {
+                                  components: { schemas: components },
+                                } as VovkJSONSchemaBase)
+                              )
+                            )
                             .join('\n'),
                         },
                       },
