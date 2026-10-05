@@ -258,7 +258,8 @@ function handleArray(schema: JSONSchema7, name: string, context: CompileContext)
   }
 
   const itemType = compileSchema(schema.items, `${name}Item`, context);
-  return `${wrapUnionType(itemType)}[]`;
+  // a union or an intersection binds looser than []
+  return /[|&]/.test(itemType) ? `(${itemType})[]` : `${itemType}[]`;
 }
 
 function handleObject(schema: JSONSchema7, name: string, context: CompileContext): string {
