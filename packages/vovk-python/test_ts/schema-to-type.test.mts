@@ -806,6 +806,13 @@ test('getBodyKind', async (t) => {
     assert.equal(getBodyKind({ type: 'object', properties: {} }), 'json');
   });
 
+  await t.test('an object goes out as JSON, whatever text type the procedure also takes', () => {
+    const body = { type: 'object', properties: { event: { type: 'string' } } } as const;
+
+    assert.equal(getBodyKind({ ...body, 'x-contentType': ['text/plain', 'application/json'] }), 'json');
+    assert.equal(getBodyKind({ ...body, 'x-contentType': ['application/json', 'text/plain'] }), 'json');
+  });
+
   await t.test('reads a body that only declares its content type', () => {
     // a procedure with contentType and no body schema
     assert.equal(getBodyKind({ 'x-contentType': ['text/plain'] }), 'text');

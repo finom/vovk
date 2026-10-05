@@ -1,10 +1,61 @@
 #[cfg(test)]
 pub mod test_requests {
     use generated_rust_client::{client_sweep_rpc, mixin_rpc, rust_sweep_rpc, with_validation_rpc};
+    use reqwest::multipart;
     use serde_json::json;
 
     fn port() -> String {
         std::env::var("PORT").unwrap_or_else(|_| "3210".to_string())
+    }
+
+    // client_sweep_rpc has no origin in the config
+    fn api_root() -> String {
+        format!("http://localhost:{}/api", port())
+    }
+
+    // a server that reads each request in full, then answers it with this status, these headers and this body
+    async fn serve(status: &str, headers: &[(&str, &str)], body: &str) -> String {
+        use tokio::io::{AsyncReadExt, AsyncWriteExt};
+
+        let listener = tokio::net::TcpListener::bind("127.0.0.1:0").await.unwrap();
+        let api_root = format!("http://{}/api", listener.local_addr().unwrap());
+        let mut response = format!("HTTP/1.1 {}\r\ncontent-length: {}\r\nconnection: close\r\n", status, body.len());
+        for (name, value) in headers {
+            response += &format!("{}: {}\r\n", name, value);
+        }
+        response += &format!("\r\n{}", body);
+
+        tokio::spawn(async move {
+            while let Ok((mut socket, _)) = listener.accept().await {
+                let response = response.clone();
+                tokio::spawn(async move {
+                    let mut request = Vec::new();
+                    let mut buffer = [0; 4096];
+                    loop {
+                        let Ok(read @ 1..) = socket.read(&mut buffer).await else { return };
+                        request.extend_from_slice(&buffer[..read]);
+                        let Some(end) = request.windows(4).position(|window| window == b"\r\n\r\n") else { continue };
+                        let head = String::from_utf8_lossy(&request[..end]).to_ascii_lowercase();
+                        let is_complete = if head.contains("transfer-encoding: chunked") {
+                            request.ends_with(b"0\r\n\r\n")
+                        } else {
+                            let length = head
+                                .lines()
+                                .find_map(|line| line.strip_prefix("content-length:"))
+                                .map_or(0, |value| value.trim().parse().unwrap_or(0));
+                            request.len() >= end + 4 + length
+                        };
+                        if is_complete {
+                            break;
+                        }
+                    }
+                    let _ = socket.write_all(response.as_bytes()).await;
+                    let _ = socket.shutdown().await;
+                });
+            }
+        });
+
+        api_root
     }
 
     // an unset optional field is left out: null would fail the schema on the client and on the server
@@ -241,5 +292,95 @@ pub mod test_requests {
         }
 
         assert_eq!(connections.load(Ordering::SeqCst), 1);
+    }
+
+    // a form sends every value as text, so typed fields keep their types only as JSON
+    #[tokio::test]
+    async fn test_form_or_json_body_without_a_file() {
+        use client_sweep_rpc::post_form_or_json_::body as Body;
+
+        let data = client_sweep_rpc::post_form_or_json(
+            Body { n: 5.0, flag: true, tags: vec!["a".to_string(), "b".to_string()] },
+            (),
+            (),
+            None,
+            Some(&api_root()),
+            false,
+        ).await.unwrap();
+
+        assert_eq!(data, json!({"body": {"n": 5, "flag": true, "tags": ["a", "b"]}, "contentType": "application/json"}));
+    }
+
+    // the path has {id}, the procedure has no params schema
+    #[tokio::test]
+    async fn test_params_without_a_schema() {
+        let params = serde_json::from_value(json!({"id": "42"})).unwrap();
+        let data = client_sweep_rpc::get_user_posts((), (), params, None, Some(&api_root()), false).await.unwrap();
+
+        assert_eq!(data, json!({"id": "42"}));
+    }
+
+    // reqwest can't send a multipart body again, so it doesn't follow a 307 or 308 and returns it
+    #[tokio::test]
+    async fn test_unfollowed_redirect() {
+        for (status_code, status) in [(307, "307 Temporary Redirect"), (308, "308 Permanent Redirect")] {
+            let api_root = serve(status, &[("location", "/api/client-sweep/sweep/form-entries")], "").await;
+            let form = multipart::Form::new().text("a", "1");
+            let error = client_sweep_rpc::post_form_entries(form, (), (), None, Some(&api_root), false)
+                .await
+                .unwrap_err();
+
+            assert_eq!(error.status_code(), status_code);
+        }
+    }
+
+    // FastAPI's {"detail": ...} and an RFC 9457 problem document have no message key
+    #[tokio::test]
+    async fn test_error_body_without_a_message() {
+        let errors = [
+            ("application/json", r#"{"detail":"Item not found"}"#, "Item not found"),
+            (
+                "application/problem+json",
+                r#"{"type":"https://example.com/probs/not-found","title":"Not Found","status":404,"detail":"Pet 42 does not exist"}"#,
+                "Pet 42 does not exist",
+            ),
+        ];
+        for (content_type, body, message) in errors {
+            let api_root = serve("404 Not Found", &[("content-type", content_type)], body).await;
+
+            let error = rust_sweep_rpc::get_is_error_data((), (), (), None, Some(&api_root), false).await.unwrap_err();
+            assert_eq!((error.status_code(), error.message()), (404, message));
+
+            let query = with_validation_rpc::handle_stream_::query { values: vec!["a".to_string()] };
+            let error = with_validation_rpc::handle_stream((), query, (), None, Some(&api_root), false)
+                .await
+                .err()
+                .expect("a 404 fails the stream call");
+            assert_eq!((error.status_code(), error.message()), (404, message));
+        }
+    }
+
+    // reqwest's default writes such names as name*=utf-8''..., which the server can't read
+    #[tokio::test]
+    async fn test_multipart_field_names() {
+        let form = multipart::Form::new()
+            .text("first name", "1")
+            .text("имя", "2")
+            .text("a/b", "3")
+            .text("a%b", "4");
+        let data = client_sweep_rpc::post_form_entries(form, (), (), None, Some(&api_root()), false).await.unwrap();
+
+        assert_eq!(data, json!([["first name", "1"], ["имя", "2"], ["a/b", "3"], ["a%b", "4"]]));
+    }
+
+    // a handler without an iteration schema reads each JSON Lines media type as an array of its items
+    #[tokio::test]
+    async fn test_json_lines_media_types() {
+        for media_type in ["application/jsonl", "application/jsonlines", "application/x-ndjson"] {
+            let api_root = serve("200 OK", &[("content-type", media_type)], "{\"n\":1}\n{\"n\":2}\n").await;
+            let data = rust_sweep_rpc::get_is_error_data((), (), (), None, Some(&api_root), false).await.unwrap();
+
+            assert_eq!(data, json!([{"n": 1}, {"n": 2}]), "{}", media_type);
+        }
     }
 }

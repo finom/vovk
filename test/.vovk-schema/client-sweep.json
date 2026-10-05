@@ -228,6 +228,75 @@
           "path": "json-or-form",
           "httpMethod": "POST"
         },
+        "postFormOrJson": {
+          "validation": {
+            "body": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "object",
+              "properties": {
+                "n": {
+                  "type": "number"
+                },
+                "flag": {
+                  "type": "boolean"
+                },
+                "tags": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              },
+              "required": [
+                "n",
+                "flag",
+                "tags"
+              ],
+              "x-contentType": [
+                "application/x-www-form-urlencoded",
+                "application/json"
+              ]
+            }
+          },
+          "path": "form-or-json",
+          "httpMethod": "POST"
+        },
+        "postStringJsonOrText": {
+          "validation": {
+            "body": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "string",
+              "x-contentType": [
+                "application/json",
+                "text/plain"
+              ]
+            }
+          },
+          "path": "string-json-or-text",
+          "httpMethod": "POST"
+        },
+        "postObjectTextOrJson": {
+          "validation": {
+            "body": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "object",
+              "properties": {
+                "event": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "event"
+              ],
+              "x-contentType": [
+                "text/plain",
+                "application/json"
+              ]
+            }
+          },
+          "path": "object-text-or-json",
+          "httpMethod": "POST"
+        },
         "postUrlEncoded": {
           "validation": {
             "body": {
@@ -348,6 +417,41 @@
             }
           },
           "path": "formats",
+          "httpMethod": "POST"
+        },
+        "postPatterns": {
+          "validation": {
+            "body": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "object",
+              "properties": {
+                "emoji": {
+                  "type": "string",
+                  "format": "emoji",
+                  "pattern": "^(\\p{Extended_Pictographic}|\\p{Emoji_Component})+$"
+                },
+                "letters": {
+                  "type": "string",
+                  "pattern": "^\\p{L}+$"
+                },
+                "user": {
+                  "type": "string",
+                  "pattern": "^(?<user>[a-z]+)@x$"
+                },
+                "smile": {
+                  "type": "string",
+                  "pattern": "^\\u{1F600}$"
+                }
+              },
+              "required": [
+                "emoji",
+                "letters",
+                "user",
+                "smile"
+              ]
+            }
+          },
+          "path": "patterns",
           "httpMethod": "POST"
         }
       }

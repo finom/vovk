@@ -144,6 +144,35 @@ export default class ClientSweepController {
     };
   });
 
+  // typed fields keep their types only as JSON, a form sends every value as text
+  @post('form-or-json')
+  static postFormOrJson = procedure({
+    contentType: ['application/x-www-form-urlencoded', 'application/json'],
+    body: z.object({ n: z.number(), flag: z.boolean(), tags: z.array(z.string()) }),
+  }).handle(async (req) => ({
+    body: await req.vovk.body(),
+    contentType: req.headers.get('content-type')?.split(';')[0],
+  }));
+
+  @post('string-json-or-text')
+  static postStringJsonOrText = procedure({
+    contentType: ['application/json', 'text/plain'],
+    body: z.string(),
+  }).handle(async (req) => ({
+    body: await req.vovk.body(),
+    contentType: req.headers.get('content-type')?.split(';')[0],
+  }));
+
+  // text/plain for a client that can only send text, such as sendBeacon
+  @post('object-text-or-json')
+  static postObjectTextOrJson = procedure({
+    contentType: ['text/plain', 'application/json'],
+    body: z.object({ event: z.string() }),
+  }).handle(async (req) => ({
+    body: await req.vovk.body(),
+    contentType: req.headers.get('content-type')?.split(';')[0],
+  }));
+
   @post('url-encoded')
   static postUrlEncoded = procedure({
     contentType: 'application/x-www-form-urlencoded',
@@ -169,5 +198,17 @@ export default class ClientSweepController {
   @post('formats')
   static postFormats = procedure({
     body: z.object({ id: z.nanoid(), phone: z.e164(), token: z.jwt(), color: z.hex() }),
+  }).handle(async (req) => req.vovk.body());
+
+  // JavaScript patterns: Unicode properties, a named group and a code point escape
+  @post('patterns')
+  static postPatterns = procedure({
+    body: z.object({
+      emoji: z.emoji(),
+      letters: z.string().regex(/^\p{L}+$/u),
+      // biome-ignore lint/complexity/useRegexLiterals: tsc refuses a named group literal below an ES2018 target
+      user: z.string().regex(new RegExp('^(?<user>[a-z]+)@x$')),
+      smile: z.string().regex(/^\u{1F600}$/u),
+    }),
   }).handle(async (req) => req.vovk.body());
 }

@@ -1,0 +1,89 @@
+import { strict as assert } from 'node:assert';
+import { execFileSync, spawnSync } from 'node:child_process';
+import fs from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
+import { after, test } from 'node:test';
+
+const cliPath = path.join(import.meta.dirname, '../../vovk-cli/dist/index.mjs');
+const hasPython = spawnSync('python3', ['--version']).status === 0;
+const projectDirs: string[] = [];
+
+after(() => {
+  for (const dir of projectDirs) fs.rmSync(dir, { recursive: true, force: true });
+});
+
+// generates the py client of a project with one segment of these controllers into dist_python
+function generate(controllers: Record<string, unknown>, outputConfig: object = {}) {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'vovk-python-'));
+  projectDirs.push(dir);
+  const segment = {
+    $schema: 'https://vovk.dev/api/schema/v3/segment.json',
+    emitSchema: true,
+    segmentName: '',
+    segmentType: 'segment',
+    controllers,
+  };
+  const config = { composedClient: { fromTemplates: ['py'], prettifyClient: false }, outputConfig };
+  fs.mkdirSync(path.join(dir, '.vovk-schema'));
+  fs.writeFileSync(path.join(dir, '.vovk-schema/root.json'), JSON.stringify(segment));
+  fs.writeFileSync(path.join(dir, 'package.json'), JSON.stringify({ name: 'app', version: '1.0.0' }));
+  fs.writeFileSync(path.join(dir, 'vovk.config.mjs'), `export default ${JSON.stringify(config)};`);
+  execFileSync(process.execPath, [cliPath, 'generate'], { cwd: dir, stdio: 'pipe' });
+  return (file: string) => path.join(dir, 'dist_python', file);
+}
+
+const controller = (name: string, handlers: Record<string, unknown>) => ({
+  rpcModuleName: `${name}RPC`,
+  originalControllerName: `${name}Controller`,
+  prefix: name.toLowerCase(),
+  handlers,
+});
+
+const idSchema = { type: 'object', properties: { id: { type: 'string' } }, required: ['id'] };
+
+test('a controller without handlers', { skip: !hasPython && 'python3 not found' }, () => {
+  // as `vovk new controller post --empty` leaves it
+  const file = generate({
+    UserRPC: controller('User', { list: { httpMethod: 'GET', path: '', validation: {} } }),
+    PostRPC: controller('Post', {}),
+  });
+
+  const result = spawnSync(
+    'python3',
+    [
+      '-c',
+      'import ast, sys; ast.parse(open(sys.argv[1], encoding="utf-8").read(), sys.argv[1])',
+      file('src/app/__init__.py'),
+    ],
+    { encoding: 'utf-8' }
+  );
+  assert.equal(result.status, 0, result.stderr);
+});
+
+test('handler names that are alike in snake_case get a method each', () => {
+  const file = generate({
+    UserRPC: controller('User', {
+      getUserByID: { httpMethod: 'GET', path: 'by-id', validation: { query: idSchema } },
+      getUserById: { httpMethod: 'POST', path: 'by-id', validation: { body: idSchema } },
+    }),
+  });
+  const source = fs.readFileSync(file('src/app/__init__.py'), 'utf-8');
+  const methods = [...source.matchAll(/^ {4}def (\w+)\(/gm)].map(([, name]) => name);
+  const handlers = [...source.matchAll(/handler_name="(\w+)"/g)].map(([, name]) => name);
+
+  // a second def of a name replaces the first in the class
+  assert.equal(methods.length, new Set(methods).size, `methods: ${methods.join(', ')}`);
+  assert.deepEqual(handlers.toSorted(), ['getUserByID', 'getUserById']);
+});
+
+test('the README starts with readme.banner', () => {
+  const file = generate(
+    { UserRPC: controller('User', { list: { httpMethod: 'GET', path: '', validation: {} } }) },
+    { readme: { banner: 'Banner line' } }
+  );
+  const readme = fs.readFileSync(file('README.md'), 'utf-8');
+  const bannerAt = readme.indexOf('Banner line');
+
+  assert.ok(bannerAt !== -1 && bannerAt < readme.indexOf('\n# '), readme);
+});

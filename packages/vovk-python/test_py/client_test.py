@@ -134,6 +134,42 @@ class TestClient(unittest.TestCase):
         self.assertEqual(sent[0].request.headers['Content-Type'], 'application/json')
         self.assertEqual(json.loads(sent[0].request.body or ''), {'name': 'Rex'})
 
+    def test_form_or_json_body_without_a_file(self) -> None:
+        # a form sends every value as text, so typed fields keep their types only as JSON
+        body: Dict[str, Any] = {'n': 5, 'flag': True, 'tags': ['a', 'b']}
+        with self.subTest('urlencoded or JSON'):
+            self.assertEqual(ClientSweepRPC.post_form_or_json(body=body), {'body': body, 'contentType': 'application/json'})
+        with self.subTest('multipart or JSON'):
+            body = {'n': 1, 'tags': ['a'], 'nested': {'a': True}}
+            self.assertEqual(ClientSweepRPC.post_json_or_form(body=body), {'body': body, 'contentType': 'application/json'})
+
+    def test_params_without_a_schema(self) -> None:
+        # the path has {id}, the procedure has no params schema
+        self.assertEqual(ClientSweepRPC.get_user_posts(params={'id': '42'}), {'id': '42'})
+
+    def test_text_body_content_type(self) -> None:
+        with self.subTest('a string goes out as the text type the procedure declares'):
+            data = ClientSweepRPC.post_string_json_or_text(body='héllo 日本')
+            self.assertEqual(data, {'body': 'héllo 日本', 'contentType': 'text/plain'})
+        with self.subTest('an object goes out as JSON, whatever text type the procedure also takes'):
+            data = ClientSweepRPC.post_object_text_or_json(body={'event': 'click'})
+            self.assertEqual(data, {'body': {'event': 'click'}, 'contentType': 'application/json'})
+
+    def test_path_params_as_javascript_writes_them(self) -> None:
+        with fake_transport(json_response(None)) as sent:
+            PetstoreAPI.set_pet_vaccinated(params={'petId': 5.0, 'vaccinated': True})
+            PetstoreAPI.set_pet_vaccinated(params={'petId': 2.5, 'vaccinated': False})
+        self.assertEqual(
+            [request.request.url for request in sent],
+            ['https://petstore.test/v1/pets/5/vaccinated/true', 'https://petstore.test/v1/pets/2.5/vaccinated/false'],
+        )
+
+    def test_json_lines_media_types(self) -> None:
+        for media_type in ['application/jsonl', 'application/jsonlines', 'application/x-ndjson']:
+            with self.subTest(media_type):
+                with fake_transport(lambda request: (200, {'Content-Type': media_type}, b'{"n":1}\n{"n":2}\n')):
+                    self.assertEqual(list(ClientSweepRPC.get_falsy_items(api_root=FAKE_ROOT)), [{'n': 1}, {'n': 2}])
+
 
 if __name__ == "__main__":
     unittest.main()

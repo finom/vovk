@@ -48,6 +48,17 @@ const petstore = {
         },
       },
     },
+    // a number and a boolean in the path
+    '/pets/{petId}/vaccinated/{vaccinated}': {
+      put: {
+        operationId: 'setPetVaccinated',
+        parameters: [
+          { name: 'petId', in: 'path', required: true, schema: { type: 'number' } },
+          { name: 'vaccinated', in: 'path', required: true, schema: { type: 'boolean' } },
+        ],
+        responses: { 200: { description: 'ok' } },
+      },
+    },
   },
   components: {
     schemas: {
