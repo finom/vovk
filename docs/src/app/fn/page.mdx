@@ -213,6 +213,8 @@ import UserProcedures from './user-procedures';
 @prefix('users')
 export default class UserController {
   @post('{id}')
-  static updateUser = UserProcedures.updateUser.bind(UserProcedures);
+  static updateUser = UserProcedures.updateUser;
 }
 ```
+
+Assign the procedure itself. `.bind()` returns a plain function: it has no `fn`, and the emitted schema loses the procedure's validation, which client-side validation, OpenAPI, the Python and Rust clients and AI tools read.
