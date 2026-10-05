@@ -99,13 +99,16 @@ type StreamItem<T extends ControllerStaticMethod> = T extends { __types: { itera
 // that isn't installed (next in a client bundle used without Next), it's any rather than true
 type HandlerStreamItem<T extends ControllerStaticMethod> = [IsAny<Awaited<ActualReturnType<T>>>] extends [true]
   ? never
-  : ActualReturnType<T> extends
-        | Promise<JSONLinesResponder<infer U>>
-        | JSONLinesResponder<infer U>
-        | Iterator<infer U>
-        | AsyncIterator<infer U>
-    ? U
-    : never;
+  : StreamItemOf<Awaited<ActualReturnType<T>>>;
+
+// the server streams a JSONLinesResponder and any iterable object, such as a Set or an SDK stream, but an array
+type StreamItemOf<R> = [R] extends [JSONLinesResponder<infer U>]
+  ? U
+  : [R] extends [string | readonly unknown[]]
+    ? never
+    : [R] extends [Iterable<infer U> | AsyncIterable<infer U> | Iterator<infer U> | AsyncIterator<infer U>]
+      ? U
+      : never;
 
 // what a call resolves to without transform
 type ClientMethodData<T extends ControllerStaticMethod> = [StreamItem<T>] extends [never]
