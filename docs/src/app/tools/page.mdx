@@ -6,6 +6,8 @@ Controllers as well as generated RPC/API modules can be converted into AI tools 
 - RPC modules generated from controllers for HTTP calls or be used on front-end or other environments that support `fetch`.
 - Third-party OpenAPI-based modules (called [OpenAPI mixins](/mixins) in this documentation), enabling to combine back-end functionality with external APIs in a single agent.
 
+A tool comes from a [procedure](/procedure) or an RPC method. Other members of a module are left out.
+
 ```ts showLineNumbers copy filename="src/modules/user/user-controller.ts"
 import { deriveTools } from 'vovk';
 import { TaskRPC, PetstoreAPI } from '@/client';
@@ -51,7 +53,8 @@ The `deriveTools` function accepts an options object with the following properti
 By default, tool description is derived from OpenAPI `summary` and `description` fields and the tool name is generated in the form of `${moduleName}_${handlerName}`. You can override these values and add tool-specific attributes using `x-tool` custom attributes in the `@operation` decorator.
 
 ```ts showLineNumbers copy filename="src/modules/user/user-controller.ts"
-import { prefix, get, operation } from 'vovk';
+import { z } from 'zod';
+import { prefix, get, operation, procedure } from 'vovk';
 
 @prefix('user')
 export default class UserController {
@@ -63,16 +66,19 @@ export default class UserController {
     }
   })
   @get('{id}')
-  static getUser() {
+  static getUser = procedure({
+    params: z.object({ id: z.string() }),
+  }).handle(async (req, { id }) => {
     // ...
-  }
+  });
 }
 ```
 
 `@operation` also provides `tool` property that defines tool-specific attributes for `deriveTools` function. It's set under `x-tool` key in the OpenAPI operation object and created for cleaner syntax.
 
 ```ts showLineNumbers copy filename="src/modules/user/user-controller.ts"
-import { prefix, get, operation } from 'vovk';
+import { z } from 'zod';
+import { prefix, get, operation, procedure } from 'vovk';
 
 @prefix('user')
 export default class UserController {
@@ -86,9 +92,11 @@ export default class UserController {
     description: 'Retrieves a user by their unique ID.',
   })
   @get('{id}')
-  static getUser() {
+  static getUser = procedure({
+    params: z.object({ id: z.string() }),
+  }).handle(async (req, { id }) => {
     // ...
-  }
+  });
 }
 ```
 
