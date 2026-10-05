@@ -11,6 +11,10 @@ interface SamplerOptions {
   python?: boolean;
 }
 
+// a third-party OpenAPI document may hold a description that isn't a string, a sample leaves it out
+export const getDescription = (schema: VovkJSONSchemaBase | undefined): string | undefined =>
+  typeof schema?.description === 'string' ? schema.description : undefined;
+
 export function schemaToCode(
   schema: VovkJSONSchemaBase,
   options: SamplerOptions,
@@ -202,8 +206,9 @@ function formatWithDescriptions(
     const formattedEntries: string[] = [];
 
     // Add top-level description for objects
-    if (isTopLevel && schema.type === 'object' && schema.description) {
-      const descLines = schema.description.split('\n');
+    const description = getDescription(schema);
+    if (isTopLevel && schema.type === 'object' && description) {
+      const descLines = description.split('\n');
       formattedEntries.push(`${indentStr}${nestIndentStr}${comment} -----`);
       descLines.forEach((line) => {
         formattedEntries.push(`${indentStr}${nestIndentStr}${comment} ${line.trim()}`);
@@ -221,8 +226,9 @@ function formatWithDescriptions(
       }
 
       // Add property description if it exists
-      if (resolvedPropSchema.description) {
-        const descLines = resolvedPropSchema.description.split('\n');
+      const propDescription = getDescription(resolvedPropSchema);
+      if (propDescription) {
+        const descLines = propDescription.split('\n');
         descLines.forEach((line) => {
           formattedEntries.push(`${indentStr}${nestIndentStr}${comment} ${line.trim()}`);
         });

@@ -2,7 +2,7 @@ import type { VovkSamplesConfig } from '../types/config.js';
 import type { VovkControllerSchema, VovkHandlerSchema } from '../types/core.js';
 import type { VovkJSONSchemaBase } from '../types/json-schema.js';
 import { objectToCode } from './object-to-code.js';
-import { getSampleValue, schemaToCode } from './schema-to-code.js';
+import { getDescription, getSampleValue, schemaToCode } from './schema-to-code.js';
 
 const toSnakeCase = (str: string) =>
   str
@@ -82,7 +82,7 @@ function generateTypeScriptCode({
     let formSample = '\nconst formData = new FormData();';
     for (const [key, prop] of Object.entries(schema.properties || {})) {
       const target = prop.oneOf?.[0] || prop.anyOf?.[0] || prop.allOf?.[0] || prop;
-      const desc = target.description ?? prop.description ?? undefined;
+      const desc = getDescription(target) ?? getDescription(prop);
       if (target.type === 'array' && target.items && typeof target.items !== 'boolean') {
         formSample += getTsFormAppend(target.items, key, desc);
         formSample += getTsFormAppend(target.items, key, desc);
@@ -105,7 +105,7 @@ function generateTypeScriptCode({
       sampleValue = `"${getSampleValue(schema)}"`;
     }
 
-    const desc = schema.description ?? description;
+    const desc = getDescription(schema) ?? description;
 
     return `\n${desc ? `// ${desc}\n` : ''}formData.append("${key}", ${sampleValue});`;
   };
@@ -190,7 +190,7 @@ function generatePythonCode({
   const getPyFiles = (schema: VovkJSONSchemaBase) => {
     return Object.entries(schema.properties ?? {}).reduce((acc, [key, prop]) => {
       const target = prop.oneOf?.[0] || prop.anyOf?.[0] || prop.allOf?.[0] || prop;
-      const desc = target.description ?? prop.description ?? undefined;
+      const desc = getDescription(target) ?? getDescription(prop);
 
       if (target.type === 'string' && target.format === 'binary') {
         acc.push(
@@ -268,7 +268,7 @@ function generateRustCode({
     let formSample = 'let form = reqwest::multipart::Form::new()';
     for (const [key, prop] of Object.entries(schema.properties || {})) {
       const target = prop.oneOf?.[0] || prop.anyOf?.[0] || prop.allOf?.[0] || prop;
-      const desc = target.description ?? prop.description ?? undefined;
+      const desc = getDescription(target) ?? getDescription(prop);
       if (target.type === 'array' && target.items && typeof target.items !== 'boolean') {
         formSample += getRsFormPart(target.items, key, desc);
         formSample += getRsFormPart(target.items, key, desc);
@@ -295,7 +295,7 @@ function generateRustCode({
       sampleValue = `"${getSampleValue(schema)}"`;
     }
 
-    const desc = schema.description ?? description;
+    const desc = getDescription(schema) ?? description;
 
     return `\n${getIndentSpaces(4)}${desc ? `// ${desc}\n` : ''}${getIndentSpaces(4)}.part("${key}", ${sampleValue});`;
   };

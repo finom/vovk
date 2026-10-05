@@ -1187,6 +1187,54 @@ const response = await MixedFormRPC.uploadProfile({
     });
   });
 
+  describe('Descriptions that are not strings', () => {
+    // a third-party OpenAPI document may hold a number or any other JSON as a description
+    const controllerSchema: VovkControllerSchema = { rpcModuleName: 'ThingRPC', prefix: 'things', handlers: {} };
+    const objectWith = (description: unknown, extra: Record<string, unknown> = {}) =>
+      ({
+        type: 'object',
+        ...(description !== undefined && { description }),
+        properties: {
+          name: { type: 'string', ...(description !== undefined && { description }) },
+          file: { type: 'string', format: 'binary', ...(description !== undefined && { description }) },
+        },
+        required: ['name', 'file'],
+        ...extra,
+      }) as VovkJSONSchemaBase;
+    const samplesWith = (description: unknown) => [
+      createCodeSamples({
+        handlerName: 'updateThing',
+        handlerSchema: {
+          httpMethod: 'POST',
+          path: 'thing',
+          validation: {
+            body: objectWith(description),
+            query: objectWith(description),
+            output: objectWith(description),
+          },
+        },
+        controllerSchema,
+        config: {},
+      }),
+      createCodeSamples({
+        handlerName: 'uploadThing',
+        handlerSchema: {
+          httpMethod: 'POST',
+          path: 'upload',
+          validation: { body: objectWith(description, { 'x-contentType': ['multipart/form-data'] }) },
+        },
+        controllerSchema,
+        config: {},
+      }),
+    ];
+
+    test('a description that is not a string is left out', () => {
+      for (const description of [123, true, ['a list'], { text: 'an object' }]) {
+        assert.deepStrictEqual(samplesWith(description), samplesWith(undefined), JSON.stringify(description));
+      }
+    });
+  });
+
   // SEC-03: the sample generator expands every $ref with a fresh "seen" set per branch, so a component
   // that references one of depth N twice is inlined 2^N times. A tiny malicious OpenAPI spec (a developer
   // generates its README, Rust or Python client) produces a gigantic sample and exhausts memory.
