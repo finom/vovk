@@ -173,7 +173,9 @@ class VovkApp {
 
   // the status, message and cause a caught error answers with
   private static toErrorResponse(e: unknown) {
-    if (isHttpException(e)) {
+    // status 0 is what a client throws for a call that got no response, its message and cause hold the URL and the
+    // input, so in production it is internal too
+    if (isHttpException(e) && !(e.statusCode === HttpStatus.NULL && process.env.NODE_ENV === 'production')) {
       // Response takes a status from 200 to 599 only
       const isValidStatus = e.statusCode >= 200 && e.statusCode <= 599;
       return {

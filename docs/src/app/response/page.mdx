@@ -189,7 +189,7 @@ try {
 }
 ```
 
-Regular errors such as `Error` are equivalent to `HttpException` with code `500`.
+Regular errors such as `Error` are equivalent to `HttpException` with code `500`. In production, their message and cause stay on the server and the client gets "Internal server error". So does an `HttpException` with status `0`, which an RPC module throws when a call gets no response or fails client-side validation. To pass such a failure on, catch it and throw an `HttpException` with a status.
 
 ```ts showLineNumbers copy
 import { HttpException, HttpStatus } from 'vovk';
