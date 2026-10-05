@@ -2,7 +2,9 @@ import { deepStrictEqual, ok, rejects, strictEqual, throws } from 'node:assert';
 import { describe, it } from 'node:test';
 import { setFlagsFromString } from 'node:v8';
 import { runInNewContext } from 'node:vm';
-import { forbidden, redirect, unauthorized } from 'next/dist/client/components/navigation.react-server.js';
+import { toStandardJsonSchema } from '@valibot/to-json-schema';
+import { forbidden, notFound, redirect, unauthorized } from 'next/dist/client/components/navigation.react-server.js';
+import * as v from 'valibot';
 import {
   cloneControllerMetadata,
   controllersToStaticParams,
@@ -260,10 +262,22 @@ describe('Runtime sweep', () => {
       static moved() {
         redirect('/elsewhere');
       }
+
+      static async *streamMissing() {
+        yield { n: 1 };
+        notFound();
+      }
+
+      static async *streamDenied() {
+        yield { n: 1 };
+        forbidden();
+      }
     }
     get('denied')(NavigationController, 'denied');
     get('unauthenticated')(NavigationController, 'unauthenticated');
     get('moved')(NavigationController, 'moved');
+    get('stream-missing')(NavigationController, 'streamMissing');
+    get('stream-denied')(NavigationController, 'streamDenied');
     const handlers = initSegment({ segmentName: 'navigation', controllers: { NavigationController } });
 
     it('Rethrows forbidden(), unauthorized() and redirect() for Next.js to answer', async () => {
@@ -274,6 +288,28 @@ describe('Runtime sweep', () => {
       await rejects(call(handlers, 'GET', 'moved'), (error: { digest?: string }) =>
         Boolean(error.digest?.startsWith('NEXT_REDIRECT'))
       );
+    });
+
+    it('Sends the status of notFound() and forbidden() thrown mid stream on the error line', async () => {
+      process.env.__NEXT_EXPERIMENTAL_AUTH_INTERRUPTS = 'true';
+      const readLines = async (response: Response) =>
+        (await response.text())
+          .split('\n')
+          .filter(Boolean)
+          .map((line) => JSON.parse(line));
+
+      for (const nodeEnv of ['production', 'development']) {
+        await withNodeEnv(nodeEnv, async () => {
+          // the stream has started, so Next.js can't answer: the status goes on the error line, as an HttpException's
+          const missing = await readLines(await call(handlers, 'GET', 'stream-missing'));
+          const denied = await readLines(await call(handlers, 'GET', 'stream-denied'));
+
+          deepStrictEqual(missing[0], { n: 1 });
+          strictEqual(missing[1]?.isError, true, nodeEnv);
+          strictEqual(missing[1]?.statusCode, 404, `${nodeEnv}: ${JSON.stringify(missing[1])}`);
+          strictEqual(denied[1]?.statusCode, 403, `${nodeEnv}: ${JSON.stringify(denied[1])}`);
+        });
+      }
     });
   });
 
@@ -817,6 +853,25 @@ describe('Runtime sweep', () => {
         return responder;
       });
 
+      // rows that are ready at once go out before the handler returns the responder
+      static sendBeforeReturn = procedure({
+        iteration: z.object({ name: z.string() }),
+        validateEachIteration: true,
+      }).handle(async (req) => {
+        const responder = new JSONLinesResponder<{ name: string }>(req);
+        await responder.send({ name: 'ann', passwordHash: 'h1' } as { name: string });
+        await responder.send({ name: 'bob', passwordHash: 'h2' } as { name: string });
+        void responder.close();
+        return responder;
+      });
+
+      static invalidBeforeReturn = procedure({ iteration: z.object({ n: z.number() }) }).handle(async (req) => {
+        const responder = new JSONLinesResponder<{ n: number }>(req);
+        await responder.send({ n: 'one' } as unknown as { n: number });
+        void responder.close();
+        return responder;
+      });
+
       static async *bigIntItem() {
         try {
           yield { n: 1 };
@@ -843,6 +898,8 @@ describe('Runtime sweep', () => {
     get('throw-after-send')(ResponderController, 'throwAfterSend');
     get('send-after-close')(ResponderController, 'sendAfterClose');
     get('invalid-item')(ResponderController, 'invalidItem');
+    get('send-before-return')(ResponderController, 'sendBeforeReturn');
+    get('invalid-before-return')(ResponderController, 'invalidBeforeReturn');
     get('big-int-item')(ResponderController, 'bigIntItem');
     get('undefined-item')(ResponderController, 'undefinedItem');
     get('throw-cycle')(ResponderController, 'throwCycle');
@@ -878,6 +935,22 @@ describe('Runtime sweep', () => {
 
       strictEqual(lines.length, 1);
       strictEqual(lines[0].isError, true);
+      ok(lines[0].reason.startsWith('Validation failed. Invalid iteration #0'), lines[0].reason);
+      deepStrictEqual(errors, [lines[0].reason]);
+    });
+
+    it('Validates and strips the lines sent before the handler returns the responder', async () => {
+      const lines = await readLines(await call(handlers, 'GET', 'send-before-return'));
+
+      deepStrictEqual(lines, [{ name: 'ann' }, { name: 'bob' }]);
+    });
+
+    it('Ends the stream and calls onError when a line sent before the handler returns fails validation', async () => {
+      errors.length = 0;
+      const lines = await readLines(await call(handlers, 'GET', 'invalid-before-return'));
+
+      strictEqual(lines.length, 1, JSON.stringify(lines));
+      strictEqual(lines[0].isError, true, JSON.stringify(lines));
       ok(lines[0].reason.startsWith('Validation failed. Invalid iteration #0'), lines[0].reason);
       deepStrictEqual(errors, [lines[0].reason]);
     });
@@ -1003,6 +1076,25 @@ describe('Runtime sweep', () => {
       strictEqual(cause.issues.length, 20);
     });
 
+    it('Keeps the 400 of a Valibot schema small for a large invalid body', async () => {
+      class ValibotTagController {
+        static tags = procedure({ body: toStandardJsonSchema(v.object({ tags: v.array(v.string()) })) }).handle(
+          async () => ({ ok: true })
+        );
+      }
+      post('tags')(ValibotTagController, 'tags');
+      const handlers = initSegment({ segmentName: 'valibot-tags', controllers: { ValibotTagController } });
+      const body = JSON.stringify({ tags: new Array(100_000).fill(0) });
+
+      const response = await call(handlers, 'POST', 'tags', { body, headers: { 'content-type': 'application/json' } });
+      const text = await response.text();
+
+      strictEqual(response.status, 400);
+      // a Valibot issue and each item of its path hold the input they were found in
+      ok(text.length < 10_000, `${text.length} bytes answer a ${body.length} byte body`);
+      deepStrictEqual(JSON.parse(text).cause.issues[0].path, ['tags', 0]);
+    });
+
     it('Validates a body that a decorator and the segment onBefore read first', async () => {
       const ownerGuard = createDecorator(async (req: VovkRequest<{ ownerId: string }>, next) => {
         const { ownerId } = await req.vovk.body();
@@ -1059,6 +1151,63 @@ describe('Runtime sweep', () => {
         (await required.json()).message,
         'Validation failed. Invalid body: Invalid input: expected object, received undefined'
       );
+    });
+
+    it('Validates an empty body with a JSON content type as undefined, and keeps an empty text or file', async () => {
+      class EmptyBodyController {
+        static optional = procedure({ body: z.object({ title: z.string() }).optional() }).handle(async (req) => ({
+          body: (await req.vovk.body()) ?? 'none',
+        }));
+
+        static required = procedure({ body: z.object({ title: z.string() }) }).handle(async () => ({ ok: true }));
+
+        static text = procedure({ contentType: 'text/plain', body: z.string() }).handle(async (req) => ({
+          body: await req.vovk.body(),
+        }));
+
+        static file = procedure({ contentType: 'application/octet-stream', body: z.file() }).handle(async (req) => ({
+          size: (await req.vovk.body()).size,
+        }));
+      }
+      post('optional')(EmptyBodyController, 'optional');
+      post('required')(EmptyBodyController, 'required');
+      post('text')(EmptyBodyController, 'text');
+      post('file')(EmptyBodyController, 'file');
+      const handlers = initSegment({ segmentName: 'empty-bodies', controllers: { EmptyBodyController } });
+      // Next.js gives a route handler a body stream for every POST, an empty one when the client sends nothing
+      const postEmpty = (path: string, headers: Record<string, string>) =>
+        call(handlers, 'POST', path, {
+          body: new ReadableStream({ start: (controller) => controller.close() }),
+          headers,
+          duplex: 'half',
+        } as RequestInit);
+
+      // an empty text and an empty file are bodies
+      deepStrictEqual(await (await postEmpty('text', { 'content-type': 'text/plain', 'content-length': '0' })).json(), {
+        body: '',
+      });
+      deepStrictEqual(
+        await (await postEmpty('file', { 'content-type': 'application/octet-stream', 'content-length': '0' })).json(),
+        { size: 0 }
+      );
+
+      // fetch() sends content-length: 0 for a call without a body, curl -X POST sends no length
+      const jsonHeaders: Record<string, string>[] = [
+        { 'content-type': 'application/json', 'content-length': '0' },
+        { 'content-type': 'application/json' },
+      ];
+      for (const headers of jsonHeaders) {
+        const optional = await postEmpty('optional', headers);
+        const required = await postEmpty('required', headers);
+
+        deepStrictEqual(await optional.json(), { body: 'none' }, JSON.stringify(headers));
+        strictEqual(optional.status, 200);
+        strictEqual(
+          (await required.json()).message,
+          'Validation failed. Invalid body: Invalid input: expected object, received undefined',
+          JSON.stringify(headers)
+        );
+      }
     });
 
     it('Validates the items of a sync generator', async () => {
@@ -1231,6 +1380,24 @@ describe('Runtime sweep', () => {
         isError: true,
       });
       deepStrictEqual(errors, ['HttpException']);
+    });
+
+    it('Reads a lone value as a one-item array where the query schema takes an array', async () => {
+      class TagSearchController {
+        static search = procedure({
+          query: z.object({ tags: z.array(z.string()), filter: z.object({ ids: z.array(z.string()) }).optional() }),
+        }).handle(async (req) => req.vovk.query());
+      }
+      get('search')(TagSearchController, 'search');
+      const handlers = initSegment({ segmentName: 'tag-search', controllers: { TagSearchController } });
+
+      // the form style the OpenAPI document gives an array param: tags=a&tags=b, and tags=a for one item
+      const response = await call(handlers, 'GET', 'search?tags=only');
+      const nested = await call(handlers, 'GET', 'search?tags=a&tags=b&filter[ids]=1');
+
+      deepStrictEqual(await response.json(), { tags: ['only'] });
+      strictEqual(response.status, 200);
+      deepStrictEqual(await nested.json(), { tags: ['a', 'b'], filter: { ids: ['1'] } });
     });
   });
 
