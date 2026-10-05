@@ -216,6 +216,21 @@ describe('procedure features', async () => {
     assert.deepEqual(arktypeHandler.schema.validation?.query?.properties, { from: {} });
   });
 
+  it('Should warn once for each slot whose schema has no Standard JSON Schema', (t) => {
+    const warn = t.mock.method(console, 'warn', () => {});
+    // valibot without toStandardJsonSchema implements Standard Schema only, which the types refuse
+    const standardOnly = v.object({ a: v.string() }) as never;
+
+    procedure({ body: standardOnly, query: standardOnly, params: z.object({ id: z.string() }) }).handle(
+      async () => null
+    );
+
+    const messages = warn.mock.calls.map((call) => String(call.arguments[0]));
+    assert.strictEqual(messages.length, 2, messages.join('\n'));
+    assert.ok(/\bbody\b.*Standard JSON Schema.*\{\}/.test(messages[0]), messages[0]);
+    assert.ok(/\bquery\b.*Standard JSON Schema.*\{\}/.test(messages[1]), messages[1]);
+  });
+
   it('Should emit the output schema of the value the server sends', async () => {
     // the server sends the parsed value, where a default makes its key present
     const user = z.object({ id: z.string(), status: z.enum(['active', 'archived']).default('active') });

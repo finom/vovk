@@ -233,6 +233,16 @@ export function createStandardValidation({
 
   // Implementation
   function procedure(options?: KnownAny): KnownAny {
+    // a Standard Schema without Standard JSON Schema, as zod before 4.2 or valibot without toStandardJsonSchema,
+    // validates but has no JSON Schema to emit
+    for (const slot of ['body', 'query', 'params', 'output', 'iteration'] as const) {
+      const model = options?.[slot];
+      if (model && !model['~standard']?.jsonSchema) {
+        console.warn(
+          `🐺 The ${slot} schema of a procedure has no Standard JSON Schema, so the ${slot} is emitted as {} (any value): OpenAPI, client-side validation, AI tools and the Python and Rust clients take any value there.`
+        );
+      }
+    }
     const notImplementedHandler = callWithValidationLibrary(options ?? {}, () => {
       throw new HttpException(HttpStatus.NOT_IMPLEMENTED, 'Not implemented');
     });
