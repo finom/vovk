@@ -477,7 +477,7 @@ if __name__ == "__main__":
 
 ### Timeout and Session
 
-All calls share one `requests.Session`, so connections stay open between them. The client waits 10 seconds to connect and 300 seconds for each read. Both are attributes of the module-level `client`:
+All calls share one `requests.Session`, so connections stay open between them. The client waits 10 seconds to connect and 300 seconds for each read, and an upload fails when the server takes no data for 10 seconds. Both are attributes of the module-level `client`:
 
 ```py
 from package_name import client

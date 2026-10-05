@@ -5,7 +5,7 @@ import threading
 import time
 import unittest
 from contextlib import contextmanager
-from typing import Any, Callable, Iterator, Tuple
+from typing import Any, Callable, Iterator, List, Tuple
 from generated_python_client.src.test_generated_python_client import (
     ClientRuntimeRPC,
     ClientSweepRPC,
@@ -47,8 +47,8 @@ def content_length(head: bytes) -> int:
 
 
 @contextmanager
-def raw_server(handle: Callable[[socket.socket], None]) -> Iterator[str]:
-    """A server for one connection on a free port, handle writes the answer bytes itself; yields its API root."""
+def raw_server(handle: Callable[[socket.socket], None], connections: int = 1) -> Iterator[str]:
+    """A server for one connection or more on a free port, handle writes the answer bytes itself; yields its API root."""
     listener = socket.socket()
     # a small receive buffer, so a server that reads slowly makes the client wait
     listener.setsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF, 65536)
@@ -56,9 +56,10 @@ def raw_server(handle: Callable[[socket.socket], None]) -> Iterator[str]:
     listener.listen(1)
 
     def serve() -> None:
-        conn, _ = listener.accept()
-        with conn:
-            handle(conn)
+        for _ in range(connections):
+            conn, _ = listener.accept()
+            with conn:
+                handle(conn)
 
     thread = threading.Thread(target=serve, daemon=True)
     thread.start()
@@ -127,6 +128,40 @@ class TestRuntime(unittest.TestCase):
         finally:
             client.timeout = default
         self.assertEqual(data, {'size': len(body)})
+
+    # a 307 or a 308 asks for the same request at another URL: the body, sent in blocks, goes out again in full
+    def test_redirect_sends_the_body_again(self) -> None:
+        body = b'x' * (1024 * 1024)
+        received: List[int] = []
+
+        def handle(conn: socket.socket) -> None:
+            head, rest = read_head(conn)
+            size = len(rest)
+            while size < content_length(head):
+                chunk = conn.recv(65536)
+                if not chunk:
+                    return
+                size += len(chunk)
+            received.append(size)
+            if b'/redirected' not in head.split(b'\r\n')[0]:
+                conn.sendall(b'HTTP/1.1 307 X\r\nlocation: /redirected\r\ncontent-length: 0\r\nconnection: close\r\n\r\n')
+                return
+            payload = json.dumps({'size': size}).encode()
+            conn.sendall(
+                b'HTTP/1.1 200 OK\r\ncontent-type: application/json\r\nconnection: close\r\n'
+                + b'content-length: %d\r\n\r\n' % len(payload)
+                + payload
+            )
+
+        default = client.timeout
+        # a body that isn't sent again leaves the server waiting for it
+        client.timeout = (5, 5)
+        try:
+            with raw_server(handle, connections=2) as api_root:
+                data = ClientSweepRPC.post_octet(body=body, api_root=api_root)
+        finally:
+            client.timeout = default
+        self.assertEqual((data, received), ({'size': len(body)}, [len(body), len(body)]))
 
     # a body without chunked encoding ends when the connection closes, as an HTTP/1.0 proxy sends it
     def test_stream_without_chunked_encoding_yields_each_item_as_it_comes(self) -> None:

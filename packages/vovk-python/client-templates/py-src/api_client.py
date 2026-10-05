@@ -1,3 +1,4 @@
+import io
 import os
 import re
 import json
@@ -272,14 +273,16 @@ class ApiClient:
         else:
             payload = {'json': body}
 
-        response = self.session.request(
-            method=http_method.upper(),
-            url=processed_url,
-            headers=request_headers,
-            timeout=self.timeout,
-            stream=True, # Always stream for consistent handling
-            **payload,
+        prepared = self.session.prepare_request(
+            requests.Request(method=http_method.upper(), url=processed_url, headers=request_headers, **payload)
         )
+        if isinstance(prepared.body, (bytes, bytearray)) and prepared.body:
+            # sent in blocks, the connect timeout bounds each block and not the whole upload; as a stream the body
+            # also goes out again from its start after a 307 or a 308
+            prepared.prepare_body(io.BytesIO(prepared.body), None)
+        # streamed, so a JSON Lines response is read as it comes
+        settings = self.session.merge_environment_settings(prepared.url, {}, True, None, None)
+        response = self.session.send(prepared, timeout=self.timeout, allow_redirects=True, **settings)
 
         # Handle response based on content type
         content_type = response.headers.get('Content-Type', '')
