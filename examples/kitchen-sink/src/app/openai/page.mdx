@@ -22,8 +22,11 @@ Text streaming with [OpenAI TypeScript API Library](https://npmjs.com/package/op
 <Tabs items={['openai-controller.ts', 'openai-example.tsx']}>
   <Tabs.Tab>
 ```ts showLineNumbers copy filename="src/modules/openai/openai-controller.ts" source="examples/kitchen-sink"
-import { type VovkRequest, post, prefix, operation, HttpException, HttpStatus } from 'vovk';
+import { procedure, post, prefix, operation, HttpException, HttpStatus } from 'vovk';
 import OpenAI from 'openai';
+import { z } from 'zod';
+
+const LIMIT = 5;
 
 @prefix('openai')
 export default class OpenAiController {
@@ -32,23 +35,32 @@ export default class OpenAiController {
     description: 'Create a chat completion using OpenAI and yield the response',
   })
   @post('chat')
-  static async *createChatCompletion(
-    req: VovkRequest<{ messages: OpenAI.Chat.Completions.ChatCompletionMessageParam[] }>
-  ) {
-    const { messages } = await req.json();
-    const LIMIT = 5;
-    const openai = new OpenAI();
+  static createChatCompletion = procedure({
+    body: z.object({
+      messages: z
+        .array(
+          z.object({
+            role: z.enum(['user', 'assistant']),
+            content: z.string().max(10_000),
+          })
+        )
+        .max(20),
+    }),
+  }).handle(async function* (req) {
+    const { messages } = await req.vovk.body();
 
     if (messages.filter(({ role }) => role === 'user').length > LIMIT) {
       throw new HttpException(HttpStatus.BAD_REQUEST, `You can only send ${LIMIT} messages at a time`);
     }
 
+    const openai = new OpenAI();
+
     yield* await openai.chat.completions.create({
-      messages,
+      messages: [{ role: 'developer', content: 'You are a helpful assistant.' }, ...messages],
       model: 'gpt-5-nano',
       stream: true,
     });
-  }
+  });
 }
 ```
 *[The code above is fetched from GitHub repository.](https://github.com/finom/vovk/blob/main/examples/kitchen-sink/src/modules/openai/openai-controller.ts)*
@@ -57,10 +69,10 @@ export default class OpenAiController {
 ```tsx showLineNumbers copy filename="src/app/openai/openai-example.tsx" source="examples/kitchen-sink"
 'use client';
 import { useState } from 'react';
+import type { VovkBody } from 'vovk';
 import { OpenAiRPC } from '@/client';
-import type OpenAI from 'openai';
 
-type Message = OpenAI.Chat.Completions.ChatCompletionMessageParam;
+type Message = VovkBody<typeof OpenAiRPC.createChatCompletion>['messages'][number];
 
 export default function OpenAiExample() {
   const [messages, setMessages] = useState<Message[]>([]);
@@ -104,7 +116,7 @@ export default function OpenAiExample() {
     >
       {messages.map((message, index) => (
         <div key={index}>
-          {message.role === 'assistant' ? '🤖' : '👤'} {(message.content as string) || '...'}
+          {message.role === 'assistant' ? '🤖' : '👤'} {message.content || '...'}
         </div>
       ))}
       {error && <div>❌ {error.message}</div>}
