@@ -110,6 +110,7 @@ export async function renderOneClientFile({
   templateDef,
   locatedSegments,
   isNodeNextResolution,
+  tsExtension,
   hasMixins,
   isVovkProject,
   vovkCliPackage,
@@ -143,6 +144,7 @@ export async function renderOneClientFile({
   templateDef: VovkStrictConfig['clientTemplateDefs'][string];
   locatedSegments: Segment[];
   isNodeNextResolution: boolean;
+  tsExtension: string;
   hasMixins: boolean;
   isVovkProject: boolean;
   vovkCliPackage: PackageJson;
@@ -213,7 +215,7 @@ export async function renderOneClientFile({
     TOML,
     getFirstLineBanner,
     nodeNextResolutionExt: {
-      ts: isNodeNextResolution ? '.ts' : '',
+      ts: isNodeNextResolution ? tsExtension : '',
       js: isNodeNextResolution ? '.js' : '',
       mjs: isNodeNextResolution ? '.mjs' : '',
     },

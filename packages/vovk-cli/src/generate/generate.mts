@@ -1,6 +1,5 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
-import { getTsconfig } from 'get-tsconfig';
 import matter from 'gray-matter';
 import _ from 'lodash';
 import type { PackageJson } from 'type-fest';
@@ -18,6 +17,7 @@ import type { ProjectInfo } from '../get-project-info/index.mjs';
 import type { GenerateOptions } from '../types.mjs';
 import { chalkHighlightThing } from '../utils/chalk-highlight-thing.mjs';
 import { hasGeneratedBanner } from '../utils/generated-banner.mjs';
+import { getTsImportOptions } from '../utils/get-ts-import-options.mjs';
 import type { Segment } from '../utils/locate-segments.mjs';
 import { normalizeOpenAPIMixin } from '../utils/normalize-openapi-mixin.mjs';
 import { pickSegmentFullSchema } from '../utils/pick-segment-full-schema.mjs';
@@ -241,9 +241,7 @@ export async function generate({
     validateMixinModuleNames(mixinName, fullSchema.segments[mixinName]);
   }
 
-  const { module, moduleResolution } = getTsconfig(cwd)?.config?.compilerOptions ?? {};
-  // without moduleResolution TypeScript resolves like Node.js only for a node16+ module; no tsconfig at all is a Next.js default
-  const isNodeNextResolution = /^node(16|18|20|next)$/i.test(moduleResolution ?? module ?? '');
+  const { isNodeNextResolution, tsExtension } = getTsImportOptions(cwd);
   const isVovkProject = !!srcRoot;
   const isComposedEnabled =
     cliGenerateOptions?.composedOnly ||
@@ -342,6 +340,7 @@ export async function generate({
           templateDef,
           locatedSegments,
           isNodeNextResolution,
+          tsExtension,
           hasMixins,
           isVovkProject,
           vovkCliPackage,
@@ -466,6 +465,7 @@ export async function generate({
               templateDef,
               locatedSegments,
               isNodeNextResolution,
+              tsExtension,
               hasMixins,
               isVovkProject,
               vovkCliPackage,
