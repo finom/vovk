@@ -25,6 +25,21 @@ type Target = NonNullable<VovkAjvConfig['target']>;
 
 const DEFAULT_OPTIONS: Options = {};
 
+// a pattern is read with the u flag, which \p{…} needs (z.emoji()), and without it when the u flag refuses it,
+// as it does escapes such as \- or \_ that JavaScript and Zod's regexes allow
+const regExp = Object.assign(
+  (pattern: string, flags: string) => {
+    try {
+      return new RegExp(pattern, flags);
+    } catch (error) {
+      if (!flags.includes('u')) throw error;
+      return new RegExp(pattern, flags.replace('u', ''));
+    }
+  },
+  // the code standalone validation would write, which vovk-ajv doesn't generate
+  { code: 'new RegExp' }
+);
+
 const createAjv = (options: Options, target: Target, isForm: boolean) => {
   const AjvClass = target === 'draft-2020-12' ? Ajv2020 : Ajv;
   const ajv = new AjvClass({
@@ -33,11 +48,10 @@ const createAjv = (options: Options, target: Target, isForm: boolean) => {
     addUsedSchema: false,
     // strict mode refuses keywords JSON Schema doesn't define, such as Zod's example or OpenAPI's discriminator and x-*
     strict: false,
-    // with the u flag a pattern refuses escapes that JavaScript and Zod's regexes allow, such as \- or \_
-    unicodeRegExp: false,
     // a form holds strings, so "5" is checked as the number the server reads it as
     ...(isForm && { coerceTypes: true }),
     ...options,
+    code: { regExp, ...options.code },
   });
   ajvFormats(ajv);
   ajvErrors(ajv);
