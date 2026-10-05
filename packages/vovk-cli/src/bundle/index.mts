@@ -23,7 +23,7 @@ export async function bundle({
 }) {
   const { config, log, cwd, apiDirAbsolutePath } = projectInfo;
   const locatedSegments = await locateSegments({ dir: apiDirAbsolutePath, config, log });
-  const bundledSchema = omitRoutelessSegments(fullSchema, locatedSegments, projectInfo);
+  const bundledSchema = omitRoutelessSegments(fullSchema, locatedSegments, projectInfo, cliBundleOptions?.schemaPath);
   const { bundle: bundleConfig } = config;
 
   if ((bundleConfig.build as { isMissingBuild?: boolean }).isMissingBuild) {

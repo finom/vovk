@@ -50,7 +50,12 @@ export class VovkGenerate {
     const locatedSegments = await locateSegments({ dir: apiDirAbsolutePath, config, log });
     await generate({
       projectInfo: this.#projectInfo,
-      fullSchema: omitRoutelessSegments(fullSchema, locatedSegments, this.#projectInfo),
+      fullSchema: omitRoutelessSegments(
+        fullSchema,
+        locatedSegments,
+        this.#projectInfo,
+        this.#cliGenerateOptions.schemaPath
+      ),
       forceNothingWrittenLog: this.#forceNothingWrittenLog,
       cliGenerateOptions: this.#cliGenerateOptions,
       locatedSegments,
