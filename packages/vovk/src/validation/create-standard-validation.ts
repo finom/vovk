@@ -16,6 +16,29 @@ import { withValidationLibrary } from './with-validation-library.js';
 // an array of 100 000 wrong items has as many issues: a validation error lists the first ones, in its message and cause
 const MAX_ISSUES = 20;
 
+// the fields of an issue that copy the value that failed: Valibot's input and received, ArkType's data and actual
+const INPUT_FIELDS = new Set(['input', 'received', 'data', 'actual']);
+
+type Issue = { message: string; path?: readonly (PropertyKey | { key: PropertyKey })[]; toJSON?: () => object };
+
+// an issue as an error carries it: the library's own plain fields and the path as keys. A whole Valibot issue holds
+// the input in several places, and a union nests more issues, so it can be many times the size of the request
+const toIssue = (issue: Issue) => {
+  // what JSON.stringify reads, as ArkType's toJSON()
+  const source = typeof issue.toJSON === 'function' ? issue.toJSON() : issue;
+  const fields = Object.entries(source).filter(
+    ([key, value]) =>
+      key !== 'path' &&
+      !INPUT_FIELDS.has(key) &&
+      (value === null || typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean')
+  );
+  return {
+    ...Object.fromEntries(fields),
+    message: issue.message,
+    ...(issue.path ? { path: issue.path.map((segment) => (typeof segment === 'object' ? segment.key : segment)) } : {}),
+  };
+};
+
 type ProcedureOptions<
   TBody extends CombinedSpec,
   TQuery extends CombinedSpec,
@@ -70,14 +93,10 @@ export function createStandardValidation({
       validate: async (data, model: KnownAny, { validationType, i }) => {
         const result = await model['~standard'].validate(data);
         if (result.issues?.length) {
-          const issues = result.issues.slice(0, MAX_ISSUES);
+          const issues = (result.issues as Issue[]).slice(0, MAX_ISSUES).map(toIssue);
           const moreIssues = result.issues.length - issues.length;
           const message = `Validation failed. Invalid ${validationType === 'iteration' ? `${validationType} #${i}` : validationType}: ${issues
-            .map(
-              // a path segment is a key or, in valibot and others, an object that holds the key
-              ({ message, path }: { message: string; path?: readonly (PropertyKey | { key: PropertyKey })[] }) =>
-                `${message}${path?.length ? ` at ${path.map((segment) => String(typeof segment === 'object' ? segment.key : segment)).join('.')}` : ''}`
-            )
+            .map(({ message, path }) => `${message}${path?.length ? ` at ${path.map(String).join('.')}` : ''}`)
             .join(', ')}${moreIssues ? `, and ${moreIssues} more` : ''}`;
           // output and iterations are the handler's own data, and some libraries copy it into the issues:
           // without a status code the error is internal, so production answers 500 and keeps the issues on the server

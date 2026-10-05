@@ -1134,6 +1134,21 @@ describe('Runtime sweep', () => {
       deepStrictEqual(JSON.parse(text).cause.issues[0].path, ['tags', 0]);
     });
 
+    it('Answers 400 for an issue that holds a BigInt', async () => {
+      class LimitController {
+        static limit = procedure({ query: z.object({ n: z.coerce.bigint().max(BigInt(10)) }) }).handle(async () => ({
+          ok: true,
+        }));
+      }
+      get('limit')(LimitController, 'limit');
+      const handlers = initSegment({ segmentName: 'bigint-limit', controllers: { LimitController } });
+
+      const response = await call(handlers, 'GET', 'limit?n=20');
+
+      strictEqual(response.status, 400);
+      deepStrictEqual((await response.json()).cause.issues[0].path, ['n']);
+    });
+
     it('Validates a body that a decorator and the segment onBefore read first', async () => {
       const ownerGuard = createDecorator(async (req: VovkRequest<{ ownerId: string }>, next) => {
         const { ownerId } = await req.vovk.body();

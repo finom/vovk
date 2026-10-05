@@ -226,7 +226,7 @@ Use `body`, `query`, and `params` to provide input validation schemas. These val
 
 A request without a body is validated as `undefined{:ts}`, so an optional schema such as `z.object({ ... }).optional(){:ts}` lets the client leave the body out.
 
-Data that fails validation gets a `400` response. Its message and its `cause.issues` hold the first 20 issues, and the message says how many more there are.
+Data that fails validation gets a `400` response. Its message and its `cause.issues` hold the first 20 issues, and the message says how many more there are. An issue keeps its `message`, its `path` as a list of keys, and the library's other fields that hold text, a number or a boolean, such as Zod's `code`; fields that copy the value that failed are left out.
 
 #### `output` and `iteration`
 
