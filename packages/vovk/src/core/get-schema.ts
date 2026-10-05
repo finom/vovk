@@ -8,10 +8,14 @@ export async function getControllerSchema(
   rpcModuleName: string,
   exposeValidation: boolean
 ) {
+  // hidden validation keeps the declared content types, the clients encode a body by them
   const handlers = exposeValidation
     ? (controller._handlers ?? {})
     : Object.fromEntries(
-        Object.entries(controller._handlers ?? {}).map(([key, { validation: _v, ...value }]) => [key, value])
+        Object.entries(controller._handlers ?? {}).map(([key, { validation, ...value }]) => {
+          const contentType = validation?.body?.['x-contentType'];
+          return [key, contentType ? { ...value, validation: { body: { 'x-contentType': contentType } } } : value];
+        })
       );
 
   return {

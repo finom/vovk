@@ -10,7 +10,7 @@ The function accepts:
 
 - `segmentName?: string{:ts}` – the segment name used in the route. Defaults to an empty string (the root segment).
 - `controllers: Record<string, Function>{:ts}` – a record of controllers.
-- `exposeValidation?: boolean` – set to `false` to hide validation logic from client-side code. Defaults to `true`.
+- `exposeValidation?: boolean` – set to `false` to hide validation logic from client-side code. The declared content types stay in the schema, since the clients encode a body by them. Defaults to `true`.
 - `emitSchema?: boolean{:ts}` – set to `false` to skip emitting the schema for the segment. Defaults to `true`.
 - `onError?: (err: Error, req: VovkRequest) => void | Promise<void>{:ts}` – called when a controller throws. Can be used for logging. The second argument can be used to access the request URL, authorization data, and other request details.
 
