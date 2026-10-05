@@ -1,6 +1,6 @@
 import assert from 'node:assert';
 import { describe, it } from 'node:test';
-import { HttpMethod } from 'vovk';
+import { HttpMethod } from 'vovk/internal';
 import { generateFnName } from '../../../dist/utils/generate-fn-name.mjs';
 
 const isIdentifier = (name: string) => /^[\p{L}_$][\p{L}\p{Nd}_$]*$/u.test(name);
