@@ -129,7 +129,7 @@ export function ExpandableChatDemo() {
 }
 ```
 
-[Check the full code for the component here](https://github.com/finom/vovk/blob/main/examples/realtime-kanban/src/components/ExpandableChatDemo.tsx)
+[Check the full code for the component here](https://github.com/finom/vovk/blob/main/examples/realtime-kanban/src/components/expandable-chat-demo.tsx)
 
 The key part of the code is the `useParseSDKToolCallOutputs` hook, which extracts tool call outputs from assistant messages and passes them to the registry’s `parse` method. The registry processes the results and triggers UI updates accordingly. The hook also ensures that each tool call output is parsed only once by keeping track of parsed tool call IDs in a `Set`.
 

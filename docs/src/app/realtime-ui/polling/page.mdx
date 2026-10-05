@@ -34,7 +34,7 @@ Because we use [Prisma](https://www.prisma.io/) as our ORM, we can use [Prisma E
 > [!IMPORTANT]
 >
 > The existing implementation has the following limitations:
-> - Deletions need to be explicit, even if cascade deletions are handled automatically by the database. See the [`UserController.deleteUser`](https://github.com/finom/vovk/blob/main/examples/realtime-kanban/src/modules/user/UserService.ts) method for more details.
+> - Deletions need to be explicit, even if cascade deletions are handled automatically by the database. See the [`UserService.deleteUser`](https://github.com/finom/vovk/blob/main/examples/realtime-kanban/src/modules/user/user-service.ts) method for more details.
 > - All write operations must select the `updatedAt` field for change detection to work properly.
 > - The list of supported write operations is limited to `create`, `update`, `upsert`, and `delete` for simplicity. Read operations are passed through as-is. For more complex operations, additional handling or abstraction is required.
 
