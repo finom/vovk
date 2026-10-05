@@ -109,7 +109,7 @@ console.log(tools); // [{ name, description, parameters, execute }, ...]
 <a name="rules"></a>
 ## Rules of Locally Called Procedures
 
-`fn` functions do not imitate the `Request` object but partially implement the `VovkRequest` interface by exposing only the [custom `vovk` property](/req-vovk) with `async vovk.body()`, `vovk.query()`, `vovk.params()`, and `vovk.meta()`. In other words, properties such as `req.url` or `req.headers` are not defined in the local procedure context. A suitable `req` signature looks like `Pick<VovkRequest<TBody, TQuery, TParams>, 'vovk'>{:ts}`.
+`fn` functions do not imitate the `Request` object but partially implement the `VovkRequest` interface by exposing only the [custom `vovk` property](/req-vovk) with `async vovk.body()`, `vovk.query()`, `vovk.params()`, and `vovk.meta()`. In other words, properties such as `req.url` or `req.headers` are not defined in the local procedure context. A suitable `req` signature looks like `Pick<VovkRequest<TBody, TQuery, TParams>, 'vovk'>{:ts}`. `vovk.body()` reads a `FormData{:ts}`, `URLSearchParams{:ts}`, `Blob{:ts}`, `ArrayBuffer{:ts}` or typed array body as the server reads a request that carries it, by the content type the RPC client would send; any other body is passed as it is.
 
 To ensure that the implemented HTTP handler can also be called with `fn`, you can use request object destructuring when defining the handler to use only the `vovk` property:
 

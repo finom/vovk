@@ -3,6 +3,7 @@ import { JSONLinesResponder, setResponderHooks } from '../core/json-lines-respon
 import { setHandlerSchema } from '../core/set-handler-schema.js';
 import { bufferBody } from '../req/buffer-body.js';
 import { getMediaType } from '../req/get-media-type.js';
+import { parseBody } from '../req/parse-body.js';
 import { parseForm } from '../req/parse-form.js';
 import { reqMeta } from '../req/req-meta.js';
 import { validateContentType } from '../req/validate-content-type.js';
@@ -12,6 +13,7 @@ import type { VovkOperationObject } from '../types/operation.js';
 import type { VovkRequest } from '../types/request.js';
 import type { KnownAny } from '../types/utils.js';
 import type { BodyTypeFromContentType, ContentType, VovkTypedProcedure } from '../types/validation.js';
+import { fileNameToDisposition } from '../utils/file-name-to-disposition.js';
 import { isJSONObject } from '../utils/map-json-schema-refs.js';
 
 const validationTypes: VovkValidationType[] = ['body', 'query', 'params', 'output', 'iteration'] as const;
@@ -33,6 +35,39 @@ const hasBody = (req: VovkRequestAny) => {
 
 // fn() calls made without a body, the local counterpart of a request without one
 const callsWithoutBody = new WeakSet<object>();
+
+const matchesMediaType = (type: string, pattern: string) =>
+  pattern === '*/*' || (pattern.endsWith('/*') ? type.startsWith(pattern.slice(0, -1)) : type === pattern);
+
+// the type the client sends bytes with: their own when the procedure takes it, else the first type it declares
+const getBytesContentType = (ownType: string, declared: string[]) => {
+  const type = ownType || 'application/octet-stream';
+  if (declared.some((pattern) => matchesMediaType(getMediaType(type) ?? type, pattern))) return type;
+  if (ownType) return declared.includes('application/octet-stream') ? 'application/octet-stream' : type;
+  return (
+    declared.find((declaredType) => !declaredType.includes('*') && declaredType !== 'multipart/form-data') ??
+    declared.find((declaredType) => declaredType !== '*/*' && declaredType.endsWith('/*')) ??
+    type
+  );
+};
+
+// fn() reads a body as the server reads a request that carries it: a form or bytes by the content type the client
+// sends them with, any other value as it is
+const parseFnBody = async (body: unknown, contentType: string[] | undefined) => {
+  if (body instanceof FormData) return parseForm(body);
+  const isBytes = body instanceof Blob || body instanceof ArrayBuffer || ArrayBuffer.isView(body);
+  if (!isBytes && !(body instanceof URLSearchParams)) return body ?? null;
+  const declared = (contentType ?? ['application/json']).map((type) => type.toLowerCase());
+  const type =
+    body instanceof URLSearchParams
+      ? 'application/x-www-form-urlencoded'
+      : getBytesContentType(body instanceof Blob ? body.type : '', declared);
+  const headers = {
+    'content-type': type,
+    ...(body instanceof File ? { 'content-disposition': fileNameToDisposition(body.name) } : {}),
+  };
+  return parseBody(new Request('http://localhost', { method: 'POST', body: body as BodyInit, headers }));
+};
 
 // whether a JSON Schema takes an array, or null, and no single value
 const takesArray = (schema: unknown): boolean => {
@@ -320,22 +355,14 @@ export function withValidationLibrary<
   function fn<TReturnType = ReturnType<THandle>, TTransformed = never>(
     input?: FnInput | FnInputWithTransform<TTransformed>
   ): TReturnType | Promise<TTransformed> {
-    let bodyCache: unknown;
+    let parsedBody: Promise<unknown> | undefined;
 
     const fakeReq: Pick<
       VovkRequest<THandle['__types']['body'], THandle['__types']['query'], THandle['__types']['params']>,
       'vovk'
     > = {
       vovk: {
-        body: () => {
-          if (input && input.body instanceof FormData) {
-            bodyCache ??= parseForm(input.body);
-          } else {
-            bodyCache = input?.body;
-          }
-
-          return Promise.resolve(bodyCache ?? null);
-        },
+        body: () => (parsedBody ??= parseFnBody(input?.body, contentType)),
         query: () => input?.query ?? {},
         params: () => input?.params ?? {},
         meta: <T = KnownAny>(meta?: T | null) => reqMeta<T>(fakeReq, meta),
