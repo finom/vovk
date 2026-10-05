@@ -14,7 +14,7 @@ Don't `WebFetch` vovk.dev mid-task. This skill + sibling vovk:* skills = canonic
 ## Rules
 
 - **`.vovk-schema/`** — back-end schema artifacts. **Commit.** Source of truth for codegen on fresh clone.
-- **Requirements** — Node 22+, Next 15+ (App Router).
+- **Requirements** — Node 22+, Next 15+ (App Router), TypeScript 5.3+ (generated client; the `vovk new` controller + service pair needs 5.5+). `moduleResolution` `bundler`, `node16` or `nodenext`: under `node` TS can't find `vovk/fetcher`.
 - **Templates** — `ts` is the only TS-client template set, used by both composed and segmented clients; emits into project source (default `src/client`, or `client/` without a `src` folder), imported via `@/client`.
 - **`_schema_`** — dev-only endpoint per segment (when `NODE_ENV=development`); `vovk dev` polls these to write `.vovk-schema/`.
 - **`vovk dev` vs `vovk generate`** — dev = watcher (writes schema artifacts continuously); generate = one-shot (used in `prebuild`).

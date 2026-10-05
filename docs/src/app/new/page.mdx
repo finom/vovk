@@ -138,6 +138,8 @@ The built-in templates cover standard CRUD operations for controllers and servic
 - When no library is selected, it uses the validation-agnostic template [vovk-cli/module-templates/type/controller.ts.ejs](https://github.com/finom/vovk/blob/main/packages/vovk-cli/module-templates/type/controller.ts.ejs).
 - Service template is used regardless of the validation library: [vovk-cli/module-templates/type/service.ts.ejs](https://github.com/finom/vovk/blob/main/packages/vovk-cli/module-templates/type/service.ts.ejs).
 
+The controller and the service these templates write infer types from each other, which needs TypeScript 5.5+.
+
 ### Shortcuts
 
 Controllers and services can be created with shortcuts:
