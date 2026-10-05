@@ -1,7 +1,16 @@
-import type { VovkController, VovkSegmentSchema } from '../types/core.js';
+import type { VovkController, VovkHandlerSchema, VovkSegmentSchema } from '../types/core.js';
 import { VovkSchemaIdEnum } from '../types/enums.js';
 import type { StaticClass } from '../types/utils.js';
 import { trimPath } from '../utils/trim-path.js';
+
+// the body's JSON Schema is built here only for its content types, and one that can't be built gives none
+const getBodyContentType = (validation: VovkHandlerSchema['validation']) => {
+  try {
+    return validation?.body?.['x-contentType'];
+  } catch {
+    return undefined;
+  }
+};
 
 export async function getControllerSchema(
   controller: VovkController,
@@ -13,7 +22,7 @@ export async function getControllerSchema(
     ? (controller._handlers ?? {})
     : Object.fromEntries(
         Object.entries(controller._handlers ?? {}).map(([key, { validation, ...value }]) => {
-          const contentType = validation?.body?.['x-contentType'];
+          const contentType = getBodyContentType(validation);
           return [key, contentType ? { ...value, validation: { body: { 'x-contentType': contentType } } } : value];
         })
       );

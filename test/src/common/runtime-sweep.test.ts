@@ -1408,6 +1408,41 @@ describe('Runtime sweep', () => {
     it('Reach the client when skipSchemaEmission skips the body', async () => {
       deepStrictEqual(await callThroughClient('skipped-body', defineController(['body'])), results);
     });
+
+    it('Leave out the content type of a body whose JSON Schema cannot be built when exposeValidation is false', async () => {
+      const throwConversion = (): Record<string, unknown> => {
+        throw new Error('No JSON Schema for this type');
+      };
+      // a Standard Schema whose JSON Schema conversion throws
+      const opaque = {
+        '~standard': {
+          version: 1 as const,
+          vendor: 'opaque',
+          validate: (value: unknown) => ({ value }),
+          jsonSchema: { input: throwConversion, output: throwConversion },
+        },
+      };
+      class OpaqueController {
+        static upload = procedure({ contentType: 'text/csv', body: opaque }).handle(async () => ({ ok: true }));
+      }
+      post('upload')(OpaqueController, 'upload');
+      let handlers = {} as Handlers;
+      await withNodeEnv('development', async () => {
+        handlers = initSegment({
+          segmentName: 'opaque-body',
+          controllers: { OpaqueRPC: OpaqueController },
+          exposeValidation: false,
+        });
+      });
+
+      const response = await call(handlers, 'GET', '_schema_');
+
+      strictEqual(response.status, 200);
+      deepStrictEqual((await response.json()).schema.controllers.OpaqueRPC.handlers.upload, {
+        path: 'upload',
+        httpMethod: 'POST',
+      });
+    });
   });
 
   describe('Query', () => {
