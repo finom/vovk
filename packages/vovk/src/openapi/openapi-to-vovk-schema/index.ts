@@ -15,6 +15,7 @@ import type { VovkHandlerSchema, VovkSchema } from '../../types/core.js';
 import { type HttpMethod, VovkSchemaIdEnum } from '../../types/enums.js';
 import type { VovkJSONSchemaBase } from '../../types/json-schema.js';
 import type { ContentType } from '../../types/validation.js';
+import { JSON_LINES_MEDIA_TYPES } from '../../utils/media-types.js';
 import { applyComponentsSchemas } from './apply-components-schemas.js';
 import { inlineRefs } from './inline-refs.js';
 import { mapSubschemas, SUBSCHEMA_MAP_KEYWORDS } from './map-subschemas.js';
@@ -31,9 +32,6 @@ const BODY_CONTENT_TYPES: ContentType[] = [
   'text/plain',
   'application/octet-stream',
 ];
-
-// the media types every client reads as JSON Lines, matched without parameters
-const JSON_LINES_MEDIA_TYPES = ['application/jsonl', 'application/jsonlines', 'application/x-ndjson'];
 
 const mediaTypeEssence = (mediaType: string) => mediaType.split(';')[0].trim().toLowerCase();
 

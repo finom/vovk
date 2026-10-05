@@ -3,6 +3,7 @@ import type { VovkFetcher, VovkFetcherOptions, VovkStreamAsyncIterable } from '.
 import type { VovkHandlerSchema } from '../types/core.js';
 import { HttpStatus } from '../types/enums.js';
 import { fileNameToDisposition } from '../utils/file-name-to-disposition.js';
+import { JSON_LINES_MEDIA_TYPES } from '../utils/media-types.js';
 import { takesNullBody } from './takes-null-body.js';
 export const DEFAULT_ERROR_MESSAGE = 'Unknown error at default fetcher';
 
@@ -55,9 +56,6 @@ function wrapStreamErrors(
 const getMediaType = (contentType: string | null | undefined) => contentType?.split(';')[0].trim().toLowerCase() ?? '';
 
 const isJSONMediaType = (mediaType: string) => mediaType === 'application/json' || mediaType.endsWith('+json');
-
-// the Python and Rust clients and the OpenAPI mixin importer use the same list
-const JSON_LINES_MEDIA_TYPES = ['application/jsonl', 'application/jsonlines', 'application/x-ndjson'];
 
 // AbortSignal.any is missing in React Native and Safari before 17.4, where the given signal aborts the controller
 function anySignal(controller: AbortController, signal: AbortSignal): AbortSignal {
