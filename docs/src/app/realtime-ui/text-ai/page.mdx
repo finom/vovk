@@ -84,7 +84,7 @@ export default class AiSdkController {
 ```
 *[The code above is fetched from GitHub repository.](https://github.com/finom/vovk/blob/main/examples/realtime-kanban/src/modules/ai/ai-sdk-controller.ts)*
 
-The resulting endpoint is served at `/api/ai-sdk/tools`.
+The resulting endpoint is served at `/api/ai-sdk/function-calling`.
 
 ## Frontend Setup
 
@@ -96,7 +96,7 @@ On the frontend we’re going to use the AI SDK, represented by the [ai](https:/
 import { useChat } from '@ai-sdk/react';
 import { useState } from 'react';
 import { DefaultChatTransport } from 'ai';
-import { AiSdkRPC } from 'vovk-client';
+import { AiSdkRPC } from '@/client';
 import { Conversation, ConversationContent, ConversationEmptyState } from '@/components/ai-elements/conversation';
 import { useRegistry } from '@/hooks/use-registry';
 import useParseSDKToolCallOutputs from '@/hooks/use-parse-sdk-tool-call-outputs';
@@ -106,7 +106,7 @@ export function ExpandableChatDemo() {
 
   const { messages, sendMessage, status } = useChat({
     transport: new DefaultChatTransport({
-      api: AiSdkRPC.functionCalling.getURL(), // or "/api/ai-sdk/tools",
+      api: AiSdkRPC.functionCalling.getURL(), // or "/api/ai-sdk/function-calling",
     }),
     onToolCall: (toolCall) => {
       console.log('Tool call initiated:', toolCall);
@@ -129,7 +129,7 @@ export function ExpandableChatDemo() {
 }
 ```
 
-[Check the full code for the component here](https://github.com/finom/vovk/blob/main/examples/realtime-kanban/src/components/ExpandableChatDemo.tsx)
+[Check the full code for the component here](https://github.com/finom/vovk/blob/main/examples/realtime-kanban/src/components/expandable-chat-demo.tsx)
 
 The key part of the code is the `useParseSDKToolCallOutputs` hook, which extracts tool call outputs from assistant messages and passes them to the registry’s `parse` method. The registry processes the results and triggers UI updates accordingly. The hook also ensures that each tool call output is parsed only once by keeping track of parsed tool call IDs in a `Set`.
 
@@ -171,9 +171,11 @@ Without optimizations, the code can be reduced to this small snippet:
 
 ```ts showLineNumbers copy
 // ...
+const store = useRegistryStore();
+
 useEffect(() => {
-  useRegistry.getState().parse(messages);
-}, [messages]);
+  store.getState().parse(messages);
+}, [messages, store]);
 // ...
 ```
 

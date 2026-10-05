@@ -97,14 +97,17 @@ Before diving into the registry implementation, let's set up the [fetcher](/impo
 ```ts showLineNumbers copy filename="src/lib/fetcher.ts"
 export const fetcher = createFetcher<{ bypassRegistry?: boolean }>({
   onError: (error) => {
-    if (error.statusCode === HttpStatus.UNAUTHORIZED) {
+    if (
+      error.statusCode === HttpStatus.UNAUTHORIZED &&
+      typeof document !== 'undefined'
+    ) {
       document.location.href = '/login';
     }
   },
 });
 ```
 
-The `onError` handler redirects to the login page on authentication failures. The `bypassRegistry` generic parameter adds a type-safe option that callers can pass (e.g. `await UserRPC.getUsers({ bypassRegistry: true }){:ts}`) to skip registry processing for specific requests — useful for cases where you only need the raw response.
+The `onError` handler redirects to the login page on authentication failures in the browser. The Telegram mixin calls the same fetcher on the server, where there is no `document`, so the error is thrown as it is. The `bypassRegistry` generic parameter adds a type-safe option that callers can pass (e.g. `await UserRPC.getUsers({ bypassRegistry: true }){:ts}`) to skip registry processing for specific requests — useful for cases where you only need the raw response.
 
 Declare the fetcher in the [config](/config) so that it replaces the default one imported by the generated [client](/typescript):
 
@@ -115,7 +118,7 @@ const config = {
   outputConfig: {
     imports: {
       // ...
-      fetcher: './src/lib/fetcher.ts',
+      fetcher: './src/lib/fetcher',
     },
   },
 };

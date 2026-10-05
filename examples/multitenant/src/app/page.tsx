@@ -1,6 +1,6 @@
 'use client';
 import { useQuery } from '@tanstack/react-query';
-import { RootRPC } from '@/client';
+import { RootRPC } from '@/client/root';
 import Demo from '@/components/demo';
 
 export default function RootTenantPage() {

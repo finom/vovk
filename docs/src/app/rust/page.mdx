@@ -98,7 +98,7 @@ The snippets below are adapted from a real example described on the [Hello World
 
 A controller like this:
 
-<Tabs items={['UserController.ts', 'UserService.ts', 'route.ts']}>
+<Tabs items={['user-controller.ts', 'user-service.ts', 'route.ts']}>
 <Tabs.Tab>
 ```ts showLineNumbers copy filename="src/modules/user/user-controller.ts" source="examples/hello-world"
 import { operation, post, prefix, procedure } from 'vovk';
@@ -379,13 +379,13 @@ All RPC modules are generated in `lib.rs`, which contains RPC functions and the 
 
 Access nested structures via `_::`. For example, `body.profile` is `update_user_::body_::profile`. This syntax avoids name collisions and maps 1:1 to the schema structure.
 
-Use `use` to import and rename structs to follow PascalCase:
+Use `use` to import and rename structs to follow PascalCase. The functions are `async`; this sample runs them on [tokio](https://tokio.rs/) (`cargo add tokio --features macros,rt-multi-thread`):
 
 ```rs
-use std::io::Write;
 use vovk_hello_world::user_rpc;
 
-pub fn main() {
+#[tokio::main]
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
   use user_rpc::update_user_::{
     body as Body,
     body_::profile as Profile,
@@ -414,6 +414,7 @@ pub fn main() {
   ).await?;
 
   println!("user_rpc.update_user response: {:?}", update_user_response);
+  Ok(())
 }
 ```
 
@@ -425,13 +426,13 @@ A failed call returns an `HttpException`. Its `status_code()` is the response st
 
 ### JSON Lines Endpoints
 
-For continuous streaming with [JSON Lines](/jsonlines) endpoints, the client implements the `Iterator` trait to return an async-capable iterator for streamed data.
+For continuous streaming with [JSON Lines](/jsonlines) endpoints, the async function resolves to a [`futures::Stream`](https://docs.rs/futures/latest/futures/stream/trait.Stream.html) of `Result<T, HttpException>` items. Read it with `StreamExt::next` from the [futures](https://docs.rs/futures) crate.
 
 A JSON Lines endpoint without an `iteration` schema gets a regular function instead: it reads the whole response and returns the items as a JSON array.
 
 A controller like this:
 
-<Tabs items={['StreamController.ts', 'StreamService.ts', 'route.ts']}>
+<Tabs items={['stream-controller.ts', 'stream-service.ts', 'route.ts']}>
 <Tabs.Tab>
 ```ts showLineNumbers copy filename="src/modules/stream/stream-controller.ts" source="examples/hello-world"
 import { get, operation, prefix, procedure } from 'vovk';
@@ -569,12 +570,12 @@ pub mod stream_rpc {
 }
 ```
 
-Usage:
+Usage, with the futures crate (`cargo add futures`):
 
 ```rs
 use futures::StreamExt;
 use std::io::{stdout, Write};
-use vovk_hello_world_local::open_api_rpc::stream_rpc;
+use vovk_hello_world::stream_rpc;
 
 pub async fn consume_stream() -> Result<(), Box<dyn std::error::Error>> {
   let mut stream = stream_rpc::stream_tokens((), (), (), None, None, false).await?;

@@ -3,7 +3,7 @@ import { VovkNewDynamic } from './vovk-new-dynamic';
 
 # Controller & Procedure
 
-A **controller** in Vovk.ts is a class that groups endpoint logic as `static` members. The class is initialized (not instantiated) inside a [segment route](/segment) via [`initSegment`](/segment#initsegment) — that's how its members become reachable HTTP endpoints.
+A **controller** in Vovk.ts is a class that groups endpoint logic as `static` members. The class is initialized (not instantiated) inside a [segment route](/segment) via [`initSegment`](/segment#creating-segments) — that's how its members become reachable HTTP endpoints.
 
 A **procedure** is one such member: a single endpoint definition, typically decorated with an HTTP method like `@get()`, `@post()`, `@put()`, `@patch()`, or `@del()`. Vovk.ts supports two authoring styles, both of which compile to real Next.js Route Handlers:
 
@@ -13,12 +13,15 @@ A **procedure** is one such member: a single endpoint definition, typically deco
 Pick the bare style for simple cases; reach for `procedure()` whenever you want validation or a transport-agnostic callable.
 
 ```ts showLineNumbers copy filename="src/modules/user/user-controller.ts"
-import { put, prefix } from 'vovk';
+import { put, prefix, type VovkRequest } from 'vovk';
 
 @prefix('users') // optional prefix for all routes in this controller
 export default class UserController {
   @put('{id}')
-  static async updateUser(req: NextRequest, { id }: { id: string }) {
+  static async updateUser(
+    req: VovkRequest<{ email: string }, { notify: 'email' | 'push' | 'none' }>,
+    { id }: { id: string }
+  ) {
     const data = await req.json();
     // ...
   }
@@ -37,7 +40,7 @@ const controllers = {
 
 export type Controllers = typeof controllers;
 
-export const { GET, POST, PUT, DELETE } = initSegment({ controllers });
+export const { GET, POST, PATCH, PUT, HEAD, OPTIONS, DELETE } = initSegment({ controllers });
 ```
 
 The key of this object defines the name of the resulting RPC module variable used by the client side:
@@ -52,6 +55,8 @@ const updatedUser = await UserRPC.updateUser({
   body: userData,
 });
 ```
+
+The RPC method takes `body` and `query` because the request is typed with [`VovkRequest`](#vovkrequest-type); with `NextRequest` it takes `params` only.
 
 For more information, see [TypeScript Client](/typescript).
 
@@ -230,7 +235,7 @@ Data that fails validation gets a `400` response. Its message and its `cause.iss
 
 #### `output` and `iteration`
 
-Use `output` and `iteration` to provide output validation schemas. `output` is for regular JSON responses, while `iteration` is for [JSON Lines](/jsonlines). Both are optional and don't affect generated RPC typings, but they enable key features like [OpenAPI](/openapi), [AI tools](/tools), and for [Python](/python), [Rust](/rust), and future clients. These schemas are not used for client-side validation. A procedure takes one or the other: `procedure(){:ts}` throws when it gets both.
+Use `output` and `iteration` to provide output validation schemas. `output` is for regular JSON responses, while `iteration` is for [JSON Lines](/jsonlines). Both are optional. When given, the RPC method's result type follows `output`, and the type of its stream items follows `iteration`, instead of the handler's return type. They also enable key features like [OpenAPI](/openapi), [AI tools](/tools), and the [Python](/python), [Rust](/rust), and future clients. These schemas are not used for client-side validation. A procedure takes one or the other: `procedure(){:ts}` throws when it gets both.
 
 A response that fails `output` or `iteration` validation is a bug in the handler, not in the request. It is thrown as a plain `Error{:ts}`, without a status code: in production the client gets `500` "Internal server error", and the validation issues stay on the server, where the segment's [`onError`](/segment) receives the first 20 of them as the error's `cause`. In development the message names the failing fields.
 
@@ -257,9 +262,9 @@ Skips emitting JSON Schema for the handler. Provide a boolean to skip entirely, 
 
 Applies only to `iteration`. Controls whether to validate each item in the streamed response. By default, only the first `iteration` item is validated.
 
-#### `operation`
+#### `operationObject`
 
-Optionally provide an `operation` object to specify OAS details when the `@operation` decorator is not applicable—useful with [`fn`](/fn) on a regular function instead of a class method.
+Optionally provide an `operationObject` to specify OAS details when the `@operation` decorator is not applicable—useful with [`fn`](/fn) on a regular function instead of a class method.
 
 #### `preferTransformed = true`
 

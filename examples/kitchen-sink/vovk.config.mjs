@@ -35,7 +35,8 @@ const config = {
             mainFields: ['module', 'main'],
           },
         },
-        // noExternal: ['!next/**'],
+        // vovk-examples doesn't depend on vovk, so the bundle carries it
+        deps: { alwaysBundle: ['vovk', 'vovk/**'] },
       });
     },
     outputConfig: {
@@ -69,6 +70,15 @@ const config = {
 </p>`,
       },
       package: {
+        type: 'module',
+        main: './index.js',
+        types: './index.d.ts',
+        exports: {
+          '.': {
+            types: './index.d.ts',
+            default: './index.js',
+          },
+        },
         dependencies: {
           'react-loading-skeleton': '^3.5.0',
         },

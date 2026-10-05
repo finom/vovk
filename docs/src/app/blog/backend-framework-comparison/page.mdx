@@ -41,7 +41,7 @@ Which validation library does the framework use? **✅ Standard Schema** = accep
 A type-safe client that calls your endpoints. **✅ Native** = first-party client. Sub-modes: **pure inference** (no codegen, TS type flows), **codegen** (build step), **OpenAPI roundtrip** (spec → external generator). **❌** = no typed client.
 
 ### LLM tool derivation
-Auto-derived `{ name, description, parameters, execute }` tool objects from existing procedures. **✅ Native** = same procedure declaration becomes a tool. **🔌** = via first-party package. **OpenAPI bridge** = only through OpenAPI doc + external generator. **❌** = no auto-derivation (write `@Tool` methods manually).
+Auto-derived `{ name, description, inputSchema, execute }` tool objects from existing procedures. **✅ Native** = same procedure declaration becomes a tool. **🔌** = via first-party package. **OpenAPI bridge** = only through OpenAPI doc + external generator. **❌** = no auto-derivation (write `@Tool` methods manually).
 
 ### Local call
 Calling a procedure in-process, without HTTP, with full input validation. **✅ True bypass** = no `Request` construction, no network, validation runs. **HTTP simulation** = framework constructs a `Request` and runs the middleware stack (e.g. Hono `app.request`, Fastify `inject`, Elysia `app.handle`). **Plain function** = the handler can be called as a function but skips validation. **❌** = none.
@@ -166,7 +166,7 @@ import UserController from '@/modules/user/user-controller';
 
 const controllers = { UserRPC: UserController };
 export type Controllers = typeof controllers;
-export const { GET, POST, PUT, DELETE, PATCH } = initSegment({ controllers });
+export const { GET, POST, PATCH, PUT, HEAD, OPTIONS, DELETE } = initSegment({ controllers });
 ```
 
 *Source: [vovk.dev/segment](https://vovk.dev/segment)*
@@ -179,10 +179,10 @@ export const { GET, POST, PUT, DELETE, PATCH } = initSegment({ controllers });
 
 #### Typed RPC client
 
-Codegen via `vovk generate` (or `vovk dev` watcher) emits `vovk-client` — a TypeScript module mirroring controllers, same call signature as `.fn()`.
+Codegen via `vovk generate` (or `vovk dev` watcher) emits a TypeScript client into the project, imported as `@/client` — a module mirroring controllers, same call signature as `.fn()`.
 
 ```ts
-import { UserRPC } from 'vovk-client';
+import { UserRPC } from '@/client';
 
 const user = await UserRPC.getUser({
   params: { id: '0190ad59-c3e3-71e0-bbaf-2c4c4f2f8a3f' },
@@ -193,14 +193,14 @@ const user = await UserRPC.getUser({
 
 #### LLM tool derivation
 
-Native, first-party. `deriveTools()` converts any controller or RPC module into `{ name, description, parameters, execute }` tool objects compatible with Vercel AI SDK out of the box. The `ToModelOutput.MCP` formatter shapes execute-output for MCP transports.
+Native, first-party. `deriveTools()` converts any controller or RPC module into `{ name, description, inputSchema, execute }` tool objects compatible with Vercel AI SDK out of the box. The `ToModelOutput.MCP` formatter shapes execute-output for MCP transports.
 
 ```ts
 import { deriveTools } from 'vovk';
 import UserController from '@/modules/user/user-controller';
 
-const { tools, toolsByName } = deriveTools({ modules: { UserController } });
-// tools: [{ name, description, parameters, execute }, ...]
+const tools = deriveTools({ modules: { UserController } });
+// [{ name, description, inputSchema, execute, ... }, ...]
 ```
 
 *Source: [vovk.dev/tools](https://vovk.dev/tools)*

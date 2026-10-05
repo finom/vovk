@@ -47,7 +47,7 @@ The services implement the actual business logic for each procedure, including d
 - Creations and updates are followed by `EmbeddingService.generateEntityEmbedding` calls, and the search endpoints use `EmbeddingService.vectorSearch` to perform vector search using OpenAI embeddings and pgvector. For details, see the [Embeddings](./embeddings) article.
 - The controller procedures use [req.vovk](/req-vovk) to access request data such as `params`, `query`, and `body`, because we want to call these methods directly from code (not only through HTTP requests) via the [fn](/fn) interface for SSR/PPR, server actions, and AI tool execution.
 
-<Tabs items={['UserController.ts', 'UserService.ts', 'TaskController.ts', 'TaskService.ts']}>
+<Tabs items={['user-controller.ts', 'user-service.ts', 'task-controller.ts', 'task-service.ts']}>
 <Tabs.Tab>
 ```ts showLineNumbers copy filename="src/modules/user/user-controller.ts" source="examples/realtime-kanban"
 import { TaskSchema, UserSchema } from '@schemas/index';
@@ -162,10 +162,11 @@ export default class UserService {
       },
     });
 
+    // the row is saved either way; search skips it until an update brings its embedding
     await EmbeddingService.generateEntityEmbedding(
       user.entityType,
       user.id as UserType['id'],
-    );
+    ).catch((error) => console.error('Embedding failed', error));
     return user as UserType;
   };
 
@@ -178,7 +179,9 @@ export default class UserService {
       data,
     });
 
-    await EmbeddingService.generateEntityEmbedding(user.entityType, id);
+    await EmbeddingService.generateEntityEmbedding(user.entityType, id).catch(
+      (error) => console.error('Embedding failed', error),
+    );
 
     return user as UserType;
   };
@@ -338,10 +341,11 @@ export default class TaskService {
   ) => {
     const task = await DatabaseService.prisma.task.create({ data });
 
+    // the row is saved either way; search skips it until an update brings its embedding
     await EmbeddingService.generateEntityEmbedding(
       task.entityType,
       task.id as TaskType['id'],
-    );
+    ).catch((error) => console.error('Embedding failed', error));
 
     return task as TaskType;
   };
@@ -355,7 +359,9 @@ export default class TaskService {
       data,
     });
 
-    await EmbeddingService.generateEntityEmbedding(task.entityType, id);
+    await EmbeddingService.generateEntityEmbedding(task.entityType, id).catch(
+      (error) => console.error('Embedding failed', error),
+    );
 
     return task as TaskType;
   };

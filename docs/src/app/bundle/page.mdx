@@ -320,7 +320,7 @@ The [Schema](/schema) is available via the `schema` import, as well as a propert
 import { schema, UserRPC } from 'my-api-bundle';
 
 console.log(schema.segments[''].controllers.UserRPC.handlers.getUser.validation.params);
-console.log(UserRPC.getUser.schema.validation.params);
+console.log(UserRPC.getUser.schema.validation?.params);
 ```
 
 Note that the `openapi` object that is usually available from **@/client/openapi** is not bundled, as it would significantly increase the package size. The `schema` module that is usually available from **@/client/schema** is also omitted to keep the bundling flow simple by using only a single entry point.

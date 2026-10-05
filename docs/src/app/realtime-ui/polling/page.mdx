@@ -34,13 +34,14 @@ Because we use [Prisma](https://www.prisma.io/) as our ORM, we can use [Prisma E
 > [!IMPORTANT]
 >
 > The existing implementation has the following limitations:
-> - Deletions need to be explicit, even if cascade deletions are handled automatically by the database. See the [`UserController.deleteUser`](https://github.com/finom/vovk/blob/main/examples/realtime-kanban/src/modules/user/UserService.ts) method for more details.
+> - Deletions need to be explicit, even if cascade deletions are handled automatically by the database. See the [`UserService.deleteUser`](https://github.com/finom/vovk/blob/main/examples/realtime-kanban/src/modules/user/user-service.ts) method for more details.
 > - All write operations must select the `updatedAt` field for change detection to work properly.
 > - The list of supported write operations is limited to `create`, `update`, `upsert`, and `delete` for simplicity. Read operations are passed through as-is. For more complex operations, additional handling or abstraction is required.
 
-```ts showLineNumbers copy filename="src/modules/database/database-service.ts" source="examples/realtime-kanban" {20,124}
+```ts showLineNumbers copy filename="src/modules/database/database-service.ts" source="examples/realtime-kanban" {24,133}
 import { PrismaNeon } from '@prisma/adapter-neon';
-import { PrismaClient } from '@prisma/client';
+import { Prisma, PrismaClient } from '@prisma/client';
+import { HttpException, HttpStatus } from 'vovk';
 import type { BaseEntity } from '@/types';
 import DatabaseEventsService, {
   type DBChange,
@@ -106,7 +107,12 @@ export default class DatabaseService {
                   `Unsupported database operation "${operation}" on model "${model}"`,
                 );
               }
-              const result = (await query(args)) as BaseEntity | BaseEntity[];
+              let result: BaseEntity | BaseEntity[];
+              try {
+                result = (await query(args)) as BaseEntity | BaseEntity[];
+              } catch (error) {
+                throw DatabaseService.toHttpException(error, model);
+              }
 
               const now = new Date().toISOString();
               let change: DBChange | null = null;
@@ -173,6 +179,27 @@ export default class DatabaseService {
           },
         },
       });
+  }
+
+  // a missing record, a taken unique value or a missing related record is the caller's error, not a 500
+  private static toHttpException(error: unknown, model: string) {
+    if (!(error instanceof Prisma.PrismaClientKnownRequestError)) return error;
+    switch (error.code) {
+      case 'P2025':
+        return new HttpException(HttpStatus.NOT_FOUND, `${model} not found`);
+      case 'P2002':
+        return new HttpException(
+          HttpStatus.CONFLICT,
+          `${model} with the same unique field already exists`,
+        );
+      case 'P2003':
+        return new HttpException(
+          HttpStatus.BAD_REQUEST,
+          `${model} refers to a record that doesn't exist`,
+        );
+      default:
+        return error;
+    }
   }
 }
 ```
@@ -249,10 +276,15 @@ export default class DatabaseEventsService {
       value: JSON.stringify({ id, entityType, date, type }),
     }));
 
-    // one multi(): batch ZADD + EXPIRE
+    // one multi(): batch ZADD, drop the entries older than the key's lifetime, EXPIRE
     await DatabaseEventsService.redisClient
       .multi()
       .zAdd(DatabaseEventsService.DB_KEY, entries)
+      .zRemRangeByScore(
+        DatabaseEventsService.DB_KEY,
+        '-inf',
+        Date.now() - DatabaseEventsService.INTERVAL * 60,
+      )
       .expire(
         DatabaseEventsService.DB_KEY,
         (DatabaseEventsService.INTERVAL * 60) / 1000,
@@ -290,9 +322,9 @@ export default class DatabaseEventsService {
 
 ## Polling controller and service
 
-With Redis change entries and the change emitter in place, we can implement a polling endpoint that streams updates to clients in real time. The `DatabasePollController` exposes a single [JSONLines](/jsonlines) endpoint, and `DatabasePollService` uses a [JSONLinesResponder](/jsonlines#jsonlinesresponder) instance (received from the controller) to send data to clients. The service closes the connection safely after 30 seconds, so clients should reconnect.
+With Redis change entries and the change emitter in place, we can implement a polling endpoint that streams updates to clients in real time. The `DatabasePollController` exposes a single [JSONLines](/jsonlines) endpoint, and `DatabasePollService` uses a [JSONLinesResponder](/jsonlines#jsonlinesresponder) instance (received from the controller) to send data to clients. The service closes the connection after 30 seconds, so clients should reconnect, and removes its change listener then, or at the first change after the client has left.
 
-<Tabs items={['DatabasePollService.ts', 'DatabasePollController.ts']}>
+<Tabs items={['database-poll-service.ts', 'database-poll-controller.ts']}>
 <Tabs.Tab>
 ```ts showLineNumbers copy filename="src/modules/database/database-poll-service.ts" source="examples/realtime-kanban"
 import { forEach, groupBy } from 'lodash';
@@ -309,58 +341,71 @@ export default class PollService {
       VovkIteration<typeof DatabasePollController.poll>
     >,
   ) {
-    setTimeout(() => responder.close(), 30_000);
-
     let asOldAs = new Date();
     // 10 minutes ago; TODO: use latest update date from registry
     asOldAs.setMinutes(asOldAs.getMinutes() - 10);
 
-    DatabaseEventsService.emitter.on(
-      DatabaseEventsService.DB_KEY,
-      (changes) => {
-        const deleted = changes.filter((change) => change.type === 'delete');
-        const createdOrUpdated = changes.filter(
-          (change) => change.type === 'create' || change.type === 'update',
+    const onChanges = (changes: DBChange[]) => {
+      // the client left before the timeout
+      if (responder.isClosed) {
+        DatabaseEventsService.emitter.off(
+          DatabaseEventsService.DB_KEY,
+          onChanges,
+        );
+        return;
+      }
+      const deleted = changes.filter((change) => change.type === 'delete');
+      const createdOrUpdated = changes.filter(
+        (change) => change.type === 'create' || change.type === 'update',
+      );
+
+      for (const deletedEntity of deleted) {
+        void responder.send({
+          id: deletedEntity.id,
+          entityType: deletedEntity.entityType,
+          __isDeleted: true,
+        });
+      }
+      // group by entityType and date, so the date is maximum date for the given entity: { entityType: string, date: string }[]
+      forEach(groupBy(createdOrUpdated, 'entityType'), (changes) => {
+        const maxDateItem = changes.reduce(
+          (max, change) => {
+            const changeDate = new Date(change.date);
+            return changeDate.getTime() > new Date(max.date).getTime()
+              ? change
+              : max;
+          },
+          { date: new Date(0) } as unknown as DBChange,
         );
 
-        for (const deletedEntity of deleted) {
-          void responder.send({
-            id: deletedEntity.id,
-            entityType: deletedEntity.entityType,
-            __isDeleted: true,
-          });
-        }
-        // group by entityType and date, so the date is maximum date for the given entity: { entityType: string, date: string }[]
-        forEach(groupBy(createdOrUpdated, 'entityType'), (changes) => {
-          const maxDateItem = changes.reduce(
-            (max, change) => {
-              const changeDate = new Date(change.date);
-              return changeDate.getTime() > new Date(max.date).getTime()
-                ? change
-                : max;
-            },
-            { date: new Date(0) } as unknown as DBChange,
-          );
-
-          if (new Date(maxDateItem.date).getTime() > asOldAs.getTime()) {
-            void DatabaseService.prisma[maxDateItem.entityType as 'user']
-              .findMany({
-                where: {
-                  updatedAt: {
-                    gt: asOldAs,
-                  },
+        if (new Date(maxDateItem.date).getTime() > asOldAs.getTime()) {
+          void DatabaseService.prisma[maxDateItem.entityType as 'user']
+            .findMany({
+              where: {
+                updatedAt: {
+                  gt: asOldAs,
                 },
-              })
-              .then((entities) => {
-                for (const entity of entities) {
-                  void responder.send(entity);
-                }
-              });
-            asOldAs = new Date(maxDateItem.date);
-          }
-        });
-      },
-    );
+              },
+            })
+            .then((entities) => {
+              for (const entity of entities) {
+                void responder.send(entity);
+              }
+            });
+          asOldAs = new Date(maxDateItem.date);
+        }
+      });
+    };
+
+    DatabaseEventsService.emitter.on(DatabaseEventsService.DB_KEY, onChanges);
+
+    setTimeout(() => {
+      DatabaseEventsService.emitter.off(
+        DatabaseEventsService.DB_KEY,
+        onChanges,
+      );
+      responder.close();
+    }, 30_000);
   }
 }
 ```

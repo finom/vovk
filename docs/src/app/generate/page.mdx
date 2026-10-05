@@ -53,7 +53,7 @@ In a Next.js project, a segment whose route file is gone while its schema file r
 
 - `--composed-only` — generate only the composed client, even if the segmented client is enabled.
 - `--out`, `--composed-out <path>` — override `composedClient.outDir`.
-- `--from`, `--composed-from <templates...>` — override `composedClient.templates`.
+- `--from`, `--composed-from <templates...>` — override `composedClient.fromTemplates`.
 - `--include`, `--composed-include-segments <segments...>` — override `composedClient.includeSegments`.
 - `--exclude`, `--composed-exclude-segments <segments...>` — override `composedClient.excludeSegments`.
 
@@ -61,7 +61,7 @@ In a Next.js project, a segment whose route file is gone while its schema file r
 
 - `--segmented-only` — generate only the segmented client, even if the composed client is enabled.
 - `--segmented-out <path>` — override `segmentedClient.outDir`.
-- `--segmented-from <templates...>` — override `segmentedClient.templates`.
+- `--segmented-from <templates...>` — override `segmentedClient.fromTemplates`.
 - `--segmented-include-segments <segments...>` — override `segmentedClient.includeSegments`.
 - `--segmented-exclude-segments <segments...>` — override `segmentedClient.excludeSegments`.
 
@@ -84,5 +84,5 @@ Mixins extend the sclient declared in one or more OpenAPI specs. See [OpenAPI mi
 - `--schema`, `--schema-path <path>` — override the schema folder defined by `schemaOutDir`.
 - `--config`, `--config-path <config>` — override the config file path. By default, all supported filenames are checked; a warning is shown if multiple are found.
 - `--origin <url>` — override `outputConfig.origin`.
-- `--log-level <level>` — set log level: `trace`, `debug`, `info`, `warn`, `error`, `fatal` (default: `info`).
+- `--log-level <level>` — set log level: `trace`, `debug`, `info`, `warn`, `error`, `silent` (default: `info`).
 - `-h, --help` — show help.

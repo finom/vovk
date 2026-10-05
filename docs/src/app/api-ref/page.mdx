@@ -91,7 +91,7 @@ export default class HelloController {
 }
 ```
 
-Each HTTP method decorator has an `.auto()` helper that can be used to generate the path automatically based on the controller and method names. It accepts the same options as the decorator itself.
+Each HTTP method decorator has an `.auto()` helper that generates the path from the method name in kebab case, so `getHelloWorld` is served at `get-hello-world`, followed by a `{name}` segment for each property of the procedure's `params` schema. It accepts the same options as the decorator itself.
 
 ```ts showLineNumbers copy
 import { get } from 'vovk';
@@ -146,7 +146,7 @@ export default class HelloController {
 
 ### `@cloneControllerMetadata`
 
-Each controller belongs to a single segment. If you want to reuse a controller in other segments, you can use the `@cloneControllerMetadata` decorator on a new class that extends the original controller. This copies all metadata (routes, operations, etc.) from the original controller to the new one. Note that the prefix is **not** inherited, so you may want to add a new prefix to the cloned controller.
+A controller can be listed in several segments; each segment runs its own hooks. Give it a different key in each when the [composed client](/composed) includes them, as the client exports one module per name. To serve the same handlers under another prefix, or next to handlers of its own, extend the controller and apply the `@cloneControllerMetadata` decorator to the new class. This copies all metadata (routes, operations, etc.) from the original controller to the new one. The new class keeps the original prefix unless it sets its own, as `@prefix('v2')` does below.
 
 ```ts showLineNumbers copy
 import { prefix, cloneControllerMetadata } from 'vovk';
@@ -200,7 +200,7 @@ Applies decorator results to a handler without using decorator syntax, providing
 
 - `...decorators: Function[]{:ts}` – one or more decorator results (e.g. `get('path')`, `operation(...)`, `myCustomDecorator(...)`, `procedure(...)`).
 
-**Returns:** an object with a `.handle(handler)` method. The handler is either an async function or omitted if `procedure` is included (in which case `procedure` already defines the handler via its own `.handle()`).
+**Returns:** an object with a `.handle(handler)` method, which takes the handler. Pass `procedure(...)` without its own `.handle()`: the handler given to `decorate(...).handle()` becomes the procedure's handler.
 
 The controller prefix can be defined as a `static prefix` property on the class instead of using the `@prefix()` decorator:
 
@@ -245,7 +245,7 @@ Decorator application follows the same order as the stacked syntax: the last dec
 
 ### `fetcher`
 
-Function that creates a data-fetching layer for the RPC client. It is used by default when the fetcher is not [customized](/imports#fetcher). A new fetcher can be created using the [createFetcher](#createFetcher) function.
+Function that creates a data-fetching layer for the RPC client. It is used by default when the fetcher is not [customized](/imports#fetcher). A new fetcher can be created using the [createFetcher](#createfetcher) function.
 
 ### `createFetcher`
 
@@ -271,9 +271,7 @@ export const fetcher = createFetcher<{
   },
   transformResponse: async (data, { someOtherCustomFlag }) => {
     // ...
-    return {
-      ...data,
-    };
+    return data;
   },
   onSuccess: async (data, { successMessage }) => {
     if (successMessage) {
@@ -304,6 +302,8 @@ Function that generates an API surface at build time (static params) instead of 
 ```ts showLineNumbers copy filename="src/app/api/[[...vovk]]/route.ts"
 // ...
 export type Controllers = typeof controllers;
+
+export const dynamic = 'force-static';
 
 export function generateStaticParams() {
   return controllersToStaticParams(controllers);
@@ -443,11 +443,11 @@ If `.handle()` is not called, the procedure will throw Not Implemented error.
 - `body`, `query`, `params` — input validation schemas.
 - `output` — output validation schema for JSON responses.
 - `iteration` — item schema for JSON Lines streaming responses.
-- `contentType` — set a custom `Content-Type` (string or an array of strings) for the response to enable non-JSON responses.
+- `contentType` — the `Content-Type` (string or an array of strings) the request body may have, for non-JSON bodies such as forms, text or files. See [`contentType`](/procedure#contenttype).
 - `disableServerSideValidation` — disable server-side validation (boolean or granular by parts).
 - `skipSchemaEmission` — skip JSON Schema emission (boolean or granular by parts).
 - `validateEachIteration` — validate each streamed item (iteration), not just the first one.
-- `operation` — provide OAS details when the `@operation` decorator isn’t applicable.
+- `operationObject` — provide OAS details when the `@operation` decorator isn’t applicable.
 - `preferTransformed` — choose between transformed vs raw values when using `req.vovk.*`.
 
 Extra capabilities on procedures:

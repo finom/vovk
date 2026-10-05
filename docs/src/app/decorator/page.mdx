@@ -21,7 +21,7 @@ export interface ReqMeta {
 
 const myDecorator = createDecorator(
   (req, next, a: string, b: number) => {
-    console.log(a, b); // Outputs: "foo", 1
+    console.log(a, b); // Outputs: "baz", 1
 
     req.vovk.meta<ReqMeta>({ foo: 'bar', a, b }); // Add metadata to the request object
 

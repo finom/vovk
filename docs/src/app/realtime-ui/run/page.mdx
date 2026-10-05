@@ -17,11 +17,20 @@ DATABASE_URL_UNPOOLED="postgresql://postgres:password@localhost:5432/realtime-ka
 REDIS_URL=redis://localhost:6379
 ```
 
-Run Docker containers and the development server:
+Start the Docker containers:
 
 ```bash copy
 docker-compose up -d
 ```
+
+Generate the Prisma client, the Zod schemas and the Vovk.ts client, then create the database tables:
+
+```bash copy
+npm run generate
+npx prisma migrate deploy
+```
+
+Start the development server:
 
 ```sh
 npm run dev
@@ -31,13 +40,14 @@ Open [http://localhost:3000](http://localhost:3000) in your browser to see the r
 
 The variables in the `.env` file are used as follows:
 
-- `OPENAI_API_KEY` – your OpenAI API key, required for AI features.
-- `DATABASE_URL` – the database connection string for Prisma ORM, used to instantiate the Prisma client in [DatabaseService.ts](https://github.com/finom/vovk/blob/main/examples/realtime-kanban/src/modules/database/DatabaseService.ts).
+- `OPENAI_API_KEY` – your OpenAI API key, required for AI features. Creating or updating a user or a task also calls the embeddings API: without a working key, the row is saved without an embedding, and search skips it until an update adds one.
+- `DATABASE_URL` – the database connection string for Prisma ORM, used to instantiate the Prisma client in [database-service.ts](https://github.com/finom/vovk/blob/main/examples/realtime-kanban/src/modules/database/database-service.ts).
 - `DATABASE_URL_UNPOOLED` – the database connection string for direct connections, used for migrations in [prisma.config.ts](https://github.com/finom/vovk/blob/main/examples/realtime-kanban/prisma.config.ts).
 - `REDIS_URL` – the Redis connection string for realtime features, explained in more detail in the [Polling](./polling) article.
 
 You can also define additional env variables in `.env`:
 
-- `PASSWORD` – a simple password protection for the app. It’s described in more detail in the [Authentication](./authentication) article.
+- `PASSWORD` – a simple password protection for the app's pages and API. It doesn't cover the MCP server or the Telegram webhook, which have their own keys below. It’s described in more detail in the [Authentication](./authentication) article.
 - `MCP_ACCESS_KEY` – a simple authorization key for the MCP server using the `?mcp_access_key=your_key` query param. If this variable is not set, no authorization is required. See the [MCP](./mcp) article for details.
 - `TELEGRAM_BOT_TOKEN` – enables the Telegram bot integration. See the [Telegram Integration](./telegram) article for more information.
+- `TELEGRAM_WEBHOOK_SECRET` – the secret Telegram sends with each webhook call. The webhook answers only when both Telegram variables are set.

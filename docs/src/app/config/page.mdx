@@ -37,7 +37,7 @@ Overrides configuration for the [composed client](/composed), such as [outDir](/
 <a name="segmentedclient" />
 ### `segmentedClient: object`
 
-Overrides configuration for the [segmented client](/segmented), such as [outDir](/segmented#outdir), [fromTemplates](/segmented#fromtemplates), [excludeSegments](/segmented#excludesegments), and more.
+Overrides configuration for the [segmented client](/segmented), such as [outDir](/composed#outdir), [fromTemplates](/composed#fromtemplates), [excludeSegments](/composed#excludesegments), and more.
 
 <a name="bundle" />
 ### `bundle: object`
@@ -67,7 +67,7 @@ Used exclusively by [vovk new](/new) when multiple segments are present. If set 
 <a name="loglevel" />
 ### `logLevel = 'info'`
 
-Sets the [log level](https://www.npmjs.com/package/loglevel) for the CLI. Accepted values: `"debug"`, `"info"`, `"warn"`, `"error"`. Default: `"info"`. Use `"debug"` to see underlying operations (e.g., file watching).
+Sets the [log level](https://www.npmjs.com/package/loglevel) for the CLI. Accepted values: `"trace"`, `"debug"`, `"info"`, `"warn"`, `"error"`. Default: `"info"`. Use `"debug"` to see underlying operations (e.g., file watching).
 
 <a name="devhttps" />
 ### `devHttps = false`
@@ -147,7 +147,7 @@ If `"libs"` is present in [exposeConfigKeys](#exposeConfigKeys), it is emitted t
 import { schema, UserRPC } from '@/client';
 
 console.log(schema.meta.config.libs.ajv.options.strict);
-console.log(UserRPC.updateUser.fullSchema.meta.config.libs.ajv.target);
+console.log(UserRPC.updateUser.fullSchema.meta?.config.libs?.ajv.target);
 ```
 
 <a name="outputconfig" />
@@ -172,13 +172,14 @@ Customizes the generated `README.md`. Supports a `banner` appended to the top, a
 #### `samples: { apiRoot?: string, headers?: Record<string, string> }`
 Customizes generated code samples in `README.md` files and in [Scalar](https://scalar.com/) OpenAPI documentation. Allows the snippet function to explicitly render `apiRoot` and `headers` fields.
 
+<a name="openapiobject" />
 #### `openAPIObject: Partial<import('openapi3-ts/oas31').OpenAPIObject>`
 
 Augments the generated OpenAPI schema. You can provide `info`, `servers`, and other fields; they are merged with the auto-generated schema.
 
 #### `reExports: Record<string, string>`
 
-Re-exports variables from other modules. Keys list the identifiers to re-export; values are module paths. Identifiers are placed inside curly braces, and paths are resolved relative to the output directory. This is useful when you want to re-export additional items alongside generated RPC modules (including the [bundled](/bundle) package).
+Re-exports variables from other modules. Keys list the identifiers to re-export; values are module paths. Identifiers are placed inside curly braces. A path that starts with `.` is relative to the project root, like the other paths of the config, and is rewritten relative to each generated client's folder; any other value, such as a package name, is kept as is. This is useful when you want to re-export additional items alongside generated RPC modules (including the [bundled](/bundle) package).
 
 ```js filename="/vovk.config.mjs"
 const config = {
@@ -194,13 +195,13 @@ const config = {
 };
 ```
 
-Will be compiled to:
+With the client in **src/client**, this is compiled to:
 
 ```ts showLineNumbers copy
-export { type MyType } from './src/types';
-export { MyClass, myFunction } from './src/utils';
-export { MyComponent as RenamedComponent } from './src/components';
-export { default as MyDefault } from './src/default-export';
+export { type MyType } from '../types';
+export { MyClass, myFunction } from '../utils';
+export { MyComponent as RenamedComponent } from '../components';
+export { default as MyDefault } from '../default-export';
 ```
 
 ```ts showLineNumbers copy

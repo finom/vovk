@@ -49,7 +49,7 @@ Skips prompts and uses default values.
 
 ### `--log-level <level>`
 
-Sets the log level: `trace`, `debug`, `info`, `warn`, `error`. Default: `info`.
+Sets the log level: `trace`, `debug`, `info`, `warn`, `error`, `silent`. Default: `info`.
 
 ### `--use-npm`, `--use-yarn`, `--use-pnpm`, `--use-bun`
 
@@ -78,7 +78,7 @@ Sets up [tsdown](https://tsdown.dev/) to [bundle](/bundle) the TypeScript client
 
 ### `--lang <languages...>`
 
-Generates clients for additional languages. Sets [`composedClient.templates`](/composed#templates) to include "py" (Python) and "rs" (Rust).
+Generates clients for additional languages. Sets [`composedClient.fromTemplates`](/composed#fromtemplates) to include "py" (Python) and "rs" (Rust).
 
 ### `--validation-library <library>`
 
@@ -90,12 +90,11 @@ Specifies the package channel (default: "latest").
 
 - `latest` for stable releases.
 - `beta` for beta releases (tested but might introduce breaking changes without notice).
-- `draft` for draft releases (unstable, may contain experimental features).
 
-In that case, use the corresponding version suffix when running the command:
+Run the CLI from the same channel:
 
 ```sh npm2yarn copy
-npx vovk-cli init@draft --channel draft
+npx vovk-cli@beta init --channel beta
 ```
 
 A Vovk.ts package with no release on the channel, such as **vovk-ajv** without a beta, is added at its `latest` version.

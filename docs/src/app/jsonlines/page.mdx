@@ -58,7 +58,8 @@ export default class StreamController {
 When used with a service, the iterable can be delegated using the `yield*` syntax:
 
 ```ts showLineNumbers copy filename="src/modules/stream/stream-controller.ts"
-import { procedure, prefix, post, type VovkIteration } from 'vovk';
+import { z } from 'zod';
+import { procedure, prefix, post } from 'vovk';
 import StreamService from './stream-service';
 
 @prefix('stream')
@@ -69,7 +70,7 @@ export default class StreamController {
     iteration: z.object({
       message: z.string(),
     }),
-  }).handle(function *() {
+  }).handle(async function* () {
     yield* StreamService.getJSONLines();
   });
 }
@@ -77,7 +78,7 @@ export default class StreamController {
 
 ```ts showLineNumbers copy filename="src/modules/stream/stream-service.ts"
 import type { VovkIteration } from 'vovk';
-import type { StreamController } from './stream-controller';
+import type StreamController from './stream-controller';
 
 export default class StreamService {
   static async *getJSONLines() {
@@ -191,7 +192,7 @@ const responder = new JSONLinesResponder<IterationType>(req, ({ readableStream, 
 
 The constructor accepts two optional parameters:
 
-- `request?: Request | null` – The incoming request object. If provided, it checks for `Accept: application/jsonl` header to create `headers` record for the response with `Content-Type: application/jsonl`. If not provided or the header is missing, it defaults to `text/plain`. In a procedure with `iteration`, the request also lets the responder validate a line sent before the handler returns it.
+- `request?: Request | null` – The incoming request object. If provided, it checks for `Accept: application/jsonl` header to create `headers` record for the response with `Content-Type: application/jsonl`. If not provided or the header is missing, it defaults to `text/plain`. The RPC client streams only a JSON Lines response and returns any other `Response` as is, so pass the request when the client reads the stream. In a procedure with `iteration`, the request also lets the responder validate a line sent before the handler returns it.
 - `getResponse?: (responder: JSONLinesResponder<T>) => Response` – A function that allows to construct a custom `Response` object. Allows to set custom headers or other response options. If not provided, `Response` is created internally with default headers.
 
 The responder instance provides the following members:
@@ -231,21 +232,26 @@ Tokens are sent with `JSONLinesResponder#send`, and when the stream completes, c
 The controller class returns an instance of `JSONLinesResponder`, and the streaming is performed in a floating Promise above the `return` statement.
 
 ```ts showLineNumbers copy
-import { prefix, get, JSONLinesResponder, type VovkRequest } from 'vovk';
+import { z } from 'zod';
+import { prefix, get, procedure, JSONLinesResponder } from 'vovk';
 import StreamService, { type Token } from './stream-service';
 
 @prefix('stream')
 export default class StreamController {
   @get('tokens')
-  static async streamTokens(req: Request) {
+  static streamTokens = procedure({
+    iteration: z.object({ message: z.string() }),
+  }).handle(async (req) => {
     const responder = new JSONLinesResponder<Token>(req);
 
     void StreamService.streamTokens(responder);
 
     return responder;
-  }
+  });
 }
 ```
+
+The `iteration` schema gives `Token` its type, in the service and in the RPC client.
 
 The `JSONLinesResponder` class also provides a `throw` method that safely closes the stream and causes the client to rethrow the received error.
 

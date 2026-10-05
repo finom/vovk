@@ -84,9 +84,9 @@ The `prebuild` script runs `vovk generate` before `next build` so the client lib
 
 <Tabs items={['Explicit', 'Implicit']} >
   <Tabs.Tab>
-    Install concurrently:
+    Install concurrently, and cross-env, which sets `PORT` on Windows too:
 ```sh npm2yarn copy
-npm i -D concurrently
+npm i -D concurrently cross-env
 ```
 
     Update the "dev" script in **package.json**:
@@ -94,7 +94,7 @@ npm i -D concurrently
     ```json
     "scripts": {
         "build": "next build",
-        "dev": "PORT=3000 concurrently 'vovk dev' 'next dev' --kill-others",
+        "dev": "cross-env PORT=3000 concurrently \"vovk dev\" \"next dev\" --kill-others",
         "prebuild": "vovk generate"
     }
     ```
@@ -170,7 +170,7 @@ const controllers = { HelloRPC: HelloController };
 export type Controllers = typeof controllers;
 
 // export Next.js route handlers
-export const { GET, POST, PUT, DELETE } = initSegment({ controllers });
+export const { GET, POST, PATCH, PUT, HEAD, OPTIONS, DELETE } = initSegment({ controllers });
 ```
 
 **More info:**

@@ -17,10 +17,10 @@ To deploy the app with this setup, create a new project in Vercel, link it to a 
 
 Add `OPENAI_API_KEY` to the project environment variables. Other variables such as `DATABASE_URL` and `REDIS_URL` are created automatically by the integrations. 
 
-It’s also recommended to add a `PASSWORD` variable to enable simple (and free) password protection for the app. You can set it to any desired value.
+It’s also recommended to add a `PASSWORD` variable to enable simple (and free) password protection for the app's pages and API. You can set it to any desired value. It doesn't cover the MCP server or the Telegram webhook.
 
 For MCP protection, you can also add the `MCP_ACCESS_KEY` variable to enable basic authorization for the MCP server using the `?mcp_access_key=your_key` query param. If this variable is not set, no authorization is required.
 
-Finally, for Telegram bot integration, you can add the `TELEGRAM_BOT_TOKEN` variable if you want to use the Telegram bot feature. See the [Telegram integration](./telegram) article for more details.
+Finally, for Telegram bot integration, you can add the `TELEGRAM_BOT_TOKEN` and `TELEGRAM_WEBHOOK_SECRET` variables if you want to use the Telegram bot feature. The webhook answers only when both are set. See the [Telegram integration](./telegram) article for more details.
 
 If you run into issues, check the [.env.template](https://github.com/finom/vovk/blob/main/examples/realtime-kanban/.env.template) file for reference.

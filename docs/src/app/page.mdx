@@ -70,7 +70,7 @@ export default class UserController {
 ```
 
 ```ts
-const user = await UserController.getUser.fn({ params: { id: '123' } });
+const user = await UserController.getUser.fn({ params: { id: '123e4567-e89b-12d3-a456-426614174000' } });
 ```
 
 Services hold business logic separately. Plain classes, no decorators:
@@ -102,7 +102,7 @@ Codegen reads the emitted schema and produces a `fetch`-powered client that mirr
 ```ts
 import { UserRPC } from '@/client';
 
-const user = await UserRPC.getUser({ params: { id: '123' } });
+const user = await UserRPC.getUser({ params: { id: '123e4567-e89b-12d3-a456-426614174000' } });
 ```
 
 Procedures can yield JSON Lines for real-time streaming:
@@ -142,7 +142,7 @@ Function plus schema is a complete unit. From that pair Vovk derives:
 - the **local `.fn()` callable** — same call shape as the RPC client; use it in SSR, server components, and server actions
 - the **typed RPC client module** — `fetch`-powered, generated from the emitted schema
 - the **OpenAPI 3.x document** — derived from the same schema, no parallel spec to maintain
-- the **LLM tool** with `name`, `description`, `parameters`, and `execute` — via `deriveTools`
+- the **LLM tool** with `name`, `description`, `inputSchema`, and `execute` — via `deriveTools`
 - a generated **`README.md`** — client library documentation rendered from the procedure surface
 
 One source, multiple destinations. The sections below cover each in detail.
@@ -158,7 +158,7 @@ Every group of controllers lives in a [segment](/segment) — a Next.js catch-al
 ```ts filename="src/app/api/[[...vovk]]/route.ts"
 const controllers = { UserRPC: UserController };
 export type Controllers = typeof controllers;
-export const { GET, POST, PUT, DELETE } = initSegment({ controllers });
+export const { GET, POST, PATCH, PUT, HEAD, OPTIONS, DELETE } = initSegment({ controllers });
 ```
 
 ### Schema emission
@@ -225,7 +225,7 @@ const tools = deriveTools({ modules: { TaskRPC, PetstoreAPI } });
 // [{ name, description, inputSchema, execute, ... }, ...]
 ```
 
-Each tool has `name`, `description`, `parameters` (JSON Schema), and an `execute` function. See [Deriving AI Tools](/tools).
+Each tool has `name`, `description`, `inputSchema` (a Standard Schema that also gives JSON Schema), and an `execute` function. See [Deriving AI Tools](/tools).
 
 ### Streaming
 
