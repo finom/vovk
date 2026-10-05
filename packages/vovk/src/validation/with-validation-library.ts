@@ -12,6 +12,7 @@ import type { VovkOperationObject } from '../types/operation.js';
 import type { VovkRequest } from '../types/request.js';
 import type { KnownAny } from '../types/utils.js';
 import type { BodyTypeFromContentType, ContentType, VovkTypedProcedure } from '../types/validation.js';
+import { isJSONObject } from '../utils/map-json-schema-refs.js';
 
 const validationTypes: VovkValidationType[] = ['body', 'query', 'params', 'output', 'iteration'] as const;
 
@@ -32,6 +33,35 @@ const hasBody = (req: VovkRequestAny) => {
 
 // fn() calls made without a body, the local counterpart of a request without one
 const callsWithoutBody = new WeakSet<object>();
+
+// whether a JSON Schema takes an array, or null, and no single value
+const takesArray = (schema: unknown): boolean => {
+  if (!isJSONObject(schema)) return false;
+  if (schema.type !== undefined) {
+    const types = [schema.type].flat();
+    return types.includes('array') && types.every((type) => type === 'array' || type === 'null');
+  }
+  const branches = schema.anyOf ?? schema.oneOf;
+  return (
+    Array.isArray(branches) &&
+    branches.some(takesArray) &&
+    branches.every((branch) => takesArray(branch) || (isJSONObject(branch) && branch.type === 'null'))
+  );
+};
+
+// a key given once is a string, so where the query schema takes an array, as in the OpenAPI form style a client sends
+// one item as tags=a, it is read as a one-item array; also in nested objects
+const withLoneValuesAsArrays = (query: unknown, schema: unknown): unknown => {
+  if (!isJSONObject(query) || !isJSONObject(schema) || !isJSONObject(schema.properties)) return query;
+  const { properties } = schema;
+  return Object.fromEntries(
+    Object.entries(query).map(([key, value]) => {
+      const property = Object.hasOwn(properties, key) ? properties[key] : undefined;
+      const isLoneItem = typeof value === 'string' && takesArray(property);
+      return [key, isLoneItem ? [value] : withLoneValuesAsArrays(value, property)];
+    })
+  );
+};
 
 // a buffered body read as JSON that has no bytes, as fetch() sends a JSON content type for a call without a body
 const isEmptyJSONBody = async (req: VovkRequestAny) => {
@@ -110,6 +140,18 @@ export function withValidationLibrary<
         : (disableServerSideValidation ?? []);
   const skipSchemaEmissionKeys =
     skipSchemaEmission === false ? [] : skipSchemaEmission === true ? validationTypes : (skipSchemaEmission ?? []);
+  // made on the first request; a schema JSON Schema can't describe leaves the query as it is
+  let querySchema: unknown;
+  const getQuerySchema = () => {
+    if (querySchema === undefined) {
+      try {
+        querySchema = (query && toJSONSchema?.(query, { validationType: 'query' })) ?? null;
+      } catch {
+        querySchema = null;
+      }
+    }
+    return querySchema;
+  };
   const outputHandler = async (req: VovkRequestAny, handlerParams: Parameters<THandle>[1]) => {
     const { __disableClientValidation } = req.vovk.meta<Meta>();
     const onBeforeSend =
@@ -222,7 +264,7 @@ export function withValidationLibrary<
       }
 
       if (query && !disableServerSideValidationKeys.includes('query')) {
-        const data = req.vovk.query();
+        const data = withLoneValuesAsArrays(req.vovk.query(), getQuerySchema());
         const parsed = (await validate(data, query, { validationType: 'query', req })) ?? data;
         const instance = preferTransformed ? parsed : data;
         req.vovk.query = () => instance;
