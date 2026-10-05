@@ -24,6 +24,7 @@ import {
   type VovkRequest,
 } from 'vovk';
 import { createRPC } from 'vovk/create-rpc';
+import { vovkApp } from 'vovk/internal';
 import { z } from 'zod';
 
 type Handlers = ReturnType<typeof initSegment>;
@@ -688,6 +689,23 @@ describe('Runtime sweep', () => {
         deriveTools({ modules: { ReportController } }).map(({ name, title }) => ({ name, title })),
         [{ name: 'ReportController_getReport', title: 'Get the report' }]
       );
+    });
+
+    it('Serves no route of a controller deriveTools gets through a segment that does not list it', async () => {
+      class MountedController {
+        static a = decorate(get('a')).handle(async () => 'a');
+      }
+      class UnmountedController {
+        static b = decorate(get('b'), procedure({ operationObject: { summary: 'Get b' } })).handle(async () => 'b');
+      }
+      const handlers = initSegment({ controllers: { MountedController } });
+
+      deriveTools({ modules: { UnmountedController } });
+
+      // deriveTools registered the route, as initSegment would
+      ok(Object.hasOwn(vovkApp.routes.GET.get(UnmountedController as never) ?? {}, 'b'));
+      strictEqual((await call(handlers, 'GET', 'a')).status, 200);
+      strictEqual((await call(handlers, 'GET', 'b')).status, 404);
     });
   });
 
