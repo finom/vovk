@@ -1,14 +1,17 @@
-# Add ../dist_python/src to sys.path so we can import the local module
+# Add ../../dist_python/src to sys.path so we can import the local module
 import os
 import sys
 import unittest
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-LOCAL_SRC = os.path.normpath(os.path.join(BASE_DIR, "..", "dist_python", "src"))
+LOCAL_SRC = os.path.normpath(os.path.join(BASE_DIR, "..", "..", "dist_python", "src"))
 if LOCAL_SRC not in sys.path:
     sys.path.insert(0, LOCAL_SRC)
 
 from vovk_hello_world import UserRPC, OpenApiRPC, StreamRPC
+
+# the local server; the generated client calls production by default
+API_ROOT = f"http://localhost:{os.environ.get('PORT', '3000')}/api"
 
 class TestLocalRPC(unittest.TestCase):
     def test_update_user(self) -> None:
@@ -20,17 +23,17 @@ class TestLocalRPC(unittest.TestCase):
         params: UserRPC.UpdateUserParams = {
             "id": "123e4567-e89b-12d3-a456-426614174000"
         }
-        update_user_response = UserRPC.update_user(params=params, body=body, query=query)
+        update_user_response = UserRPC.update_user(params=params, body=body, query=query, api_root=API_ROOT)
         self.assertIsInstance(update_user_response, dict)
 
     def test_openapi_spec(self) -> None:
-        openapi_response = OpenApiRPC.get_spec()
+        openapi_response = OpenApiRPC.get_spec(api_root=API_ROOT)
         self.assertIn("info", openapi_response)
         self.assertIn("title", openapi_response["info"])
         self.assertIn("version", openapi_response["info"])
 
     def test_stream_tokens(self) -> None:
-        stream_response = StreamRPC.stream_tokens()
+        stream_response = StreamRPC.stream_tokens(api_root=API_ROOT)
         messages: list[str] = []
         for item in stream_response:
             self.assertIn("message", item)

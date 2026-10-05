@@ -10,6 +10,11 @@ mod local_test {
 
   static TEST_GUARD: tokio::sync::Mutex<()> = tokio::sync::Mutex::const_new(());
 
+  // the local server; the generated client calls production by default
+  fn api_root() -> String {
+    format!("http://localhost:{}/api", std::env::var("PORT").unwrap_or_else(|_| "3000".to_string()))
+  }
+
   #[tokio::test]
   async fn update_user_and_openapi_spec_work() {
     let _guard = TEST_GUARD.lock().await;
@@ -30,14 +35,14 @@ mod local_test {
         id: "123e4567-e89b-12d3-a456-426614174000".to_string(),
       },
       None,
-      None,
+      Some(&api_root()),
       false,
     )
     .await
     .expect("update_user should succeed");
     println!("user_rpc.update_user response: {:?}", response);
 
-    let openapi = open_api_rpc::get_spec((), (), (), None, None, false)
+    let openapi = open_api_rpc::get_spec((), (), (), None, Some(&api_root()), false)
       .await
       .expect("get_spec should succeed");
     if let (Some(title), Some(version)) = (
@@ -54,7 +59,7 @@ mod local_test {
 
   #[tokio::test]
   async fn stream_tokens_emits_messages() {
-    let mut stream = stream_rpc::stream_tokens((), (), (), None, None, false)
+    let mut stream = stream_rpc::stream_tokens((), (), (), None, Some(&api_root()), false)
       .await
       .expect("stream_tokens should succeed");
 

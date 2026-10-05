@@ -625,7 +625,7 @@ The original package.json is used to populate metadata (`repository`, `homepage`
     "start": "next start",
     "lint": "biome check",
     "test:node": "tsx --test --test-concurrency=1",
-    "test:python": "python3 -m pip install -q -r test/python/requirements.txt && python3 -m unittest discover -s test/python -p '*_test.py'",
+    "test:python": "python3 -m pip install -q -r test/python/requirements.txt && python3 -m unittest discover -s test/python -p local_test.py && python3 -m unittest discover -s test/python -p packaged_test.py",
     "test:rust": "RUST_BACKTRACE=full RUST_TEST_THREADS=1 cargo test --manifest-path ./test/rust/Cargo.toml --tests -- --nocapture --show-output",
     "pretest": "next build",
     "test": "concurrently 'next start' \"sleep 10 && printf '\\n\\033[1;96mNode tests\\033[0m\\n' && npm run test:node && printf '\\n\\033[1;96mPython tests\\033[0m\\n' && npm run test:python && printf '\\n\\033[1;96mRust tests\\033[0m\\n' && npm run test:rust\" --kill-others --success first",
