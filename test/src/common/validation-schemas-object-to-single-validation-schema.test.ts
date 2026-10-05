@@ -149,6 +149,16 @@ describe('validationSchemasObjectToSingleValidationSchema', () => {
       });
     });
 
+    it('returns the input itself, not what a slot transforms it to', () => {
+      const merged = validationSchemasObjectToSingleValidationSchema({
+        body: z.object({ cents: z.number().transform((amount) => amount * 100) }),
+      });
+      const input = { body: { cents: 1 } };
+      const result = merged['~standard'].validate(input) as StandardResult;
+      assert.strictEqual(result.issues, undefined);
+      assert.strictEqual(result.value, input);
+    });
+
     it('prefixes slot validation issues with the slot key segment', () => {
       const merged = validationSchemasObjectToSingleValidationSchema({
         body: z.object({ foo: z.string() }),
@@ -270,7 +280,7 @@ describe('validationSchemasObjectToSingleValidationSchema', () => {
   });
 
   describe('jsonSchema.output', () => {
-    it('delegates to each slot’s output method (distinct from input)', () => {
+    it('describes the input, which validate returns unchanged', () => {
       const slot = makeMockSchema({
         input: () => ({ shape: 'IN' }),
         output: () => ({ shape: 'OUT' }),
@@ -281,7 +291,7 @@ describe('validationSchemasObjectToSingleValidationSchema', () => {
       const inputProps = inputJSON.properties as Record<string, Record<string, unknown>>;
       const outputProps = outputJSON.properties as Record<string, Record<string, unknown>>;
       assert.deepStrictEqual(inputProps.body, { shape: 'IN' });
-      assert.deepStrictEqual(outputProps.body, { shape: 'OUT' });
+      assert.deepStrictEqual(outputProps.body, { shape: 'IN' });
     });
   });
 
