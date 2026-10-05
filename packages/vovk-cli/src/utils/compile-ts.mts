@@ -267,6 +267,8 @@ function handleArray(schema: JSONSchema7, name: string, context: CompileContext)
 
 function handleObject(schema: JSONSchema7, name: string, context: CompileContext): string {
   const props: string[] = [];
+  // TypeScript checks every declared property against the index signature
+  const propTypes: string[] = [];
 
   // Handle known properties
   if (schema.properties) {
@@ -283,28 +285,28 @@ function handleObject(schema: JSONSchema7, name: string, context: CompileContext
       // Add JSDoc comment if description is present
       const comment = propSchema.description ? `\n/** ${escapeJSDocComment(propSchema.description)} */\n` : '';
       props.push(`${comment}${safePropName}${isRequired ? '' : '?'}: ${propType}`);
+      propTypes.push(propType, ...(isRequired ? [] : ['undefined']));
     }
   }
 
-  // Handle additional properties
+  // additional and pattern properties share one string index signature
+  const indexTypes: string[] = [];
   if (schema.additionalProperties === true) {
-    props.push('[key: string]: any');
+    indexTypes.push('any');
   } else if (schema.additionalProperties && isSchema(schema.additionalProperties)) {
     const additionalTypeName = sanitizeTypeName(`${name}-additional`);
-    const additionalType = compileSchema(schema.additionalProperties, additionalTypeName, context);
-    props.push(`[key: string]: ${additionalType}`);
+    indexTypes.push(compileSchema(schema.additionalProperties, additionalTypeName, context));
   }
-
-  // Handle pattern properties
   if (schema.patternProperties) {
-    // For simplicity, treat pattern properties as string index signature
-    const patternTypes = Object.values(schema.patternProperties)
-      .filter(isSchema)
-      .map((s, i) => compileSchema(s, sanitizeTypeName(`${name}-pattern-${i}`), context));
-
-    if (patternTypes.length > 0) {
-      props.push(`[key: string]: ${patternTypes.join(' | ')}`);
-    }
+    indexTypes.push(
+      ...Object.values(schema.patternProperties)
+        .filter(isSchema)
+        .map((s, i) => compileSchema(s, sanitizeTypeName(`${name}-pattern-${i}`), context))
+    );
+  }
+  if (indexTypes.length > 0) {
+    const types = indexTypes.includes('any') ? ['any'] : [...new Set([...indexTypes, ...propTypes])];
+    props.push(`[key: string]: ${types.join(' | ')}`);
   }
 
   return props.length > 0 ? `{ ${props.join('; ')} }` : '{}';
