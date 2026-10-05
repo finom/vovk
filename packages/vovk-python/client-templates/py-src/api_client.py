@@ -183,16 +183,22 @@ class ApiClient:
             raise ValueError("URL is required for making an API request")
         if not http_method:
             raise ValueError("HTTP method is required for making an API request")
-        TIsForm = False
         # a declared text type such as application/xml is text too: a str body is text, bytes are binary
         TIsText = body_content_type is not None and isinstance(body, str)
         TIsBinary = body_content_type is not None and not TIsText
+        TIsForm = False
+        TIsMultipart = False
+        if validation and validation.get('body'):
+            body_ct = validation['body'].get('x-contentType', [])
+            # an object goes out as a form only when JSON can't carry it: no JSON declared, or files to send
+            declares_json = any(t == 'application/json' or t.endswith('+json') for t in body_ct)
+            if ('multipart/form-data' in body_ct or 'application/x-www-form-urlencoded' in body_ct) and (files or not declares_json):
+                TIsForm = True
+                TIsMultipart = 'multipart/form-data' in body_ct
         # Validate inputs if validation schema is provided
         if validation and not disable_client_validation:
             # Validate body (skip for form data and binary data since they can't be validated client-side)
-            body_content_types = validation.get('body', {}).get('x-contentType', [])
-            is_form = 'multipart/form-data' in body_content_types or 'application/x-www-form-urlencoded' in body_content_types
-            if validation.get('body') and not is_form and not TIsBinary:
+            if validation.get('body') and not TIsForm and not TIsBinary:
                 if body is None:
                     raise ValueError("Body is required for validation but not provided")
                 _validate(body, validation['body'])
@@ -208,14 +214,6 @@ class ApiClient:
                 if params is None:
                     raise ValueError("Params are required for validation but not provided")
                 _validate(params, validation['params'])
-
-        TIsMultipart = False
-        if validation and validation.get('body'):
-            body_ct = validation['body'].get('x-contentType', [])
-            if 'multipart/form-data' in body_ct or 'application/x-www-form-urlencoded' in body_ct:
-                TIsForm = True
-            if 'multipart/form-data' in body_ct:
-                TIsMultipart = True
 
         # Process URL and substitute path parameters
         processed_url = url

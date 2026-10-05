@@ -106,6 +106,10 @@ export type BodyKind = 'none' | 'form' | 'urlencoded' | 'binary' | 'text' | 'jso
 export function getBodyKind(schema: VovkJSONSchemaBase | undefined): BodyKind {
   if (!schema) return 'none';
   const ct = schema['x-contentType'] as string[] | undefined;
+  // an object goes out as a form only when JSON can't carry it: no JSON declared, or a field that holds a file
+  const declaresForm = ct?.includes('multipart/form-data') || ct?.includes('application/x-www-form-urlencoded');
+  const declaresJSON = ct?.some((c: string) => c === 'application/json' || c.endsWith('+json'));
+  if (declaresForm && declaresJSON && !isFileSchema(schema, schema) && !holdsFile(schema, schema)) return 'json';
   if (ct?.includes('multipart/form-data')) return 'form';
   // a form without multipart holds no files, so the generated struct is sent urlencoded
   if (ct?.includes('application/x-www-form-urlencoded')) return 'urlencoded';
@@ -117,6 +121,30 @@ export function getBodyKind(schema: VovkJSONSchemaBase | undefined): BodyKind {
   const isJSONContentType = (c: string) => c === '*/*' || c === 'application/json' || c.endsWith('+json');
   if (!isStructured && ct?.length && !ct.some(isJSONContentType)) return 'binary';
   return 'json';
+}
+
+const MAX_FILE_SEARCH_DEPTH = 16;
+
+// a file, or a list or a union that may be one
+function isFileSchema(schema: Schema | undefined, root: Schema, depth = 0): boolean {
+  if (!schema || typeof schema !== 'object' || depth > MAX_FILE_SEARCH_DEPTH) return false;
+  if (schema.$ref) return isFileSchema(resolvePointer(schema.$ref, root), root, depth + 1);
+  if (schema.format === 'binary' || schema.contentEncoding === 'binary') return true;
+  const items =
+    schema.items && typeof schema.items === 'object' && !Array.isArray(schema.items) ? schema.items : undefined;
+  return [items, ...(schema.anyOf ?? []), ...(schema.oneOf ?? [])].some((s) => isFileSchema(s, root, depth + 1));
+}
+
+// a field of the body, or of any branch of it, holds a file
+function holdsFile(schema: Schema | undefined, root: Schema, depth = 0): boolean {
+  if (!schema || typeof schema !== 'object' || depth > MAX_FILE_SEARCH_DEPTH) return false;
+  if (schema.$ref) return holdsFile(resolvePointer(schema.$ref, root), root, depth + 1);
+  return (
+    Object.values(schema.properties ?? {}).some((prop) => isFileSchema(prop, root)) ||
+    [...(schema.allOf ?? []), ...(schema.anyOf ?? []), ...(schema.oneOf ?? [])].some((branch) =>
+      holdsFile(branch, root, depth + 1)
+    )
+  );
 }
 
 // a text body goes out as the type the procedure declares, as the TypeScript client sends it
