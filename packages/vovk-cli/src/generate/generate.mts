@@ -38,9 +38,14 @@ const getIncludedSegmentNames = (
   fullSchema: VovkSchema,
   configKey: 'segmentedClient' | 'composedClient',
   cliGenerateOptions: GenerateOptions | undefined,
-  { templateName, templateDef }: Pick<ClientTemplateFile, 'templateName' | 'templateDef'>
+  { templateName, templateDef }: Pick<ClientTemplateFile, 'templateName' | 'templateDef'>,
+  mixinNames: string[]
 ) => {
-  const segments = Object.values(fullSchema.segments);
+  // a configured mixin counts before its spec is loaded, vovk dev starts without it
+  const segmentNames = _.uniq([
+    ...Object.values(fullSchema.segments).map(({ segmentName }) => segmentName),
+    ...mixinNames,
+  ]);
   const cliIncludeSegments =
     cliGenerateOptions?.[configKey === 'segmentedClient' ? 'segmentedIncludeSegments' : 'composedIncludeSegments'];
   const cliExcludeSegments =
@@ -57,7 +62,7 @@ const getIncludedSegmentNames = (
   if (includeSegments?.length && excludeSegments?.length) {
     throw new Error(`Both includeSegments and excludeSegments are set ${where}. Please use only one of them.`);
   }
-  const segmentExists = (segmentName: string) => segments.some(({ segmentName: sName }) => sName === segmentName);
+  const segmentExists = (segmentName: string) => segmentNames.includes(segmentName);
 
   if (includeSegments?.length) {
     for (const segmentName of includeSegments) {
@@ -74,12 +79,10 @@ const getIncludedSegmentNames = (
         throw new Error(`Segment "${segmentName}" from excludeSegments not found in the config for "${configKey}"`);
       }
     }
-    return segments
-      .filter(({ segmentName }) => !excludeSegments.includes(segmentName))
-      .map(({ segmentName }) => segmentName);
+    return segmentNames.filter((segmentName) => !excludeSegments.includes(segmentName));
   }
 
-  return segments.map(({ segmentName }) => segmentName);
+  return segmentNames;
 };
 
 interface GenerationResult {
@@ -242,6 +245,9 @@ export async function generate({
   }
 
   const { module, isNodeNextResolution, tsExtension } = getTsImportOptions(cwd);
+  const mixinNames = Object.keys(projectInfo.openAPIMixins ?? {});
+  // a mixin whose spec isn't loaded yet keeps its client, but gets no new one
+  const isRendered = (segmentName: string) => Object.hasOwn(fullSchema.segments, segmentName);
   const isVovkProject = !!srcRoot;
   const isComposedEnabled =
     cliGenerateOptions?.composedOnly ||
@@ -272,7 +278,7 @@ export async function generate({
     const segmentNamesOf = new Map(
       composedClientTemplateFiles.map((file) => [
         file,
-        getIncludedSegmentNames(config, fullSchema, 'composedClient', cliGenerateOptions, file),
+        getIncludedSegmentNames(config, fullSchema, 'composedClient', cliGenerateOptions, file, mixinNames),
       ])
     );
     for (const segmentNames of _.uniqBy([...segmentNamesOf.values()], (names) => names.join('\0'))) {
@@ -312,7 +318,7 @@ export async function generate({
           segmentName: null,
         });
 
-        const composedFullSchema = pickSegmentFullSchema(fullSchema, segmentNames);
+        const composedFullSchema = pickSegmentFullSchema(fullSchema, segmentNames.filter(isRendered));
         const hasMixins = Object.values(composedFullSchema.segments).some((segment) => segment.segmentType === 'mixin');
         if (templateName === BuiltInTemplateName.mixins && !hasMixins) {
           return null;
@@ -399,7 +405,8 @@ export async function generate({
           fullSchema,
           'segmentedClient',
           cliGenerateOptions,
-          clientTemplateFile
+          clientTemplateFile,
+          mixinNames
         );
         const templateContent = await fs.readFile(templateFilePath, 'utf-8');
 
@@ -413,7 +420,7 @@ export async function generate({
           : { data: { imports: [] }, content: templateContent };
 
         const results = await Promise.all(
-          segmentNames.map(async (segmentName) => {
+          segmentNames.filter(isRendered).map(async (segmentName) => {
             const segmentedFullSchema = pickSegmentFullSchema(fullSchema, [segmentName]);
             const hasMixins = Object.values(segmentedFullSchema.segments).some(
               (segment) => segment.segmentType === 'mixin'

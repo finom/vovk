@@ -537,6 +537,9 @@ export class VovkDev {
 
     await ensureClient(this.#projectInfo, this.#segments, this.#getCliSchemaPath());
 
+    // no segment schema to wait for, the client of the OpenAPI mixins is generated now
+    if (!this.#segments.length && !isEmpty(this.#projectInfo.openAPIMixins)) this.#generate();
+
     const MAX_ATTEMPTS = 5;
     const DELAY = 5000;
 
