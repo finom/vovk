@@ -28,7 +28,7 @@ Vovk.ts CLI that will be used as a devDependency in a Vovk.ts app.
 npm install -D vovk-cli
 ```
 
-- [vovk dev](https://vovk.dev/dev) - starts the development script that watches the changes in [controllers](https://vovk.dev/controller) and regenerates the [schema](https://vovk.dev/schema) and [client](https://vovk.dev/typescript)
+- [vovk dev](https://vovk.dev/dev) - starts the development script that watches the changes in [controllers](https://vovk.dev/procedure) and regenerates the [schema](https://vovk.dev/schema) and [client](https://vovk.dev/typescript)
 - [vovk generate](https://vovk.dev/generate) - generates the client based on the schema
 - [vovk bundle](https://vovk.dev/bundle) - bundles the client (requires `bundle.build` config to be set)
 - [vovk init](https://vovk.dev/init) - initializes a new Vovk.ts project in an existing Next.js app
