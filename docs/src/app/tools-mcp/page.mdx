@@ -132,7 +132,7 @@ export default class AnnotatedController {
 }
 ```
 
-When the tool is executed with `ToModelOutput.MCP` formatter, the output will include the `annotations` object:
+When the tool is executed with `ToModelOutput.MCP` formatter, each content item will include the `annotations` object, as MCP annotates content items:
 
 ```json
 {
@@ -140,17 +140,17 @@ When the tool is executed with `ToModelOutput.MCP` formatter, the output will in
     {
       "type": "image",
       "data": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD...",
-      "mimeType": "image/jpeg"
+      "mimeType": "image/jpeg",
+      "annotations": {
+        "audience": ["user"],
+        "priority": 5
+      }
     }
-  ],
-  "annotations": {
-    "audience": ["user"],
-    "priority": 5
-  }
+  ]
 }
 ```
 
-Note that `mcpOutput` metadata key can also override other MCP output properties, including `content`, `structuredContent`, and `annotations`. This might be useful if you want to customize the MCP output without changing the actual procedure response.
+Note that `mcpOutput` metadata key can also override other MCP output properties, including `content` and `structuredContent`; its `annotations` go on each content item. This might be useful if you want to customize the MCP output without changing the actual procedure response.
 
 ## MCP Handler Example
 
