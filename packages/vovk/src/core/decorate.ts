@@ -73,6 +73,9 @@ export function decorate(...args: unknown[]): KnownAny {
 
   return {
     handle(fn: KnownAny) {
+      if (typeof fn !== 'function') {
+        throw new Error('decorate().handle() requires a handler function');
+      }
       const handler = procedureResult ? procedureResult.handle(fn) : fn;
 
       handler._decorateMetadata = handler._decorateMetadata ?? {};

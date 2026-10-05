@@ -330,6 +330,22 @@ describe('Runtime sweep', () => {
       });
     });
 
+    it('Refuses decorate().handle() without a handler', () => {
+      for (const decorated of [
+        decorate(get('users')),
+        decorate(get('users'), procedure()),
+        // the handler given to the procedure instead
+        decorate(
+          get('users'),
+          procedure().handle(async () => [])
+        ),
+      ]) {
+        throws(() => (decorated as unknown as { handle: () => unknown }).handle(), {
+          message: 'decorate().handle() requires a handler function',
+        });
+      }
+    });
+
     it('Answers a path two controllers of a segment declare with a JSON error and calls onError', async () => {
       const errors: string[] = [];
       class FirstController {
