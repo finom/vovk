@@ -26,6 +26,11 @@ class HttpException(Exception):
         self.status_code = response_body['statusCode']
         self.cause = response_body.get('cause')
 
+    def __reduce__(self) -> Any:
+        # pickled, as a process pool sends it, or copied: made again from its body, not from the message alone
+        body: HttpExceptionResponseBody = {'message': self.message, 'statusCode': self.status_code, 'isError': True, 'cause': self.cause}
+        return (type(self), (body,), self.__dict__)
+
 _JSON_LINES_MEDIA_TYPES = ('application/jsonl', 'application/jsonlines', 'application/x-ndjson')
 
 _FORM_MEDIA_TYPES = ('multipart/form-data', 'application/x-www-form-urlencoded')
