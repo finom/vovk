@@ -198,6 +198,21 @@ describe('procedure features', async () => {
     assert.equal(await text.fn({ body: new Blob(['hello']) }), 'hello');
   });
 
+  it('Should parse bytes for a procedure that takes JSON or a file into a File, as HTTP does', async () => {
+    const handler = procedure({
+      contentType: ['application/json', 'image/png'],
+      body: z.union([z.object({ url: z.string() }), z.file()]),
+    }).handle(async ({ vovk }) => {
+      const body = await vovk.body();
+      return { isFile: body instanceof File, type: body instanceof File ? body.type : null };
+    });
+
+    assert.deepEqual(await handler.fn({ body: new Uint8Array([137, 80, 78, 71]) }), {
+      isFile: true,
+      type: 'image/png',
+    });
+  });
+
   it('Should assign schema', async () => {
     assert.equal(handler.schema.validation?.body?.$schema, 'https://json-schema.org/draft/2020-12/schema');
     assert.equal(handler.schema.validation?.query?.$schema, 'https://json-schema.org/draft/2020-12/schema');

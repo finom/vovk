@@ -875,6 +875,39 @@ describe('Client sweep, pure functions', () => {
       deepStrictEqual(await withFetch(segment, () => rpc.createJSON({ body: blob })), sent);
       deepStrictEqual(await withFetch(segment, () => rpc.create({ body: blob })), sent);
     });
+
+    it('Sends bytes to a procedure that takes JSON or a file as the file type, as the Python and Rust clients do', async () => {
+      class AvatarController {
+        static upload = procedure({
+          contentType: ['application/json', 'image/png'],
+          body: z.union([z.object({ url: z.string() }), z.file()]),
+        }).handle(async (req) => ({
+          isFile: (await req.vovk.body()) instanceof File,
+          contentType: req.headers.get('content-type')?.split(';')[0],
+        }));
+      }
+      prefix('test')(AvatarController);
+      post('avatar')(AvatarController, 'upload');
+      const segment = serve('json-or-file', { AvatarController });
+      const rpc = rpcOf({
+        upload: { path: 'avatar', httpMethod: 'POST', validation: AvatarController.upload.schema.validation },
+      });
+      const png = new Uint8Array([137, 80, 78, 71]);
+
+      deepStrictEqual(await withFetch(segment, () => rpc.upload({ body: png })), {
+        isFile: true,
+        contentType: 'image/png',
+      });
+      deepStrictEqual(await withFetch(segment, () => rpc.upload({ body: new Blob([png]) })), {
+        isFile: true,
+        contentType: 'image/png',
+      });
+      // an object still goes as JSON
+      deepStrictEqual(await withFetch(segment, () => rpc.upload({ body: { url: 'a.png' } })), {
+        isFile: false,
+        contentType: 'application/json',
+      });
+    });
   });
 
   describe('shipped types', () => {
