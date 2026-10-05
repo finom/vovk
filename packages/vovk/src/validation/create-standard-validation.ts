@@ -70,7 +70,7 @@ export function createStandardValidation({
 }: {
   toJSONSchema: (
     model: KnownAny,
-    meta: { validationType: VovkValidationType; target: CombinedSpec.Target | undefined }
+    meta: { validationType: VovkValidationType; target: CombinedSpec.Target | undefined; io: 'input' | 'output' }
   ) => KnownAny;
 }) {
   function callWithValidationLibrary(options: KnownAny, handle: (...args: KnownAny[]) => KnownAny) {
@@ -89,7 +89,16 @@ export function createStandardValidation({
       validateEachIteration: options.validateEachIteration,
       handle: handle as KnownAny,
       toJSONSchema: (model, opts) =>
-        toJSONSchema(model, { validationType: opts.validationType, target: options.target }),
+        toJSONSchema(model, {
+          validationType: opts.validationType,
+          target: options.target,
+          // the server sends the output and the items as the schema parses them, unless preferTransformed is off
+          io:
+            (opts.validationType === 'output' || opts.validationType === 'iteration') &&
+            options.preferTransformed !== false
+              ? 'output'
+              : 'input',
+        }),
       validate: async (data, model: KnownAny, { validationType, i }) => {
         const result = await model['~standard'].validate(data);
         if (result.issues?.length) {

@@ -79,7 +79,8 @@
               },
               "required": [
                 "id"
-              ]
+              ],
+              "additionalProperties": false
             }
           },
           "path": "numeric/{id}",
