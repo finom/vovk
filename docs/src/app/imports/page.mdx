@@ -111,9 +111,7 @@ export const fetcher = createFetcher<{
   },
   transformResponse: async (data, { someOtherCustomFlag }) => {
     // ...
-    return {
-      ...data,
-    };
+    return data;
   },
   onSuccess: async (data, { successMessage }) => {
     if (successMessage) {
