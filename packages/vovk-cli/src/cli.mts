@@ -1,0 +1,274 @@
+import { readFileSync } from 'node:fs';
+import path from 'node:path';
+import 'dotenv/config';
+import { Command } from 'commander';
+import concurrently from 'concurrently';
+import { bundle } from './bundle/index.mjs';
+import { getNextDevPort } from './dev/get-next-dev-port.mjs';
+import { VovkDev } from './dev/index.mjs';
+import { getProjectFullSchema } from './generate/get-project-full-schema.mjs';
+import { VovkGenerate } from './generate/index.mjs';
+import { getProjectInfo, loadOpenAPIMixins } from './get-project-info/index.mjs';
+import { Init } from './init/index.mjs';
+import { newComponents } from './new/index.mjs';
+import type { BundleOptions, DevOptions, GenerateOptions, InitOptions, NewOptions, VovkEnv } from './types.mjs';
+import { getAvailablePort } from './utils/get-available-port.mjs';
+import { getCommandShell, quoteShellArgument } from './utils/quote-shell-argument.mjs';
+
+const program = new Command();
+
+const vovkCliPackage = JSON.parse(readFileSync(path.join(import.meta.dirname, '../package.json'), 'utf-8')) as {
+  version: string;
+};
+
+program.name('vovk').description('Vovk CLI').version(vovkCliPackage.version);
+
+program
+  .command('dev')
+  .alias('d')
+  .description('Start schema watcher (optional flag --next-dev to start it with Next.js)')
+  .argument('[nextArgs...]', 'extra arguments for the implicit next dev command call')
+  .option('--next-dev', 'start schema watcher and Next.js with automatic port allocation')
+  .option('--exit', 'kill the processes when schema and client is generated')
+  .option('--schema-out <path>', 'path to schema output directory (default: .vovk-schema)')
+  .option('--https, --dev-https', 'use HTTPS for the dev server (default: false)')
+  .option('--log-level <level>', 'set the log level')
+  .action(async (nextArgs: string[], options: DevOptions) => {
+    const { nextDev, exit = false, schemaOut, devHttps, logLevel } = options;
+    const portAttempts = 30;
+    const PORT = !nextDev
+      ? process.env.PORT
+      : getNextDevPort(nextArgs) ||
+        process.env.PORT ||
+        (await getAvailablePort(3000, portAttempts, 0, (failedPort, tryingPort) =>
+          console.warn(`🐺 Port ${failedPort} is in use, trying ${tryingPort} instead.`)
+        ).catch(() => {
+          throw new Error(`Failed to find an available port after ${portAttempts} attempts`);
+        }));
+
+    if (!PORT) {
+      throw new Error('PORT env variable is required');
+    }
+
+    if (nextDev) {
+      const { result } = concurrently(
+        [
+          {
+            command: ['npx', 'next', 'dev', ...nextArgs].map((arg) => quoteShellArgument(arg)).join(' '),
+            name: 'Next.js Development Server',
+            env: { PORT } satisfies VovkEnv,
+          },
+          {
+            command: `node ${quoteShellArgument(path.join(import.meta.dirname, 'dev', 'index.mjs'))}`,
+            name: 'Vovk Dev Watcher',
+            env: {
+              PORT,
+              __VOVK_START_WATCHER_IN_STANDALONE_MODE__: 'true' as const,
+              // TODO: Pass these as flags
+              __VOVK_SCHEMA_OUT_FLAG__: schemaOut ?? '',
+              __VOVK_DEV_HTTPS_FLAG__: devHttps ? 'true' : '',
+              __VOVK_EXIT__: exit ? 'true' : 'false',
+              __VOVK_LOG_LEVEL__: logLevel ?? undefined,
+            } satisfies VovkEnv,
+          },
+        ],
+        {
+          killOthersOn: ['failure', 'success'],
+          prefix: 'none',
+          successCondition: 'first',
+          shell: getCommandShell(),
+        }
+      );
+      try {
+        await result;
+      } catch (closeEvents) {
+        // concurrently rejects with child close events on shutdown; children already logged the reason
+        const hasFailure =
+          Array.isArray(closeEvents) &&
+          closeEvents.some((event) => typeof event?.exitCode === 'number' && event.exitCode !== 0);
+        if (hasFailure) process.exit(1);
+      }
+    } else {
+      await new VovkDev({ schemaOut, devHttps, logLevel }).start({ exit });
+    }
+  });
+
+program
+  .command('generate')
+  .alias('g')
+  .description('Generate RPC client from schema')
+  .option('--composed-only', 'generate only composed client even if segmented client is enabled')
+  .option('--out, --composed-out <path>', 'path to output directory for composed client')
+  .option('--from, --composed-from <templates...>', 'client template names for composed client')
+  .option('--include, --composed-include-segments <segments...>', 'include segments in composed client')
+  .option('--exclude, --composed-exclude-segments <segments...>', 'exclude segments in composed client')
+  .option('--segmented-only', 'generate only segmented client even if composed client is enabled')
+  .option('--segmented-out <path>', 'path to output directory for segmented client')
+  .option('--segmented-from <templates...>', 'client template names for segmented client')
+  .option('--segmented-include-segments <segments...>', 'include segments in segmented client')
+  .option('--segmented-exclude-segments <segments...>', 'exclude segments in segmented client')
+  .option('--prettify', 'prettify output files')
+  .option('--force', 'replace files at the output paths that vovk-cli did not generate')
+  .option('--schema, --schema-path <path>', 'path to schema folder (default: ./.vovk-schema)')
+  .option('--config, --config-path <config>', 'path to config file')
+  .option('--origin <url>', 'set the origin URL for the generated client')
+  .option(
+    '--watch [s]',
+    'watch for changes in schema or openapi spec and regenerate client; accepts a number in seconds to throttle the watcher or make an HTTP request to the OpenAPI spec URLs'
+  )
+  .option('--openapi, --openapi-spec <openapi_path_or_urls...>', 'use OpenAPI mixins for client generation')
+  .option(
+    '--openapi-module-name, --openapi-get-module-name <names...>',
+    'module name strategies corresponding to the index of --openapi option'
+  )
+  .option(
+    '--openapi-method-name, --openapi-get-method-name <names...>',
+    'method name strategies corresponding to the index of --openapi option'
+  )
+  .option('--openapi-root-url <urls...>', 'root URLs corresponding to the index of --openapi option')
+  .option('--openapi-mixin-name <names...>', 'mixin names corresponding to the index of --openapi option')
+  .option(
+    '--openapi-fallback <paths...>',
+    'save OpenAPI spec corresponding to the index of --openapi option to a local file and use it as a fallback if URL is not available'
+  )
+  .option('--log-level <level>', 'set the log level')
+  .action(async (cliGenerateOptions: GenerateOptions) => {
+    const projectInfo = await loadOpenAPIMixins(
+      await getProjectInfo({
+        configPath: cliGenerateOptions.configPath,
+        srcRootRequired: false,
+        logLevel: cliGenerateOptions.logLevel,
+      })
+    );
+
+    await new VovkGenerate({
+      projectInfo,
+      forceNothingWrittenLog: true,
+      cliGenerateOptions,
+    }).start();
+  });
+
+program
+  .command('bundle')
+  .alias('b')
+  .description('Generate TypeScript RPC and bundle it')
+  .option('--out, --out-dir <path>', 'path to output directory for bundle')
+  .option('--include, --include-segments <segments...>', 'include segments')
+  .option('--exclude, --exclude-segments <segments...>', 'exclude segments')
+  // the last long flag names the option, it has to stay prebundleOutDir
+  .option('--prebundle-out, --prebundle-out-dir <path>', 'path to output directory for prebundle')
+  .option('--keep-prebundle-dir', 'do not delete prebundle directory after bundling')
+  .option('--schema, --schema-path <path>', 'path to schema folder (default: .vovk-schema)')
+  .option('--config, --config-path <config>', 'path to config file')
+  .option('--origin <url>', 'set the origin URL for the generated client')
+  .option('--openapi, --openapi-spec <openapi_path_or_urls...>', 'use OpenAPI mixins for client generation')
+  .option(
+    '--openapi-module-name, --openapi-get-module-name <names...>',
+    'module name strategies corresponding to the index of --openapi option'
+  )
+  .option(
+    '--openapi-method-name, --openapi-get-method-name <names...>',
+    'method name strategies corresponding to the index of --openapi option'
+  )
+  .option('--openapi-root-url <urls...>', 'root URLs corresponding to the index of --openapi option')
+  .option('--openapi-mixin-name <names...>', 'mixin names corresponding to the index of --openapi option')
+  .option(
+    '--openapi-fallback <paths...>',
+    'save OpenAPI spec corresponding to the index of --openapi option to a local file and use it as a fallback if URL is not available'
+  )
+  .option('--log-level <level>', 'set the log level')
+  .action(async (cliBundleOptions: BundleOptions) => {
+    const projectInfo = await loadOpenAPIMixins(
+      await getProjectInfo({
+        configPath: cliBundleOptions.configPath,
+        srcRootRequired: false,
+        logLevel: cliBundleOptions.logLevel,
+      })
+    );
+    const { cwd, config, log, isNextInstalled } = projectInfo;
+    const fullSchema = await getProjectFullSchema({
+      schemaOutAbsolutePath: path.resolve(cwd, cliBundleOptions?.schemaPath ?? config.schemaOutDir),
+      log,
+      isNextInstalled,
+      config,
+    });
+
+    await bundle({
+      projectInfo,
+      fullSchema,
+      cliBundleOptions,
+    });
+  });
+
+program
+  .command('new [components...]')
+  .alias('n')
+  .description(
+    'Create new components. "vovk new [...components] [segmentName/]moduleName" to create a new module or "vovk new segment [segmentName]" to create a new segment'
+  )
+  .option('-o, --overwrite', 'overwrite existing files')
+  .option('--static', '(new segment only) if the segment is static')
+  .option(
+    '--template, --templates <templates...>',
+    '(new module only) override config template; accepts an array of strings that correspond the order of the components'
+  )
+  .option(
+    '--out, --out-dir <dirname>',
+    '(new module only) override outDir in template file; relative to the root of the project'
+  )
+  .option('--no-segment-update', '(new module only) do not update segment files when creating a new module')
+  .option('--empty', '(new module only) create an empty module')
+  .option('--dry-run', 'do not write files to disk')
+  .option('--log-level <level>', 'set the log level')
+  .action(async (components: string[], newOptions: NewOptions) =>
+    newComponents(
+      components,
+      await getProjectInfo({
+        logLevel: newOptions.logLevel,
+      }),
+      newOptions
+    )
+  );
+
+program
+  .command('init')
+  .description('Initialize Vovk.ts at existing Next.js project')
+  .option('--prefix <prefix>', 'directory to initialize project in')
+  .option('-y, --yes', 'skip all prompts and use default values')
+  .option('--log-level <level>', 'set log level', 'info')
+  .option('--use-npm', 'use npm as package manager')
+  .option('--use-yarn', 'use yarn as package manager')
+  .option('--use-pnpm', 'use pnpm as package manager')
+  .option('--use-bun', 'use bun as package manager')
+  .option('--skip-install', 'skip installing dependencies')
+  .option('--update-ts-config', 'update tsconfig.json')
+  .option('--update-scripts <mode>', 'update package.json scripts ("implicit" or "explicit")')
+  .option('--bundle', 'set up "tsdown" bundler')
+  .option(
+    '--lang <languages...>',
+    'generate client for other programming languages by default ("py" for Python and "rs" for Rust are supported)'
+  )
+  .option(
+    '--validation-library <library>',
+    'validation library to use ("zod", "valibot" or "arktype"); set to "none" to skip'
+  )
+  .option('--channel <channel>', 'channel to use for fetching packages', 'latest')
+  .option('--dry-run', 'do not write files to disk')
+  .action((options: InitOptions) => new Init().main(options));
+
+program
+  .command('help')
+  .description('Show help message')
+  .action(() => program.help());
+
+program.parseAsync(process.argv).catch((error: unknown) => {
+  const logLevelFlagIndex = process.argv.indexOf('--log-level');
+  const isDebug = ['debug', 'trace'].includes(process.argv[logLevelFlagIndex + 1] ?? '');
+  const err = error instanceof Error ? error : new Error(String(error));
+  console.error(`🐺 ❌ ${isDebug ? (err.stack ?? err.message) : err.message}`);
+  process.exit(1);
+});
+
+if (!process.argv.slice(2).length) {
+  program.outputHelp();
+}
