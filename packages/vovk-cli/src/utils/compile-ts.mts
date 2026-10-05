@@ -7,27 +7,35 @@ interface CompileOptions {
   schema: (JSONSchema7 & { components?: OpenAPIObject['components'] }) | boolean;
   refs?: Map<string, JSONSchema7>;
   dontCreateRefTypes?: boolean; // New option
+  // OpenAPI: a request leaves read-only properties out, a response write-only ones
+  direction?: 'request' | 'response';
 }
 
 interface CompileContext {
   refs: Map<string, JSONSchema7>;
   compiledRefs: Map<string, string>;
   refsInProgress: Set<string>;
+  name: string;
+  leftOutKey?: 'readOnly' | 'writeOnly';
+  leavesOut: Map<string, boolean>;
 }
 
 export function compileTs(options: CompileOptions): string {
+  // Ensure the main type name is valid
+  const mainTypeName = sanitizeTypeName(options.name);
   const context: CompileContext = {
     refs: options.refs || new Map(),
     compiledRefs: new Map(),
     refsInProgress: new Set(),
+    name: mainTypeName,
+    leftOutKey: options.direction && ({ request: 'readOnly', response: 'writeOnly' } as const)[options.direction],
+    leavesOut: new Map(),
   };
 
   const { schema } = options;
   // Collect all definitions from the schema
   if (isSchema(schema)) collectDefinitions(schema, context.refs);
 
-  // Ensure the main type name is valid
-  const mainTypeName = sanitizeTypeName(options.name);
   const mainType = compileSchema(schema, mainTypeName, context);
 
   // Compile all referenced types, unless dontCreateRefTypes is set
@@ -117,7 +125,10 @@ function compileSchema(schema: JSONSchema7Definition | boolean, name: string, co
 function compileSchemaType(schema: JSONSchema7, name: string, context: CompileContext): string {
   // Handle x-tsType extension
   if ('x-tsType' in schema && typeof schema['x-tsType'] === 'string') {
-    return schema['x-tsType'];
+    const tsType = schema['x-tsType'];
+    // the type of a component has every property, a request or a response type leaves some out
+    if (!schema.$ref || !leavesOutProperty(schema.$ref, context)) return tsType;
+    return handleRef(schema.$ref, context, sanitizeTypeName(context.name + tsType.slice(tsType.lastIndexOf('.') + 1)));
   }
 
   // Handle $ref
@@ -185,9 +196,7 @@ function compileSchemaWithType(schema: JSONSchema7, name: string, context: Compi
   }
 }
 
-function handleRef(ref: string, context: CompileContext): string {
-  const typeName = refToTypeName(ref);
-
+function handleRef(ref: string, context: CompileContext, typeName = refToTypeName(ref)): string {
   // Check if we're already compiling this ref (circular reference)
   if (context.refsInProgress.has(ref)) {
     return typeName;
@@ -276,7 +285,7 @@ function handleObject(schema: JSONSchema7, name: string, context: CompileContext
     const required = new Set(schema.required || []);
 
     for (const [propName, propSchema] of Object.entries(schema.properties)) {
-      if (!isSchema(propSchema)) continue;
+      if (!isSchema(propSchema) || isLeftOut(propSchema, context)) continue;
 
       const isRequired = required.has(propName);
       // Ensure the generated type name for nested properties is valid
@@ -311,6 +320,35 @@ function handleObject(schema: JSONSchema7, name: string, context: CompileContext
   }
 
   return props.length > 0 ? `{ ${props.join('; ')} }` : '{}';
+}
+
+function isLeftOut(property: JSONSchema7, context: CompileContext): boolean {
+  const { leftOutKey } = context;
+  if (!leftOutKey) return false;
+  const target = property.$ref ? context.refs.get(property.$ref) : undefined;
+  return property[leftOutKey] === true || target?.[leftOutKey] === true;
+}
+
+// whether the type of a ref has a property the direction leaves out, at any depth
+function leavesOutProperty(ref: string, context: CompileContext): boolean {
+  if (!context.leftOutKey) return false;
+  let leavesOut = context.leavesOut.get(ref);
+  if (leavesOut === undefined) {
+    const seen = new Set<string>();
+    const visit = (value: unknown): boolean => {
+      if (!value || typeof value !== 'object') return false;
+      const { $ref, properties } = value as JSONSchema7;
+      if (properties && Object.values(properties).some((p) => isSchema(p) && isLeftOut(p, context))) return true;
+      if (typeof $ref === 'string' && !seen.has($ref)) {
+        seen.add($ref);
+        if (visit(context.refs.get($ref))) return true;
+      }
+      return Object.values(value).some(visit);
+    };
+    leavesOut = visit({ $ref: ref });
+    context.leavesOut.set(ref, leavesOut);
+  }
+  return leavesOut;
 }
 
 function refToTypeName(ref: string): string {
