@@ -234,11 +234,11 @@ describe('openAPIToVovkSchema — response types', () => {
   const components = {
     schemas: { User: user },
     responses: {
-      User: {
+      UserResponse: {
         description: 'A user',
         content: { 'application/json': { schema: { $ref: '#/components/schemas/User' } } },
       },
-      Users: {
+      UsersResponse: {
         description: 'Users',
         content: { 'application/jsonl': { schema: { $ref: '#/components/schemas/User' } } },
       },
@@ -249,10 +249,10 @@ describe('openAPIToVovkSchema — response types', () => {
       components,
       paths: {
         '/users/{id}': {
-          get: { operationId: 'getUser', responses: { '200': { $ref: '#/components/responses/User' } } },
+          get: { operationId: 'getUser', responses: { '200': { $ref: '#/components/responses/UserResponse' } } },
         },
         '/users': {
-          get: { operationId: 'streamUsers', responses: { '200': { $ref: '#/components/responses/Users' } } },
+          get: { operationId: 'streamUsers', responses: { '200': { $ref: '#/components/responses/UsersResponse' } } },
         },
       },
     },

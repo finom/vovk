@@ -1,10 +1,12 @@
 import type {
   ComponentsObject,
   ContentObject,
+  OpenAPIObject,
   OperationObject,
   ParameterObject,
   PathItemObject,
   RequestBodyObject,
+  ResponseObject,
   ServerObject,
 } from 'openapi3-ts/oas31';
 import { schemaToTsType } from '../../samples/schema-to-ts-type.js';
@@ -44,7 +46,7 @@ function pickStyles(fields: [string, { style?: string; explode?: boolean } | und
 
 // success body: 200/201, then other 2xx, then the 2XX wildcard
 // exact media type first, then +json suffix; `default` is the error shape, skip it
-function makeResponseSchemaPicker(operation: OperationObject) {
+function makeResponseSchemaPicker(operation: OperationObject, openAPIObject: OpenAPIObject) {
   const responses = operation.responses ?? {};
   const codes = Object.keys(responses);
   const successCodes = [
@@ -55,8 +57,8 @@ function makeResponseSchemaPicker(operation: OperationObject) {
 
   return (exact: string[], suffix?: string): VovkJSONSchemaBase | null => {
     for (const code of successCodes) {
-      // ResponsesObject indexes to `any`, annotate to get typed media objects
-      const content: ContentObject | undefined = responses[code]?.content;
+      // a response may be a $ref to components/responses
+      const content = inlineRefs<ResponseObject>(responses[code], openAPIObject)?.content;
       if (!content) continue;
       for (const [mediaType, media] of Object.entries(content)) {
         if (exact.includes(mediaTypeEssence(mediaType)) && media?.schema) return media.schema as VovkJSONSchemaBase;
@@ -245,7 +247,7 @@ export function openAPIToVovkSchema({
         ([mediaType]) => mediaTypeEssence(mediaType) === 'application/x-www-form-urlencoded'
       )?.[1]?.encoding;
       const formStyles = pickStyles(Object.entries(formEncoding ?? {}));
-      const pickResponseSchema = makeResponseSchemaPicker(operation);
+      const pickResponseSchema = makeResponseSchemaPicker(operation, openAPIObject);
       const output = pickResponseSchema(['application/json'], '+json');
       const iteration = pickResponseSchema(['application/jsonl', 'application/jsonlines']);
 
