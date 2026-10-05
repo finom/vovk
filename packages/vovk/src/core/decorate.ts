@@ -1,5 +1,5 @@
 import type { KnownAny } from '../types/utils.js';
-import { decoratorFactories, decoratorMiddlewares } from './create-decorator.js';
+import { classDecorators, decoratorFactories, decoratorMiddlewares } from './create-decorator.js';
 
 type DecoratorApplier = (controller: KnownAny, propertyKey: string) => unknown;
 
@@ -108,6 +108,13 @@ export function decorate(...args: unknown[]): KnownAny {
   for (const [i, decoratorFn] of decoratorFns.entries()) {
     if (typeof decoratorFn !== 'function') {
       throw new Error('All decorator arguments to decorate() must be functions');
+    }
+    // applied to a member, a class decorator acts on the whole class: prefix() would move every route
+    const classDecoratorName = classDecorators.get(decoratorFn);
+    if (classDecoratorName !== undefined) {
+      throw new Error(
+        `decorate() argument ${i + 1} is the class decorator ${classDecoratorName}: apply it to the class`
+      );
     }
     // uncalled, a factory makes a decorator that nothing applies: a guard would never run
     const factoryName = decoratorFactories.get(decoratorFn);

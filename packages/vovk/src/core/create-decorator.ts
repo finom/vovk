@@ -17,6 +17,10 @@ export const decoratorMiddlewares = new WeakMap<object, Middleware>();
 // passed uncalled, which would make a decorator that nothing applies
 export const decoratorFactories = new WeakMap<object, string>();
 
+// the class decorators and the factories that make them, by name: decorate() refuses them, as on a member they would
+// act on the whole class
+export const classDecorators = new WeakMap<object, string>();
+
 /**
  * Creates a custom decorator for Vovk controllers.
  * @see https://vovk.dev/decorator

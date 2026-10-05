@@ -4,7 +4,7 @@ import type { KnownAny } from '../types/utils.js';
 import { toKebabCase } from '../utils/to-kebab-case.js';
 import { trimPath } from '../utils/trim-path.js';
 import { applyDecoratorAdapter } from './apply-decorator-adapter.js';
-import { decoratorFactories } from './create-decorator.js';
+import { classDecorators, decoratorFactories } from './create-decorator.js';
 import { vovkApp } from './vovk-app.js';
 
 const isClass = (func: unknown) => typeof func === 'function' && /class/.test(func.toString());
@@ -159,13 +159,16 @@ function createHTTPDecorator<T extends HttpMethod>(httpMethod: T) {
 export const prefix = (givenPath = '') => {
   const path = trimPath(givenPath);
 
-  return (givenTarget: KnownAny, _context?: KnownAny) => {
+  const decorator = (givenTarget: KnownAny, _context?: KnownAny) => {
     const controller = givenTarget as VovkController;
     controller.prefix = path;
 
     return givenTarget;
   };
+  classDecorators.set(decorator, 'prefix(...)');
+  return decorator;
 };
+classDecorators.set(prefix, 'prefix');
 
 // initSegment copies a clone's parent's routes again, when the parent's decorate() decorators are applied
 export const clonedControllers = new WeakSet<object>();
@@ -174,7 +177,7 @@ export const clonedControllers = new WeakSet<object>();
  * Clones metadata from parent controller to child controller.
  */
 export function cloneControllerMetadata() {
-  return function inherit<T extends new (...args: KnownAny[]) => KnownAny>(c: T, _context?: KnownAny) {
+  const inherit = function inherit<T extends new (...args: KnownAny[]) => KnownAny>(c: T, _context?: KnownAny) {
     const parent = Object.getPrototypeOf(c) as VovkController;
     const controller = c as unknown as VovkController;
     clonedControllers.add(controller);
@@ -188,7 +191,10 @@ export function cloneControllerMetadata() {
 
     return controller as unknown as T;
   };
+  classDecorators.set(inherit, 'cloneControllerMetadata()');
+  return inherit;
 }
+classDecorators.set(cloneControllerMetadata, 'cloneControllerMetadata');
 
 /**
  * GET HTTP method decorator.

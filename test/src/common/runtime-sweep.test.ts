@@ -481,6 +481,22 @@ describe('Runtime sweep', () => {
       );
     });
 
+    it('Refuses a class decorator passed to decorate()', () => {
+      // applied to one member, prefix('v2') would move every route of the controller
+      throws(() => decorate(prefix('v2'), get('users')).handle(async () => []), {
+        message: 'decorate() argument 1 is the class decorator prefix(...): apply it to the class',
+      });
+      for (const [decorator, name] of [
+        [prefix, 'prefix'],
+        [cloneControllerMetadata, 'cloneControllerMetadata'],
+        [cloneControllerMetadata(), 'cloneControllerMetadata()'],
+      ] as const) {
+        throws(() => decorate(get('users'), decorator).handle(async () => []), {
+          message: `decorate() argument 2 is the class decorator ${name}: apply it to the class`,
+        });
+      }
+    });
+
     it('Answers a path two controllers of a segment declare with a JSON error and calls onError', async () => {
       const errors: string[] = [];
       class FirstController {
