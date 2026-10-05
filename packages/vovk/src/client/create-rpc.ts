@@ -230,7 +230,8 @@ export const createRPC = <T, OPTS extends Record<string, KnownAny> = VovkFetcher
 
       const internalInput = {
         ...mergeOptions<OPTS>(options, { validateOnClient: optionsResolvedValidateOnClient }, input),
-        body: body ?? null,
+        // undefined is no body, null a value the fetcher sends to a procedure that takes JSON
+        body,
         query: input.query ?? {},
         params: input.params ?? {},
       };

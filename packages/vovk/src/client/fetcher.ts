@@ -186,7 +186,8 @@ export function createFetcher<T>({
       const declaredContentTypes = (
         (bodySchema?.['x-contentType'] ?? (bodySchema ? ['application/json'] : [])) as string[]
       ).map(getMediaType);
-      const hasBody = body !== undefined && body !== null;
+      // null is a JSON value, sent to a procedure that takes JSON; to any other it's no body
+      const hasBody = body !== undefined && (body !== null || declaredContentTypes.some(isJSONMediaType));
       const isBinary = body instanceof Blob || body instanceof ArrayBuffer || ArrayBuffer.isView(body);
       const resolvedContentType = !hasBody
         ? undefined // no body, no content type: a cross-origin GET then needs no preflight
