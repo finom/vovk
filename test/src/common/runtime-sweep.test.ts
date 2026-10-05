@@ -332,34 +332,77 @@ describe('Runtime sweep', () => {
     });
 
     it('Refuses decorate().handle() without a handler', () => {
-      for (const decorated of [
-        decorate(get('users')),
-        decorate(get('users'), procedure()),
-        // the handler given to the procedure instead
-        decorate(
-          get('users'),
-          procedure().handle(async () => [])
-        ),
-      ]) {
+      for (const decorated of [decorate(get('users')), decorate(get('users'), procedure())]) {
         throws(() => (decorated as unknown as { handle: () => unknown }).handle(), {
           message: 'decorate().handle() requires a handler function',
         });
       }
+      // the handler given to the procedure instead is refused by decorate() itself
+      throws(
+        () =>
+          decorate(
+            get('users'),
+            procedure().handle(async () => [])
+          ),
+        {
+          message:
+            'decorate() takes procedure(...) last and without .handle(): call .handle() on what decorate() returns',
+        }
+      );
     });
 
     it('Refuses a decorate() member without .handle() in every segment', () => {
       class UnhandledController {
-        // the handler given to the procedure, and no .handle() on what decorate() returns
-        static list = decorate(
-          get('list'),
-          procedure().handle(async () => [])
-        );
+        static list = decorate(get('list'), procedure());
       }
       for (const segmentName of ['unhandled', 'unhandled-again']) {
         throws(() => initSegment({ segmentName, controllers: { UnhandledController } }), {
           message: 'UnhandledController.list has no handler: call .handle() on what decorate() returns',
         });
       }
+    });
+
+    it('Refuses a procedure among the decorators of decorate(), which would reject unhandled', async () => {
+      const message =
+        'decorate() takes procedure(...) last and without .handle(): call .handle() on what decorate() returns';
+      const defineControllers = [
+        // the handler given to the procedure, and another one to decorate()
+        () =>
+          class DoubleHandleController {
+            static list = decorate(
+              get('list'),
+              procedure().handle(async () => ['from the procedure'])
+            ).handle(async () => ['from decorate()']);
+          },
+        () =>
+          class ProcedureFirstController {
+            static list = decorate(procedure(), get('list')).handle(async () => []);
+          },
+      ];
+      const rejections: unknown[] = [];
+      const onRejection = (reason: unknown) => rejections.push(reason);
+      const errors: string[] = [];
+      process.on('unhandledRejection', onRejection);
+      try {
+        for (const [i, defineController] of defineControllers.entries()) {
+          try {
+            initSegment({
+              segmentName: `procedure-as-decorator-${i}`,
+              controllers: { Controller: defineController() },
+            });
+          } catch (error) {
+            errors.push((error as Error).message);
+          }
+        }
+        await wait(20);
+      } finally {
+        process.off('unhandledRejection', onRejection);
+      }
+      deepStrictEqual(
+        rejections.map((reason) => (reason as Error).message),
+        []
+      );
+      deepStrictEqual(errors, [message, message]);
     });
 
     it('Answers a path two controllers of a segment declare with a JSON error and calls onError', async () => {

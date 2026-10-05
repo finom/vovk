@@ -76,6 +76,12 @@ export function decorate(...args: unknown[]): KnownAny {
     if (typeof decoratorFn !== 'function') {
       throw new Error('All decorator arguments to decorate() must be functions');
     }
+    // a procedure here would be applied as a decorator: it calls its handler with the class and rejects, unhandled
+    if ('definition' in decoratorFn && 'fn' in decoratorFn) {
+      throw new Error(
+        'decorate() takes procedure(...) last and without .handle(): call .handle() on what decorate() returns'
+      );
+    }
   }
 
   const decorated = {
