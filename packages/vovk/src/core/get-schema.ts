@@ -1,7 +1,6 @@
 import type { VovkController, VovkHandlerSchema, VovkSegmentSchema } from '../types/core.js';
 import { VovkSchemaIdEnum } from '../types/enums.js';
 import type { StaticClass } from '../types/utils.js';
-import { trimPath } from '../utils/trim-path.js';
 
 // the body's JSON Schema is built here only for its content types, and one that can't be built gives none
 const getBodyContentType = (validation: VovkHandlerSchema['validation']) => {
@@ -30,7 +29,7 @@ export async function getControllerSchema(
   return {
     rpcModuleName,
     originalControllerName: controller.name,
-    prefix: trimPath(controller.prefix ?? ''),
+    prefix: controller._prefix ?? '',
     handlers,
   };
 }

@@ -90,7 +90,7 @@ export type StreamAbortMessage = {
 export type VovkControllerInternal = {
   _segmentName: string;
   _rpcModuleName?: VovkControllerSchema['rpcModuleName'];
-  prefix?: VovkControllerSchema['prefix'];
+  _prefix?: string;
   _handlers: VovkControllerSchema['handlers'];
   _handlersMetadata?: Record<string, { staticParams?: Record<string, string>[] }>;
   _onError?: (err: Error, req: VovkRequest) => void | Promise<void>;

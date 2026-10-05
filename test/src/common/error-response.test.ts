@@ -6,7 +6,6 @@ import { type VovkErrorResponse, vovkApp } from 'vovk/internal';
 // drives the dispatcher directly so NODE_ENV can be toggled per case
 class ErrorResponseController {
   static _segmentName = 'error-response-test';
-  static prefix = '';
 
   static internal = () => {
     throw new Error('connect ECONNREFUSED 10.0.3.14:5432', { cause: { host: 'internal-db.local' } });

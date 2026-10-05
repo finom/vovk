@@ -167,7 +167,7 @@ export const prefix = (givenPath = '') => {
       };
     }
     const controller = givenTarget as VovkController;
-    controller.prefix = path;
+    controller._prefix = path;
 
     return givenTarget;
   };

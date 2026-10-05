@@ -333,6 +333,32 @@ describe('Runtime sweep', () => {
       strictEqual('decorate' in vovk, false);
     });
 
+    it('Routes by @prefix() and ignores a static prefix field', async () => {
+      class StaticPrefixController {
+        static prefix = 'ignored';
+
+        static list() {
+          return 'static';
+        }
+      }
+      get('list')(StaticPrefixController, 'list');
+      class DecoratedPrefixController {
+        static list() {
+          return 'decorated';
+        }
+      }
+      get('list')(DecoratedPrefixController, 'list');
+      prefix('decorated')(DecoratedPrefixController);
+      const handlers = initSegment({
+        segmentName: 'static-prefix-field',
+        controllers: { StaticPrefixRPC: StaticPrefixController, DecoratedPrefixRPC: DecoratedPrefixController },
+      });
+
+      strictEqual((await call(handlers, 'GET', 'list')).status, 200);
+      strictEqual((await call(handlers, 'GET', 'ignored/list')).status, 404);
+      deepStrictEqual(await (await call(handlers, 'GET', 'decorated/list')).json(), 'decorated');
+    });
+
     it('Answers a path two controllers of a segment declare with a JSON error and calls onError', async () => {
       const errors: string[] = [];
       class FirstController {
@@ -556,27 +582,6 @@ describe('Runtime sweep', () => {
       await call(v1, 'GET', 'fail');
       await call(v2, 'GET', 'fail');
       deepStrictEqual(errors, ['v1', 'v2']);
-    });
-
-    it('Trims the slashes of a static prefix, as @prefix() does', async () => {
-      await withNodeEnv('development', async () => {
-        class MemberController {
-          static prefix = '/members/';
-
-          static getMember = procedure({ params: z.object({ id: z.string() }) }).handle(async (_req, { id }) => ({
-            id,
-          }));
-        }
-        get('{id}')(MemberController, 'getMember');
-        const handlers = initSegment({ segmentName: 'static-prefix', controllers: { MemberRPC: MemberController } });
-
-        const response = await call(handlers, 'GET', 'members/1');
-
-        strictEqual(response.status, 200);
-        deepStrictEqual(await response.json(), { id: '1' });
-        const { schema } = await (await call(handlers, 'GET', '_schema_')).json();
-        strictEqual(schema.controllers.MemberRPC.prefix, 'members');
-      });
     });
   });
 

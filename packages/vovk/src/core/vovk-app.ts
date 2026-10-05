@@ -10,7 +10,6 @@ import type {
 } from '../types/core.js';
 import { HttpMethod, HttpStatus } from '../types/enums.js';
 import type { VovkRequest } from '../types/request.js';
-import { trimPath } from '../utils/trim-path.js';
 import { HttpException, isHttpException } from './http-exception.js';
 import { JSONLinesResponder, Responder } from './json-lines-responder.js';
 
@@ -378,8 +377,7 @@ class VovkApp {
       // a segment set up without initSegment names its controllers by _segmentName
       const isInSegment = segment ? segment.controllers.has(controller) : controller._segmentName === segmentName;
       if (!isInSegment) return;
-      // a static prefix property is trimmed as @prefix() trims its path
-      const prefix = trimPath(controller.prefix ?? '');
+      const prefix = controller._prefix ?? '';
 
       Object.entries(staticMethods ?? {}).forEach(([path, staticMethod]) => {
         const fullPath = [prefix, path].filter(Boolean).join('/');
