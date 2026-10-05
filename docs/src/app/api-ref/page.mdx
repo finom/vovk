@@ -356,7 +356,7 @@ Utility that turns RPC modules or controllers into AI tools that satisfy the [st
 
 The function accepts the following options:
 
-- `modules: Record<string, object>{:ts}` – key-value object where keys are module names and values are objects with methods. Each method should have a `schema: VovkHandlerSchema` property and either `isRPC: true` (for RPC modules) or the [fn](/fn) function (for controllers).
+- `modules: Record<string, object>{:ts}` – key-value object where keys are module names and values are objects with methods. Each method should have the `schema` property that RPC methods and procedures have, and either `isRPC: true` (for RPC modules) or the [fn](/fn) function (for controllers).
 - `onExecute?: (result: unknown, tool: StandardToolV0) => void | Promise<void>{:ts}` – called after each tool execution.
 - `onError?: (e: Error, tool: StandardToolV0) => void | Promise<void>{:ts}` – called when an error is thrown during tool execution.
 - `toModelOutput` – function that formats the tool result into a model-friendly output.
@@ -614,14 +614,7 @@ export enum HttpStatus {
 
 ### `VovkSchema`
 
-The full schema of the composed client or of a single segment in a segmented client. Shape:
-
-```ts showLineNumbers copy
-{
-  segments: { [key: string]: VovkSegmentSchema };
-  meta?: VovkMetaSchema
-}
-```
+The full schema of the composed client or of a single segment in a segmented client. It has `segments`, the schema of each segment by its name, and an optional `meta` with the emitted config. A segment's schema is typed as `typeof UserRPC.updateUser.segmentSchema`.
 
 See the [schema docs](/schema) for more details.
 
