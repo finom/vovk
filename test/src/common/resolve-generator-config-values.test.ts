@@ -14,7 +14,7 @@ describe('resolveGeneratorConfigValues', () => {
         projectPackageJson: undefined,
       });
 
-      deepStrictEqual(result.package, {});
+      deepStrictEqual(result.package, { version: '0.0.0' });
       strictEqual(result.origin, '');
       deepStrictEqual(result.imports, {
         fetcher: 'vovk/fetcher',
@@ -278,6 +278,7 @@ describe('resolveGeneratorConfigValues', () => {
 
       deepStrictEqual(result.package, {
         name: 'bundled',
+        version: '0.0.0',
         exports: {
           '.': {
             default: './index.js',
@@ -313,6 +314,7 @@ describe('resolveGeneratorConfigValues', () => {
 
       deepStrictEqual(result.package, {
         name: 'base',
+        version: '0.0.0',
       });
       strictEqual(result.origin, '');
     });
@@ -343,6 +345,7 @@ describe('resolveGeneratorConfigValues', () => {
 
       deepStrictEqual(result.package, {
         name: 'users-api',
+        version: '0.0.0',
       });
       strictEqual(result.origin, 'https://users.example.com');
       deepStrictEqual(result.reExports, { User: './models/User' });
@@ -371,7 +374,7 @@ describe('resolveGeneratorConfigValues', () => {
       });
 
       // Should not include segment-specific configs
-      deepStrictEqual(result.package, {});
+      deepStrictEqual(result.package, { version: '0.0.0' });
     });
 
     it('should aggregate reExports for composed client', () => {
@@ -468,7 +471,7 @@ describe('resolveGeneratorConfigValues', () => {
         outputConfigs: [],
       });
 
-      deepStrictEqual(result.package, {});
+      deepStrictEqual(result.package, { version: '0.0.0' });
       strictEqual(result.origin, '');
       deepStrictEqual(result.imports, {
         fetcher: 'vovk/fetcher',

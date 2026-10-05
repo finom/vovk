@@ -54,6 +54,8 @@ export function resolveGeneratorConfigValues({
     outputConfigs?.reduce((acc, config) => deepExtend(acc, config.package), {} as PackageJson),
     isBundle ? config?.bundle?.outputConfig?.package : undefined
   );
+  // the OpenAPI info and a Python package require a version
+  packageJson.version ??= '0.0.0';
 
   const openAPIObject: OpenAPIObject = deepExtend(
     {
