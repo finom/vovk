@@ -123,15 +123,19 @@ export function withValidationLibrary<
     }
 
     if (output && !disableServerSideValidationKeys.includes('output')) {
-      // only undefined means a missing return, falsy values like false or 0 are valid outputs
-      if (data === undefined) {
-        throw new HttpException(
-          HttpStatus.INTERNAL_SERVER_ERROR,
-          'Output is required. You probably forgot to return something from your handler.'
-        );
+      let parsed: unknown;
+      try {
+        parsed = (await validate(data, output, { validationType: 'output', req })) ?? data;
+      } catch (error) {
+        // undefined the schema refuses is a missing return; falsy values like false or 0 are outputs
+        if (data === undefined) {
+          throw new HttpException(
+            HttpStatus.INTERNAL_SERVER_ERROR,
+            'Output is required. You probably forgot to return something from your handler.'
+          );
+        }
+        throw error;
       }
-
-      const parsed = (await validate(data, output, { validationType: 'output', req })) ?? data;
       return preferTransformed ? parsed : data;
     }
 
