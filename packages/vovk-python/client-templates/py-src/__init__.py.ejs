@@ -39,12 +39,14 @@ client = ApiClient(<%- vars.toPythonString(t.apiRoot ?? '') %>, {
 <% Object.entries(t.schema.segments).forEach(([segmentName, segment]) => {
     Object.values(segment.controllers).forEach((controllerSchema) => {
 const { rpcModuleName } = controllerSchema;
-const pyModuleName = vars.toPythonIdentifier(rpcModuleName); %>
+const pyModuleName = vars.toPythonIdentifier(rpcModuleName);
+// handler names alike in snake_case, such as getUserByID and getUserById, get a method each
+const methodNames = new Set(); %>
 class <%- pyModuleName %>: <% if (!Object.keys(controllerSchema.handlers).length) { %>
     pass<% } %><% Object.entries(controllerSchema.handlers).forEach(([handlerNameOriginal, handlerSchema]) => {
     const { validation, operationObject, httpMethod } = handlerSchema;
     const handlerNameOriginalCapitalized = vars.toPythonIdentifier(handlerNameOriginal.charAt(0).toUpperCase() + handlerNameOriginal.slice(1));
-    const handlerName = vars.toPythonIdentifier(t._.snakeCase(handlerNameOriginal));
+    const handlerName = vars.toPythonIdentifier(t._.snakeCase(handlerNameOriginal), methodNames);
     const bodyKind = vars.getBodyKind(validation?.body);
     const bodyContentType = bodyKind === 'text' ? vars.getTextContentType(validation?.body) : validation?.body?.['x-contentType']?.[0] || 'application/octet-stream';
     // a path with {name} placeholders takes params, with or without a params schema

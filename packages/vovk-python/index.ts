@@ -22,9 +22,15 @@ export function toPythonString(value: string): string {
   return JSON.stringify(value);
 }
 
-export function toPythonIdentifier(name: string): string {
-  const ident = name.replace(/[^A-Za-z0-9_]/g, '_').replace(/^(?=[0-9])/, '_') || '_';
-  return PYTHON_KEYWORDS.has(ident) ? `${ident}_` : ident;
+// with a set of the names a scope already has, a taken name gets the first free suffix: name_2, name_3, …
+export function toPythonIdentifier(name: string, used?: Set<string>): string {
+  const base = name.replace(/[^A-Za-z0-9_]/g, '_').replace(/^(?=[0-9])/, '_') || '_';
+  const ident = PYTHON_KEYWORDS.has(base) ? `${base}_` : base;
+  if (!used) return ident;
+  let candidate = ident;
+  for (let i = 2; used.has(candidate); i++) candidate = `${ident}_${i}`;
+  used.add(candidate);
+  return candidate;
 }
 
 // lines for a """ docstring: a quote or a backslash would end the string or start an escape

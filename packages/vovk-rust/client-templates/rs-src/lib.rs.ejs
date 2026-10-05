@@ -22,7 +22,10 @@ pub use crate::http_request::HttpException;
     // a configured origin or root entry gives the segment its own root, a mixin's root already includes its path
     const apiRoot = segmentMeta.forceApiRoot ?? t.apiRoot ?? '';
     const segmentPath = segment.forceApiRoot ? '' : typeof segmentMeta.segmentNameOverride === 'string' ? segmentMeta.segmentNameOverride : segmentName;
-    Object.values(segment.controllers).forEach((controllerSchema) => { %>
+    Object.values(segment.controllers).forEach((controllerSchema) => {
+    // handler names alike in snake_case, such as getUserByID and getUserById, get a function each; the imported
+    // functions keep theirs
+    const functionNames = new Set(['http_request', 'http_request_stream']); %>
 pub mod <%= vars.toRustIdent(t._.snakeCase(controllerSchema.rpcModuleName)) %> {
     #[allow(unused_imports)]
     use crate::http_request::{Endpoint, HttpException, RequestBody, http_request, http_request_stream};
@@ -33,7 +36,7 @@ pub mod <%= vars.toRustIdent(t._.snakeCase(controllerSchema.rpcModuleName)) %> {
     use std::pin::Pin;
 <% Object.entries(controllerSchema.handlers).forEach(([handlerNameOriginal, handlerSchema]) => { 
     const { validation, operationObject, httpMethod } = handlerSchema;
-    const handlerName = vars.toRustIdent(t._.snakeCase(handlerNameOriginal));
+    const handlerName = vars.toRustIdent(t._.snakeCase(handlerNameOriginal), functionNames);
     const url = [apiRoot.replace(/\/+$/, ''), ...[segmentPath, controllerSchema.prefix ?? '', handlerSchema.path].map((part) => t._.trim(part, '/'))].filter(Boolean).join('/');
     // a path with {name} placeholders takes params, with or without a params schema
     const paramsType = validation?.params ? `${handlerName}_::params` : /\{[^}]+\}/.test(`${controllerSchema.prefix ?? ''}/${handlerSchema.path}`) ? 'HashMap<String, String>' : '()';
