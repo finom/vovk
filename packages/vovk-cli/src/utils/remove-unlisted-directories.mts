@@ -254,8 +254,10 @@ async function processDirectory(context: PruneContext, relativePath: string): Pr
         if (await isSegmentContent(context, newRelativePath)) continue;
 
         const origin = await getDirectoryOrigin(fullPath, generated.relPaths, generated.unstampedRelPaths);
-        // an empty directory is left alone silently, one holding anything else is reported
-        if (origin === 'foreign') skipped.push(fullPath);
+        // an empty directory is left alone silently, one holding anything else is reported,
+        // unless it sits in a segment folder, as what a build leaves there does
+        const isInSegment = allowedDirs.some((allowedDir) => newRelativePath.startsWith(allowedDir + path.sep));
+        if (origin === 'foreign' && !isInSegment) skipped.push(fullPath);
         if (origin !== 'generated') continue;
       }
 
