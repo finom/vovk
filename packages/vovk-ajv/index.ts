@@ -209,8 +209,8 @@ const validate = ({
   options: Options;
   target: VovkAjvConfig['target'] | undefined;
 }) => {
-  // binary data is not validated
-  if (!input || !schema || input instanceof Blob) return;
+  // a falsy value is checked, but no value and binary data are not
+  if (input === undefined || !schema || input instanceof Blob) return;
   const schemaTarget = schema.$schema?.includes('://json-schema.org/draft-07/schema') ? 'draft-07' : 'draft-2020-12';
   const isForm = input instanceof FormData || input instanceof URLSearchParams;
   // a URL carries the query and params as strings
