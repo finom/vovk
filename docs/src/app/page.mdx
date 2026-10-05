@@ -73,7 +73,7 @@ export default class UserController {
 ```
 
 ```ts
-const user = await UserController.getUser.fn({ params: { id: '123' } });
+const user = await UserController.getUser.fn({ params: { id: '123e4567-e89b-12d3-a456-426614174000' } });
 ```
 
 Services hold business logic separately. Plain classes, no decorators:
@@ -105,7 +105,7 @@ Codegen reads the emitted schema and produces a `fetch`-powered client that mirr
 ```ts
 import { UserRPC } from '@/client';
 
-const user = await UserRPC.getUser({ params: { id: '123' } });
+const user = await UserRPC.getUser({ params: { id: '123e4567-e89b-12d3-a456-426614174000' } });
 ```
 
 Procedures can yield JSON Lines for real-time streaming:

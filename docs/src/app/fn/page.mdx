@@ -32,7 +32,7 @@ When the controller is mounted in a [segment](/segment), the same procedure is a
 import { UserRPC } from '@/client';
 
 const user = await UserRPC.getUser({
-  params: { id: '69' },
+  params: { id: '123e4567-e89b-12d3-a456-426614174000' },
   disableClientValidation: true, // disables client-side validation
   meta: { hello: 'world' }, // available as xMetaHeader metadata
 });
@@ -46,7 +46,7 @@ Calling the procedure with `fn` runs it in the current evaluation context — no
 import UserController from '@/modules/user/user-controller';
 
 const user = await UserController.getUser.fn({
-  params: { id: '69' },
+  params: { id: '123e4567-e89b-12d3-a456-426614174000' },
   disableClientValidation: true, // disables validation
   meta: { hello: 'world' }, // available as root metadata
 });
@@ -65,7 +65,7 @@ import UserController from '@/modules/user/user-controller';
 
 export default async function UserPage() {
   const user = await UserController.getUser.fn({
-    params: { id: '69' },
+    params: { id: '123e4567-e89b-12d3-a456-426614174000' },
   });
 
   return (
