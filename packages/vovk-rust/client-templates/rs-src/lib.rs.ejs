@@ -33,6 +33,8 @@ pub mod <%= vars.toRustIdent(t._.snakeCase(controllerSchema.rpcModuleName)) %> {
     const { validation, operationObject, httpMethod } = handlerSchema;
     const handlerName = vars.toRustIdent(t._.snakeCase(handlerNameOriginal));
     const url = [apiRoot.replace(/\/+$/, ''), ...[segmentPath, controllerSchema.prefix ?? '', handlerSchema.path].map((part) => t._.trim(part, '/'))].filter(Boolean).join('/');
+    // a path with {name} placeholders takes params, with or without a params schema
+    const paramsType = validation?.params ? `${handlerName}_::params` : /\{[^}]+\}/.test(`${controllerSchema.prefix ?? ''}/${handlerSchema.path}`) ? 'HashMap<String, String>' : '()';
     %>
     // <%- vars.toRustCommentText(`${controllerSchema.rpcModuleName}.${handlerName} ${httpMethod} \`${url}\``) %>
 <%- 
@@ -73,7 +75,7 @@ vars.convertJSONSchemasToRustTypes({
     pub async fn <%= handlerName %>( 
         body: <%- bodyKind === 'form' ? 'reqwest::multipart::Form' : bodyKind !== 'none' ? `${handlerName}_::body` : '()' %>,
         query: <%- validation?.query ? `${handlerName}_::query` : '()' %>,
-        params: <%- validation?.params ? `${handlerName}_::params` : '()' %>,
+        params: <%- paramsType %>,
         headers: Option<&HashMap<String, String>>,
         api_root: Option<&str>,
         disable_client_validation: bool,
@@ -83,7 +85,7 @@ vars.convertJSONSchemasToRustTypes({
                 validation?.output ? `${handlerName}_::output` : validation?.iteration ? `${handlerName}_::iteration` : 'serde_json::Value',
                 typedBody ? `${handlerName}_::body` : '()',
                 validation?.query ? `${handlerName}_::query` : '()',
-                validation?.params ? `${handlerName}_::params` : '()'
+                paramsType
             ].filter(Boolean).map((s) => ' '.repeat(12) + s).join(',\n') %>
         >(
             &Endpoint {

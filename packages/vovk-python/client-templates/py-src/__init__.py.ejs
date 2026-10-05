@@ -46,7 +46,9 @@ class <%- pyModuleName %>: <% if (!Object.keys(controllerSchema.handlers).length
     const handlerNameOriginalCapitalized = vars.toPythonIdentifier(handlerNameOriginal.charAt(0).toUpperCase() + handlerNameOriginal.slice(1));
     const handlerName = vars.toPythonIdentifier(t._.snakeCase(handlerNameOriginal));
     const bodyKind = vars.getBodyKind(validation?.body);
-    const bodyContentType = bodyKind === 'text' ? vars.getTextContentType(validation?.body) : validation?.body?.['x-contentType']?.[0] || 'application/octet-stream'; %>
+    const bodyContentType = bodyKind === 'text' ? vars.getTextContentType(validation?.body) : validation?.body?.['x-contentType']?.[0] || 'application/octet-stream';
+    // a path with {name} placeholders takes params, with or without a params schema
+    const paramsType = validation?.params ? `${handlerNameOriginalCapitalized}Params` : /\{[^}]+\}/.test(`${controllerSchema.prefix ?? ''}/${handlerSchema.path}`) ? 'Dict[str, str]' : null; %>
     # <%- vars.toPythonCommentText(`${rpcModuleName}.${handlerName} ${httpMethod} \`${joinURL(...segmentBases[segmentName], controllerSchema.prefix, handlerSchema.path)}\``) %>
 <%- ([
         bodyKind === 'text' ? '' : bodyKind === 'binary' ? '' : vars.convertJSONSchemaToPythonDataType({ schema: validation?.body, namespace: pyModuleName, className: `${handlerNameOriginalCapitalized}Body`, pad: 4 }),
@@ -63,7 +65,7 @@ class <%- pyModuleName %>: <% if (!Object.keys(controllerSchema.handlers).length
             bodyKind === 'json' || (bodyKind === 'form' && vars.hasNormalData(validation.body)) ? `body: ${handlerNameOriginalCapitalized}Body,` : '',
             validation?.body && vars.hasFiles(validation.body) ? `files: ${handlerNameOriginalCapitalized}Files,` : '',
             validation?.query ? `query: ${handlerNameOriginalCapitalized}Query,` : '',
-            validation?.params ? `params: ${handlerNameOriginalCapitalized}Params,` : ''
+            paramsType ? `params: ${paramsType},` : ''
         ].filter(Boolean).map((s) => ' '.repeat(8) + s).join('\n') %>
         headers: Optional[Dict[str, str]] = None,
         api_root: Optional[str] = None,
@@ -88,7 +90,7 @@ class <%- pyModuleName %>: <% if (!Object.keys(controllerSchema.handlers).length
                 validation?.body && vars.hasFiles(validation.body) ? 'files=files,' : '',
                 bodyKind === 'text' || bodyKind === 'binary' ? `body_content_type=${vars.toPythonString(bodyContentType)},` : '',
                 validation?.query ? 'query=query,' : '',
-                validation?.params ? 'params=params,' : ''
+                paramsType ? 'params=params,' : ''
             ].filter(Boolean).map((s) => ' '.repeat(12) + s).join('\n') %>
             headers=headers,
             api_root=api_root,
