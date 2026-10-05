@@ -1,7 +1,15 @@
 import type NPMCliPackageJson from '@npmcli/package-json';
 import { getNextDevPort } from '../dev/get-next-dev-port.mjs';
 
-export function getDevScript(pkgJson: NPMCliPackageJson, updateScriptsMode: 'implicit' | 'explicit') {
+type UpdateScriptsMode = 'implicit' | 'explicit';
+
+// vovk dev hands everything after -- to next dev, so the implicit script fits only `next dev [flags]`
+export function getDevScriptMode(pkgJson: NPMCliPackageJson, updateScriptsMode: UpdateScriptsMode): UpdateScriptsMode {
+  const dev = pkgJson.content.scripts?.dev ?? 'next dev';
+  return dev.includes('vovk dev') || /^next dev(\s+[^&|;<>]*)?$/.test(dev.trim()) ? updateScriptsMode : 'explicit';
+}
+
+export function getDevScript(pkgJson: NPMCliPackageJson, updateScriptsMode: UpdateScriptsMode) {
   const dev = pkgJson.content.scripts?.dev ?? 'next dev';
   if (dev.includes('vovk dev')) {
     return dev; // Already has vovk dev
@@ -10,7 +18,7 @@ export function getDevScript(pkgJson: NPMCliPackageJson, updateScriptsMode: 'imp
   // vovk dev requests the schema on PORT, next dev listens on -p when it's given
   const port = getNextDevPort(nextDevFlags.split(/\s+/)) ?? '3000';
   // cross-env and double quotes, so cmd.exe runs it too
-  return updateScriptsMode === 'explicit'
+  return getDevScriptMode(pkgJson, updateScriptsMode) === 'explicit'
     ? `cross-env PORT=${port} concurrently "${dev.replace(/"/g, '\\"')}" "vovk dev" --kill-others`
     : `vovk dev --next-dev${nextDevFlags ? ` -- ${nextDevFlags}` : ''}`;
 }
@@ -29,7 +37,7 @@ export async function updateNPMScripts({
   pkgJson: NPMCliPackageJson;
   root: string;
   bundle?: boolean;
-  updateScriptsMode: 'implicit' | 'explicit';
+  updateScriptsMode: UpdateScriptsMode;
 }) {
   const scripts = pkgJson.content.scripts;
   pkgJson.update({

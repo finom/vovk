@@ -14,7 +14,7 @@ import { getPackageManager, installDependencies } from './install-dependencies.m
 import { logUpdateDependenciesError } from './log-update-dependencies-error.mjs';
 import { updateDependenciesWithoutInstalling } from './update-dependencies-without-installing.mjs';
 import { updateGitignore } from './update-gitignore.mjs';
-import { getDevScript, updateNPMScripts } from './update-npm-scripts.mjs';
+import { getDevScript, getDevScriptMode, updateNPMScripts } from './update-npm-scripts.mjs';
 import { updateTypeScriptConfig } from './update-typescript-config.mjs';
 
 const VALIDATION_LIBRARIES = ['zod', 'valibot', 'arktype', 'none'];
@@ -86,13 +86,18 @@ export class Init {
     }
 
     if (updateScripts) {
+      // read before the update, which writes vovk dev into the script
+      const devScriptMode = pkgJson ? getDevScriptMode(pkgJson, updateScripts) : updateScripts;
+      if (devScriptMode !== updateScripts) {
+        log.info('The "dev" script runs more than "next dev", so "concurrently" runs it unchanged next to "vovk dev"');
+      }
       try {
         if (!dryRun && pkgJson) await updateNPMScripts({ pkgJson, root, bundle, updateScriptsMode: updateScripts });
         log.info(`${dryRun ? 'Dry run: would update' : 'Updated'} scripts at package.json`);
       } catch (error) {
         log.error(`Failed to update scripts at package.json: ${(error as Error).message}`);
       }
-      if (updateScripts === 'explicit') {
+      if (devScriptMode === 'explicit') {
         devDependencies.push('concurrently', 'cross-env');
       }
     }

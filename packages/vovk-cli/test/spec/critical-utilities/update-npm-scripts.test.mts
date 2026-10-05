@@ -3,7 +3,7 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import { after, describe, it } from 'node:test';
 import NPMCliPackageJson from '@npmcli/package-json';
-import { getDevScript, updateNPMScripts } from '../../../dist/init/update-npm-scripts.mjs';
+import { getDevScript, getDevScriptMode, updateNPMScripts } from '../../../dist/init/update-npm-scripts.mjs';
 import { createProject } from '../../lib/minimal-project.mts';
 
 const projectDir = path.join(process.cwd(), 'tmp_update_npm_scripts');
@@ -58,6 +58,12 @@ await describe('getDevScript', async () => {
     ]) {
       assert.strictEqual(getDevScript(withDevScript(dev), 'implicit'), getDevScript(withDevScript(dev), 'explicit'));
     }
+  });
+
+  await it('Keeps the chosen mode for a dev script that already runs vovk dev', () => {
+    // a second vovk init must not add concurrently and cross-env for its own implicit script
+    assert.strictEqual(getDevScriptMode(withDevScript('vovk dev --next-dev'), 'implicit'), 'implicit');
+    assert.strictEqual(getDevScriptMode(withDevScript('prisma generate && next dev'), 'implicit'), 'explicit');
   });
 });
 

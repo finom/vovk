@@ -106,6 +106,26 @@ export async function startSchemaServer(schemas: Record<string, object>) {
   };
 }
 
+// an npm registry, such as a company mirror, that has only the given packages and their dist-tags
+export async function startRegistry(packages: Record<string, Record<string, string>>) {
+  const server = http.createServer((req, res) => {
+    const name = decodeURIComponent(new URL(req.url ?? '/', 'http://localhost').pathname.slice(1));
+    const tags = packages[name];
+    const versions = Object.fromEntries(Object.values(tags ?? {}).map((version) => [version, { name, version }]));
+    res.writeHead(tags ? 200 : 404, { 'content-type': 'application/json' });
+    res.end(JSON.stringify(tags ? { name, 'dist-tags': tags, versions } : { error: 'Not found' }));
+  });
+  await new Promise<void>((resolve) => server.listen(0, '127.0.0.1', resolve));
+
+  return {
+    url: `http://127.0.0.1:${(server.address() as AddressInfo).port}/`,
+    close: () => {
+      server.closeAllConnections();
+      return new Promise((resolve) => server.close(resolve));
+    },
+  };
+}
+
 // a port nothing listens on
 export async function getFreePort() {
   const server = http.createServer();

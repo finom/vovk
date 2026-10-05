@@ -1,11 +1,9 @@
 import assert from 'node:assert';
 import fs from 'node:fs/promises';
-import http from 'node:http';
-import type { AddressInfo } from 'node:net';
 import path from 'node:path';
 import { after, describe, it, mock } from 'node:test';
 import { updateDependenciesWithoutInstalling } from '../../../dist/init/update-dependencies-without-installing.mjs';
-import { createProject } from '../../lib/minimal-project.mts';
+import { createProject, startRegistry } from '../../lib/minimal-project.mts';
 
 const projectDir = path.join(process.cwd(), 'tmp_update_dependencies');
 const log = { info() {}, warn() {}, error() {}, debug() {}, raw: { info() {} } } as unknown as Parameters<
@@ -23,26 +21,6 @@ const distTags: Record<string, Record<string, string>> = {
   'vovk-cli': { latest: '0.2.0', beta: '0.3.0-beta.0' },
   'vovk-python': { latest: '0.0.3' },
 };
-
-// a registry, such as a company mirror, that has only the given packages
-async function startRegistry(packages: Record<string, Record<string, string>>) {
-  const server = http.createServer((req, res) => {
-    const name = decodeURIComponent(new URL(req.url ?? '/', 'http://localhost').pathname.slice(1));
-    const tags = packages[name];
-    const versions = Object.fromEntries(Object.values(tags ?? {}).map((version) => [version, { name, version }]));
-    res.writeHead(tags ? 200 : 404, { 'content-type': 'application/json' });
-    res.end(JSON.stringify(tags ? { name, 'dist-tags': tags, versions } : { error: 'Not found' }));
-  });
-  await new Promise<void>((resolve) => server.listen(0, '127.0.0.1', resolve));
-
-  return {
-    url: `http://127.0.0.1:${(server.address() as AddressInfo).port}/`,
-    close: () => {
-      server.closeAllConnections();
-      return new Promise((resolve) => server.close(resolve));
-    },
-  };
-}
 
 // npm is set up for the registry, as npx sets it from .npmrc, and registry.npmjs.org is out of reach
 async function withRegistry(registryUrl: string, run: () => Promise<void>) {
