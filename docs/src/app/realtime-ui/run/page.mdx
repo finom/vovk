@@ -40,7 +40,7 @@ Open [http://localhost:3000](http://localhost:3000) in your browser to see the r
 
 The variables in the `.env` file are used as follows:
 
-- `OPENAI_API_KEY` – your OpenAI API key, required for AI features.
+- `OPENAI_API_KEY` – your OpenAI API key, required for AI features. Creating or updating a user or a task also calls the embeddings API: without a working key, the row is saved without an embedding, and search skips it until an update adds one.
 - `DATABASE_URL` – the database connection string for Prisma ORM, used to instantiate the Prisma client in [database-service.ts](https://github.com/finom/vovk/blob/main/examples/realtime-kanban/src/modules/database/database-service.ts).
 - `DATABASE_URL_UNPOOLED` – the database connection string for direct connections, used for migrations in [prisma.config.ts](https://github.com/finom/vovk/blob/main/examples/realtime-kanban/prisma.config.ts).
 - `REDIS_URL` – the Redis connection string for realtime features, explained in more detail in the [Polling](./polling) article.
