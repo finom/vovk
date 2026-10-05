@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server.js';
-import { createFetcher, procedure, type VovkBody, type VovkRequest } from 'vovk';
+import { createFetcher, procedure, type VovkBody, type VovkParams, type VovkQuery, type VovkRequest } from 'vovk';
 import { createRPC } from 'vovk/create-rpc';
 import type { VovkFetcherOptions } from 'vovk/internal';
 // @ts-expect-error a module that isn't installed, as next is for a client bundle used without Next
@@ -218,4 +218,176 @@ export async function inputTypes() {
   // the RPC method infers what it sends, the controller method what its handler gets
   ({ tags: 'a,b' }) satisfies VovkBody<typeof rpc.save>;
   ({ tags: ['a', 'b'] }) satisfies VovkBody<typeof InputController.save>;
+}
+
+// ====== Route params without a params schema ======
+
+class RouteParamsController {
+  static rename = procedure({ body: z.object({ name: z.string() }) }).handle(async (req, { id }) => ({
+    id,
+    ...(await req.vovk.body()),
+  }));
+
+  static remove = procedure().handle(async (_req, { id }) => ({ id }));
+}
+
+export async function routeParamsWithoutSchema() {
+  const rpc = createRPC<typeof RouteParamsController>({}, '', 'RouteParamsRPC');
+
+  // the route, as in put('{id}'), is not part of the type, so the method takes params as strings
+  await rpc.rename({ params: { id: '42' }, body: { name: 'Ann' } });
+  await rpc.remove({ params: { id: '42' } });
+  rpc.remove.getURL({ params: { id: '42' } });
+  ({ id: '42' }) satisfies VovkParams<typeof rpc.remove>;
+}
+
+// ====== Schemas whose input type is unknown ======
+
+class UnknownInputController {
+  static anyJson = procedure({ body: z.unknown() }).handle(async (req) => req.vovk.body());
+
+  static anything = procedure({ body: z.any() }).handle(async (req) => req.vovk.body());
+
+  static preprocessedBody = procedure({
+    body: z.preprocess((value) => value, z.object({ name: z.string() })),
+  }).handle(async (req) => req.vovk.body());
+
+  static preprocessedQuery = procedure({
+    query: z.preprocess((value) => value, z.object({ q: z.string() })),
+  }).handle(async (req) => req.vovk.query());
+
+  static preprocessedParams = procedure({
+    params: z.preprocess((value) => value, z.object({ id: z.string() })),
+  }).handle(async (req) => req.vovk.params());
+}
+
+export async function unknownInputTypes() {
+  const rpc = createRPC<typeof UnknownInputController>({}, '', 'UnknownInputRPC');
+
+  await rpc.anyJson({ body: { a: 1 } });
+  await rpc.anyJson();
+  await rpc.anything({ body: [1, 2] });
+  // z.preprocess() takes anything, and passes it on to a schema that may reject a missing value
+  await rpc.preprocessedBody({ body: { name: 'Ann' } });
+  // @ts-expect-error the body is validated as undefined
+  await rpc.preprocessedBody();
+  await rpc.preprocessedQuery({ query: { q: 'x' } });
+  // @ts-expect-error the query is validated as {}
+  await rpc.preprocessedQuery();
+  await rpc.preprocessedParams({ params: { id: '1' } });
+  // @ts-expect-error the params are validated as {}
+  await rpc.preprocessedParams();
+}
+
+// ====== Optional input: a key is optional when the server accepts the request without it ======
+
+class OptionalInputController {
+  static optionalBody = procedure({ body: z.object({ a: z.string() }).optional() }).handle(async (req) =>
+    req.vovk.body()
+  );
+
+  static optionalQuery = procedure({ query: z.object({ q: z.string() }).optional() }).handle(async (req) =>
+    req.vovk.query()
+  );
+
+  static allOptionalQuery = procedure({
+    query: z.object({ q: z.string().optional(), page: z.coerce.number().default(1) }),
+  }).handle(async (req) => req.vovk.query());
+
+  static requiredQuery = procedure({ query: z.object({ q: z.string() }) }).handle(async (req) => req.vovk.query());
+
+  static requiredBody = procedure({ body: z.object({ a: z.string() }) }).handle(async (req) => req.vovk.body());
+
+  static plainSearch(req: VovkRequest<null, { q?: string }>) {
+    return req.vovk.query();
+  }
+}
+
+export async function optionalInput() {
+  const rpc = createRPC<typeof OptionalInputController>({}, '', 'OptionalInputRPC');
+
+  await rpc.optionalBody();
+  await rpc.optionalBody({ body: { a: 'x' } });
+  ({ a: 'x' }) satisfies VovkBody<typeof rpc.optionalBody>;
+  await rpc.optionalQuery({ query: { q: 'x' } });
+  // @ts-expect-error a request without a query string is validated as {}, which lacks q
+  await rpc.optionalQuery();
+  await rpc.allOptionalQuery();
+  rpc.allOptionalQuery.getURL();
+  ({ q: 'x' }) satisfies VovkQuery<typeof rpc.allOptionalQuery>;
+  await rpc.plainSearch();
+
+  // fn() validates what it gets the same way
+  await OptionalInputController.optionalBody.fn();
+  await OptionalInputController.allOptionalQuery.fn();
+  await OptionalInputController.requiredQuery.fn({ query: { q: 'x' } });
+  // @ts-expect-error the query is validated as {}
+  await OptionalInputController.requiredQuery.fn();
+  // @ts-expect-error the body is validated as undefined
+  await OptionalInputController.requiredBody.fn();
+}
+
+// ====== Bodies of plain methods and OpenAPI mixins ======
+
+class PlainBodyController {
+  static text(req: VovkRequest<string>) {
+    return req.vovk.body();
+  }
+
+  static textOrJson(req: VovkRequest<string | { a: number }>) {
+    return req.vovk.body();
+  }
+
+  static maybeJson(req: VovkRequest<{ a: number } | undefined>) {
+    return req.vovk.body();
+  }
+}
+
+// a mixin's types, as the generated mixins.d.ts writes them for a text/plain request body
+type MixinControllers = {
+  sendText: (req: VovkRequest<string, null, null>) => Promise<{ ok: boolean }>;
+};
+
+export async function plainAndMixinBodies() {
+  const rpc = createRPC<typeof PlainBodyController>({}, '', 'PlainBodyRPC');
+
+  await rpc.text({ body: 'hello' });
+  await rpc.textOrJson({ body: 'hello' });
+  await rpc.textOrJson({ body: { a: 1 } });
+  await rpc.maybeJson({ body: { a: 1 } });
+  await rpc.maybeJson();
+
+  const mixin = createRPC<MixinControllers>({}, '', 'MixinRPC');
+
+  await mixin.sendText({ body: 'hello' });
+}
+
+// ====== Iterables a handler returns: the server streams any iterable object but an array ======
+
+class ChunkStream implements AsyncIterable<{ delta: string }> {
+  async *[Symbol.asyncIterator]() {
+    yield { delta: 'a' };
+  }
+}
+
+class IterableController {
+  static tags() {
+    return new Set(['a', 'b']);
+  }
+
+  static counts = procedure().handle(async () => new Map([['a', 1]]));
+
+  static chunks = procedure().handle(async () => new ChunkStream());
+}
+
+export async function iterableResults() {
+  const rpc = createRPC<typeof IterableController>({}, '', 'IterableRPC');
+
+  const tags = await rpc.tags();
+  (await tags.asPromise()) satisfies string[];
+  const counts = await rpc.counts();
+  (await counts.asPromise()) satisfies [string, number][];
+  const chunks = await rpc.chunks();
+  (await chunks.asPromise()) satisfies { delta: string }[];
+  chunks.abortSilently();
 }

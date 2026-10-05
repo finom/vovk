@@ -80,6 +80,7 @@ jobs:
       - run: npx turbo run tsc --dangerously-disable-package-manager-check
       - run: npm --prefix test run generate && npm --prefix test run build-other-compiled-sources
       - run: npx tsc --project ./test
+      - run: npx tsc --project ./test/tsconfig.non-strict.json
       - run: npm run unit:ts --prefix packages/vovk-python && npm run unit:ts --prefix packages/vovk-rust
 
   integration:
