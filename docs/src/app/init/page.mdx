@@ -90,12 +90,11 @@ Specifies the package channel (default: "latest").
 
 - `latest` for stable releases.
 - `beta` for beta releases (tested but might introduce breaking changes without notice).
-- `draft` for draft releases (unstable, may contain experimental features).
 
-In that case, use the corresponding version suffix when running the command:
+Run the CLI from the same channel:
 
 ```sh npm2yarn copy
-npx vovk-cli init@draft --channel draft
+npx vovk-cli@beta init --channel beta
 ```
 
 A Vovk.ts package with no release on the channel, such as **vovk-ajv** without a beta, is added at its `latest` version.
