@@ -71,25 +71,20 @@ async function withRegistry(registryUrl: string, run: () => Promise<void>) {
 await describe('updateDependenciesWithoutInstalling', async () => {
   await it('Takes the latest version of a package without the channel', async () => {
     await createProject(projectDir, { 'package.json': { name: 'app', version: '1.0.0' } });
-    const fetchMock = mock.method(globalThis, 'fetch', async (url: string) => {
-      const name = decodeURIComponent(new URL(url).pathname.slice(1));
-      return new Response(JSON.stringify({ 'dist-tags': distTags[name], versions: {} }));
-    });
-    // test runs use the packages of this repo, the registry is what this test is about
-    const nodeEnv = process.env.NODE_ENV;
-    process.env.NODE_ENV = 'production';
+    const registry = await startRegistry(distTags);
 
     try {
-      await updateDependenciesWithoutInstalling({
-        log,
-        dir: projectDir,
-        dependencyNames: ['vovk', 'vovk-ajv'],
-        devDependencyNames: ['vovk-cli', 'vovk-python'],
-        channel: 'beta',
-      });
+      await withRegistry(registry.url, () =>
+        updateDependenciesWithoutInstalling({
+          log,
+          dir: projectDir,
+          dependencyNames: ['vovk', 'vovk-ajv'],
+          devDependencyNames: ['vovk-cli', 'vovk-python'],
+          channel: 'beta',
+        })
+      );
     } finally {
-      process.env.NODE_ENV = nodeEnv;
-      fetchMock.mock.restore();
+      await registry.close();
     }
 
     const { dependencies, devDependencies } = JSON.parse(

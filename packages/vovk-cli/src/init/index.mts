@@ -114,6 +114,7 @@ export class Init {
       }
     }
 
+    let depsFailed = false;
     if (!dryRun && pkgJson) {
       let depsUpdated = false;
       const packageManager = getPackageManager({
@@ -137,6 +138,7 @@ export class Init {
 
         depsUpdated = true;
       } catch (e) {
+        depsFailed = true;
         const error = e as Error;
         logUpdateDependenciesError({
           log,
@@ -209,6 +211,11 @@ export class Init {
       log.error(
         `Failed to create config: ${(error as Error).message}. Please, refer to the documentation at https://vovk.dev/config`
       );
+    }
+
+    // thrown last, so the other steps still run and only the install is left to the user
+    if (depsFailed) {
+      throw new Error('The dependencies were not added to package.json, install them with the command above');
     }
   }
 

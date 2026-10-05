@@ -4,7 +4,7 @@ import chalk from 'chalk';
 import type { PackageJson } from 'type-fest';
 import type { InitOptions } from '../types.mjs';
 import type { getLogger } from '../utils/get-logger.mjs';
-import { getNPMPackageMetadata, type NpmPackageMetadata } from '../utils/get-npm-package-metadata.mjs';
+import { getNPMPackageMetadata } from '../utils/get-npm-package-metadata.mjs';
 
 /** Root of the monorepo packages directory (…/packages) resolved from the compiled CLI location (dist/init/). */
 const packagesRoot = path.resolve(import.meta.dirname, '../../..');
@@ -68,14 +68,7 @@ async function updateDeps({
         packageJson[key][name] = version;
         return;
       }
-      let metadata: NpmPackageMetadata;
-
-      try {
-        metadata = await getNPMPackageMetadata(name);
-      } catch (error) {
-        log.error(`Failed to fetch metadata for package ${name}@${channel ?? 'latest'}: ${error}`);
-        return;
-      }
+      const metadata = await getNPMPackageMetadata(name);
       const isVovk = name.startsWith('vovk');
       const tag = isVovk ? (channel ?? 'latest') : 'latest';
       const channelVersion = metadata['dist-tags'][tag];
@@ -83,8 +76,7 @@ async function updateDeps({
       const publishedVersion = channelVersion ?? metadata['dist-tags'].latest;
 
       if (!publishedVersion) {
-        log.error(`Package ${name} has no "${tag}" or "latest" version on npm`);
-        return;
+        throw new Error(`Package ${name} has no "${tag}" or "latest" version`);
       }
 
       if (!channelVersion) {
