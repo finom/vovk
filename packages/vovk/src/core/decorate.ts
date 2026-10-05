@@ -1,4 +1,5 @@
 import type { KnownAny } from '../types/utils.js';
+import { decoratorMiddlewares } from './create-decorator.js';
 
 /**
  * Metadata stored on a handler by HTTP decorators and custom decorators when used outside decorator context (via decorate).
@@ -9,6 +10,23 @@ export type DecorateMetadata = {
   options?: KnownAny;
   decoratorAppliers?: ((controller: KnownAny, propertyKey: string) => void)[];
 };
+
+const decoratedControllers = new WeakSet<object>();
+
+/**
+ * Applies the decorators decorate() keeps on the methods of a controller, bottom-up as stacked decorators are applied.
+ * Runs once per controller, called by initSegment and deriveTools when they get the class.
+ */
+export function applyDecorateDecorators(controller: KnownAny) {
+  if (decoratedControllers.has(controller)) return;
+  decoratedControllers.add(controller);
+  for (const key of Object.getOwnPropertyNames(controller)) {
+    const appliers = (controller[key]?._decorateMetadata as DecorateMetadata | undefined)?.decoratorAppliers ?? [];
+    for (let i = appliers.length - 1; i >= 0; i--) {
+      appliers[i](controller, key);
+    }
+  }
+}
 
 /**
  * Applies decorators without decorator syntax; `.handle()` registers the handler
@@ -62,6 +80,16 @@ export function decorate(...args: unknown[]): KnownAny {
 
       for (const decoratorFn of decoratorFns) {
         handler._decorateMetadata.decoratorAppliers.push(decoratorFn);
+      }
+
+      // until the decorators are applied to the class, fn() runs the middlewares here, so no guard is skipped
+      const middlewares = decoratorFns.flatMap((decoratorFn) => decoratorMiddlewares.get(decoratorFn) ?? []);
+      if (middlewares.length) {
+        handler.wrapper = middlewares.reduceRight(
+          (next: (req: unknown, params: unknown) => unknown, middleware) => (req: unknown, params: unknown) =>
+            middleware.handler.call(undefined, req, async () => await next(req, params), ...middleware.args),
+          (req: unknown, params: unknown) => handler(req, params)
+        );
       }
 
       return handler;

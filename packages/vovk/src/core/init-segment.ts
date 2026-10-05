@@ -1,9 +1,9 @@
 import type { VovkController } from '../types/core.js';
 import type { HttpMethod } from '../types/enums.js';
 import type { VovkRequest } from '../types/request.js';
-import type { KnownAny, StaticClass } from '../types/utils.js';
+import type { StaticClass } from '../types/utils.js';
 import { trimPath } from '../utils/trim-path.js';
-import type { DecorateMetadata } from './decorate.js';
+import { applyDecorateDecorators } from './decorate.js';
 import { getSchema } from './get-schema.js';
 import { getCatchAllPath, vovkApp } from './vovk-app.js';
 
@@ -36,16 +36,7 @@ export const initSegment = (options: {
     controller._onSuccess = options?.onSuccess;
     controller._onBefore = options?.onBefore;
 
-    // Apply deferred decorate() decorator appliers in reverse order (bottom-up, matching stacked decorator semantics)
-    for (const key of Object.getOwnPropertyNames(controller)) {
-      const appliers = ((controller[key] as KnownAny)?._decorateMetadata as DecorateMetadata | undefined)
-        ?.decoratorAppliers;
-      if (appliers) {
-        for (let i = appliers.length - 1; i >= 0; i--) {
-          appliers[i](controller, key);
-        }
-      }
-    }
+    applyDecorateDecorators(controller);
 
     // Re-clone metadata if this controller extends another registered controller
     // (cloneControllerMetadata() runs at class-definition time, before decorate() metadata is applied)

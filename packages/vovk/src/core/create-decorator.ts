@@ -5,6 +5,14 @@ import { applyDecoratorAdapter } from './apply-decorator-adapter.js';
 
 type Next = () => Promise<unknown>;
 
+type Middleware = {
+  handler: (this: VovkController | undefined, req: unknown, next: Next, ...args: unknown[]) => unknown;
+  args: unknown[];
+};
+
+// the middleware of each decorator a createDecorator() factory makes, which decorate() runs before the class is known
+export const decoratorMiddlewares = new WeakMap<object, Middleware>();
+
 /**
  * Creates a custom decorator for Vovk controllers.
  * @see https://vovk.dev/decorator
@@ -24,7 +32,7 @@ export function createDecorator<TArgs extends unknown[], TRequest = VovkRequest>
     | undefined
 ) {
   return function decoratorCreator(...args: TArgs) {
-    return function decorator(target: KnownAny, propertyKeyOrContext?: unknown): KnownAny {
+    const decorator = function decorator(target: KnownAny, propertyKeyOrContext?: unknown): KnownAny {
       return applyDecoratorAdapter(target, propertyKeyOrContext, applyDecorator);
 
       function applyDecorator(controller: VovkController, propertyKey: string) {
@@ -84,5 +92,7 @@ export function createDecorator<TArgs extends unknown[], TRequest = VovkRequest>
         };
       }
     };
+    if (handler) decoratorMiddlewares.set(decorator, { handler: handler as Middleware['handler'], args });
+    return decorator;
   };
 }
