@@ -80,7 +80,7 @@ export default vovkConfig;
 
 There are two ways to run Vovk.ts and the Next.js server together: explicitly and implicitly. The explicit option uses the `concurrently` package to run both processes (you must set `PORT`). The implicit option lets the Vovk.ts CLI start Next.js for you; in that case, **vovk-cli** assigns the port automatically.
 
-The `prebuild` script runs `vovk generate` before `next build` so the client library is generated ahead of the Next.js build.
+The `prebuild` script runs `vovk generate` before `next build` so the client library is generated ahead of the Next.js build. Yarn 2+ doesn't run `pre` scripts: there, use `"build": "vovk generate && next build"` instead.
 
 <Tabs items={['Explicit', 'Implicit']} >
   <Tabs.Tab>
