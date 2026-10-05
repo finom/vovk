@@ -1873,4 +1873,31 @@ describe('Runtime sweep', () => {
       deepStrictEqual(await own.json(), { from: 'child' });
     });
   });
+
+  describe('Form data from another realm', () => {
+    it('Keeps an uploaded file the global File class does not recognize', async () => {
+      class UploadController {
+        static upload = procedure({ contentType: 'multipart/form-data' }).handle(async (req) => {
+          const { file } = (await req.vovk.body()) as { file: unknown };
+          return { type: typeof file, size: file instanceof Blob ? file.size : null };
+        });
+      }
+      post('upload')(UploadController, 'upload');
+      const handlers = initSegment({ segmentName: 'realm-upload', controllers: { UploadController } });
+      const form = new FormData();
+      form.append('file', new Blob(['hello']), 'hello.txt');
+      // the edge runtime of Next.js 15.0 hands out form files that are Blobs but not instances of its global File
+      const { File: NativeFile } = globalThis;
+      globalThis.File = class File extends Blob {} as unknown as typeof NativeFile;
+
+      try {
+        const response = await call(handlers, 'POST', 'upload', { body: form });
+
+        strictEqual(response.status, 200);
+        deepStrictEqual(await response.json(), { type: 'object', size: 5 });
+      } finally {
+        globalThis.File = NativeFile;
+      }
+    });
+  });
 });
