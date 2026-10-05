@@ -1,4 +1,4 @@
-import { cookies } from 'next/headers';
+import { headers } from 'next/headers';
 import { get } from 'vovk';
 
 export default class CustomerController {
@@ -6,7 +6,7 @@ export default class CustomerController {
   static async getMessage() {
     const subdomains = Object.fromEntries(
       new URLSearchParams(
-        (await cookies()).get('x-subdomains')?.value ?? '',
+        (await headers()).get('x-subdomains') ?? '',
       ).entries(),
     );
 
