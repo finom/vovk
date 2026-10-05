@@ -127,7 +127,7 @@ Note that client-side validation does not fully support the OpenAPI-compatible `
 
 ## URL-Encoded Form Data
 
-Set `contentType` to `'application/x-www-form-urlencoded'` to accept URL-encoded form submissions. The body is parsed the same way as `multipart/form-data`, but the client `body` type also accepts `URLSearchParams{:ts}`. When the procedure doesn't also accept `multipart/form-data`, an object body is sent as `URLSearchParams{:ts}`.
+Set `contentType` to `'application/x-www-form-urlencoded'` to accept URL-encoded form submissions. The body is parsed the same way as `multipart/form-data`, but the client `body` type also accepts `URLSearchParams{:ts}`. When the procedure doesn't also accept `multipart/form-data`, an object body, or a `FormData{:ts}` without files, is sent as `URLSearchParams{:ts}`.
 
 ```ts showLineNumbers copy {7}
 import { z } from 'zod';

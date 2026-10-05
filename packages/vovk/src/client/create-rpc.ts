@@ -83,6 +83,14 @@ const toFormBody = (
   return form;
 };
 
+// a FormData without files goes urlencoded, as an object does, when the procedure takes no multipart
+const toURLEncodedForm = (form: FormData, contentTypes: string[]) =>
+  contentTypes.includes('application/x-www-form-urlencoded') &&
+  !contentTypes.includes('multipart/form-data') &&
+  !Array.from(form.values()).some((value) => value instanceof Blob)
+    ? new URLSearchParams(Array.from(form.entries()) as [string, string][])
+    : form;
+
 // a module promise, as from import('vovk-ajv'), gives its validateOnClient export
 const resolveValidateOnClient = async <OPTS>(
   validateOnClient: VovkValidateOnClient<OPTS> | Promise<{ validateOnClient: VovkValidateOnClient<OPTS> }> | undefined
@@ -191,7 +199,11 @@ export const createRPC = <T, OPTS extends Record<string, KnownAny> = VovkFetcher
         (!contentTypes.some(isJSONContentType) || holdsBlob(input.body))
           ? input.body
           : null;
-      const body = formSource ? toFormBody(formSource, contentTypes, styled?.appendFormField) : input.body;
+      const body = formSource
+        ? toFormBody(formSource, contentTypes, styled?.appendFormField)
+        : input.body instanceof FormData
+          ? toURLEncodedForm(input.body, contentTypes)
+          : input.body;
 
       const validate: Parameters<typeof fetcher>[0]['validate'] = async (
         validationInput,
