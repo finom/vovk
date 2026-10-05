@@ -1,5 +1,7 @@
 import fs from 'node:fs/promises';
+import { createRequire, isBuiltin } from 'node:module';
 import path from 'node:path';
+import { pathToFileURL } from 'node:url';
 import TOML from '@iarna/toml';
 import ejs from 'ejs';
 import _ from 'lodash';
@@ -39,6 +41,20 @@ export function toUnderscoredPackageName(name: string | undefined): string {
   const underscored = name?.replace(/^@/, '').replace(/[^A-Za-z0-9_]/g, '_') || 'my_package_name';
   if (/^\d/.test(underscored)) return `pkg_${underscored}`;
   return KEYWORDS.has(underscored) ? `${underscored}_pkg` : underscored;
+}
+
+// a module a template names in its front matter comes from the project, a global or npx vovk-cli can't reach it;
+// vovk itself stays the CLI's own, which the built-in templates expect
+async function importTemplateModule(specifier: string, cwd: string): Promise<unknown> {
+  let resolved: string | undefined;
+  if (!isBuiltin(specifier) && !/^vovk(\/|$)/.test(specifier)) {
+    try {
+      resolved = createRequire(path.join(cwd, 'package.json')).resolve(specifier);
+    } catch {
+      // not in the project
+    }
+  }
+  return import(resolved ? pathToFileURL(resolved).href : specifier);
 }
 
 export function normalizeOutTemplatePath(out: string, packageJson: PackageJson): string {
@@ -249,7 +265,7 @@ export async function renderOneClientFile({
 
   if (Array.isArray(data.imports)) {
     for (const imp of data.imports) {
-      t.imports[imp] = await import(imp);
+      t.imports[imp] = await importTemplateModule(imp, cwd);
     }
   }
 
