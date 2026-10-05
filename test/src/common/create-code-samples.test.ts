@@ -1235,6 +1235,97 @@ const response = await MixedFormRPC.uploadProfile({
     });
   });
 
+  describe('Descriptions over several lines', () => {
+    // the code of a sample: its comments and string literals left out, a comment ends where its language ends a line
+    const lineBreaks = { ts: '\n\r\u2028\u2029', py: '\n\r', rs: '\n' };
+    function codeOf(source: string, language: 'ts' | 'py' | 'rs'): string {
+      const lineComment = language === 'py' ? '#' : '//';
+      let code = '';
+      let i = 0;
+      while (i < source.length) {
+        if (source.startsWith(lineComment, i)) {
+          while (i < source.length && !lineBreaks[language].includes(source[i])) i++;
+        } else if (language !== 'py' && source.startsWith('/*', i)) {
+          // a Rust block comment nests, a TypeScript one ends at the first */
+          let depth = 0;
+          do {
+            if (source.startsWith('/*', i)) {
+              depth = language === 'rs' ? depth + 1 : 1;
+              i += 2;
+            } else if (source.startsWith('*/', i)) {
+              depth--;
+              i += 2;
+            } else i++;
+          } while (depth > 0 && i < source.length);
+        } else if (source[i] === '"' || source[i] === "'") {
+          const quote = source[i++];
+          while (i < source.length && source[i] !== quote) i += source[i] === '\\' ? 2 : 1;
+          i++;
+          code += '""';
+        } else code += source[i++];
+      }
+      return code;
+    }
+
+    const controllerSchema: VovkControllerSchema = { rpcModuleName: 'ThingRPC', prefix: 'things', handlers: {} };
+    const objectWith = (description: string) =>
+      ({
+        type: 'object',
+        description,
+        properties: {
+          name: { type: 'string', description },
+          // a value inside a block comment, as the output samples are written
+          note: { type: 'string', example: '*/ PWNED() /*' },
+        },
+        required: ['name', 'note'],
+      }) as VovkJSONSchemaBase;
+    const formWith = (description: string) =>
+      ({
+        type: 'object',
+        'x-contentType': ['multipart/form-data'],
+        properties: {
+          file: { type: 'string', format: 'binary', description },
+          files: { type: 'array', items: { type: 'string', format: 'binary' }, description },
+          name: { type: 'string', description },
+        },
+        required: ['file', 'files', 'name'],
+      }) as VovkJSONSchemaBase;
+    const samplesWith = (description: string) =>
+      [
+        { body: objectWith(description), query: objectWith(description), output: objectWith(description) },
+        { iteration: objectWith(description) },
+        { body: formWith(description) },
+      ].map((validation) =>
+        createCodeSamples({
+          handlerName: 'updateThing',
+          handlerSchema: { httpMethod: 'POST', path: 'thing', validation },
+          controllerSchema,
+          config: {},
+        })
+      );
+
+    test('every line of a description stays in its comment', () => {
+      for (const lineBreak of ['\n', '\r\n', '\r', '\u2028', '\u2029']) {
+        for (const samples of samplesWith(`line one${lineBreak}PWNED()`)) {
+          for (const language of ['ts', 'py', 'rs'] as const) {
+            assert.ok(
+              !codeOf(samples[language], language).includes('PWNED'),
+              `${language} ${JSON.stringify(lineBreak)}:\n${samples[language]}`
+            );
+          }
+        }
+      }
+    });
+
+    test('a description or a value in a block comment does not end it', () => {
+      for (const samples of samplesWith('x */ PWNED() /* y')) {
+        for (const language of ['ts', 'py', 'rs'] as const) {
+          assert.ok(!codeOf(samples[language], language).includes('PWNED'), `${language}:\n${samples[language]}`);
+        }
+      }
+    });
+  });
+
   describe('Method names alike in snake_case', () => {
     // the Python and Rust clients name the methods of a module in schema order, a taken name gets the first free suffix
     const handlers = {

@@ -11,6 +11,9 @@ interface SamplerOptions {
   python?: boolean;
 }
 
+// a line comment in a TypeScript, Python or Rust sample ends at one of these
+export const LINE_BREAK = /\r\n|[\n\r\u2028\u2029]/;
+
 // a third-party OpenAPI document may hold a description that isn't a string, a sample leaves it out
 export const getDescription = (schema: VovkJSONSchemaBase | undefined): string | undefined =>
   typeof schema?.description === 'string' ? schema.description : undefined;
@@ -208,7 +211,7 @@ function formatWithDescriptions(
     // Add top-level description for objects
     const description = getDescription(schema);
     if (isTopLevel && schema.type === 'object' && description) {
-      const descLines = description.split('\n');
+      const descLines = description.split(LINE_BREAK);
       formattedEntries.push(`${indentStr}${nestIndentStr}${comment} -----`);
       descLines.forEach((line) => {
         formattedEntries.push(`${indentStr}${nestIndentStr}${comment} ${line.trim()}`);
@@ -228,7 +231,7 @@ function formatWithDescriptions(
       // Add property description if it exists
       const propDescription = getDescription(resolvedPropSchema);
       if (propDescription) {
-        const descLines = propDescription.split('\n');
+        const descLines = propDescription.split(LINE_BREAK);
         descLines.forEach((line) => {
           formattedEntries.push(`${indentStr}${nestIndentStr}${comment} ${line.trim()}`);
         });

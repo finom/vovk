@@ -2,7 +2,7 @@ import type { VovkSamplesConfig } from '../types/config.js';
 import type { VovkControllerSchema, VovkHandlerSchema } from '../types/core.js';
 import type { VovkJSONSchemaBase } from '../types/json-schema.js';
 import { objectToCode } from './object-to-code.js';
-import { getDescription, getSampleValue, schemaToCode } from './schema-to-code.js';
+import { getDescription, getSampleValue, LINE_BREAK, schemaToCode } from './schema-to-code.js';
 
 const toSnakeCase = (str: string) =>
   str
@@ -29,6 +29,15 @@ function getSnakeCaseName(handlerName: string, moduleHandlerNames: string[], tak
 }
 
 const getIndentSpaces = (level: number): string => ' '.repeat(level);
+
+// a description in a line comment: every line after a break starts the comment again
+const commentText = (description: string, linePrefix: string) => description.split(LINE_BREAK).join(`\n${linePrefix}`);
+
+// text in a /* */ comment: */ would end the comment, and in Rust /* would open a nested one
+const inBlockComment = (text: string, nests = false) => {
+  const unclosed = text.replace(/\*\//g, '*\\/');
+  return nests ? unclosed.replace(/\/\*/g, '/\\*') : unclosed;
+};
 
 function isTextFormat(mimeType?: string): boolean {
   if (!mimeType) return false;
@@ -125,7 +134,7 @@ function generateTypeScriptCode({
 
     const desc = getDescription(schema) ?? description;
 
-    return `\n${desc ? `// ${desc}\n` : ''}formData.append("${key}", ${sampleValue});`;
+    return `\n${desc ? `// ${commentText(desc, '// ')}\n` : ''}formData.append("${key}", ${sampleValue});`;
   };
 
   const tsArgs = hasArg
@@ -154,7 +163,7 @@ ${
     ? `
 console.log(response); 
 /* 
-${getTsSample(outputValidation, 0)}
+${inBlockComment(getTsSample(outputValidation, 0))}
 */`
     : ''
 }${
@@ -163,7 +172,7 @@ ${getTsSample(outputValidation, 0)}
 for await (const item of response) {
     console.log(item); 
     /*
-    ${getTsSample(iterationValidation)}
+    ${inBlockComment(getTsSample(iterationValidation))}
     */
 }`
     : ''
@@ -210,7 +219,7 @@ function generatePythonCode({
 
       if (target.type === 'string' && target.format === 'binary') {
         acc.push(
-          `${desc ? `${getIndentSpaces(8)}# ${desc}\n` : ''}${getIndentSpaces(8)}('${key}', ${getFileTouple(target)})`
+          `${desc ? `${getIndentSpaces(8)}# ${commentText(desc, `${getIndentSpaces(8)}# `)}\n` : ''}${getIndentSpaces(8)}('${key}', ${getFileTouple(target)})`
         );
       } else if (
         target.type === 'array' &&
@@ -218,7 +227,7 @@ function generatePythonCode({
         typeof target.items !== 'boolean' &&
         target.items.format === 'binary'
       ) {
-        const val = `${desc ? `${getIndentSpaces(8)}# ${desc}\n` : ''}${getIndentSpaces(8)}('${key}', ${getFileTouple(target.items)})`;
+        const val = `${desc ? `${getIndentSpaces(8)}# ${commentText(desc, `${getIndentSpaces(8)}# `)}\n` : ''}${getIndentSpaces(8)}('${key}', ${getFileTouple(target.items)})`;
         acc.push(val, val);
       }
 
@@ -313,7 +322,7 @@ function generateRustCode({
 
     const desc = getDescription(schema) ?? description;
 
-    return `\n${getIndentSpaces(4)}${desc ? `// ${desc}\n` : ''}${getIndentSpaces(4)}.part("${key}", ${sampleValue});`;
+    return `\n${getIndentSpaces(4)}${desc ? `// ${commentText(desc, `${getIndentSpaces(4)}// `)}\n` : ''}${getIndentSpaces(4)}.part("${key}", ${sampleValue});`;
   };
 
   const getHashMapSample = (map: Record<string, unknown>, indent = 4) => {
@@ -355,7 +364,7 @@ async fn main() {${bodyValidation && isForm(bodyValidation) ? `\n  ${getRsFormSa
       ? `\n\nmatch response {
     Ok(output) => println!("{:?}", output),
     /* 
-    output ${getRsOutputSample(outputValidation)} 
+    output ${inBlockComment(getRsOutputSample(outputValidation), true)} 
     */
     Err(e) => println!("error: {:?}", e),
   }`
@@ -370,7 +379,7 @@ async fn main() {${bodyValidation && isForm(bodyValidation) ? `\n  ${getRsFormSa
           Ok(value) => {
             println!("#{}: {:?}", i, value);
             /*
-            #0: iteration ${getRsOutputSample(iterationValidation, 8)}
+            #0: iteration ${inBlockComment(getRsOutputSample(iterationValidation, 8), true)}
             */
             i += 1;
           }
