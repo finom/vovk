@@ -34,7 +34,6 @@ export type {
 } from './types/core.js';
 export { HttpMethod, VovkSchemaIdEnum } from './types/enums.js';
 export type { VovkOperationObject } from './types/operation.js';
-export type { StandardToolV0 } from './types/standard-tool.js';
 export type { IsAny, IsNotAny } from './types/utils.js';
 export type { VovkTypedProcedure } from './types/validation.js';
 export { deepExtend } from './utils/deep-extend.js';

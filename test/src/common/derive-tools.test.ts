@@ -11,12 +11,13 @@ import {
   prefix,
   procedure,
   put,
+  type StandardToolV0,
   ToModelOutput,
   toDownloadResponse,
   type VovkOutput,
 } from 'vovk';
 import { createRPC } from 'vovk/create-rpc';
-import type { MCPModelOutput, StandardToolV0 } from 'vovk/internal';
+import type { MCPModelOutput } from 'vovk/internal';
 import { z } from 'zod';
 
 describe('deriveTools', () => {

@@ -1,7 +1,6 @@
 import { deepStrictEqual, strictEqual } from 'node:assert';
 import { afterEach, beforeEach, describe, it, mock } from 'node:test';
-import { deriveTools, HttpException, HttpStatus, procedure, ToModelOutput } from 'vovk';
-import type { StandardToolV0 } from 'vovk/internal';
+import { deriveTools, HttpException, HttpStatus, procedure, type StandardToolV0, ToModelOutput } from 'vovk';
 
 const tool = {} as StandardToolV0<unknown, unknown, unknown>;
 
