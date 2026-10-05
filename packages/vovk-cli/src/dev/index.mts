@@ -82,6 +82,9 @@ export class VovkDev {
   // accepts the self-signed certificate of next dev --experimental-https; used for the schema requests only
   #selfSignedDispatcher: Agent | null = null;
 
+  // a 404 comes back on every attempt, so it's reported once per URL
+  #notFoundEndpoints = new Set<string>();
+
   constructor({ schemaOut, devHttps, logLevel }: Pick<DevOptions, 'schemaOut' | 'devHttps' | 'logLevel'>) {
     this.#schemaOut = schemaOut || null;
     // null when the flag is omitted so config.devHttps can take effect
@@ -382,6 +385,25 @@ export class VovkDev {
     try {
       const resp = await fetch(endpoint, { dispatcher: devHttps ? this.#getSelfSignedDispatcher() : undefined });
       const text = await resp.text();
+      const shortText = text.length > 2000 ? `${text.slice(0, 2000)}...` : text;
+
+      if (resp.status === 404) {
+        const message = `Schema request to ${chalkHighlightThing(endpoint)} for ${formatLoggedSegmentName(segmentName)} got 404. A basePath in the Next.js config is a likely cause: vovk dev requests the schema without it. Otherwise the segment did not compile, or another server listens on this port.`;
+        if (this.#notFoundEndpoints.has(endpoint)) log.debug(message);
+        else log.warn(message);
+        this.#notFoundEndpoints.add(endpoint);
+        return { isError: true };
+      }
+
+      if (resp.status !== 200) {
+        log.warn(
+          `Schema request to ${chalkHighlightThing(endpoint)} for ${formatLoggedSegmentName(segmentName)} failed with status code ${resp.status} but expected 200.`
+        );
+        log.warn(`Response from ${formatLoggedSegmentName(segmentName)}: ${shortText}`);
+        return { isError: true };
+      }
+
+      this.#notFoundEndpoints.delete(endpoint);
       let json: { schema: VovkSegmentSchema | null };
       try {
         json = JSON.parse(text);
@@ -389,18 +411,7 @@ export class VovkDev {
         log.error(
           `Error parsing JSON from ${chalkHighlightThing(endpoint)} for ${formatLoggedSegmentName(segmentName)}: ${(error as Error)?.message}`
         );
-        log.error(`Response text: ${text.length > 2000 ? `${text.slice(0, 2000)}...` : text}`);
-        return { isError: true };
-      }
-
-      if (resp.status !== 200) {
-        const probableCause = {
-          404: 'the segment did not compile or another server listens on this port',
-        }[resp.status];
-        log.warn(
-          `Schema request to ${chalkHighlightThing(endpoint)} for ${formatLoggedSegmentName(segmentName)} failed with status code ${resp.status} but expected 200.${probableCause ? ` Probable cause: ${probableCause}.` : ''}`
-        );
-        log.warn(`Response from ${formatLoggedSegmentName(segmentName)}: ${text}`);
+        log.error(`Response text: ${shortText}`);
         return { isError: true };
       }
 

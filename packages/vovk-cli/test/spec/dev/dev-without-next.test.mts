@@ -73,6 +73,40 @@ await describe('vovk dev in a project without Next.js', async () => {
     }
   });
 
+  await it('Names the schema URL and a Next.js basePath once when the schema request gets a 404', async () => {
+    // what a Next.js app with a basePath answers at /api/_schema_
+    const thirdRequest = Promise.withResolvers<void>();
+    let requestCount = 0;
+    const server = http.createServer((_req, res) => {
+      if (++requestCount === 3) thirdRequest.resolve();
+      res.writeHead(404, { 'content-type': 'text/html' });
+      res.end('<!DOCTYPE html><html><body>This page could not be found.</body></html>');
+    });
+    await new Promise<void>((resolve) => server.listen(0, resolve));
+    const port = (server.address() as AddressInfo).port;
+    await createProject(projectDir, {
+      'package.json': { name: 'app', version: '1.0.0', type: 'module' },
+      'vovk.config.mjs': `export default ${JSON.stringify({ composedClient: { prettifyClient: false } })};`,
+      'src/app/api/[[...vovk]]/route.ts': '',
+    });
+
+    const dev = startCLI(['dev'], { cwd: projectDir, env: { PORT: String(port) } });
+    try {
+      // the answer to the second request is logged by the time the third one comes
+      await thirdRequest.promise;
+    } finally {
+      await dev.stop();
+      server.closeAllConnections();
+      await new Promise((resolve) => server.close(resolve));
+    }
+
+    const output = dev.getOutput();
+    const reports = output.split('\n').filter((line) => line.includes(`http://localhost:${port}/api/_schema_`));
+    assert.strictEqual(reports.length, 1, output);
+    assert.match(reports[0], /basePath/, output);
+    assert.doesNotMatch(output, /Unexpected token|DOCTYPE/, output);
+  });
+
   await it('Picks up an edit of a .cjs config', async () => {
     const configPath = path.join(projectDir, 'vovk.config.cjs');
     await createProject(projectDir, {
