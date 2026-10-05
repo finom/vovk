@@ -4,17 +4,9 @@ import { describe, it } from 'node:test';
 import { fileURLToPath } from 'node:url';
 import vm from 'node:vm';
 import ts from 'typescript';
-import {
-  createFetcher,
-  HttpException,
-  initSegment,
-  post,
-  prefix,
-  procedure,
-  progressive,
-  type VovkRequest,
-} from 'vovk';
+import { HttpException, initSegment, post, prefix, procedure, progressive, type VovkRequest } from 'vovk';
 import { createRPC } from 'vovk/create-rpc';
+import { createFetcher } from 'vovk/fetcher';
 import { deepExtend, readableStreamToAsyncIterable, type VovkStreamAsyncIterable } from 'vovk/internal';
 import { z } from 'zod';
 import { validateOnClient } from '../../../packages/vovk-ajv/index.js';
