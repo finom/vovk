@@ -62,7 +62,7 @@ const controllers = {
 
 export type Controllers = typeof controllers;
 
-export const { GET, POST, PUT, DELETE, PATCH } = initSegment({
+export const { GET, POST, PATCH, PUT, HEAD, OPTIONS, DELETE } = initSegment({
   controllers,
 });
 ```
@@ -139,7 +139,7 @@ export const maxDuration = 60;
 const controllers = { AdminRPC: AdminController };
 export type Controllers = typeof controllers;
 
-export const { GET, POST, PUT, DELETE, PATCH } = initSegment({
+export const { GET, POST, PATCH, PUT, HEAD, OPTIONS, DELETE } = initSegment({
   segmentName: 'admin',
   controllers,
 });
