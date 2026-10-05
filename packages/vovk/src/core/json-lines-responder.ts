@@ -14,6 +14,14 @@ const HIGH_WATER_MARK = 64 * 1024;
 // past this, so the handler isn't stuck waiting for a read that can't start
 const UNREAD_LIMIT = 16 * 1024 * 1024;
 
+// the digests of notFound(), forbidden() and unauthorized() from next/navigation: once a stream started Next.js can't
+// answer them, so the error line carries their status
+const NAVIGATION_ERROR_LINES: Record<string, StreamAbortMessage> = {
+  'NEXT_HTTP_ERROR_FALLBACK;401': { isError: true, reason: 'Unauthorized', statusCode: HttpStatus.UNAUTHORIZED },
+  'NEXT_HTTP_ERROR_FALLBACK;403': { isError: true, reason: 'Forbidden', statusCode: HttpStatus.FORBIDDEN },
+  'NEXT_HTTP_ERROR_FALLBACK;404': { isError: true, reason: 'Not found', statusCode: HttpStatus.NOT_FOUND },
+};
+
 /**
  * Responder subclass for streaming JSON Lines. @see https://vovk.dev/jsonlines
  * @example
@@ -162,6 +170,10 @@ export class JSONLinesResponder<T> extends Responder {
   }
 
   private toErrorLine(e: unknown) {
+    const digest = (e as { digest?: unknown } | null)?.digest;
+    if (typeof digest === 'string' && Object.hasOwn(NAVIGATION_ERROR_LINES, digest)) {
+      return JSON.stringify(NAVIGATION_ERROR_LINES[digest]);
+    }
     // same rule as a non streaming handler: an error other than an HttpException is internal, and so is status 0,
     // which a client throws for a call that got no response
     if ((!isHttpException(e) || e.statusCode === HttpStatus.NULL) && process.env.NODE_ENV === 'production') {
