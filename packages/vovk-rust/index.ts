@@ -98,7 +98,7 @@ const MAX_TUPLE_LENGTH = 12;
 
 type Schema = VovkJSONSchemaBase;
 
-export type BodyKind = 'none' | 'form' | 'urlencoded' | 'binary' | 'text' | 'json';
+type BodyKind = 'none' | 'form' | 'urlencoded' | 'binary' | 'text' | 'json';
 
 /**
  * Determine the body kind from the schema's x-contentType and format fields.
@@ -181,12 +181,12 @@ export function getBinaryBodyVariants(schema: VovkJSONSchemaBase | undefined): s
 }
 
 // Helper function for indentation
-export function indent(level: number, pad: number = 0): string {
+function indent(level: number, pad: number = 0): string {
   return ' '.repeat(pad + level * 2);
 }
 
 // Generate documentation comments from title and description
-export function generateDocComment(schema: VovkJSONSchemaBase, level: number, pad: number = 0): string {
+function generateDocComment(schema: VovkJSONSchemaBase, level: number, pad: number = 0): string {
   if (!schema?.title && !schema?.description) return '';
 
   const lines = [
@@ -271,7 +271,7 @@ function resolvePointer(ref: string, rootSchema: Schema): Schema | undefined {
 }
 
 // $defs, definitions and components/schemas entries all become top level named types
-export function getNamedSchemas(rootSchema: VovkJSONSchemaBase | undefined): Record<string, VovkJSONSchemaBase> {
+function getNamedSchemas(rootSchema: VovkJSONSchemaBase | undefined): Record<string, VovkJSONSchemaBase> {
   if (!rootSchema || typeof rootSchema !== 'object') return {};
   const components = (rootSchema as { components?: { schemas?: Record<string, Schema> } }).components?.schemas;
   return { ...components, ...rootSchema.definitions, ...rootSchema.$defs };
@@ -330,7 +330,7 @@ function getDirectEdges(rootSchema: Schema): Map<string, Set<string>> {
 }
 
 // a reference needs a Box when its target can reach back to the named type that holds it
-export function refNeedsBox(from: string | null, to: string, rootSchema: VovkJSONSchemaBase): boolean {
+function refNeedsBox(from: string | null, to: string, rootSchema: VovkJSONSchemaBase): boolean {
   if (from === null) return false;
 
   const edges = getDirectEdges(rootSchema);
