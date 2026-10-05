@@ -80,7 +80,9 @@ vars.convertJSONSchemasToRustTypes({
         binary: `RequestBody::Binary(body, ${vars.toRustString(validation?.body?.['x-contentType']?.[0] || 'application/octet-stream')})`,
     }[bodyKind];
 %>
-    pub async fn <%= handlerName %>( 
+<% // without a body the function still takes body: (), every function takes the same arguments
+if (bodyKind === 'none') { %>    #[allow(unused_variables)]
+<% } %>    pub async fn <%= handlerName %>( 
         body: <%- bodyKind === 'form' ? 'reqwest::multipart::Form' : bodyKind !== 'none' ? `${handlerName}_::body` : '()' %>,
         query: <%- validation?.query ? `${handlerName}_::query` : '()' %>,
         params: <%- paramsType %>,
