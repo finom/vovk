@@ -339,30 +339,29 @@ export class VovkDev {
       return;
     }
     const namesOfClasses = getControllerClassNames(code);
-    if (namesOfClasses.length) {
-      const affectedSegments = this.#segments.filter((s) => {
-        const segmentSchema = this.#schemaSegments[s.segmentName];
-        if (!segmentSchema) return false;
-        const controllersByOriginalName = keyBy(
-          segmentSchema.controllers,
-          'originalControllerName' satisfies keyof VovkSegmentSchema['controllers'][string]
-        );
+    const affectedSegments = this.#segments.filter((s) => {
+      const segmentSchema = this.#schemaSegments[s.segmentName];
+      if (!segmentSchema || !namesOfClasses.length) return false;
+      const controllersByOriginalName = keyBy(
+        segmentSchema.controllers,
+        'originalControllerName' satisfies keyof VovkSegmentSchema['controllers'][string]
+      );
 
-        return namesOfClasses.some((name) => segmentSchema.controllers[name] || controllersByOriginalName[name]);
-      });
+      return namesOfClasses.some((name) => segmentSchema.controllers[name] || controllersByOriginalName[name]);
+    });
 
-      if (affectedSegments.length) {
-        log.debug(
-          `A file with controller ${namesOfClasses.join(', ')} have been modified at path "${filePath}". Segment(s) affected: ${JSON.stringify(affectedSegments.map((s) => s.segmentName))}`
-        );
+    if (affectedSegments.length) {
+      log.debug(
+        `A file with controller ${namesOfClasses.join(', ')} have been modified at path "${filePath}". Segment(s) affected: ${JSON.stringify(affectedSegments.map((s) => s.segmentName))}`
+      );
 
-        await Promise.all(affectedSegments.map((segment) => this.#requestSchema(segment.segmentName)));
-      } else {
-        log.debug(`The class ${namesOfClasses.join(', ')} does not belong to any segment`);
-      }
-    } else {
-      log.debug(`The file ${filePath} does not contain any controller`);
+      await Promise.all(affectedSegments.map((segment) => this.#requestSchema(segment.segmentName)));
+      return;
     }
+
+    // a renamed controller, a service or a validation module can change any schema
+    log.debug(`The file ${filePath} holds no controller of a known segment, requesting every segment`);
+    await Promise.all(this.#segments.map((segment) => this.#requestSchema(segment.segmentName)));
   };
 
   #getSelfSignedDispatcher() {
