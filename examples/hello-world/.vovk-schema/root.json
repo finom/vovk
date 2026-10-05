@@ -20,10 +20,7 @@
                   "format": "email",
                   "pattern": "^(?:[A-Za-z0-9_'+\\-]+\\.)*[A-Za-z0-9_'+\\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$",
                   "description": "User email",
-                  "examples": [
-                    "john@example.com",
-                    "jane@example.com"
-                  ]
+                  "examples": ["john@example.com", "jane@example.com"]
                 },
                 "profile": {
                   "type": "object",
@@ -32,33 +29,21 @@
                       "type": "string",
                       "minLength": 2,
                       "description": "User full name",
-                      "examples": [
-                        "John Doe",
-                        "Jane Smith"
-                      ]
+                      "examples": ["John Doe", "Jane Smith"]
                     },
                     "age": {
                       "type": "integer",
                       "minimum": 16,
                       "maximum": 120,
                       "description": "User age",
-                      "examples": [
-                        25,
-                        30
-                      ]
+                      "examples": [25, 30]
                     }
                   },
-                  "required": [
-                    "name",
-                    "age"
-                  ],
+                  "required": ["name", "age"],
                   "description": "User profile object"
                 }
               },
-              "required": [
-                "email",
-                "profile"
-              ],
+              "required": ["email", "profile"],
               "description": "User data object"
             },
             "query": {
@@ -67,17 +52,11 @@
               "properties": {
                 "notify": {
                   "type": "string",
-                  "enum": [
-                    "email",
-                    "push",
-                    "none"
-                  ],
+                  "enum": ["email", "push", "none"],
                   "description": "Notification type"
                 }
               },
-              "required": [
-                "notify"
-              ],
+              "required": ["notify"],
               "description": "Query parameters"
             },
             "params": {
@@ -89,14 +68,10 @@
                   "format": "uuid",
                   "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
                   "description": "User ID",
-                  "examples": [
-                    "123e4567-e89b-12d3-a456-426614174000"
-                  ]
+                  "examples": ["123e4567-e89b-12d3-a456-426614174000"]
                 }
               },
-              "required": [
-                "id"
-              ],
+              "required": ["id"],
               "description": "Path parameters"
             },
             "output": {
@@ -115,19 +90,11 @@
                 },
                 "notify": {
                   "type": "string",
-                  "enum": [
-                    "email",
-                    "push",
-                    "none"
-                  ],
+                  "enum": ["email", "push", "none"],
                   "description": "Notification type"
                 }
               },
-              "required": [
-                "success",
-                "id",
-                "notify"
-              ],
+              "required": ["success", "id", "notify"],
               "additionalProperties": false,
               "description": "Response object"
             }
@@ -157,9 +124,7 @@
                   "description": "Message from the token"
                 }
               },
-              "required": [
-                "message"
-              ],
+              "required": ["message"],
               "additionalProperties": false,
               "description": "Streamed token object"
             }
