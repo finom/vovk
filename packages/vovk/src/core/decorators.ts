@@ -153,13 +153,25 @@ function createHTTPDecorator<T extends HttpMethod>(httpMethod: T) {
   return decoratorFactoryWithAuto;
 }
 
+// 2018-09 decorators (SWC without experimentalDecorators) get a class descriptor and reach the class in a finisher
+const isClassDescriptor = (target: unknown) =>
+  typeof target === 'object' && target !== null && (target as { kind?: unknown }).kind === 'class';
+
 /**
  * Prefix for all routes in the controller.
  */
 export const prefix = (givenPath = '') => {
   const path = trimPath(givenPath);
 
-  const decorator = (givenTarget: KnownAny, _context?: KnownAny) => {
+  const decorator = (givenTarget: KnownAny, _context?: KnownAny): KnownAny => {
+    if (isClassDescriptor(givenTarget)) {
+      return {
+        ...givenTarget,
+        finisher(klass: KnownAny) {
+          decorator(klass);
+        },
+      };
+    }
     const controller = givenTarget as VovkController;
     controller.prefix = path;
 
@@ -177,7 +189,15 @@ export const clonedControllers = new WeakSet<object>();
  * Clones metadata from parent controller to child controller.
  */
 export function cloneControllerMetadata() {
-  const inherit = function inherit<T extends new (...args: KnownAny[]) => KnownAny>(c: T, _context?: KnownAny) {
+  const inherit = function inherit<T extends new (...args: KnownAny[]) => KnownAny>(c: T, _context?: KnownAny): T {
+    if (isClassDescriptor(c)) {
+      return {
+        ...(c as object),
+        finisher(klass: T) {
+          inherit(klass);
+        },
+      } as unknown as T;
+    }
     const parent = Object.getPrototypeOf(c) as VovkController;
     const controller = c as unknown as VovkController;
     clonedControllers.add(controller);

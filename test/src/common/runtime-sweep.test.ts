@@ -1799,4 +1799,78 @@ describe('Runtime sweep', () => {
       ok(elapsed < 3000, `parsing ${Math.round(body.length / 1024)} KB of repeated keys took ${elapsed} ms`);
     });
   });
+
+  describe('Decorators without experimentalDecorators', () => {
+    // without the flag, SWC (Turbopack) applies 2018-09 decorators: each gets a descriptor, the class reaches a finisher
+    type Descriptor2018 = { finisher?: (klass: unknown) => void };
+    const decorate2018 = (decorator: unknown, descriptor: object) =>
+      ((decorator as (descriptor: object) => Descriptor2018 | undefined)(descriptor) ?? descriptor) as Descriptor2018;
+
+    it('Applies @prefix() given a class descriptor', async () => {
+      class HelloController {
+        static getHello() {
+          return { greeting: 'Hello, World!' };
+        }
+      }
+      const results = [
+        decorate2018(get('greeting'), {
+          kind: 'method',
+          key: 'getHello',
+          placement: 'static',
+          descriptor: Object.getOwnPropertyDescriptor(HelloController, 'getHello'),
+        }),
+        decorate2018(prefix('greetings'), { kind: 'class', elements: [] }),
+      ];
+      for (const { finisher } of results) finisher?.(HelloController);
+      const handlers = initSegment({ segmentName: 'decorators-2018', controllers: { HelloRPC: HelloController } });
+
+      const response = await call(handlers, 'GET', 'greetings/greeting');
+
+      strictEqual(response.status, 200);
+      deepStrictEqual(await response.json(), { greeting: 'Hello, World!' });
+    });
+
+    it('Applies @cloneControllerMetadata() given a class descriptor', async () => {
+      class ParentController {
+        static getA() {
+          return { from: 'parent' };
+        }
+      }
+      decorate2018(get('a'), {
+        kind: 'method',
+        key: 'getA',
+        placement: 'static',
+        descriptor: Object.getOwnPropertyDescriptor(ParentController, 'getA'),
+      }).finisher?.(ParentController);
+      class ChildController extends ParentController {
+        static getB() {
+          return { from: 'child' };
+        }
+      }
+      // the member finishers run before the class ones, as in the 2018-09 helper
+      const results = [
+        decorate2018(get('b'), {
+          kind: 'method',
+          key: 'getB',
+          placement: 'static',
+          descriptor: Object.getOwnPropertyDescriptor(ChildController, 'getB'),
+        }),
+        decorate2018(cloneControllerMetadata(), { kind: 'class', elements: [] }),
+      ];
+      for (const { finisher } of results) finisher?.(ChildController);
+      // the parent is in no segment: only the clone serves its route
+      const handlers = initSegment({
+        segmentName: 'decorators-2018-clone',
+        controllers: { ChildRPC: ChildController },
+      });
+
+      const inherited = await call(handlers, 'GET', 'a');
+      const own = await call(handlers, 'GET', 'b');
+
+      strictEqual(inherited.status, 200);
+      deepStrictEqual(await inherited.json(), { from: 'parent' });
+      strictEqual(own.status, 200);
+      deepStrictEqual(await own.json(), { from: 'child' });
+    });
+  });
 });
