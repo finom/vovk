@@ -178,7 +178,7 @@ Augments the generated OpenAPI schema. You can provide `info`, `servers`, and ot
 
 #### `reExports: Record<string, string>`
 
-Re-exports variables from other modules. Keys list the identifiers to re-export; values are module paths. Identifiers are placed inside curly braces, and paths are resolved relative to the output directory. This is useful when you want to re-export additional items alongside generated RPC modules (including the [bundled](/bundle) package).
+Re-exports variables from other modules. Keys list the identifiers to re-export; values are module paths. Identifiers are placed inside curly braces. A path that starts with `.` is relative to the project root, like the other paths of the config, and is rewritten relative to each generated client's folder; any other value, such as a package name, is kept as is. This is useful when you want to re-export additional items alongside generated RPC modules (including the [bundled](/bundle) package).
 
 ```js filename="/vovk.config.mjs"
 const config = {
@@ -194,13 +194,13 @@ const config = {
 };
 ```
 
-Will be compiled to:
+With the client in **src/client**, this is compiled to:
 
 ```ts showLineNumbers copy
-export { type MyType } from './src/types';
-export { MyClass, myFunction } from './src/utils';
-export { MyComponent as RenamedComponent } from './src/components';
-export { default as MyDefault } from './src/default-export';
+export { type MyType } from '../types';
+export { MyClass, myFunction } from '../utils';
+export { MyComponent as RenamedComponent } from '../components';
+export { default as MyDefault } from '../default-export';
 ```
 
 ```ts showLineNumbers copy
