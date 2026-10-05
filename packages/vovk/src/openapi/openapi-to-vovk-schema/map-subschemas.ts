@@ -4,7 +4,13 @@ const SUBSCHEMA_KEYWORDS = new Set([
   'items', 'prefixItems', 'additionalItems', 'contains', 'additionalProperties', 'unevaluatedItems',
   'unevaluatedProperties', 'propertyNames', 'not', 'if', 'then', 'else', 'allOf', 'anyOf', 'oneOf',
 ]);
-const SUBSCHEMA_MAP_KEYWORDS = new Set(['properties', 'patternProperties', 'dependentSchemas', '$defs', 'definitions']);
+export const SUBSCHEMA_MAP_KEYWORDS = new Set([
+  'properties',
+  'patternProperties',
+  'dependentSchemas',
+  '$defs',
+  'definitions',
+]);
 
 export const mapValues = <T>(value: object, fn: (item: unknown) => T): Record<string, T> =>
   Object.fromEntries(Object.entries(value).map(([key, item]) => [key, fn(item)]));

@@ -262,6 +262,52 @@ describe('openAPIToVovkSchema — untrusted x-tsType', () => {
     );
   });
 
+  it('keeps a property, a pattern and a definition named x-tsType', () => {
+    // a key of properties, patternProperties or $defs is a name; the keyword inside each is still dropped
+    const evil = { type: 'string', 'x-tsType': payload };
+    const named = {
+      type: 'object',
+      properties: { 'x-tsType': evil, properties: evil, name: { type: 'string' } },
+      patternProperties: { 'x-tsType': evil },
+      $defs: { 'x-tsType': evil },
+      required: ['x-tsType', 'name'],
+    };
+    const schema = openAPIToVovkSchema({
+      apiRoot: 'https://api.example',
+      source: {
+        object: {
+          openapi: '3.1.0',
+          info: { title: 'Names', version: '1.0.0' },
+          paths: {
+            '/thing': {
+              post: {
+                operationId: 'createThing',
+                requestBody: { content: { 'application/json': { schema: { $ref: '#/components/schemas/Named' } } } },
+                responses: { '200': { content: { 'application/json': { schema: named } } } },
+              },
+            },
+          },
+          components: { schemas: { Named: named } },
+        },
+      },
+      getModuleName: () => 'Names',
+      getMethodName: ({ operationObject }: { operationObject: { operationId?: string } }) =>
+        operationObject.operationId ?? 'op',
+      segmentName: 'api',
+    } as unknown as Parameters<typeof openAPIToVovkSchema>[0]);
+
+    const stripped = { type: 'string' };
+    const component = schema.segments.api.meta?.openAPIObject?.components?.schemas?.Named as Obj;
+    const { body, output } = schema.segments.api.controllers.Names.handlers.createThing.validation as Obj;
+    for (const copy of [component, body.$defs.Named, output]) {
+      deepStrictEqual(copy.properties, { 'x-tsType': stripped, properties: stripped, name: { type: 'string' } });
+      deepStrictEqual(copy.required, ['x-tsType', 'name']);
+      deepStrictEqual(copy.patternProperties, { 'x-tsType': stripped });
+      deepStrictEqual(copy.$defs, { 'x-tsType': stripped });
+    }
+    ok(!collectTsTypes(schema).some((value) => value.includes('PWNED')), 'no x-tsType from the spec survives');
+  });
+
   it('still sets its own x-tsType for component refs', () => {
     const tsTypes = collectTsTypes(build());
     ok(

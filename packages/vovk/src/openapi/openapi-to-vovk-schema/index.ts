@@ -17,7 +17,7 @@ import type { VovkJSONSchemaBase } from '../../types/json-schema.js';
 import type { ContentType } from '../../types/validation.js';
 import { applyComponentsSchemas } from './apply-components-schemas.js';
 import { inlineRefs } from './inline-refs.js';
-import { mapSubschemas } from './map-subschemas.js';
+import { mapSubschemas, SUBSCHEMA_MAP_KEYWORDS } from './map-subschemas.js';
 import { normalizeOpenAPI30 } from './normalize-openapi-30.js';
 import { pruneComponentsSchemas } from './prune-components-schemas.js';
 
@@ -145,16 +145,16 @@ function resolveServerURL(server: ServerObject | undefined): string | undefined 
   });
 }
 
-// a spec is third party input, its x-tsType would land in the generated client as raw TS
-function stripXTsType<T>(value: T): T {
-  if (Array.isArray(value)) return value.map(stripXTsType) as T;
+// a spec is third party input, its x-tsType would land in the generated client as raw TS;
+// a key of a map such as properties is a name, not the keyword
+function stripXTsType<T>(value: T, isNameMap = false): T {
+  if (Array.isArray(value)) return value.map((item) => stripXTsType(item)) as T;
   if (!value || typeof value !== 'object') return value;
-  const result: Record<string, unknown> = {};
-  for (const [key, val] of Object.entries(value)) {
-    if (key === 'x-tsType') continue;
-    result[key] = stripXTsType(val);
-  }
-  return result as T;
+  return Object.fromEntries(
+    Object.entries(value)
+      .filter(([key]) => isNameMap || key !== 'x-tsType')
+      .map(([key, item]) => [key, stripXTsType(item, !isNameMap && SUBSCHEMA_MAP_KEYWORDS.has(key))])
+  ) as T;
 }
 
 export function openAPIToVovkSchema({
