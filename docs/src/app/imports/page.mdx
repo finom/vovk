@@ -67,7 +67,7 @@ export default config;
 
 ## `fetcher`
 
-The `fetcher` prepares handlers, performs client-side validation, issues HTTP requests, differentiates content types (JSON, [JSON Lines](/streaming), or other `Response` types), and returns data in the appropriate format.
+The `fetcher` prepares handlers, performs client-side validation, issues HTTP requests, differentiates content types (JSON, [JSON Lines](/jsonlines), or other `Response` types), and returns data in the appropriate format.
 
 - For `application/json` and any `+json` type, such as `application/problem+json`, it returns the parsed JSON, or `null` for a response without a body, such as a `204` or the answer to a `HEAD` request. An error status throws an `HttpException{:ts}` with the body's `message`, or with the `detail` or `title` of a problem details document.
 - For `application/jsonl` or `application/jsonlines`, it returns a disposable async iterable.

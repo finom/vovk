@@ -23,7 +23,7 @@ This guide walks you through implementing multitenancy in Next.js with a small a
 
 The live example is available at [multitenant.vovk.dev](https://multitenant.vovk.dev/), and the source code is in the [vovk-multitenant-example](https://github.com/finom/vovk/tree/main/examples/multitenant).
 
-Each tenant has its own root API endpoint under that domain’s `/api` path. For example, the customer tenant’s API lives at `customer.example.com/api`, and the admin tenant’s API at `admin.example.com/api`. These root endpoints are implemented as [segments](/segments) and rewritten at [Next.js proxy](https://nextjs.org/docs/app/getting-started/proxy) to the appropriate path based on the tenant subdomain.
+Each tenant has its own root API endpoint under that domain’s `/api` path. For example, the customer tenant’s API lives at `customer.example.com/api`, and the admin tenant’s API at `admin.example.com/api`. These root endpoints are implemented as [segments](/segment) and rewritten at [Next.js proxy](https://nextjs.org/docs/app/getting-started/proxy) to the appropriate path based on the tenant subdomain.
 
 On the frontend, use Next.js [dynamic routes](https://nextjs.org/docs/app/api-reference/file-conventions/dynamic-routes) for tenant‑specific paths. For example, a customer’s dedicated tenant page lives at `src/customer/[customer_name]/page.tsx`, and the admin tenant uses `src/admin/page.tsx`.
 
@@ -118,7 +118,7 @@ Use Next.js [dynamic routes](https://nextjs.org/docs/app/api-reference/file-conv
 
 ## Create Backend API Segments and Controllers
 
-After [setting up a Vovk.ts](/getting-started) app, the simplest approach is to use the Vovk.ts CLI to create segments and controllers. The CLI generates the necessary files so you can focus on business logic.
+After [setting up a Vovk.ts](/quick-install) app, the simplest approach is to use the Vovk.ts CLI to create segments and controllers. The CLI generates the necessary files so you can focus on business logic.
 
 First, create the API segments for each tenant. Each segment handles requests to its root API endpoint.
 
@@ -129,7 +129,7 @@ npx vovk new segment customer # create "customer" segment at src/app/api/custome
 npx vovk new segment customer/pro # create "customer/pro" segment at src/app/api/customer/pro/[[...vovk]]/route.ts
 ```
 
-Read more about Vovk.ts [segments](/segments).
+Read more about Vovk.ts [segments](/segment).
 
 Next, create controllers for each segment. For example, to create `ProductService` and `ProductController` for the root segment in `src/modules/product/`:
 

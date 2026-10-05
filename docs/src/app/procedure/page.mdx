@@ -3,7 +3,7 @@ import { VovkNewDynamic } from './vovk-new-dynamic';
 
 # Controller & Procedure
 
-A **controller** in Vovk.ts is a class that groups endpoint logic as `static` members. The class is initialized (not instantiated) inside a [segment route](/segment) via [`initSegment`](/segment#initsegment) — that's how its members become reachable HTTP endpoints.
+A **controller** in Vovk.ts is a class that groups endpoint logic as `static` members. The class is initialized (not instantiated) inside a [segment route](/segment) via [`initSegment`](/segment#creating-segments) — that's how its members become reachable HTTP endpoints.
 
 A **procedure** is one such member: a single endpoint definition, typically decorated with an HTTP method like `@get()`, `@post()`, `@put()`, `@patch()`, or `@del()`. Vovk.ts supports two authoring styles, both of which compile to real Next.js Route Handlers:
 
