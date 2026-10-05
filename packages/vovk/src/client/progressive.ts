@@ -10,6 +10,17 @@ type PromisifyProperties<T> = {
 
 type TransformUnionToPromises<T> = PromisifyProperties<UnionToIntersection<T>>;
 
+// Promise.withResolvers, which browsers Next.js supports lack: Safari before 17.4, Chrome before 119
+const withResolvers = () => {
+  let resolve: (value: unknown) => void = () => {};
+  let reject: (reason?: unknown) => void = () => {};
+  const promise = new Promise<unknown>((res, rej) => {
+    resolve = res;
+    reject = rej;
+  });
+  return { promise, resolve, reject };
+};
+
 /** Proxy object where each property is a promise resolving once the value arrives from the stream. @see https://vovk.dev/jsonlines */
 export function progressive<T extends (...args: KnownAny[]) => Promise<VovkStreamAsyncIterable<KnownAny>>>(
   fn: T,
@@ -40,7 +51,7 @@ export function progressive<T extends (...args: KnownAny[]) => Promise<VovkStrea
               reg[key].resolve(value);
             }
           } else {
-            const { promise, resolve, reject } = Promise.withResolvers<KnownAny>();
+            const { promise, resolve, reject } = withResolvers();
             reg[key] = { resolve, reject, promise, isSettled: true };
             reg[key].resolve(value);
           }
@@ -79,7 +90,7 @@ export function progressive<T extends (...args: KnownAny[]) => Promise<VovkStrea
         return undefined;
       }
 
-      const { promise, resolve, reject } = Promise.withResolvers();
+      const { promise, resolve, reject } = withResolvers();
       reg[prop] = { resolve, reject, promise, isSettled: false };
 
       // the stream already finished, settle immediately instead of hanging forever
