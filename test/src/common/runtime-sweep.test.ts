@@ -428,6 +428,39 @@ describe('Runtime sweep', () => {
       }
     });
 
+    it('Refuses a decorate() argument that returns a promise in every segment, with no unhandled rejection', async () => {
+      class AsyncMiddlewareController {
+        // a middleware given to decorate() itself, not through createDecorator()
+        static list = decorate(async (req: Request, next: () => Promise<unknown>) => {
+          if (!req.headers.get('authorization')) throw new HttpException(HttpStatus.UNAUTHORIZED, 'No authorization');
+          return next();
+        }, get('list')).handle(async () => []);
+      }
+      const rejections: unknown[] = [];
+      const onRejection = (reason: unknown) => rejections.push(reason);
+      const errors: string[] = [];
+      process.on('unhandledRejection', onRejection);
+      try {
+        for (const segmentName of ['async-middleware', 'async-middleware-again']) {
+          try {
+            initSegment({ segmentName, controllers: { AsyncMiddlewareController } });
+          } catch (error) {
+            errors.push((error as Error).message);
+          }
+        }
+        await wait(20);
+      } finally {
+        process.off('unhandledRejection', onRejection);
+      }
+      deepStrictEqual(
+        rejections.map((reason) => (reason as Error).message),
+        []
+      );
+      const message =
+        'AsyncMiddlewareController.list: decorate() argument 1 returned a promise, so it is no decorator: wrap a middleware with createDecorator()';
+      deepStrictEqual(errors, [message, message]);
+    });
+
     it('Answers a path two controllers of a segment declare with a JSON error and calls onError', async () => {
       const errors: string[] = [];
       class FirstController {

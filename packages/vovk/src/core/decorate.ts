@@ -1,6 +1,8 @@
 import type { KnownAny } from '../types/utils.js';
 import { decoratorFactories, decoratorMiddlewares } from './create-decorator.js';
 
+type DecoratorApplier = (controller: KnownAny, propertyKey: string) => unknown;
+
 /**
  * Metadata stored on a handler by HTTP decorators and custom decorators when used outside decorator context (via decorate).
  */
@@ -8,30 +10,56 @@ export type DecorateMetadata = {
   httpMethod?: string;
   path?: string;
   options?: KnownAny;
-  decoratorAppliers?: ((controller: KnownAny, propertyKey: string) => void)[];
+  decoratorAppliers?: DecoratorApplier[];
 };
 
-const decoratedControllers = new WeakSet<object>();
+// a controller whose decorators failed keeps the error: a decorator applied before it stays, so no segment may serve it
+const decoratedControllers = new WeakMap<object, { error: unknown } | null>();
 // what decorate() returns: a member that still holds it got no .handle() call, so it has no handler and no route
 const unhandledDecorations = new WeakSet<object>();
+
+const isThenable = (value: unknown) =>
+  (typeof value === 'object' || typeof value === 'function') &&
+  value !== null &&
+  typeof (value as { then?: unknown }).then === 'function';
+
+// the position is the decorator's argument of decorate(), which an error names with the member
+function applyDecorator(controller: KnownAny, key: string, decorator: DecoratorApplier, position: number) {
+  const where = `${controller.name}.${key}: decorate() argument ${position}`;
+  const result = decorator(controller, key);
+  if (isThenable(result)) {
+    // a middleware run as a decorator rejects: handled here, so no unhandled rejection is reported
+    Promise.resolve(result).catch(() => {});
+    throw new Error(`${where} returned a promise, so it is no decorator: wrap a middleware with createDecorator()`);
+  }
+}
 
 /**
  * Applies the decorators decorate() keeps on the methods of a controller, bottom-up as stacked decorators are applied.
  * Runs once per controller, called by initSegment and deriveTools when they get the class.
  */
 export function applyDecorateDecorators(controller: KnownAny) {
-  if (decoratedControllers.has(controller)) return;
+  if (decoratedControllers.has(controller)) {
+    const failure = decoratedControllers.get(controller);
+    if (failure) throw failure.error;
+    return;
+  }
   for (const key of Object.getOwnPropertyNames(controller)) {
     if (unhandledDecorations.has(controller[key])) {
       throw new Error(`${controller.name}.${key} has no handler: call .handle() on what decorate() returns`);
     }
   }
-  decoratedControllers.add(controller);
-  for (const key of Object.getOwnPropertyNames(controller)) {
-    const appliers = (controller[key]?._decorateMetadata as DecorateMetadata | undefined)?.decoratorAppliers ?? [];
-    for (let i = appliers.length - 1; i >= 0; i--) {
-      appliers[i](controller, key);
+  decoratedControllers.set(controller, null);
+  try {
+    for (const key of Object.getOwnPropertyNames(controller)) {
+      const appliers = (controller[key]?._decorateMetadata as DecorateMetadata | undefined)?.decoratorAppliers ?? [];
+      for (let i = appliers.length - 1; i >= 0; i--) {
+        applyDecorator(controller, key, appliers[i], i + 1);
+      }
     }
+  } catch (error) {
+    decoratedControllers.set(controller, { error });
+    throw error;
   }
 }
 
