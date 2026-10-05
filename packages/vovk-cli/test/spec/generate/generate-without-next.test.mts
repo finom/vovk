@@ -12,6 +12,29 @@ const projectDir = path.join(process.cwd(), 'tmp_generate_without_next');
 const read = (file: string) => fs.readFile(path.join(projectDir, file), 'utf-8');
 const exists = async (file: string) => !!(await fs.stat(path.join(projectDir, file)).catch(() => null));
 const configFile = (config: object) => `export default ${JSON.stringify(config)};`;
+const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
+// the root segment schema with one controller holding these procedures
+const withHandlers = (handlers: string[], rpcModuleName = 'UserRPC') => ({
+  ...userSegmentSchema,
+  controllers: {
+    [rpcModuleName]: {
+      ...userSegmentSchema.controllers.UserRPC,
+      rpcModuleName,
+      handlers: Object.fromEntries(handlers.map((name) => [name, { httpMethod: 'GET', path: name, validation: {} }])),
+    },
+  },
+});
+
+// polls, so a watcher that gets there later passes too
+async function waitUntil(check: () => Promise<boolean>, timeoutMs = 10_000) {
+  const start = Date.now();
+  while (!(await check())) {
+    if (Date.now() - start > timeoutMs) return false;
+    await sleep(250);
+  }
+  return true;
+}
 const segmentSchema = (segmentName: string, rpcModuleName: string) => ({
   ...userSegmentSchema,
   segmentName,
@@ -817,5 +840,108 @@ imports:
     const { info } = JSON.parse(await read('out/openapi.json'));
     assert.ok(typeof info.version === 'string' && info.version, JSON.stringify(info));
     assert.match(await read('out/pyproject.toml'), /^version = "[^"]+"$/m);
+  });
+
+  await it('Keeps watching the schema folder after it is removed and created again', async () => {
+    await createProject(projectDir, {
+      'package.json': { name: 'app', version: '1.0.0', type: 'module' },
+      'vovk.config.mjs': configFile({ composedClient: { prettifyClient: false } }),
+      'src/app/api/[[...vovk]]/route.ts': '',
+      '.vovk-schema/root.json': userSegmentSchema,
+    });
+
+    const cli = startCLI(['generate', '--watch', '1'], { cwd: projectDir });
+    try {
+      await cli.waitForOutput(/Composed client is generated/, 10_000);
+      // a git switch to a branch without the folder and back
+      await fs.rm(path.join(projectDir, '.vovk-schema'), { recursive: true });
+      await sleep(2000);
+      await fs.mkdir(path.join(projectDir, '.vovk-schema'));
+      await fs.writeFile(path.join(projectDir, '.vovk-schema/root.json'), JSON.stringify(withHandlers(['getUser'])));
+      await sleep(2000);
+      await fs.writeFile(
+        path.join(projectDir, '.vovk-schema/root.json'),
+        JSON.stringify(withHandlers(['getUser'], 'PostRPC'))
+      );
+
+      const isRegenerated = await waitUntil(async () => (await read('src/client/index.ts')).includes('PostRPC'));
+      assert.ok(isRegenerated, cli.getOutput());
+    } finally {
+      await cli.stop();
+    }
+  });
+
+  await it('Regenerates with --watch from the current OpenAPI mixin file of the config', async () => {
+    const petsSpec = (operationIds: string[]) => ({
+      openapi: '3.1.0',
+      info: { title: 'Pets', version: '1.0.0' },
+      servers: [{ url: 'https://pets.example.com' }],
+      paths: Object.fromEntries(
+        operationIds.map((operationId) => [
+          `/${operationId}`,
+          { get: { operationId, responses: { 200: { description: 'OK' } } } },
+        ])
+      ),
+    });
+    await createProject(projectDir, {
+      'package.json': { name: 'app', version: '1.0.0', type: 'module' },
+      'vovk.config.mjs': configFile({
+        composedClient: { prettifyClient: false },
+        outputConfig: {
+          segments: { pets: { openAPIMixin: { source: { file: './pets.json' }, getModuleName: 'PetsRPC' } } },
+        },
+      }),
+      'pets.json': petsSpec(['listPets']),
+      'src/app/api/[[...vovk]]/route.ts': '',
+      '.vovk-schema/root.json': userSegmentSchema,
+    });
+
+    const cli = startCLI(['generate', '--watch', '1'], { cwd: projectDir });
+    try {
+      await cli.waitForOutput(/Composed client is generated/, 10_000);
+      await sleep(1500);
+      await fs.writeFile(path.join(projectDir, 'pets.json'), JSON.stringify(petsSpec(['listPets', 'getOwners'])));
+      await sleep(1500);
+      // and a schema change, which regenerates the client
+      await fs.writeFile(
+        path.join(projectDir, '.vovk-schema/root.json'),
+        JSON.stringify(withHandlers(['getUser'], 'PostRPC'))
+      );
+
+      const isRegenerated = await waitUntil(async () => (await read('src/client/mixins.json')).includes('getOwners'));
+      assert.ok(isRegenerated, await read('src/client/mixins.json'));
+    } finally {
+      await cli.stop();
+    }
+  });
+
+  await it('Writes the newest client when --watch generations overlap', async () => {
+    await createProject(projectDir, {
+      'package.json': { name: 'app', version: '1.0.0', type: 'module' },
+      'vovk.config.mjs': configFile({
+        composedClient: { fromTemplates: ['handlers'], prettifyClient: false },
+        clientTemplateDefs: { handlers: { templatePath: './handlers-template/' } },
+      }),
+      // takes 4 s while a procedure is named "slow", like a big client under prettier on a busy machine
+      'handlers-template/handlers.ts.ejs':
+        "<%- t.getFirstLineBanner() %>\n<% const names = Object.values(t.schema.segments).flatMap((s) => Object.values(s.controllers).flatMap((c) => Object.keys(c.handlers))); if (names.includes('slow')) await new Promise((resolve) => setTimeout(resolve, 4000)); %>export const handlers = <%- JSON.stringify(names) %>;\n",
+      'src/app/api/[[...vovk]]/route.ts': '',
+      '.vovk-schema/root.json': withHandlers(['getUser']),
+    });
+    const schemaFile = path.join(projectDir, '.vovk-schema/root.json');
+
+    const cli = startCLI(['generate', '--watch', '0.5'], { cwd: projectDir });
+    try {
+      await cli.waitForOutput(/Composed client is generated/, 10_000);
+      await sleep(1500);
+      await fs.writeFile(schemaFile, JSON.stringify(withHandlers(['getUser', 'slow'])));
+      await sleep(2000);
+      await fs.writeFile(schemaFile, JSON.stringify(withHandlers(['getUser', 'fast'])));
+      await sleep(7000);
+    } finally {
+      await cli.stop();
+    }
+
+    assert.match(await read('src/client/handlers.ts'), /\["getUser","fast"\]/);
   });
 });
