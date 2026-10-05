@@ -1,6 +1,7 @@
 import assert from 'node:assert';
 import { createRequire } from 'node:module';
 import { describe, test } from 'node:test';
+import ts from 'typescript';
 import type { VovkJSONSchemaBase } from 'vovk';
 import {
   createCodeSamples,
@@ -10,6 +11,70 @@ import {
 } from 'vovk/internal';
 import { toPythonIdentifier } from '../../../packages/vovk-python/index.js';
 import { toRustIdent } from '../../../packages/vovk-rust/index.js';
+
+type Language = 'ts' | 'py' | 'rs';
+
+// where a line ends for a comment in each language
+const lineBreaks = { ts: '\n\r\u2028\u2029', py: '\n\r', rs: '\n' };
+
+// the length of the escape at source[i] in a string literal, 0 when the language doesn't take it
+function escapeLength(source: string, i: number, language: Language): number {
+  const rest = source.slice(i + 1, i + 12);
+  if (language === 'py') {
+    const match = /^(?:u[0-9a-fA-F]{4}|U[0-9a-fA-F]{8}|x[0-9a-fA-F]{2}|[0-7]{1,3}|[\\'"abfnrtv\n])/.exec(rest);
+    return match ? match[0].length + 1 : 0;
+  }
+  const braced = /^u\{([0-9a-fA-F]{1,6})\}/.exec(rest);
+  if (braced) {
+    const codePoint = Number.parseInt(braced[1], 16);
+    // no Rust string holds a lone surrogate
+    const isSurrogate = codePoint >= 0xd800 && codePoint <= 0xdfff;
+    return codePoint <= 0x10ffff && (language === 'ts' || !isSurrogate) ? braced[0].length + 1 : 0;
+  }
+  const match =
+    language === 'rs'
+      ? /^(?:x[0-7][0-9a-fA-F]|[nrt\\0'"\n])/.exec(rest)
+      : /^(?:u[0-9a-fA-F]{4}|x[0-9a-fA-F]{2}|0(?![0-9])|[^0-9xu])/.exec(rest);
+  return match ? match[0].length + 1 : 0;
+}
+
+// the code of a sample, its comments and string literals left out, and the escapes its strings hold that the language
+// doesn't take; a comment ends where its language ends a line, a TypeScript or Python string also at a raw line break
+function lex(source: string, language: Language): { code: string; badEscapes: string[] } {
+  const lineComment = language === 'py' ? '#' : '//';
+  const badEscapes: string[] = [];
+  let code = '';
+  let i = 0;
+  while (i < source.length) {
+    if (source.startsWith(lineComment, i)) {
+      while (i < source.length && !lineBreaks[language].includes(source[i])) i++;
+    } else if (language !== 'py' && source.startsWith('/*', i)) {
+      // a Rust block comment nests, a TypeScript one ends at the first */
+      let depth = 0;
+      do {
+        if (source.startsWith('/*', i)) {
+          depth = language === 'rs' ? depth + 1 : 1;
+          i += 2;
+        } else if (source.startsWith('*/', i)) {
+          depth--;
+          i += 2;
+        } else i++;
+      } while (depth > 0 && i < source.length);
+    } else if (source[i] === '"' || source[i] === "'") {
+      const quote = source[i++];
+      while (i < source.length && source[i] !== quote && (language === 'rs' || !'\n\r'.includes(source[i]))) {
+        if (source[i] === '\\') {
+          const length = escapeLength(source, i, language);
+          if (!length) badEscapes.push(source.slice(i, i + 8));
+          i += length || 2;
+        } else i++;
+      }
+      i++;
+      code += '""';
+    } else code += source[i++];
+  }
+  return { code, badEscapes };
+}
 
 describe('createCodeSamples', () => {
   describe('JSON body with query and params', () => {
@@ -1239,37 +1304,6 @@ const response = await MixedFormRPC.uploadProfile({
   });
 
   describe('Descriptions over several lines', () => {
-    // the code of a sample: its comments and string literals left out, a comment ends where its language ends a line
-    const lineBreaks = { ts: '\n\r\u2028\u2029', py: '\n\r', rs: '\n' };
-    function codeOf(source: string, language: 'ts' | 'py' | 'rs'): string {
-      const lineComment = language === 'py' ? '#' : '//';
-      let code = '';
-      let i = 0;
-      while (i < source.length) {
-        if (source.startsWith(lineComment, i)) {
-          while (i < source.length && !lineBreaks[language].includes(source[i])) i++;
-        } else if (language !== 'py' && source.startsWith('/*', i)) {
-          // a Rust block comment nests, a TypeScript one ends at the first */
-          let depth = 0;
-          do {
-            if (source.startsWith('/*', i)) {
-              depth = language === 'rs' ? depth + 1 : 1;
-              i += 2;
-            } else if (source.startsWith('*/', i)) {
-              depth--;
-              i += 2;
-            } else i++;
-          } while (depth > 0 && i < source.length);
-        } else if (source[i] === '"' || source[i] === "'") {
-          const quote = source[i++];
-          while (i < source.length && source[i] !== quote) i += source[i] === '\\' ? 2 : 1;
-          i++;
-          code += '""';
-        } else code += source[i++];
-      }
-      return code;
-    }
-
     const controllerSchema: VovkControllerSchema = { rpcModuleName: 'ThingRPC', prefix: 'things', handlers: {} };
     const objectWith = (description: string) =>
       ({
@@ -1312,7 +1346,7 @@ const response = await MixedFormRPC.uploadProfile({
         for (const samples of samplesWith(`line one${lineBreak}PWNED()`)) {
           for (const language of ['ts', 'py', 'rs'] as const) {
             assert.ok(
-              !codeOf(samples[language], language).includes('PWNED'),
+              !lex(samples[language], language).code.includes('PWNED'),
               `${language} ${JSON.stringify(lineBreak)}:\n${samples[language]}`
             );
           }
@@ -1323,7 +1357,7 @@ const response = await MixedFormRPC.uploadProfile({
     test('a description or a value in a block comment does not end it', () => {
       for (const samples of samplesWith('x */ PWNED() /* y')) {
         for (const language of ['ts', 'py', 'rs'] as const) {
-          assert.ok(!codeOf(samples[language], language).includes('PWNED'), `${language}:\n${samples[language]}`);
+          assert.ok(!lex(samples[language], language).code.includes('PWNED'), `${language}:\n${samples[language]}`);
         }
       }
     });
@@ -1436,6 +1470,78 @@ const response = await MixedFormRPC.uploadProfile({
           JSON.stringify(handlerName)
         );
       }
+    });
+  });
+
+  describe('Text from the schema in string literals', () => {
+    // what would end a string literal, or make one invalid, in TypeScript, Python or Rust
+    const text = [
+      '"); PWNED(); ("',
+      "'), PWNED(), ('",
+      '\\',
+      '\n PWNED() \r PWNED() \t',
+      // biome-ignore lint/suspicious/noTemplateCurlyInString: what a template literal would run
+      '${PWNED()}',
+      String.fromCharCode(0x01, 0x08, 0x0c, 0x7f, 0x85, 0x2028, 0x202e, 0xd800),
+    ].join('');
+    const controllerSchema: VovkControllerSchema = { rpcModuleName: 'ThingRPC', prefix: 'things', handlers: {} };
+    const samplesOf = (validation: VovkHandlerSchema['validation']) =>
+      createCodeSamples({
+        handlerName: 'updateThing',
+        handlerSchema: { httpMethod: 'POST', path: 'thing', validation },
+        controllerSchema,
+        config: {},
+      });
+    const json = {
+      type: 'object',
+      properties: { [text]: { type: 'string', example: text } },
+      required: [text],
+    } as VovkJSONSchemaBase;
+    const form = {
+      type: 'object',
+      'x-contentType': ['multipart/form-data'],
+      properties: {
+        [text]: { type: 'string', example: text },
+        [`${text}file`]: { type: 'string', format: 'binary', contentMediaType: text },
+        files: { type: 'array', items: { type: 'string', format: 'binary', contentMediaType: text } },
+      },
+      required: [text, `${text}file`, 'files'],
+    } as VovkJSONSchemaBase;
+
+    test('a name, a value or a media type stays inside its string literal', () => {
+      for (const samples of [
+        samplesOf({ body: json, query: json, params: json, output: json }),
+        samplesOf({ iteration: json }),
+        samplesOf({ body: form }),
+      ]) {
+        for (const language of ['ts', 'py', 'rs'] as const) {
+          const { code, badEscapes } = lex(samples[language], language);
+          assert.ok(!code.includes('PWNED'), `${language}:\n${samples[language]}`);
+          assert.deepStrictEqual(badEscapes, [], `${language}:\n${samples[language]}`);
+        }
+        const { diagnostics } = ts.transpileModule(samples.ts, {
+          compilerOptions: { target: ts.ScriptTarget.ESNext, module: ts.ModuleKind.ESNext },
+          reportDiagnostics: true,
+        });
+        assert.deepStrictEqual(
+          diagnostics?.map(({ messageText }) => messageText),
+          [],
+          samples.ts
+        );
+      }
+    });
+
+    test('a media type that is not a string is left out', () => {
+      const formWith = (contentMediaType?: unknown) =>
+        ({
+          type: 'object',
+          'x-contentType': ['multipart/form-data'],
+          properties: {
+            file: { type: 'string', format: 'binary', ...(contentMediaType !== undefined && { contentMediaType }) },
+          },
+          required: ['file'],
+        }) as VovkJSONSchemaBase;
+      assert.deepStrictEqual(samplesOf({ body: formWith(5) }), samplesOf({ body: formWith() }));
     });
   });
 

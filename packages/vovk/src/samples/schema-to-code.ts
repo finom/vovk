@@ -14,6 +14,30 @@ interface SamplerOptions {
 // a line comment in a TypeScript, Python or Rust sample ends at one of these
 export const LINE_BREAK = /\r\n|[\n\r\u2028\u2029]/;
 
+// what toCodeString looks at in JSON: a \u escape, any other escape, and a raw control or bidirectional character
+const CODE_STRING_ESCAPE = /\\u([0-9a-f]{4})|\\.|[\x7f-\x9f\u202a-\u202e\u2066-\u2069]/g;
+
+// a string literal in TypeScript and in Rust: JSON's escapes, with \u{...} for \b, \f and \u00XX, which Rust lacks, and
+// for a control or bidirectional character; U+FFFD for a lone surrogate, which no Rust string holds; TypeScript may
+// take single quotes
+export function toCodeString(value: string, quote: '"' | "'" = '"'): string {
+  const escaped = JSON.stringify(value)
+    .slice(1, -1)
+    .replace(CODE_STRING_ESCAPE, (sequence, hex: string | undefined) => {
+      if (hex) return /^d[89a-f]/.test(hex) ? '\\u{fffd}' : `\\u{${hex}}`;
+      if (sequence === '\\b') return '\\u{8}';
+      if (sequence === '\\f') return '\\u{c}';
+      return sequence.length === 1 ? `\\u{${sequence.charCodeAt(0).toString(16)}}` : sequence;
+    });
+  return quote === '"' ? `"${escaped}"` : `'${escaped.replace(/\\"/g, '"').replace(/'/g, "\\'")}'`;
+}
+
+// a string literal in Python: JSON's escapes are Python's; in single quotes a ' is escaped instead of a "
+export function toPythonString(value: string, quote: '"' | "'" = '"'): string {
+  const json = JSON.stringify(value);
+  return quote === '"' ? json : `'${json.slice(1, -1).replace(/\\"/g, '"').replace(/'/g, "\\'")}'`;
+}
+
 // a third-party OpenAPI document may hold a description that isn't a string, a sample leaves it out
 export const getDescription = (schema: VovkJSONSchemaBase | undefined): string | undefined =>
   typeof schema?.description === 'string' ? schema.description : undefined;
@@ -172,6 +196,8 @@ function formatWithDescriptions(
     return value ? 'True' : 'False';
   }
 
+  if (typeof value === 'string') return python ? toPythonString(value) : toCodeString(value);
+
   // Handle primitives
   if (typeof value !== 'object' || value instanceof Date) {
     return JSON.stringify(value);
@@ -238,7 +264,8 @@ function formatWithDescriptions(
       }
 
       // Format the key
-      const formattedKey = stripQuotes && /^[A-Za-z_$][0-9A-Za-z_$]*$/.test(key) ? key : JSON.stringify(key);
+      const quotedKey = python ? toPythonString(key) : toCodeString(key);
+      const formattedKey = stripQuotes && /^[A-Za-z_$][0-9A-Za-z_$]*$/.test(key) ? key : quotedKey;
 
       // Format the value
       const formattedValue = formatWithDescriptions(

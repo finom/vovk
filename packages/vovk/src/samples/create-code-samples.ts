@@ -3,7 +3,14 @@ import type { VovkControllerSchema, VovkHandlerSchema } from '../types/core.js';
 import type { VovkJSONSchemaBase } from '../types/json-schema.js';
 import { getPythonClassName, getPythonMethodName, getRustFunctionName, getRustModuleName } from './client-names.js';
 import { objectToCode } from './object-to-code.js';
-import { getDescription, getSampleValue, LINE_BREAK, schemaToCode } from './schema-to-code.js';
+import {
+  getDescription,
+  getSampleValue,
+  LINE_BREAK,
+  schemaToCode,
+  toCodeString,
+  toPythonString,
+} from './schema-to-code.js';
 
 const toSnakeCase = (str: string) =>
   str
@@ -14,6 +21,10 @@ const toSnakeCase = (str: string) =>
     .replace(/^_/, ''); // Remove leading underscore
 
 const getIndentSpaces = (level: number): string => ' '.repeat(level);
+
+// a third-party OpenAPI document may hold a media type that isn't a string, a sample leaves it out
+const getContentMediaType = (schema: VovkJSONSchemaBase) =>
+  typeof schema.contentMediaType === 'string' ? schema.contentMediaType : undefined;
 
 // a description in a line comment: every line after a break starts the comment again
 const commentText = (description: string, linePrefix: string) => description.split(LINE_BREAK).join(`\n${linePrefix}`);
@@ -109,18 +120,19 @@ function generateTypeScriptCode({
   const getTsFormAppend = (schema: VovkJSONSchemaBase, key: string, description?: string) => {
     let sampleValue: string;
     if (schema.type === 'string' && schema.format === 'binary') {
-      sampleValue = `new Blob(${isTextFormat(schema.contentMediaType) ? '["text_content"]' : '[binary_data]'}${
-        schema.contentMediaType ? `, { type: "${schema.contentMediaType}" }` : ''
+      const mediaType = getContentMediaType(schema);
+      sampleValue = `new Blob(${isTextFormat(mediaType) ? '["text_content"]' : '[binary_data]'}${
+        mediaType ? `, { type: ${toCodeString(mediaType)} }` : ''
       })`;
     } else if (schema.type === 'object') {
       sampleValue = '"object_unknown"';
     } else {
-      sampleValue = `"${getSampleValue(schema)}"`;
+      sampleValue = toCodeString(String(getSampleValue(schema)));
     }
 
     const desc = getDescription(schema) ?? description;
 
-    return `\n${desc ? `// ${commentText(desc, '// ')}\n` : ''}formData.append("${key}", ${sampleValue});`;
+    return `\n${desc ? `// ${commentText(desc, '// ')}\n` : ''}formData.append(${toCodeString(key)}, ${sampleValue});`;
   };
 
   const tsArgs = hasArg
@@ -129,7 +141,7 @@ ${[
   bodyValidation ? `    body: ${isForm(bodyValidation) ? 'formData' : getTsSample(bodyValidation)},` : null,
   queryValidation ? `    query: ${getTsSample(queryValidation)},` : null,
   paramsValidation ? `    params: ${getTsSample(paramsValidation)},` : null,
-  config?.apiRoot ? `    apiRoot: '${config.apiRoot}',` : null,
+  config?.apiRoot ? `    apiRoot: ${toCodeString(config.apiRoot, "'")},` : null,
   config?.headers
     ? `    init: {
       headers: ${objectToCode(config.headers, { stripQuotes: true, indent: 6, nestingIndent: 4 })}
@@ -141,7 +153,7 @@ ${[
 }`
     : '';
 
-  const TS_CODE = `import { ${rpcName} } from '${packageName}';
+  const TS_CODE = `import { ${rpcName} } from ${toCodeString(packageName, "'")};
 ${bodyValidation && isForm(bodyValidation) ? `${getTsFormSample(bodyValidation)}\n` : ''}
 ${iterationValidation ? 'using' : 'const'} response = await ${rpcName}.${handlerName}(${tsArgs});
 ${
@@ -196,7 +208,8 @@ function generatePythonCode({
       .join('\n');
 
   const getFileTouple = (schema: VovkJSONSchemaBase) => {
-    return `('name.ext', BytesIO(${isTextFormat(schema.contentMediaType) ? '"text_content".encode("utf-8")' : 'binary_data'})${schema.contentMediaType ? `, "${schema.contentMediaType}"` : ''})`;
+    const mediaType = getContentMediaType(schema);
+    return `('name.ext', BytesIO(${isTextFormat(mediaType) ? '"text_content".encode("utf-8")' : 'binary_data'})${mediaType ? `, ${toPythonString(mediaType)}` : ''})`;
   };
   const getPyFiles = (schema: VovkJSONSchemaBase) => {
     return Object.entries(schema.properties ?? {}).reduce((acc, [key, prop]) => {
@@ -205,7 +218,7 @@ function generatePythonCode({
 
       if (target.type === 'string' && target.format === 'binary') {
         acc.push(
-          `${desc ? `${getIndentSpaces(8)}# ${commentText(desc, `${getIndentSpaces(8)}# `)}\n` : ''}${getIndentSpaces(8)}('${key}', ${getFileTouple(target)})`
+          `${desc ? `${getIndentSpaces(8)}# ${commentText(desc, `${getIndentSpaces(8)}# `)}\n` : ''}${getIndentSpaces(8)}(${toPythonString(key, "'")}, ${getFileTouple(target)})`
         );
       } else if (
         target.type === 'array' &&
@@ -213,7 +226,7 @@ function generatePythonCode({
         typeof target.items !== 'boolean' &&
         target.items.format === 'binary'
       ) {
-        const val = `${desc ? `${getIndentSpaces(8)}# ${commentText(desc, `${getIndentSpaces(8)}# `)}\n` : ''}${getIndentSpaces(8)}('${key}', ${getFileTouple(target.items)})`;
+        const val = `${desc ? `${getIndentSpaces(8)}# ${commentText(desc, `${getIndentSpaces(8)}# `)}\n` : ''}${getIndentSpaces(8)}(${toPythonString(key, "'")}, ${getFileTouple(target.items)})`;
         acc.push(val, val);
       }
 
@@ -236,7 +249,7 @@ response = ${rpcName}.${methodName}(${
           pyFilesArg,
           queryValidation ? `    query=${getPySample(queryValidation)},` : null,
           paramsValidation ? `    params=${getPySample(paramsValidation)},` : null,
-          config?.apiRoot ? `    api_root="${config.apiRoot}",` : null,
+          config?.apiRoot ? `    api_root=${toPythonString(config.apiRoot)},` : null,
           config?.headers
             ? `    headers=${objectToCode(config.headers, { stripQuotes: false, indent: 4, nestingIndent: 4 })},`
             : null,
@@ -293,28 +306,29 @@ function generateRustCode({
   const getRsFormPart = (schema: VovkJSONSchemaBase, key: string, description?: string) => {
     let sampleValue: string;
     if (schema.type === 'string' && schema.format === 'binary') {
-      sampleValue = isTextFormat(schema.contentMediaType)
+      const mediaType = getContentMediaType(schema);
+      sampleValue = isTextFormat(mediaType)
         ? 'reqwest::multipart::Part::text("text_content")'
         : 'reqwest::multipart::Part::bytes(binary_data)';
 
-      if (schema.contentMediaType) {
-        sampleValue += `.mime_str("${schema.contentMediaType}").unwrap()`;
+      if (mediaType) {
+        sampleValue += `.mime_str(${toCodeString(mediaType)}).unwrap()`;
       }
     } else if (schema.type === 'object') {
       sampleValue = '"object_unknown"';
     } else {
-      sampleValue = `"${getSampleValue(schema)}"`;
+      sampleValue = toCodeString(String(getSampleValue(schema)));
     }
 
     const desc = getDescription(schema) ?? description;
 
-    return `\n${getIndentSpaces(4)}${desc ? `// ${commentText(desc, `${getIndentSpaces(4)}// `)}\n` : ''}${getIndentSpaces(4)}.part("${key}", ${sampleValue});`;
+    return `\n${getIndentSpaces(4)}${desc ? `// ${commentText(desc, `${getIndentSpaces(4)}// `)}\n` : ''}${getIndentSpaces(4)}.part(${toCodeString(key)}, ${sampleValue});`;
   };
 
   const getHashMapSample = (map: Record<string, unknown>, indent = 4) => {
     const entries = Object.entries(map)
       .map(([key, value]) => {
-        return `${getIndentSpaces(indent + 2)}("${key}".to_string(), "${value}".to_string())`;
+        return `${getIndentSpaces(indent + 2)}(${toCodeString(key)}.to_string(), ${toCodeString(String(value))}.to_string())`;
       })
       .join(',\n');
     return `Some(&HashMap::from([\n${entries}\n${getIndentSpaces(4)}]))`;
@@ -341,7 +355,7 @@ async fn main() {${bodyValidation && isForm(bodyValidation) ? `\n  ${getRsFormSa
     ${queryValidation ? serdeUnwrap(getRsJSONSample(queryValidation)) : '()'}, /* query */ 
     ${paramsValidation ? serdeUnwrap(getRsJSONSample(paramsValidation)) : '()'}, /* params */ 
     ${config?.headers ? `${getHashMapSample(config.headers)}, /* headers */` : 'None, /* headers (HashMap) */ '}
-    ${config?.apiRoot ? `Some("${config.apiRoot}"), /* api_root */` : 'None, /* api_root */'}
+    ${config?.apiRoot ? `Some(${toCodeString(config.apiRoot)}), /* api_root */` : 'None, /* api_root */'}
     false, /* disable_client_validation */
   ).await;${
     outputValidation
