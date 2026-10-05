@@ -367,7 +367,8 @@ where
         RequestBody::None => request,
         RequestBody::Json(_) => request.json(&body_value),
         RequestBody::UrlEncoded(_) => request.form(&to_form_fields(body_value.as_ref().unwrap_or(&Value::Null))?),
-        RequestBody::Multipart(form) => request.multipart(form),
+        // names go out raw in quotes, as browsers write them: the server reads no name*=utf-8''... form
+        RequestBody::Multipart(form) => request.multipart(form.percent_encode_noop()),
         RequestBody::Text(text, _) => request.body(text),
         RequestBody::Binary(bytes, _) => request.body(bytes),
     };
