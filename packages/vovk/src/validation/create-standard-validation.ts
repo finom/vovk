@@ -1,8 +1,9 @@
 import { HttpException } from '../core/http-exception.js';
+import type { JSONLinesResponder } from '../core/json-lines-responder.js';
 import type { VovkValidationType } from '../types/core.js';
 import type { VovkOperationObject } from '../types/operation.js';
 import type { VovkRequest } from '../types/request.js';
-import type { KnownAny } from '../types/utils.js';
+import type { KnownAny, NoInference } from '../types/utils.js';
 import type {
   BodyTypeFromContentType,
   CombinedSpec,
@@ -100,6 +101,13 @@ export function createStandardValidation({
     | Promise<TOutputValue>
     | (unknown extends TIterationValue ? never : AsyncGenerator<TIterationValue>);
 
+  // what fn() resolves to: the handler's result, or with an iteration schema, an async generator of the validated items
+  type FnResult<THandleFn extends (...args: KnownAny[]) => KnownAny, TIterationValue> = unknown extends TIterationValue
+    ? Awaited<ReturnType<THandleFn>>
+    : Awaited<ReturnType<THandleFn>> extends JSONLinesResponder<KnownAny>
+      ? Awaited<ReturnType<THandleFn>>
+      : AsyncGenerator<TIterationValue, void, unknown>;
+
   // return type for procedure().handle(), stores THandleFn instead of ReturnType<THandleFn>
   // to avoid circular inference when the handler calls a service typed via the controller
   type BuilderHandleReturn<
@@ -136,9 +144,13 @@ export function createStandardValidation({
         params?: TParams extends CombinedSpec ? CombinedSpec.InferInput<TParams> : undefined;
         meta?: Record<string, KnownAny>;
         disableClientValidation?: boolean;
-        transform: (data: Awaited<ReturnType<THandleFn>>, fakeReq: Pick<TReq, 'vovk'>) => TTransformed;
+        transform: (
+          data: FnResult<THandleFn, CombinedSpec.InferOutput<TIteration>>,
+          fakeReq: Pick<TReq, 'vovk'>
+        ) => TTransformed;
       }): Promise<TTransformed>;
-      <TReturnType = ReturnType<THandleFn>>(input?: {
+      // a type argument sets the result, the type the caller expects doesn't
+      <TReturnType = FnResult<THandleFn, CombinedSpec.InferOutput<TIteration>>>(input?: {
         body?: TBody extends CombinedSpec
           ? BodyTypeFromContentType<NormalizeContentType<TContentType>, CombinedSpec.InferInput<TBody>>
           : undefined;
@@ -146,7 +158,7 @@ export function createStandardValidation({
         params?: TParams extends CombinedSpec ? CombinedSpec.InferInput<TParams> : undefined;
         meta?: Record<string, KnownAny>;
         disableClientValidation?: boolean;
-      }): TReturnType;
+      }): Promise<Awaited<NoInference<TReturnType>>>;
       (input?: {
         body?: TBody extends CombinedSpec
           ? BodyTypeFromContentType<NormalizeContentType<TContentType>, CombinedSpec.InferInput<TBody>>
@@ -155,7 +167,7 @@ export function createStandardValidation({
         params?: TParams extends CombinedSpec ? CombinedSpec.InferInput<TParams> : undefined;
         meta?: Record<string, KnownAny>;
         disableClientValidation?: boolean;
-      }): ReturnType<THandleFn>;
+      }): Promise<FnResult<THandleFn, CombinedSpec.InferOutput<TIteration>>>;
     };
     definition: KnownAny;
     schema: KnownAny;
