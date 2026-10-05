@@ -11,8 +11,5 @@ export function compileJSONSchemaToTypeScriptType(
   if (schema === undefined || schema === null) return '';
   // a boolean schema refers to nothing, so it needs no components
   if (typeof schema === 'boolean') return compileTs({ schema, name: typeName, ...options });
-  if ('tsType' in schema && typeof schema.tsType === 'string') return `export type ${typeName} = ${schema.tsType};\n`;
-  const tsType = compileTs({ schema: { ...schema, components }, name: typeName, ...options });
-
-  return tsType;
+  return compileTs({ schema: { ...schema, components }, name: typeName, ...options });
 }
