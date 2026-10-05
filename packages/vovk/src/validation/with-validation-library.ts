@@ -15,6 +15,7 @@ import type { KnownAny } from '../types/utils.js';
 import type { BodyTypeFromContentType, ContentType, VovkTypedProcedure } from '../types/validation.js';
 import { fileNameToDisposition } from '../utils/file-name-to-disposition.js';
 import { isJSONObject } from '../utils/map-json-schema-refs.js';
+import { getBinaryContentType } from '../utils/media-types.js';
 
 const validationTypes: VovkValidationType[] = ['body', 'query', 'params', 'output', 'iteration'] as const;
 
@@ -36,21 +37,6 @@ const hasBody = (req: VovkRequestAny) => {
 // fn() calls made without a body, the local counterpart of a request without one
 const callsWithoutBody = new WeakSet<object>();
 
-const matchesMediaType = (type: string, pattern: string) =>
-  pattern === '*/*' || (pattern.endsWith('/*') ? type.startsWith(pattern.slice(0, -1)) : type === pattern);
-
-// the type the client sends bytes with: their own when the procedure takes it, else the first type it declares
-const getBytesContentType = (ownType: string, declared: string[]) => {
-  const type = ownType || 'application/octet-stream';
-  if (declared.some((pattern) => matchesMediaType(getMediaType(type) ?? type, pattern))) return type;
-  if (ownType) return declared.includes('application/octet-stream') ? 'application/octet-stream' : type;
-  return (
-    declared.find((declaredType) => !declaredType.includes('*') && declaredType !== 'multipart/form-data') ??
-    declared.find((declaredType) => declaredType !== '*/*' && declaredType.endsWith('/*')) ??
-    type
-  );
-};
-
 // fn() reads a body as the server reads a request that carries it: a form or bytes by the content type the client
 // sends them with, any other value as it is
 const parseFnBody = async (body: unknown, contentType: string[] | undefined) => {
@@ -61,7 +47,7 @@ const parseFnBody = async (body: unknown, contentType: string[] | undefined) => 
   const type =
     body instanceof URLSearchParams
       ? 'application/x-www-form-urlencoded'
-      : getBytesContentType(body instanceof Blob ? body.type : '', declared);
+      : getBinaryContentType(body instanceof Blob ? body.type : '', declared);
   const headers = {
     'content-type': type,
     ...(body instanceof File ? { 'content-disposition': fileNameToDisposition(body.name) } : {}),

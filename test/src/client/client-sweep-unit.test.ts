@@ -875,6 +875,82 @@ describe('Client sweep, pure functions', () => {
       deepStrictEqual(await withFetch(segment, () => rpc.createJSON({ body: blob })), sent);
       deepStrictEqual(await withFetch(segment, () => rpc.create({ body: blob })), sent);
     });
+
+    it('Sends bytes to a procedure that takes JSON or a file as the file type, as the Python and Rust clients do', async () => {
+      class AvatarController {
+        static upload = procedure({
+          contentType: ['application/json', 'image/png'],
+          body: z.union([z.object({ url: z.string() }), z.file()]),
+        }).handle(async (req) => ({
+          isFile: (await req.vovk.body()) instanceof File,
+          contentType: req.headers.get('content-type')?.split(';')[0],
+        }));
+      }
+      prefix('test')(AvatarController);
+      post('avatar')(AvatarController, 'upload');
+      const segment = serve('json-or-file', { AvatarController });
+      const rpc = rpcOf({
+        upload: { path: 'avatar', httpMethod: 'POST', validation: AvatarController.upload.schema.validation },
+      });
+      const png = new Uint8Array([137, 80, 78, 71]);
+
+      deepStrictEqual(await withFetch(segment, () => rpc.upload({ body: png })), {
+        isFile: true,
+        contentType: 'image/png',
+      });
+      deepStrictEqual(await withFetch(segment, () => rpc.upload({ body: new Blob([png]) })), {
+        isFile: true,
+        contentType: 'image/png',
+      });
+      // an object still goes as JSON
+      deepStrictEqual(await withFetch(segment, () => rpc.upload({ body: { url: 'a.png' } })), {
+        isFile: false,
+        contentType: 'application/json',
+      });
+    });
+
+    describe('the content type of bytes', () => {
+      const contentTypeOf = async (req: VovkRequest) => req.headers.get('content-type');
+      class BytesController {
+        static pngOrOctet = procedure({ contentType: ['image/png', 'application/octet-stream'] }).handle(contentTypeOf);
+        static anyApplication = procedure({ contentType: ['application/*'] }).handle(contentTypeOf);
+        static anyType = procedure({ contentType: ['*/*'] }).handle(contentTypeOf);
+      }
+      prefix('test')(BytesController);
+      post('png-or-octet')(BytesController, 'pngOrOctet');
+      post('any-application')(BytesController, 'anyApplication');
+      post('any-type')(BytesController, 'anyType');
+      const segment = serve('bytes-content-type', { BytesController });
+      const { pngOrOctet, anyApplication, anyType } = BytesController;
+      const rpc = rpcOf({
+        pngOrOctet: { path: 'png-or-octet', httpMethod: 'POST', validation: pngOrOctet.schema.validation },
+        anyApplication: { path: 'any-application', httpMethod: 'POST', validation: anyApplication.schema.validation },
+        anyType: { path: 'any-type', httpMethod: 'POST', validation: anyType.schema.validation },
+      });
+      const send = (name: string, body: unknown) => withFetch(segment, () => rpc[name]({ body }));
+      const png = new Uint8Array([137, 80, 78, 71]);
+
+      it('Sends untyped bytes as the first declared type, even when application/octet-stream is declared too', async () => {
+        strictEqual(await send('pngOrOctet', png), 'image/png');
+      });
+
+      it('Sends untyped bytes as the wildcard a procedure declares, application/* included', async () => {
+        strictEqual(await send('anyApplication', png.buffer), 'application/*');
+      });
+
+      it('Sends untyped bytes as application/octet-stream to a procedure that takes any type', async () => {
+        strictEqual(await send('anyType', new Blob([png])), 'application/octet-stream');
+      });
+
+      it('Sends a typed Blob as its own type when the procedure takes it', async () => {
+        strictEqual(
+          await send('pngOrOctet', new Blob([png], { type: 'application/octet-stream' })),
+          'application/octet-stream'
+        );
+        strictEqual(await send('anyApplication', new Blob(['%PDF'], { type: 'application/pdf' })), 'application/pdf');
+        strictEqual(await send('anyType', new Blob(['a,b'], { type: 'text/csv' })), 'text/csv');
+      });
+    });
   });
 
   describe('shipped types', () => {
