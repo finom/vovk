@@ -1,9 +1,9 @@
 'use client';
 import { useState } from 'react';
+import type { VovkBody } from 'vovk';
 import { OpenAiRPC } from '@/client';
-import type OpenAI from 'openai';
 
-type Message = OpenAI.Chat.Completions.ChatCompletionMessageParam;
+type Message = VovkBody<typeof OpenAiRPC.createChatCompletion>['messages'][number];
 
 export default function OpenAiExample() {
   const [messages, setMessages] = useState<Message[]>([]);
@@ -47,7 +47,7 @@ export default function OpenAiExample() {
     >
       {messages.map((message, index) => (
         <div key={index}>
-          {message.role === 'assistant' ? '🤖' : '👤'} {(message.content as string) || '...'}
+          {message.role === 'assistant' ? '🤖' : '👤'} {message.content || '...'}
         </div>
       ))}
       {error && <div>❌ {error.message}</div>}

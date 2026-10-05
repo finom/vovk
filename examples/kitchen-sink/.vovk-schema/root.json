@@ -508,12 +508,47 @@
       "prefix": "openai",
       "handlers": {
         "createChatCompletion": {
-          "path": "chat",
-          "httpMethod": "POST",
+          "validation": {
+            "body": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "object",
+              "properties": {
+                "messages": {
+                  "maxItems": 20,
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "role": {
+                        "type": "string",
+                        "enum": [
+                          "user",
+                          "assistant"
+                        ]
+                      },
+                      "content": {
+                        "type": "string",
+                        "maxLength": 10000
+                      }
+                    },
+                    "required": [
+                      "role",
+                      "content"
+                    ]
+                  }
+                }
+              },
+              "required": [
+                "messages"
+              ]
+            }
+          },
           "operationObject": {
             "summary": "Create a chat completion",
             "description": "Create a chat completion using OpenAI and yield the response"
-          }
+          },
+          "path": "chat",
+          "httpMethod": "POST"
         }
       }
     },
