@@ -190,39 +190,33 @@ describe('Client sweep, pure functions', () => {
               abortController: new AbortController(),
             }) as VovkStreamAsyncIterable<Record<string, unknown>>
         ) as unknown as Record<string, Promise<unknown>>;
-      // reads the stream, taking the keys right away, as a destructuring does
-      const settle = (text: string, keys: string[]) => {
-        const result = progressiveOf(text);
-        return Promise.allSettled(keys.map((key) => result[key]));
-      };
-      // what the keys below reach through the prototype chain of a plain object
-      const targets = [Object.prototype, Object, Object.prototype.toString];
+      const read = (promise: unknown) =>
+        Promise.resolve(promise).then(
+          (value) => value,
+          (error: Error) => `rejected: ${error.message}`
+        );
+      // constructor, __proto__, toString, valueOf, hasOwnProperty…
+      const names = Object.getOwnPropertyNames(Object.prototype);
+      // what those keys reach through the prototype chain of a plain object
+      const targets = [
+        Object.prototype,
+        ...new Set(names.map((name) => Object.getOwnPropertyDescriptor(Object.prototype, name)?.value)),
+      ].filter((target) => typeof target === 'object' || typeof target === 'function');
       const ownKeys = () => targets.map((target) => Object.getOwnPropertyNames(target).sort());
       const keysBefore = ownKeys();
 
       try {
-        const streams = {
-          constructor: await settle('{"constructor":"x"}\n{"users":[1]}\n', ['users', 'constructor']),
-          toString: await settle('{"toString":"y"}\n{"users":[2]}\n', ['users', 'toString']),
-          proto: await settle('{"__proto__":{"isAdmin":true}}\n{"users":[3]}\n', ['users']),
-        };
+        const results: unknown[] = [];
+        for (const [i, name] of names.entries()) {
+          const result = progressiveOf(`{"${name}":${i}}\n{"users":[${i}]}\n`);
+          // the keys are taken right away, as a destructuring does
+          const [users, value] = [result.users, result[name]];
+          results.push([name, await read(users), await read(value)]);
+        }
 
         deepStrictEqual(
-          { streams, keys: ownKeys() },
-          {
-            streams: {
-              constructor: [
-                { status: 'fulfilled', value: [1] },
-                { status: 'fulfilled', value: 'x' },
-              ],
-              toString: [
-                { status: 'fulfilled', value: [2] },
-                { status: 'fulfilled', value: 'y' },
-              ],
-              proto: [{ status: 'fulfilled', value: [3] }],
-            },
-            keys: keysBefore,
-          }
+          { results, keys: ownKeys() },
+          { results: names.map((name, i) => [name, [i], i]), keys: keysBefore }
         );
       } finally {
         // a key written to a shared object would leak into the other tests

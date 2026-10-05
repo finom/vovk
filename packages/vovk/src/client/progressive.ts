@@ -27,6 +27,7 @@ export function progressive<T extends (...args: KnownAny[]) => Promise<VovkStrea
   ...args: undefined extends Parameters<T>[0] ? [arg?: Parameters<T>[0]] : [arg: Parameters<T>[0]]
 ): TransformUnionToPromises<VovkYieldType<T>> {
   const [arg] = args;
+  // the keys come from the stream: with no prototype, constructor or __proto__ is a key like any other
   const reg: Record<
     string | symbol,
     {
@@ -35,7 +36,7 @@ export function progressive<T extends (...args: KnownAny[]) => Promise<VovkStrea
       promise: Promise<unknown>;
       isSettled: boolean;
     }
-  > = {};
+  > = Object.create(null);
   let finalState: { type: 'done' } | { type: 'error'; error: unknown } | null = null;
 
   const missingKeyError = (key: string) => new Error(`The connection was closed without sending a value for "${key}"`);
@@ -45,7 +46,7 @@ export function progressive<T extends (...args: KnownAny[]) => Promise<VovkStrea
       for await (const item of result) {
         // a null line carries no keys
         for (const [key, value] of Object.entries(item ?? {})) {
-          if (key in reg) {
+          if (Object.hasOwn(reg, key)) {
             if (!reg[key].isSettled) {
               reg[key].isSettled = true;
               reg[key].resolve(value);
@@ -81,7 +82,7 @@ export function progressive<T extends (...args: KnownAny[]) => Promise<VovkStrea
     });
   return new Proxy({} as TransformUnionToPromises<VovkYieldType<T>>, {
     get(_target, prop) {
-      if (prop in reg) {
+      if (Object.hasOwn(reg, prop)) {
         return reg[prop].promise;
       }
 
@@ -102,9 +103,9 @@ export function progressive<T extends (...args: KnownAny[]) => Promise<VovkStrea
 
       return promise;
     },
-    has: (_target, prop) => prop in reg,
+    has: (_target, prop) => Object.hasOwn(reg, prop),
     ownKeys: () => Reflect.ownKeys(reg),
     getOwnPropertyDescriptor: (_target, prop) =>
-      prop in reg ? { enumerable: true, configurable: true, value: reg[prop].promise } : undefined,
+      Object.hasOwn(reg, prop) ? { enumerable: true, configurable: true, value: reg[prop].promise } : undefined,
   });
 }
