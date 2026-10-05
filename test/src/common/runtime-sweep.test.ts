@@ -7,16 +7,13 @@ import {
   cloneControllerMetadata,
   controllersToStaticParams,
   createDecorator,
-  decorate,
   del,
-  deriveTools,
   get,
   HttpException,
   HttpStatus,
   initSegment,
   JSONLinesResponder,
   multitenant,
-  operation,
   patch,
   post,
   prefix,
@@ -24,7 +21,6 @@ import {
   type VovkRequest,
 } from 'vovk';
 import { createRPC } from 'vovk/create-rpc';
-import { vovkApp } from 'vovk/internal';
 import { z } from 'zod';
 
 type Handlers = ReturnType<typeof initSegment>;
@@ -331,192 +327,10 @@ describe('Runtime sweep', () => {
       });
     });
 
-    it('Refuses decorate().handle() without a handler', () => {
-      for (const decorated of [decorate(get('users')), decorate(get('users'), procedure())]) {
-        throws(() => (decorated as unknown as { handle: () => unknown }).handle(), {
-          message: 'decorate().handle() requires a handler function',
-        });
-      }
-      // the handler given to the procedure instead is refused by decorate() itself
-      throws(
-        () =>
-          decorate(
-            get('users'),
-            procedure().handle(async () => [])
-          ),
-        {
-          message:
-            'decorate() takes procedure(...) last and without .handle(): call .handle() on what decorate() returns',
-        }
-      );
-    });
+    it('Has no decorate() export', async () => {
+      const vovk = await import('vovk');
 
-    it('Refuses a decorate() member without .handle() in every segment', () => {
-      class UnhandledController {
-        static list = decorate(get('list'), procedure());
-      }
-      for (const segmentName of ['unhandled', 'unhandled-again']) {
-        throws(() => initSegment({ segmentName, controllers: { UnhandledController } }), {
-          message: 'UnhandledController.list has no handler: call .handle() on what decorate() returns',
-        });
-      }
-    });
-
-    it('Refuses a procedure among the decorators of decorate(), which would reject unhandled', async () => {
-      const message =
-        'decorate() takes procedure(...) last and without .handle(): call .handle() on what decorate() returns';
-      const defineControllers = [
-        // the handler given to the procedure, and another one to decorate()
-        () =>
-          class DoubleHandleController {
-            static list = decorate(
-              get('list'),
-              procedure().handle(async () => ['from the procedure'])
-            ).handle(async () => ['from decorate()']);
-          },
-        () =>
-          class ProcedureFirstController {
-            static list = decorate(procedure(), get('list')).handle(async () => []);
-          },
-      ];
-      const rejections: unknown[] = [];
-      const onRejection = (reason: unknown) => rejections.push(reason);
-      const errors: string[] = [];
-      process.on('unhandledRejection', onRejection);
-      try {
-        for (const [i, defineController] of defineControllers.entries()) {
-          try {
-            initSegment({
-              segmentName: `procedure-as-decorator-${i}`,
-              controllers: { Controller: defineController() },
-            });
-          } catch (error) {
-            errors.push((error as Error).message);
-          }
-        }
-        await wait(20);
-      } finally {
-        process.off('unhandledRejection', onRejection);
-      }
-      deepStrictEqual(
-        rejections.map((reason) => (reason as Error).message),
-        []
-      );
-      deepStrictEqual(errors, [message, message]);
-    });
-
-    it('Refuses a decorator factory passed to decorate() uncalled', () => {
-      const authGuard = createDecorator((_req, next) => next());
-      // without (), the guard never runs and the route answers anyway
-      throws(() => decorate(get('guarded'), authGuard).handle(async () => 'ok'), {
-        message: 'decorate() argument 2 is a decorator factory: call it, and pass the decorator it returns',
-      });
-      for (const [factory, name] of [
-        [get, 'get'],
-        [get.auto, 'get.auto'],
-        [post, 'post'],
-        [patch, 'patch'],
-        [del, 'del'],
-        [operation, 'operation'],
-        [operation.error, 'operation.error'],
-        [operation.tool, 'operation.tool'],
-        [procedure, 'procedure'],
-      ] as const) {
-        throws(() => decorate(factory), {
-          message: `decorate() argument 1 is the factory ${name}: call it, ${name}(...)`,
-        });
-      }
-    });
-
-    it('Refuses a decorate() argument that returns a promise in every segment, with no unhandled rejection', async () => {
-      class AsyncMiddlewareController {
-        // a middleware given to decorate() itself, not through createDecorator()
-        static list = decorate(async (req: Request, next: () => Promise<unknown>) => {
-          if (!req.headers.get('authorization')) throw new HttpException(HttpStatus.UNAUTHORIZED, 'No authorization');
-          return next();
-        }, get('list')).handle(async () => []);
-      }
-      const rejections: unknown[] = [];
-      const onRejection = (reason: unknown) => rejections.push(reason);
-      const errors: string[] = [];
-      process.on('unhandledRejection', onRejection);
-      try {
-        for (const segmentName of ['async-middleware', 'async-middleware-again']) {
-          try {
-            initSegment({ segmentName, controllers: { AsyncMiddlewareController } });
-          } catch (error) {
-            errors.push((error as Error).message);
-          }
-        }
-        await wait(20);
-      } finally {
-        process.off('unhandledRejection', onRejection);
-      }
-      deepStrictEqual(
-        rejections.map((reason) => (reason as Error).message),
-        []
-      );
-      const message =
-        'AsyncMiddlewareController.list: decorate() argument 1 returned a promise, so it is no decorator: wrap a middleware with createDecorator()';
-      deepStrictEqual(errors, [message, message]);
-    });
-
-    it('Names the member and the argument of a decorate() decorator that throws, with its error as the cause', () => {
-      class SyncMiddlewareController {
-        static list = decorate(get('list'), (req: Request, next: () => unknown) => {
-          if (!req.headers.get('authorization')) throw new HttpException(HttpStatus.UNAUTHORIZED, 'No authorization');
-          return next();
-        }).handle(async () => []);
-      }
-      throws(
-        () => initSegment({ segmentName: 'sync-middleware', controllers: { SyncMiddlewareController } }),
-        (error: Error) => {
-          ok(error.cause instanceof TypeError);
-          strictEqual(
-            error.message,
-            `SyncMiddlewareController.list: decorate() argument 2 threw: ${error.cause.message}`
-          );
-          return true;
-        }
-      );
-    });
-
-    it('Refuses a class decorator passed to decorate()', () => {
-      // applied to one member, prefix('v2') would move every route of the controller
-      throws(() => decorate(prefix('v2'), get('users')).handle(async () => []), {
-        message: 'decorate() argument 1 is the class decorator prefix(...): apply it to the class',
-      });
-      for (const [decorator, name] of [
-        [prefix, 'prefix'],
-        [cloneControllerMetadata, 'cloneControllerMetadata'],
-        [cloneControllerMetadata(), 'cloneControllerMetadata()'],
-      ] as const) {
-        throws(() => decorate(get('users'), decorator).handle(async () => []), {
-          message: `decorate() argument 2 is the class decorator ${name}: apply it to the class`,
-        });
-      }
-    });
-
-    it('Refuses one function as the handler of two decorate() calls, and keeps the function as the member', () => {
-      const authGuard = createDecorator((_req, next) => next());
-      // the function would take the decorators of both calls, and each member would get them all
-      const list = async () => ['list'];
-      throws(
-        () =>
-          class SharedController {
-            static a = decorate(get('a'), authGuard()).handle(list);
-            static b = decorate(get('b')).handle(list);
-          },
-        {
-          message:
-            'decorate().handle() got the handler of another decorate() call: use a separate function for each member',
-        }
-      );
-      const own = async () => ['own'];
-      class OwnController {
-        static a = decorate(get('a'), authGuard()).handle(own);
-      }
-      strictEqual(OwnController.a, own);
+      strictEqual('decorate' in vovk, false);
     });
 
     it('Answers a path two controllers of a segment declare with a JSON error and calls onError', async () => {
@@ -636,16 +450,25 @@ describe('Runtime sweep', () => {
       deepStrictEqual(await response.json(), { 'user-id': '42' });
     });
 
-    it('Serves the routes a decorate() controller inherits over two levels in any controller order', async () => {
+    it('Serves the routes a controller inherits over two levels in any controller order', async () => {
       class GrandparentController {
-        static a = decorate(get('a')).handle(async () => 'a');
+        static a() {
+          return 'a';
+        }
       }
+      get('a')(GrandparentController, 'a');
       class ParentController extends GrandparentController {
-        static b = decorate(get('b')).handle(async () => 'b');
+        static b() {
+          return 'b';
+        }
       }
+      get('b')(ParentController, 'b');
       class ChildController extends ParentController {
-        static c = decorate(get('c')).handle(async () => 'c');
+        static c() {
+          return 'c';
+        }
       }
+      get('c')(ChildController, 'c');
       prefix('child')(ChildController);
       // the child comes first
       const handlers = initSegment({
@@ -735,65 +558,16 @@ describe('Runtime sweep', () => {
       deepStrictEqual(errors, ['v1', 'v2']);
     });
 
-    describe('A clone of a decorate() controller in another segment', () => {
-      const defineControllers = () => {
-        class UserController {
-          static prefix = 'users';
-
-          static getUser = decorate(get('{id}'), procedure({ params: z.object({ id: z.string() }) })).handle(
-            async (_req, { id }) => ({ id })
-          );
-        }
-        class UserControllerV2 extends UserController {}
-        prefix('v2')(UserControllerV2);
-        cloneControllerMetadata()(UserControllerV2);
-        return { UserController, UserControllerV2 };
-      };
-      // what the clone's segment answers at v2/1, and the path its schema emits for the RPC method
-      const getServed = async (handlers: Handlers) => {
-        const response = await call(handlers, 'GET', 'v2/1');
-        const { schema } = await (await call(handlers, 'GET', '_schema_')).json();
-        return {
-          status: response.status,
-          body: await response.json(),
-          path: schema.controllers.UserRPC.handlers.getUser?.path,
-        };
-      };
-      const served = { status: 200, body: { id: '1' }, path: '{id}' };
-
-      // as on a platform that runs each route.ts in its own function
-      it("Serves and emits the parent's routes when its segment is the only one loaded", async () => {
-        const { UserControllerV2 } = defineControllers();
-
-        await withNodeEnv('development', async () => {
-          const v2 = initSegment({ segmentName: 'clone-alone', controllers: { UserRPC: UserControllerV2 } });
-
-          deepStrictEqual(await getServed(v2), served);
-        });
-      });
-
-      it("Serves and emits the parent's routes after the parent's own segment", async () => {
-        const { UserController, UserControllerV2 } = defineControllers();
-
-        await withNodeEnv('development', async () => {
-          const v1 = initSegment({ segmentName: 'clone-parent', controllers: { UserRPC: UserController } });
-          const v2 = initSegment({ segmentName: 'clone-child', controllers: { UserRPC: UserControllerV2 } });
-
-          deepStrictEqual(await getServed(v2), served);
-          strictEqual((await call(v1, 'GET', 'users/1')).status, 200);
-        });
-      });
-    });
-
     it('Trims the slashes of a static prefix, as @prefix() does', async () => {
       await withNodeEnv('development', async () => {
         class MemberController {
           static prefix = '/members/';
 
-          static getMember = decorate(get('{id}'), procedure({ params: z.object({ id: z.string() }) })).handle(
-            async (_req, { id }) => ({ id })
-          );
+          static getMember = procedure({ params: z.object({ id: z.string() }) }).handle(async (_req, { id }) => ({
+            id,
+          }));
         }
+        get('{id}')(MemberController, 'getMember');
         const handlers = initSegment({ segmentName: 'static-prefix', controllers: { MemberRPC: MemberController } });
 
         const response = await call(handlers, 'GET', 'members/1');
@@ -803,81 +577,6 @@ describe('Runtime sweep', () => {
         const { schema } = await (await call(handlers, 'GET', '_schema_')).json();
         strictEqual(schema.controllers.MemberRPC.prefix, 'members');
       });
-    });
-  });
-
-  // a server component, a server action, a tools route or a unit test imports the controller, not the segment's
-  // route.ts, so no initSegment has run in that process
-  describe('decorate() before initSegment', () => {
-    // a controller whose guard refuses a call without a user, and how many times the guard ran
-    const defineSecretController = () => {
-      const guard = { runs: 0 };
-      const authGuard = createDecorator(async (req, next) => {
-        guard.runs++;
-        if (!req.vovk.meta<{ userId?: string }>().userId) {
-          throw new HttpException(HttpStatus.UNAUTHORIZED, 'Missing token');
-        }
-        return next();
-      });
-      class SecretController {
-        static getSecret = decorate(
-          get('secret'),
-          authGuard(),
-          procedure({ operationObject: { summary: 'Get the secret' } })
-        ).handle(async () => ({ secret: 'top secret' }));
-      }
-      return { SecretController, guard };
-    };
-
-    it('Runs the guard of a decorate() procedure on fn()', async () => {
-      const { SecretController, guard } = defineSecretController();
-
-      await rejects(SecretController.getSecret.fn(), { statusCode: 401, message: 'Missing token' });
-
-      // the segment loaded later wraps the procedure no second time
-      const handlers = initSegment({ segmentName: 'secret', controllers: { SecretController } });
-      strictEqual((await call(handlers, 'GET', 'secret')).status, 401);
-      await rejects(SecretController.getSecret.fn(), { statusCode: 401 });
-      strictEqual(guard.runs, 3);
-    });
-
-    it('Runs the guard of a decorate() procedure in its derived tool', async () => {
-      const { SecretController, guard } = defineSecretController();
-      const [tool] = deriveTools({ modules: { SecretController } });
-
-      deepStrictEqual(await tool.execute({}), { error: 'Missing token' });
-      strictEqual(guard.runs, 1);
-    });
-
-    it('Derives a tool from the operation() of a decorate() procedure', () => {
-      // the decorate() form of @operation() above @get()
-      class ReportController {
-        static getReport = decorate(operation({ summary: 'Get the report' }), get('report'), procedure()).handle(
-          async () => ({ rows: [] })
-        );
-      }
-
-      deepStrictEqual(
-        deriveTools({ modules: { ReportController } }).map(({ name, title }) => ({ name, title })),
-        [{ name: 'ReportController_getReport', title: 'Get the report' }]
-      );
-    });
-
-    it('Serves no route of a controller deriveTools gets through a segment that does not list it', async () => {
-      class MountedController {
-        static a = decorate(get('a')).handle(async () => 'a');
-      }
-      class UnmountedController {
-        static b = decorate(get('b'), procedure({ operationObject: { summary: 'Get b' } })).handle(async () => 'b');
-      }
-      const handlers = initSegment({ controllers: { MountedController } });
-
-      deriveTools({ modules: { UnmountedController } });
-
-      // deriveTools registered the route, as initSegment would
-      ok(Object.hasOwn(vovkApp.routes.GET.get(UnmountedController as never) ?? {}, 'b'));
-      strictEqual((await call(handlers, 'GET', 'a')).status, 200);
-      strictEqual((await call(handlers, 'GET', 'b')).status, 404);
     });
   });
 

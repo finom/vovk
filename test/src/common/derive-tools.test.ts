@@ -1,7 +1,6 @@
 import assert from 'node:assert';
 import { describe, it } from 'node:test';
 import {
-  decorate,
   del,
   deriveTools,
   get,
@@ -9,6 +8,7 @@ import {
   initSegment,
   JSONLinesResponder,
   operation,
+  prefix,
   procedure,
   put,
   ToModelOutput,
@@ -926,18 +926,17 @@ describe('deriveTools', () => {
 
   describe('Controllers with operation() applied before the HTTP decorator', () => {
     class UserController {
-      static prefix = 'users';
-
-      // the decorate() sample of the docs: the HTTP decorator listed first is applied last
-      static updateUser = decorate(
-        put('{id}'),
-        operation({ summary: 'Update user' }),
-        procedure({ params: z.object({ id: z.string() }), body: z.object({ email: z.string() }) })
-      ).handle(async (req, { id }) => ({ id, ...(await req.vovk.body()) }));
+      static updateUser = procedure({
+        params: z.object({ id: z.string() }),
+        body: z.object({ email: z.string() }),
+      }).handle(async (req, { id }) => ({ id, ...(await req.vovk.body()) }));
 
       static getUser = procedure({ params: z.object({ id: z.string() }) }).handle(async (_req, { id }) => ({ id }));
     }
-    // @get('{id}') written above @operation()
+    prefix('users')(UserController);
+    // @put('{id}') and @get('{id}') written above @operation(): stacked decorators apply bottom-up
+    operation({ summary: 'Update user' })(UserController, 'updateUser');
+    put('{id}')(UserController, 'updateUser');
     operation({ summary: 'Get user' })(UserController, 'getUser');
     get('{id}')(UserController, 'getUser');
     initSegment({ segmentName: 'derive-tools', controllers: { UserRPC: UserController } });
@@ -960,12 +959,12 @@ describe('deriveTools', () => {
 
     it("Keeps the procedure's own operation next to the decorator's", () => {
       class TaskController {
-        static deleteTask = decorate(
-          del('{id}'),
-          operation({ summary: 'Delete task' }),
-          procedure({ operationObject: { description: 'Deletes a task by its ID' } })
-        ).handle(async () => null);
+        static deleteTask = procedure({ operationObject: { description: 'Deletes a task by its ID' } }).handle(
+          async () => null
+        );
       }
+      operation({ summary: 'Delete task' })(TaskController, 'deleteTask');
+      del('{id}')(TaskController, 'deleteTask');
       initSegment({ segmentName: 'derive-tools-merge', controllers: { TaskRPC: TaskController } });
 
       assert.deepStrictEqual(

@@ -1,5 +1,4 @@
 import { readableStreamToAsyncIterable } from '../client/default-stream-handler.js';
-import { applyDecorateDecorators } from '../core/decorate.js';
 import { HttpException } from '../core/http-exception.js';
 import { JSONLinesResponder } from '../core/json-lines-responder.js';
 import type { VovkHandlerSchema, VovkSegmentSchema } from '../types/core.js';
@@ -307,11 +306,6 @@ export function deriveTools<TOutput = unknown, TFormattedOutput = unknown>(optio
     onExecute = (result) => result,
     onError = () => {},
   } = options;
-
-  // a tools route may load a controller without its segment, whose initSegment applies the decorate() decorators
-  for (const module of Object.values(modules ?? {})) {
-    if (typeof module === 'function') applyDecorateDecorators(module);
-  }
 
   // tool name to the module and handler it came from
   const sources = new Map<string, string>();

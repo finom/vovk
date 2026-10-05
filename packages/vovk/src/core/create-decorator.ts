@@ -5,22 +5,6 @@ import { applyDecoratorAdapter } from './apply-decorator-adapter.js';
 
 type Next = () => Promise<unknown>;
 
-type Middleware = {
-  handler: (this: VovkController | undefined, req: unknown, next: Next, ...args: unknown[]) => unknown;
-  args: unknown[];
-};
-
-// the middleware of each decorator a createDecorator() factory makes, which decorate() runs before the class is known
-export const decoratorMiddlewares = new WeakMap<object, Middleware>();
-
-// the functions that make decorators, by the name to call them with ('' when it isn't known): decorate() refuses one
-// passed uncalled, which would make a decorator that nothing applies
-export const decoratorFactories = new WeakMap<object, string>();
-
-// the class decorators and the factories that make them, by name: decorate() refuses them, as on a member they would
-// act on the whole class
-export const classDecorators = new WeakMap<object, string>();
-
 /**
  * Creates a custom decorator for Vovk controllers.
  * @see https://vovk.dev/decorator
@@ -39,8 +23,8 @@ export function createDecorator<TArgs extends unknown[], TRequest = VovkRequest>
     | null
     | undefined
 ) {
-  const decoratorCreator = function decoratorCreator(...args: TArgs) {
-    const decorator = function decorator(target: KnownAny, propertyKeyOrContext?: unknown): KnownAny {
+  return function decoratorCreator(...args: TArgs) {
+    return function decorator(target: KnownAny, propertyKeyOrContext?: unknown): KnownAny {
       return applyDecoratorAdapter(target, propertyKeyOrContext, applyDecorator);
 
       function applyDecorator(controller: VovkController, propertyKey: string) {
@@ -100,9 +84,5 @@ export function createDecorator<TArgs extends unknown[], TRequest = VovkRequest>
         };
       }
     };
-    if (handler) decoratorMiddlewares.set(decorator, { handler: handler as Middleware['handler'], args });
-    return decorator;
   };
-  decoratorFactories.set(decoratorCreator, '');
-  return decoratorCreator;
 }
