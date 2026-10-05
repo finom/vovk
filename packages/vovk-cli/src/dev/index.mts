@@ -516,6 +516,7 @@ export class VovkDev {
     const { log, config, cwd } = this.#projectInfo;
     if (!segmentSchema) {
       log.warn(`${formatLoggedSegmentName(segmentName, { upperFirst: true })} schema is null`);
+      this.#failExitRun();
       return false;
     }
 
@@ -525,6 +526,7 @@ export class VovkDev {
       assertSegmentName(segmentName);
     } catch (error) {
       log.error((error as Error).message);
+      this.#failExitRun();
       return false;
     }
 
@@ -533,6 +535,7 @@ export class VovkDev {
       log.error(
         `Schema for ${formatLoggedSegmentName(segmentName)} reported a different segment name ${JSON.stringify(segmentSchema.segmentName)}, ignoring it`
       );
+      this.#failExitRun();
       return false;
     }
 
