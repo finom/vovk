@@ -1,5 +1,7 @@
 <%- t.getFirstLineBanner('html') %>
-# <%= t.underscoredPackageName %> v<%= t.package.version %> [![Checked with mypy](http://www.mypy-lang.org/static/mypy_badge.svg)](http://mypy-lang.org/) [![Vovk.ts](https://badgen.net/badge/Built%20with/Vovk.ts/333333?icon=https://vovk.dev/icon-white.svg)](https://vovk.dev)
+<% if (t.readme.banner) { %><%- t.readme.banner %>
+
+<% } %># <%= t.underscoredPackageName %> v<%= t.package.version %> [![Checked with mypy](http://www.mypy-lang.org/static/mypy_badge.svg)](http://mypy-lang.org/) [![Vovk.ts](https://badgen.net/badge/Built%20with/Vovk.ts/333333?icon=https://vovk.dev/icon-white.svg)](https://vovk.dev)
 
 
 <%- t.readme.description ?? (`${t.package.description ? `> ${t.package.description}` : ''}`) %>
