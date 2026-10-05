@@ -135,6 +135,20 @@ describe('vovk-ajv', () => {
     await rejects(validate({ query: { page: 'two' } }), /Invalid query: data\/page must be number/);
   });
 
+  it('Validates a falsy body, and leaves a missing one alone', async () => {
+    const cases: [unknown, object][] = [
+      ['', { type: 'string', minLength: 1 }],
+      [0, { type: 'number', minimum: 1 }],
+      [false, { const: true }],
+      [null, { type: 'object' }],
+    ];
+
+    for (const [body, schema] of cases) {
+      await rejects(validateBody(body, { $schema, ...schema }), /Client-side validation failed\. Invalid body: data /);
+    }
+    await validateBody(undefined, { $schema, type: 'object' });
+  });
+
   it('Compiles a schema once for every object with the same text', async () => {
     // the copy of Ajv that vovk-ajv itself loads
     const requireFromAjvPackage = createRequire(new URL('../../../packages/vovk-ajv/index.js', import.meta.url));
