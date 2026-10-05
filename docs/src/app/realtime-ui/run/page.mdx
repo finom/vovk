@@ -17,11 +17,20 @@ DATABASE_URL_UNPOOLED="postgresql://postgres:password@localhost:5432/realtime-ka
 REDIS_URL=redis://localhost:6379
 ```
 
-Run Docker containers and the development server:
+Start the Docker containers:
 
 ```bash copy
 docker-compose up -d
 ```
+
+Generate the Prisma client, the Zod schemas and the Vovk.ts client, then create the database tables:
+
+```bash copy
+npm run generate
+npx prisma migrate deploy
+```
+
+Start the development server:
 
 ```sh
 npm run dev
