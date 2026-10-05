@@ -47,7 +47,7 @@ The services implement the actual business logic for each procedure, including d
 - Creations and updates are followed by `EmbeddingService.generateEntityEmbedding` calls, and the search endpoints use `EmbeddingService.vectorSearch` to perform vector search using OpenAI embeddings and pgvector. For details, see the [Embeddings](./embeddings) article.
 - The controller procedures use [req.vovk](/req-vovk) to access request data such as `params`, `query`, and `body`, because we want to call these methods directly from code (not only through HTTP requests) via the [fn](/fn) interface for SSR/PPR, server actions, and AI tool execution.
 
-<Tabs items={['UserController.ts', 'UserService.ts', 'TaskController.ts', 'TaskService.ts']}>
+<Tabs items={['user-controller.ts', 'user-service.ts', 'task-controller.ts', 'task-service.ts']}>
 <Tabs.Tab>
 ```ts showLineNumbers copy filename="src/modules/user/user-controller.ts" source="examples/realtime-kanban"
 import { TaskSchema, UserSchema } from '@schemas/index';

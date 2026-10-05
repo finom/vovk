@@ -67,7 +67,7 @@ The controller method uses `@post` to map POST and `procedure()` for Zod validat
 
 The service method infers parameter types from the procedure, returning the service method result directly and avoiding implicit `any` self-reference issues.
 
-<Tabs items={['UserController.ts', 'UserService.ts', 'route.ts']}>
+<Tabs items={['user-controller.ts', 'user-service.ts', 'route.ts']}>
 <Tabs.Tab>
 ```ts showLineNumbers copy filename="src/modules/user/user-controller.ts" source="examples/hello-world"
 import { operation, post, prefix, procedure } from 'vovk';
@@ -200,7 +200,7 @@ export const { GET, POST, PATCH, PUT, HEAD, OPTIONS, DELETE } = initSegment({
 
 `/api/streams/tokens` streams tokens using a controller generator method that delegates with `yield*` to the service. Each streamed item is validated via the `iteration` schema. Delays are simulated with `setTimeout`.
 
-<Tabs items={['StreamController.ts', 'StreamService.ts', 'route.ts']}>
+<Tabs items={['stream-controller.ts', 'stream-service.ts', 'route.ts']}>
 <Tabs.Tab>
 ```ts showLineNumbers copy filename="src/modules/stream/stream-controller.ts" source="examples/hello-world"
 import { get, operation, prefix, procedure } from 'vovk';
@@ -281,7 +281,7 @@ export const { GET, POST, PATCH, PUT, HEAD, OPTIONS, DELETE } = initSegment({
 
 The demo uses [@tanstack/react-query](https://www.npmjs.com/package/@tanstack/react-query) for both standard requests and streaming.
 
-<Tabs items={['index.tsx', 'UserFormDemo.tsx', 'StreamDemo.tsx']}>
+<Tabs items={['index.tsx', 'user-form-demo.tsx', 'stream-demo.tsx']}>
 <Tabs.Tab>
 ```ts showLineNumbers copy filename="src/components/demo/index.tsx" source="examples/hello-world"
 'use client';
@@ -691,7 +691,7 @@ The original package.json is used to populate metadata (`repository`, `homepage`
 
 The [OpenAPI specification](https://hello-world.vovk.dev/api/static/openapi.json) is served by a `GET` endpoint returning the generated spec (`openapi` from `@/client/openapi`).
 
-<Tabs items={['OpenApiController.ts', 'route.ts']}>
+<Tabs items={['openapi-controller.ts', 'route.ts']}>
 <Tabs.Tab>
 ```ts showLineNumbers copy filename="src/modules/static/openapi/openapi-controller.ts" source="examples/hello-world"
 import { get, operation } from 'vovk';

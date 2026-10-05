@@ -292,7 +292,7 @@ export default class DatabaseEventsService {
 
 With Redis change entries and the change emitter in place, we can implement a polling endpoint that streams updates to clients in real time. The `DatabasePollController` exposes a single [JSONLines](/jsonlines) endpoint, and `DatabasePollService` uses a [JSONLinesResponder](/jsonlines#jsonlinesresponder) instance (received from the controller) to send data to clients. The service closes the connection safely after 30 seconds, so clients should reconnect.
 
-<Tabs items={['DatabasePollService.ts', 'DatabasePollController.ts']}>
+<Tabs items={['database-poll-service.ts', 'database-poll-controller.ts']}>
 <Tabs.Tab>
 ```ts showLineNumbers copy filename="src/modules/database/database-poll-service.ts" source="examples/realtime-kanban"
 import { forEach, groupBy } from 'lodash';
