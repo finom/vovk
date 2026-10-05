@@ -4,8 +4,8 @@ description: "Walkthrough of the Realtime Kanban example app — a live-updating
 see_also:
   label: "Vovk.ts Docs Context"
   url: https://vovk.dev/context/docs.md
-chars: 111097
-est_tokens: 27775
+chars: 111054
+est_tokens: 27764
 ---
 
 Page: https://vovk.dev/realtime-ui
@@ -15,7 +15,7 @@ Page: https://vovk.dev/realtime-ui
 **Realtime Kanban** is an example app that keeps a Next.js UI in sync with the back end and layers in a grab-bag of AI features — an MCP server, OpenAI function calling, a voice interface, embeddings, and a Telegram bot.
 This series walks through how it's built, showing how users, bots, AI agents, and MCP clients can all update the same board in real time with very little extra code. It's a worked example to learn from and copy, not a framework or a prescribed architecture — take the parts you need.
 
-AI-friendly context for all articles in this series is available [here](https://vovk.dev/context/realtime-ui.md).
+AI-friendly context for all articles in this series is available here.
 
 ## See it in action
 
