@@ -1,11 +1,13 @@
 import os
+import re
 import json
+import functools
 import requests
 from urllib.parse import quote
-import jsonschema
-from jsonschema import FormatChecker
+from jsonschema import FormatChecker, validators
+from jsonschema.exceptions import ValidationError, best_match
 from requests.models import Response
-from typing import Dict, Optional, Any, Generator, Literal, List, Tuple, TypedDict, Union
+from typing import Dict, Optional, Any, Generator, Iterator, Literal, List, Tuple, TypedDict, Union
 
 class HttpExceptionResponseBody(TypedDict):
     cause: Any
@@ -19,6 +21,34 @@ class HttpException(Exception):
         self.message = response_body['message']
         self.status_code = response_body['statusCode']
         self.cause = response_body.get('cause')
+
+@functools.lru_cache(maxsize=None)
+def _compile_pattern(pattern: str) -> Optional['re.Pattern[str]']:
+    try:
+        return re.compile(pattern)
+    except re.error:
+        return None
+
+def _pattern(validator: Any, pattern: str, instance: Any, schema: Dict[str, Any]) -> Iterator[ValidationError]:
+    # schema patterns are JavaScript ones: what Python's re can't read, such as \p{L} or a named group, the server checks
+    compiled = _compile_pattern(pattern)
+    if validator.is_type(instance, 'string') and compiled is not None and not compiled.search(instance):
+        yield ValidationError(f'{instance!r} does not match {pattern!r}')
+
+@functools.lru_cache(maxsize=None)
+def _validator_class(base: Any) -> Any:
+    return validators.extend(base, {'pattern': _pattern})
+
+def _validate(instance: Any, schema: Dict[str, Any]) -> None:
+    # unlike jsonschema.validate, the schema itself isn't checked: that check reads its patterns with Python's re
+    validator = _validator_class(validators.validator_for(schema))(schema, format_checker=FormatChecker())
+    try:
+        error = best_match(validator.iter_errors(instance))
+    except re.error:
+        # another place a pattern sits, such as a patternProperties key: the server checks this value
+        return
+    if error is not None:
+        raise error
 
 class ApiClient:
     @staticmethod
@@ -147,27 +177,25 @@ class ApiClient:
         TIsBinary = body_content_type is not None and not TIsText
         # Validate inputs if validation schema is provided
         if validation and not disable_client_validation:
-            # Always use format checker by default
-            format_checker = FormatChecker()
             # Validate body (skip for form data and binary data since they can't be validated client-side)
             body_content_types = validation.get('body', {}).get('x-contentType', [])
             is_form = 'multipart/form-data' in body_content_types or 'application/x-www-form-urlencoded' in body_content_types
             if validation.get('body') and not is_form and not TIsBinary:
                 if body is None:
                     raise ValueError("Body is required for validation but not provided")
-                jsonschema.validate(instance=body, schema=validation['body'], format_checker=format_checker)
-            
+                _validate(body, validation['body'])
+
             # Validate query
             if validation.get('query'):
                 if query is None:
                     raise ValueError("Query is required for validation but not provided")
-                jsonschema.validate(instance=query, schema=validation['query'], format_checker=format_checker)
-            
+                _validate(query, validation['query'])
+
             # Validate params
             if validation.get('params'):
                 if params is None:
                     raise ValueError("Params are required for validation but not provided")
-                jsonschema.validate(instance=params, schema=validation['params'], format_checker=format_checker)
+                _validate(params, validation['params'])
 
         TIsMultipart = False
         if validation and validation.get('body'):

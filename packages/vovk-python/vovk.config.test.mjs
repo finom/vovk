@@ -29,6 +29,21 @@ const petstore = {
         responses: { 200: { description: 'ok' } },
       },
     },
+    // a JavaScript pattern as a patternProperties key
+    '/tags': {
+      post: {
+        operationId: 'createTags',
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: { type: 'object', patternProperties: { '^\\p{L}+$': { type: 'string' } } },
+            },
+          },
+        },
+        responses: { 200: { description: 'ok' } },
+      },
+    },
     '/documents': {
       post: {
         operationId: 'createDocument',
