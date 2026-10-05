@@ -1,6 +1,7 @@
 import type { VovkController, VovkSegmentSchema } from '../types/core.js';
 import { VovkSchemaIdEnum } from '../types/enums.js';
 import type { StaticClass } from '../types/utils.js';
+import { trimPath } from '../utils/trim-path.js';
 
 export async function getControllerSchema(
   controller: VovkController,
@@ -16,7 +17,7 @@ export async function getControllerSchema(
   return {
     rpcModuleName,
     originalControllerName: controller.name,
-    prefix: controller.prefix ?? '',
+    prefix: trimPath(controller.prefix ?? ''),
     handlers,
   };
 }
