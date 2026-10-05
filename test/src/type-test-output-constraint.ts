@@ -1,4 +1,4 @@
-import { procedure, type VovkBody, type VovkOutput, type VovkParams } from 'vovk';
+import { procedure, type VovkBody, type VovkOutput, type VovkParams, type VovkRequest } from 'vovk';
 import { createRPC } from 'vovk/create-rpc';
 import { z } from 'zod';
 
@@ -118,12 +118,54 @@ const searchParamsTypes = procedure({
   // @ts-expect-error an absent key gives null, not undefined
   searchParams.get('sort') satisfies string | undefined;
   searchParams.getAll('tags') satisfies string[];
+  searchParams.has('sort') satisfies boolean;
+  // @ts-expect-error the query schema has no such key
+  searchParams.get('other');
   for (const [key, value] of searchParams.entries()) {
     key satisfies string;
     value satisfies string;
   }
   return null;
 });
+
+// Test 16: without a query schema, searchParams takes any key, as URLSearchParams does
+const searchParamsWithoutSchema = procedure().handle(async (req) => {
+  const { searchParams } = req.nextUrl;
+  searchParams.get('page') satisfies string | null;
+  // @ts-expect-error an absent key gives null
+  searchParams.get('page') satisfies string;
+  searchParams.getAll('tag') satisfies string[];
+  searchParams.has('page') satisfies boolean;
+  // @ts-expect-error without a query schema, req.vovk.query() is unknown
+  req.vovk.query().page;
+  return null;
+});
+
+class PlainSearchParams {
+  static untyped(req: VovkRequest) {
+    const { searchParams } = req.nextUrl;
+    searchParams.get('page') satisfies string | null;
+    searchParams.getAll('tag') satisfies string[];
+    searchParams.has('page') satisfies boolean;
+    return null;
+  }
+
+  static withoutQuery(req: VovkRequest<null, null>) {
+    req.nextUrl.searchParams.get('page') satisfies string | null;
+    return null;
+  }
+
+  // a query type keys searchParams and req.vovk.query() alike
+  static typed(req: VovkRequest<null, { q?: string }>) {
+    req.nextUrl.searchParams.get('q') satisfies string | null;
+    req.vovk.query().q satisfies string | undefined;
+    // @ts-expect-error the query type has no such key
+    req.nextUrl.searchParams.get('other');
+    // @ts-expect-error the query type has no such key
+    req.vovk.query().other;
+    return null;
+  }
+}
 
 // ====== The raw request: what the client sent, before defaults and transforms ======
 
@@ -245,10 +287,12 @@ export {
   FnResultController,
   noOptions,
   noParamsSchema,
+  PlainSearchParams,
   rawRequestTypes,
   returnsSchemaInput,
   returnsSchemaOutput,
   searchParamsTypes,
+  searchParamsWithoutSchema,
   selfRef,
   TestController,
   test1,
