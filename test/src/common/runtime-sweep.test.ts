@@ -168,7 +168,25 @@ describe('Runtime sweep', () => {
       static throwString() {
         throw 'Plain string';
       }
+
+      static async *streamUnknownStatus() {
+        yield { n: 1 };
+        throw new HttpException(999 as HttpStatus, 'Unknown status');
+      }
+
+      static async *streamInformationalStatus() {
+        yield { n: 1 };
+        throw new HttpException(HttpStatus.CONTINUE, 'Informational status');
+      }
+
+      static async *streamNullStatus() {
+        yield { n: 1 };
+        throw new HttpException(HttpStatus.NULL, 'No response');
+      }
     }
+    get('stream-unknown-status')(FailureController, 'streamUnknownStatus');
+    get('stream-informational-status')(FailureController, 'streamInformationalStatus');
+    get('stream-null-status')(FailureController, 'streamNullStatus');
     get('big-int', { cors: true })(FailureController, 'bigInt');
     get('big-int-cause', { cors: true })(FailureController, 'bigIntCause');
     get('not-modified')(FailureController, 'notModified');
@@ -239,6 +257,27 @@ describe('Runtime sweep', () => {
       deepStrictEqual(await unknown.json(), { statusCode: 500, message: 'Unknown status', isError: true });
       strictEqual(informational.status, 500);
       deepStrictEqual(await informational.json(), { statusCode: 500, message: 'Informational status', isError: true });
+    });
+
+    it('Sends 500 on the error line of an HttpException with a status outside 200-599, as a JSON response does', async () => {
+      const readLines = async (response: Response) =>
+        (await response.text())
+          .split('\n')
+          .filter(Boolean)
+          .map((line) => JSON.parse(line));
+
+      deepStrictEqual(await readLines(await call(handlers, 'GET', 'stream-unknown-status')), [
+        { n: 1 },
+        { isError: true, reason: 'Unknown status', statusCode: 500 },
+      ]);
+      deepStrictEqual(await readLines(await call(handlers, 'GET', 'stream-informational-status')), [
+        { n: 1 },
+        { isError: true, reason: 'Informational status', statusCode: 500 },
+      ]);
+      deepStrictEqual(await readLines(await call(handlers, 'GET', 'stream-null-status')), [
+        { n: 1 },
+        { isError: true, reason: 'No response', statusCode: 500 },
+      ]);
     });
 
     it('Sends a thrown value that is no Error as the message', async () => {
@@ -1208,6 +1247,67 @@ describe('Runtime sweep', () => {
           JSON.stringify(headers)
         );
       }
+    });
+
+    it('Streams the items of an iteration whose server-side validation is off, with validateEachIteration set', async () => {
+      const iteration = z.object({ n: z.number() });
+      class UncheckedController {
+        static all = procedure({ iteration, validateEachIteration: true, disableServerSideValidation: true }).handle(
+          async function* () {
+            yield { n: 1 };
+          }
+        );
+
+        static iteration = procedure({
+          iteration,
+          validateEachIteration: true,
+          disableServerSideValidation: ['iteration'],
+        }).handle(async function* () {
+          yield { n: 1 };
+        });
+      }
+      get('all')(UncheckedController, 'all');
+      get('iteration')(UncheckedController, 'iteration');
+      const handlers = initSegment({ segmentName: 'unchecked', controllers: { UncheckedController } });
+
+      for (const path of ['all', 'iteration']) {
+        const response = await call(handlers, 'GET', path);
+
+        strictEqual(response.status, 200, path);
+        strictEqual(await response.text(), '{"n":1}\n', path);
+      }
+    });
+
+    it('Refuses output and iteration together before any handler runs', () => {
+      const item = z.object({ n: z.number() });
+
+      throws(() => procedure({ output: item, iteration: item }), {
+        message: "Output and iteration are mutually exclusive. You can't use them together.",
+      });
+    });
+
+    it('Answers an undefined return when the output schema takes undefined', async () => {
+      class MaybeController {
+        static maybe = procedure({ output: z.object({ n: z.number() }).optional() }).handle(async () => undefined);
+
+        static missing = procedure({ output: z.object({ n: z.number() }) }).handle(
+          async () => undefined as unknown as { n: number }
+        );
+      }
+      get('maybe')(MaybeController, 'maybe');
+      get('missing')(MaybeController, 'missing');
+      const handlers = initSegment({ segmentName: 'maybe', controllers: { MaybeController } });
+
+      const missing = await call(handlers, 'GET', 'missing');
+      const maybe = await call(handlers, 'GET', 'maybe');
+
+      strictEqual(missing.status, 500);
+      strictEqual(
+        (await missing.json()).message,
+        'Output is required. You probably forgot to return something from your handler.'
+      );
+      deepStrictEqual(await maybe.json(), null);
+      strictEqual(maybe.status, 200);
     });
 
     it('Validates the items of a sync generator', async () => {
