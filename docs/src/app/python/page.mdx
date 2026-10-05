@@ -17,7 +17,7 @@ npm install vovk-python --save-dev
 Create a Python package with the [CLI](/generate) command:
 
 ```sh npm2yarn copy
-npx vovk generate --from py --out ./python_package
+npm exec -- vovk generate --from py --out ./python_package
 ```
 
 This produces:
@@ -45,7 +45,7 @@ python3 -m build ./python_package --wheel --sdist && python3 -m twine upload ./p
 If you prefer generating source files to embed in another Python project, use the `pySrc` template:
 
 ```sh npm2yarn copy
-npx vovk generate --from pySrc --out ./python_src
+npm exec -- vovk generate --from pySrc --out ./python_src
 ```
 
 This generates:

@@ -17,7 +17,7 @@ npm install vovk-rust --save-dev
 Generate a Rust package with the [CLI](/generate):
 
 ```sh npm2yarn copy
-npx vovk generate --from rs --out ./rust_package
+npm exec -- vovk generate --from rs --out ./rust_package
 ```
 
 This produces the following structure:
@@ -44,7 +44,7 @@ cargo publish --manifest-path rust_package/Cargo.toml
 If you prefer generating source files to embed in another Rust project, use the [rsSrc](/templates#rssrc) template:
 
 ```sh npm2yarn copy
-npx vovk generate --from rsSrc --out ./rust_src
+npm exec -- vovk generate --from rsSrc --out ./rust_src
 ```
 
 This generates:

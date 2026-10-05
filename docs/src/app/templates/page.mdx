@@ -66,7 +66,7 @@ export default config;
 This setup allows you to generate the full Cargo package with:
 
 ```sh npm2yarn copy
-npx vovk generate --from rs --out ./dist_rust
+npm exec -- vovk generate --from rs --out ./dist_rust
 ```
 
 Or generate only the source code with:
@@ -78,7 +78,7 @@ npx vovk generate --from rsSrc --out ./my_rust_project/src
 Or only the `README.md` file with:
 
 ```sh npm2yarn copy
-npx vovk generate --from rsReadme --out ./my_rust_project
+npm exec -- vovk generate --from rsReadme --out ./my_rust_project
 ```
 
 <a name="defs" />
@@ -160,7 +160,7 @@ Renders the `openapi.json` file that contains the OpenAPI schema. Can be used se
 To emit just the `openapi.json` file, without generating a client:
 
 ```sh npm2yarn copy
-npx vovk generate --from openapiJson --out ./public
+npm exec -- vovk generate --from openapiJson --out ./public
 ```
 
 ### `readme`

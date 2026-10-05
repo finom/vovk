@@ -36,7 +36,7 @@ The `vovk new` command creates [segments](/segment) and modules (such as control
 ### Root Segment
 
 ```sh npm2yarn copy
-npx vovk new segment
+npm exec -- vovk new segment
 ```
 
 If you run `vovk new segment` without an argument, it creates a root segment at **/src/app/api/[[...vovk]]/route.ts** (formatted with [Prettier](https://www.npmjs.com/package/prettier)). The `segmentName` option of `initSegment` is an empty string and can be omitted. The generated file contains:
@@ -63,7 +63,7 @@ Root segments can be used alongside nested segments of any depth.
 ### Nested Segment
 
 ```sh npm2yarn copy
-npx vovk new segment foo
+npm exec -- vovk new segment foo
 ```
 
 Running `vovk new segment foo` creates **/src/app/api/foo/[[...vovk]]/route.ts** (formatted with Prettier). The generated file includes:
@@ -90,7 +90,7 @@ The segment exposes an API at **/api/foo/...**.
 <Image src={newModuleSvg} alt="vovk new module" className="dark:invert" />
 
 ```sh npm2yarn copy
-npx vovk new controller service foo/user
+npm exec -- vovk new controller service foo/user
 ```
 
 `vovk new` (with anything other than `segment`) creates new modules in **/src/modules** (formatted with Prettier).
@@ -102,7 +102,7 @@ Command structure:
 - Module name (singular) with optional segment prefix: `foo/user` creates a module in **/src/modules/foo/user/** and updates the `foo` segment. Omit the segment to target the root:
 
 ```sh npm2yarn copy
-npx vovk new controller service user
+npm exec -- vovk new controller service user
 ```
 
 When you create a controller with `vovk new`, the script updates the `controllers` list in the segment file and modifies `route.ts` using [AST](https://www.npmjs.com/package/ts-morph).
@@ -341,7 +341,7 @@ export default class <%= vars.ServiceName %> {
 When you run:
 
 ```sh npm2yarn copy
-npx vovk new controller service userCart
+npm exec -- vovk new controller service userCart
 ```
 
 It creates **user-cart-controller.ts** and **user-cart-service.ts** in **/src/modules/user-cart/** and updates the root segment with the new controller.
