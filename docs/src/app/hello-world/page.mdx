@@ -1,7 +1,5 @@
 import { Tabs } from 'nextra/components';
 import IFrame from './iframe';
-import Asciinema from '../../components/asciinema-player';
-import NoSSR from '../../components/no-ssr';
 
 # "Hello World" Example
 
@@ -16,7 +14,7 @@ The "Hello World" app at [hello-world.vovk.dev](https://hello-world.vovk.dev/) i
 - Back-end:
   - `UserController` with an `updateUser` method (POST `/api/users/{id}`).
   - `StreamController` with a JSONLines `streamTokens` handler (GET `/api/streams/tokens`).
-  - `OpenApiController` with `getSpec` (GET `/api/static/openapi/spec.json`), serving the generated OpenAPI spec. Documentation is viewable at the [`/openapi` page](https://hello-world.vovk.dev/openapi).
+  - `OpenApiController` with `getSpec` (GET `/api/static/openapi.json`), serving the generated OpenAPI spec. Documentation is viewable at the [`/openapi` page](https://hello-world.vovk.dev/openapi).
 - Front-end:
   - A form plus a JSONLines streaming demo above it.
 - Configuration:
@@ -626,7 +624,7 @@ The original package.json is used to populate metadata (`repository`, `homepage`
     "build": "next build",
     "start": "next start",
     "lint": "biome check",
-    "test:node": "node --experimental-strip-types --test --test-concurrency=1",
+    "test:node": "tsx --test --test-concurrency=1",
     "test:python": "python3 -m pip install -q -r test/python/requirements.txt && python3 -m unittest discover -s test/python -p '*_test.py'",
     "test:rust": "RUST_BACKTRACE=full RUST_TEST_THREADS=1 cargo test --manifest-path ./test/rust/Cargo.toml --tests -- --nocapture --show-output",
     "pretest": "next build",
@@ -659,7 +657,7 @@ The original package.json is used to populate metadata (`repository`, `homepage`
     "@tanstack/react-query": "^5.101.4",
     "ajv": "^8.20.0",
     "ajv-errors": "^3.0.0",
-    "next": "^16.3.0",
+    "next": "^16.3.6",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
     "vovk": "^4.0.0-beta.0",
@@ -676,6 +674,7 @@ The original package.json is used to populate metadata (`repository`, `homepage`
     "prettier": "^3.9.6",
     "tailwindcss": "^4.3.3",
     "tsdown": "^0.22.14",
+    "tsx": "^4.23.7",
     "typescript": "^5",
     "vovk-cli": "^0.3.0-beta.0",
     "vovk-hello-world-published": "npm:vovk-hello-world@^0.0.88",
@@ -739,30 +738,16 @@ The spec includes Scalar‑compatible samples you can reuse immediately.
 <a name="bundle" />
 ## Building and Packaging
 
-<div className="mt-4">
-  <NoSSR>
-    <Asciinema src="/asciinema/hello-world-patch.cast" />
-  </NoSSR>
-</div>
-
 This example also demonstrates how to quickly produce distributable packages published on [npm](https://www.npmjs.com/package/vovk-hello-world), [PyPI](https://pypi.org/project/vovk-hello-world/), and [crates.io](https://crates.io/crates/vovk_hello_world). The provided [templates](/templates) compile ready-to-use packages with language-specific files such as [package.json](https://github.com/finom/vovk/blob/main/examples/hello-world/dist/package.json), [Cargo.toml](https://github.com/finom/vovk/blob/main/examples/hello-world/dist_rust/Cargo.toml), and [pyproject.toml](https://github.com/finom/vovk/blob/main/examples/hello-world/dist_python/pyproject.toml), as well as README files that use code samples served as API/client documentation.
 
-`npm run patch`:
-
-1. Verifies a clean working tree.
-2. Bumps the patch version.
-3. Triggers `postversion` to regenerate clients, bundle TypeScript, create package files and README files, publish all packages, and create a commit + tag.
+`vovk generate` writes the Python and Rust packages to **dist_python** and **dist_rust**, as `composedClient.fromTemplates` lists `py` and `rs`, and `vovk bundle` builds the npm package into **dist**. Each package is published with its own script:
 
 ```json
 "scripts": {
   // ...
   "publish:node": "npm publish ./dist",
   "publish:rust": "cargo publish --manifest-path dist_rust/Cargo.toml --allow-dirty",
-  "publish:python": "python3 -m build ./dist_python --wheel --sdist && python3 -m twine upload ./dist_python/dist/*",
-  "git-tag": "git add . && git commit -m \"chore: release v$(node -p \"require('./package.json').version\")\" && git tag v$(node -p \"require('./package.json').version\")",
-  "check-uncommitted": "git diff --quiet && git diff --cached --quiet || (echo '❌ Uncommitted changes!' && exit 1)",
-  "postversion": "vovk generate && vovk bundle && npm run publish:node && npm run publish:rust && npm run publish:python && npm run git-tag",
-  "patch": "npm run check-uncommitted && npm version patch --no-git-tag-version"
+  "publish:python": "python3 -m build ./dist_python --wheel --sdist && python3 -m twine upload ./dist_python/dist/*"
 }
 ```
 
