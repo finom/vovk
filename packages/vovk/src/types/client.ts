@@ -11,7 +11,7 @@ import type {
 import type { HttpMethod } from './enums.js';
 import type { VovkRequest } from './request.js';
 import type { IsAny, IsEmptyObject, KnownAny, Prettify } from './utils.js';
-import type { BodyTypeFromContentType, ContentType, VovkValidateOnClient } from './validation.js';
+import type { ContentType, VovkValidateOnClient } from './validation.js';
 
 type OmitNullable<T> = {
   [K in keyof T as T[K] extends null | undefined ? never : K]: T[K];
@@ -19,45 +19,37 @@ type OmitNullable<T> = {
 
 type MetaInput = { meta?: { [key: string]: KnownAny } };
 
-type QueryInput<TQuery> = TQuery extends Record<KnownAny, KnownAny> ? { query: TQuery } : unknown;
+// a plain method, or a mixin, declares a part of the request with any type but unknown, null and undefined
+type IsDeclared<T> = unknown extends T ? false : [T] extends [null | undefined] ? false : true;
 
-type ParamsInput<TParams> = TParams extends Record<KnownAny, KnownAny> ? { params: TParams } : unknown;
+// a body is optional when it may be undefined, a query or params when {} fits their type
+type PlainInput<TBody, TQuery, TParams> = (IsDeclared<TBody> extends true
+  ? undefined extends TBody
+    ? { body?: TBody }
+    : { body: TBody }
+  : unknown) &
+  (IsDeclared<TQuery> extends true ? ({} extends TQuery ? { query?: TQuery } : { query: TQuery }) : unknown) &
+  (IsDeclared<TParams> extends true ? ({} extends TParams ? { params?: TParams } : { params: TParams }) : unknown);
 
-// a procedure takes the input types of its schemas
-type ProcedureInput<TTypes> = TTypes extends {
-  bodyInput: infer TBody;
-  queryInput: infer TQuery;
-  paramsInput: infer TParams;
-  contentType: infer CT extends ContentType[];
+// the parts of a request a plain method types with VovkRequest<TBody, TQuery, TParams>
+type RequestParts<TReq> = TReq extends {
+  vovk: { body: () => Promise<infer TBody>; query: () => infer TQuery; params: () => infer TParams };
 }
-  ? (unknown extends TBody
-      ? // no body schema: a declared content type other than JSON still takes a body
-        CT[number] extends 'application/json'
-        ? unknown
-        : { body?: BodyTypeFromContentType<CT, unknown> }
-      : { body: BodyTypeFromContentType<CT, TBody> }) &
-      QueryInput<TQuery> &
-      ParamsInput<TParams> &
-      MetaInput
+  ? PlainInput<TBody, TQuery, TParams>
   : unknown;
 
-export type StaticMethodInput<
-  T extends ((req: VovkRequest<KnownAny, KnownAny, KnownAny>, params: KnownAny) => KnownAny) & {
-    __types?: {
-      body: unknown;
-      contentType: ContentType[];
-    };
-  },
-> = OmitNullable<
-  T extends { __types: { bodyInput: unknown } }
-    ? ProcedureInput<T['__types']>
-    : (Parameters<T>[0] extends VovkRequest<infer TBody, infer TQuery, infer TParams>
-        ? (TBody extends Record<KnownAny, KnownAny> ? { body: TBody } : unknown) &
-            QueryInput<TQuery> &
-            ParamsInput<TParams> &
-            MetaInput
-        : unknown) &
-        (Parameters<T>[1] extends Record<KnownAny, KnownAny> ? { params: Parameters<T>[1] } : unknown)
+type StaticMethodLike = ((req: VovkRequest<KnownAny, KnownAny, KnownAny>, params: KnownAny) => KnownAny) & {
+  __types?: {
+    body: unknown;
+    contentType: ContentType[];
+  };
+};
+
+export type StaticMethodInput<T extends StaticMethodLike> = OmitNullable<
+  (T extends { __types: { input: infer TInput } }
+    ? TInput
+    : RequestParts<Parameters<T>[0]> & PlainInput<unknown, unknown, Parameters<T>[1]>) &
+    MetaInput
 >;
 
 type ToPromise<T> = T extends PromiseLike<unknown> ? T : Promise<T>;
@@ -151,6 +143,12 @@ export type ClientMethodReturn<
       : Promise<VovkStreamAsyncIterable<StreamItem<T>>>
     : Promise<Awaited<R>>;
 
+// the part of a method's input that goes into its URL
+type URLInput<T extends StaticMethodLike> = Pick<
+  Prettify<StaticMethodInput<T>>,
+  Extract<'params' | 'query', keyof Prettify<StaticMethodInput<T>>>
+>;
+
 export type ClientMethod<
   T extends ((
     req: VovkRequest<KnownAny, KnownAny, KnownAny>,
@@ -179,18 +177,9 @@ export type ClientMethod<
   controllerSchema: VovkControllerSchema;
   segmentSchema: VovkSegmentSchema;
   fullSchema: VovkSchema;
-  getURL: IsEmptyObject<
-    Pick<Prettify<StaticMethodInput<T>>, Extract<'params' | 'query', keyof Prettify<StaticMethodInput<T>>>>
-  > extends true
-    ? (urlInput?: { apiRoot?: string }) => string
-    : (
-        urlInput: Pick<
-          Prettify<StaticMethodInput<T>>,
-          Extract<'params' | 'query', keyof Prettify<StaticMethodInput<T>>>
-        > & {
-          apiRoot?: string;
-        }
-      ) => string;
+  getURL: IsEmptyObject<URLInput<T>> extends true
+    ? (urlInput?: URLInput<T> & { apiRoot?: string }) => string
+    : (urlInput: URLInput<T> & { apiRoot?: string }) => string;
   apiRoot: string;
   queryKey: (key?: unknown[]) => unknown[];
   __types: T['__types'];

@@ -3,13 +3,15 @@ import type { JSONLinesResponder } from '../core/json-lines-responder.js';
 import type { VovkValidationType } from '../types/core.js';
 import type { VovkOperationObject } from '../types/operation.js';
 import type { VovkRequest } from '../types/request.js';
-import type { KnownAny, NoInference } from '../types/utils.js';
+import type { IsEmptyObject, KnownAny, NoInference, Prettify } from '../types/utils.js';
 import type {
-  BodyTypeFromContentType,
   CombinedSpec,
   ContentType,
   NormalizeContentType,
+  NoSchema,
   ParsedBodyTypeFromContentType,
+  ProcedureFnInput,
+  ProcedureInput,
 } from '../types/validation.js';
 import { HttpStatus } from './create-validate-on-client.js';
 import { withValidationLibrary } from './with-validation-library.js';
@@ -108,6 +110,9 @@ export function createStandardValidation({
       ? Awaited<ReturnType<THandleFn>>
       : AsyncGenerator<TIterationValue, void, unknown>;
 
+  // the input argument is optional when every key in it is
+  type FnArgs<TInput> = IsEmptyObject<TInput> extends true ? [input?: TInput] : [input: TInput];
+
   // return type for procedure().handle(), stores THandleFn instead of ReturnType<THandleFn>
   // to avoid circular inference when the handler calls a service typed via the controller
   type BuilderHandleReturn<
@@ -119,6 +124,12 @@ export function createStandardValidation({
     TContentType extends ContentType | ContentType[],
     TReq extends VovkRequest<KnownAny, KnownAny, KnownAny>,
     THandleFn extends (...args: KnownAny[]) => KnownAny = (...args: KnownAny[]) => KnownAny,
+    TFnInput = Prettify<
+      ProcedureFnInput<TBody, TQuery, TParams, NormalizeContentType<TContentType>> & {
+        meta?: Record<string, KnownAny>;
+        disableClientValidation?: boolean;
+      }
+    >,
   > = {
     (req: TReq, params: ParamsOutput<TParams>): KnownAny;
     __types: {
@@ -129,57 +140,37 @@ export function createStandardValidation({
       iteration: TIteration extends CombinedSpec ? CombinedSpec.InferOutput<TIteration> : KnownAny;
       contentType: NormalizeContentType<TContentType>;
       // what a caller sends: a default, a coercion or a transform makes it differ from what the handler gets
-      bodyInput: CombinedSpec.InferInput<TBody>;
-      queryInput: CombinedSpec.InferInput<TQuery>;
-      paramsInput: CombinedSpec.InferInput<TParams>;
+      input: ProcedureInput<TBody, TQuery, TParams, NormalizeContentType<TContentType>>;
     };
     __handleFn: THandleFn;
     isRPC?: boolean;
     fn: {
-      <TTransformed>(input: {
-        body?: TBody extends CombinedSpec
-          ? BodyTypeFromContentType<NormalizeContentType<TContentType>, CombinedSpec.InferInput<TBody>>
-          : undefined;
-        query?: TQuery extends CombinedSpec ? CombinedSpec.InferInput<TQuery> : undefined;
-        params?: TParams extends CombinedSpec ? CombinedSpec.InferInput<TParams> : undefined;
-        meta?: Record<string, KnownAny>;
-        disableClientValidation?: boolean;
-        transform: (
-          data: FnResult<THandleFn, CombinedSpec.InferOutput<TIteration>>,
-          fakeReq: Pick<TReq, 'vovk'>
-        ) => TTransformed;
-      }): Promise<TTransformed>;
+      <TTransformed>(
+        input: TFnInput & {
+          transform: (
+            data: FnResult<THandleFn, CombinedSpec.InferOutput<TIteration>>,
+            fakeReq: Pick<TReq, 'vovk'>
+          ) => TTransformed;
+        }
+      ): Promise<TTransformed>;
       // a type argument sets the result, the type the caller expects doesn't
-      <TReturnType = FnResult<THandleFn, CombinedSpec.InferOutput<TIteration>>>(input?: {
-        body?: TBody extends CombinedSpec
-          ? BodyTypeFromContentType<NormalizeContentType<TContentType>, CombinedSpec.InferInput<TBody>>
-          : undefined;
-        query?: TQuery extends CombinedSpec ? CombinedSpec.InferInput<TQuery> : undefined;
-        params?: TParams extends CombinedSpec ? CombinedSpec.InferInput<TParams> : undefined;
-        meta?: Record<string, KnownAny>;
-        disableClientValidation?: boolean;
-      }): Promise<Awaited<NoInference<TReturnType>>>;
-      (input?: {
-        body?: TBody extends CombinedSpec
-          ? BodyTypeFromContentType<NormalizeContentType<TContentType>, CombinedSpec.InferInput<TBody>>
-          : undefined;
-        query?: TQuery extends CombinedSpec ? CombinedSpec.InferInput<TQuery> : undefined;
-        params?: TParams extends CombinedSpec ? CombinedSpec.InferInput<TParams> : undefined;
-        meta?: Record<string, KnownAny>;
-        disableClientValidation?: boolean;
-      }): Promise<FnResult<THandleFn, CombinedSpec.InferOutput<TIteration>>>;
+      <TReturnType = FnResult<THandleFn, CombinedSpec.InferOutput<TIteration>>>(
+        ...input: FnArgs<TFnInput>
+      ): Promise<Awaited<NoInference<TReturnType>>>;
+      (...input: FnArgs<TFnInput>): Promise<FnResult<THandleFn, CombinedSpec.InferOutput<TIteration>>>;
     };
     definition: KnownAny;
     schema: KnownAny;
     wrapper?: KnownAny;
   };
 
+  // a schema left out gets NoSchema, so a schema whose input type is unknown, such as z.unknown(), still counts
   function procedure<
-    TBody extends CombinedSpec,
-    TQuery extends CombinedSpec,
-    TParams extends CombinedSpec,
-    TOutput extends CombinedSpec,
-    TIteration extends CombinedSpec,
+    TBody extends CombinedSpec = NoSchema,
+    TQuery extends CombinedSpec = NoSchema,
+    TParams extends CombinedSpec = NoSchema,
+    TOutput extends CombinedSpec = NoSchema,
+    TIteration extends CombinedSpec = NoSchema,
     TContentType extends ContentType | ContentType[] = ['application/json'],
     TReq extends VovkRequest<KnownAny, KnownAny, KnownAny> = VovkRequest<
       // without a body schema, the declared content type says what req.vovk.body() parses the body into
