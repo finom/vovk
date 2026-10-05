@@ -63,7 +63,7 @@ export default class AiSdkController {
 
     const result = streamText({
       model: openai('gpt-5'),
-      system: 'You execute functions sequentially, one by one.',
+      instructions: 'You execute functions sequentially, one by one.',
       messages: await convertToModelMessages(messages),
       tools: toolSet,
       stopWhen: stepCountIs(16),
