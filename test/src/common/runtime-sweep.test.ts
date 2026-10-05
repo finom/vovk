@@ -1186,7 +1186,19 @@ describe('Runtime sweep', () => {
     it('Lets a decorator copy a request whose body was validated, to forward or log it', async () => {
       const forward = createDecorator(async (req, next) => {
         const result = await next();
-        return { result, cloned: await req.clone().text(), copied: await new Request(req).text() };
+        const upstream = 'http://upstream.example/notes';
+        return {
+          result,
+          cloned: await req.clone().text(),
+          copied: await new Request(upstream, req).text(),
+          // as fetch(upstream, init) builds its request
+          forwarded: await new Request(upstream, {
+            method: req.method,
+            headers: req.headers,
+            body: req.body,
+            duplex: 'half',
+          } as RequestInit).text(),
+        };
       });
       class ForwardController {
         static create = procedure({ body: z.object({ title: z.string() }) }).handle(async (req) => req.vovk.body());
@@ -1202,7 +1214,12 @@ describe('Runtime sweep', () => {
       });
 
       strictEqual(response.status, 200);
-      deepStrictEqual(await response.json(), { result: { title: 'Hello' }, cloned: text, copied: text });
+      deepStrictEqual(await response.json(), {
+        result: { title: 'Hello' },
+        cloned: text,
+        copied: text,
+        forwarded: text,
+      });
     });
 
     it('Validates a missing body as undefined, so an optional body can be left out', async () => {
