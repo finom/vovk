@@ -12,6 +12,22 @@ const toSnakeCase = (str: string) =>
     .toLowerCase()
     .replace(/^_/, ''); // Remove leading underscore
 
+// the name the Python and Rust clients give a handler: in schema order, a name already taken in the module gets the
+// first free suffix, so getUserByID and getUserById become get_user_by_id and get_user_by_id_2
+function getSnakeCaseName(handlerName: string, moduleHandlerNames: string[], taken: string[] = []): string {
+  const used = new Set(taken);
+  let unique = '';
+  // a handler the module doesn't list comes last
+  for (const name of new Set([...moduleHandlerNames, handlerName])) {
+    const snake = toSnakeCase(name);
+    unique = snake;
+    for (let i = 2; used.has(unique); i++) unique = `${snake}_${i}`;
+    if (name === handlerName) break;
+    used.add(unique);
+  }
+  return unique;
+}
+
 const getIndentSpaces = (level: number): string => ' '.repeat(level);
 
 function isTextFormat(mimeType?: string): boolean {
@@ -47,6 +63,8 @@ export type CodeSamplePackageJson = {
 
 type CodeGenerationParams = {
   handlerName: string;
+  // the handler's method in the client of the sample's language
+  methodName: string;
   rpcName: string;
   packageName: string;
   queryValidation?: VovkJSONSchemaBase;
@@ -155,7 +173,7 @@ for await (const item of response) {
 }
 
 function generatePythonCode({
-  handlerName,
+  methodName,
   rpcName,
   packageName,
   queryValidation,
@@ -181,8 +199,6 @@ function generatePythonCode({
       .split('\n')
       .map((line) => `${indent}# ${line}`.trimEnd())
       .join('\n');
-
-  const handlerNameSnake = toSnakeCase(handlerName);
 
   const getFileTouple = (schema: VovkJSONSchemaBase) => {
     return `('name.ext', BytesIO(${isTextFormat(schema.contentMediaType) ? '"text_content".encode("utf-8")' : 'binary_data'})${schema.contentMediaType ? `, "${schema.contentMediaType}"` : ''})`;
@@ -217,7 +233,7 @@ function generatePythonCode({
 
   const PY_CODE = `from ${packageName} import ${rpcName}
 ${bodyValidation && isForm(bodyValidation) ? 'from io import BytesIO\n' : ''}
-response = ${rpcName}.${handlerNameSnake}(${
+response = ${rpcName}.${methodName}(${
     hasArg
       ? '\n' +
         [
@@ -249,7 +265,7 @@ ${commentOut(getPySample(iterationValidation, 0), '    ')}`
 }
 
 function generateRustCode({
-  handlerName,
+  methodName,
   rpcName,
   packageName,
   queryValidation,
@@ -316,7 +332,6 @@ function generateRustCode({
     return serdeUnwrap(getRsJSONSample(schema));
   };
 
-  const handlerNameSnake = toSnakeCase(handlerName);
   const rpcNameSnake = toSnakeCase(rpcName);
 
   const serdeUnwrap = (fake: string) => `from_value(json!(${fake})).unwrap()`;
@@ -328,7 +343,7 @@ use serde_json::{
 };
 ${iterationValidation ? 'use futures_util::StreamExt;\n' : ''}${bodyValidation && isForm(bodyValidation) ? `use reqwest::multipart;\n` : ''}#[tokio::main]
 async fn main() {${bodyValidation && isForm(bodyValidation) ? `\n  ${getRsFormSample(bodyValidation)}\n` : ''}
-  let response = ${rpcNameSnake}::${handlerNameSnake}(
+  let response = ${rpcNameSnake}::${methodName}(
     ${bodyValidation ? getBody(bodyValidation) : '()'}, /* body */ 
     ${queryValidation ? serdeUnwrap(getRsJSONSample(queryValidation)) : '()'}, /* query */ 
     ${paramsValidation ? serdeUnwrap(getRsJSONSample(paramsValidation)) : '()'}, /* params */ 
@@ -401,9 +416,14 @@ export function createCodeSamples({
   const packageNameSnake = toSnakeCase(packageJson?.name || 'client');
   const pyPackageName = packageJson?.py_name ?? packageNameSnake;
   const rsPackageName = packageJson?.rs_name ?? packageNameSnake;
+  const handlerNames = Object.keys(controllerSchema.handlers ?? {});
+  const pyMethodName = getSnakeCaseName(handlerName, handlerNames);
+  // the Rust module imports functions named http_request and http_request_stream
+  const rsFunctionName = getSnakeCaseName(handlerName, handlerNames, ['http_request', 'http_request_stream']);
 
   const commonParams: CodeGenerationParams = {
     handlerName,
+    methodName: handlerName,
     rpcName,
     packageName,
     queryValidation,
@@ -416,8 +436,8 @@ export function createCodeSamples({
   };
 
   const ts = generateTypeScriptCode(commonParams);
-  const py = generatePythonCode({ ...commonParams, packageName: pyPackageName });
-  const rs = generateRustCode({ ...commonParams, packageName: rsPackageName });
+  const py = generatePythonCode({ ...commonParams, packageName: pyPackageName, methodName: pyMethodName });
+  const rs = generateRustCode({ ...commonParams, packageName: rsPackageName, methodName: rsFunctionName });
 
   return { ts, py, rs };
 }

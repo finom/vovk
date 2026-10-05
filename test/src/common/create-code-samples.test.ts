@@ -1235,6 +1235,35 @@ const response = await MixedFormRPC.uploadProfile({
     });
   });
 
+  describe('Method names alike in snake_case', () => {
+    // the Python and Rust clients name the methods of a module in schema order, a taken name gets the first free suffix
+    const handlers = {
+      getUserByID: { httpMethod: 'GET', path: 'by-id' },
+      getUserById: { httpMethod: 'POST', path: 'by-id' },
+      get_user_by_id: { httpMethod: 'PUT', path: 'by-id' },
+      httpRequest: { httpMethod: 'GET', path: 'request' },
+    } as VovkControllerSchema['handlers'];
+    const controllerSchema: VovkControllerSchema = { rpcModuleName: 'UserRPC', prefix: 'users', handlers };
+    const methodsCalled = (handlerName: string) => {
+      const { py, rs } = createCodeSamples({
+        handlerName,
+        handlerSchema: handlers[handlerName],
+        controllerSchema,
+        package: { name: 'client' },
+        config: {},
+      });
+      return [py.match(/UserRPC\.(\w+)\(/)?.[1], rs.match(/user_rpc::(\w+)\(/)?.[1]];
+    };
+
+    test('each handler calls the method the client gives it', () => {
+      assert.deepStrictEqual(methodsCalled('getUserByID'), ['get_user_by_id', 'get_user_by_id']);
+      assert.deepStrictEqual(methodsCalled('getUserById'), ['get_user_by_id_2', 'get_user_by_id_2']);
+      assert.deepStrictEqual(methodsCalled('get_user_by_id'), ['get_user_by_id_3', 'get_user_by_id_3']);
+      // the Rust module imports functions named http_request and http_request_stream
+      assert.deepStrictEqual(methodsCalled('httpRequest'), ['http_request', 'http_request_2']);
+    });
+  });
+
   // SEC-03: the sample generator expands every $ref with a fresh "seen" set per branch, so a component
   // that references one of depth N twice is inlined 2^N times. A tiny malicious OpenAPI spec (a developer
   // generates its README, Rust or Python client) produces a gigantic sample and exhausts memory.
