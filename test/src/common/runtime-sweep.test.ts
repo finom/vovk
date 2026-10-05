@@ -497,6 +497,28 @@ describe('Runtime sweep', () => {
       }
     });
 
+    it('Refuses one function as the handler of two decorate() calls, and keeps the function as the member', () => {
+      const authGuard = createDecorator((_req, next) => next());
+      // the function would take the decorators of both calls, and each member would get them all
+      const list = async () => ['list'];
+      throws(
+        () =>
+          class SharedController {
+            static a = decorate(get('a'), authGuard()).handle(list);
+            static b = decorate(get('b')).handle(list);
+          },
+        {
+          message:
+            'decorate().handle() got the handler of another decorate() call: use a separate function for each member',
+        }
+      );
+      const own = async () => ['own'];
+      class OwnController {
+        static a = decorate(get('a'), authGuard()).handle(own);
+      }
+      strictEqual(OwnController.a, own);
+    });
+
     it('Answers a path two controllers of a segment declare with a JSON error and calls onError', async () => {
       const errors: string[] = [];
       class FirstController {

@@ -139,13 +139,14 @@ export function decorate(...args: unknown[]): KnownAny {
         throw new Error('decorate().handle() requires a handler function');
       }
       const handler = procedureResult ? procedureResult.handle(fn) : fn;
-
-      handler._decorateMetadata = handler._decorateMetadata ?? {};
-      handler._decorateMetadata.decoratorAppliers = handler._decorateMetadata.decoratorAppliers ?? [];
-
-      for (const decoratorFn of decoratorFns) {
-        handler._decorateMetadata.decoratorAppliers.push(decoratorFn);
+      // the handler of two decorate() calls would take the decorators of both, and each member would get them all
+      if (handler._decorateMetadata) {
+        throw new Error(
+          'decorate().handle() got the handler of another decorate() call: use a separate function for each member'
+        );
       }
+
+      handler._decorateMetadata = { decoratorAppliers: [...decoratorFns] };
 
       // until the decorators are applied to the class, fn() runs the middlewares here, so no guard is skipped
       const middlewares = decoratorFns.flatMap((decoratorFn) => decoratorMiddlewares.get(decoratorFn) ?? []);
