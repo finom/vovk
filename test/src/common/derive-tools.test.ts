@@ -1,10 +1,15 @@
 import assert from 'node:assert';
 import { describe, it } from 'node:test';
 import {
+  decorate,
   deriveTools,
+  get,
   HttpException,
+  initSegment,
   JSONLinesResponder,
+  operation,
   procedure,
+  put,
   ToModelOutput,
   toDownloadResponse,
   type VovkOutput,
@@ -915,6 +920,41 @@ describe('deriveTools', () => {
         .map((i) => (i.path?.[0] as { key?: string } | undefined)?.key);
       assert.ok(missingKeys.includes('query'));
       assert.ok(missingKeys.includes('params'));
+    });
+  });
+
+  describe('Controllers with operation() applied before the HTTP decorator', () => {
+    class UserController {
+      static prefix = 'users';
+
+      // the decorate() sample of the docs: the HTTP decorator listed first is applied last
+      static updateUser = decorate(
+        put('{id}'),
+        operation({ summary: 'Update user' }),
+        procedure({ params: z.object({ id: z.string() }), body: z.object({ email: z.string() }) })
+      ).handle(async (req, { id }) => ({ id, ...(await req.vovk.body()) }));
+
+      static getUser = procedure({ params: z.object({ id: z.string() }) }).handle(async (_req, { id }) => ({ id }));
+    }
+    // @get('{id}') written above @operation()
+    operation({ summary: 'Get user' })(UserController, 'getUser');
+    get('{id}')(UserController, 'getUser');
+    initSegment({ segmentName: 'derive-tools', controllers: { UserRPC: UserController } });
+
+    it('Derives their tools', () => {
+      assert.deepStrictEqual(
+        deriveTools({ modules: { UserController } }).map(({ name }) => name),
+        ['UserController_updateUser', 'UserController_getUser']
+      );
+    });
+
+    it('Gives the method the schema of its RPC method', () => {
+      const { path, httpMethod, operationObject } = UserController.updateUser.schema;
+
+      assert.deepStrictEqual(
+        { path, httpMethod, summary: operationObject?.summary },
+        { path: '{id}', httpMethod: 'PUT', summary: 'Update user' }
+      );
     });
   });
 });

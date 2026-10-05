@@ -9,18 +9,21 @@ import {
   createDecorator,
   decorate,
   del,
+  deriveTools,
   get,
   HttpException,
   HttpStatus,
   initSegment,
   JSONLinesResponder,
   multitenant,
+  operation,
   patch,
   post,
   prefix,
   procedure,
   type VovkRequest,
 } from 'vovk';
+import { createRPC } from 'vovk/create-rpc';
 import { z } from 'zod';
 
 type Handlers = ReturnType<typeof initSegment>;
@@ -542,6 +545,134 @@ describe('Runtime sweep', () => {
       await call(v2, 'GET', 'fail');
       deepStrictEqual(errors, ['v1', 'v2']);
     });
+
+    describe('A clone of a decorate() controller in another segment', () => {
+      const defineControllers = () => {
+        class UserController {
+          static prefix = 'users';
+
+          static getUser = decorate(get('{id}'), procedure({ params: z.object({ id: z.string() }) })).handle(
+            async (_req, { id }) => ({ id })
+          );
+        }
+        class UserControllerV2 extends UserController {}
+        prefix('v2')(UserControllerV2);
+        cloneControllerMetadata()(UserControllerV2);
+        return { UserController, UserControllerV2 };
+      };
+      // what the clone's segment answers at v2/1, and the path its schema emits for the RPC method
+      const getServed = async (handlers: Handlers) => {
+        const response = await call(handlers, 'GET', 'v2/1');
+        const { schema } = await (await call(handlers, 'GET', '_schema_')).json();
+        return {
+          status: response.status,
+          body: await response.json(),
+          path: schema.controllers.UserRPC.handlers.getUser?.path,
+        };
+      };
+      const served = { status: 200, body: { id: '1' }, path: '{id}' };
+
+      // as on a platform that runs each route.ts in its own function
+      it("Serves and emits the parent's routes when its segment is the only one loaded", async () => {
+        const { UserControllerV2 } = defineControllers();
+
+        await withNodeEnv('development', async () => {
+          const v2 = initSegment({ segmentName: 'clone-alone', controllers: { UserRPC: UserControllerV2 } });
+
+          deepStrictEqual(await getServed(v2), served);
+        });
+      });
+
+      it("Serves and emits the parent's routes after the parent's own segment", async () => {
+        const { UserController, UserControllerV2 } = defineControllers();
+
+        await withNodeEnv('development', async () => {
+          const v1 = initSegment({ segmentName: 'clone-parent', controllers: { UserRPC: UserController } });
+          const v2 = initSegment({ segmentName: 'clone-child', controllers: { UserRPC: UserControllerV2 } });
+
+          deepStrictEqual(await getServed(v2), served);
+          strictEqual((await call(v1, 'GET', 'users/1')).status, 200);
+        });
+      });
+    });
+
+    it('Trims the slashes of a static prefix, as @prefix() does', async () => {
+      await withNodeEnv('development', async () => {
+        class MemberController {
+          static prefix = '/members/';
+
+          static getMember = decorate(get('{id}'), procedure({ params: z.object({ id: z.string() }) })).handle(
+            async (_req, { id }) => ({ id })
+          );
+        }
+        const handlers = initSegment({ segmentName: 'static-prefix', controllers: { MemberRPC: MemberController } });
+
+        const response = await call(handlers, 'GET', 'members/1');
+
+        strictEqual(response.status, 200);
+        deepStrictEqual(await response.json(), { id: '1' });
+        const { schema } = await (await call(handlers, 'GET', '_schema_')).json();
+        strictEqual(schema.controllers.MemberRPC.prefix, 'members');
+      });
+    });
+  });
+
+  // a server component, a server action, a tools route or a unit test imports the controller, not the segment's
+  // route.ts, so no initSegment has run in that process
+  describe('decorate() before initSegment', () => {
+    // a controller whose guard refuses a call without a user, and how many times the guard ran
+    const defineSecretController = () => {
+      const guard = { runs: 0 };
+      const authGuard = createDecorator(async (req, next) => {
+        guard.runs++;
+        if (!req.vovk.meta<{ userId?: string }>().userId) {
+          throw new HttpException(HttpStatus.UNAUTHORIZED, 'Missing token');
+        }
+        return next();
+      });
+      class SecretController {
+        static getSecret = decorate(
+          get('secret'),
+          authGuard(),
+          procedure({ operationObject: { summary: 'Get the secret' } })
+        ).handle(async () => ({ secret: 'top secret' }));
+      }
+      return { SecretController, guard };
+    };
+
+    it('Runs the guard of a decorate() procedure on fn()', async () => {
+      const { SecretController, guard } = defineSecretController();
+
+      await rejects(SecretController.getSecret.fn(), { statusCode: 401, message: 'Missing token' });
+
+      // the segment loaded later wraps the procedure no second time
+      const handlers = initSegment({ segmentName: 'secret', controllers: { SecretController } });
+      strictEqual((await call(handlers, 'GET', 'secret')).status, 401);
+      await rejects(SecretController.getSecret.fn(), { statusCode: 401 });
+      strictEqual(guard.runs, 3);
+    });
+
+    it('Runs the guard of a decorate() procedure in its derived tool', async () => {
+      const { SecretController, guard } = defineSecretController();
+      const [tool] = deriveTools({ modules: { SecretController } });
+
+      deepStrictEqual(await tool.execute({}), { error: 'Missing token' });
+      strictEqual(guard.runs, 1);
+    });
+
+    it('Derives a tool from the operation() of a decorate() procedure', () => {
+      // the decorate() form of @operation() above @get()
+      class ReportController {
+        static getReport = decorate(operation({ summary: 'Get the report' }), get('report'), procedure()).handle(
+          async () => ({ rows: [] })
+        );
+      }
+
+      deepStrictEqual(
+        deriveTools({ modules: { ReportController } }).map(({ name, title }) => ({ name, title })),
+        [{ name: 'ReportController_getReport', title: 'Get the report' }]
+      );
+    });
   });
 
   describe('Responses', () => {
@@ -1036,6 +1167,28 @@ describe('Runtime sweep', () => {
       deepStrictEqual(bodiesBefore, [{ ownerId: 'me', title: 'Hello' }]);
     });
 
+    it('Lets a decorator copy a request whose body was validated, to forward or log it', async () => {
+      const forward = createDecorator(async (req, next) => {
+        const result = await next();
+        return { result, cloned: await req.clone().text(), copied: await new Request(req).text() };
+      });
+      class ForwardController {
+        static create = procedure({ body: z.object({ title: z.string() }) }).handle(async (req) => req.vovk.body());
+      }
+      forward()(ForwardController, 'create');
+      post('create')(ForwardController, 'create');
+      const handlers = initSegment({ segmentName: 'forward', controllers: { ForwardController } });
+      const text = JSON.stringify({ title: 'Hello' });
+
+      const response = await call(handlers, 'POST', 'create', {
+        body: text,
+        headers: { 'content-type': 'application/json' },
+      });
+
+      strictEqual(response.status, 200);
+      deepStrictEqual(await response.json(), { result: { title: 'Hello' }, cloned: text, copied: text });
+    });
+
     it('Validates a missing body as undefined, so an optional body can be left out', async () => {
       class DraftController {
         static optional = procedure({ body: z.object({ title: z.string() }).optional() }).handle(async (req) => ({
@@ -1146,6 +1299,84 @@ describe('Runtime sweep', () => {
     });
   });
 
+  // a client sends a body as the content type the schema declares for it, which a hidden body schema must keep
+  describe('Content types of a hidden body schema', () => {
+    const defineController = (skipSchemaEmission?: ['body']) => {
+      class ImportController {
+        static csv = procedure({ contentType: 'text/csv', body: z.string(), skipSchemaEmission }).handle(
+          async (req) => ({ rows: (await req.vovk.body()).split('\n').length })
+        );
+
+        static form = procedure({
+          contentType: 'multipart/form-data',
+          body: z.object({ name: z.string() }),
+          skipSchemaEmission,
+        }).handle(async (req) => req.vovk.body());
+
+        static pdf = procedure({ contentType: 'application/pdf', body: z.file(), skipSchemaEmission }).handle(
+          async (req) => ({ size: (await req.vovk.body()).size })
+        );
+      }
+      post('csv')(ImportController, 'csv');
+      post('form')(ImportController, 'form');
+      post('pdf')(ImportController, 'pdf');
+      return ImportController;
+    };
+
+    // the results of the calls of an RPC module built from the schema the segment serves, as the generated client is
+    const callThroughClient = async (
+      segmentName: string,
+      ImportController: ReturnType<typeof defineController>,
+      exposeValidation?: boolean
+    ) => {
+      let handlers = {} as Handlers;
+      await withNodeEnv('development', async () => {
+        handlers = initSegment({ segmentName, controllers: { ImportRPC: ImportController }, exposeValidation });
+      });
+      const { schema } = await (await call(handlers, 'GET', '_schema_')).json();
+      // the body schema itself stays hidden
+      for (const { validation } of Object.values<{ validation?: { body?: object } }>(
+        schema.controllers.ImportRPC.handlers
+      )) {
+        ok(!validation?.body || !('type' in validation.body));
+      }
+      const ImportRPC = createRPC<typeof ImportController>(
+        { segments: { [segmentName]: schema } },
+        segmentName,
+        'ImportRPC',
+        undefined,
+        { apiRoot: 'http://localhost/api' }
+      );
+      const original = globalThis.fetch;
+      // routed as Next.js routes app/api/<segmentName>/[[...vovk]]/route.ts
+      globalThis.fetch = (async (url: string, init: RequestInit) => {
+        const req = new Request(url, init);
+        const path = new URL(req.url).pathname.split('/').slice(3);
+        return handlers[req.method as keyof Handlers](req, { params: Promise.resolve({ vovk: path }) });
+      }) as typeof fetch;
+      const outcome = (promise: Promise<unknown>) =>
+        promise.catch((error: HttpException) => `${error.statusCode} ${error.message}`);
+      try {
+        return await Promise.all([
+          outcome(ImportRPC.csv({ body: 'a,b\nc,d' })),
+          outcome(ImportRPC.form({ body: { name: 'me' } })),
+          outcome(ImportRPC.pdf({ body: new File(['%PDF'], 'report.pdf') })),
+        ]);
+      } finally {
+        globalThis.fetch = original;
+      }
+    };
+    const results = [{ rows: 2 }, { name: 'me' }, { size: 4 }];
+
+    it('Reach the client when exposeValidation is false', async () => {
+      deepStrictEqual(await callThroughClient('hidden-validation', defineController(), false), results);
+    });
+
+    it('Reach the client when skipSchemaEmission skips the body', async () => {
+      deepStrictEqual(await callThroughClient('skipped-body', defineController(['body'])), results);
+    });
+  });
+
   describe('Query', () => {
     class SearchController {
       static search(req: VovkRequest) {
@@ -1184,6 +1415,12 @@ describe('Runtime sweep', () => {
         filter: { status: ['open', 'closed'] },
         page: ['2'],
       });
+    });
+
+    it('Keeps a plain value given before the same key with []', async () => {
+      const response = await call(handlers, 'GET', 'search?x=1&x[]=2&y=1&y[]=2&y[]=3');
+
+      deepStrictEqual(await response.json(), { x: ['1', '2'], y: ['1', '2', '3'] });
     });
 
     it('Appends [] after the highest index', async () => {
