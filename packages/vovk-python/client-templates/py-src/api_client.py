@@ -403,28 +403,27 @@ class ApiClient:
         Yields:
             Each parsed JSON object from the response
         """
-        buffer = ""
+        # the line read so far, in pieces: only each new chunk is split, so a long line costs no more than a short one
+        pieces: List[str] = []
         # JSON Lines is UTF-8, and application/x-ndjson comes without a charset that requests could decode it with
         decoder = codecs.getincrementaldecoder('utf-8')(errors='replace')
-        
+
         for chunk in response.iter_content(chunk_size=1024):
-            if chunk:
-                buffer += decoder.decode(chunk)
-                lines = buffer.split('\n')
-                
-                # Process all complete lines
-                for i in range(len(lines) - 1):
-                    line = lines[i].strip()
+            *lines, rest = decoder.decode(chunk).split('\n')
+            if lines:
+                lines[0] = ''.join(pieces) + lines[0]
+                pieces = []
+                for line in lines:
+                    line = line.strip()
                     if line:
                         yield self._parse_jsonl_line(line)
-                
-                # Keep the last (potentially incomplete) line in the buffer
-                buffer = lines[-1]
-        
-        buffer += decoder.decode(b'', final=True)
-        # Process any remaining data in buffer, a stream cut inside its last line fails here
-        if buffer.strip():
-            yield self._parse_jsonl_line(buffer.strip())
+            if rest:
+                pieces.append(rest)
+
+        # a stream cut inside its last line fails here
+        last = (''.join(pieces) + decoder.decode(b'', final=True)).strip()
+        if last:
+            yield self._parse_jsonl_line(last)
 
     @staticmethod
     def _parse_jsonl_line(line: str) -> Any:
