@@ -376,6 +376,12 @@ where
     Ok((request, http_method.to_string()))
 }
 
+// where a redirect points
+fn location(response: &reqwest::Response) -> Option<String> {
+    let value = response.headers().get(reqwest::header::LOCATION)?;
+    value.to_str().ok().map(str::to_string)
+}
+
 // "application/json; charset=utf-8" => "application/json"
 fn media_type(response: &reqwest::Response) -> String {
     response
@@ -400,8 +406,12 @@ fn is_json_lines(media_type: &str) -> bool {
 
 // as the TypeScript client reads an error: the JSON message, else the detail or title of a problem document, else the
 // text a proxy sent; the cause is the body's cause, or the whole JSON body
-fn error_from_body(body: &[u8], media_type: &str, status: reqwest::StatusCode) -> HttpException {
+fn error_from_body(body: &[u8], media_type: &str, status: reqwest::StatusCode, location: Option<&str>) -> HttpException {
     let status_code = status.as_u16() as i32;
+    if let (true, Some(location)) = (status.is_redirection(), location) {
+        let reason = status.canonical_reason().unwrap_or("Redirect");
+        return HttpException::new(format!("{} to {} was not followed", reason, location), status_code, None);
+    }
     let text = String::from_utf8_lossy(body).trim().to_string();
     let json = if is_json(media_type) { serde_json::from_slice::<Value>(body).ok() } else { None };
     let message = json
@@ -475,15 +485,17 @@ where
     let status = response.status();
     let status_code = status.as_u16() as i32;
     let media_type = media_type(&response);
+    let location = location(&response);
 
     let bytes = response
         .bytes()
         .await
         .map_err(|e| HttpException::new(e.to_string(), status_code, None))?;
 
-    // only an error status makes an error, a 2xx body may hold any keys
-    if status.is_client_error() || status.is_server_error() {
-        return Err(error_from_body(&bytes, &media_type, status));
+    // a 2xx body may hold any keys; a redirect reqwest didn't follow, as for a multipart body it can't send again,
+    // is an error like any other status
+    if !status.is_success() {
+        return Err(error_from_body(&bytes, &media_type, status, location.as_deref()));
     }
 
     if is_json_lines(&media_type) {
@@ -554,8 +566,9 @@ where
 
     if !status.is_success() {
         let media_type = media_type(&response);
+        let location = location(&response);
         let bytes = response.bytes().await.unwrap_or_default();
-        return Err(error_from_body(&bytes, &media_type, status));
+        return Err(error_from_body(&bytes, &media_type, status, location.as_deref()));
     }
 
     let byte_stream = response

@@ -340,6 +340,7 @@ pub mod test_requests {
                 .unwrap_err();
 
             assert_eq!(error.status_code(), status_code);
+            assert!(error.message().ends_with("to /api/client-sweep/sweep/form-entries was not followed"), "{}", error);
         }
     }
 
