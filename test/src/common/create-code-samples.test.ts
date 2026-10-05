@@ -1,7 +1,12 @@
 import assert from 'node:assert';
 import { describe, test } from 'node:test';
 import type { VovkJSONSchemaBase } from 'vovk';
-import { createCodeSamples, type VovkControllerSchema, type VovkHandlerSchema } from 'vovk/internal';
+import {
+  createCodeSamples,
+  openAPIToVovkSchema,
+  type VovkControllerSchema,
+  type VovkHandlerSchema,
+} from 'vovk/internal';
 
 describe('createCodeSamples', () => {
   describe('JSON body with query and params', () => {
@@ -1179,6 +1184,115 @@ const response = await MixedFormRPC.uploadProfile({
       });
 
       assert.deepStrictEqual(jsonLiteralsInCode(py), [], py);
+    });
+  });
+
+  // SEC-03: the sample generator expands every $ref with a fresh "seen" set per branch, so a component
+  // that references one of depth N twice is inlined 2^N times. A tiny malicious OpenAPI spec (a developer
+  // generates its README, Rust or Python client) produces a gigantic sample and exhausts memory.
+  describe('malicious OpenAPI spec: deeply shared refs', () => {
+    test('does not expand a diamond-ref spec into an exponential code sample', () => {
+      const depth = 12;
+      const schemas: Record<string, unknown> = {
+        C0: { type: 'object', properties: { leaf: { type: 'string' } }, required: ['leaf'] },
+      };
+      for (let i = 1; i <= depth; i++) {
+        schemas[`C${i}`] = {
+          type: 'object',
+          properties: {
+            left: { $ref: `#/components/schemas/C${i - 1}` },
+            right: { $ref: `#/components/schemas/C${i - 1}` },
+          },
+          required: ['left', 'right'],
+        };
+      }
+      const spec = {
+        openapi: '3.1.0',
+        info: { title: 'Evil', version: '1.0.0' },
+        servers: [{ url: 'https://api.example.com' }],
+        paths: {
+          '/things': {
+            post: {
+              operationId: 'createThing',
+              requestBody: { content: { 'application/json': { schema: { $ref: `#/components/schemas/C${depth}` } } } },
+              responses: { '200': { description: 'ok' } },
+            },
+          },
+        },
+        components: { schemas },
+      };
+      const specBytes = JSON.stringify(spec).length;
+
+      const segment = openAPIToVovkSchema({
+        source: { object: spec },
+        getModuleName: () => 'ThingsAPI',
+        getMethodName: ({ operationObject }: { operationObject: { operationId?: string } }) =>
+          operationObject.operationId ?? 'op',
+        segmentName: 'things',
+      } as unknown as Parameters<typeof openAPIToVovkSchema>[0]);
+
+      const controllerSchema = segment.segments.things.controllers.ThingsAPI;
+      const { ts } = createCodeSamples({
+        handlerName: 'createThing',
+        handlerSchema: controllerSchema.handlers.createThing,
+        controllerSchema,
+        package: { name: 'my-client' },
+        config: {},
+      });
+
+      // the sample should stay proportional to the schema, not to 2^depth
+      assert.ok(
+        ts.length < specBytes * 50,
+        `a ${specBytes}-byte spec produced a ${ts.length}-char code sample (2^${depth} inlining)`
+      );
+    });
+  });
+
+  describe('malicious OpenAPI spec: nested arrays', () => {
+    test('does not expand arrays nested with minItems into an exponential code sample', () => {
+      const depth = 10;
+      let schema: Record<string, unknown> = { type: 'string' };
+      for (let i = 0; i < depth; i++) schema = { type: 'array', minItems: 3, items: schema };
+      const spec = {
+        openapi: '3.1.0',
+        info: { title: 'Evil', version: '1.0.0' },
+        servers: [{ url: 'https://api.example.com' }],
+        paths: {
+          '/things': {
+            post: {
+              operationId: 'createThing',
+              requestBody: { content: { 'application/json': { schema } } },
+              responses: { '200': { description: 'ok' } },
+            },
+          },
+        },
+      };
+      const specBytes = JSON.stringify(spec).length;
+
+      const segment = openAPIToVovkSchema({
+        source: { object: spec },
+        getModuleName: () => 'ThingsAPI',
+        getMethodName: ({ operationObject }: { operationObject: { operationId?: string } }) =>
+          operationObject.operationId ?? 'op',
+        segmentName: 'things',
+      } as unknown as Parameters<typeof openAPIToVovkSchema>[0]);
+
+      const controllerSchema = segment.segments.things.controllers.ThingsAPI;
+      const samples = createCodeSamples({
+        handlerName: 'createThing',
+        handlerSchema: controllerSchema.handlers.createThing,
+        controllerSchema,
+        package: { name: 'my-client' },
+        config: {},
+      });
+
+      // 3 items per level would make 3^depth strings
+      for (const [lang, sample] of Object.entries(samples)) {
+        assert.ok(
+          sample.length < specBytes * 50,
+          `a ${specBytes}-byte spec produced a ${sample.length}-char ${lang} code sample (3^${depth} items)`
+        );
+      }
     });
   });
 });

@@ -377,4 +377,14 @@ describe('vovkSchemaToOpenAPI — JSON Lines', () => {
       [{ n: 0 }, { n: 0 }, { n: 0 }]
     );
   });
+
+  it('Keeps the example small when the item nests arrays with minItems', () => {
+    let item: Obj = { type: 'string' };
+    for (let i = 0; i < 10; i++) item = { type: 'array', minItems: 3, items: item };
+    const openAPI = toOpenAPI({ stream: { path: 'stream', httpMethod: 'GET', validation: { iteration: item } } });
+    const media = openAPI.paths['/api/things/stream'].get.responses[200].content['application/jsonl'];
+    // 3 items per level would make 3^10 strings in every line
+    ok(media.example.length < JSON.stringify(item).length * 50, `a ${media.example.length}-char example`);
+    deepStrictEqual(media.example.split('\n').length, 3);
+  });
 });
