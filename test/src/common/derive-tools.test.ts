@@ -2,8 +2,10 @@ import assert from 'node:assert';
 import { describe, it } from 'node:test';
 import {
   deriveTools,
+  get,
   HttpException,
   JSONLinesResponder,
+  operation,
   procedure,
   ToModelOutput,
   toDownloadResponse,
@@ -520,7 +522,9 @@ describe('deriveTools', () => {
       });
     });
 
-    it('Should support MCP annotations', async () => {
+    // MCP has no annotations on a tool result, each content item carries its own
+    it('Should put MCP annotations on each content item', async () => {
+      const annotations = { audience: ['user' as const], priority: 0.5 };
       const procedureWithAnnotations = procedure({
         operationObject: {
           'x-tool': {
@@ -531,30 +535,43 @@ describe('deriveTools', () => {
         body: z.object({ foo: z.string().max(5) }),
       }).handle(async ({ vovk }) => {
         const { foo } = await vovk.body();
-        vovk.meta({ mcpOutput: { annotations: { audience: ['user'], priority: 5 } } });
+        vovk.meta({ mcpOutput: { annotations } });
 
         return { foo };
       });
+      const imageWithAnnotations = procedure({
+        operationObject: {
+          'x-tool': { name: 'imageWithAnnotations' },
+          description: 'imageWithAnnotations description',
+        },
+      }).handle(async ({ vovk }) => {
+        vovk.meta({ mcpOutput: { annotations } });
 
-      const [procedureWithAnnotationsTool] = deriveTools({
+        return toDownloadResponse(new Uint8Array([1, 2, 3]), { type: 'image/png', filename: 'a.png' });
+      });
+
+      const [procedureWithAnnotationsTool, imageWithAnnotationsTool] = deriveTools({
         toModelOutput: ToModelOutput.MCP,
         modules: {
           MyModule: {
             procedureWithAnnotations,
+            imageWithAnnotations,
           },
         },
       });
 
-      const result: MCPModelOutput = await procedureWithAnnotationsTool.execute({ body: { foo: 'bar' } });
-      assert.deepStrictEqual(result, {
+      assert.deepStrictEqual(await procedureWithAnnotationsTool.execute({ body: { foo: 'bar' } }), {
         content: [
           {
             type: 'text',
             text: JSON.stringify({ foo: 'bar' }),
+            annotations,
           },
         ],
         structuredContent: { foo: 'bar' },
-        annotations: { audience: ['user'], priority: 5 },
+      });
+      assert.deepStrictEqual(await imageWithAnnotationsTool.execute({}), {
+        content: [{ type: 'image', mimeType: 'image/png', data: 'AQID', annotations }],
       });
     });
   });
@@ -573,9 +590,22 @@ describe('deriveTools', () => {
       yield { n: 1 };
       yield { n: 2 };
     });
+    // without an iteration schema the procedure hands the sync generator over as it is
+    const returnsSyncGenerator = procedure({ operationObject: { description: 'd' } }).handle(function* () {
+      yield { n: 1 };
+      yield { n: 2 };
+    });
 
-    const [jsonTool, textTool, binaryTool, generatorTool] = deriveTools({
-      modules: { MyModule: { returnsJSONResponse, returnsTextResponse, returnsBinaryResponse, returnsGenerator } },
+    const [jsonTool, textTool, binaryTool, generatorTool, syncGeneratorTool] = deriveTools({
+      modules: {
+        MyModule: {
+          returnsJSONResponse,
+          returnsTextResponse,
+          returnsBinaryResponse,
+          returnsGenerator,
+          returnsSyncGenerator,
+        },
+      },
     });
 
     it('Parses a JSON Response instead of handing over the Response object', async () => {
@@ -592,6 +622,22 @@ describe('deriveTools', () => {
 
     it('Collects the items of a generator handler', async () => {
       assert.deepStrictEqual(await generatorTool.execute({}), [{ n: 1 }, { n: 2 }]);
+    });
+
+    it('Collects the items of a sync generator handler', async () => {
+      assert.deepStrictEqual(await syncGeneratorTool.execute({}), [{ n: 1 }, { n: 2 }]);
+    });
+
+    // the server streams any iterable object but an array as JSON Lines, a string goes out as it is
+    it('Collects the items of a Set and keeps a string whole', async () => {
+      const returnsSet = procedure({ operationObject: { description: 'd' } }).handle(
+        async () => new Set([{ n: 1 }, { n: 2 }])
+      );
+      const returnsString = procedure({ operationObject: { description: 'd' } }).handle(async () => 'ab');
+      const [setTool, stringTool] = deriveTools({ modules: { MyModule: { returnsSet, returnsString } } });
+
+      assert.deepStrictEqual(await setTool.execute({}), [{ n: 1 }, { n: 2 }]);
+      assert.strictEqual(await stringTool.execute({}), 'ab');
     });
   });
 
@@ -771,6 +817,53 @@ describe('deriveTools', () => {
 
       assert.deepStrictEqual(await tool.execute(undefined as never), { ok: true });
       assert.deepStrictEqual(calls, ['onExecute']);
+    });
+  });
+
+  describe('Input validated with inputSchema first', () => {
+    // the Vercel AI SDK validates the model's arguments with inputSchema and calls execute with the value it returns
+    const validateAndExecute = async (
+      tool: StandardToolV0<{ body?: unknown; query?: unknown; params?: unknown }, unknown, unknown>,
+      input: unknown
+    ) => {
+      assert.ok(tool.inputSchema, 'expected the tool to have an inputSchema');
+      const result = await tool.inputSchema['~standard'].validate(input);
+      if (result.issues) throw new Error(`inputSchema refused the input: ${JSON.stringify(result.issues)}`);
+      return tool.execute(result.value);
+    };
+
+    const isDone = procedure({
+      operationObject: { description: 'd' },
+      query: z.object({ done: z.stringbool() }),
+    }).handle(async ({ vovk }) => vovk.query());
+    const toCents = procedure({
+      operationObject: { description: 'd' },
+      body: z.object({ amount: z.number().transform((amount) => Math.round(amount * 100)) }),
+    }).handle(async ({ vovk }) => vovk.body());
+
+    it('Parses a query value that changes type once', async () => {
+      const [tool] = deriveTools({ modules: { MyModule: { isDone } } });
+
+      assert.deepStrictEqual(await validateAndExecute(tool, { query: { done: 'true' } }), { done: true });
+    });
+
+    it('Transforms a body value once', async () => {
+      const [tool] = deriveTools({ modules: { MyModule: { toCents } } });
+
+      assert.deepStrictEqual(await validateAndExecute(tool, { body: { amount: 12.34 } }), { amount: 1234 });
+    });
+  });
+
+  describe('A controller method that is not a procedure', () => {
+    // a plain handler has no fn, so a tool can't call it without HTTP
+    class PlainController {
+      static updateUser = () => ({ success: true });
+    }
+    get('users')(PlainController, 'updateUser');
+    operation({ summary: 'Update user' })(PlainController, 'updateUser');
+
+    it('Is left out of the tools', () => {
+      assert.deepStrictEqual(deriveTools({ modules: { PlainController } }), []);
     });
   });
 

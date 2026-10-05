@@ -4,20 +4,24 @@ import type { StandardToolV0 } from '../types/standard-tool.js';
 import type { KnownAny } from '../types/utils.js';
 import { toModelErrorMessage } from './to-model-error-message.js';
 
+type MCPAnnotations = {
+  audience?: ('user' | 'assistant')[];
+  priority?: number;
+  lastModified?: string;
+};
+
 export type MCPModelOutput = {
   content: [
-    | { type: 'audio'; mimeType: string; data: string }
-    | { type: 'image'; mimeType: string; data: string }
-    | { type: 'text'; text: string },
+    | { type: 'audio'; mimeType: string; data: string; annotations?: MCPAnnotations }
+    | { type: 'image'; mimeType: string; data: string; annotations?: MCPAnnotations }
+    | { type: 'text'; text: string; annotations?: MCPAnnotations },
   ];
-  annotations?: {
-    audience?: ('user' | 'assistant')[];
-    priority?: number;
-    lastModified?: string;
-  };
   structuredContent?: { [key: string]: unknown };
   isError?: boolean;
 };
+
+// the mcpOutput meta a handler sets: fields that replace the output's, and annotations for each content item
+type MCPOutputMeta = Partial<MCPModelOutput> & { annotations?: MCPAnnotations };
 
 // MCP structured content is an object: an array goes under "items", any other value has none
 const toStructuredContent = (data: unknown): Pick<MCPModelOutput, 'structuredContent'> => {
@@ -69,24 +73,31 @@ type ToModelOutputMCPFn = <TOutput>(
   req: Pick<VovkRequest, 'vovk'> | null
 ) => Promise<MCPModelOutput>;
 
+// MCP annotates each content item, a tool result has no annotations of its own
+function withMeta(output: MCPModelOutput, meta: MCPOutputMeta | undefined): MCPModelOutput {
+  const { annotations, ...fields } = meta ?? {};
+  const result = { ...output, ...fields };
+  if (!annotations) return result;
+  const content = result.content.map((item) => ({ ...item, annotations: item.annotations ?? annotations }));
+  return { ...result, content: content as MCPModelOutput['content'] };
+}
+
 export const toModelOutputMCP: ToModelOutputMCPFn = async (result: unknown, _tool, req): Promise<MCPModelOutput> => {
-  const mcpOutputMeta = req ? (reqMeta(req).mcpOutput as MCPModelOutput) : null;
+  const mcpOutputMeta = req ? (reqMeta(req).mcpOutput as MCPOutputMeta | undefined) : undefined;
   if (result instanceof Response) {
-    return { ...(await responseToMCP(result)), ...(mcpOutputMeta || {}) };
+    return withMeta(await responseToMCP(result), mcpOutputMeta);
   }
 
   if (result instanceof Error) {
-    return {
-      content: [{ type: 'text', text: toModelErrorMessage(result) }],
-      isError: true,
-      ...(mcpOutputMeta || {}),
-    };
+    return withMeta({ content: [{ type: 'text', text: toModelErrorMessage(result) }], isError: true }, mcpOutputMeta);
   }
 
-  return {
-    // a handler that returns nothing has no JSON text
-    content: [{ type: 'text', text: JSON.stringify(result) ?? '' }],
-    ...toStructuredContent(result),
-    ...(mcpOutputMeta || {}),
-  };
+  return withMeta(
+    {
+      // a handler that returns nothing has no JSON text
+      content: [{ type: 'text', text: JSON.stringify(result) ?? '' }],
+      ...toStructuredContent(result),
+    },
+    mcpOutputMeta
+  );
 };

@@ -198,6 +198,65 @@ describe('openAPIToVovkSchema — pruneComponents', () => {
     ok(reattached.$defs?.Nested, 'transitive Nested re-embedded after pruning');
   });
 
+  // the schemas a pruned segment keeps when getUser answers with these responses
+  function keptSchemas(responses: Obj, components: Obj) {
+    const segment = openAPIToVovkSchema({
+      apiRoot: 'https://api.example.com',
+      source: {
+        object: {
+          openapi: '3.1.0',
+          info: { title: 'Refs', version: '1.0.0' },
+          paths: { '/user': { get: { operationId: 'getUser', responses } } },
+          components,
+        },
+      },
+      getModuleName: () => 'Test',
+      getMethodName: ({ operationObject }: { operationObject: { operationId?: string } }) =>
+        operationObject.operationId ?? 'op',
+      segmentName: 'api',
+      pruneComponents: true,
+    } as unknown as Parameters<typeof openAPIToVovkSchema>[0]).segments.api as Seg;
+    return Object.keys(segment.meta.openAPIObject.components.schemas).sort();
+  }
+
+  const jsonResponse = (ref: string) => ({
+    description: 'a response',
+    content: { 'application/json': { schema: { $ref: ref } } },
+  });
+
+  it('reads a $ref by its full path, not by its last segment', () => {
+    const kept = keptSchemas(
+      { '200': { $ref: '#/components/responses/User' } },
+      {
+        schemas: {
+          User: { type: 'object', properties: { legacy: { type: 'boolean' } } },
+          UserBody: { type: 'object', properties: { id: { type: 'string' } } },
+        },
+        responses: { User: jsonResponse('#/components/schemas/UserBody') },
+      }
+    );
+    deepStrictEqual(kept, ['UserBody'], 'the response User refers to UserBody, the schema User is unused');
+  });
+
+  it('keeps the schemas a kept operation reaches through other components', () => {
+    const kept = keptSchemas(
+      {
+        '200': jsonResponse('#/components/schemas/UserBody'),
+        '404': { $ref: '#/components/responses/NotFound' },
+      },
+      {
+        schemas: {
+          UserBody: { type: 'object', properties: { id: { type: 'string' } } },
+          Problem: { type: 'object', properties: { detail: { $ref: '#/components/schemas/Detail' } } },
+          Detail: { type: 'string' },
+          Orphan: { type: 'boolean' },
+        },
+        responses: { NotFound: jsonResponse('#/components/schemas/Problem') },
+      }
+    );
+    deepStrictEqual(kept, ['Detail', 'Problem', 'UserBody'], 'Problem and Detail come through the 404 response');
+  });
+
   it('does not mutate the input spec', () => {
     build({ filterOperations: () => false, pruneComponents: true });
     deepStrictEqual(
@@ -260,6 +319,52 @@ describe('openAPIToVovkSchema — untrusted x-tsType', () => {
       !collectTsTypes(schema).some((value) => value.includes('PWNED')),
       'no x-tsType from the spec survives into the schema'
     );
+  });
+
+  it('keeps a property, a pattern and a definition named x-tsType', () => {
+    // a key of properties, patternProperties or $defs is a name; the keyword inside each is still dropped
+    const evil = { type: 'string', 'x-tsType': payload };
+    const named = {
+      type: 'object',
+      properties: { 'x-tsType': evil, properties: evil, name: { type: 'string' } },
+      patternProperties: { 'x-tsType': evil },
+      $defs: { 'x-tsType': evil },
+      required: ['x-tsType', 'name'],
+    };
+    const schema = openAPIToVovkSchema({
+      apiRoot: 'https://api.example',
+      source: {
+        object: {
+          openapi: '3.1.0',
+          info: { title: 'Names', version: '1.0.0' },
+          paths: {
+            '/thing': {
+              post: {
+                operationId: 'createThing',
+                requestBody: { content: { 'application/json': { schema: { $ref: '#/components/schemas/Named' } } } },
+                responses: { '200': { content: { 'application/json': { schema: named } } } },
+              },
+            },
+          },
+          components: { schemas: { Named: named } },
+        },
+      },
+      getModuleName: () => 'Names',
+      getMethodName: ({ operationObject }: { operationObject: { operationId?: string } }) =>
+        operationObject.operationId ?? 'op',
+      segmentName: 'api',
+    } as unknown as Parameters<typeof openAPIToVovkSchema>[0]);
+
+    const stripped = { type: 'string' };
+    const component = schema.segments.api.meta?.openAPIObject?.components?.schemas?.Named as Obj;
+    const { body, output } = schema.segments.api.controllers.Names.handlers.createThing.validation as Obj;
+    for (const copy of [component, body.$defs.Named, output]) {
+      deepStrictEqual(copy.properties, { 'x-tsType': stripped, properties: stripped, name: { type: 'string' } });
+      deepStrictEqual(copy.required, ['x-tsType', 'name']);
+      deepStrictEqual(copy.patternProperties, { 'x-tsType': stripped });
+      deepStrictEqual(copy.$defs, { 'x-tsType': stripped });
+    }
+    ok(!collectTsTypes(schema).some((value) => value.includes('PWNED')), 'no x-tsType from the spec survives');
   });
 
   it('still sets its own x-tsType for component refs', () => {
@@ -351,6 +456,12 @@ const responseSpec = {
         responses: { '200': { content: { 'application/jsonl': { schema: okSchema() } } } },
       },
     },
+    '/ndjson': {
+      get: {
+        operationId: 'ndjson',
+        responses: { '200': { content: { 'application/x-ndjson': { schema: okSchema() } } } },
+      },
+    },
   },
 };
 
@@ -371,6 +482,68 @@ function responseHandler(name: string): Obj {
 }
 
 const okProperties = { ok: { type: 'boolean' } };
+
+describe('openAPIToVovkSchema — form body x-tsType', () => {
+  // a form body's x-tsType is built from its schema
+  function formBodyTsType(schema: Obj): string {
+    const segment = openAPIToVovkSchema({
+      apiRoot: 'https://api.example.com',
+      source: {
+        object: {
+          openapi: '3.1.0',
+          info: { title: 'Forms', version: '1.0.0' },
+          paths: {
+            '/things': {
+              post: {
+                operationId: 'createThing',
+                requestBody: { content: { 'multipart/form-data': { schema } } },
+                responses: { '200': { description: 'ok' } },
+              },
+            },
+          },
+        },
+      },
+      getModuleName: () => 'Test',
+      getMethodName: ({ operationObject }: { operationObject: { operationId?: string } }) =>
+        operationObject.operationId ?? 'op',
+      segmentName: 'api',
+    } as unknown as Parameters<typeof openAPIToVovkSchema>[0]).segments.api as Seg;
+    return segment.controllers.Test.handlers.createThing.validation.body['x-tsType'];
+  }
+
+  // each level builds the object type of the next once per type it lists, 2^depth times without the fix
+  for (const type of [
+    ['object', 'object'],
+    ['object', 'array'],
+  ]) {
+    it(`grows with the schema for nested objects of type ${JSON.stringify(type)}`, () => {
+      let schema: Obj = { type: 'string' };
+      for (let i = 0; i < 16; i++) schema = { type, properties: { a: schema } };
+      const tsType = formBodyTsType(schema);
+      ok(
+        tsType.length < JSON.stringify(schema).length,
+        `a ${JSON.stringify(schema).length}-char schema gave a ${tsType.length}-char type`
+      );
+    });
+  }
+
+  it('keeps the types of an ordinary type list', () => {
+    const tsType = formBodyTsType({
+      type: 'object',
+      properties: {
+        n: { type: ['integer', 'null'] },
+        s: { type: ['string', 'number'] },
+        o: { type: ['object', 'null'], properties: { a: { type: 'string' } } },
+        l: { type: ['array', 'null'], items: { type: 'string' } },
+      },
+      required: ['n'],
+    });
+    strictEqual(
+      tsType,
+      'FormData | { n: (number | null); s?: (string | number); o?: ({ a?: string } | null); l?: (string[] | null) }'
+    );
+  });
+});
 
 describe('openAPIToVovkSchema — success response selection', () => {
   it('reads the 2XX wildcard status', () => {
@@ -411,5 +584,106 @@ describe('openAPIToVovkSchema — success response selection', () => {
 
   it('still reads a plain 200 application/jsonl iteration', () => {
     deepStrictEqual(responseHandler('legacyJsonl').validation.iteration.properties, okProperties);
+  });
+
+  it('reads an application/x-ndjson response as the iteration', () => {
+    deepStrictEqual(responseHandler('ndjson').validation.iteration?.properties, okProperties);
+  });
+});
+
+describe('openAPIToVovkSchema — OpenAPI 3.0 keywords', () => {
+  // the Python and Rust clients validate with JSON Schema 2020-12: an exclusive bound is the number itself,
+  // and `nullable` is no keyword there
+  const oas30Spec = {
+    openapi: '3.0.3',
+    info: { title: 'OAS 3.0', version: '1.0.0' },
+    paths: {
+      '/things': {
+        get: {
+          operationId: 'listThings',
+          parameters: [{ name: 'limit', in: 'query', schema: { type: 'integer', minimum: 0, exclusiveMinimum: true } }],
+          responses: { '200': { description: 'ok' } },
+        },
+        post: {
+          operationId: 'createThing',
+          requestBody: {
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    name: { type: 'string', nullable: true },
+                    score: { type: 'number', maximum: 10, exclusiveMaximum: true },
+                    rank: { type: 'number', minimum: 1, exclusiveMinimum: false },
+                    thing: { $ref: '#/components/schemas/Thing' },
+                    status: { type: 'string', enum: ['open', 'done'], nullable: true },
+                    parent: { $ref: '#/components/schemas/Thing', nullable: true },
+                    owner: { allOf: [{ $ref: '#/components/schemas/Thing' }], nullable: true },
+                  },
+                },
+              },
+            },
+          },
+          responses: { '200': { description: 'ok' } },
+        },
+      },
+    },
+    components: { schemas: { Thing: { type: 'object', properties: { note: { type: 'string', nullable: true } } } } },
+  };
+
+  const handlers = openAPIToVovkSchema({
+    apiRoot: 'https://api.example.com',
+    source: { object: oas30Spec },
+    getModuleName: () => 'Things',
+    getMethodName: ({ operationObject }: { operationObject: { operationId?: string } }) =>
+      operationObject.operationId ?? 'op',
+    segmentName: 'api',
+  } as unknown as Parameters<typeof openAPIToVovkSchema>[0]).segments.api.controllers.Things.handlers as Obj;
+
+  // whether JSON Schema 2020-12 lets the schema take null: every keyword that applies to null has to
+  const admitsNull = (schema: Obj, defs: Obj = {}): boolean => {
+    const admits = (subschema: Obj) => admitsNull(subschema, defs);
+    return (
+      (schema.$ref === undefined || admits(defs[schema.$ref.replace('#/$defs/', '')])) &&
+      (schema.type === undefined || [schema.type].flat().includes('null')) &&
+      (schema.enum === undefined || schema.enum.includes(null)) &&
+      (!('const' in schema) || schema.const === null) &&
+      (schema.anyOf === undefined || schema.anyOf.some(admits)) &&
+      (schema.oneOf === undefined || schema.oneOf.filter(admits).length === 1) &&
+      (schema.allOf === undefined || schema.allOf.every(admits)) &&
+      (schema.not === undefined || !admits(schema.not))
+    );
+  };
+
+  const booleanBounds = (value: unknown, path = ''): string[] => {
+    if (!value || typeof value !== 'object') return [];
+    return Object.entries(value).flatMap(([key, child]) =>
+      (key === 'exclusiveMinimum' || key === 'exclusiveMaximum') && typeof child === 'boolean'
+        ? [`${path}/${key}`]
+        : booleanBounds(child, `${path}/${key}`)
+    );
+  };
+
+  it('writes an exclusive bound as the number it bounds by', () => {
+    const { listThings, createThing } = handlers;
+    deepStrictEqual(booleanBounds([listThings.validation, createThing.validation]), []);
+    strictEqual(listThings.validation.query.properties.limit.exclusiveMinimum, 0);
+    strictEqual(createThing.validation.body.properties.score.exclusiveMaximum, 10);
+    strictEqual(createThing.validation.body.properties.rank.minimum, 1);
+  });
+
+  it('lets a nullable property take null', () => {
+    const { body } = handlers.createThing.validation;
+    ok(admitsNull(body.properties.name), JSON.stringify(body.properties.name));
+    ok(admitsNull(body.$defs.Thing.properties.note), JSON.stringify(body.$defs.Thing.properties.note));
+    ok(!admitsNull(body.properties.score));
+  });
+
+  it('lets a nullable enum, $ref or allOf take null', () => {
+    const { properties, $defs } = handlers.createThing.validation.body;
+    deepStrictEqual(properties.status, { type: ['string', 'null'], enum: ['open', 'done', null] });
+    ok(admitsNull(properties.parent, $defs), JSON.stringify(properties.parent));
+    ok(admitsNull(properties.owner, $defs), JSON.stringify(properties.owner));
+    ok(!admitsNull(properties.thing, $defs));
   });
 });

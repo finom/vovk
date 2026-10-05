@@ -1,4 +1,4 @@
-import { deepStrictEqual, strictEqual } from 'node:assert';
+import { deepStrictEqual, ok, strictEqual } from 'node:assert';
 import { describe, it } from 'node:test';
 import type { OpenAPIObject } from 'openapi3-ts/oas31';
 import { createRPC } from 'vovk/create-rpc';
@@ -145,5 +145,38 @@ describe('OpenAPI mixin requests', () => {
       ['tags', 'b'],
       ['address', '{"city":"Kyiv"}'],
     ]);
+  });
+
+  it('Sends a file as multipart when the body takes JSON or multipart', async () => {
+    const upload = {
+      type: 'object',
+      properties: { file: { type: 'string', format: 'binary' }, note: { type: 'string' } },
+    } as const;
+    const { uploadFile } = mixinModule({
+      '/upload': {
+        post: {
+          operationId: 'uploadFile',
+          requestBody: {
+            content: { 'application/json': { schema: upload }, 'multipart/form-data': { schema: upload } },
+          },
+          responses: { '200': { description: 'ok' } },
+        },
+      },
+    });
+    const { fetch } = globalThis;
+    const request: { body?: RequestInit['body'] } = {};
+    globalThis.fetch = (async (_url: string, init: RequestInit) => {
+      request.body = init.body;
+      return new Response('{}', { headers: { 'content-type': 'application/json' } });
+    }) as typeof globalThis.fetch;
+    try {
+      await uploadFile({ body: { file: new File(['hello'], 'hello.txt'), note: 'hi' } });
+    } finally {
+      globalThis.fetch = fetch;
+    }
+    const sent = request.body;
+    ok(sent instanceof FormData, `expected a multipart body, got ${String(sent)}`);
+    strictEqual((sent.get('file') as File | null)?.name, 'hello.txt');
+    strictEqual(sent.get('note'), 'hi');
   });
 });
