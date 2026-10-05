@@ -347,6 +347,21 @@ describe('Runtime sweep', () => {
       }
     });
 
+    it('Refuses a decorate() member without .handle() in every segment', () => {
+      class UnhandledController {
+        // the handler given to the procedure, and no .handle() on what decorate() returns
+        static list = decorate(
+          get('list'),
+          procedure().handle(async () => [])
+        );
+      }
+      for (const segmentName of ['unhandled', 'unhandled-again']) {
+        throws(() => initSegment({ segmentName, controllers: { UnhandledController } }), {
+          message: 'UnhandledController.list has no handler: call .handle() on what decorate() returns',
+        });
+      }
+    });
+
     it('Answers a path two controllers of a segment declare with a JSON error and calls onError', async () => {
       const errors: string[] = [];
       class FirstController {

@@ -12,6 +12,8 @@ export type DecorateMetadata = {
 };
 
 const decoratedControllers = new WeakSet<object>();
+// what decorate() returns: a member that still holds it got no .handle() call, so it has no handler and no route
+const unhandledDecorations = new WeakSet<object>();
 
 /**
  * Applies the decorators decorate() keeps on the methods of a controller, bottom-up as stacked decorators are applied.
@@ -19,6 +21,11 @@ const decoratedControllers = new WeakSet<object>();
  */
 export function applyDecorateDecorators(controller: KnownAny) {
   if (decoratedControllers.has(controller)) return;
+  for (const key of Object.getOwnPropertyNames(controller)) {
+    if (unhandledDecorations.has(controller[key])) {
+      throw new Error(`${controller.name}.${key} has no handler: call .handle() on what decorate() returns`);
+    }
+  }
   decoratedControllers.add(controller);
   for (const key of Object.getOwnPropertyNames(controller)) {
     const appliers = (controller[key]?._decorateMetadata as DecorateMetadata | undefined)?.decoratorAppliers ?? [];
@@ -71,7 +78,7 @@ export function decorate(...args: unknown[]): KnownAny {
     }
   }
 
-  return {
+  const decorated = {
     handle(fn: KnownAny) {
       if (typeof fn !== 'function') {
         throw new Error('decorate().handle() requires a handler function');
@@ -98,4 +105,6 @@ export function decorate(...args: unknown[]): KnownAny {
       return handler;
     },
   };
+  unhandledDecorations.add(decorated);
+  return decorated;
 }
