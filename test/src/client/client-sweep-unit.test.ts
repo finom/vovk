@@ -109,7 +109,7 @@ describe('Client sweep, pure functions', () => {
       const requests: string[] = [];
       const stubFetch = async (url: string, init: RequestInit) => {
         requests.push(`${url} ${init.body}`);
-        return { ...response, json: async () => ({ ok: true }) };
+        return { ...response, text: async () => '{"ok":true}' };
       };
       void [FormData, File, URLSearchParams];
       const { Buffer, fetch: originalFetch } = globalThis;
