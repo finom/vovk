@@ -660,6 +660,7 @@ fn build_query_string(data: &Value, prefix: &str) -> String {
         _ => {
             let value_str = match data {
                 Value::String(s) => s.clone(),
+                Value::Number(n) => number_to_string(n),
                 _ => data.to_string(),
             };
             format!("{}={}", urlencoding::encode(prefix), urlencoding::encode(&value_str))

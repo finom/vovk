@@ -88,6 +88,15 @@ pub mod test_requests {
         assert_eq!(data, json!({"body": {"a": "a", "b": "b", "c": 1.5}, "query": {"q": "q", "page": "2"}}));
     }
 
+    // a whole number goes into the query as JavaScript prints it, as it does into the path and a form
+    #[tokio::test]
+    async fn test_query_numbers() {
+        let query = rust_sweep_rpc::get_numeric_query_::query { limit: 10.0 };
+        let data = rust_sweep_rpc::get_numeric_query((), query, (), None, None, false).await.unwrap();
+
+        assert_eq!(data, json!({"search": "?limit=10"}));
+    }
+
     // a number or a boolean goes into the path as JavaScript prints it
     #[tokio::test]
     async fn test_number_and_boolean_params() {
