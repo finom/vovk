@@ -17,6 +17,7 @@ import type { VovkJSONSchemaBase } from '../../types/json-schema.js';
 import type { ContentType } from '../../types/validation.js';
 import { applyComponentsSchemas } from './apply-components-schemas.js';
 import { inlineRefs } from './inline-refs.js';
+import { mapSubschemas } from './map-subschemas.js';
 import { normalizeOpenAPI30 } from './normalize-openapi-30.js';
 import { pruneComponentsSchemas } from './prune-components-schemas.js';
 
@@ -115,6 +116,26 @@ function withBodyTsType(body: VovkJSONSchemaBase, contentTypes: ContentType[]): 
   if (contentTypes.every((contentType) => contentType === 'application/json')) return body;
   return { ...body, 'x-tsType': getTsTypeString(contentTypes, body) };
 }
+
+type Defs = VovkJSONSchemaBase['$defs'];
+
+// a property marked readOnly itself or through a component in $defs
+const isReadOnly = (property: VovkJSONSchemaBase | undefined, defs: Defs) =>
+  [property, property?.$ref ? defs?.[property.$ref.replace('#/$defs/', '')] : undefined].some(
+    (schema) => (schema as { readOnly?: unknown } | undefined)?.readOnly === true
+  );
+
+// OpenAPI: a readOnly property listed in required is required in a response only, the server assigns it
+function withoutReadOnlyRequired(schema: unknown, defs: Defs): unknown {
+  const result = mapSubschemas(schema, (subschema) => withoutReadOnlyRequired(subschema, defs)) as VovkJSONSchemaBase;
+  const { required, properties } = result ?? {};
+  if (Array.isArray(required) && properties) {
+    result.required = required.filter((name) => !isReadOnly(properties[name], defs));
+  }
+  return result;
+}
+
+const toRequestBody = (body: VovkJSONSchemaBase) => withoutReadOnlyRequired(body, body.$defs) as VovkJSONSchemaBase;
 
 // a server URL may hold `{name}` variables, each declares a default
 function resolveServerURL(server: ServerObject | undefined): string | undefined {
@@ -297,7 +318,7 @@ export function openAPIToVovkSchema({
       }),
       ...(body && {
         // after applyComponentsSchemas, so component refs carry their Mixins type
-        body: withBodyTsType(applyComponentsSchemas(body, keptSchemas, segmentName), bodyContentTypes),
+        body: withBodyTsType(toRequestBody(applyComponentsSchemas(body, keptSchemas, segmentName)), bodyContentTypes),
       }),
       ...(output && {
         // Response slot: not validated + typed via x-tsType → skip $defs (dedup).

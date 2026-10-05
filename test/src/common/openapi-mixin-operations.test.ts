@@ -208,7 +208,7 @@ describe('openAPIToVovkSchema — request body types', () => {
       properties: { id: { type: 'integer', readOnly: true }, name: { type: 'string' } },
       required: ['id', 'name'],
     } satisfies SchemaObject;
-    const body = handlersOf({
+    const segment = convert({
       openapi: '3.0.3',
       components: { schemas: { Pet: pet } },
       paths: {
@@ -220,12 +220,15 @@ describe('openAPIToVovkSchema — request body types', () => {
           },
         },
       },
-    }).createPet.validation.body as Obj;
+    });
+    const { body } = segment.controllers.TestAPI.handlers.createPet.validation;
     const validateBody = (value: unknown) =>
       validateOnClient({ body: value }, { body }, { fullSchema: { $schema: '', segments: {} }, endpoint: '/pets' });
 
     await validateBody({ name: 'Rex' });
     await rejects(validateBody({ id: 1 }), /required property 'name'/);
+    // the component a response is typed from still requires the id
+    deepStrictEqual(segment.meta.openAPIObject.components.schemas.Pet.required, ['id', 'name']);
   });
 });
 
