@@ -179,10 +179,10 @@ export const { GET, POST, PATCH, PUT, HEAD, OPTIONS, DELETE } = initSegment({ co
 
 #### Typed RPC client
 
-Codegen via `vovk generate` (or `vovk dev` watcher) emits `vovk-client` — a TypeScript module mirroring controllers, same call signature as `.fn()`.
+Codegen via `vovk generate` (or `vovk dev` watcher) emits a TypeScript client into the project, imported as `@/client` — a module mirroring controllers, same call signature as `.fn()`.
 
 ```ts
-import { UserRPC } from 'vovk-client';
+import { UserRPC } from '@/client';
 
 const user = await UserRPC.getUser({
   params: { id: '0190ad59-c3e3-71e0-bbaf-2c4c4f2f8a3f' },

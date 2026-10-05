@@ -40,7 +40,7 @@ export default config;
 After running `vovk dev` or `vovk generate`, the `TelegramAPI` module is available for import from the generated client library.
 
 ```ts
-import { TelegramAPI } from 'vovk-client';
+import { TelegramAPI } from '@/client';
 
 await TelegramAPI.sendMessage({
   body: {
@@ -54,7 +54,7 @@ await TelegramAPI.sendMessage({
 Because the Telegram Bot API requires authentication via the bot token in the URL, the API module can be recreated with the `withDefaults` method to set the `apiRoot` permanently.
 
 ```ts
-import { TelegramAPI as TelegramRawAPI } from 'vovk-client';
+import { TelegramAPI as TelegramRawAPI } from '@/client';
 
 const TelegramAPI = TelegramRawAPI.withDefaults({
   apiRoot: 'https://api.telegram.org/bot<YOUR_BOT_TOKEN>',

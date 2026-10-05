@@ -271,7 +271,7 @@ export default function useWebRTCAudioSession(
 
 ### Client-side Tools
 
-The `useWebRTCAudioSession` hook accepts a tools list derived via `deriveTools({ modules: { UserRPC, TaskRPC } }){:ts}`, and also custom client-side tools created with `createTool` for navigation, scrolling, and other UI interactions. The `getCurrentTime` and `partyMode` tools were borrowed from [this repository](https://github.com/cameronking4/openai-realtime-api-nextjs), which was used as an inspiration for this demo.
+The `useWebRTCAudioSession` hook accepts a tools list derived via `deriveTools({ modules: { UserRPC, TaskRPC } }){:ts}`, and also custom client-side tools created with `standardTool` from the [standard-tool](https://www.npmjs.com/package/standard-tool) package for navigation, scrolling, and other UI interactions. The `getCurrentTime` and `partyMode` tools were borrowed from [this repository](https://github.com/cameronking4/openai-realtime-api-nextjs), which was used as an inspiration for this demo.
 
 Since the component is mounted in [layout.tsx](https://github.com/finom/vovk/blob/main/examples/realtime-kanban/src/app/layout.tsx), the component state and WebRTC connection persist across page navigations within this route. This allows you to navigate the app via voice commands using the `navigateTo` tool, which in turn uses Next.js `useRouter` hook.
 

@@ -99,7 +99,7 @@ export default class UserController {
 The generated client mirrors the controller interface exactly:
 
 ```ts
-import { UserRPC, PetstoreAPI } from 'vovk-client';
+import { UserRPC, PetstoreAPI } from '@/client';
 
 const user = await UserRPC.getUser({ params: { id: '123' } });
 const pet = await PetstoreAPI.getPetById({ params: { petId: 1 } });
