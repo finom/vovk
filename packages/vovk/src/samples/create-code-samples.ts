@@ -1,6 +1,7 @@
 import type { VovkSamplesConfig } from '../types/config.js';
 import type { VovkControllerSchema, VovkHandlerSchema } from '../types/core.js';
 import type { VovkJSONSchemaBase } from '../types/json-schema.js';
+import { getPythonClassName, getPythonMethodName, getRustFunctionName, getRustModuleName } from './client-names.js';
 import { objectToCode } from './object-to-code.js';
 import { getDescription, getSampleValue, LINE_BREAK, schemaToCode } from './schema-to-code.js';
 
@@ -11,22 +12,6 @@ const toSnakeCase = (str: string) =>
     .replace(/([A-Z])([A-Z])(?=[a-z])/g, '$1_$2') // Add underscore between uppercase letters if the second one is followed by a lowercase
     .toLowerCase()
     .replace(/^_/, ''); // Remove leading underscore
-
-// the name the Python and Rust clients give a handler: in schema order, a name already taken in the module gets the
-// first free suffix, so getUserByID and getUserById become get_user_by_id and get_user_by_id_2
-function getSnakeCaseName(handlerName: string, moduleHandlerNames: string[], taken: string[] = []): string {
-  const used = new Set(taken);
-  let unique = '';
-  // a handler the module doesn't list comes last
-  for (const name of new Set([...moduleHandlerNames, handlerName])) {
-    const snake = toSnakeCase(name);
-    unique = snake;
-    for (let i = 2; used.has(unique); i++) unique = `${snake}_${i}`;
-    if (name === handlerName) break;
-    used.add(unique);
-  }
-  return unique;
-}
 
 const getIndentSpaces = (level: number): string => ' '.repeat(level);
 
@@ -74,6 +59,7 @@ type CodeGenerationParams = {
   handlerName: string;
   // the handler's method in the client of the sample's language
   methodName: string;
+  // the module in the client of the sample's language
   rpcName: string;
   packageName: string;
   queryValidation?: VovkJSONSchemaBase;
@@ -341,18 +327,16 @@ function generateRustCode({
     return serdeUnwrap(getRsJSONSample(schema));
   };
 
-  const rpcNameSnake = toSnakeCase(rpcName);
-
   const serdeUnwrap = (fake: string) => `from_value(json!(${fake})).unwrap()`;
 
-  const RS_CODE = `use ${packageName}::${rpcNameSnake};
+  const RS_CODE = `use ${packageName}::${rpcName};
 use serde_json::{ 
   from_value, 
   json 
 };
 ${iterationValidation ? 'use futures_util::StreamExt;\n' : ''}${bodyValidation && isForm(bodyValidation) ? `use reqwest::multipart;\n` : ''}#[tokio::main]
 async fn main() {${bodyValidation && isForm(bodyValidation) ? `\n  ${getRsFormSample(bodyValidation)}\n` : ''}
-  let response = ${rpcNameSnake}::${methodName}(
+  let response = ${rpcName}::${methodName}(
     ${bodyValidation ? getBody(bodyValidation) : '()'}, /* body */ 
     ${queryValidation ? serdeUnwrap(getRsJSONSample(queryValidation)) : '()'}, /* query */ 
     ${paramsValidation ? serdeUnwrap(getRsJSONSample(paramsValidation)) : '()'}, /* params */ 
@@ -426,9 +410,6 @@ export function createCodeSamples({
   const pyPackageName = packageJson?.py_name ?? packageNameSnake;
   const rsPackageName = packageJson?.rs_name ?? packageNameSnake;
   const handlerNames = Object.keys(controllerSchema.handlers ?? {});
-  const pyMethodName = getSnakeCaseName(handlerName, handlerNames);
-  // the Rust module imports functions named http_request and http_request_stream
-  const rsFunctionName = getSnakeCaseName(handlerName, handlerNames, ['http_request', 'http_request_stream']);
 
   const commonParams: CodeGenerationParams = {
     handlerName,
@@ -445,8 +426,18 @@ export function createCodeSamples({
   };
 
   const ts = generateTypeScriptCode(commonParams);
-  const py = generatePythonCode({ ...commonParams, packageName: pyPackageName, methodName: pyMethodName });
-  const rs = generateRustCode({ ...commonParams, packageName: rsPackageName, methodName: rsFunctionName });
+  const py = generatePythonCode({
+    ...commonParams,
+    packageName: pyPackageName,
+    rpcName: getPythonClassName(rpcName),
+    methodName: getPythonMethodName(handlerName, handlerNames),
+  });
+  const rs = generateRustCode({
+    ...commonParams,
+    packageName: rsPackageName,
+    rpcName: getRustModuleName(rpcName),
+    methodName: getRustFunctionName(handlerName, handlerNames),
+  });
 
   return { ts, py, rs };
 }

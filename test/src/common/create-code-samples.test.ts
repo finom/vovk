@@ -1,4 +1,5 @@
 import assert from 'node:assert';
+import { createRequire } from 'node:module';
 import { describe, test } from 'node:test';
 import type { VovkJSONSchemaBase } from 'vovk';
 import {
@@ -7,6 +8,8 @@ import {
   type VovkControllerSchema,
   type VovkHandlerSchema,
 } from 'vovk/internal';
+import { toPythonIdentifier } from '../../../packages/vovk-python/index.js';
+import { toRustIdent } from '../../../packages/vovk-rust/index.js';
 
 describe('createCodeSamples', () => {
   describe('JSON body with query and params', () => {
@@ -1352,6 +1355,87 @@ const response = await MixedFormRPC.uploadProfile({
       assert.deepStrictEqual(methodsCalled('get_user_by_id'), ['get_user_by_id_3', 'get_user_by_id_3']);
       // the Rust module imports functions named http_request and http_request_stream
       assert.deepStrictEqual(methodsCalled('httpRequest'), ['http_request', 'http_request_2']);
+    });
+  });
+
+  describe('Names the clients have', () => {
+    // the templates name a Python class toPythonIdentifier(rpcModuleName) and its methods
+    // toPythonIdentifier(snakeCase(handlerName)), a Rust module and its functions toRustIdent(snakeCase(name)),
+    // with the lodash snakeCase vovk-cli gives them; a Rust module imports http_request and http_request_stream
+    const lodashSnakeCase: (name: string) => string = createRequire(
+      new URL('../../../packages/vovk-cli/package.json', import.meta.url)
+    )('lodash/snakeCase');
+    const clientNames = (rpcModuleName: string, handlerName: string) => {
+      const rsFunction = toRustIdent(lodashSnakeCase(handlerName));
+      return {
+        py: [toPythonIdentifier(rpcModuleName), toPythonIdentifier(lodashSnakeCase(handlerName))],
+        rs: [
+          toRustIdent(lodashSnakeCase(rpcModuleName)),
+          ['http_request', 'http_request_stream'].includes(rsFunction) ? `${rsFunction}_2` : rsFunction,
+        ],
+      };
+    };
+    const sampleNames = (rpcModuleName: string, handlerName: string) => {
+      const controllerSchema: VovkControllerSchema = {
+        rpcModuleName,
+        prefix: 'things',
+        handlers: { [handlerName]: { httpMethod: 'GET', path: 'thing' } },
+      };
+      const { py, rs } = createCodeSamples({
+        handlerName,
+        handlerSchema: controllerSchema.handlers[handlerName],
+        controllerSchema,
+        package: { name: 'client' },
+        config: {},
+      });
+      return {
+        py: py.match(/^response = (\w+)\.(\w+)\(/m)?.slice(1),
+        rs: rs.match(/^ {2}let response = (\w+)::(\w+)\(/m)?.slice(1),
+      };
+    };
+
+    test('a sample calls the method its client has', () => {
+      // biome-ignore format: a table
+      const handlerNames = ['getV2Users', 'listV1', 'getOAuth2Token', 'users.list', 'a/b', 'getÜber', 'HTTPServer', 'import', 'type', 'self', 'match', 'httpRequest'];
+      for (const handlerName of handlerNames) {
+        assert.deepStrictEqual(sampleNames('ThingRPC', handlerName), clientNames('ThingRPC', handlerName), handlerName);
+      }
+    });
+
+    test('a sample names the module its client has', () => {
+      for (const rpcModuleName of ['ThingV2RPC', 'HTTPServerRPC', 'things.API', 'ÜberRPC', 'self']) {
+        assert.deepStrictEqual(
+          sampleNames(rpcModuleName, 'getThing'),
+          clientNames(rpcModuleName, 'getThing'),
+          rpcModuleName
+        );
+      }
+    });
+
+    test('a sample names any handler as its client does', () => {
+      // names made of these pieces, seeded so a failure repeats
+      // biome-ignore format: a word list
+      const pieces = [
+        'get', 'User', 'ID', 'HTTP', 'Server', 'v2', 'V1', 'x', 'Q', '0', '42', '1st', '2ND', '3rd', '11th', '_', '$',
+        '-', '.', '/', ' ', "'", '\u2019', 'Ü', 'über', 'ß', 'Æ', 'ø', 'Ł', 'ŉ', 'ĳ', 'ǅ', 'Σσ', 'Жж', '中', '😀',
+        '\u2713', '\u0301', '\u200d', '\ufe0f', '\u00d7', '\u2028', 'import', 'type',
+      ];
+      let seed = 2026;
+      const random = () => {
+        seed = (seed * 16807) % 2147483647;
+        return seed / 2147483647;
+      };
+      for (let n = 0; n < 2000; n++) {
+        let handlerName = '';
+        for (let length = 1 + Math.floor(random() * 6); length > 0; length--) {
+          handlerName += pieces[Math.floor(random() * pieces.length)];
+        }
+        assert.deepStrictEqual(
+          sampleNames('ThingRPC', handlerName),
+          clientNames('ThingRPC', handlerName),
+          JSON.stringify(handlerName)
+        );
+      }
     });
   });
 
