@@ -351,6 +351,12 @@ const responseSpec = {
         responses: { '200': { content: { 'application/jsonl': { schema: okSchema() } } } },
       },
     },
+    '/ndjson': {
+      get: {
+        operationId: 'ndjson',
+        responses: { '200': { content: { 'application/x-ndjson': { schema: okSchema() } } } },
+      },
+    },
   },
 };
 
@@ -411,5 +417,90 @@ describe('openAPIToVovkSchema — success response selection', () => {
 
   it('still reads a plain 200 application/jsonl iteration', () => {
     deepStrictEqual(responseHandler('legacyJsonl').validation.iteration.properties, okProperties);
+  });
+
+  it('reads an application/x-ndjson response as the iteration', () => {
+    deepStrictEqual(responseHandler('ndjson').validation.iteration?.properties, okProperties);
+  });
+});
+
+describe('openAPIToVovkSchema — OpenAPI 3.0 keywords', () => {
+  // the Python and Rust clients validate with JSON Schema 2020-12: an exclusive bound is the number itself,
+  // and `nullable` is no keyword there
+  const oas30Spec = {
+    openapi: '3.0.3',
+    info: { title: 'OAS 3.0', version: '1.0.0' },
+    paths: {
+      '/things': {
+        get: {
+          operationId: 'listThings',
+          parameters: [{ name: 'limit', in: 'query', schema: { type: 'integer', minimum: 0, exclusiveMinimum: true } }],
+          responses: { '200': { description: 'ok' } },
+        },
+        post: {
+          operationId: 'createThing',
+          requestBody: {
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    name: { type: 'string', nullable: true },
+                    score: { type: 'number', maximum: 10, exclusiveMaximum: true },
+                    rank: { type: 'number', minimum: 1, exclusiveMinimum: false },
+                    thing: { $ref: '#/components/schemas/Thing' },
+                  },
+                },
+              },
+            },
+          },
+          responses: { '200': { description: 'ok' } },
+        },
+      },
+    },
+    components: { schemas: { Thing: { type: 'object', properties: { note: { type: 'string', nullable: true } } } } },
+  };
+
+  const handlers = openAPIToVovkSchema({
+    apiRoot: 'https://api.example.com',
+    source: { object: oas30Spec },
+    getModuleName: () => 'Things',
+    getMethodName: ({ operationObject }: { operationObject: { operationId?: string } }) =>
+      operationObject.operationId ?? 'op',
+    segmentName: 'api',
+  } as unknown as Parameters<typeof openAPIToVovkSchema>[0]).segments.api.controllers.Things.handlers as Obj;
+
+  // whether JSON Schema 2020-12 lets the schema take null: every keyword that applies to null has to
+  const admitsNull = (schema: Obj): boolean =>
+    (schema.type === undefined || [schema.type].flat().includes('null')) &&
+    (schema.enum === undefined || schema.enum.includes(null)) &&
+    (!('const' in schema) || schema.const === null) &&
+    (schema.anyOf === undefined || schema.anyOf.some(admitsNull)) &&
+    (schema.oneOf === undefined || schema.oneOf.filter(admitsNull).length === 1) &&
+    (schema.allOf === undefined || schema.allOf.every(admitsNull)) &&
+    (schema.not === undefined || !admitsNull(schema.not));
+
+  const booleanBounds = (value: unknown, path = ''): string[] => {
+    if (!value || typeof value !== 'object') return [];
+    return Object.entries(value).flatMap(([key, child]) =>
+      (key === 'exclusiveMinimum' || key === 'exclusiveMaximum') && typeof child === 'boolean'
+        ? [`${path}/${key}`]
+        : booleanBounds(child, `${path}/${key}`)
+    );
+  };
+
+  it('writes an exclusive bound as the number it bounds by', () => {
+    const { listThings, createThing } = handlers;
+    deepStrictEqual(booleanBounds([listThings.validation, createThing.validation]), []);
+    strictEqual(listThings.validation.query.properties.limit.exclusiveMinimum, 0);
+    strictEqual(createThing.validation.body.properties.score.exclusiveMaximum, 10);
+    strictEqual(createThing.validation.body.properties.rank.minimum, 1);
+  });
+
+  it('lets a nullable property take null', () => {
+    const { body } = handlers.createThing.validation;
+    ok(admitsNull(body.properties.name), JSON.stringify(body.properties.name));
+    ok(admitsNull(body.$defs.Thing.properties.note), JSON.stringify(body.$defs.Thing.properties.note));
+    ok(!admitsNull(body.properties.score));
   });
 });

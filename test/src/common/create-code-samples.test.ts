@@ -1,5 +1,6 @@
 import assert from 'node:assert';
 import { describe, test } from 'node:test';
+import type { VovkJSONSchemaBase } from 'vovk';
 import { createCodeSamples, type VovkControllerSchema, type VovkHandlerSchema } from 'vovk/internal';
 
 describe('createCodeSamples', () => {
@@ -1128,6 +1129,56 @@ const response = await MixedFormRPC.uploadProfile({
       });
 
       assert.ok(result.ts.includes('NodeRPC.createNode'));
+    });
+  });
+
+  describe('Python literals', () => {
+    const controllerSchema: VovkControllerSchema = {
+      rpcModuleName: 'TaskRPC',
+      prefix: 'tasks',
+      handlers: {},
+    };
+    const task: VovkJSONSchemaBase = {
+      type: 'object',
+      properties: {
+        done: { type: 'boolean' },
+        note: { type: 'null' },
+        flags: { type: 'array', items: { type: 'boolean' } },
+      },
+    };
+
+    // Python spells true, false and null as True, False and None, so a JSON literal in the code is a NameError
+    const jsonLiteralsInCode = (python: string) =>
+      python.replace(/"(?:[^"\\\n]|\\.)*"|'(?:[^'\\\n]|\\.)*'|#.*$/gm, '').match(/\b(?:true|false|null)\b/g) ?? [];
+
+    test('Python JSON body, query and output', () => {
+      const { py } = createCodeSamples({
+        handlerName: 'updateTask',
+        handlerSchema: {
+          httpMethod: 'PUT',
+          path: '',
+          validation: {
+            body: task,
+            query: { type: 'object', properties: { notify: { type: 'boolean' } } },
+            output: task,
+          },
+        },
+        controllerSchema,
+        config: {},
+      });
+
+      assert.deepStrictEqual(jsonLiteralsInCode(py), [], py);
+    });
+
+    test('Python streaming items', () => {
+      const { py } = createCodeSamples({
+        handlerName: 'streamTasks',
+        handlerSchema: { httpMethod: 'GET', path: 'stream', validation: { iteration: task } },
+        controllerSchema,
+        config: {},
+      });
+
+      assert.deepStrictEqual(jsonLiteralsInCode(py), [], py);
     });
   });
 });
