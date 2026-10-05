@@ -1545,6 +1545,68 @@ const response = await MixedFormRPC.uploadProfile({
     });
   });
 
+  describe('TypeScript method names', () => {
+    // the receiver and the name of the method a TypeScript sample calls for its response
+    function calledMethod(sample: string): string[] | undefined {
+      const file = ts.createSourceFile('sample.ts', sample, ts.ScriptTarget.ESNext);
+      let called: string[] | undefined;
+      const visit = (node: ts.Node) => {
+        if (
+          ts.isVariableDeclaration(node) &&
+          node.name.getText(file) === 'response' &&
+          node.initializer &&
+          ts.isAwaitExpression(node.initializer) &&
+          ts.isCallExpression(node.initializer.expression)
+        ) {
+          const callee = node.initializer.expression.expression;
+          if (ts.isPropertyAccessExpression(callee)) called = [callee.expression.getText(file), callee.name.text];
+          if (ts.isElementAccessExpression(callee) && ts.isStringLiteral(callee.argumentExpression)) {
+            called = [callee.expression.getText(file), callee.argumentExpression.text];
+          }
+        }
+        ts.forEachChild(node, visit);
+      };
+      visit(file);
+      return called;
+    }
+
+    test('a sample calls a method whose name is not an identifier as the client has it', () => {
+      // the client takes the handler names of a mixin as they are, so these are methods of ThingsAPI
+      const operationIds = ['users.list', 'repos/get', 'get-user', 'a b', '2fa', "it's", 'getÜber', 'delete', 'list'];
+      const spec = {
+        openapi: '3.1.0',
+        info: { title: 'Names', version: '1.0.0' },
+        servers: [{ url: 'https://api.example.com' }],
+        paths: Object.fromEntries(
+          operationIds.map((operationId, i) => [
+            `/things/${i}`,
+            { get: { operationId, responses: { '200': { description: 'ok' } } } },
+          ])
+        ),
+      };
+      const segment = openAPIToVovkSchema({
+        source: { object: spec },
+        getModuleName: () => 'ThingsAPI',
+        getMethodName: ({ operationObject }: { operationObject: { operationId?: string } }) =>
+          operationObject.operationId ?? 'op',
+        segmentName: 'things',
+      } as unknown as Parameters<typeof openAPIToVovkSchema>[0]);
+      const controllerSchema = segment.segments.things.controllers.ThingsAPI;
+
+      assert.deepStrictEqual(Object.keys(controllerSchema.handlers), operationIds);
+      for (const handlerName of operationIds) {
+        const { ts: sample } = createCodeSamples({
+          handlerName,
+          handlerSchema: controllerSchema.handlers[handlerName],
+          controllerSchema,
+          package: { name: 'my-client' },
+          config: {},
+        });
+        assert.deepStrictEqual(calledMethod(sample), ['ThingsAPI', handlerName], sample);
+      }
+    });
+  });
+
   // SEC-03: the sample generator expands every $ref with a fresh "seen" set per branch, so a component
   // that references one of depth N twice is inlined 2^N times. A tiny malicious OpenAPI spec (a developer
   // generates its README, Rust or Python client) produces a gigantic sample and exhausts memory.

@@ -22,6 +22,10 @@ const toSnakeCase = (str: string) =>
 
 const getIndentSpaces = (level: number): string => ' '.repeat(level);
 
+// a handler as the generated TypeScript client has it: by its own name, in brackets when that isn't an identifier
+const toTsMethod = (handlerName: string) =>
+  /^[\p{ID_Start}$_][\p{ID_Continue}$]*$/u.test(handlerName) ? `.${handlerName}` : `[${toCodeString(handlerName)}]`;
+
 // a third-party OpenAPI document may hold a media type that isn't a string, a sample leaves it out
 const getContentMediaType = (schema: VovkJSONSchemaBase) =>
   typeof schema.contentMediaType === 'string' ? schema.contentMediaType : undefined;
@@ -155,7 +159,7 @@ ${[
 
   const TS_CODE = `import { ${rpcName} } from ${toCodeString(packageName, "'")};
 ${bodyValidation && isForm(bodyValidation) ? `${getTsFormSample(bodyValidation)}\n` : ''}
-${iterationValidation ? 'using' : 'const'} response = await ${rpcName}.${handlerName}(${tsArgs});
+${iterationValidation ? 'using' : 'const'} response = await ${rpcName}${toTsMethod(handlerName)}(${tsArgs});
 ${
   outputValidation
     ? `
