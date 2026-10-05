@@ -88,6 +88,10 @@ export function withValidationLibrary<
   preferTransformed: boolean | undefined;
   operationObject: VovkOperationObject | undefined;
 }) {
+  // refused where the procedure is defined, as the handler would run before the call fails
+  if (output && iteration) {
+    throw new Error("Output and iteration are mutually exclusive. You can't use them together.");
+  }
   preferTransformed = preferTransformed ?? true;
   const disableServerSideValidationKeys =
     disableServerSideValidation === false
@@ -116,12 +120,6 @@ export function withValidationLibrary<
     const data = await handle(req, handlerParams);
     if (__disableClientValidation) {
       return data;
-    }
-    if (output && iteration) {
-      throw new HttpException(
-        HttpStatus.INTERNAL_SERVER_ERROR,
-        "Output and iteration are mutually exclusive. You can't use them together."
-      );
     }
 
     if (output && !disableServerSideValidationKeys.includes('output')) {
