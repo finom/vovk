@@ -58,6 +58,9 @@ export function getOutputConfigs(
   ];
 }
 
+// the templates warned about a client without an origin, once per run, as vovk dev generates again and again
+const templatesWithoutOrigin = new Set<string>();
+
 // a Python or Rust package goes by py_name or rs_name when the config sets it
 const getUnderscoredPackageName = (packageJson: VovkPackageJson, packageNameKey?: 'py_name' | 'rs_name') =>
   (packageNameKey && packageJson[packageNameKey]) || toUnderscoredPackageName(packageJson.name);
@@ -165,7 +168,7 @@ export async function renderOneClientFile({
 }) {
   const { config, log } = projectInfo;
 
-  const { templateFilePath, relativeDir, packageNameKey } = clientTemplateFile;
+  const { templateName, templateFilePath, relativeDir, packageNameKey } = clientTemplateFile;
   const locatedSegmentsByName = _.keyBy(locatedSegments, 'segmentName');
   // a segmented client renders a whole client into each segment folder, required templates included
   const segmentDir = typeof segmentName === 'string' ? segmentName || ROOT_SEGMENT_FILE_NAME : '';
@@ -288,6 +291,23 @@ export async function renderOneClientFile({
       })
     ),
   };
+
+  // a Python or Rust client sends every call to the root it's generated with, a relative one can't be sent
+  const isPythonOrRust = data.imports?.some((imp) => imp === 'vovk-python' || imp === 'vovk-rust');
+  if (isPythonOrRust && !templatesWithoutOrigin.has(templateName)) {
+    const hasSegmentWithoutOrigin = Object.values(fullSchema.segments).some(
+      ({ segmentName: sName, segmentType, controllers }) =>
+        segmentType !== 'mixin' &&
+        !_.isEmpty(controllers) &&
+        !/^[a-z][a-z\d+.-]*:\/\//i.test(t.segmentMeta[sName]?.forceApiRoot ?? t.apiRoot ?? '')
+    );
+    if (hasSegmentWithoutOrigin) {
+      templatesWithoutOrigin.add(templateName);
+      log.warn(
+        `The "${templateName}" template writes a client without an origin, so its calls can't be sent. Set outputConfig.origin, or pass api_root to every call.`
+      );
+    }
+  }
 
   if (Array.isArray(data.imports)) {
     for (const imp of data.imports) {

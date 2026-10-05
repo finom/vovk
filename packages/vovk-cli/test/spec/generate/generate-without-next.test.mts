@@ -778,6 +778,33 @@ imports:
     await assert.rejects(fs.access(path.join(projectDir, 'x')));
   });
 
+  await it('Warns once per template that a Python or Rust client has no origin to send its calls to', async () => {
+    await createProject(projectDir, {
+      'package.json': { name: 'app', version: '1.0.0', type: 'module' },
+      'vovk.config.mjs': configFile({ composedClient: { prettifyClient: false } }),
+      '.vovk-schema/root.json': userSegmentSchema,
+      '.vovk-schema/admin.json': segmentSchema('admin', 'AdminRPC'),
+    });
+
+    // the TypeScript client calls relative URLs, the Python and Rust ones can't
+    const { stdout, stderr } = await runCLI(['generate', '--from', 'ts', '--from', 'py', '--from', 'rs'], {
+      cwd: projectDir,
+    });
+    const warnings = `${stdout}${stderr}`.split('\n').filter((line) => line.includes('outputConfig.origin'));
+    assert.strictEqual(warnings.length, 2, stdout + stderr);
+    for (const templateName of ['pySrc', 'rsSrc']) {
+      assert.ok(
+        warnings.some((line) => line.includes(`"${templateName}"`) && line.includes('api_root')),
+        stdout + stderr
+      );
+    }
+
+    const withOrigin = await runCLI(['generate', '--from', 'py', '--from', 'rs', '--origin', 'https://example.com'], {
+      cwd: projectDir,
+    });
+    assert.doesNotMatch(withOrigin.stdout + withOrigin.stderr, /outputConfig\.origin/);
+  });
+
   await it('Gives the OpenAPI document and the Python package a version when package.json has none', async () => {
     await createProject(projectDir, {
       'package.json': { name: 'app', type: 'module' },
