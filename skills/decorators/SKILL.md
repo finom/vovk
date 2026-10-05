@@ -214,13 +214,13 @@ Auth: put authentication **at top** (outermost) → populates `meta()` before do
 
 Not every decorator uses `req`. Placement rule depends on what decorator does:
 
-- **Wrapping decorators** — read `req` / call `next()` (auth, logging, timing, any `createDecorator(handler, …)` with non-null handler). Stack **below `@get`/`@post`/etc.** in source order. HTTP decorator registers handler by capturing `controller[propertyKey]` at application time (TS bottom-up) → decorators below already baked into what gets registered. Decorators **above** `@get` applied after route registered → wrapping is dead code for HTTP calls, never see `req`.
+- **Wrapping decorators** — read `req` / call `next()` (auth, logging, timing, any `createDecorator(handler, …)` with non-null handler). Run on HTTP and `.fn()` calls on either side of `@get`/`@post`/etc.: dispatcher calls latest wrapper, so one applied after HTTP decorator (written above it) still sees `req`. Order stays top-to-bottom. Convention: stack them **below** HTTP decorator.
 - **Schema-only decorators** — `@operation`, anything written as `createDecorator(null, initHandler)`. Only mutate handler schema (OpenAPI, tool derivation, etc.), pass through at runtime. Placement doesn't change behavior; convention puts them **on top** (above `@get`) for readability — metadata reads naturally before HTTP verb line.
 
 ```ts
 @operation({ summary: 'List users' })  // schema-only — on top, reads like a doc comment
 @get('/users')                          // HTTP decorator
-@authGuard()                            // wrapping — must be below @get
+@authGuard()                            // wrapping — below @get by convention
 static listUsers = procedure().handle(/* ... */);
 ```
 
