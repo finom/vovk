@@ -172,7 +172,7 @@ export function withValidationLibrary<
           yield preferTransformed ? parsed : item;
         }
       })();
-    } else if (validateEachIteration) {
+    } else if (validateEachIteration && !iteration) {
       throw new HttpException(
         HttpStatus.INTERNAL_SERVER_ERROR,
         'validateEachIteration is set but iteration is not defined.'
