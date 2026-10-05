@@ -331,21 +331,6 @@ static createUser = procedure({ body: /* ... */ }).handle(async (req) => {
 });
 ```
 
-### "I can't use `experimentalDecorators` — how do I set operation metadata?"
-
-Use `decorate()` (see `procedure` skill for full pattern):
-
-```ts
-import { decorate, post, operation, procedure, HttpStatus } from 'vovk';
-
-static createUser = decorate(
-  post(),
-  operation({ summary: 'Create user', tags: ['users'] }),
-  operation.error(HttpStatus.CONFLICT, 'Email already exists'),
-  procedure({ body: /* ... */ })
-).handle(async (req) => { /* ... */ });
-```
-
 ## Gotchas
 
 - **`@operation` is advisory**: omitting it doesn't break spec, but descriptions/tags go missing. LLM tool callers and doc readers both suffer.

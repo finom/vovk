@@ -16,7 +16,7 @@ Opposite of most frameworks: procedures first, HTTP opt-in.
 
 ## Scope
 
-Covers procedure authoring end-to-end: `procedure({...}).handle(...)` options, validation with Zod/Valibot/ArkType (+ `vovk-ajv` client-side), controller classes and HTTP decorators (`@prefix`, `@get/@post/@put/@patch/@del`, `.auto()`), `req.vovk` + `VovkRequest`, error handling (`HttpException` / `HttpStatus`), content types (JSON, multipart, URL-encoded, text, binary, downloads), response headers + CORS, `.fn()` for server components / SSR / server actions, `decorate()`, `vovk new controller service` CLI.
+Covers procedure authoring end-to-end: `procedure({...}).handle(...)` options, validation with Zod/Valibot/ArkType (+ `vovk-ajv` client-side), controller classes and HTTP decorators (`@prefix`, `@get/@post/@put/@patch/@del`, `.auto()`), `req.vovk` + `VovkRequest`, error handling (`HttpException` / `HttpStatus`), content types (JSON, multipart, URL-encoded, text, binary, downloads), response headers + CORS, `.fn()` for server components / SSR / server actions, `vovk new controller service` CLI.
 
 Out of scope (→ skill): segment setup / `initSegment` / `route.ts` → `segment`. RPC client generation / `@/client` → `rpc`. Custom decorators / `createDecorator` / auth guards → `decorators`. AI tools (`deriveTools`) → `tools`. Generator handlers / streaming → `jsonlines`. `@operation` / Scalar docs → `openapi`. Inference helpers against RPC modules → `rpc`.
 
@@ -425,30 +425,6 @@ static hello = procedure().handle(async () => {
 
 For auth, logging, rate-limits, other cross-cutting concerns → **`decorators` skill** (`createDecorator`, stacking, `.fn()` detection, auth patterns).
 
-## `decorate()` — non-decorator syntax
-
-For projects without `experimentalDecorators`:
-
-```ts
-import { decorate, get, procedure, operation } from 'vovk';
-
-class UserController {
-  static prefix = 'users';
-
-  static getUser = decorate(
-    get('{id}'),
-    operation({ summary: 'Get a user' }),
-    procedure({
-      params: z.object({ id: z.string().uuid() }),
-    }),
-  ).handle(async (_req, { id }) => {
-    return UserService.byId(id);
-  });
-}
-```
-
-Decorators apply in order — **last listed applied first**. `procedure()` typically goes last (applied first, closest to handler).
-
 ## Type inference
 
 Helpers exported from `vovk`:
@@ -521,6 +497,5 @@ HTML ships with data inline; browser never talks to server.
 - **`req.url` is `undefined` in `.fn()` context.** Any decorator checking URL must guard.
 - **Zod default = `vovk init`'s choice** — if user chose Valibot/ArkType, match their choice when adding schemas.
 - **CORS on decorator = preflight handling only.** Doesn't whitelist origins — configure at Next.js / platform layer.
-- **`decorate()` order**: last listed applies first. Flipping order changes behavior.
 - **`procedure().handle()` = the shape.** Don't confuse with `procedure(...).handle(...)` mid-chain — options go in `procedure(...)`, handler in `.handle(...)`.
 - **Never pass `req` to service.** Procedures pre-calculate (`vovk.body()`, `vovk.meta()`, `next/headers`) and hand service plain typed values — see "Controller / procedure / service — split of responsibilities" above.
