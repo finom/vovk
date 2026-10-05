@@ -26,6 +26,7 @@ type ProcedureOptions<
   TOutput extends CombinedSpec,
   TIteration extends CombinedSpec,
   TContentType extends ContentType | ContentType[],
+  TPreferTransformed extends boolean,
 > = {
   contentType?: TContentType;
   body?: TBody;
@@ -36,14 +37,41 @@ type ProcedureOptions<
   disableServerSideValidation?: boolean | VovkValidationType[];
   skipSchemaEmission?: boolean | VovkValidationType[];
   validateEachIteration?: boolean;
-  preferTransformed?: boolean;
+  preferTransformed?: TPreferTransformed;
   operationObject?: VovkOperationObject;
   target?: CombinedSpec.Target;
 };
 
+// what the handler gets from a schema: its output, or with preferTransformed: false, the value as it was sent
+type Received<TSchema extends CombinedSpec, TPreferTransformed extends boolean> = [TPreferTransformed] extends [false]
+  ? CombinedSpec.InferInput<TSchema>
+  : CombinedSpec.InferOutput<TSchema>;
+
 // without a params schema, the handler gets the route params as strings
-type ParamsOutput<TParams extends CombinedSpec> =
-  unknown extends CombinedSpec.InferOutput<TParams> ? Record<string, string> : CombinedSpec.InferOutput<TParams>;
+type HandlerParams<TParams extends CombinedSpec, TPreferTransformed extends boolean> =
+  unknown extends Received<TParams, TPreferTransformed>
+    ? Record<string, string>
+    : Received<TParams, TPreferTransformed>;
+
+// req.vovk returns the validated values; req.json() and searchParams hold what the client sent
+type HandlerRequest<
+  TBody extends CombinedSpec,
+  TQuery extends CombinedSpec,
+  TParams extends CombinedSpec,
+  TContentType extends ContentType | ContentType[],
+  TPreferTransformed extends boolean,
+> = VovkRequest<
+  // without a body schema, the declared content type says what req.vovk.body() parses the body into
+  unknown extends Received<TBody, TPreferTransformed>
+    ? ParsedBodyTypeFromContentType<NormalizeContentType<TContentType>>
+    : Received<TBody, TPreferTransformed>,
+  Received<TQuery, TPreferTransformed>,
+  HandlerParams<TParams, TPreferTransformed>,
+  [TBody] extends [NoSchema]
+    ? ParsedBodyTypeFromContentType<NormalizeContentType<TContentType>>
+    : CombinedSpec.InferInput<TBody>,
+  CombinedSpec.InferInput<TQuery>
+>;
 
 export function createStandardValidation({
   toJSONSchema,
@@ -122,6 +150,7 @@ export function createStandardValidation({
     TOutput extends CombinedSpec,
     TIteration extends CombinedSpec,
     TContentType extends ContentType | ContentType[],
+    TPreferTransformed extends boolean,
     TReq extends VovkRequest<KnownAny, KnownAny, KnownAny>,
     THandleFn extends (...args: KnownAny[]) => KnownAny = (...args: KnownAny[]) => KnownAny,
     TFnInput = Prettify<
@@ -131,11 +160,11 @@ export function createStandardValidation({
       }
     >,
   > = {
-    (req: TReq, params: ParamsOutput<TParams>): KnownAny;
+    (req: TReq, params: HandlerParams<TParams, TPreferTransformed>): KnownAny;
     __types: {
-      body: TBody extends CombinedSpec ? CombinedSpec.InferOutput<TBody> : KnownAny;
-      query: TQuery extends CombinedSpec ? CombinedSpec.InferOutput<TQuery> : KnownAny;
-      params: TParams extends CombinedSpec ? CombinedSpec.InferOutput<TParams> : KnownAny;
+      body: Received<TBody, TPreferTransformed>;
+      query: Received<TQuery, TPreferTransformed>;
+      params: Received<TParams, TPreferTransformed>;
       output: unknown extends CombinedSpec.InferOutput<TOutput> ? KnownAny : CombinedSpec.InferOutput<TOutput>;
       iteration: TIteration extends CombinedSpec ? CombinedSpec.InferOutput<TIteration> : KnownAny;
       contentType: NormalizeContentType<TContentType>;
@@ -172,26 +201,36 @@ export function createStandardValidation({
     TOutput extends CombinedSpec = NoSchema,
     TIteration extends CombinedSpec = NoSchema,
     TContentType extends ContentType | ContentType[] = ['application/json'],
-    TReq extends VovkRequest<KnownAny, KnownAny, KnownAny> = VovkRequest<
-      // without a body schema, the declared content type says what req.vovk.body() parses the body into
-      unknown extends CombinedSpec.InferOutput<TBody>
-        ? ParsedBodyTypeFromContentType<NormalizeContentType<TContentType>>
-        : CombinedSpec.InferOutput<TBody>,
-      TQuery extends CombinedSpec ? CombinedSpec.InferOutput<TQuery> : undefined,
-      ParamsOutput<TParams>
+    TPreferTransformed extends boolean = true,
+    TReq extends VovkRequest<KnownAny, KnownAny, KnownAny> = HandlerRequest<
+      TBody,
+      TQuery,
+      TParams,
+      TContentType,
+      TPreferTransformed
     >,
   >(
-    options?: ProcedureOptions<TBody, TQuery, TParams, TOutput, TIteration, TContentType>
-  ): BuilderHandleReturn<TBody, TQuery, TParams, TOutput, TIteration, TContentType, TReq> & {
+    options?: ProcedureOptions<TBody, TQuery, TParams, TOutput, TIteration, TContentType, TPreferTransformed>
+  ): BuilderHandleReturn<TBody, TQuery, TParams, TOutput, TIteration, TContentType, TPreferTransformed, TReq> & {
     handle: unknown extends CombinedSpec.InferOutput<TOutput>
-      ? <THandleFn extends (req: TReq, params: ParamsOutput<TParams>) => KnownAny>(
+      ? <THandleFn extends (req: TReq, params: HandlerParams<TParams, TPreferTransformed>) => KnownAny>(
           fn: THandleFn
-        ) => BuilderHandleReturn<TBody, TQuery, TParams, TOutput, TIteration, TContentType, TReq, THandleFn>
+        ) => BuilderHandleReturn<
+          TBody,
+          TQuery,
+          TParams,
+          TOutput,
+          TIteration,
+          TContentType,
+          TPreferTransformed,
+          TReq,
+          THandleFn
+        >
       : // the schema validates what the handler returns, so the handler returns its input; fn() gets its output
         (
           fn: (
             req: TReq,
-            params: ParamsOutput<TParams>
+            params: HandlerParams<TParams, TPreferTransformed>
           ) => HandleReturnType<CombinedSpec.InferInput<TOutput>, CombinedSpec.InferInput<TIteration>>
         ) => BuilderHandleReturn<
           TBody,
@@ -200,10 +239,11 @@ export function createStandardValidation({
           TOutput,
           TIteration,
           TContentType,
+          TPreferTransformed,
           TReq,
           (
             req: TReq,
-            params: ParamsOutput<TParams>
+            params: HandlerParams<TParams, TPreferTransformed>
           ) => HandleReturnType<CombinedSpec.InferOutput<TOutput>, CombinedSpec.InferOutput<TIteration>>
         >;
   };
