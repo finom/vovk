@@ -16,16 +16,29 @@ after(async () => {
 const withDevScript = (dev: string) =>
   ({ content: { name: 'app', scripts: { dev } } }) as unknown as Parameters<typeof getDevScript>[0];
 
-const updateScripts = async (scripts: Record<string, string>, packageJson: Record<string, unknown> = {}) => {
-  await createProject(projectDir, { 'package.json': { name: 'app', version: '1.0.0', ...packageJson, scripts } });
+const updateScripts = async (
+  scripts: Record<string, string>,
+  {
+    packageJson = {},
+    files = {},
+    userAgent,
+  }: { packageJson?: Record<string, unknown>; files?: Record<string, string>; userAgent?: string } = {}
+) => {
+  await createProject(projectDir, {
+    'package.json': { name: 'app', version: '1.0.0', ...packageJson, scripts },
+    ...files,
+  });
   await updateNPMScripts({
     pkgJson: await NPMCliPackageJson.load(projectDir),
     root: projectDir,
     bundle: true,
     updateScriptsMode: 'implicit',
+    userAgent,
   });
   return JSON.parse(await fs.readFile(path.join(projectDir, 'package.json'), 'utf-8')).scripts;
 };
+
+const YARN_4_USER_AGENT = 'yarn/4.9.2 npm/? node/v24.1.0 darwin arm64';
 
 await describe('getDevScript', async () => {
   await it('Keeps the next dev flags in the implicit script', () => {
@@ -86,11 +99,43 @@ await describe('updateNPMScripts', async () => {
       prebuild: 'vovk generate',
       bundle: 'vovk bundle',
     });
+    const yarn4Scripts = await updateScripts(
+      { build: 'vovk generate && next build' },
+      { packageJson: { packageManager: 'yarn@4.9.2' } }
+    );
+    assert.strictEqual(yarn4Scripts.build, 'vovk generate && next build');
   });
 
   await it('Generates the client in the build script under Yarn 2+, which never runs prebuild', async () => {
-    const scripts = await updateScripts({ build: 'next build' }, { packageManager: 'yarn@4.9.2' });
+    const scripts = await updateScripts({ build: 'next build' }, { packageJson: { packageManager: 'yarn@4.9.2' } });
 
     assert.strictEqual(scripts.build, 'vovk generate && next build');
+  });
+
+  await it('Finds Yarn 2+ by .yarnrc.yml or by the yarn that runs vovk init', async () => {
+    const withYarnrc = await updateScripts(
+      { build: 'next build' },
+      { files: { '.yarnrc.yml': 'nodeLinker: node-modules\n' } }
+    );
+    // yarn dlx vovk-cli init, in a project with no package manager yet
+    const runByYarn = await updateScripts({ build: 'next build' }, { userAgent: YARN_4_USER_AGENT });
+
+    for (const scripts of [withYarnrc, runByYarn]) {
+      assert.strictEqual(scripts.build, 'vovk generate && next build');
+      assert.strictEqual(scripts.prebuild, undefined);
+    }
+  });
+
+  await it('Keeps prebuild for Yarn 1 and for the package manager package.json names', async () => {
+    const yarn1 = await updateScripts({ build: 'next build' }, { packageJson: { packageManager: 'yarn@1.22.22' } });
+    const pnpm = await updateScripts(
+      { build: 'next build' },
+      { packageJson: { packageManager: 'pnpm@10.34.6' }, userAgent: YARN_4_USER_AGENT }
+    );
+
+    for (const scripts of [yarn1, pnpm]) {
+      assert.strictEqual(scripts.build, 'next build');
+      assert.strictEqual(scripts.prebuild, 'vovk generate');
+    }
   });
 });

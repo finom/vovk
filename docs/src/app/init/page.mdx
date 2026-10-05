@@ -70,7 +70,7 @@ Updates `package.json` scripts to run Next.js and Vovk.ts together. Modes:
 - `implicit` — runs the concurrently API under the hood. It fits a `dev` script that is `next dev` with flags. A `dev` script that runs more, such as `prisma generate && next dev`, gets the `explicit` form.
 - `explicit` — uses the `concurrently` CLI: `cross-env PORT=3000 concurrently "next dev" "vovk dev" --kill-others`. [cross-env](https://www.npmjs.com/package/cross-env) and double quotes let the script run on Windows too. `PORT` is the port from `next dev -p` when the old script has one.
 
-The flag also sets `prebuild` to run `vovk generate` before `next build` to ensure the client is generated before building. With `--bundle`, it adds a `bundle` script that runs `vovk bundle`. An existing `prebuild` or `bundle` script is kept, and the command is chained after it, for example `prisma generate && vovk generate`.
+The flag also sets `prebuild` to run `vovk generate` before `next build` to ensure the client is generated before building. Yarn 2+ doesn't run `pre` scripts, so there it puts `vovk generate` at the start of `build` instead: `vovk generate && next build`. With `--bundle`, it adds a `bundle` script that runs `vovk bundle`. An existing `prebuild` or `bundle` script is kept, and the command is chained after it, for example `prisma generate && vovk generate`.
 
 ### `--bundle`
 
