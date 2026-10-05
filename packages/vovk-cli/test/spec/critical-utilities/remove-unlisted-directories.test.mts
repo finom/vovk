@@ -189,6 +189,20 @@ await describe('removeUnlistedDirectories', async () => {
     );
   });
 
+  await it('Removes the files of a stale segment that holds a kept one and leaves the rest', async () => {
+    await writeFiles(['admin/Cargo.toml', 'admin/src/lib.rs', 'admin/users/Cargo.toml', 'admin/users/src/lib.rs']);
+    await write(['admin/src/schema.json', 'admin/users/src/schema.json'], '{}');
+    await writeUserFiles(['admin/notes.md']);
+
+    const skipped = await removeUnlistedDirectories(tmpDir, ['admin/users'], rsGeneratedRelPaths, {
+      unstampedRelPaths: rsUnstampedRelPaths,
+    });
+
+    assert.deepStrictEqual((await fs.readdir(path.join(tmpDir, 'admin'))).sort(), ['notes.md', 'users']);
+    assert.deepStrictEqual((await fs.readdir(path.join(tmpDir, 'admin/users/src'))).sort(), ['lib.rs', 'schema.json']);
+    assert.deepStrictEqual(skipped, []);
+  });
+
   await it('Leaves the output directory of another client alone', async () => {
     await writeFiles(['root/index.ts', 'all/index.ts', 'nested/all/index.ts', 'stale/index.ts']);
 
