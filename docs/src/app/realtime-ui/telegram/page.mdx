@@ -87,15 +87,49 @@ The `TelegramController` class contains a single `handle` procedure, implementin
 
 ```ts showLineNumbers copy filename="src/modules/telegram/telegram-controller.ts" source="examples/realtime-kanban"
 import { post, prefix } from 'vovk';
+import { telegramGuard } from '@/decorators/telegram-guard';
 import TelegramService from './telegram-service';
 
 @prefix('telegram')
 export default class TelegramController {
   @post('bot')
+  @telegramGuard()
   static handle = TelegramService.handle.bind(TelegramService);
 }
 ```
 *[The code above is fetched from GitHub repository.](https://github.com/finom/vovk/blob/main/examples/realtime-kanban/src/modules/telegram/telegram-controller.ts)*
+
+The app's `PASSWORD` doesn't cover this endpoint, as Telegram sends no session cookie. The `telegramGuard` decorator checks the `X-Telegram-Bot-Api-Secret-Token` header instead: the endpoint answers `404` until both `TELEGRAM_BOT_TOKEN` and `TELEGRAM_WEBHOOK_SECRET` are set, and `401` to a request whose header doesn't hold the secret.
+
+```ts showLineNumbers copy filename="src/decorators/telegram-guard.ts" source="examples/realtime-kanban"
+import { timingSafeEqual } from 'node:crypto';
+import { createDecorator, HttpException, HttpStatus } from 'vovk';
+
+// Telegram sends the secret_token given to setWebhook in this header with every update
+export const telegramGuard = createDecorator(async (req, next) => {
+  const secret = process.env.TELEGRAM_WEBHOOK_SECRET;
+  if (!process.env.TELEGRAM_BOT_TOKEN || !secret) {
+    throw new HttpException(HttpStatus.NOT_FOUND, 'Not found');
+  }
+  const given = Buffer.from(
+    req.headers.get('x-telegram-bot-api-secret-token') ?? '',
+  );
+  const expected = Buffer.from(secret);
+  if (given.length !== expected.length || !timingSafeEqual(given, expected)) {
+    throw new HttpException(HttpStatus.UNAUTHORIZED, 'Unauthorized');
+  }
+  return next();
+});
+```
+*[The code above is fetched from GitHub repository.](https://github.com/finom/vovk/blob/main/examples/realtime-kanban/src/decorators/telegram-guard.ts)*
+
+Telegram sends the header once the webhook is registered with the same secret as `secret_token`. The secret can hold 1 to 256 characters: `A-Z`, `a-z`, `0-9`, `_` and `-`.
+
+```sh
+curl "https://api.telegram.org/bot$TELEGRAM_BOT_TOKEN/setWebhook" \
+  -d "url=https://your-app.example.com/api/bots/telegram/bot" \
+  -d "secret_token=$TELEGRAM_WEBHOOK_SECRET"
+```
 
 ## Service
 
