@@ -301,12 +301,14 @@ class ApiClient:
             except ValueError:
                 pass
         envelope: Dict[str, Any] = body if isinstance(body, dict) else {}
-        message = envelope.get('message')
+        # as the TypeScript client reads it: the message, else the detail or title of a problem document, else the text
+        message = next((envelope[key] for key in ('message', 'detail', 'title') if isinstance(envelope.get(key), str)), None)
+        cause = envelope.get('cause')
         return HttpException({
-            'message': message if isinstance(message, str) else text or response.reason or 'Unknown error',
+            'message': message if message is not None else text or response.reason or 'Unknown error',
             'statusCode': response.status_code,
             'isError': True,
-            'cause': envelope.get('cause'),
+            'cause': cause if cause is not None else body,
         })
 
     @staticmethod

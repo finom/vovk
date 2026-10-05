@@ -343,7 +343,7 @@ pub mod test_requests {
         }
     }
 
-    // FastAPI's {"detail": ...} and an RFC 9457 problem document have no message key
+    // FastAPI's {"detail": ...} and an RFC 9457 problem document have no message key; the body is the cause
     #[tokio::test]
     async fn test_error_body_without_a_message() {
         let errors = [
@@ -353,19 +353,21 @@ pub mod test_requests {
                 r#"{"type":"https://example.com/probs/not-found","title":"Not Found","status":404,"detail":"Pet 42 does not exist"}"#,
                 "Pet 42 does not exist",
             ),
+            ("application/problem+json", r#"{"title":"Not Found"}"#, "Not Found"),
         ];
         for (content_type, body, message) in errors {
             let api_root = serve("404 Not Found", &[("content-type", content_type)], body).await;
+            let cause: serde_json::Value = serde_json::from_str(body).unwrap();
 
             let error = rust_sweep_rpc::get_is_error_data((), (), (), None, Some(&api_root), false).await.unwrap_err();
-            assert_eq!((error.status_code(), error.message()), (404, message));
+            assert_eq!((error.status_code(), error.message(), error.cause()), (404, message, Some(&cause)));
 
             let query = with_validation_rpc::handle_stream_::query { values: vec!["a".to_string()] };
             let error = with_validation_rpc::handle_stream((), query, (), None, Some(&api_root), false)
                 .await
                 .err()
                 .expect("a 404 fails the stream call");
-            assert_eq!((error.status_code(), error.message()), (404, message));
+            assert_eq!((error.status_code(), error.message(), error.cause()), (404, message, Some(&cause)));
         }
     }
 

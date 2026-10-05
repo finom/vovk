@@ -41,6 +41,22 @@ class TestClient(unittest.TestCase):
         self.assertEqual(context.exception.status_code, 400)
         self.assertEqual(context.exception.message, '{"isError": true, "statusCode": 400}')
 
+    def test_json_error_with_a_detail_or_title(self) -> None:
+        # FastAPI's {"detail": ...} and an RFC 9457 problem document have no message key; the body is the cause
+        problem = {'type': 'https://example.com/probs/not-found', 'title': 'Not Found', 'status': 404, 'detail': 'Pet 42 does not exist'}
+        errors: List[Any] = [
+            ('application/json', {'detail': 'Item not found'}, 'Item not found'),
+            ('application/problem+json', problem, 'Pet 42 does not exist'),
+            ('application/problem+json', {'title': 'Not Found'}, 'Not Found'),
+        ]
+        for content_type, body, message in errors:
+            with self.subTest(body=body):
+                response = (404, {'Content-Type': content_type}, json.dumps(body).encode())
+                with fake_transport(lambda request: response), self.assertRaises(HttpException) as context:
+                    ClientSweepRPC.get_content_type(api_root=FAKE_ROOT)
+                error = context.exception
+                self.assertEqual((error.status_code, error.message, error.cause), (404, message, body))
+
     def test_text_error(self) -> None:
         with self.assertRaises(HttpException) as context:
             ClientSweepRPC.get_text_error()

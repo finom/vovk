@@ -398,26 +398,26 @@ fn is_json_lines(media_type: &str) -> bool {
     matches!(media_type, "application/jsonl" | "application/jsonlines" | "application/x-ndjson")
 }
 
-// the message of a JSON error, or the text a proxy sent
+// as the TypeScript client reads an error: the JSON message, else the detail or title of a problem document, else the
+// text a proxy sent; the cause is the body's cause, or the whole JSON body
 fn error_from_body(body: &[u8], media_type: &str, status: reqwest::StatusCode) -> HttpException {
     let status_code = status.as_u16() as i32;
-    if is_json(media_type) {
-        if let Ok(value) = serde_json::from_slice::<Value>(body) {
-            let message = value
-                .get("message")
-                .and_then(|m| m.as_str())
-                .unwrap_or("Unknown error")
-                .to_string();
-            return HttpException::new(message, status_code, value.get("cause").cloned());
-        }
-    }
     let text = String::from_utf8_lossy(body).trim().to_string();
-    let message = if text.is_empty() {
-        status.canonical_reason().unwrap_or("Unknown error").to_string()
-    } else {
-        text
-    };
-    HttpException::new(message, status_code, None)
+    let json = if is_json(media_type) { serde_json::from_slice::<Value>(body).ok() } else { None };
+    let message = json
+        .as_ref()
+        .and_then(|value| ["message", "detail", "title"].iter().find_map(|key| value.get(*key)?.as_str()))
+        .map(str::to_string)
+        .unwrap_or(if text.is_empty() {
+            status.canonical_reason().unwrap_or("Unknown error").to_string()
+        } else {
+            text
+        });
+    let cause = json.map(|value| match value.get("cause") {
+        Some(cause) if !cause.is_null() => cause.clone(),
+        _ => value,
+    });
+    HttpException::new(message, status_code, cause)
 }
 
 // a success that is not JSON: an empty body is null, text is a string unless the type wants JSON, bytes are a byte list
