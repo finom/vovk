@@ -84,7 +84,7 @@ export default class AiSdkController {
 ```
 *[The code above is fetched from GitHub repository.](https://github.com/finom/vovk/blob/main/examples/realtime-kanban/src/modules/ai/ai-sdk-controller.ts)*
 
-The resulting endpoint is served at `/api/ai-sdk/tools`.
+The resulting endpoint is served at `/api/ai-sdk/function-calling`.
 
 ## Frontend Setup
 
@@ -106,7 +106,7 @@ export function ExpandableChatDemo() {
 
   const { messages, sendMessage, status } = useChat({
     transport: new DefaultChatTransport({
-      api: AiSdkRPC.functionCalling.getURL(), // or "/api/ai-sdk/tools",
+      api: AiSdkRPC.functionCalling.getURL(), // or "/api/ai-sdk/function-calling",
     }),
     onToolCall: (toolCall) => {
       console.log('Tool call initiated:', toolCall);
