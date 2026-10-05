@@ -357,9 +357,8 @@ export class Init {
       }
 
       if (shouldAsk) {
-        const keys = ['experimentalDecorators'];
         updateTsConfig = await confirm({
-          message: `Do you want to add ${keys.map((k) => `"${k}"`).join(' and ')} to tsconfig.json? (recommended)`,
+          message: 'Add "experimentalDecorators" to tsconfig.json? Webpack builds need it. (recommended)',
         });
       }
     }

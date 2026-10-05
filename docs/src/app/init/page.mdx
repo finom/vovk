@@ -16,7 +16,8 @@ Options:
   --use-pnpm                      use pnpm as package manager
   --use-bun                       use bun as package manager
   --skip-install                  skip installing dependencies
-  --update-ts-config              update tsconfig.json
+  --update-ts-config              add "experimentalDecorators" to tsconfig.json
+  --no-update-ts-config           leave tsconfig.json as it is
   --update-scripts <mode>         update package.json scripts ("implicit" or "explicit")
   --bundle                        set up "tsdown" bundler
   --lang <languages...>           generate client for other programming languages by default ("py" for Python and "rs" for Rust are
@@ -61,7 +62,11 @@ Skips installing dependencies but still updates `package.json`.
 
 ### `--update-ts-config`
 
-Updates `tsconfig.json` with settings needed for Vovk.ts, such as `experimentalDecorators`.
+Adds `experimentalDecorators` to `tsconfig.json` without asking. Webpack builds need it; see [Enable decorators](/manual-install#enable-decorators). With `--yes`, this is the default.
+
+### `--no-update-ts-config`
+
+Leaves `tsconfig.json` as it is, also with `--yes`.
 
 ### `--update-scripts <mode>`
 

@@ -241,7 +241,8 @@ program
   .option('--use-pnpm', 'use pnpm as package manager')
   .option('--use-bun', 'use bun as package manager')
   .option('--skip-install', 'skip installing dependencies')
-  .option('--update-ts-config', 'update tsconfig.json')
+  .option('--update-ts-config', 'add "experimentalDecorators" to tsconfig.json')
+  .option('--no-update-ts-config', 'leave tsconfig.json as it is')
   .option('--update-scripts <mode>', 'update package.json scripts ("implicit" or "explicit")')
   .option('--bundle', 'set up "tsdown" bundler')
   .option(
