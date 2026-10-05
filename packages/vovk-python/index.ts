@@ -110,12 +110,22 @@ export function getBodyKind(schema: VovkJSONSchemaBase | undefined): 'none' | 'f
   const ct = schema['x-contentType'] as string[] | undefined;
   if (ct?.includes('multipart/form-data') || ct?.includes('application/x-www-form-urlencoded')) return 'form';
   if (schema.format === 'binary' || schema.contentEncoding === 'binary') return 'binary';
-  if (ct?.some((c: string) => c.startsWith('text/'))) return 'text';
-  // a declared non JSON content type on a scalar body means raw bytes, e.g. application/octet-stream or image/png
+  // an object or an array goes out as JSON, whatever else the procedure declares
   const isStructured = schema.type === 'object' || schema.type === 'array' || !!schema.properties;
+  if (!isStructured && ct?.some((c: string) => c.startsWith('text/'))) return 'text';
+  // a declared non JSON content type on a scalar body means raw bytes, e.g. application/octet-stream or image/png
   const isJSONContentType = (c: string) => c === '*/*' || c === 'application/json' || c.endsWith('+json');
   if (!isStructured && ct?.length && !ct.some(isJSONContentType)) return 'binary';
   return 'json';
+}
+
+// a text body goes out as the type the procedure declares, as the TypeScript client sends it
+export function getTextContentType(schema: VovkJSONSchemaBase | undefined): string {
+  const isTextLike = (type: string) =>
+    !type.includes('*') &&
+    !['multipart/form-data', 'application/x-www-form-urlencoded', 'application/json'].includes(type) &&
+    !type.endsWith('+json');
+  return (schema?.['x-contentType'] as string[] | undefined)?.find(isTextLike) ?? 'text/plain';
 }
 
 /**

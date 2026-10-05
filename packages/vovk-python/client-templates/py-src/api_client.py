@@ -173,7 +173,8 @@ class ApiClient:
         if not http_method:
             raise ValueError("HTTP method is required for making an API request")
         TIsForm = False
-        TIsText = body_content_type is not None and body_content_type.startswith('text/')
+        # a declared text type such as application/xml is text too: a str body is text, bytes are binary
+        TIsText = body_content_type is not None and isinstance(body, str)
         TIsBinary = body_content_type is not None and not TIsText
         # Validate inputs if validation schema is provided
         if validation and not disable_client_validation:
