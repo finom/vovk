@@ -25,6 +25,17 @@ class HttpException(Exception):
 
 _JSON_LINES_MEDIA_TYPES = ('application/jsonl', 'application/jsonlines', 'application/x-ndjson')
 
+_FORM_MEDIA_TYPES = ('multipart/form-data', 'application/x-www-form-urlencoded')
+
+def _is_json_media_type(media_type: str) -> bool:
+    return media_type == 'application/json' or media_type.endswith('+json')
+
+def _binary_content_type(declared: List[str]) -> str:
+    # bytes go out as the first type the procedure declares that isn't JSON or a form, such as image/png
+    concrete = (t for t in declared if '*' not in t and t not in _FORM_MEDIA_TYPES and not _is_json_media_type(t))
+    wildcard = (t for t in declared if t != '*/*' and t.endswith('/*'))
+    return next(concrete, None) or next(wildcard, None) or 'application/octet-stream'
+
 def _to_text(value: Any) -> str:
     # a scalar as JavaScript writes it: true and false, and a whole number without .0
     if isinstance(value, bool):
@@ -183,18 +194,16 @@ class ApiClient:
             raise ValueError("URL is required for making an API request")
         if not http_method:
             raise ValueError("HTTP method is required for making an API request")
+        body_ct: List[str] = validation['body'].get('x-contentType', []) if validation and validation.get('body') else []
+        if body_content_type is None and isinstance(body, (bytes, bytearray)):
+            # bytes for a body that also takes JSON, such as a file or an object: the file goes out as is
+            body_content_type = _binary_content_type(body_ct)
         # a declared text type such as application/xml is text too: a str body is text, bytes are binary
         TIsText = body_content_type is not None and isinstance(body, str)
         TIsBinary = body_content_type is not None and not TIsText
-        TIsForm = False
-        TIsMultipart = False
-        if validation and validation.get('body'):
-            body_ct = validation['body'].get('x-contentType', [])
-            # an object goes out as a form only when JSON can't carry it: no JSON declared, or files to send
-            declares_json = any(t == 'application/json' or t.endswith('+json') for t in body_ct)
-            if ('multipart/form-data' in body_ct or 'application/x-www-form-urlencoded' in body_ct) and (files or not declares_json):
-                TIsForm = True
-                TIsMultipart = 'multipart/form-data' in body_ct
+        # an object goes out as a form only when JSON can't carry it: no JSON declared, or files to send
+        TIsForm = any(t in _FORM_MEDIA_TYPES for t in body_ct) and bool(files or not any(_is_json_media_type(t) for t in body_ct))
+        TIsMultipart = TIsForm and 'multipart/form-data' in body_ct
         # Validate inputs if validation schema is provided
         if validation and not disable_client_validation:
             # Validate body (skip for form data and binary data since they can't be validated client-side)

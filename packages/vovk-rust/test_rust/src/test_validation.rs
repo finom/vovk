@@ -490,6 +490,20 @@ pub mod test_validation {
                 serde_json::json!({"type": "image/png", "hello": "none"})
             );
         }
+
+        // the object branch still goes out as JSON
+        let data = with_validation_rpc::handle_octet_stream_or_json_data(
+            Body::Variant1(with_validation_rpc::handle_octet_stream_or_json_data_::body_::Variant1 {
+                hello: "world".to_string(),
+            }),
+            (),
+            (),
+            None,
+            None,
+            false,
+        ).await.unwrap();
+
+        assert_eq!(serde_json::to_value(&data).unwrap(), serde_json::json!({"type": "none", "hello": "world"}));
     }
 
     #[tokio::test]

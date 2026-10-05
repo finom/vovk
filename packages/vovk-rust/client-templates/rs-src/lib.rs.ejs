@@ -6,6 +6,8 @@ imports: ['vovk-rust']
     convertJSONSchemasToRustTypes: t.imports['vovk-rust'].convertJSONSchemasToRustTypes,
     getBodyKind: t.imports['vovk-rust'].getBodyKind,
     getTextContentType: t.imports['vovk-rust'].getTextContentType,
+    getBinaryContentType: t.imports['vovk-rust'].getBinaryContentType,
+    getBinaryBodyVariants: t.imports['vovk-rust'].getBinaryBodyVariants,
     toRustIdent: t.imports['vovk-rust'].toRustIdent,
     toRustDocLines: t.imports['vovk-rust'].toRustDocLines,
     toRustCommentText: t.imports['vovk-rust'].toRustCommentText,
@@ -63,9 +65,12 @@ vars.convertJSONSchemasToRustTypes({
     // Determine body kind: 'none', 'form', 'urlencoded', 'binary', 'text', or 'json'
     const bodyKind = vars.getBodyKind(validation?.body);
     const typedBody = bodyKind === 'json' || bodyKind === 'urlencoded';
+    // the file variants of a file-or-JSON union go out as bytes
+    const binaryVariants = vars.getBinaryBodyVariants(validation?.body);
+    const binaryArms = binaryVariants.map((variant) => `                ${handlerName}_::body::${variant}(bytes) => RequestBody::Binary(bytes, ${vars.toRustString(vars.getBinaryContentType(validation?.body))}),\n`).join('');
     const requestBody = {
         none: 'RequestBody::None',
-        json: 'RequestBody::Json(&body)',
+        json: binaryVariants.length ? `match body {\n${binaryArms}                _ => RequestBody::Json(&body),\n            }` : 'RequestBody::Json(&body)',
         urlencoded: 'RequestBody::UrlEncoded(&body)',
         form: 'RequestBody::Multipart(body)',
         text: `RequestBody::Text(body, ${vars.toRustString(vars.getTextContentType(validation?.body))})`,

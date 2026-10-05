@@ -156,6 +156,30 @@ export function getTextContentType(schema: VovkJSONSchemaBase | undefined): stri
   return (schema?.['x-contentType'] as string[] | undefined)?.find(isTextLike) ?? 'text/plain';
 }
 
+// bytes go out as the first type the procedure declares that isn't JSON or a form, such as image/png
+export function getBinaryContentType(schema: VovkJSONSchemaBase | undefined): string {
+  const declared = (schema?.['x-contentType'] as string[] | undefined) ?? [];
+  const isForm = (type: string) => type === 'multipart/form-data' || type === 'application/x-www-form-urlencoded';
+  const isJSON = (type: string) => type === 'application/json' || type.endsWith('+json');
+  return (
+    declared.find((type) => !type.includes('*') && !isForm(type) && !isJSON(type)) ??
+    declared.find((type) => type !== '*/*' && type.endsWith('/*')) ??
+    'application/octet-stream'
+  );
+}
+
+// the variants of a union body that hold a file: they go out as bytes, the others as JSON
+export function getBinaryBodyVariants(schema: VovkJSONSchemaBase | undefined): string[] {
+  if (!schema || getBodyKind(schema) !== 'json') return [];
+  const ctx: Context = { root: schema, defNames: new Map(), defSchemas: new Map(), pad: 0, enclosing: null, refs: [] };
+  const target = effectiveSchema(schema, ctx);
+  if (nominalKind(target, ctx) !== 'union') return [];
+  return (target.anyOf ?? target.oneOf ?? []).flatMap((variant, index) => {
+    const branch = variant?.$ref ? resolvePointer(variant.$ref, schema) : variant;
+    return branch?.type === 'string' && getBodyKind(branch) === 'binary' ? [`Variant${index}`] : [];
+  });
+}
+
 // Helper function for indentation
 export function indent(level: number, pad: number = 0): string {
   return ' '.repeat(pad + level * 2);
