@@ -12,6 +12,7 @@ import { defaultStreamHandler } from './default-stream-handler.js';
 import { fetcher as defaultFetcher } from './fetcher.js';
 import { encodeURIComponentWellFormed, serializeQuery } from './serialize-query.js';
 import { fromJSON, getStyledSerializers } from './serialize-styled.js';
+import { takesNullBody } from './takes-null-body.js';
 
 export type { CombinedSpec, VovkHandlerSchema, VovkRequest };
 
@@ -191,19 +192,21 @@ export const createRPC = <T, OPTS extends Record<string, KnownAny> = VovkFetcher
           : (givenFetcher ?? (defaultFetcher as unknown as VovkFetcher<OPTS>)));
 
       const contentTypes: string[] = validation?.body?.['x-contentType'] ?? [];
+      // null is no body, as undefined is, unless the body schema takes null; the validator sees the same
+      const givenBody = input.body === null && !takesNullBody(validation?.body) ? undefined : input.body;
       // an object goes out as a form only when JSON can't carry it: no JSON declared, or a file inside;
       // it's validated as the object, so numbers and arrays keep their types
       const formSource =
         contentTypes.some((type) => FORM_CONTENT_TYPES.includes(type)) &&
-        isFormSource(input.body) &&
-        (!contentTypes.some(isJSONContentType) || holdsBlob(input.body))
-          ? input.body
+        isFormSource(givenBody) &&
+        (!contentTypes.some(isJSONContentType) || holdsBlob(givenBody))
+          ? givenBody
           : null;
       const body = formSource
         ? toFormBody(formSource, contentTypes, styled?.appendFormField)
-        : input.body instanceof FormData
-          ? toURLEncodedForm(input.body, contentTypes)
-          : input.body;
+        : givenBody instanceof FormData
+          ? toURLEncodedForm(givenBody, contentTypes)
+          : givenBody;
 
       const validate: Parameters<typeof fetcher>[0]['validate'] = async (
         validationInput,
@@ -242,7 +245,7 @@ export const createRPC = <T, OPTS extends Record<string, KnownAny> = VovkFetcher
 
       const internalInput = {
         ...mergeOptions<OPTS>(options, { validateOnClient: optionsResolvedValidateOnClient }, input),
-        // undefined is no body, null a value the fetcher sends to a procedure that takes JSON
+        // undefined is no body; null is left only for a body schema that takes it
         body,
         query: input.query ?? {},
         params: input.params ?? {},

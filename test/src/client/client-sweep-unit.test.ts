@@ -734,6 +734,45 @@ describe('Client sweep, pure functions', () => {
       ok(!(result instanceof Response), 'The response is returned as is, not read as JSON Lines');
       deepStrictEqual(await (result as VovkStreamAsyncIterable<unknown>).asPromise(), [{ n: 1 }, { n: 2 }]);
     });
+
+    it('Sends null as a JSON body only to a body schema that accepts null', async () => {
+      const withBody = (body: object) => ({ path: '', httpMethod: 'POST', validation: { body } });
+      const object = { type: 'object', properties: { a: { type: 'string' } } };
+      const nullable = { anyOf: [object, { type: 'null' }] };
+      const rpc = rpcOf({
+        typeNull: withBody({ type: 'null' }),
+        typeList: withBody({ type: ['object', 'null'] }),
+        // OpenAPI 3.0, as a mixin carries it
+        nullableKeyword: withBody({ ...object, nullable: true }),
+        anyOf: withBody(nullable),
+        oneOf: withBody({ oneOf: nullable.anyOf }),
+        object: withBody(object),
+        contentTypeOnly: withBody({ 'x-contentType': ['application/json'] }),
+        multipart: withBody({ ...nullable, 'x-contentType': ['multipart/form-data'] }),
+      });
+      const sent: [string, unknown][] = [];
+
+      for (const name of Object.keys(rpc)) {
+        await withFetch(
+          (_url, init) => {
+            sent.push([name, init.body]);
+            return Response.json({});
+          },
+          () => rpc[name]({ body: null })
+        );
+      }
+
+      deepStrictEqual(sent, [
+        ['typeNull', 'null'],
+        ['typeList', 'null'],
+        ['nullableKeyword', 'null'],
+        ['anyOf', 'null'],
+        ['oneOf', 'null'],
+        ['object', undefined],
+        ['contentTypeOnly', undefined],
+        ['multipart', undefined],
+      ]);
+    });
   });
 
   describe('request bodies, sent to a segment in this process', () => {
@@ -754,6 +793,34 @@ describe('Client sweep, pure functions', () => {
       deepStrictEqual(await withFetch(segment, () => rpc.assign({ body: { userId: 'u1' } })), {
         body: { userId: 'u1' },
       });
+    });
+
+    it('Sends no body for null to a procedure whose body is optional but not nullable', async () => {
+      // a model calling a derived tool sends null for a field it leaves out, and OpenAI's strict mode always does
+      class DraftController {
+        static save = procedure({ body: z.object({ title: z.string() }).optional() }).handle(async (req) => ({
+          body: (await req.vovk.body()) ?? 'none',
+          contentType: req.headers.get('content-type'),
+        }));
+      }
+      prefix('test')(DraftController);
+      post('drafts')(DraftController, 'save');
+      const segment = serve('optional-body', { DraftController });
+      const rpc = rpcOf({
+        save: { path: 'drafts', httpMethod: 'POST', validation: DraftController.save.schema.validation },
+      });
+      const validated: unknown[] = [];
+      const validateOnClient = (input: { body?: unknown }) => {
+        validated.push(input.body);
+        return input;
+      };
+
+      deepStrictEqual(await withFetch(segment, () => rpc.save({ body: null, validateOnClient })), {
+        body: 'none',
+        contentType: null,
+      });
+      // a custom validator sees no body either
+      deepStrictEqual(validated, [undefined]);
     });
 
     it('Sends a FormData body urlencoded when the procedure takes only urlencoded', async () => {

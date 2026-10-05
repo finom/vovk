@@ -3,6 +3,7 @@ import type { VovkFetcher, VovkFetcherOptions, VovkStreamAsyncIterable } from '.
 import type { VovkHandlerSchema } from '../types/core.js';
 import { HttpStatus } from '../types/enums.js';
 import { fileNameToDisposition } from '../utils/file-name-to-disposition.js';
+import { takesNullBody } from './takes-null-body.js';
 export const DEFAULT_ERROR_MESSAGE = 'Unknown error at default fetcher';
 
 // header values must be ByteString, escape non-ASCII as \uXXXX which JSON.parse reads natively
@@ -186,8 +187,7 @@ export function createFetcher<T>({
       const declaredContentTypes = (
         (bodySchema?.['x-contentType'] ?? (bodySchema ? ['application/json'] : [])) as string[]
       ).map(getMediaType);
-      // null is a JSON value, sent to a procedure that takes JSON; to any other it's no body
-      const hasBody = body !== undefined && (body !== null || declaredContentTypes.some(isJSONMediaType));
+      const hasBody = body !== undefined && (body !== null || takesNullBody(bodySchema));
       const isBinary = body instanceof Blob || body instanceof ArrayBuffer || ArrayBuffer.isView(body);
       const resolvedContentType = !hasBody
         ? undefined // no body, no content type: a cross-origin GET then needs no preflight
