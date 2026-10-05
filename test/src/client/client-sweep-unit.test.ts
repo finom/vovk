@@ -4,9 +4,19 @@ import { describe, it } from 'node:test';
 import { fileURLToPath } from 'node:url';
 import vm from 'node:vm';
 import ts from 'typescript';
-import { createFetcher, HttpException, progressive } from 'vovk';
+import {
+  createFetcher,
+  HttpException,
+  initSegment,
+  post,
+  prefix,
+  procedure,
+  progressive,
+  type VovkRequest,
+} from 'vovk';
 import { createRPC } from 'vovk/create-rpc';
 import { deepExtend, readableStreamToAsyncIterable, type VovkStreamAsyncIterable } from 'vovk/internal';
+import { z } from 'zod';
 import { validateOnClient } from '../../../packages/vovk-ajv/index.js';
 
 const streamOf = (chunks: Uint8Array[]) =>
@@ -53,6 +63,19 @@ const withFetch = async <T>(
   } finally {
     globalThis.fetch = original;
   }
+};
+
+// a segment that answers the requests of rpcOf() in this process, routed as Next.js routes /api/[[...vovk]]
+const serve = (segmentName: string, controllers: Parameters<typeof initSegment>[0]['controllers']) => {
+  const handlers = initSegment({ segmentName, controllers });
+  return (url: string, init: RequestInit) => {
+    const req = new Request(new URL(url, 'http://localhost'), init);
+    // NextRequest's nextUrl, req.vovk.query() reads it
+    Object.defineProperty(req, 'nextUrl', { value: new URL(req.url) });
+    const vovk = new URL(req.url).pathname.split('/').slice(2).filter(Boolean).map(decodeURIComponent);
+    const method = (init.method ?? 'GET') as keyof typeof handlers;
+    return handlers[method](req, { params: Promise.resolve({ vovk }) }) as Promise<Response>;
+  };
 };
 
 describe('Client sweep, pure functions', () => {
@@ -136,6 +159,79 @@ describe('Client sweep, pure functions', () => {
       const { users } = progressive(getStream) as unknown as { users: Promise<number[]> };
 
       deepStrictEqual(await users, [1]);
+    });
+
+    it('Lets progressive work where Promise.withResolvers is missing', async () => {
+      // Safari before 17.4, Chrome before 119 and Firefox before 121, which Next.js supports with no polyfill for it
+      const { withResolvers } = Promise;
+      const getStream = async () =>
+        readableStreamToAsyncIterable({
+          readableStream: streamOf([new TextEncoder().encode('{"users":[1]}\n{"tasks":[2]}\n')]),
+          abortController: new AbortController(),
+        }) as VovkStreamAsyncIterable<{ users: number[] } | { tasks: number[] }>;
+
+      try {
+        Reflect.deleteProperty(Promise, 'withResolvers');
+        const { users, tasks } = progressive(getStream) as unknown as Record<string, Promise<number[]>>;
+
+        deepStrictEqual(await users, [1]);
+        deepStrictEqual(await tasks, [2]);
+      } finally {
+        Promise.withResolvers = withResolvers;
+      }
+    });
+
+    it('Lets progressive take a key named after an Object.prototype member as any other key', async () => {
+      const progressiveOf = (text: string) =>
+        progressive(
+          async () =>
+            readableStreamToAsyncIterable({
+              readableStream: streamOf([new TextEncoder().encode(text)]),
+              abortController: new AbortController(),
+            }) as VovkStreamAsyncIterable<Record<string, unknown>>
+        ) as unknown as Record<string, Promise<unknown>>;
+      // reads the stream, taking the keys right away, as a destructuring does
+      const settle = (text: string, keys: string[]) => {
+        const result = progressiveOf(text);
+        return Promise.allSettled(keys.map((key) => result[key]));
+      };
+      // what the keys below reach through the prototype chain of a plain object
+      const targets = [Object.prototype, Object, Object.prototype.toString];
+      const ownKeys = () => targets.map((target) => Object.getOwnPropertyNames(target).sort());
+      const keysBefore = ownKeys();
+
+      try {
+        const streams = {
+          constructor: await settle('{"constructor":"x"}\n{"users":[1]}\n', ['users', 'constructor']),
+          toString: await settle('{"toString":"y"}\n{"users":[2]}\n', ['users', 'toString']),
+          proto: await settle('{"__proto__":{"isAdmin":true}}\n{"users":[3]}\n', ['users']),
+        };
+
+        deepStrictEqual(
+          { streams, keys: ownKeys() },
+          {
+            streams: {
+              constructor: [
+                { status: 'fulfilled', value: [1] },
+                { status: 'fulfilled', value: 'x' },
+              ],
+              toString: [
+                { status: 'fulfilled', value: [2] },
+                { status: 'fulfilled', value: 'y' },
+              ],
+              proto: [{ status: 'fulfilled', value: [3] }],
+            },
+            keys: keysBefore,
+          }
+        );
+      } finally {
+        // a key written to a shared object would leak into the other tests
+        targets.forEach((target, i) => {
+          for (const key of Object.getOwnPropertyNames(target)) {
+            if (!keysBefore[i].includes(key)) Reflect.deleteProperty(target, key);
+          }
+        });
+      }
     });
 
     it('Reads the stream only as fast as the iteration takes items', async () => {
@@ -519,6 +615,40 @@ describe('Client sweep, pure functions', () => {
       deepStrictEqual(urls, ['/api/bodies?q=1']);
     });
 
+    it('Calls the root of the origin when rootEntry is an empty string', async () => {
+      // rootEntry: '' serves the API from the domain root (/config#rootentry); the generated client passes no
+      // apiRoot without an origin, so the schema's rootEntry decides
+      const controllers = {
+        UserRPC: { rpcModuleName: 'UserRPC', prefix: 'users', handlers: { get: { path: '{id}', httpMethod: 'GET' } } },
+      };
+      const schema = {
+        segments: { '': { segmentName: '', emitSchema: true, controllers } },
+        meta: { config: { rootEntry: '' } },
+      };
+      const { get } = (createRPC as (...args: unknown[]) => unknown)(schema, '', 'UserRPC') as Record<string, TestCall>;
+      const urls: string[] = [];
+
+      await withFetch(
+        (url) => {
+          urls.push(url);
+          return Response.json({});
+        },
+        () => get({ params: { id: '1' } })
+      );
+
+      deepStrictEqual(
+        { getURL: get.getURL({ params: { id: '1' } }), urls },
+        { getURL: '/users/1', urls: ['/users/1'] }
+      );
+    });
+
+    it('Writes a Date param as its ISO string, as the query does', () => {
+      const { getDay } = rpcOf({ getDay: { path: 'days/{day}', httpMethod: 'GET' } });
+      const day = new Date('2026-10-02T10:20:30.456Z');
+
+      strictEqual(getDay.getURL({ params: { day } }), getDay.getURL({ params: { day: day.toISOString() } }));
+    });
+
     it('Gives null for a JSON response without a body', async () => {
       const rpc = rpcOf({
         exists: { path: '', httpMethod: 'HEAD' },
@@ -543,6 +673,16 @@ describe('Client sweep, pure functions', () => {
         strictEqual(await rpc.stream(), null);
         await rejects(rpc.missing(), (error) => error instanceof HttpException && error.statusCode === 404);
       });
+    });
+
+    it('Gives null for an empty JSON response sent without Content-Length', async () => {
+      // Next.js sends new Response(null) with a JSON content type chunked: a body with no bytes and no length
+      const chunked = () =>
+        new Response(new ReadableStream({ start: (controller) => controller.close() }), {
+          headers: { 'content-type': 'application/json' },
+        });
+
+      strictEqual(await withFetch(chunked, () => rpcOf(handlers).get()), null);
     });
 
     it('Parses any JSON media type in any case', async () => {
@@ -589,6 +729,90 @@ describe('Client sweep, pure functions', () => {
       )) as VovkStreamAsyncIterable<unknown>;
 
       deepStrictEqual(await stream.asPromise(), [{ n: 1 }, { n: 2 }]);
+    });
+
+    it('Streams an application/x-ndjson response as JSON Lines, as the Rust client does', async () => {
+      const result = await withFetch(
+        () => new Response('{"n":1}\n{"n":2}\n', { headers: { 'content-type': 'application/x-ndjson' } }),
+        () => rpcOf(handlers).get()
+      );
+
+      ok(!(result instanceof Response), 'The response is returned as is, not read as JSON Lines');
+      deepStrictEqual(await (result as VovkStreamAsyncIterable<unknown>).asPromise(), [{ n: 1 }, { n: 2 }]);
+    });
+  });
+
+  describe('request bodies, sent to a segment in this process', () => {
+    it('Sends a null body to a procedure whose body is nullable', async () => {
+      class AssignController {
+        static assign = procedure({ body: z.object({ userId: z.string() }).nullable() }).handle(async (req) => ({
+          body: await req.vovk.body(),
+        }));
+      }
+      prefix('test')(AssignController);
+      post('assign')(AssignController, 'assign');
+      const segment = serve('nullable-body', { AssignController });
+      const rpc = rpcOf({
+        assign: { path: 'assign', httpMethod: 'POST', validation: AssignController.assign.schema.validation },
+      });
+
+      deepStrictEqual(await withFetch(segment, () => rpc.assign({ body: null })), { body: null });
+      deepStrictEqual(await withFetch(segment, () => rpc.assign({ body: { userId: 'u1' } })), {
+        body: { userId: 'u1' },
+      });
+    });
+
+    it('Sends a FormData body urlencoded when the procedure takes only urlencoded', async () => {
+      class LoginController {
+        static login = procedure({
+          contentType: 'application/x-www-form-urlencoded',
+          body: z.object({ username: z.string() }),
+        }).handle(async (req) => ({
+          body: await req.vovk.body(),
+          contentType: req.headers.get('content-type')?.split(';')[0],
+        }));
+      }
+      prefix('test')(LoginController);
+      post('login')(LoginController, 'login');
+      const segment = serve('urlencoded-form-data', { LoginController });
+      const rpc = rpcOf({
+        login: { path: 'login', httpMethod: 'POST', validation: LoginController.login.schema.validation },
+      });
+      // the client body types and the /content-type table allow FormData here
+      const form = new FormData();
+      form.append('username', 'ann');
+
+      deepStrictEqual(await withFetch(segment, () => rpc.login({ body: form })), {
+        body: { username: 'ann' },
+        contentType: 'application/x-www-form-urlencoded',
+      });
+    });
+
+    it('Sends an untyped Blob as JSON to a procedure that takes JSON by default', async () => {
+      const body = z.object({ title: z.string() });
+      const echo = async (req: VovkRequest) => ({
+        body: await req.vovk.body(),
+        contentType: req.headers.get('content-type')?.split(';')[0],
+      });
+      class NoteController {
+        static createJSON = procedure({ contentType: 'application/json', body }).handle(echo);
+        static create = procedure({ body }).handle(echo);
+      }
+      prefix('test')(NoteController);
+      post('notes-json')(NoteController, 'createJSON');
+      post('notes')(NoteController, 'create');
+      const segment = serve('default-json-blob', { NoteController });
+      const { createJSON, create } = NoteController;
+      const rpc = rpcOf({
+        createJSON: { path: 'notes-json', httpMethod: 'POST', validation: createJSON.schema.validation },
+        create: { path: 'notes', httpMethod: 'POST', validation: create.schema.validation },
+      });
+      const blob = new Blob([JSON.stringify({ title: 'hi' })]);
+      const sent = { body: { title: 'hi' }, contentType: 'application/json' };
+
+      // the /content-type table types a JSON body as TBody | Blob, and JSON is the default
+      deepStrictEqual(await withFetch(segment, () => rpc.createJSON({ body: blob })), sent);
+      deepStrictEqual(await withFetch(segment, () => rpc.create({ body: blob })), sent);
     });
   });
 

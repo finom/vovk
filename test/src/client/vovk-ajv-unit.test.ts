@@ -1,7 +1,8 @@
 import { deepStrictEqual, rejects, strictEqual } from 'node:assert';
 import { createRequire } from 'node:module';
 import { describe, it } from 'node:test';
-import type { VovkJSONSchemaBase } from 'vovk';
+import { procedure, type VovkJSONSchemaBase } from 'vovk';
+import { z } from 'zod';
 import { validateOnClient } from '../../../packages/vovk-ajv/index.js';
 
 const fullSchema = { $schema: '', segments: {} };
@@ -59,6 +60,28 @@ describe('vovk-ajv', () => {
     }
   });
 
+  it('Reads a Unicode property escape, next to the escapes the u flag refuses', async () => {
+    // z.emoji() and z.string().regex(/^\p{L}+$/u) emit \p{…}, which JavaScript reads only with the u flag
+    const cases = {
+      emoji: ['^(\\p{Extended_Pictographic}|\\p{Emoji_Component})+$', '😀', 'a'],
+      letters: ['^\\p{L}+$', 'Zoë', 'Zo1'],
+      // the escapes of the test above, in the same schema
+      phone: ['^\\d{3}\\-\\d{4}$', '555-1234', '5551234'],
+      slug: ['^[\\w-.]+$', 'a.b-c', 'a b'],
+    };
+    const entries = Object.entries(cases);
+    const schema = {
+      $schema,
+      type: 'object',
+      properties: Object.fromEntries(entries.map(([key, [pattern]]) => [key, { type: 'string', pattern }])),
+    };
+
+    await validateBody(Object.fromEntries(entries.map(([key, [, valid]]) => [key, valid])), schema);
+    for (const [key, [, , invalid]] of entries) {
+      await rejects(validateBody({ [key]: invalid }, schema), new RegExp(`data/${key} must match pattern`));
+    }
+  });
+
   it('Reads the boolean exclusive bounds of OpenAPI 3.0', async () => {
     const schema = {
       type: 'object',
@@ -95,6 +118,21 @@ describe('vovk-ajv', () => {
     deepStrictEqual(form.getAll('age'), ['5']);
     await rejects(validateBody(invalid, schema), /data\/age must be number/);
     await rejects(validateBody({ age: '5' }, schema), /data\/age must be number/);
+  });
+
+  it('Validates params and query as the strings a URL carries', async () => {
+    // the input schema of z.coerce.number() is a number, the server coerces the string it gets
+    const getItems = procedure({
+      params: z.object({ id: z.coerce.number() }),
+      query: z.object({ page: z.coerce.number().default(1) }),
+    }).handle(async () => null);
+    const validate = (input: { params?: object; query?: object }) =>
+      validateOnClient(input, getItems.schema.validation ?? {}, { fullSchema, endpoint: '/x' });
+
+    await validate({ params: { id: '1' } });
+    await validate({ query: { page: '2' } });
+    await rejects(validate({ params: { id: 'one' } }), /Invalid params: data\/id must be number/);
+    await rejects(validate({ query: { page: 'two' } }), /Invalid query: data\/page must be number/);
   });
 
   it('Compiles a schema once for every object with the same text', async () => {
