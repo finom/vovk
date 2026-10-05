@@ -31,6 +31,13 @@ _FORM_MEDIA_TYPES = ('multipart/form-data', 'application/x-www-form-urlencoded')
 def _is_json_media_type(media_type: str) -> bool:
     return media_type == 'application/json' or media_type.endswith('+json')
 
+def _charset(content_type: str) -> Optional[str]:
+    for parameter in content_type.split(';')[1:]:
+        name, _, value = parameter.partition('=')
+        if name.strip().lower() == 'charset':
+            return value.strip().strip('"\'') or None
+    return None
+
 def _binary_content_type(declared: List[str]) -> str:
     # bytes go out as the first type the procedure declares that isn't JSON or a form, such as image/png
     concrete = (t for t in declared if '*' not in t and t not in _FORM_MEDIA_TYPES and not _is_json_media_type(t))
@@ -185,6 +192,8 @@ class ApiClient:
         Returns:
             If the response is JSON, returns the parsed JSON.
             If the response is JSONL, returns a generator yielding each parsed line.
+            If the response is text/* or names a charset, returns the text as str, UTF-8 unless the charset says otherwise.
+            Otherwise, as for a file, returns the bytes.
             
         Raises:
             ValueError: If validation fails or required parameters are missing
@@ -290,15 +299,22 @@ class ApiClient:
         if response.status_code >= 400:
             raise self._to_http_exception(response, content_type)
 
-        if content_type.split(';')[0].strip().lower() in _JSON_LINES_MEDIA_TYPES:
+        media_type = content_type.split(';')[0].strip().lower()
+        if media_type in _JSON_LINES_MEDIA_TYPES:
             return self._stream_jsonl(response)
 
-        elif 'application/json' in content_type:
+        if _is_json_media_type(media_type):
             # an empty body, such as a 204 answer has, holds no value
             return response.json() if response.content else None
 
-        # Default to returning raw content if content type is not recognized
-        return response.text
+        # a file comes back as its bytes; text as str, and without a charset text/* is UTF-8, not requests' Latin-1
+        charset = _charset(content_type)
+        if charset is None and not media_type.startswith('text/'):
+            return response.content
+        try:
+            return response.content.decode(charset or 'utf-8', errors='replace')
+        except LookupError:
+            return response.content.decode('utf-8', errors='replace')
 
     @staticmethod
     def _to_http_exception(response: Response, content_type: str) -> HttpException:

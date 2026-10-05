@@ -5,7 +5,7 @@ import threading
 import time
 import unittest
 from contextlib import contextmanager
-from typing import Any, Callable, Iterator, List, Tuple
+from typing import Callable, Iterator, List, Tuple
 from generated_python_client.src.test_generated_python_client import (
     ClientRuntimeRPC,
     ClientSweepRPC,
@@ -15,15 +15,6 @@ from generated_python_client.src.test_generated_python_client import (
 from utils import fake_transport, json_response
 
 FAKE_ROOT = 'http://fake.test/api'
-
-
-def as_bytes(data: Any) -> bytes:
-    """A download as bytes, whether it comes back as bytes, as the requests response or as text."""
-    if isinstance(data, bytes):
-        return data
-    if isinstance(data, str):
-        return data.encode('utf-8')
-    return bytes(data.content)
 
 
 def read_head(conn: socket.socket) -> Tuple[bytes, bytes]:
@@ -71,15 +62,15 @@ def raw_server(handle: Callable[[socket.socket], None], connections: int = 1) ->
 
 
 class TestRuntime(unittest.TestCase):
-    # the TypeScript client gives the Response, whose bytes are the file
+    # the TypeScript client gives the Response, whose bytes are the file; this client gives the bytes
     def test_file_download_comes_back_as_sent(self) -> None:
         data = ClientRuntimeRPC.get_download(query={'kind': 'binary', 'size': '1024'})
-        self.assertEqual(as_bytes(data), bytes(i % 256 for i in range(1024)))
+        self.assertEqual(data, bytes(i % 256 for i in range(1024)))
 
-    # toDownloadResponse with type text/csv sends no charset; the bytes are UTF-8 as the server wrote them
+    # toDownloadResponse with type text/csv sends no charset; the text is UTF-8 as the server wrote it
     def test_text_download_without_a_charset(self) -> None:
         data = ClientRuntimeRPC.get_download(query={'kind': 'csv', 'size': '0'})
-        self.assertEqual(as_bytes(data), 'name,city\nZoë,東京\n'.encode('utf-8'))
+        self.assertEqual(data, 'name,city\nZoë,東京\n')
 
     # one module-level client serves every call and thread, so a cookie one call got must not ride along with the next
     def test_a_cookie_from_one_call_is_not_sent_with_the_next(self) -> None:

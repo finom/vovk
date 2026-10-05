@@ -189,6 +189,20 @@ class TestClient(unittest.TestCase):
     def test_query_numbers_as_javascript_writes_them(self) -> None:
         self.assertEqual(RustSweepRPC.get_numeric_query(query={'limit': 10.0}), {'search': '?limit=10'})
 
+    def test_what_a_response_that_is_not_json_comes_back_as(self) -> None:
+        # bytes, unless the type is text/* or names a charset: then str, UTF-8 unless the charset says otherwise
+        cases: List[Any] = [
+            ('application/octet-stream', b'\x80\x81', b'\x80\x81'),
+            ('text/csv', 'Zoë'.encode('utf-8'), 'Zoë'),
+            ('text/plain; charset=iso-8859-1', 'Zoë'.encode('latin-1'), 'Zoë'),
+            ('application/xml; charset="utf-8"', '<a>Zoë</a>'.encode('utf-8'), '<a>Zoë</a>'),
+            ('application/problem+json', b'{"ok":true}', {'ok': True}),
+        ]
+        for content_type, body, expected in cases:
+            with self.subTest(content_type):
+                with fake_transport(lambda request: (200, {'Content-Type': content_type}, body)):
+                    self.assertEqual(ClientSweepRPC.get_content_type(api_root=FAKE_ROOT), expected)
+
     def test_json_lines_media_types(self) -> None:
         for media_type in ['application/jsonl', 'application/jsonlines', 'application/x-ndjson']:
             with self.subTest(media_type):
