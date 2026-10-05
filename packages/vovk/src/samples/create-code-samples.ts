@@ -173,7 +173,14 @@ function generatePythonCode({
       comment: '#',
       ignoreBinary: true,
       nestingIndent: 4,
+      python: true,
     });
+  // what comes back is described in a comment, as the TypeScript and Rust samples do
+  const commentOut = (code: string, indent = '') =>
+    code
+      .split('\n')
+      .map((line) => `${indent}# ${line}`.trimEnd())
+      .join('\n');
 
   const handlerNameSnake = toSnakeCase(handlerName);
 
@@ -229,12 +236,12 @@ response = ${rpcName}.${handlerNameSnake}(${
       : ''
   })
 
-${outputValidation ? `print(response)\n${getPySample(outputValidation, 0)}` : ''}${
+${outputValidation ? `print(response)\n${commentOut(getPySample(outputValidation, 0))}` : ''}${
   iterationValidation
     ? `for i, item in enumerate(response):
     print(f"iteration #{i}:\\n {item}")
     # iteration #0:
-    ${getPySample(iterationValidation)}`
+${commentOut(getPySample(iterationValidation, 0), '    ')}`
     : ''
 }`;
 

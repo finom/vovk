@@ -163,13 +163,13 @@ response = UserZodRPC.update_user(
 )
 
 print(response)
-{
-    # -----
-    # Response object
-    # -----
-    # Success status
-    "success": true
-}`;
+# {
+#     # -----
+#     # Response object
+#     # -----
+#     # Success status
+#     "success": True
+# }`;
 
       assert.strictEqual(result.py, expected);
     });
@@ -435,32 +435,32 @@ response = FormZodRPC.submit_form(
 )
 
 print(response)
-{
-    # -----
-    # Response object
-    # -----
-    # User email
-    "email": "string",
-    "resume": {
-        # Resume file name
-        "name": "string",
-        # Resume file size
-        "size": 0,
-        # Resume file type
-        "type": "string"
-    },
-    # Array of portfolio sample files
-    "portfolioSamples": [
-        {
-            # Portfolio sample file name
-            "name": "string",
-            # Portfolio sample file size
-            "size": 0,
-            # Portfolio sample file type
-            "type": "string"
-        }
-    ]
-}`;
+# {
+#     # -----
+#     # Response object
+#     # -----
+#     # User email
+#     "email": "string",
+#     "resume": {
+#         # Resume file name
+#         "name": "string",
+#         # Resume file size
+#         "size": 0,
+#         # Resume file type
+#         "type": "string"
+#     },
+#     # Array of portfolio sample files
+#     "portfolioSamples": [
+#         {
+#             # Portfolio sample file name
+#             "name": "string",
+#             # Portfolio sample file size
+#             "size": 0,
+#             # Portfolio sample file type
+#             "type": "string"
+#         }
+#     ]
+# }`;
 
       assert.strictEqual(result.py, expected);
     });
@@ -610,10 +610,10 @@ response = StreamRPC.stream_tokens()
 for i, item in enumerate(response):
     print(f"iteration #{i}:\\n {item}")
     # iteration #0:
-    {
-        # Stream message
-        "message": "string"
-    }`;
+    # {
+    #     # Stream message
+    #     "message": "string"
+    # }`;
 
       assert.strictEqual(result.py, expected);
     });

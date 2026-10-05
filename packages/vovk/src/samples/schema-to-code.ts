@@ -6,6 +6,8 @@ interface SamplerOptions {
   indent?: number;
   nestingIndent?: number;
   ignoreBinary?: boolean;
+  // Python spells true, false and null as True, False and None
+  python?: boolean;
 }
 
 export function schemaToCode(
@@ -13,9 +15,16 @@ export function schemaToCode(
   options: SamplerOptions,
   rootSchema?: VovkJSONSchemaBase
 ): string {
-  const { comment = '//', stripQuotes = false, indent = 0, nestingIndent = 4, ignoreBinary = false } = options;
+  const {
+    comment = '//',
+    stripQuotes = false,
+    indent = 0,
+    nestingIndent = 4,
+    ignoreBinary = false,
+    python = false,
+  } = options;
 
-  if (!schema || typeof schema !== 'object') return 'null';
+  if (!schema || typeof schema !== 'object') return python ? 'None' : 'null';
 
   // Use the input schema as the root if not provided
   rootSchema = rootSchema || schema;
@@ -33,7 +42,8 @@ export function schemaToCode(
     indent,
     nestingIndent,
     ignoreBinary,
-    true // isTopLevel
+    true, // isTopLevel
+    python
   );
 }
 
@@ -133,7 +143,8 @@ function formatWithDescriptions(
   indent: number,
   nestingIndent: number,
   ignoreBinary: boolean,
-  isTopLevel: boolean
+  isTopLevel: boolean,
+  python: boolean
 ): string {
   const indentStr = ' '.repeat(indent);
   const nestIndentStr = ' '.repeat(nestingIndent); // Create nesting indent string
@@ -145,7 +156,11 @@ function formatWithDescriptions(
 
   // Handle null
   if (value === null) {
-    return 'null';
+    return python ? 'None' : 'null';
+  }
+
+  if (python && typeof value === 'boolean') {
+    return value ? 'True' : 'False';
   }
 
   // Handle primitives
@@ -168,7 +183,8 @@ function formatWithDescriptions(
         indent + nestingIndent, // Use nestingIndent instead of hardcoded 4
         nestingIndent,
         ignoreBinary,
-        false
+        false,
+        python
       );
       return `${indentStr}${nestIndentStr}${formattedItem}`; // Use nestIndentStr for item indentation
     });
@@ -223,7 +239,8 @@ function formatWithDescriptions(
         indent + nestingIndent,
         nestingIndent,
         ignoreBinary,
-        false
+        false,
+        python
       );
 
       formattedEntries.push(
