@@ -405,6 +405,29 @@ describe('Runtime sweep', () => {
       deepStrictEqual(errors, [message, message]);
     });
 
+    it('Refuses a decorator factory passed to decorate() uncalled', () => {
+      const authGuard = createDecorator((_req, next) => next());
+      // without (), the guard never runs and the route answers anyway
+      throws(() => decorate(get('guarded'), authGuard).handle(async () => 'ok'), {
+        message: 'decorate() argument 2 is a decorator factory: call it, and pass the decorator it returns',
+      });
+      for (const [factory, name] of [
+        [get, 'get'],
+        [get.auto, 'get.auto'],
+        [post, 'post'],
+        [patch, 'patch'],
+        [del, 'del'],
+        [operation, 'operation'],
+        [operation.error, 'operation.error'],
+        [operation.tool, 'operation.tool'],
+        [procedure, 'procedure'],
+      ] as const) {
+        throws(() => decorate(factory), {
+          message: `decorate() argument 1 is the factory ${name}: call it, ${name}(...)`,
+        });
+      }
+    });
+
     it('Answers a path two controllers of a segment declare with a JSON error and calls onError', async () => {
       const errors: string[] = [];
       class FirstController {

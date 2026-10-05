@@ -1,5 +1,5 @@
 import type { KnownAny } from '../types/utils.js';
-import { decoratorMiddlewares } from './create-decorator.js';
+import { decoratorFactories, decoratorMiddlewares } from './create-decorator.js';
 
 /**
  * Metadata stored on a handler by HTTP decorators and custom decorators when used outside decorator context (via decorate).
@@ -72,9 +72,18 @@ export function decorate(...args: unknown[]): KnownAny {
     propertyKeyOrContext?: unknown
   ) => KnownAny)[];
 
-  for (const decoratorFn of decoratorFns) {
+  for (const [i, decoratorFn] of decoratorFns.entries()) {
     if (typeof decoratorFn !== 'function') {
       throw new Error('All decorator arguments to decorate() must be functions');
+    }
+    // uncalled, a factory makes a decorator that nothing applies: a guard would never run
+    const factoryName = decoratorFactories.get(decoratorFn);
+    if (factoryName !== undefined) {
+      throw new Error(
+        factoryName
+          ? `decorate() argument ${i + 1} is the factory ${factoryName}: call it, ${factoryName}(...)`
+          : `decorate() argument ${i + 1} is a decorator factory: call it, and pass the decorator it returns`
+      );
     }
     // a procedure here would be applied as a decorator: it calls its handler with the class and rejects, unhandled
     if ('definition' in decoratorFn && 'fn' in decoratorFn) {

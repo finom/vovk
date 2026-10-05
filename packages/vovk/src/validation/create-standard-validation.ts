@@ -1,3 +1,4 @@
+import { decoratorFactories } from '../core/create-decorator.js';
 import { HttpException } from '../core/http-exception.js';
 import type { VovkValidationType } from '../types/core.js';
 import type { VovkOperationObject } from '../types/operation.js';
@@ -216,5 +217,6 @@ export function createStandardValidation({
     });
   }
 
+  decoratorFactories.set(procedure, 'procedure');
   return procedure;
 }

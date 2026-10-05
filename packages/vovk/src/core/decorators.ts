@@ -4,6 +4,7 @@ import type { KnownAny } from '../types/utils.js';
 import { toKebabCase } from '../utils/to-kebab-case.js';
 import { trimPath } from '../utils/trim-path.js';
 import { applyDecoratorAdapter } from './apply-decorator-adapter.js';
+import { decoratorFactories } from './create-decorator.js';
 import { vovkApp } from './vovk-app.js';
 
 const isClass = (func: unknown) => typeof func === 'function' && /class/.test(func.toString());
@@ -143,6 +144,11 @@ function createHTTPDecorator<T extends HttpMethod>(httpMethod: T) {
   };
 
   decoratorFactoryWithAuto.auto = auto;
+
+  // the names they are exported by
+  const name = httpMethod === HttpMethod.DELETE ? 'del' : httpMethod.toLowerCase();
+  decoratorFactories.set(decoratorFactory, name);
+  decoratorFactories.set(auto, `${name}.auto`);
 
   return decoratorFactoryWithAuto;
 }
