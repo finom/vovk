@@ -106,6 +106,10 @@ export type BodyKind = 'none' | 'form' | 'urlencoded' | 'binary' | 'text' | 'jso
 export function getBodyKind(schema: VovkJSONSchemaBase | undefined): BodyKind {
   if (!schema) return 'none';
   const ct = schema['x-contentType'] as string[] | undefined;
+  // an object goes out as a form only when JSON can't carry it: no JSON declared, or a field that holds a file
+  const declaresForm = ct?.includes('multipart/form-data') || ct?.includes('application/x-www-form-urlencoded');
+  const declaresJSON = ct?.some((c: string) => c === 'application/json' || c.endsWith('+json'));
+  if (declaresForm && declaresJSON && !isFileSchema(schema, schema) && !holdsFile(schema, schema)) return 'json';
   if (ct?.includes('multipart/form-data')) return 'form';
   // a form without multipart holds no files, so the generated struct is sent urlencoded
   if (ct?.includes('application/x-www-form-urlencoded')) return 'urlencoded';
@@ -119,6 +123,30 @@ export function getBodyKind(schema: VovkJSONSchemaBase | undefined): BodyKind {
   return 'json';
 }
 
+const MAX_FILE_SEARCH_DEPTH = 16;
+
+// a file, or a list or a union that may be one
+function isFileSchema(schema: Schema | undefined, root: Schema, depth = 0): boolean {
+  if (!schema || typeof schema !== 'object' || depth > MAX_FILE_SEARCH_DEPTH) return false;
+  if (schema.$ref) return isFileSchema(resolvePointer(schema.$ref, root), root, depth + 1);
+  if (schema.format === 'binary' || schema.contentEncoding === 'binary') return true;
+  const items =
+    schema.items && typeof schema.items === 'object' && !Array.isArray(schema.items) ? schema.items : undefined;
+  return [items, ...(schema.anyOf ?? []), ...(schema.oneOf ?? [])].some((s) => isFileSchema(s, root, depth + 1));
+}
+
+// a field of the body, or of any branch of it, holds a file
+function holdsFile(schema: Schema | undefined, root: Schema, depth = 0): boolean {
+  if (!schema || typeof schema !== 'object' || depth > MAX_FILE_SEARCH_DEPTH) return false;
+  if (schema.$ref) return holdsFile(resolvePointer(schema.$ref, root), root, depth + 1);
+  return (
+    Object.values(schema.properties ?? {}).some((prop) => isFileSchema(prop, root)) ||
+    [...(schema.allOf ?? []), ...(schema.anyOf ?? []), ...(schema.oneOf ?? [])].some((branch) =>
+      holdsFile(branch, root, depth + 1)
+    )
+  );
+}
+
 // a text body goes out as the type the procedure declares, as the TypeScript client sends it
 export function getTextContentType(schema: VovkJSONSchemaBase | undefined): string {
   const isTextLike = (type: string) =>
@@ -126,6 +154,30 @@ export function getTextContentType(schema: VovkJSONSchemaBase | undefined): stri
     !['multipart/form-data', 'application/x-www-form-urlencoded', 'application/json'].includes(type) &&
     !type.endsWith('+json');
   return (schema?.['x-contentType'] as string[] | undefined)?.find(isTextLike) ?? 'text/plain';
+}
+
+// bytes go out as the first type the procedure declares that isn't JSON or a form, such as image/png
+export function getBinaryContentType(schema: VovkJSONSchemaBase | undefined): string {
+  const declared = (schema?.['x-contentType'] as string[] | undefined) ?? [];
+  const isForm = (type: string) => type === 'multipart/form-data' || type === 'application/x-www-form-urlencoded';
+  const isJSON = (type: string) => type === 'application/json' || type.endsWith('+json');
+  return (
+    declared.find((type) => !type.includes('*') && !isForm(type) && !isJSON(type)) ??
+    declared.find((type) => type !== '*/*' && type.endsWith('/*')) ??
+    'application/octet-stream'
+  );
+}
+
+// the variants of a union body that hold a file: they go out as bytes, the others as JSON
+export function getBinaryBodyVariants(schema: VovkJSONSchemaBase | undefined): string[] {
+  if (!schema || getBodyKind(schema) !== 'json') return [];
+  const ctx: Context = { root: schema, defNames: new Map(), defSchemas: new Map(), pad: 0, enclosing: null, refs: [] };
+  const target = effectiveSchema(schema, ctx);
+  if (nominalKind(target, ctx) !== 'union') return [];
+  return (target.anyOf ?? target.oneOf ?? []).flatMap((variant, index) => {
+    const branch = variant?.$ref ? resolvePointer(variant.$ref, schema) : variant;
+    return branch?.type === 'string' && getBodyKind(branch) === 'binary' ? [`Variant${index}`] : [];
+  });
 }
 
 // Helper function for indentation
@@ -150,9 +202,11 @@ export function generateDocComment(schema: VovkJSONSchemaBase, level: number, pa
 const BIDI_CONTROLS = /[\u202A-\u202E\u2066-\u2069]/gu;
 
 // Schema text may come from a third-party OpenAPI document: a line break would end a comment and start code,
-// and rustc rejects a bare carriage return inside a doc comment
-export function toRustDocLines(text: string): string[] {
-  return text.split(/\r\n|\r|\n/).map((line) => line.replace(/\p{Cc}/gu, ' ').replace(BIDI_CONTROLS, ' '));
+// and rustc rejects a bare carriage return inside a doc comment; a number or any other JSON there is written as text
+export function toRustDocLines(text: unknown): string[] {
+  return String(text)
+    .split(/\r\n|\r|\n/)
+    .map((line) => line.replace(/\p{Cc}/gu, ' ').replace(BIDI_CONTROLS, ' '));
 }
 
 export function toRustCommentText(text: string): string {
@@ -185,6 +239,14 @@ export function toRustIdent(value: unknown, used?: Set<string>): string {
   }
 
   return ident;
+}
+
+// the function of each handler of a module, by handler name: in schema order, a name already taken gets the first
+// free suffix, so getUserByID and getUserById become get_user_by_id and get_user_by_id_2; the module imports
+// http_request and http_request_stream, so those names are taken
+export function getFunctionNames(handlerNames: string[], toSnakeCase: (name: string) => string): Map<string, string> {
+  const used = new Set(['http_request', 'http_request_stream']);
+  return new Map(handlerNames.map((name) => [name, toRustIdent(toSnakeCase(name), used)]));
 }
 
 function decodePointerSegment(segment: string): string {

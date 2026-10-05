@@ -2,6 +2,7 @@ import { strict as assert } from 'node:assert';
 import { test } from 'node:test';
 import type { VovkJSONSchemaBase } from 'vovk';
 import {
+  areFilesOptional,
   convertJSONSchemaToPythonDataType,
   convertJSONSchemaToPythonFilesType,
   getBodyKind,
@@ -22,7 +23,7 @@ test('convertJSONSchemaToPythonDataType - simple types', async (t) => {
       pad: 0,
     });
 
-    assert.equal(result, 'MyString = str');
+    assert.equal(result, 'MyString: TypeAlias = str');
   });
 
   await t.test('converts integer schema', () => {
@@ -33,7 +34,7 @@ test('convertJSONSchemaToPythonDataType - simple types', async (t) => {
       pad: 0,
     });
 
-    assert.equal(result, 'MyInteger = int');
+    assert.equal(result, 'MyInteger: TypeAlias = int');
   });
 
   await t.test('converts number schema', () => {
@@ -44,7 +45,7 @@ test('convertJSONSchemaToPythonDataType - simple types', async (t) => {
       pad: 0,
     });
 
-    assert.equal(result, 'MyNumber = float');
+    assert.equal(result, 'MyNumber: TypeAlias = float');
   });
 
   await t.test('converts boolean schema', () => {
@@ -55,7 +56,7 @@ test('convertJSONSchemaToPythonDataType - simple types', async (t) => {
       pad: 0,
     });
 
-    assert.equal(result, 'MyBoolean = bool');
+    assert.equal(result, 'MyBoolean: TypeAlias = bool');
   });
 
   await t.test('converts null schema', () => {
@@ -66,7 +67,7 @@ test('convertJSONSchemaToPythonDataType - simple types', async (t) => {
       pad: 0,
     });
 
-    assert.equal(result, 'MyNull = None');
+    assert.equal(result, 'MyNull: TypeAlias = None');
   });
 });
 
@@ -82,7 +83,7 @@ test('convertJSONSchemaToPythonDataType - array types', async (t) => {
       pad: 0,
     });
 
-    assert.equal(result, 'StringArray = List[str]');
+    assert.equal(result, 'StringArray: TypeAlias = List[str]');
   });
 
   await t.test('converts array of any type', () => {
@@ -95,7 +96,7 @@ test('convertJSONSchemaToPythonDataType - array types', async (t) => {
       pad: 0,
     });
 
-    assert.equal(result, 'AnyArray = List[Any]');
+    assert.equal(result, 'AnyArray: TypeAlias = List[Any]');
   });
 
   await t.test('converts tuple type', () => {
@@ -110,7 +111,7 @@ test('convertJSONSchemaToPythonDataType - array types', async (t) => {
       pad: 0,
     });
 
-    assert.equal(result, 'MyTuple = Tuple[str, int, bool]');
+    assert.equal(result, 'MyTuple: TypeAlias = Tuple[str, int, bool]');
   });
 });
 
@@ -126,7 +127,7 @@ test('convertJSONSchemaToPythonDataType - enum types', async (t) => {
       pad: 0,
     });
 
-    assert.equal(result, 'StringEnum = Literal["one", "two", "three"]');
+    assert.equal(result, 'StringEnum: TypeAlias = Literal["one", "two", "three"]');
   });
 
   await t.test('converts numeric enum', () => {
@@ -140,7 +141,7 @@ test('convertJSONSchemaToPythonDataType - enum types', async (t) => {
       pad: 0,
     });
 
-    assert.equal(result, 'NumericEnum = Literal[1, 2, 3]');
+    assert.equal(result, 'NumericEnum: TypeAlias = Literal[1, 2, 3]');
   });
 });
 
@@ -155,7 +156,7 @@ test('convertJSONSchemaToPythonDataType - union types', async (t) => {
       pad: 0,
     });
 
-    assert.equal(result, 'OptionalString = Union[str, None]');
+    assert.equal(result, 'OptionalString: TypeAlias = Union[str, None]');
   });
 
   await t.test('converts union with oneOf', () => {
@@ -168,7 +169,7 @@ test('convertJSONSchemaToPythonDataType - union types', async (t) => {
       pad: 0,
     });
 
-    assert.equal(result, 'StringOrInt = Union[str, int]');
+    assert.equal(result, 'StringOrInt: TypeAlias = Union[str, int]');
   });
 
   await t.test('converts union with anyOf', () => {
@@ -181,7 +182,7 @@ test('convertJSONSchemaToPythonDataType - union types', async (t) => {
       pad: 0,
     });
 
-    assert.equal(result, 'MixedTypes = Union[str, int, bool]');
+    assert.equal(result, 'MixedTypes: TypeAlias = Union[str, int, bool]');
   });
 });
 
@@ -425,7 +426,7 @@ test('convertJSONSchemaToPythonDataType - error handling', async (t) => {
       pad: 0,
     });
 
-    assert.equal(result, 'EmptySchema = Any');
+    assert.equal(result, 'EmptySchema: TypeAlias = Any');
   });
 
   await t.test('handles null schema', () => {
@@ -756,7 +757,7 @@ test('convertJSONSchemaToPythonDataType - $refs', async (t) => {
       pad: 0,
     });
 
-    assert.ok(result.includes('_Body_Kind = Literal["a", "b"]'), result);
+    assert.ok(result.includes('_Body_Kind: TypeAlias = Literal["a", "b"]'), result);
     assert.ok(result.includes('kind: Rpc._Body_Kind'), result);
   });
 
@@ -790,7 +791,7 @@ test('convertJSONSchemaToPythonDataType - $refs', async (t) => {
     assert.ok(!result.includes('.protobuf.') && !result.includes('user-profile'), result);
     assert.ok(result.includes('class _Body_google_protobuf_Timestamp(TypedDict):'), result);
     assert.ok(result.includes('ts: Rpc._Body_google_protobuf_Timestamp'), result);
-    assert.ok(result.includes('_Body_user_profile = Literal["a", "b"]'), result);
+    assert.ok(result.includes('_Body_user_profile: TypeAlias = Literal["a", "b"]'), result);
   });
 });
 
@@ -806,6 +807,13 @@ test('getBodyKind', async (t) => {
     assert.equal(getBodyKind({ type: 'object', properties: {} }), 'json');
   });
 
+  await t.test('an object goes out as JSON, whatever text type the procedure also takes', () => {
+    const body = { type: 'object', properties: { event: { type: 'string' } } } as const;
+
+    assert.equal(getBodyKind({ ...body, 'x-contentType': ['text/plain', 'application/json'] }), 'json');
+    assert.equal(getBodyKind({ ...body, 'x-contentType': ['application/json', 'text/plain'] }), 'json');
+  });
+
   await t.test('reads a body that only declares its content type', () => {
     // a procedure with contentType and no body schema
     assert.equal(getBodyKind({ 'x-contentType': ['text/plain'] }), 'text');
@@ -819,7 +827,7 @@ test('getBodyKind', async (t) => {
         className: 'Body',
         pad: 0,
       }),
-      'Body = Any'
+      'Body: TypeAlias = Any'
     );
   });
 });
@@ -870,7 +878,7 @@ test('schema text never leaves its literal', async (t) => {
       pad: 0,
     });
 
-    assert.equal(result, 'Kind = Literal["say \\"hi\\"", True, None, 1.5]');
+    assert.equal(result, 'Kind: TypeAlias = Literal["say \\"hi\\"", True, None, 1.5]');
   });
 
   await t.test('names the helpers for templates', () => {
@@ -923,6 +931,59 @@ test('allOf and $ref bodies', async (t) => {
   });
 });
 
+test('files in a union branch, behind a $ref or in a list', async (t) => {
+  const file = { type: 'string', format: 'binary' } as const;
+  // as z.union([z.object({ n: z.number() }), z.object({ file: z.file() })]) emits it
+  const fileOrJSON: VovkJSONSchemaBase = {
+    anyOf: [
+      { type: 'object', properties: { n: { type: 'number' } }, required: ['n'] },
+      { type: 'object', properties: { file }, required: ['file'] },
+    ],
+    'x-contentType': ['application/json', 'multipart/form-data'],
+  };
+  const upload: VovkJSONSchemaBase = { type: 'object', properties: { file }, required: ['file'] };
+
+  await t.test('are found as the Rust client finds them', () => {
+    assert.equal(hasFiles(fileOrJSON), true);
+    assert.equal(hasFiles({ type: 'object', properties: { files: { type: 'array', items: file } } }), true);
+    assert.equal(
+      hasFiles({ type: 'object', properties: { file: { $ref: '#/$defs/File' } }, $defs: { File: file } }),
+      true
+    );
+    assert.equal(hasFiles({ type: 'object', properties: { file: { anyOf: [file, { type: 'null' }] } } }), true);
+    assert.equal(
+      hasFiles({ type: 'object', properties: { file: { type: 'string', contentEncoding: 'binary' } } }),
+      true
+    );
+    assert.equal(hasFiles({ allOf: [{ $ref: '#/$defs/Upload' }], $defs: { Upload: upload } }), true);
+    assert.equal(
+      hasFiles({ anyOf: [{ type: 'object', properties: { n: { type: 'number' } } }, { type: 'string' }] }),
+      false
+    );
+  });
+
+  await t.test('may be left out when a branch holds none', () => {
+    assert.equal(areFilesOptional(fileOrJSON), true);
+    assert.equal(areFilesOptional(upload), false);
+    assert.equal(
+      areFilesOptional({ allOf: [upload, { type: 'object', properties: { n: { type: 'number' } } }] }),
+      false
+    );
+  });
+
+  await t.test('make a files type of the fields of every branch', () => {
+    const result = convertJSONSchemaToPythonFilesType({
+      schema: fileOrJSON,
+      namespace: 'Rpc',
+      className: 'Files',
+      pad: 0,
+    });
+
+    assert.ok(result.includes('class Files(TypedDict):'), result);
+    assert.match(result, /^ {4}file: Union\[BinaryIO/m);
+  });
+});
+
 test('bodies without top-level properties', async (t) => {
   await t.test('may carry data', () => {
     assert.equal(hasNormalData({ type: 'array', items: { type: 'string' } }), true);
@@ -942,7 +1003,7 @@ test('bodies without top-level properties', async (t) => {
       pad: 0,
     });
 
-    assert.equal(result, 'Body = Dict[str, float]');
+    assert.equal(result, 'Body: TypeAlias = Dict[str, float]');
   });
 
   await t.test('a record of any values is a Dict of Any', () => {
@@ -992,7 +1053,7 @@ test('recursive definitions', async (t) => {
 
     assert.equal(
       result,
-      `_Body___schema0 = Union[str, float, bool, None, List[Any], Dict[str, Any]]
+      `_Body___schema0: TypeAlias = Union[str, float, bool, None, List[Any], Dict[str, Any]]
 class Body(TypedDict):
     data: Rpc._Body___schema0`
     );
@@ -1016,7 +1077,7 @@ class Body(TypedDict):
 
     assert.equal(
       result,
-      `_Body_Forest = List[Any]
+      `_Body_Forest: TypeAlias = List[Any]
 class _Body_Tree(TypedDict):
     children: Rpc._Body_Forest
 class Body(TypedDict):
@@ -1045,7 +1106,7 @@ class Body(TypedDict):
       result,
       `class _Body_Node(TypedDict):
     next: Union[Rpc._Body_Node, None]
-Body = _Body_Node`
+Body: TypeAlias = _Body_Node`
     );
   });
 });
