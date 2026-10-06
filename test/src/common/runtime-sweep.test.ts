@@ -1756,6 +1756,16 @@ describe('Runtime sweep', () => {
       strictEqual(response.status, 200);
       deepStrictEqual(await nested.json(), { tags: ['a', 'b'], filter: { ids: ['1'] } });
     });
+
+    it('Reads a lone value as a one-item array in fn() and leaves the query it was given as it is', async () => {
+      const search = procedure({
+        query: z.object({ tags: z.array(z.string()), filter: z.object({ ids: z.array(z.string()) }).optional() }),
+      }).handle(async (req) => req.vovk.query());
+      const query = { tags: 'only', filter: { ids: '1' } };
+
+      deepStrictEqual(await search.fn({ query: query as never }), { tags: ['only'], filter: { ids: ['1'] } });
+      deepStrictEqual(query, { tags: 'only', filter: { ids: '1' } });
+    });
   });
 
   describe('controllersToStaticParams', () => {
