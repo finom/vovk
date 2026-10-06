@@ -292,8 +292,10 @@ export async function renderOneClientFile({
     ),
   };
 
-  // a Python or Rust client sends every call to the root it's generated with, a relative one can't be sent
-  const isPythonOrRust = data.imports?.some((imp) => imp === 'vovk-python' || imp === 'vovk-rust');
+  // a Python or Rust client sends every call to the root it's generated with, a relative one can't be sent;
+  // a README imports the same package for its names but sends nothing
+  const isPythonOrRust =
+    /\.(py|rs)$/.test(outPath) && data.imports?.some((imp) => imp === 'vovk-python' || imp === 'vovk-rust');
   if (isPythonOrRust && !templatesWithoutOrigin.has(templateName)) {
     const hasSegmentWithoutOrigin = Object.values(fullSchema.segments).some(
       ({ segmentName: sName, segmentType, controllers }) =>
