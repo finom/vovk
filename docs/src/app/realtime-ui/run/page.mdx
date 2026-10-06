@@ -48,6 +48,7 @@ The variables in `.env`:
 Optional variables:
 
 - `PASSWORD` – password protection for the app's pages and API. It doesn't cover the MCP server or the Telegram webhook, which have their own keys below. See the [Authentication](./authentication) article.
+- `SESSION_SECRET` – the key that signs the session cookie. Set it whenever you set `PASSWORD`. Without it, the app uses a default key from the public repository. Generate one with `openssl rand -base64 32`.
 - `MCP_ACCESS_KEY` – an authorization key for the MCP server, sent in the `?mcp_access_key=your_key` query parameter. If it isn't set, the MCP server needs no key. See the [MCP](./mcp) article.
 - `TELEGRAM_BOT_TOKEN` – turns on the Telegram bot. See the [Telegram Integration](./telegram) article.
 - `TELEGRAM_WEBHOOK_SECRET` – the secret Telegram sends with each webhook call. The webhook answers only when both Telegram variables are set.
