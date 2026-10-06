@@ -3,9 +3,6 @@ import { Node, type ObjectLiteralExpression, Project, SyntaxKind } from 'ts-morp
 import type { VovkConfig } from 'vovk';
 import { prettify } from '../../src/utils/prettify.mts';
 
-/**
- * Converts a JS value to a ts-morph compatible source string
- */
 function valueToSource(value: unknown): string {
   if (value === null) return 'null';
   if (value === undefined) return 'undefined';
@@ -23,9 +20,6 @@ function valueToSource(value: unknown): string {
   return String(value);
 }
 
-/**
- * Recursively merges updates into an ObjectLiteralExpression
- */
 function mergeIntoObjectLiteral(objLiteral: ObjectLiteralExpression, updates: Record<string, unknown>): void {
   for (const [key, value] of Object.entries(updates)) {
     const existingProp = objLiteral.getProperty(key);
@@ -64,9 +58,6 @@ function mergeIntoObjectLiteral(objLiteral: ObjectLiteralExpression, updates: Re
   }
 }
 
-/**
- * Finds the config object literal in the source file
- */
 function findConfigObjectLiteral(
   sourceFile: ReturnType<Project['createSourceFile']>
 ): ObjectLiteralExpression | undefined {

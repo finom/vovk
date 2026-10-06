@@ -2,12 +2,12 @@
   "openapi": "3.1.0",
   "info": {
     "title": "\"Hello World\" app API",
+    "version": "1.0.0",
     "description": "API for \"Hello World\" app hosted at https://hello-world.vovk.dev/. Source code is available on Github https://github.com/finom/vovk/tree/main/examples/hello-world. For more information about this app, visit the documentation page https://vovk.dev/hello-world.",
     "license": {
       "name": "MIT",
       "url": "https://opensource.org/licenses/MIT"
-    },
-    "version": "1.0.0"
+    }
   },
   "servers": [
     {
@@ -69,7 +69,7 @@
           {
             "label": "Python RPC",
             "lang": "python",
-            "source": "from vovk_hello_world import UserRPC\n\nresponse = UserRPC.update_user(\n    body={\n        # -----\n        # User data object\n        # -----\n        # User email\n        \"email\": \"john@example.com\",\n        # User profile object\n        \"profile\": {\n            # User full name\n            \"name\": \"John Doe\",\n            # User age\n            \"age\": 25\n        }\n    },\n    query={\n        # -----\n        # Query parameters\n        # -----\n        # Notification type\n        \"notify\": \"email\"\n    },\n    params={\n        # -----\n        # Path parameters\n        # -----\n        # User ID\n        \"id\": \"123e4567-e89b-12d3-a456-426614174000\"\n    },\n)\n\nprint(response)\n{\n    # -----\n    # Response object\n    # -----\n    # Success status\n    \"success\": true,\n    # User ID\n    \"id\": \"00000000-0000-0000-0000-000000000000\",\n    # Notification type\n    \"notify\": \"email\"\n}"
+            "source": "from vovk_hello_world import UserRPC\n\nresponse = UserRPC.update_user(\n    body={\n        # -----\n        # User data object\n        # -----\n        # User email\n        \"email\": \"john@example.com\",\n        # User profile object\n        \"profile\": {\n            # User full name\n            \"name\": \"John Doe\",\n            # User age\n            \"age\": 25\n        }\n    },\n    query={\n        # -----\n        # Query parameters\n        # -----\n        # Notification type\n        \"notify\": \"email\"\n    },\n    params={\n        # -----\n        # Path parameters\n        # -----\n        # User ID\n        \"id\": \"123e4567-e89b-12d3-a456-426614174000\"\n    },\n)\n\nprint(response)\n# {\n#     # -----\n#     # Response object\n#     # -----\n#     # Success status\n#     \"success\": True,\n#     # User ID\n#     \"id\": \"00000000-0000-0000-0000-000000000000\",\n#     # Notification type\n#     \"notify\": \"email\"\n# }"
           },
           {
             "label": "Rust RPC",
@@ -127,6 +127,7 @@
                     }
                   },
                   "required": ["success", "id", "notify"],
+                  "additionalProperties": false,
                   "description": "Response object"
                 }
               }
@@ -145,7 +146,7 @@
                   "email": {
                     "type": "string",
                     "format": "email",
-                    "pattern": "^(?!\\.)(?!.*\\.\\.)([A-Za-z0-9_'+\\-\\.]*)[A-Za-z0-9_+-]@([A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$",
+                    "pattern": "^(?:[A-Za-z0-9_'+\\-]+\\.)*[A-Za-z0-9_'+\\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$",
                     "description": "User email",
                     "examples": ["john@example.com", "jane@example.com"]
                   },
@@ -191,7 +192,7 @@
           {
             "label": "Python RPC",
             "lang": "python",
-            "source": "from vovk_hello_world import StreamRPC\n\nresponse = StreamRPC.stream_tokens()\n\nfor i, item in enumerate(response):\n    print(f\"iteration #{i}:\\n {item}\")\n    # iteration #0:\n    {\n        # -----\n        # Streamed token object\n        # -----\n        # Message from the token\n        \"message\": \"string\"\n    }"
+            "source": "from vovk_hello_world import StreamRPC\n\nresponse = StreamRPC.stream_tokens()\n\nfor i, item in enumerate(response):\n    print(f\"iteration #{i}:\\n {item}\")\n    # iteration #0:\n    # {\n    #     # -----\n    #     # Streamed token object\n    #     # -----\n    #     # Message from the token\n    #     \"message\": \"string\"\n    # }"
           },
           {
             "label": "Rust RPC",
@@ -214,9 +215,10 @@
                     }
                   },
                   "required": ["message"],
-                  "description": "Streamed token object",
-                  "examples": ["{\"message\":\"string\"}\n{\"message\":\"string\"}\n{\"message\":\"string\"}"]
-                }
+                  "additionalProperties": false,
+                  "description": "Streamed token object"
+                },
+                "example": "{\"message\":\"string\"}\n{\"message\":\"string\"}\n{\"message\":\"string\"}"
               }
             }
           }

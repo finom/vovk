@@ -24,10 +24,11 @@ export default class UserService {
       },
     });
 
+    // the row is saved either way; search skips it until an update brings its embedding
     await EmbeddingService.generateEntityEmbedding(
       user.entityType,
       user.id as UserType['id'],
-    );
+    ).catch((error) => console.error('Embedding failed', error));
     return user as UserType;
   };
 
@@ -40,7 +41,9 @@ export default class UserService {
       data,
     });
 
-    await EmbeddingService.generateEntityEmbedding(user.entityType, id);
+    await EmbeddingService.generateEntityEmbedding(user.entityType, id).catch(
+      (error) => console.error('Embedding failed', error),
+    );
 
     return user as UserType;
   };

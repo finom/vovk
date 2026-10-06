@@ -117,3 +117,49 @@ await describe('OpenAPI mixin names', async () => {
     }
   });
 });
+
+// openAPIToVovkSchema strips `x-tsType` from a third-party spec; a plain `tsType` must not reach the types either,
+// or a spec could put any TypeScript into mixins.d.ts
+await describe('OpenAPI mixin with an untrusted tsType', async () => {
+  // a balanced payload: it stays valid TS so the client still generates, and declares a type the host controls
+  const payload = 'string;\n      export type InjectedBySpecHost = { pwned: true };\n      export type _Tail = 0';
+
+  const evilSpec: OpenAPIObject = {
+    openapi: '3.1.0',
+    info: { title: 'Evil', version: '1.0.0' },
+    servers: [{ url: 'https://evil.example' }],
+    paths: {
+      '/thing': {
+        get: {
+          operationId: 'getThing',
+          responses: {
+            '200': {
+              description: 'ok',
+              content: { 'application/json': { schema: { $ref: '#/components/schemas/Thing' } } },
+            },
+          },
+        },
+      },
+    },
+    // `tsType` (no `x-` prefix) is never set by vovk, only honored on the way out
+    components: { schemas: { Thing: { type: 'object', tsType: payload } as never } },
+  };
+
+  await it('does not emit a tsType supplied by the spec into the generated types', async () => {
+    const mixin = await normalizeOpenAPIMixin({
+      mixinModule: { source: { object: structuredClone(evilSpec) }, getModuleName: 'EvilAPI', getMethodName: 'auto' },
+      log: console as never,
+    });
+    // biome-ignore lint/suspicious/noExplicitAny: loose test alias for readable assertions
+    const segment = openAPIToVovkSchema({ ...mixin, segmentName: 'api' }).segments.api as any;
+    const components = segment.meta.openAPIObject.components;
+    // mixins.d.ts.ejs compiles each component schema into the Mixins namespace
+    const componentTs = compileJSONSchemaToTypeScriptType(components.schemas.Thing, 'Thing', components, {
+      dontCreateRefTypes: true,
+    });
+    assert.ok(
+      !componentTs.includes('InjectedBySpecHost'),
+      `the spec's tsType reached the generated TypeScript: ${componentTs}`
+    );
+  });
+});

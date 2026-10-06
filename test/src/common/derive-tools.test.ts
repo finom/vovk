@@ -1,17 +1,24 @@
 import assert from 'node:assert';
 import { describe, it } from 'node:test';
 import {
+  del,
   deriveTools,
+  get,
   HttpException,
+  initSegment,
   JSONLinesResponder,
+  operation,
+  prefix,
   procedure,
+  put,
+  type StandardToolV0,
   ToModelOutput,
   toDownloadResponse,
   type VovkOutput,
 } from 'vovk';
 import { createRPC } from 'vovk/create-rpc';
-import type { MCPModelOutput, StandardToolV0 } from 'vovk/internal';
 import { z } from 'zod';
+import type { MCPModelOutput } from '../../../packages/vovk/dist/tools/to-model-output-mcp.js';
 
 describe('deriveTools', () => {
   const outputSchema = z.object({ foo: z.string().max(5), inputMeta: z.string().optional() });
@@ -520,7 +527,9 @@ describe('deriveTools', () => {
       });
     });
 
-    it('Should support MCP annotations', async () => {
+    // MCP has no annotations on a tool result, each content item carries its own
+    it('Should put MCP annotations on each content item', async () => {
+      const annotations = { audience: ['user' as const], priority: 0.5 };
       const procedureWithAnnotations = procedure({
         operationObject: {
           'x-tool': {
@@ -531,30 +540,43 @@ describe('deriveTools', () => {
         body: z.object({ foo: z.string().max(5) }),
       }).handle(async ({ vovk }) => {
         const { foo } = await vovk.body();
-        vovk.meta({ mcpOutput: { annotations: { audience: ['user'], priority: 5 } } });
+        vovk.meta({ mcpOutput: { annotations } });
 
         return { foo };
       });
+      const imageWithAnnotations = procedure({
+        operationObject: {
+          'x-tool': { name: 'imageWithAnnotations' },
+          description: 'imageWithAnnotations description',
+        },
+      }).handle(async ({ vovk }) => {
+        vovk.meta({ mcpOutput: { annotations } });
 
-      const [procedureWithAnnotationsTool] = deriveTools({
+        return toDownloadResponse(new Uint8Array([1, 2, 3]), { type: 'image/png', filename: 'a.png' });
+      });
+
+      const [procedureWithAnnotationsTool, imageWithAnnotationsTool] = deriveTools({
         toModelOutput: ToModelOutput.MCP,
         modules: {
           MyModule: {
             procedureWithAnnotations,
+            imageWithAnnotations,
           },
         },
       });
 
-      const result: MCPModelOutput = await procedureWithAnnotationsTool.execute({ body: { foo: 'bar' } });
-      assert.deepStrictEqual(result, {
+      assert.deepStrictEqual(await procedureWithAnnotationsTool.execute({ body: { foo: 'bar' } }), {
         content: [
           {
             type: 'text',
             text: JSON.stringify({ foo: 'bar' }),
+            annotations,
           },
         ],
         structuredContent: { foo: 'bar' },
-        annotations: { audience: ['user'], priority: 5 },
+      });
+      assert.deepStrictEqual(await imageWithAnnotationsTool.execute({}), {
+        content: [{ type: 'image', mimeType: 'image/png', data: 'AQID', annotations }],
       });
     });
   });
@@ -573,9 +595,22 @@ describe('deriveTools', () => {
       yield { n: 1 };
       yield { n: 2 };
     });
+    // without an iteration schema the procedure hands the sync generator over as it is
+    const returnsSyncGenerator = procedure({ operationObject: { description: 'd' } }).handle(function* () {
+      yield { n: 1 };
+      yield { n: 2 };
+    });
 
-    const [jsonTool, textTool, binaryTool, generatorTool] = deriveTools({
-      modules: { MyModule: { returnsJSONResponse, returnsTextResponse, returnsBinaryResponse, returnsGenerator } },
+    const [jsonTool, textTool, binaryTool, generatorTool, syncGeneratorTool] = deriveTools({
+      modules: {
+        MyModule: {
+          returnsJSONResponse,
+          returnsTextResponse,
+          returnsBinaryResponse,
+          returnsGenerator,
+          returnsSyncGenerator,
+        },
+      },
     });
 
     it('Parses a JSON Response instead of handing over the Response object', async () => {
@@ -592,6 +627,22 @@ describe('deriveTools', () => {
 
     it('Collects the items of a generator handler', async () => {
       assert.deepStrictEqual(await generatorTool.execute({}), [{ n: 1 }, { n: 2 }]);
+    });
+
+    it('Collects the items of a sync generator handler', async () => {
+      assert.deepStrictEqual(await syncGeneratorTool.execute({}), [{ n: 1 }, { n: 2 }]);
+    });
+
+    // the server streams any iterable object but an array as JSON Lines, a string goes out as it is
+    it('Collects the items of a Set and keeps a string whole', async () => {
+      const returnsSet = procedure({ operationObject: { description: 'd' } }).handle(
+        async () => new Set([{ n: 1 }, { n: 2 }])
+      );
+      const returnsString = procedure({ operationObject: { description: 'd' } }).handle(async () => 'ab');
+      const [setTool, stringTool] = deriveTools({ modules: { MyModule: { returnsSet, returnsString } } });
+
+      assert.deepStrictEqual(await setTool.execute({}), [{ n: 1 }, { n: 2 }]);
+      assert.strictEqual(await stringTool.execute({}), 'ab');
     });
   });
 
@@ -774,6 +825,53 @@ describe('deriveTools', () => {
     });
   });
 
+  describe('Input validated with inputSchema first', () => {
+    // the Vercel AI SDK validates the model's arguments with inputSchema and calls execute with the value it returns
+    const validateAndExecute = async (
+      tool: StandardToolV0<{ body?: unknown; query?: unknown; params?: unknown }, unknown, unknown>,
+      input: unknown
+    ) => {
+      assert.ok(tool.inputSchema, 'expected the tool to have an inputSchema');
+      const result = await tool.inputSchema['~standard'].validate(input);
+      if (result.issues) throw new Error(`inputSchema refused the input: ${JSON.stringify(result.issues)}`);
+      return tool.execute(result.value);
+    };
+
+    const isDone = procedure({
+      operationObject: { description: 'd' },
+      query: z.object({ done: z.stringbool() }),
+    }).handle(async ({ vovk }) => vovk.query());
+    const toCents = procedure({
+      operationObject: { description: 'd' },
+      body: z.object({ amount: z.number().transform((amount) => Math.round(amount * 100)) }),
+    }).handle(async ({ vovk }) => vovk.body());
+
+    it('Parses a query value that changes type once', async () => {
+      const [tool] = deriveTools({ modules: { MyModule: { isDone } } });
+
+      assert.deepStrictEqual(await validateAndExecute(tool, { query: { done: 'true' } }), { done: true });
+    });
+
+    it('Transforms a body value once', async () => {
+      const [tool] = deriveTools({ modules: { MyModule: { toCents } } });
+
+      assert.deepStrictEqual(await validateAndExecute(tool, { body: { amount: 12.34 } }), { amount: 1234 });
+    });
+  });
+
+  describe('A controller method that is not a procedure', () => {
+    // a plain handler has no fn, so a tool can't call it without HTTP
+    class PlainController {
+      static updateUser = () => ({ success: true });
+    }
+    get('users')(PlainController, 'updateUser');
+    operation({ summary: 'Update user' })(PlainController, 'updateUser');
+
+    it('Is left out of the tools', () => {
+      assert.deepStrictEqual(deriveTools({ modules: { PlainController } }), []);
+    });
+  });
+
   describe('meta and OpenAPI mixins', () => {
     const segment = (segmentType: string, forceApiRoot?: string) => ({
       segmentName: 'external',
@@ -915,6 +1013,56 @@ describe('deriveTools', () => {
         .map((i) => (i.path?.[0] as { key?: string } | undefined)?.key);
       assert.ok(missingKeys.includes('query'));
       assert.ok(missingKeys.includes('params'));
+    });
+  });
+
+  describe('Controllers with operation() applied before the HTTP decorator', () => {
+    class UserController {
+      static updateUser = procedure({
+        params: z.object({ id: z.string() }),
+        body: z.object({ email: z.string() }),
+      }).handle(async (req, { id }) => ({ id, ...(await req.vovk.body()) }));
+
+      static getUser = procedure({ params: z.object({ id: z.string() }) }).handle(async (_req, { id }) => ({ id }));
+    }
+    prefix('users')(UserController);
+    // @put('{id}') and @get('{id}') written above @operation(): stacked decorators apply bottom-up
+    operation({ summary: 'Update user' })(UserController, 'updateUser');
+    put('{id}')(UserController, 'updateUser');
+    operation({ summary: 'Get user' })(UserController, 'getUser');
+    get('{id}')(UserController, 'getUser');
+    initSegment({ segmentName: 'derive-tools', controllers: { UserRPC: UserController } });
+
+    it('Derives their tools', () => {
+      assert.deepStrictEqual(
+        deriveTools({ modules: { UserController } }).map(({ name }) => name),
+        ['UserController_updateUser', 'UserController_getUser']
+      );
+    });
+
+    it('Gives the method the schema of its RPC method', () => {
+      const { path, httpMethod, operationObject } = UserController.updateUser.schema;
+
+      assert.deepStrictEqual(
+        { path, httpMethod, summary: operationObject?.summary },
+        { path: '{id}', httpMethod: 'PUT', summary: 'Update user' }
+      );
+    });
+
+    it("Keeps the procedure's own operation next to the decorator's", () => {
+      class TaskController {
+        static deleteTask = procedure({ operationObject: { description: 'Deletes a task by its ID' } }).handle(
+          async () => null
+        );
+      }
+      operation({ summary: 'Delete task' })(TaskController, 'deleteTask');
+      del('{id}')(TaskController, 'deleteTask');
+      initSegment({ segmentName: 'derive-tools-merge', controllers: { TaskRPC: TaskController } });
+
+      assert.deepStrictEqual(
+        deriveTools({ modules: { TaskController } }).map(({ description }) => description),
+        ['Delete task\nDeletes a task by its ID']
+      );
     });
   });
 });

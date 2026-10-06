@@ -208,14 +208,14 @@ Fetcher = client's core primitive — function (`VovkFetcher<TFetcherOptions>`) 
 Response-shape dispatch by content type:
 
 - `application/json` → parsed JSON (typed as procedure's output schema).
-- `application/jsonl` / `application/jsonlines` → disposable async iterable (see `jsonlines` skill).
+- `application/jsonl` / `application/jsonlines` / `application/x-ndjson` → disposable async iterable (see `jsonlines` skill).
 - Other content types → raw `Response` object — caller reads text, binary, or streams it.
 
 You **extend** default rather than rewriting via `createFetcher`:
 
 ```ts
 // src/lib/fetcher.ts
-import { createFetcher } from 'vovk';
+import { createFetcher } from 'vovk/fetcher';
 
 export const fetcher = createFetcher<{
   // Custom per-call options — become typed fields on every RPC method call site.
@@ -253,7 +253,7 @@ await UserRPC.updateUser({
 All optional; `options` = typed `TOptions` you declared.
 
 - `prepareRequestInit(init, options) => RequestInit | Promise<RequestInit>` — mutate `RequestInit` before `fetch` (headers, credentials, mode, cache, `next.revalidate`). Async OK — fetcher awaits return.
-- `transformResponse(data, options, info)` — transform parsed response; `info = { response, init, schema }` gives access to raw `Response`, final `RequestInit`, procedure's `VovkHandlerSchema` (useful for reading `operationObject`).
+- `transformResponse(data, options, info)` — transform parsed response; `info = { response, init, schema }` gives access to raw `Response`, final `RequestInit`, procedure's schema (same object as `UserRPC.updateUser.schema`; useful for reading `operationObject`).
 - `onSuccess(data, options)` — observe successful responses (toasts, analytics).
 - `onError(error: HttpException, options)` — observe failures. Both network errors and HTTP-status errors land here; `error.statusCode === 0` (`HttpStatus.NULL`) = either transport failure or client-side validation rejection.
 
@@ -323,11 +323,11 @@ Keep fetcher focused on transport-layer concerns. Stateful things (request dedup
 
 Install `vovk-ajv`, set `outputConfig.imports.validateOnClient: 'vovk-ajv'`. Generated client validates `params` / `body` / `query` against procedure's schema **before** HTTP call — invalid inputs throw `HttpException(HttpStatus.NULL, ...)` locally (i.e. `statusCode === 0`, same as transport failures) instead of round-tripping.
 
-Roll your own validator via `createValidateOnClient` from `vovk` if Ajv isn't fit; point `imports.validateOnClient` at its module path:
+Roll your own validator via `createValidateOnClient` from `vovk/create-validate-on-client` if Ajv isn't fit; point `imports.validateOnClient` at its module path:
 
 ```ts
 // src/lib/validateOnClient.ts
-import { createValidateOnClient, HttpException, HttpStatus } from 'vovk';
+import { createValidateOnClient, HttpException, HttpStatus } from 'vovk/create-validate-on-client';
 
 export const validateOnClient = createValidateOnClient({
   validate: async (input, schema, meta) => {
@@ -403,7 +403,7 @@ Every generated RPC method = more than just callable. Useful properties:
 - `.getURL({ params, query, apiRoot })` — compute URL call would hit, without making request. Useful for `<a href>`, `<form action>`, or calling `fetch` directly.
 - `.queryKey(key?)` — returns globally unique React Query / TanStack Query cache key. Shape: `[segmentName, controllerPrefix, rpcModuleName, decoratorPath, httpMethod, ...key]`. Optional `key` = array of **extra scalars** to disambiguate similar queries (typically same values passed in `params` / `query`).
 - `.apiRoot` — baked-in `apiRoot` string.
-- `.schema` (`VovkHandlerSchema`), `.controllerSchema` (`VovkControllerSchema`), `.segmentSchema` (`VovkSegmentSchema`), `.fullSchema` (`VovkSchema`) — raw schema objects. `schema.validation.body` etc. give per-input JSON Schema; `schema.operationObject` gives OpenAPI operation fragment; `fullSchema.meta.config` exposes config subset emitted into client (by default only `libs` and `rootEntry`, e.g. `fullSchema.meta.config.libs.ajv`).
+- `.schema`, `.controllerSchema`, `.segmentSchema`, `.fullSchema` (`VovkSchema`) — raw schema objects; name a type as `typeof UserRPC.getUser.segmentSchema`. `schema.validation.body` etc. give per-input JSON Schema; `schema.operationObject` gives OpenAPI operation fragment; `fullSchema.meta.config` exposes config subset emitted into client (by default only `libs` and `rootEntry`, e.g. `fullSchema.meta.config.libs.ajv`).
 - `.isRPC: true` — type guard (distinguishes RPC modules from raw controllers in tools like `deriveTools`).
 
 ```ts

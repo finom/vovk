@@ -22,13 +22,9 @@
                   "type": "string"
                 },
                 "c": {
-                  "anyOf": [
-                    {
-                      "type": "number"
-                    },
-                    {
-                      "type": "null"
-                    }
+                  "type": [
+                    "number",
+                    "null"
                   ]
                 }
               },
@@ -79,7 +75,8 @@
               },
               "required": [
                 "id"
-              ]
+              ],
+              "additionalProperties": false
             }
           },
           "path": "numeric/{id}",
@@ -119,13 +116,9 @@
                 "items": {
                   "type": "array",
                   "items": {
-                    "anyOf": [
-                      {
-                        "type": "string"
-                      },
-                      {
-                        "type": "null"
-                      }
+                    "type": [
+                      "string",
+                      "null"
                     ]
                   }
                 }
@@ -136,6 +129,24 @@
             }
           },
           "path": "query-array",
+          "httpMethod": "GET"
+        },
+        "getNumericQuery": {
+          "validation": {
+            "query": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "object",
+              "properties": {
+                "limit": {
+                  "type": "number"
+                }
+              },
+              "required": [
+                "limit"
+              ]
+            }
+          },
+          "path": "numeric-query",
           "httpMethod": "GET"
         }
       }

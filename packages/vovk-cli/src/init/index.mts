@@ -14,7 +14,7 @@ import { getPackageManager, installDependencies } from './install-dependencies.m
 import { logUpdateDependenciesError } from './log-update-dependencies-error.mjs';
 import { updateDependenciesWithoutInstalling } from './update-dependencies-without-installing.mjs';
 import { updateGitignore } from './update-gitignore.mjs';
-import { getDevScript, updateNPMScripts } from './update-npm-scripts.mjs';
+import { getDevScript, getDevScriptMode, isYarnBerry, updateNPMScripts } from './update-npm-scripts.mjs';
 import { updateTypeScriptConfig } from './update-typescript-config.mjs';
 
 const VALIDATION_LIBRARIES = ['zod', 'valibot', 'arktype', 'none'];
@@ -86,13 +86,26 @@ export class Init {
     }
 
     if (updateScripts) {
+      // read before the update, which writes vovk dev into the script
+      const devScriptMode = pkgJson ? getDevScriptMode(pkgJson, updateScripts) : updateScripts;
+      if (devScriptMode !== updateScripts) {
+        log.info('The "dev" script runs more than "next dev", so "concurrently" runs it unchanged next to "vovk dev"');
+      }
       try {
-        if (!dryRun && pkgJson) await updateNPMScripts({ pkgJson, root, bundle, updateScriptsMode: updateScripts });
+        if (!dryRun && pkgJson) {
+          await updateNPMScripts({
+            pkgJson,
+            root,
+            bundle,
+            updateScriptsMode: updateScripts,
+            userAgent: process.env.npm_config_user_agent,
+          });
+        }
         log.info(`${dryRun ? 'Dry run: would update' : 'Updated'} scripts at package.json`);
       } catch (error) {
         log.error(`Failed to update scripts at package.json: ${(error as Error).message}`);
       }
-      if (updateScripts === 'explicit') {
+      if (devScriptMode === 'explicit') {
         devDependencies.push('concurrently', 'cross-env');
       }
     }
@@ -114,6 +127,7 @@ export class Init {
       }
     }
 
+    let depsFailed = false;
     if (!dryRun && pkgJson) {
       let depsUpdated = false;
       const packageManager = getPackageManager({
@@ -137,6 +151,7 @@ export class Init {
 
         depsUpdated = true;
       } catch (e) {
+        depsFailed = true;
         const error = e as Error;
         logUpdateDependenciesError({
           log,
@@ -210,6 +225,11 @@ export class Init {
         `Failed to create config: ${(error as Error).message}. Please, refer to the documentation at https://vovk.dev/config`
       );
     }
+
+    // thrown last, so the other steps still run and only the install is left to the user
+    if (depsFailed) {
+      throw new Error('The dependencies were not added to package.json, install them with the command above');
+    }
   }
 
   async main({
@@ -282,8 +302,7 @@ export class Init {
 
     if (!(await getFileSystemEntryType(path.join(root, 'package.json')))) {
       log.warn(
-        `${chalkHighlightThing('package.json')} not found at ${chalkHighlightThing(root)}. Run "npx create-next-app" to create a new Next.js project
-        .`
+        `${chalkHighlightThing('package.json')} not found at ${chalkHighlightThing(root)}. Run "npx create-next-app" to create a new Next.js project.`
       );
     } else if (pkgJson && !(await getFileSystemEntryType(path.join(root, 'tsconfig.json')))) {
       log.warn(
@@ -337,9 +356,8 @@ export class Init {
       }
 
       if (shouldAsk) {
-        const keys = ['experimentalDecorators'];
         updateTsConfig = await confirm({
-          message: `Do you want to add ${keys.map((k) => `"${k}"`).join(' and ')} to tsconfig.json? (recommended)`,
+          message: 'Add "experimentalDecorators" to tsconfig.json? Webpack builds need it. (recommended)',
         });
       }
     }
@@ -349,21 +367,23 @@ export class Init {
       default: false,
     });
 
+    const generateScript =
+      pkgJson && isYarnBerry({ pkgJson, root, userAgent: process.env.npm_config_user_agent }) ? 'build' : 'prebuild';
     updateScripts ??= !pkgJson
       ? undefined
       : await select({
-          message: `Do you want to update "dev" and add "prebuild"${bundle ? ' and "bundle"' : ''} NPM scripts at package.json (recommended)?`,
+          message: `Do you want to update the "dev" and "${generateScript}"${bundle ? ' and "bundle"' : ''} NPM scripts at package.json (recommended)?`,
           default: 'implicit',
           choices: [
             {
               name: 'Yes, use "concurrently" implicitly',
               value: 'implicit' as const,
-              description: `The ${chalk.cyanBright.bold(`"dev"`)} script will use concurrently API to run "next dev" and "vovk dev" commands at the same time. It will automatically find an available port, running ${chalk.cyanBright.bold(`"${getDevScript(pkgJson, 'implicit')}"`)}. The ${chalk.cyanBright.bold(`"prebuild"`)} script will run ${chalk.cyanBright.bold(`"vovk generate"`)}`,
+              description: `The ${chalk.cyanBright.bold(`"dev"`)} script will use concurrently API to run "next dev" and "vovk dev" commands at the same time. It will automatically find an available port, running ${chalk.cyanBright.bold(`"${getDevScript(pkgJson, 'implicit')}"`)}. The ${chalk.cyanBright.bold(`"${generateScript}"`)} script will run ${chalk.cyanBright.bold(`"vovk generate"`)}`,
             },
             {
               name: 'Yes, use "concurrently" explicitly',
               value: 'explicit' as const,
-              description: `The ${chalk.cyanBright.bold(`"dev"`)} script will use pre-defined PORT variable to run "next dev" and "vovk dev" as "concurrently" CLI arguments ${chalk.cyanBright.bold(`"${getDevScript(pkgJson, 'explicit')}"`)}. The ${chalk.cyanBright.bold(`"prebuild"`)} script will run ${chalk.cyanBright.bold(`"vovk generate"`)}`,
+              description: `The ${chalk.cyanBright.bold(`"dev"`)} script will use pre-defined PORT variable to run "next dev" and "vovk dev" as "concurrently" CLI arguments ${chalk.cyanBright.bold(`"${getDevScript(pkgJson, 'explicit')}"`)}. The ${chalk.cyanBright.bold(`"${generateScript}"`)} script will run ${chalk.cyanBright.bold(`"vovk generate"`)}`,
             },
             {
               name: 'No',

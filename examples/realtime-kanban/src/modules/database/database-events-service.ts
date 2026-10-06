@@ -45,10 +45,15 @@ export default class DatabaseEventsService {
       value: JSON.stringify({ id, entityType, date, type }),
     }));
 
-    // one multi(): batch ZADD + EXPIRE
+    // one multi(): batch ZADD, drop the entries older than the key's lifetime, EXPIRE
     await DatabaseEventsService.redisClient
       .multi()
       .zAdd(DatabaseEventsService.DB_KEY, entries)
+      .zRemRangeByScore(
+        DatabaseEventsService.DB_KEY,
+        '-inf',
+        Date.now() - DatabaseEventsService.INTERVAL * 60,
+      )
       .expire(
         DatabaseEventsService.DB_KEY,
         (DatabaseEventsService.INTERVAL * 60) / 1000,

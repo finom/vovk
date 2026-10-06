@@ -16,7 +16,6 @@ import { responseErrorMessage } from './to-model-error-message.js';
 import { ToModelOutput } from './to-model-output.js';
 import type { DefaultModelOutput } from './to-model-output-default.js';
 
-// Standard tool input type
 type DerivedToolInput = { body?: unknown; query?: unknown; params?: unknown };
 
 type Handler = ((...args: unknown[]) => unknown) & {
@@ -59,17 +58,24 @@ const toToolName = (name: string) => {
     : safeName;
 };
 
-function isAsyncIterable(value: unknown): value is AsyncIterable<unknown> {
-  return typeof (value as AsyncIterable<unknown>)?.[Symbol.asyncIterator] === 'function';
+// what the server streams as JSON Lines: any iterable object but an array, a Set or a sync generator included
+function isStreamable(value: unknown): value is Iterable<unknown> | AsyncIterable<unknown> {
+  return (
+    typeof value === 'object' &&
+    value !== null &&
+    !Array.isArray(value) &&
+    (typeof (value as AsyncIterable<unknown>)[Symbol.asyncIterator] === 'function' ||
+      typeof (value as Iterable<unknown>)[Symbol.iterator] === 'function')
+  );
 }
+
+// a member a tool can run: an RPC method, or a procedure, which has fn
+const isCallable = (handler: Handler | undefined) => !!handler?.isRPC || typeof handler?.fn === 'function';
 
 async function caller<TOutput, TFormattedOutput>(
   { handler, handlerName, body, query, params, meta, toModelOutput }: CallerInput<TOutput, TFormattedOutput>,
   tool: StandardToolV0<DerivedToolInput, TOutput, TFormattedOutput>
 ): Promise<[TFormattedOutput, Pick<VovkRequest, 'vovk'> | null, Error | null]> {
-  if (!handler.isRPC && !handler.fn) {
-    throw new Error('Handler is not a valid RPC or controller method');
-  }
   try {
     let result: unknown;
     let req = null;
@@ -112,7 +118,7 @@ async function caller<TOutput, TFormattedOutput>(
     }
 
     // a streaming handler yields its items, collect them so the model sees data instead of an iterator
-    if (isAsyncIterable(result)) {
+    if (isStreamable(result)) {
       const items: unknown[] = [];
       for await (const item of result) items.push(item);
       result = items;
@@ -234,7 +240,6 @@ const makeTool = <TOutput, TFormattedOutput>({
   return tool;
 };
 
-// Base options type without toModelOutput
 type DeriveToolsBaseOptions<TOutput = unknown, TFormattedOutput = unknown> = {
   modules: Record<string, object>;
   meta?: Record<string, unknown>;
@@ -270,14 +275,12 @@ type DeriveToolsBaseOptions<TOutput = unknown, TFormattedOutput = unknown> = {
  * });
  * ```
  */
-// Overload: without toModelOutput - returns DefaultModelOutput
 export function deriveTools<TOutput = unknown, TFormattedOutput = DefaultModelOutput<TOutput>>(
   options: DeriveToolsBaseOptions & {
     toModelOutput?: never;
   }
 ): StandardToolV0<DerivedToolInput, TOutput, TFormattedOutput>[];
 
-// Overload: with toModelOutput - infers TFormattedOutput from the function
 export function deriveTools<TOutput = unknown, TFormattedOutput = unknown>(
   options: DeriveToolsBaseOptions & {
     toModelOutput: ToModelOutputFn<unknown, TOutput, TFormattedOutput>;
@@ -315,7 +318,8 @@ export function deriveTools<TOutput = unknown, TFormattedOutput = unknown>(optio
   ).flatMap(([moduleName, module]) => {
     return Object.entries(module ?? {})
       .filter(
-        ([, handler]) => handler?.schema?.operationObject && !handler?.schema?.operationObject?.['x-tool']?.hidden
+        ([, handler]) =>
+          isCallable(handler) && handler.schema?.operationObject && !handler.schema.operationObject['x-tool']?.hidden
       )
       .map(([handlerName]) => {
         const tool = makeTool<TOutput, TFormattedOutput>({

@@ -4,9 +4,9 @@ import { FileTree, Tabs } from 'nextra/components';
 
 > [!WARNING]
 >
-> The Rust client library is experimental and may contain bugs. Use with caution.
+> The Rust client is experimental and may have bugs. Use it with caution.
 
-The Rust client can be generated with `vovk generate` using the [rs](/templates#rs) or [rsSrc](/templates#rssrc) template.
+`vovk generate` creates the Rust client from the [rs](/templates#rs) or [rsSrc](/templates#rssrc) template.
 
 Install the generator package:
 
@@ -17,10 +17,10 @@ npm install vovk-rust --save-dev
 Generate a Rust package with the [CLI](/generate):
 
 ```sh npm2yarn copy
-npx vovk generate --from rs --out ./rust_package
+npm exec -- vovk generate --from rs --out ./rust_package
 ```
 
-This produces the following structure:
+This produces:
 
 <FileTree>
   <FileTree.Folder name="rust_package" defaultOpen>
@@ -41,10 +41,10 @@ Publish to [crates.io](https://crates.io/) with:
 cargo publish --manifest-path rust_package/Cargo.toml
 ```
 
-If you prefer generating source files to embed in another Rust project, use the [rsSrc](/templates#rssrc) template:
+To generate source files for another Rust project instead, use the [rsSrc](/templates#rssrc) template:
 
 ```sh npm2yarn copy
-npx vovk generate --from rsSrc --out ./rust_src
+npm exec -- vovk generate --from rsSrc --out ./rust_src
 ```
 
 This generates:
@@ -60,7 +60,7 @@ This generates:
 
 ## Configuring the Rust Client
 
-You can [configure](/config) generation so the client is produced automatically by the default [generate](/generate) command (no flags) and during [vovk dev](/dev), which performs “hot generation” whenever the schema changes. Add the `rs` template to the [composed client](/composed) config:
+You can [configure](/config) the default [generate](/generate) command (without flags) to create the client. [vovk dev](/dev) creates it too, and creates it again on every schema change. Add the `rs` template to the [composed client](/composed) config:
 
 ```ts showLineNumbers copy filename="vovk.config.mjs"
 /** @type {import('vovk').VovkConfig} */
@@ -68,11 +68,21 @@ const config = {
   composedClient: {
     fromTemplates: ['ts', 'rs'], // keep the default "ts" template
   },
+  clientTemplateDefs: {
+    rs: {
+      extends: 'rs', // extends the built-in "rs" template
+      outputConfig: {
+        origin: 'https://example.com', // the server the Rust client calls
+      },
+    },
+  },
 };
 export default config;
 ```
 
-The [rs](/templates#rs) template (and others) has a default `outDir` (`./dist_rust`) for composed clients. Override it via [template definitions](/templates#defs):
+The Rust client calls an absolute URL, so it needs [`outputConfig.origin`](/config#outputconfig). Set it on the `rs` template, and the TypeScript client keeps its relative URLs. Without an origin, `vovk generate` warns, and every call needs its own `api_root`.
+
+Like other templates, the [rs](/templates#rs) template has a default `outDir` for composed clients: `./dist_rust`. Change it in the [template definitions](/templates#defs):
 
 ```ts showLineNumbers copy filename="vovk.config.mjs"
 /** @type {import('vovk').VovkConfig} */
@@ -94,11 +104,11 @@ export default config;
 
 ### JSON Endpoints
 
-The snippets below are adapted from a real example described on the [Hello World](/hello-world) page.
+The samples below are based on the example from the [Hello World](/hello-world) page.
 
 A controller like this:
 
-<Tabs items={['UserController.ts', 'UserService.ts', 'route.ts']}>
+<Tabs items={['user-controller.ts', 'user-service.ts', 'route.ts']}>
 <Tabs.Tab>
 ```ts showLineNumbers copy filename="src/modules/user/user-controller.ts" source="examples/hello-world"
 import { operation, post, prefix, procedure } from 'vovk';
@@ -227,7 +237,7 @@ export const { GET, POST, PATCH, PUT, HEAD, OPTIONS, DELETE } = initSegment({
 </Tabs.Tab>
 </Tabs>
 
-...emits a [Vovk.ts schema](/schema), which is then used to generate the Rust client, adding comments from the schema `description`, and choosing suitable types. For example, `age` is generated as `u8` due to `min`/`max` constraints.
+...emits a [Vovk.ts schema](/schema). The Rust client is generated from it. It adds comments from the schema `description` and picks fitting types: `age` becomes a `u8` because of its `min` and `max`.
 
 ```rs filename="./dist_rust/src/lib.rs"
 mod http_request;
@@ -375,17 +385,19 @@ pub mod user_rpc {
 }
 ```
 
-All RPC modules are generated in `lib.rs`, which contains RPC functions and the associated types. Nested structures are emitted as nested modules with corresponding `struct` definitions or types.
+All RPC modules are in `lib.rs`, with the RPC functions and their types. Nested structures become nested modules with their `struct` definitions or types.
 
-Access nested structures via `_::`. For example, `body.profile` is `update_user_::body_::profile`. This syntax avoids name collisions and maps 1:1 to the schema structure.
+An RPC module is a `mod`, and each of its procedures is an `async fn`. Both are named in snake_case: `UserRPC.updateUser` is `user_rpc::update_user`, and its types are in the module `update_user_`. Each module names its functions in schema order. A name that is already taken gets the first free suffix, `_2`, `_3`, so `getUserByID` and `getUserById` give `get_user_by_id` and `get_user_by_id_2`. The module imports `http_request` and `http_request_stream`, so these names count as taken.
 
-Use `use` to import and rename structs to follow PascalCase:
+Reach nested structures with `_::`: `body.profile` is `update_user_::body_::profile`. This avoids name collisions and follows the schema's structure one to one.
+
+With `use`, you can import the structs under PascalCase names. The functions are `async`; this sample runs them on [tokio](https://tokio.rs/) (`cargo add tokio --features macros,rt-multi-thread`):
 
 ```rs
-use std::io::Write;
 use vovk_hello_world::user_rpc;
 
-pub fn main() {
+#[tokio::main]
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
   use user_rpc::update_user_::{
     body as Body,
     body_::profile as Profile,
@@ -414,22 +426,29 @@ pub fn main() {
   ).await?;
 
   println!("user_rpc.update_user response: {:?}", update_user_response);
+  Ok(())
 }
 ```
 
-Under the hood, it uses [reqwest](https://docs.rs/reqwest/latest/reqwest/) for HTTP, [jsonschema](https://docs.rs/jsonschema/latest/jsonschema/) for client-side validation, and other common crates. Client-side validation reads a schema as JSON Schema 2020-12, or draft 7 when the schema declares it, and checks formats such as `email` and `uuid`. The crate needs Rust 1.85 or newer.
+The client uses [reqwest](https://docs.rs/reqwest/latest/reqwest/) for HTTP, [jsonschema](https://docs.rs/jsonschema/latest/jsonschema/) for client-side validation, and other common crates. Client-side validation reads a schema as JSON Schema 2020-12, or as draft 7 when the schema declares it. It checks formats such as `email` and `uuid`.
 
-A failed call returns an `HttpException`. Its `status_code()` is the response status, or 0 when the call failed before a response came, for example on client-side validation; `message()` and `cause()` hold the error the server sent.
+The crate builds on Rust 1.86. Its `Cargo.toml` sets `rust-version = "1.85"` and resolver 3, so Cargo locks dependency versions that support Rust 1.85. A project that depends on the crate resolves dependencies with its own resolver. With edition 2024, or with `resolver = "3"` (Cargo 1.84+), it builds on Rust 1.86. An edition 2021 project without that resolver gets the newest versions, which need Rust 1.88.
+
+For a procedure that takes `multipart/form-data`, the body is a [`reqwest::multipart::Form`](https://docs.rs/reqwest/latest/reqwest/multipart/struct.Form.html). Field names go out as written, in quotes, as browsers send them. Give files names without `"`, `\` or line breaks. reqwest escapes these with a backslash, which the server keeps in the name, and a `"` makes the form unreadable.
+
+A function without an output schema returns a `serde_json::Value`: the parsed JSON, or `null` for an empty body. A `text/*` response, or a response of any type with a charset, is a string, decoded as UTF-8 unless the charset names another encoding. Any other response, such as a file, is a string that holds its bytes in base64.
+
+A failed call returns an `HttpException`. Its `status_code()` is the response status, or 0 when the call failed before a response came, for example in client-side validation. `message()` and `cause()` hold the error the server sent. When no response came, or the response broke off, `source()` is the `reqwest::Error`, without the URL.
 
 ### JSON Lines Endpoints
 
-For continuous streaming with [JSON Lines](/jsonlines) endpoints, the client implements the `Iterator` trait to return an async-capable iterator for streamed data.
+For [JSON Lines](/jsonlines) endpoints, the async function resolves to a [`futures::Stream`](https://docs.rs/futures/latest/futures/stream/trait.Stream.html) of `Result<T, HttpException>` items. Read it with `StreamExt::next` from the [futures](https://docs.rs/futures) crate.
 
 A JSON Lines endpoint without an `iteration` schema gets a regular function instead: it reads the whole response and returns the items as a JSON array.
 
 A controller like this:
 
-<Tabs items={['StreamController.ts', 'StreamService.ts', 'route.ts']}>
+<Tabs items={['stream-controller.ts', 'stream-service.ts', 'route.ts']}>
 <Tabs.Tab>
 ```ts showLineNumbers copy filename="src/modules/stream/stream-controller.ts" source="examples/hello-world"
 import { get, operation, prefix, procedure } from 'vovk';
@@ -567,12 +586,12 @@ pub mod stream_rpc {
 }
 ```
 
-Usage:
+Usage, with the futures crate (`cargo add futures`):
 
 ```rs
 use futures::StreamExt;
 use std::io::{stdout, Write};
-use vovk_hello_world_local::open_api_rpc::stream_rpc;
+use vovk_hello_world::stream_rpc;
 
 pub async fn consume_stream() -> Result<(), Box<dyn std::error::Error>> {
   let mut stream = stream_rpc::stream_tokens((), (), (), None, None, false).await?;

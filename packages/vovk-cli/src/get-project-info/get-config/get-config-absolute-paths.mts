@@ -28,7 +28,7 @@ export async function getConfigAbsolutePaths({
       await fs.stat(filePath);
       configs.push(filePath);
     } catch {
-      // Empty
+      // not there
     }
   }
 

@@ -1,4 +1,4 @@
-import { cookies } from 'next/headers';
+import { headers } from 'next/headers';
 import { get, prefix } from 'vovk';
 
 @prefix()
@@ -7,7 +7,7 @@ export default class CustomerProController {
   static async getMessage() {
     const subdomains = Object.fromEntries(
       new URLSearchParams(
-        (await cookies()).get('x-subdomains')?.value ?? '',
+        (await headers()).get('x-subdomains') ?? '',
       ).entries(),
     );
     return { message: 'Hello from the Customer Pro API', subdomains };

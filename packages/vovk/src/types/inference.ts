@@ -61,17 +61,20 @@ export type VovkIteration<T> = T extends {
   ? I
   : unknown;
 
-export type VovkClientBody<T extends (opts: unknown) => unknown> = Parameters<T>[0] extends { body: infer B }
-  ? Exclude<B, Blob>
+// an RPC method's input key, which is optional when the server accepts a request without it
+type ClientInputKey<T extends (opts: unknown) => unknown, K extends InputKey> = K extends keyof NonNullable<
+  Parameters<T>[0]
+>
+  ? NonNullable<Parameters<T>[0]> extends { [key in K]?: infer V }
+    ? Exclude<V, undefined>
+    : undefined
   : undefined;
 
-export type VovkClientQuery<T extends (opts: unknown) => unknown> = Parameters<T>[0] extends { query: infer Q }
-  ? Q
-  : undefined;
+export type VovkClientBody<T extends (opts: unknown) => unknown> = Exclude<ClientInputKey<T, 'body'>, Blob>;
 
-export type VovkClientParams<T extends (opts: unknown) => unknown> = Parameters<T>[0] extends { params: infer P }
-  ? P
-  : undefined;
+export type VovkClientQuery<T extends (opts: unknown) => unknown> = ClientInputKey<T, 'query'>;
+
+export type VovkClientParams<T extends (opts: unknown) => unknown> = ClientInputKey<T, 'params'>;
 
 export type VovkClientYieldType<T extends (...args: KnownAny[]) => unknown> = T extends (
   ...args: KnownAny[]
@@ -139,6 +142,11 @@ type _VovkInputRaw<T extends (...args: KnownAny[]) => unknown> = {
   body: VovkBody<T>;
 };
 
+type InputKey = 'body' | 'query' | 'params';
+
+// the input keys an RPC method takes, optional where they are optional in the call
+type _ClientInput<T> = { [K in keyof T]: K extends 'body' ? Exclude<T[K], Blob> : T[K] };
+
 type _OmitUndefinedOrUnknown<T> = {
   [K in keyof T as unknown extends T[K] ? never : [T[K]] extends [undefined] ? never : K]: T[K];
 };
@@ -153,7 +161,9 @@ type _OmitUndefinedOrUnknown<T> = {
  * // { params: { id: string }; query: { search: string }; body: { name: string } }
  * ```
  */
-export type VovkInput<T extends (...args: KnownAny[]) => unknown> = _OmitUndefinedOrUnknown<_VovkInputRaw<T>>;
+export type VovkInput<T extends (...args: KnownAny[]) => unknown> = T extends { isRPC: true }
+  ? _ClientInput<Pick<NonNullable<Parameters<T>[0]>, Extract<keyof NonNullable<Parameters<T>[0]>, InputKey>>>
+  : _OmitUndefinedOrUnknown<_VovkInputRaw<T>>;
 
 /**
  * Utility type to extract return type from both controller and client methods

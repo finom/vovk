@@ -2,12 +2,13 @@ import { deepStrictEqual, ok, rejects, strictEqual, throws } from 'node:assert';
 import { describe, it } from 'node:test';
 import { setFlagsFromString } from 'node:v8';
 import { runInNewContext } from 'node:vm';
-import { forbidden, redirect, unauthorized } from 'next/dist/client/components/navigation.react-server.js';
+import { toStandardJsonSchema } from '@valibot/to-json-schema';
+import { forbidden, notFound, redirect, unauthorized } from 'next/dist/client/components/navigation.react-server.js';
+import * as v from 'valibot';
 import {
   cloneControllerMetadata,
   controllersToStaticParams,
   createDecorator,
-  decorate,
   del,
   get,
   HttpException,
@@ -21,6 +22,7 @@ import {
   procedure,
   type VovkRequest,
 } from 'vovk';
+import { createRPC } from 'vovk/create-rpc';
 import { z } from 'zod';
 
 type Handlers = ReturnType<typeof initSegment>;
@@ -166,7 +168,25 @@ describe('Runtime sweep', () => {
       static throwString() {
         throw 'Plain string';
       }
+
+      static async *streamUnknownStatus() {
+        yield { n: 1 };
+        throw new HttpException(999 as HttpStatus, 'Unknown status');
+      }
+
+      static async *streamInformationalStatus() {
+        yield { n: 1 };
+        throw new HttpException(HttpStatus.CONTINUE, 'Informational status');
+      }
+
+      static async *streamNullStatus() {
+        yield { n: 1 };
+        throw new HttpException(HttpStatus.NULL, 'No response');
+      }
     }
+    get('stream-unknown-status')(FailureController, 'streamUnknownStatus');
+    get('stream-informational-status')(FailureController, 'streamInformationalStatus');
+    get('stream-null-status')(FailureController, 'streamNullStatus');
     get('big-int', { cors: true })(FailureController, 'bigInt');
     get('big-int-cause', { cors: true })(FailureController, 'bigIntCause');
     get('not-modified')(FailureController, 'notModified');
@@ -239,6 +259,27 @@ describe('Runtime sweep', () => {
       deepStrictEqual(await informational.json(), { statusCode: 500, message: 'Informational status', isError: true });
     });
 
+    it('Sends 500 on the error line of an HttpException with a status outside 200-599, as a JSON response does', async () => {
+      const readLines = async (response: Response) =>
+        (await response.text())
+          .split('\n')
+          .filter(Boolean)
+          .map((line) => JSON.parse(line));
+
+      deepStrictEqual(await readLines(await call(handlers, 'GET', 'stream-unknown-status')), [
+        { n: 1 },
+        { isError: true, reason: 'Unknown status', statusCode: 500 },
+      ]);
+      deepStrictEqual(await readLines(await call(handlers, 'GET', 'stream-informational-status')), [
+        { n: 1 },
+        { isError: true, reason: 'Informational status', statusCode: 500 },
+      ]);
+      deepStrictEqual(await readLines(await call(handlers, 'GET', 'stream-null-status')), [
+        { n: 1 },
+        { isError: true, reason: 'No response', statusCode: 500 },
+      ]);
+    });
+
     it('Sends a thrown value that is no Error as the message', async () => {
       const response = await call(handlers, 'GET', 'throw-string');
 
@@ -260,10 +301,22 @@ describe('Runtime sweep', () => {
       static moved() {
         redirect('/elsewhere');
       }
+
+      static async *streamMissing() {
+        yield { n: 1 };
+        notFound();
+      }
+
+      static async *streamDenied() {
+        yield { n: 1 };
+        forbidden();
+      }
     }
     get('denied')(NavigationController, 'denied');
     get('unauthenticated')(NavigationController, 'unauthenticated');
     get('moved')(NavigationController, 'moved');
+    get('stream-missing')(NavigationController, 'streamMissing');
+    get('stream-denied')(NavigationController, 'streamDenied');
     const handlers = initSegment({ segmentName: 'navigation', controllers: { NavigationController } });
 
     it('Rethrows forbidden(), unauthorized() and redirect() for Next.js to answer', async () => {
@@ -274,6 +327,28 @@ describe('Runtime sweep', () => {
       await rejects(call(handlers, 'GET', 'moved'), (error: { digest?: string }) =>
         Boolean(error.digest?.startsWith('NEXT_REDIRECT'))
       );
+    });
+
+    it('Sends the status of notFound() and forbidden() thrown mid stream on the error line', async () => {
+      process.env.__NEXT_EXPERIMENTAL_AUTH_INTERRUPTS = 'true';
+      const readLines = async (response: Response) =>
+        (await response.text())
+          .split('\n')
+          .filter(Boolean)
+          .map((line) => JSON.parse(line));
+
+      for (const nodeEnv of ['production', 'development']) {
+        await withNodeEnv(nodeEnv, async () => {
+          // the stream has started, so Next.js can't answer: the status goes on the error line, as an HttpException's
+          const missing = await readLines(await call(handlers, 'GET', 'stream-missing'));
+          const denied = await readLines(await call(handlers, 'GET', 'stream-denied'));
+
+          deepStrictEqual(missing[0], { n: 1 });
+          strictEqual(missing[1]?.isError, true, nodeEnv);
+          strictEqual(missing[1]?.statusCode, 404, `${nodeEnv}: ${JSON.stringify(missing[1])}`);
+          strictEqual(denied[1]?.statusCode, 403, `${nodeEnv}: ${JSON.stringify(denied[1])}`);
+        });
+      }
     });
   });
 
@@ -325,6 +400,38 @@ describe('Runtime sweep', () => {
       throws(() => get('users')(DuplicateController, 'listAgain'), {
         message: "Duplicate route GET 'users' in DuplicateController: list and listAgain",
       });
+    });
+
+    it('Has no decorate() export', async () => {
+      const vovk = await import('vovk');
+
+      strictEqual('decorate' in vovk, false);
+    });
+
+    it('Routes by @prefix() and ignores a static prefix field', async () => {
+      class StaticPrefixController {
+        static prefix = 'ignored';
+
+        static list() {
+          return 'static';
+        }
+      }
+      get('list')(StaticPrefixController, 'list');
+      class DecoratedPrefixController {
+        static list() {
+          return 'decorated';
+        }
+      }
+      get('list')(DecoratedPrefixController, 'list');
+      prefix('decorated')(DecoratedPrefixController);
+      const handlers = initSegment({
+        segmentName: 'static-prefix-field',
+        controllers: { StaticPrefixRPC: StaticPrefixController, DecoratedPrefixRPC: DecoratedPrefixController },
+      });
+
+      strictEqual((await call(handlers, 'GET', 'list')).status, 200);
+      strictEqual((await call(handlers, 'GET', 'ignored/list')).status, 404);
+      deepStrictEqual(await (await call(handlers, 'GET', 'decorated/list')).json(), 'decorated');
     });
 
     it('Answers a path two controllers of a segment declare with a JSON error and calls onError', async () => {
@@ -444,16 +551,25 @@ describe('Runtime sweep', () => {
       deepStrictEqual(await response.json(), { 'user-id': '42' });
     });
 
-    it('Serves the routes a decorate() controller inherits over two levels in any controller order', async () => {
+    it('Serves the routes a controller inherits over two levels in any controller order', async () => {
       class GrandparentController {
-        static a = decorate(get('a')).handle(async () => 'a');
+        static a() {
+          return 'a';
+        }
       }
+      get('a')(GrandparentController, 'a');
       class ParentController extends GrandparentController {
-        static b = decorate(get('b')).handle(async () => 'b');
+        static b() {
+          return 'b';
+        }
       }
+      get('b')(ParentController, 'b');
       class ChildController extends ParentController {
-        static c = decorate(get('c')).handle(async () => 'c');
+        static c() {
+          return 'c';
+        }
       }
+      get('c')(ChildController, 'c');
       prefix('child')(ChildController);
       // the child comes first
       const handlers = initSegment({
@@ -789,7 +905,31 @@ describe('Runtime sweep', () => {
     const errors: string[] = [];
     let isClosedAfterClose = false;
     let finalized = false;
+    let checks = 0;
+    const numericItem = z.object({ n: z.string().transform(Number) });
+    const { validate } = numericItem['~standard'];
+    // the schema above, counting its checks
+    const countedNumericItem: typeof numericItem = Object.create(numericItem, {
+      '~standard': {
+        value: {
+          ...numericItem['~standard'],
+          validate: (value: unknown) => {
+            checks++;
+            return validate(value);
+          },
+        },
+      },
+    });
+    async function* stringItems() {
+      for (let i = 0; i < 3; i++) yield { n: String(i) };
+    }
     class ResponderController {
+      static transformFirst = procedure({ iteration: countedNumericItem }).handle(stringItems);
+
+      static transformEach = procedure({ iteration: countedNumericItem, validateEachIteration: true }).handle(
+        stringItems
+      );
+
       static throwAfterSend(req: VovkRequest) {
         const responder = new JSONLinesResponder<{ n: number | string }>(req);
         void responder.send({ n: 1 });
@@ -814,6 +954,25 @@ describe('Runtime sweep', () => {
           await responder.send({ n: 2 });
           await responder.close();
         })();
+        return responder;
+      });
+
+      // rows that are ready at once go out before the handler returns the responder
+      static sendBeforeReturn = procedure({
+        iteration: z.object({ name: z.string() }),
+        validateEachIteration: true,
+      }).handle(async (req) => {
+        const responder = new JSONLinesResponder<{ name: string }>(req);
+        await responder.send({ name: 'ann', passwordHash: 'h1' } as { name: string });
+        await responder.send({ name: 'bob', passwordHash: 'h2' } as { name: string });
+        void responder.close();
+        return responder;
+      });
+
+      static invalidBeforeReturn = procedure({ iteration: z.object({ n: z.number() }) }).handle(async (req) => {
+        const responder = new JSONLinesResponder<{ n: number }>(req);
+        await responder.send({ n: 'one' } as unknown as { n: number });
+        void responder.close();
         return responder;
       });
 
@@ -843,9 +1002,13 @@ describe('Runtime sweep', () => {
     get('throw-after-send')(ResponderController, 'throwAfterSend');
     get('send-after-close')(ResponderController, 'sendAfterClose');
     get('invalid-item')(ResponderController, 'invalidItem');
+    get('send-before-return')(ResponderController, 'sendBeforeReturn');
+    get('invalid-before-return')(ResponderController, 'invalidBeforeReturn');
     get('big-int-item')(ResponderController, 'bigIntItem');
     get('undefined-item')(ResponderController, 'undefinedItem');
     get('throw-cycle')(ResponderController, 'throwCycle');
+    get('transform-first')(ResponderController, 'transformFirst');
+    get('transform-each')(ResponderController, 'transformEach');
     const handlers = initSegment({
       segmentName: 'responder',
       controllers: { ResponderController },
@@ -880,6 +1043,39 @@ describe('Runtime sweep', () => {
       strictEqual(lines[0].isError, true);
       ok(lines[0].reason.startsWith('Validation failed. Invalid iteration #0'), lines[0].reason);
       deepStrictEqual(errors, [lines[0].reason]);
+    });
+
+    it('Validates and strips the lines sent before the handler returns the responder', async () => {
+      const lines = await readLines(await call(handlers, 'GET', 'send-before-return'));
+
+      deepStrictEqual(lines, [{ name: 'ann' }, { name: 'bob' }]);
+    });
+
+    it('Ends the stream and calls onError when a line sent before the handler returns fails validation', async () => {
+      errors.length = 0;
+      const lines = await readLines(await call(handlers, 'GET', 'invalid-before-return'));
+
+      strictEqual(lines.length, 1, JSON.stringify(lines));
+      strictEqual(lines[0].isError, true, JSON.stringify(lines));
+      ok(lines[0].reason.startsWith('Validation failed. Invalid iteration #0'), lines[0].reason);
+      deepStrictEqual(errors, [lines[0].reason]);
+    });
+
+    it('Checks only the first item a generator yields, once, and sends it transformed', async () => {
+      checks = 0;
+      const lines = await readLines(await call(handlers, 'GET', 'transform-first'));
+
+      deepStrictEqual(lines[0], { n: 0 });
+      strictEqual(lines.length, 3, JSON.stringify(lines));
+      strictEqual(checks, 1);
+    });
+
+    it('Checks each item a generator yields once with validateEachIteration, and sends them transformed', async () => {
+      checks = 0;
+      const lines = await readLines(await call(handlers, 'GET', 'transform-each'));
+
+      deepStrictEqual(lines, [{ n: 0 }, { n: 1 }, { n: 2 }]);
+      strictEqual(checks, 3);
     });
 
     it('Ends the stream, calls onError and returns the generator when an item fails to serialize', async () => {
@@ -1003,6 +1199,40 @@ describe('Runtime sweep', () => {
       strictEqual(cause.issues.length, 20);
     });
 
+    it('Keeps the 400 of a Valibot schema small for a large invalid body', async () => {
+      class ValibotTagController {
+        static tags = procedure({ body: toStandardJsonSchema(v.object({ tags: v.array(v.string()) })) }).handle(
+          async () => ({ ok: true })
+        );
+      }
+      post('tags')(ValibotTagController, 'tags');
+      const handlers = initSegment({ segmentName: 'valibot-tags', controllers: { ValibotTagController } });
+      const body = JSON.stringify({ tags: new Array(100_000).fill(0) });
+
+      const response = await call(handlers, 'POST', 'tags', { body, headers: { 'content-type': 'application/json' } });
+      const text = await response.text();
+
+      strictEqual(response.status, 400);
+      // a Valibot issue and each item of its path hold the input they were found in
+      ok(text.length < 10_000, `${text.length} bytes answer a ${body.length} byte body`);
+      deepStrictEqual(JSON.parse(text).cause.issues[0].path, ['tags', 0]);
+    });
+
+    it('Answers 400 for an issue that holds a BigInt', async () => {
+      class LimitController {
+        static limit = procedure({ query: z.object({ n: z.coerce.bigint().max(BigInt(10)) }) }).handle(async () => ({
+          ok: true,
+        }));
+      }
+      get('limit')(LimitController, 'limit');
+      const handlers = initSegment({ segmentName: 'bigint-limit', controllers: { LimitController } });
+
+      const response = await call(handlers, 'GET', 'limit?n=20');
+
+      strictEqual(response.status, 400);
+      deepStrictEqual((await response.json()).cause.issues[0].path, ['n']);
+    });
+
     it('Validates a body that a decorator and the segment onBefore read first', async () => {
       const ownerGuard = createDecorator(async (req: VovkRequest<{ ownerId: string }>, next) => {
         const { ownerId } = await req.vovk.body();
@@ -1036,6 +1266,45 @@ describe('Runtime sweep', () => {
       deepStrictEqual(bodiesBefore, [{ ownerId: 'me', title: 'Hello' }]);
     });
 
+    it('Lets a decorator copy a request whose body was validated, to forward or log it', async () => {
+      const forward = createDecorator(async (req, next) => {
+        const result = await next();
+        const upstream = 'http://upstream.example/notes';
+        return {
+          result,
+          cloned: await req.clone().text(),
+          copied: await new Request(upstream, req).text(),
+          // as fetch(upstream, init) builds its request
+          forwarded: await new Request(upstream, {
+            method: req.method,
+            headers: req.headers,
+            body: req.body,
+            duplex: 'half',
+          } as RequestInit).text(),
+        };
+      });
+      class ForwardController {
+        static create = procedure({ body: z.object({ title: z.string() }) }).handle(async (req) => req.vovk.body());
+      }
+      forward()(ForwardController, 'create');
+      post('create')(ForwardController, 'create');
+      const handlers = initSegment({ segmentName: 'forward', controllers: { ForwardController } });
+      const text = JSON.stringify({ title: 'Hello' });
+
+      const response = await call(handlers, 'POST', 'create', {
+        body: text,
+        headers: { 'content-type': 'application/json' },
+      });
+
+      strictEqual(response.status, 200);
+      deepStrictEqual(await response.json(), {
+        result: { title: 'Hello' },
+        cloned: text,
+        copied: text,
+        forwarded: text,
+      });
+    });
+
     it('Validates a missing body as undefined, so an optional body can be left out', async () => {
       class DraftController {
         static optional = procedure({ body: z.object({ title: z.string() }).optional() }).handle(async (req) => ({
@@ -1059,6 +1328,124 @@ describe('Runtime sweep', () => {
         (await required.json()).message,
         'Validation failed. Invalid body: Invalid input: expected object, received undefined'
       );
+    });
+
+    it('Validates an empty body with a JSON content type as undefined, and keeps an empty text or file', async () => {
+      class EmptyBodyController {
+        static optional = procedure({ body: z.object({ title: z.string() }).optional() }).handle(async (req) => ({
+          body: (await req.vovk.body()) ?? 'none',
+        }));
+
+        static required = procedure({ body: z.object({ title: z.string() }) }).handle(async () => ({ ok: true }));
+
+        static text = procedure({ contentType: 'text/plain', body: z.string() }).handle(async (req) => ({
+          body: await req.vovk.body(),
+        }));
+
+        static file = procedure({ contentType: 'application/octet-stream', body: z.file() }).handle(async (req) => ({
+          size: (await req.vovk.body()).size,
+        }));
+      }
+      post('optional')(EmptyBodyController, 'optional');
+      post('required')(EmptyBodyController, 'required');
+      post('text')(EmptyBodyController, 'text');
+      post('file')(EmptyBodyController, 'file');
+      const handlers = initSegment({ segmentName: 'empty-bodies', controllers: { EmptyBodyController } });
+      // Next.js gives a route handler a body stream for every POST, an empty one when the client sends nothing
+      const postEmpty = (path: string, headers: Record<string, string>) =>
+        call(handlers, 'POST', path, {
+          body: new ReadableStream({ start: (controller) => controller.close() }),
+          headers,
+          duplex: 'half',
+        } as RequestInit);
+
+      // an empty text and an empty file are bodies
+      deepStrictEqual(await (await postEmpty('text', { 'content-type': 'text/plain', 'content-length': '0' })).json(), {
+        body: '',
+      });
+      deepStrictEqual(
+        await (await postEmpty('file', { 'content-type': 'application/octet-stream', 'content-length': '0' })).json(),
+        { size: 0 }
+      );
+
+      // fetch() sends content-length: 0 for a call without a body, curl -X POST sends no length
+      const jsonHeaders: Record<string, string>[] = [
+        { 'content-type': 'application/json', 'content-length': '0' },
+        { 'content-type': 'application/json' },
+      ];
+      for (const headers of jsonHeaders) {
+        const optional = await postEmpty('optional', headers);
+        const required = await postEmpty('required', headers);
+
+        deepStrictEqual(await optional.json(), { body: 'none' }, JSON.stringify(headers));
+        strictEqual(optional.status, 200);
+        strictEqual(
+          (await required.json()).message,
+          'Validation failed. Invalid body: Invalid input: expected object, received undefined',
+          JSON.stringify(headers)
+        );
+      }
+    });
+
+    it('Streams the items of an iteration whose server-side validation is off, with validateEachIteration set', async () => {
+      const iteration = z.object({ n: z.number() });
+      class UncheckedController {
+        static all = procedure({ iteration, validateEachIteration: true, disableServerSideValidation: true }).handle(
+          async function* () {
+            yield { n: 1 };
+          }
+        );
+
+        static iteration = procedure({
+          iteration,
+          validateEachIteration: true,
+          disableServerSideValidation: ['iteration'],
+        }).handle(async function* () {
+          yield { n: 1 };
+        });
+      }
+      get('all')(UncheckedController, 'all');
+      get('iteration')(UncheckedController, 'iteration');
+      const handlers = initSegment({ segmentName: 'unchecked', controllers: { UncheckedController } });
+
+      for (const path of ['all', 'iteration']) {
+        const response = await call(handlers, 'GET', path);
+
+        strictEqual(response.status, 200, path);
+        strictEqual(await response.text(), '{"n":1}\n', path);
+      }
+    });
+
+    it('Refuses output and iteration together before any handler runs', () => {
+      const item = z.object({ n: z.number() });
+
+      throws(() => procedure({ output: item, iteration: item }), {
+        message: "Output and iteration are mutually exclusive. You can't use them together.",
+      });
+    });
+
+    it('Answers an undefined return when the output schema takes undefined', async () => {
+      class MaybeController {
+        static maybe = procedure({ output: z.object({ n: z.number() }).optional() }).handle(async () => undefined);
+
+        static missing = procedure({ output: z.object({ n: z.number() }) }).handle(
+          async () => undefined as unknown as { n: number }
+        );
+      }
+      get('maybe')(MaybeController, 'maybe');
+      get('missing')(MaybeController, 'missing');
+      const handlers = initSegment({ segmentName: 'maybe', controllers: { MaybeController } });
+
+      const missing = await call(handlers, 'GET', 'missing');
+      const maybe = await call(handlers, 'GET', 'maybe');
+
+      strictEqual(missing.status, 500);
+      strictEqual(
+        (await missing.json()).message,
+        'Output is required. You probably forgot to return something from your handler.'
+      );
+      deepStrictEqual(await maybe.json(), null);
+      strictEqual(maybe.status, 200);
     });
 
     it('Validates the items of a sync generator', async () => {
@@ -1146,6 +1533,119 @@ describe('Runtime sweep', () => {
     });
   });
 
+  // a client sends a body as the content type the schema declares for it, which a hidden body schema must keep
+  describe('Content types of a hidden body schema', () => {
+    const defineController = (skipSchemaEmission?: ['body']) => {
+      class ImportController {
+        static csv = procedure({ contentType: 'text/csv', body: z.string(), skipSchemaEmission }).handle(
+          async (req) => ({ rows: (await req.vovk.body()).split('\n').length })
+        );
+
+        static form = procedure({
+          contentType: 'multipart/form-data',
+          body: z.object({ name: z.string() }),
+          skipSchemaEmission,
+        }).handle(async (req) => req.vovk.body());
+
+        static pdf = procedure({ contentType: 'application/pdf', body: z.file(), skipSchemaEmission }).handle(
+          async (req) => ({ size: (await req.vovk.body()).size })
+        );
+      }
+      post('csv')(ImportController, 'csv');
+      post('form')(ImportController, 'form');
+      post('pdf')(ImportController, 'pdf');
+      return ImportController;
+    };
+
+    // the results of the calls of an RPC module built from the schema the segment serves, as the generated client is
+    const callThroughClient = async (
+      segmentName: string,
+      ImportController: ReturnType<typeof defineController>,
+      exposeValidation?: boolean
+    ) => {
+      let handlers = {} as Handlers;
+      await withNodeEnv('development', async () => {
+        handlers = initSegment({ segmentName, controllers: { ImportRPC: ImportController }, exposeValidation });
+      });
+      const { schema } = await (await call(handlers, 'GET', '_schema_')).json();
+      // the body schema itself stays hidden
+      for (const { validation } of Object.values<{ validation?: { body?: object } }>(
+        schema.controllers.ImportRPC.handlers
+      )) {
+        ok(!validation?.body || !('type' in validation.body));
+      }
+      const ImportRPC = createRPC<typeof ImportController>(
+        { segments: { [segmentName]: schema } },
+        segmentName,
+        'ImportRPC',
+        undefined,
+        { apiRoot: 'http://localhost/api' }
+      );
+      const original = globalThis.fetch;
+      // routed as Next.js routes app/api/<segmentName>/[[...vovk]]/route.ts
+      globalThis.fetch = (async (url: string, init: RequestInit) => {
+        const req = new Request(url, init);
+        const path = new URL(req.url).pathname.split('/').slice(3);
+        return handlers[req.method as keyof Handlers](req, { params: Promise.resolve({ vovk: path }) });
+      }) as typeof fetch;
+      const outcome = (promise: Promise<unknown>) =>
+        promise.catch((error: HttpException) => `${error.statusCode} ${error.message}`);
+      try {
+        return await Promise.all([
+          outcome(ImportRPC.csv({ body: 'a,b\nc,d' })),
+          outcome(ImportRPC.form({ body: { name: 'me' } })),
+          outcome(ImportRPC.pdf({ body: new File(['%PDF'], 'report.pdf') })),
+        ]);
+      } finally {
+        globalThis.fetch = original;
+      }
+    };
+    const results = [{ rows: 2 }, { name: 'me' }, { size: 4 }];
+
+    it('Reach the client when exposeValidation is false', async () => {
+      deepStrictEqual(await callThroughClient('hidden-validation', defineController(), false), results);
+    });
+
+    it('Reach the client when skipSchemaEmission skips the body', async () => {
+      deepStrictEqual(await callThroughClient('skipped-body', defineController(['body'])), results);
+    });
+
+    it('Leave out the content type of a body whose JSON Schema cannot be built when exposeValidation is false', async () => {
+      const throwConversion = (): Record<string, unknown> => {
+        throw new Error('No JSON Schema for this type');
+      };
+      // a Standard Schema whose JSON Schema conversion throws
+      const opaque = {
+        '~standard': {
+          version: 1 as const,
+          vendor: 'opaque',
+          validate: (value: unknown) => ({ value }),
+          jsonSchema: { input: throwConversion, output: throwConversion },
+        },
+      };
+      class OpaqueController {
+        static upload = procedure({ contentType: 'text/csv', body: opaque }).handle(async () => ({ ok: true }));
+      }
+      post('upload')(OpaqueController, 'upload');
+      let handlers = {} as Handlers;
+      await withNodeEnv('development', async () => {
+        handlers = initSegment({
+          segmentName: 'opaque-body',
+          controllers: { OpaqueRPC: OpaqueController },
+          exposeValidation: false,
+        });
+      });
+
+      const response = await call(handlers, 'GET', '_schema_');
+
+      strictEqual(response.status, 200);
+      deepStrictEqual((await response.json()).schema.controllers.OpaqueRPC.handlers.upload, {
+        path: 'upload',
+        httpMethod: 'POST',
+      });
+    });
+  });
+
   describe('Query', () => {
     class SearchController {
       static search(req: VovkRequest) {
@@ -1184,6 +1684,12 @@ describe('Runtime sweep', () => {
         filter: { status: ['open', 'closed'] },
         page: ['2'],
       });
+    });
+
+    it('Keeps a plain value given before the same key with []', async () => {
+      const response = await call(handlers, 'GET', 'search?x=1&x[]=2&y=1&y[]=2&y[]=3');
+
+      deepStrictEqual(await response.json(), { x: ['1', '2'], y: ['1', '2', '3'] });
     });
 
     it('Appends [] after the highest index', async () => {
@@ -1232,6 +1738,34 @@ describe('Runtime sweep', () => {
       });
       deepStrictEqual(errors, ['HttpException']);
     });
+
+    it('Reads a lone value as a one-item array where the query schema takes an array', async () => {
+      class TagSearchController {
+        static search = procedure({
+          query: z.object({ tags: z.array(z.string()), filter: z.object({ ids: z.array(z.string()) }).optional() }),
+        }).handle(async (req) => req.vovk.query());
+      }
+      get('search')(TagSearchController, 'search');
+      const handlers = initSegment({ segmentName: 'tag-search', controllers: { TagSearchController } });
+
+      // the form style the OpenAPI document gives an array param: tags=a&tags=b, and tags=a for one item
+      const response = await call(handlers, 'GET', 'search?tags=only');
+      const nested = await call(handlers, 'GET', 'search?tags=a&tags=b&filter[ids]=1');
+
+      deepStrictEqual(await response.json(), { tags: ['only'] });
+      strictEqual(response.status, 200);
+      deepStrictEqual(await nested.json(), { tags: ['a', 'b'], filter: { ids: ['1'] } });
+    });
+
+    it('Reads a lone value as a one-item array in fn() and leaves the query it was given as it is', async () => {
+      const search = procedure({
+        query: z.object({ tags: z.array(z.string()), filter: z.object({ ids: z.array(z.string()) }).optional() }),
+      }).handle(async (req) => req.vovk.query());
+      const query = { tags: 'only', filter: { ids: '1' } };
+
+      deepStrictEqual(await search.fn({ query: query as never }), { tags: ['only'], filter: { ids: ['1'] } });
+      deepStrictEqual(query, { tags: 'only', filter: { ids: '1' } });
+    });
   });
 
   describe('controllersToStaticParams', () => {
@@ -1274,6 +1808,140 @@ describe('Runtime sweep', () => {
 
       strictEqual(result.action, 'rewrite');
       strictEqual(result.destination, 'https://admin.example.com/admin/settings/users?tab=2');
+    });
+  });
+
+  // copying the array on every repeat of a field name is quadratic: a few hundred KB of `a&a&...` would block the
+  // server for seconds before validation, on any endpoint that reads a form body
+  describe('Form body with a repeated field name', () => {
+    class RepeatedFieldController {
+      static form = procedure({
+        contentType: 'application/x-www-form-urlencoded',
+        body: z.object({ name: z.string() }),
+      }).handle(async (req: VovkRequest<{ name: string }>) => ({ name: (await req.vovk.body()).name }));
+    }
+    post('form')(RepeatedFieldController, 'form');
+    const handlers = initSegment({ segmentName: 'repeated-field', controllers: { RepeatedFieldController } });
+
+    it('parses a body that repeats one field name 100000 times in linear time', async () => {
+      const body = `${'a&'.repeat(100_000)}name=x`;
+      const started = Date.now();
+      const response = await call(handlers, 'POST', 'form', {
+        headers: { 'content-type': 'application/x-www-form-urlencoded' },
+        body,
+      });
+      const elapsed = Date.now() - started;
+
+      strictEqual(response.status, 200);
+      deepStrictEqual(await response.json(), { name: 'x' });
+      // the same byte count with distinct names parses in tens of ms; the quadratic path takes several seconds
+      ok(elapsed < 3000, `parsing ${Math.round(body.length / 1024)} KB of repeated keys took ${elapsed} ms`);
+    });
+  });
+
+  describe('Decorators without experimentalDecorators', () => {
+    // without the flag, SWC (Turbopack) applies 2018-09 decorators: each gets a descriptor, the class reaches a finisher
+    type Descriptor2018 = { finisher?: (klass: unknown) => void };
+    const decorate2018 = (decorator: unknown, descriptor: object) =>
+      ((decorator as (descriptor: object) => Descriptor2018 | undefined)(descriptor) ?? descriptor) as Descriptor2018;
+
+    it('Applies @prefix() given a class descriptor', async () => {
+      class HelloController {
+        static getHello() {
+          return { greeting: 'Hello, World!' };
+        }
+      }
+      const results = [
+        decorate2018(get('greeting'), {
+          kind: 'method',
+          key: 'getHello',
+          placement: 'static',
+          descriptor: Object.getOwnPropertyDescriptor(HelloController, 'getHello'),
+        }),
+        decorate2018(prefix('greetings'), { kind: 'class', elements: [] }),
+      ];
+      for (const { finisher } of results) finisher?.(HelloController);
+      const handlers = initSegment({ segmentName: 'decorators-2018', controllers: { HelloRPC: HelloController } });
+
+      const response = await call(handlers, 'GET', 'greetings/greeting');
+
+      strictEqual(response.status, 200);
+      deepStrictEqual(await response.json(), { greeting: 'Hello, World!' });
+    });
+
+    it('Applies @cloneControllerMetadata() given a class descriptor', async () => {
+      class ParentController {
+        static getA() {
+          return { from: 'parent' };
+        }
+      }
+      decorate2018(get('a'), {
+        kind: 'method',
+        key: 'getA',
+        placement: 'static',
+        descriptor: Object.getOwnPropertyDescriptor(ParentController, 'getA'),
+      }).finisher?.(ParentController);
+      class ChildController extends ParentController {
+        static getB() {
+          return { from: 'child' };
+        }
+      }
+      // the member finishers run before the class ones, as in the 2018-09 helper
+      const results = [
+        decorate2018(get('b'), {
+          kind: 'method',
+          key: 'getB',
+          placement: 'static',
+          descriptor: Object.getOwnPropertyDescriptor(ChildController, 'getB'),
+        }),
+        decorate2018(cloneControllerMetadata(), { kind: 'class', elements: [] }),
+      ];
+      for (const { finisher } of results) finisher?.(ChildController);
+      // the parent is in no segment: only the clone serves its route
+      const handlers = initSegment({
+        segmentName: 'decorators-2018-clone',
+        controllers: { ChildRPC: ChildController },
+      });
+
+      const inherited = await call(handlers, 'GET', 'a');
+      const own = await call(handlers, 'GET', 'b');
+
+      strictEqual(inherited.status, 200);
+      deepStrictEqual(await inherited.json(), { from: 'parent' });
+      strictEqual(own.status, 200);
+      deepStrictEqual(await own.json(), { from: 'child' });
+    });
+  });
+
+  describe('Form data from another realm', () => {
+    it('Keeps an uploaded file the global File class does not recognize', async () => {
+      class UploadController {
+        static upload = procedure({ contentType: 'multipart/form-data' }).handle(async (req) => {
+          const { file } = (await req.vovk.body()) as { file: unknown };
+          return { type: typeof file, size: file instanceof Blob ? file.size : null };
+        });
+      }
+      post('upload')(UploadController, 'upload');
+      const handlers = initSegment({ segmentName: 'realm-upload', controllers: { UploadController } });
+      const form = new FormData();
+      form.append('file', new Blob(['hello']), 'hello.txt');
+      // the edge runtime of Next.js 15.0 hands out form files that are Blobs but not instances of its global File;
+      // newer undici builds parsed files with the global File, so this one builds real files and recognizes none
+      const { File: NativeFile } = globalThis;
+      function ForeignFile(...args: ConstructorParameters<typeof NativeFile>) {
+        return new NativeFile(...args);
+      }
+      Object.defineProperty(ForeignFile, Symbol.hasInstance, { value: () => false });
+      globalThis.File = ForeignFile as unknown as typeof NativeFile;
+
+      try {
+        const response = await call(handlers, 'POST', 'upload', { body: form });
+
+        strictEqual(response.status, 200);
+        deepStrictEqual(await response.json(), { type: 'object', size: 5 });
+      } finally {
+        globalThis.File = NativeFile;
+      }
     });
   });
 });

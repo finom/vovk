@@ -1,8 +1,8 @@
 # TypeScript Client Customization
 
-You can customize the generated TypeScript client by replacing imports of lower-level libraries. Do this via the `outputConfig.imports` object in the [config](/config) file, which can specify a [fetcher](#fetcher) and [validateOnClient](#validateonclient).
+You can replace the lower-level modules that the generated TypeScript client imports: the [fetcher](#fetcher) and [validateOnClient](#validateonclient). Set them in the `outputConfig.imports` object of the [config](/config) file. The object also takes `createRPC`: the module the client imports `createRPC` from, `vovk/create-rpc` by default (see [config](/config)).
 
-By default, when **vovk-ajv** (described below) is used for client-side validation, the `index.ts` file generating the `UserRPC` module might look like:
+With **vovk-ajv** (described below) for client-side validation, the generated `index.ts` that creates the `UserRPC` module looks roughly like this:
 
 ```ts showLineNumbers copy filename="./src/client/index.ts"
 import { createRPC } from 'vovk/create-rpc';
@@ -14,7 +14,7 @@ export const UserRPC = createRPC(schema, '', 'UserRPC', import('vovk/fetcher'), 
 });
 ```
 
-When `outputConfig.imports` is modified:
+With custom `outputConfig.imports`:
 
 ```ts showLineNumbers copy filename="vovk.config.mjs"
 /** @type {import('vovk').VovkConfig} */
@@ -29,10 +29,11 @@ const config = {
 export default config;
 ```
 
-The generated `index.ts` uses these imports and resolves relative paths:
+The generated `index.ts` imports them, with relative paths adjusted to its folder:
 
 ```ts showLineNumbers copy filename="./src/client/index.ts"
 import { createRPC } from 'vovk/create-rpc';
+import { schema } from './schema';
 
 export const UserRPC = createRPC(schema, '', 'UserRPC', import('../lib/fetcher'), {
   validateOnClient: import('../lib/validate-on-client'),
@@ -40,21 +41,21 @@ export const UserRPC = createRPC(schema, '', 'UserRPC', import('../lib/fetcher')
 });
 ```
 
-`fetcher` and `validateOnClient` can also be set per [segment](/segment). This enables different options or auth mechanisms per segment (including [OpenAPI mixins](/mixins)) and different validation libraries where needed.
+You can also set `fetcher` and `validateOnClient` per [segment](/segment), [OpenAPI mixins](/mixins) included. This way each segment can have its own options, auth and validation library.
 
 ```ts showLineNumbers copy
 /** @type {import('vovk').VovkConfig} */
 const config = {
   outputConfig: {
     imports: {
-      // applied to all segments
+      // for all segments
       fetcher: './src/lib/fetcher',
       validateOnClient: './src/lib/validate-on-client',
     },
     segments: {
       admin: {
         imports: {
-          // applied only to "admin" segment
+          // for the "admin" segment only
           fetcher: './src/lib/admin-fetcher',
           validateOnClient: './src/lib/admin-validate-on-client',
         },
@@ -67,15 +68,15 @@ export default config;
 
 ## `fetcher`
 
-The `fetcher` prepares handlers, performs client-side validation, issues HTTP requests, differentiates content types (JSON, [JSON Lines](/streaming), or other `Response` types), and returns data in the appropriate format.
+The `fetcher` validates the input on the client, sends the HTTP request, and returns the data by content type:
 
-- For `application/json` and any `+json` type, such as `application/problem+json`, it returns the parsed JSON, or `null` for a response without a body, such as a `204` or the answer to a `HEAD` request. An error status throws an `HttpException{:ts}` with the body's `message`, or with the `detail` or `title` of a problem details document.
-- For `application/jsonl` or `application/jsonlines`, it returns a disposable async iterable.
-- For other content types, it returns the `Response` object as-is, letting you access text or binary data. A status of 400 or above throws an `HttpException{:ts}` with the response text as its message instead.
+- For `application/json` and any `+json` type, such as `application/problem+json`, it returns the parsed JSON. A response without a body, such as a `204` or the answer to a `HEAD` request, gives `null`. An error status throws an `HttpException{:ts}` with the body's `message`, or with the `detail` or `title` of a problem details document.
+- For [JSON Lines](/jsonlines) (`application/jsonl`, `application/jsonlines` or `application/x-ndjson`), it returns a disposable async iterable.
+- For other content types, it returns the `Response` object as is, so you can read text or binary data. A status of 400 or above throws an `HttpException{:ts}` instead, with the response text as its message.
 
-The content type is compared without its parameters and in any case, so `Application/JSON; charset=utf-8` is JSON.
+The comparison ignores the content type's parameters and letter case, so `Application/JSON; charset=utf-8` is JSON.
 
-It can also process custom per-call options passed to RPC methods.
+The fetcher can also take custom options, passed to an RPC method on each call.
 
 ```ts showLineNumbers copy
 import { UserRPC } from '@/client';
@@ -89,15 +90,15 @@ const user = await UserRPC.updateUser({
 
 ### `createFetcher`
 
-The file at `imports.fetcher` must export a `fetcher` variable. To simplify creating a custom fetcher, use `createFetcher` from `vovk`.
+The module at `imports.fetcher` must export a `fetcher` variable. `createFetcher` from `vovk/fetcher` makes one.
 
 ```ts showLineNumbers copy filename="./src/lib/fetcher.ts"
-import { createFetcher } from 'vovk';
+import { createFetcher } from 'vovk/fetcher';
 
 export const fetcher = createFetcher<{
   successMessage?: string; // "Successfully created a new user"
-  useAuth?: boolean; // if true, Authorization header will be set
-  someOtherCustomFlag?: boolean; // any custom flag that you want to pass to the RPC method
+  useAuth?: boolean; // true sets the Authorization header
+  someOtherCustomFlag?: boolean; // any other option for the RPC method
 }>({
   prepareRequestInit: async (init, { useAuth, someOtherCustomFlag }) => {
     // ...
@@ -111,9 +112,7 @@ export const fetcher = createFetcher<{
   },
   transformResponse: async (data, { someOtherCustomFlag }) => {
     // ...
-    return {
-      ...data,
-    };
+    return data;
   },
   onSuccess: async (data, { successMessage }) => {
     if (successMessage) {
@@ -126,7 +125,7 @@ export const fetcher = createFetcher<{
 });
 ```
 
-With this setup, all RPC module methods accept the desired options:
+Every RPC method then accepts these options:
 
 ```ts showLineNumbers copy
 import { UserRPC } from '@/client';
@@ -141,27 +140,27 @@ await UserRPC.updateUser({
 });
 ```
 
-`createFetcher` accepts an object with:
+`createFetcher` takes an object with:
 
 #### `prepareRequestInit(init: RequestInit, options: T){:ts}`
 
-Prepares `RequestInit` before making the request. Use it to set auth headers or Next.js-specific `next` options. Receives the prepared `init` and custom call `options`, and must return a `RequestInit` object (usually based on `init`). Useful for logging or other pre-request logic.
+Runs before the request. It receives the prepared `init` and the call's custom `options`, and must return a `RequestInit` object, usually based on `init`. Use it for auth headers, the Next.js `next` options, logging, or other work before the request.
 
-#### `transformResponse(data: unknown, options: T, info: { response: Response, init: RequestInit, schema: VovkHandlerSchema }){:ts}`
+#### `transformResponse(data: unknown, options: T, info: { response: Response, init: RequestInit, schema }){:ts}`
 
-Transforms the response before returning it to the caller. The `data` type depends on the content type: JSON, a [disposable](https://github.com/tc39/proposal-explicit-resource-management) [async iterator](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/AsyncIterator), or a `Response`. Return the transformed value. The `info` argument provides the original `Response`, the `RequestInit` used, and the `VovkHandlerSchema` (e.g., `schema.operationObject`).
+Changes the response data before the caller gets it. `data` is JSON, a [disposable](https://github.com/tc39/proposal-explicit-resource-management) [async iterator](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/AsyncIterator), or a `Response`, depending on the content type. Return the new value. The `info` argument holds the original `Response`, the `RequestInit` used, and the method's schema: the same object as `UserRPC.updateUser.schema`, with fields such as `schema.operationObject`.
 
 #### `onError(error: HttpException, options: T){:ts}`
 
-Called when a request fails. Use it for error messages, logging, or custom handling.
+Runs when a request fails. Use it for error messages, logging, or custom handling. Its third argument, `info`, holds the `response`, `init`, `respData` and `schema`; the first three are `null` when the call failed before it had them.
 
 #### `onSuccess(data: unknown, options: T){:ts}`
 
-Called on success. Use it for success messages, logging, or post-processing.
+Runs when a request succeeds. Use it for success messages, logging, or post-processing. Its third argument, `info`, is the same as in `transformResponse`.
 
 ### Event-style callbacks
 
-`onSuccess` and `onError` can also be registered after the fetcher is created. This is useful when callbacks depend on context that isn't available at creation time (e.g. a React context value or a Zustand store reference). Both methods return an unsubscribe function. Multiple callbacks can be registered — they run in order.
+You can also add `onSuccess` and `onError` callbacks after you create the fetcher. Use this when a callback needs something that doesn't exist at creation time, such as a React context value or a Zustand store. Both methods return a function that removes the callback. Several callbacks run in the order you add them.
 
 ```ts showLineNumbers copy
 const unsubSuccess = fetcher.onSuccess((data, { successMessage }) => {
@@ -179,11 +178,11 @@ unsubError();
 
 ## `validateOnClient`
 
-`validateOnClient` defines how client-side validation is performed for RPC/API method input (`params`, `query`, `body`). Create it via `createValidateOnClient` from `vovk`. It accepts a `validate` function that receives the input data, the JSON schema, and metadata, and returns validated data or throws on failure. Validation runs only when both input and schema are provided.
+`validateOnClient` validates the input of an RPC or API method (`params`, `query`, `body`) on the client. Create it with `createValidateOnClient` from `vovk/create-validate-on-client`. It takes a `validate` function, which receives the input data, its JSON schema and metadata, and returns the validated data or throws. Validation runs only when both the input and its schema exist.
 
 ```ts showLineNumbers copy filename="./src/lib/validate-on-client.ts"
 import { validateData } from 'some-json-validation-library';
-import { createValidateOnClient, HttpException, HttpStatus } from 'vovk';
+import { createValidateOnClient, HttpException, HttpStatus } from 'vovk/create-validate-on-client';
 
 export const validateOnClient = createValidateOnClient({
   validate: async (input, schema, meta) => {
@@ -201,9 +200,13 @@ export const validateOnClient = createValidateOnClient({
 
 ### vovk-ajv
 
-[vovk-ajv](https://www.npmjs.com/package/vovk-ajv) is the primary library for client-side validation, built on top of [Ajv](https://www.npmjs.com/package/ajv). It’s installed and configured automatically when you run `npx vovk-cli init`. **vovk-ajv** supports additional configuration under `config.libs.ajv` in [vovk.config](/config), including Ajv options and the target JSON Schema draft.
+[vovk-ajv](https://www.npmjs.com/package/vovk-ajv) is the main client-side validation library, built on [Ajv](https://www.npmjs.com/package/ajv). `npx vovk-cli init` installs and configures it. You can set Ajv options and the target JSON Schema draft under `config.libs.ajv` in [vovk.config](/config).
 
-Ajv runs with `strict: false` and `unicodeRegExp: false` unless the options say otherwise. So keywords JSON Schema doesn't define, such as Zod's `example` or OpenAPI's `discriminator` and `x-*`, are ignored, and a `pattern` is read the way JavaScript reads a regular expression without the `u` flag, as Zod does. OpenAPI 3.0's boolean `exclusiveMinimum` and `exclusiveMaximum` are read as the bounds they mark. A `FormData` or `URLSearchParams` body holds strings, so it is validated with `coerceTypes: true`: `"5"` passes as a number. When Ajv can't compile a schema, the client skips validation for it and logs a warning; the server still validates the request.
+- Ajv runs with `strict: false` unless your options say otherwise, so it ignores keywords JSON Schema doesn't define, such as Zod's `example` or OpenAPI's `discriminator` and `x-*`.
+- A `pattern` is read with the `u` flag, which `\p{…}` needs, as in `z.emoji()`. A pattern the `u` flag refuses, such as one with a `\-` escape that Zod's regexes allow, is read without it.
+- OpenAPI 3.0's boolean `exclusiveMinimum` and `exclusiveMaximum` are read as the bounds they mark.
+- A `FormData` or `URLSearchParams` body holds strings, and so do `params` and `query`, which the URL carries. So they are validated with `coerceTypes: true`: `"5"` passes as a number. Ajv never edits the `params` and `query` it checks, so they are sent as given.
+- When Ajv can't compile a schema, the client skips validation for it and logs a warning. The server still validates the request.
 
 ```bash npm2yarn copy
 npm install vovk-ajv
@@ -224,7 +227,7 @@ const config = {
         // Ajv options
         strict: false,
       },
-      target: 'draft-2020-12', // auto-detected from $schema but can be configured
+      target: 'draft-2020-12', // detected from $schema unless you set it
     },
   },
 };

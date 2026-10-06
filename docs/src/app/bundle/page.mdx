@@ -30,24 +30,24 @@ Options:
 
 ---
 
-The [composed](/composed) [TypeScript Client](/typescript) library can be bundled and published to NPM as a package with pre-filled `package.json` and `README.md` files by using the `bundle` command after you configure the `bundle.build` function in the [config](/config) file.
+`vovk bundle` turns the [composed](/composed) [TypeScript client](/typescript) into a package for NPM, with its `package.json` and `README.md` filled in. Set the `bundle.build` function in the [config](/config) file first.
 
-Check the ["Hello World" page](/hello-world) for a complete bundling example.
+The ["Hello World" page](/hello-world) has a full bundling example.
 
-This feature is library-agnostic, so you can use any bundler you prefer, including one invoked via the `child_process` module. At the moment, [tsdown](https://tsdown.dev/) is the only bundler that has been tested with Vovk.ts. If you use a different bundler, please share your experience on [GitHub Discussions](https://github.com/finom/vovk/discussions).
+Any bundler works, even one you start with the `child_process` module. So far, [tsdown](https://tsdown.dev/) is the only bundler tested with Vovk.ts. If you use another one, share how it went on [GitHub Discussions](https://github.com/finom/vovk/discussions).
 
-Internally, bundling runs the following steps:
+Bundling runs these steps:
 
-1. It generates a client into the `tmp_prebundle` directory (configured with `bundle.prebundleOutDir: string{:ts}`) using the [tsBase](/templates#tsbase) template.
-2. Calls `bundle.build` function to bundle the generated client to the `dist` directory (configured with `bundle.outDir: string{:ts}`).
-3. Generates `package.json` and `README.md` files from the [packageJson](/templates#packagejson) and [readme](/templates#readme) templates, for the same segments and [OpenAPI mixins](/mixins) as the bundled code.
-4. Deletes the `tmp_prebundle` directory (configured with `bundle.keepPrebundleDir: boolean{:ts}`).
+1. Generates a client into the `tmp_prebundle` folder (set by `bundle.prebundleOutDir: string{:ts}`) from the [tsBase](/templates#tsbase) template.
+2. Calls the `bundle.build` function, which bundles the generated client into the `dist` folder (set by `bundle.outDir: string{:ts}`).
+3. Generates `package.json` and `README.md` from the [packageJson](/templates#packagejson) and [readme](/templates#readme) templates, for the same segments and [OpenAPI mixins](/mixins) as the bundled code.
+4. Deletes the `tmp_prebundle` folder (`bundle.keepPrebundleDir: boolean{:ts}` keeps it).
 
 ```sh npm2yarn copy
-npx vovk bundle
+npm exec -- vovk bundle
 ```
 
-After bundling, the package can be published to NPM:
+Then publish the package to NPM:
 
 ```sh npm2yarn copy
 npm publish dist
@@ -55,14 +55,14 @@ npm publish dist
 
 ## Configuring the `bundle`
 
-You can configure bundling by adding a `bundle` object to the [config](/config) file:
+Add a `bundle` object to the [config](/config) file:
 
 ```ts showLineNumbers copy filename="vovk.config.mjs"
 /** @type {import('vovk').VovkConfig} */
 const config = {
   bundle: {
     build: async ({ entry, outDir, prebundleDir }) => {
-      // plug in the bundler of your choice here
+      // call your bundler here
     },
     prebundleOutDir: 'tmp_prebundle', // default
     keepPrebundleDir: false, // default
@@ -76,10 +76,10 @@ const config = {
     outputConfig: {
       origin: 'https://example.com',
       package: {
-        // modifies package.json content
-        // by default uses values from the root package.json
+        // the package.json content
+        // by default, the values of the root package.json
         name: 'my-api-bundle',
-        // entry point configuration
+        // the entry points
         type: 'module',
         main: './index.js',
         types: './index.d.ts',
@@ -90,12 +90,12 @@ const config = {
           },
         },
       },
-      readme: {}, // modifies README.md content
-      samples: {}, // modifies README.md samples content
+      readme: {}, // the README.md content
+      samples: {}, // the code samples in README.md
       imports: {
         fetcher: './src/my-fetcher',
       },
-      reExports: {}, // modifies re-exports in the generated index.ts
+      reExports: {}, // re-exports in the generated index.ts
     },
   },
 };
@@ -104,31 +104,31 @@ export default config;
 
 ### `build` function (required)
 
-The `build` function is an asynchronous function that receives an object with `entry` (the `index.ts` file), `outDir`, and `prebundleDir`, all resolved as absolute paths.
+`build` is an async function. It gets an object with `entry` (the `index.ts` file), `outDir` and `prebundleDir`, all absolute paths.
 
 ### `prebundleOutDir` or `--prebundle-out` flag
 
-The `prebundleOutDir` is the directory in which the TypeScript client will be generated before bundling. It defaults to `tmp_prebundle`.
+The folder the TypeScript client is generated in before bundling. Defaults to `tmp_prebundle`.
 
-The directory must be a subdirectory of the project, apart from `outDir`. Unless it is kept, it is deleted after bundling, so it must be missing, empty or kept by an earlier bundle: the command fails before it writes anything if the directory holds other files.
+It must be a subfolder of the project, apart from `outDir`. Unless it's kept, it's deleted after bundling, so it must be missing, empty or kept by an earlier bundle: if it holds other files, the command fails before it writes anything.
 
 ### `keepPrebundleDir` or `--keep-prebundle-dir` flag
 
-If set to `true`, the `prebundleOutDir` will not be deleted after bundling, so it may hold other files, such as the composed client. This can be useful for debugging or other purposes. The default is `false`.
+`true` keeps `prebundleOutDir` after bundling, so it can hold other files, such as the composed client. Use it for debugging, for example. Defaults to `false`.
 
 ### `requires`
 
-The templates rendered into `outDir` after the build, keyed by [template](/templates) name, with the path relative to `outDir`. The default is `{ readme: '.', packageJson: '.' }`. A `requires` object in the config replaces the default, so list `readme` and `packageJson` along with your own templates to keep them.
+The templates rendered into `outDir` after the build: [template](/templates) names mapped to paths relative to `outDir`. Defaults to `{ readme: '.', packageJson: '.' }`. A `requires` object in the config replaces the default, so to keep `readme` and `packageJson`, list them with your own templates.
 
 ### `includeSegments` and `excludeSegments` or `--include` and `--exclude` flags
 
-The segments to bundle. Use one of the two. Without either, the bundle follows the `includeSegments` or `excludeSegments` of the [composed client](/composed).
+The segments to bundle. Use one of the two. Without either, the bundle uses the `includeSegments` or `excludeSegments` of the [composed client](/composed).
 
 ### `outputConfig`
 
-The `outputConfig` object accepts and overrides the same options as the [outputConfig](/config#outputconfig) at the root of the [config](/config) file.
+Takes the same options as the [outputConfig](/config#outputconfig) at the root of the [config](/config) file, and overrides them.
 
-For correct generation, the `outputConfig` should provide an `origin` option as well as a `package` field that includes entry point configuration: `main`, `types`, and `exports`, which should be set according to the bundler output.
+Set `origin`, and a `package` field whose entry points (`main`, `types` and `exports`) match the bundler output.
 
 ```ts showLineNumbers copy filename="vovk.config.mjs"
 const config = {
@@ -151,7 +151,7 @@ const config = {
 };
 ```
 
-You can also include additional exports in the generated `index.ts` file using the `reExports` option:
+To export more from the generated `index.ts`, use the `reExports` option:
 
 ```ts showLineNumbers copy filename="vovk.config.mjs"
 const config = {
@@ -166,7 +166,7 @@ const config = {
 };
 ```
 
-In order to keep the bundle size minimal, consider disabling client-side validation by setting `validateOnClient` to `null` in the `imports` option:
+To keep the bundle small, turn off client-side validation: set `validateOnClient` to `null` in the `imports` option:
 
 ```ts showLineNumbers copy filename="vovk.config.mjs"
 const config = {
@@ -185,16 +185,16 @@ const config = {
 
 > [!IMPORTANT]
 >
-> The tsdown API may introduce breaking changes between minor versions. The configuration below has been tested and validated with **tsdown@0.22.14**. If you encounter issues after upgrading, please pin this version until compatibility with newer releases is confirmed.
+> The tsdown API can break between minor versions. The config below is tested with **tsdown@0.22.14**. If a newer version breaks it, pin this one until newer versions are confirmed to work.
 
 
-Install `tsdown` as a development dependency:
+Install `tsdown` as a dev dependency:
 
 ```sh npm2yarn copy
 npm install --save-dev tsdown@0.22.14
 ```
 
-Add the following `build` function to the `bundle` object in the [config](/config) file:
+Add this `build` function to the `bundle` object in the [config](/config) file:
 
 ```ts showLineNumbers copy filename="vovk.config.mjs"
 /** @type {import('vovk').VovkConfig} */
@@ -229,7 +229,7 @@ const config = {
 export default config;
 ```
 
-With the configuration above, the resulting bundled package will have the following structure:
+With this config, the bundled package looks like this:
 
 <FileTree>
   <FileTree.Folder name="dist" defaultOpen>
@@ -240,7 +240,7 @@ With the configuration above, the resulting bundled package will have the follow
   </FileTree.Folder>
 </FileTree>
 
-The full configuration with `origin`, `package`, and no client-side validation might look like this:
+A full config with `origin`, `package` and no client-side validation:
 
 ```ts showLineNumbers copy filename="vovk.config.mjs"
 /** @type {import('vovk').VovkConfig} */
@@ -290,19 +290,19 @@ const config = {
 export default config;
 ```
 
-For different tsdown configurations, please refer to the [tsdown documentation](https://tsdown.dev/reference/api/Interface.UserConfig).
+For other tsdown options, see the [tsdown documentation](https://tsdown.dev/reference/api/Interface.UserConfig).
 
 
 
 ## Using the Bundled Package
 
-After publishing the bundled package to NPM, you can install and use it in other projects like any other NPM package:
+Once the package is on NPM, install it in another project like any other package:
 
 ```sh npm2yarn copy
 npm install my-api-bundle
 ```
 
-And import it in your TypeScript code:
+Then import it in your TypeScript code:
 
 ```ts showLineNumbers copy
 import { UserRPC } from 'my-api-bundle';
@@ -312,22 +312,22 @@ await UserRPC.getUser({
 });
 ```
 
-All features described in the [TypeScript](/typescript) article remain available to the bundled RPC modules.
+The bundled RPC modules have all the features of the [TypeScript](/typescript) client.
 
-The [Schema](/schema) is available via the `schema` import, as well as a property on every method individually:
+The [schema](/schema) is the `schema` export, and each method has its own `schema` property:
 
 ```ts showLineNumbers copy
 import { schema, UserRPC } from 'my-api-bundle';
 
 console.log(schema.segments[''].controllers.UserRPC.handlers.getUser.validation.params);
-console.log(UserRPC.getUser.schema.validation.params);
+console.log(UserRPC.getUser.schema.validation?.params);
 ```
 
-Note that the `openapi` object that is usually available from **@/client/openapi** is not bundled, as it would significantly increase the package size. The `schema` module that is usually available from **@/client/schema** is also omitted to keep the bundling flow simple by using only a single entry point.
+The bundle leaves out the `openapi` object of **@/client/openapi**, as it would make the package much larger. It also has no separate `schema` entry point like **@/client/schema**: to keep bundling simple, the bundle has one entry point.
 
 ---
 
-The bundled methods can be used as [AI tools](/tools) that will invoke the corresponding HTTP endpoints when called:
+Pass the bundled RPC modules to `deriveTools` for [AI tools](/tools) that call the matching HTTP endpoints:
 
 ```ts showLineNumbers copy
 import { UserRPC } from 'my-api-bundle';
@@ -340,6 +340,6 @@ const tools = deriveTools({
 
 ## Roadmap/bugs
 
-- 🐞 Type inference from `NextResponse` outputs is not available without the **next** package installed (see [proposal](https://github.com/vercel/next.js/discussions/88542)). For dynamic response headers, use the `Response` class instead, with manual type casting.
+- 🐞 Without the **next** package installed, the types of `NextResponse` outputs can't be inferred (see [proposal](https://github.com/vercel/next.js/discussions/88542)). For dynamic response headers, use the `Response` class instead, with a manual type cast.
 - ✨ Test and document other bundlers, such as **tsup** and **esbuild**.
-- ✨ Segmented bundle — create separate bundles for each segment.
+- ✨ Segmented bundle: a separate bundle for each segment.

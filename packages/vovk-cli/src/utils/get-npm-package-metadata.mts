@@ -1,6 +1,3 @@
-/**
- * Interface representing the structure of NPM package metadata.
- */
 export interface NpmPackageMetadata {
   'dist-tags': {
     [tag: string]: string;
@@ -15,10 +12,15 @@ export interface NpmPackageMetadata {
 }
 
 export async function getNPMPackageMetadata(packageName: string): Promise<NpmPackageMetadata> {
-  // Fetch package metadata from the npm registry
-  const metadataResponse = await fetch(`https://registry.npmjs.org/${encodeURIComponent(packageName)}`);
+  // npm and npx hand the registry from .npmrc to the process they start
+  const registry = (process.env.npm_config_registry || 'https://registry.npmjs.org').replace(/\/?$/, '/');
+  const fail = (reason: string) =>
+    new Error(`Failed to fetch metadata for package ${packageName} from ${registry}: ${reason}`);
+  const metadataResponse = await fetch(`${registry}${encodeURIComponent(packageName)}`).catch((error: Error) => {
+    throw fail((error.cause as Error | undefined)?.message ?? error.message);
+  });
   if (!metadataResponse.ok) {
-    throw new Error(`Failed to fetch package metadata: ${metadataResponse.statusText}`);
+    throw fail(`${metadataResponse.status} ${metadataResponse.statusText}`);
   }
 
   const metadata = (await metadataResponse.json()) as NpmPackageMetadata;

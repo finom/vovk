@@ -1,10 +1,12 @@
 import path from 'node:path';
 import * as chokidar from 'chokidar';
 import type { VovkSchema } from 'vovk';
-import type { ProjectInfo } from '../get-project-info/index.mjs';
+import { loadOpenAPIMixins, type ProjectInfo } from '../get-project-info/index.mjs';
 import type { GenerateOptions } from '../types.mjs';
 import { chalkHighlightThing } from '../utils/chalk-highlight-thing.mjs';
 import { locateSegments } from '../utils/locate-segments.mjs';
+import { oneAtATime } from '../utils/one-at-a-time.mjs';
+import { watchFolder } from '../utils/watch-folder.mjs';
 import { generate } from './generate.mjs';
 import { getProjectFullSchema } from './get-project-full-schema.mjs';
 import { omitRoutelessSegments } from './omit-routeless-segments.mjs';
@@ -49,8 +51,13 @@ export class VovkGenerate {
     const { log, config, apiDirAbsolutePath } = this.#projectInfo;
     const locatedSegments = await locateSegments({ dir: apiDirAbsolutePath, config, log });
     await generate({
-      projectInfo: this.#projectInfo,
-      fullSchema: omitRoutelessSegments(fullSchema, locatedSegments, this.#projectInfo),
+      projectInfo: await loadOpenAPIMixins(this.#projectInfo),
+      fullSchema: omitRoutelessSegments(
+        fullSchema,
+        locatedSegments,
+        this.#projectInfo,
+        this.#cliGenerateOptions.schemaPath
+      ),
       forceNothingWrittenLog: this.#forceNothingWrittenLog,
       cliGenerateOptions: this.#cliGenerateOptions,
       locatedSegments,
@@ -89,7 +96,8 @@ export class VovkGenerate {
     let lastGenerationTime = 0;
     let pendingTimer: NodeJS.Timeout | null = null;
 
-    const generateCode = async () => {
+    // a change during a generation makes one more, which reads the newest files
+    const generateCode = oneAtATime(async () => {
       try {
         lastGenerationTime = Date.now();
         await this.generate();
@@ -97,7 +105,7 @@ export class VovkGenerate {
       } catch (error) {
         log.error(`Failed to regenerate from schema: ${error instanceof Error ? error.message : String(error)}`);
       }
-    };
+    });
 
     const scheduleGeneration = () => {
       const now = Date.now();
@@ -116,12 +124,11 @@ export class VovkGenerate {
       }
     };
 
-    chokidar
-      .watch(schemaPath, {
-        persistent: true,
-        ignoreInitial: true,
-        awaitWriteFinish: AWAIT_WRITE_FINISH,
-      })
+    watchFolder(schemaPath, {
+      persistent: true,
+      ignoreInitial: true,
+      awaitWriteFinish: AWAIT_WRITE_FINISH,
+    })
       // "ready" never reaches the "all" listener, and ignoreInitial skips the files already there
       .on('ready', scheduleGeneration)
       .on('all', (event, path) => {
@@ -157,7 +164,8 @@ export class VovkGenerate {
     let lastGenerationTime = 0;
     let pendingTimer: NodeJS.Timeout | null = null;
 
-    const generateCode = async () => {
+    // a change during a generation makes one more, which reads the newest files
+    const generateCode = oneAtATime(async () => {
       try {
         lastGenerationTime = Date.now();
         await this.generate();
@@ -165,7 +173,7 @@ export class VovkGenerate {
       } catch (error) {
         log.error(`Failed to regenerate from OpenAPI spec: ${error instanceof Error ? error.message : String(error)}`);
       }
-    };
+    });
 
     chokidar
       .watch(openApiSpecPaths, {
@@ -240,10 +248,8 @@ export class VovkGenerate {
       }
     };
 
-    // Initial fetch
     pollRemoteSpec();
 
-    // Set up polling
     setInterval(pollRemoteSpec, throttleDelay);
   }
 }

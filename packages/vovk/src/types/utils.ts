@@ -2,7 +2,7 @@ export type RequireFields<T, K extends keyof T> = T & Required<Pick<T, K>>;
 
 export type IsEmptyObject<T> = T extends object
   ? keyof T extends never
-    ? true // Empty object
+    ? true
     : T extends Partial<T>
       ? Partial<T> extends T
         ? true // All properties are optional
@@ -21,3 +21,6 @@ export type StaticClass = Function;
 export type IsAny<T> = 0 extends 1 & T ? true : false;
 
 export type IsNotAny<T> = IsAny<T> extends true ? false : true;
+
+// keeps T out of inference, as NoInfer does on TypeScript 5.4+, without raising the TypeScript version the types need
+export type VovkNoInference<T> = [T][T extends unknown ? 0 : never];

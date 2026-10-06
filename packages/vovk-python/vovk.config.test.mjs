@@ -29,6 +29,21 @@ const petstore = {
         responses: { 200: { description: 'ok' } },
       },
     },
+    // a JavaScript pattern as a patternProperties key
+    '/tags': {
+      post: {
+        operationId: 'createTags',
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: { type: 'object', patternProperties: { '^\\p{L}+$': { type: 'string' } } },
+            },
+          },
+        },
+        responses: { 200: { description: 'ok' } },
+      },
+    },
     '/documents': {
       post: {
         operationId: 'createDocument',
@@ -46,6 +61,17 @@ const petstore = {
         responses: {
           200: { description: 'ok', content: { 'application/json': { schema: { $ref: '#/components/schemas/Pet' } } } },
         },
+      },
+    },
+    // a number and a boolean in the path
+    '/pets/{petId}/vaccinated/{vaccinated}': {
+      put: {
+        operationId: 'setPetVaccinated',
+        parameters: [
+          { name: 'petId', in: 'path', required: true, schema: { type: 'number' } },
+          { name: 'vaccinated', in: 'path', required: true, schema: { type: 'boolean' } },
+        ],
+        responses: { 200: { description: 'ok' } },
       },
     },
   },

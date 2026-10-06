@@ -41,7 +41,7 @@ Which validation library does the framework use? **✅ Standard Schema** = accep
 A type-safe client that calls your endpoints. **✅ Native** = first-party client. Sub-modes: **pure inference** (no codegen, TS type flows), **codegen** (build step), **OpenAPI roundtrip** (spec → external generator). **❌** = no typed client.
 
 ### LLM tool derivation
-Auto-derived `{ name, description, parameters, execute }` tool objects from existing procedures. **✅ Native** = same procedure declaration becomes a tool. **🔌** = via first-party package. **OpenAPI bridge** = only through OpenAPI doc + external generator. **❌** = no auto-derivation (write `@Tool` methods manually).
+Auto-derived `{ name, description, inputSchema, execute }` tool objects from existing procedures. **✅ Native** = same procedure declaration becomes a tool. **🔌** = via first-party package. **OpenAPI bridge** = only through OpenAPI doc + external generator. **❌** = no auto-derivation (write `@Tool` methods manually).
 
 ### Local call
 Calling a procedure in-process, without HTTP, with full input validation. **✅ True bypass** = no `Request` construction, no network, validation runs. **HTTP simulation** = framework constructs a `Request` and runs the middleware stack (e.g. Hono `app.request`, Fastify `inject`, Elysia `app.handle`). **Plain function** = the handler can be called as a function but skips validation. **❌** = none.
@@ -166,7 +166,7 @@ import UserController from '@/modules/user/user-controller';
 
 const controllers = { UserRPC: UserController };
 export type Controllers = typeof controllers;
-export const { GET, POST, PUT, DELETE, PATCH } = initSegment({ controllers });
+export const { GET, POST, PATCH, PUT, HEAD, OPTIONS, DELETE } = initSegment({ controllers });
 ```
 
 *Source: [vovk.dev/segment](https://vovk.dev/segment)*
@@ -179,10 +179,10 @@ export const { GET, POST, PUT, DELETE, PATCH } = initSegment({ controllers });
 
 #### Typed RPC client
 
-Codegen via `vovk generate` (or `vovk dev` watcher) emits `vovk-client` — a TypeScript module mirroring controllers, same call signature as `.fn()`.
+Codegen via `vovk generate` (or `vovk dev` watcher) emits a TypeScript client into the project, imported as `@/client` — a module mirroring controllers, same call signature as `.fn()`.
 
 ```ts
-import { UserRPC } from 'vovk-client';
+import { UserRPC } from '@/client';
 
 const user = await UserRPC.getUser({
   params: { id: '0190ad59-c3e3-71e0-bbaf-2c4c4f2f8a3f' },
@@ -193,14 +193,14 @@ const user = await UserRPC.getUser({
 
 #### LLM tool derivation
 
-Native, first-party. `deriveTools()` converts any controller or RPC module into `{ name, description, parameters, execute }` tool objects compatible with Vercel AI SDK out of the box. The `ToModelOutput.MCP` formatter shapes execute-output for MCP transports.
+Native, first-party. `deriveTools()` converts any controller or RPC module into `{ name, description, inputSchema, execute }` tool objects compatible with Vercel AI SDK out of the box. The `ToModelOutput.MCP` formatter shapes execute-output for MCP transports.
 
 ```ts
 import { deriveTools } from 'vovk';
 import UserController from '@/modules/user/user-controller';
 
-const { tools, toolsByName } = deriveTools({ modules: { UserController } });
-// tools: [{ name, description, parameters, execute }, ...]
+const tools = deriveTools({ modules: { UserController } });
+// [{ name, description, inputSchema, execute, ... }, ...]
 ```
 
 *Source: [vovk.dev/tools](https://vovk.dev/tools)*
@@ -231,7 +231,6 @@ Beyond the six-axis rubric, Vovk ships a few capabilities that other Tier S fram
 - **Multi-language client codegen.** First-party [`vovk-python`](https://github.com/finom/vovk-python) and [`vovk-rust`](https://github.com/finom/vovk-rust) emit typed clients in Python and Rust from the same `.vovk-schema`. 🧪 experimental. ([Encore.ts](#encorets) also emits non-TS clients first-party — Go — via `encore gen client`; Vovk is the one on this list emitting Python and Rust.)
 - **Schema artifacts on disk.** `.vovk-schema/*.json` is a build artifact, not just an inferred type. CI tools, codegen pipelines, and AI agents can read the API surface without running the dev server.
 - **[Static segments](/static-segment).** Compile-time-generated JSON for content that doesn't change at runtime (OpenAPI specs, historical data). Served as a static file.
-- **`decorate()` escape hatch.** `decorate(get('{id}'), procedure(...))` produces identical runtime and types without requiring `experimentalDecorators` in `tsconfig.json` — for projects that can't enable the legacy TS decorator flag.
 
 Streaming (JSON Lines via `iteration` validator) is a first-class procedure-level capability; oRPC has parity via its [Event Iterator](https://orpc.dev/docs/event-iterator) (SSE).
 
@@ -244,7 +243,7 @@ Trade-offs that are *Vovk-specific* (you wouldn't hit these by writing raw Route
 - **Tied to Next.js App Router.** Not a portable library. Services (plain classes with no framework imports) transfer; controllers, decorators, and `procedure()` definitions don't. Among the four 4/4 SSOT frameworks, Vovk is the only Next.js-exclusive one: Nestia is NestJS-only, Igniter.js has a Next.js adapter but isn't Next.js-exclusive, oRPC is runtime-agnostic.
 - **Codegen step required.** Pure-inference frameworks (tRPC, oRPC, Hono `hc`, Eden Treaty) don't need a build step; Vovk does. `vovk dev` must run alongside `next dev` in development. The on-disk artifact (`.vovk-schema/*.json`) has real value — CI tools, AI agents, multi-language clients all consume it — but it's a workflow tax pure-inference frameworks avoid.
 - **Ecosystem size.** Smaller community than tRPC, NestJS, Hono. Fewer Stack Overflow answers, fewer third-party plugins, less battle-tested edge-case coverage. (Major-version numbers — Vovk 3.x vs tRPC 11.x — reflect different semver philosophies and aren't a meaningful comparison; weekly downloads and contributor counts are.)
-- **Decorator-based idiomatic API.** `@get('{id}')`-style decorators require `"experimentalDecorators": true` in `tsconfig.json`. Next.js's toolchain throws on TC39 Stage 3 decorator syntax — not a Vovk bug, but it constrains your `tsconfig`. `decorate()` is the escape hatch for projects that can't enable the legacy flag.
+- **Decorator-based idiomatic API.** `@get('{id}')`-style decorators need `"experimentalDecorators": true` in `tsconfig.json` for a webpack build, the default of Next.js 15; Turbopack, the default of Next.js 16, compiles them either way.
 - **`deriveTools` tool-count ceiling.** Very large APIs hit per-conversation LLM tool-list limits. The roadmap includes a vector-search-gated `router` option to scale this; today you expose a subset of procedures or split agents per domain.
 - **Python/Rust clients are experimental** (🧪). Stable for typical CRUD; expect rough edges on advanced patterns until they leave 🧪.
 

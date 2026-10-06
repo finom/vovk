@@ -1,26 +1,23 @@
-import { cloneControllerMetadata, decorate, get } from 'vovk';
+import { cloneControllerMetadata, get, prefix } from 'vovk';
 import DecorateController from './decorate-controller.ts';
 
-// Test class-level prefix via static property: no decorator syntax at all
-// Also uses decorate for handlers (no decorator syntax at all)
+@prefix('decorate-class')
 class DecorateClassController {
-  static prefix = 'decorate-class';
-
-  static getMethod = decorate(get()).handle(async () => {
+  @get()
+  static async getMethod() {
     return { method: 'get', source: 'decorate-class' };
-  });
+  }
 
-  static getWithPath = decorate(get('with-path')).handle(async () => {
+  @get('with-path')
+  static async getWithPath() {
     return { path: 'with-path', source: 'decorate-class' };
-  });
+  }
 }
 
 export default DecorateClassController;
 
-// Test cloneControllerMetadata applied programmatically
-class DecorateClonedController extends DecorateController {
-  static prefix = 'decorate-cloned';
-}
-cloneControllerMetadata()(DecorateClonedController);
+@cloneControllerMetadata()
+@prefix('decorate-cloned')
+class DecorateClonedController extends DecorateController {}
 
 export { DecorateClonedController };

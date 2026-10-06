@@ -1,15 +1,17 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
-import debounce from 'lodash/debounce.js';
-import { VovkSchemaIdEnum } from 'vovk/internal';
+import { VovkSchemaIdEnum, type VovkSegmentSchema } from 'vovk/internal';
 import type { ProjectInfo } from '../get-project-info/index.mjs';
 import { formatLoggedSegmentName } from '../utils/format-logged-segment-name.mjs';
 import { writeMetaJson } from './write-meta-json.mjs';
 import { META_FILE_NAME, ROOT_SEGMENT_FILE_NAME, writeOneSegmentSchemaFile } from './write-one-segment-schema-file.mjs';
 
-/**
- * Ensure that the schema files are created to avoid any import errors.
- */
+// what a segment's schema file holds until the dev server sends the segment's schema
+export function getPlaceholderSchema(segmentName: string): VovkSegmentSchema {
+  return { $schema: VovkSchemaIdEnum.SEGMENT, emitSchema: false, segmentName, segmentType: 'segment', controllers: {} };
+}
+
+// creates the missing schema files, so the client's imports don't fail
 export async function ensureSchemaFiles(
   projectInfo: ProjectInfo,
   schemaOutAbsolutePath: string,
@@ -20,18 +22,11 @@ export async function ensureSchemaFiles(
   await fs.mkdir(schemaOutAbsolutePath, { recursive: true });
   await writeMetaJson(schemaOutAbsolutePath, projectInfo);
 
-  // Create JSON files (if not exist) with name [segmentName].json (where segmentName can include /, which means the folder structure can be nested)
   await Promise.all(
     segmentNames.map(async (segmentName) => {
       const { isCreated } = await writeOneSegmentSchemaFile({
         schemaOutAbsolutePath,
-        segmentSchema: {
-          $schema: VovkSchemaIdEnum.SEGMENT,
-          emitSchema: false,
-          segmentName,
-          segmentType: 'segment',
-          controllers: {},
-        },
+        segmentSchema: getPlaceholderSchema(segmentName),
         skipIfExists: true,
       });
 
@@ -52,7 +47,7 @@ export async function ensureSchemaFiles(
     }
   }
 
-  // Recursive function to delete unnecessary JSON files and folders, returns true if anything was deleted
+  // true when anything was deleted
   async function deleteUnnecessaryJsonFiles(
     dirPath: string,
     allow: string[] = [`${META_FILE_NAME}.json`]
@@ -65,7 +60,6 @@ export async function ensureSchemaFiles(
         const absolutePath = path.join(dirPath, entry.name);
 
         if (entry.isDirectory()) {
-          // Recursively delete unnecessary files and folders within nested directories
           const deletedInside = await deleteUnnecessaryJsonFiles(absolutePath);
 
           // remove the directory only when this cleanup emptied it, a pre-existing empty dir is not ours
@@ -105,5 +99,3 @@ export async function ensureSchemaFiles(
 
   if (hasChanged) projectInfo?.log.info(`Created empty schema files in ${Date.now() - now}ms`);
 }
-
-export const debouncedEnsureSchemaFiles = debounce(ensureSchemaFiles, 1000);

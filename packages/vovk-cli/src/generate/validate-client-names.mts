@@ -12,11 +12,8 @@ const RESERVED_WORDS = new Set(
 
 const isIdentifier = (name: string) => /^[\p{ID_Start}$_][\p{ID_Continue}$]*$/u.test(name) && !RESERVED_WORDS.has(name);
 
-/**
- * Throws for a mixin that can't join the schema under its name. The segmented client writes the root segment
- * to the "root" folder, and a name a segment or another mixin has would replace it; names are compared
- * ignoring case, as folder names are on most file systems.
- */
+// a mixin can't take "root", the segmented client's folder for the root segment, or the name of a segment or another
+// mixin; names compare ignoring case, as folder names do on most file systems
 export function validateMixinNames(segmentNames: string[], mixinNames: string[]) {
   const owners = new Map(segmentNames.map((name) => [name.toLowerCase(), formatLoggedSegmentName(name)]));
   const namespaces = new Map<string, string>();

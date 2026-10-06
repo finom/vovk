@@ -1,8 +1,8 @@
 # Local Procedure Call (LPC)
 
-Every procedure created with the [procedure](/procedure#procedure) function is callable as a regular function via its `fn` property. The call signature is `{ params, query, body }` — the same shape as the generated RPC client, which mirrors `fn` (not the other way around).
+Every procedure made with the [procedure](/procedure#procedure) function can be called as a regular function through its `fn` property. It takes `{ params, query, body }`, the same shape as the generated RPC client. The RPC client mirrors `fn`, not the other way around.
 
-Let's say you have the following controller class:
+Take this controller:
 
 ```ts showLineNumbers copy filename="src/modules/user/user-controller.ts"
 import { z } from 'zod';
@@ -12,8 +12,8 @@ import UserService from './user-service';
 @prefix('users')
 export default class UserController {
   @operation({
-    summary: 'Update user',
-    description: 'Update user by ID with Zod validation',
+    summary: 'Get user',
+    description: 'Get user by ID with Zod validation',
   })
   @get('{id}')
   static getUser = procedure({
@@ -26,13 +26,13 @@ export default class UserController {
 }
 ```
 
-When the controller is mounted in a [segment](/segment), the same procedure is also reachable over HTTP through the generated RPC client — same call shape:
+When the controller is in a [segment](/segment), the generated RPC client calls the same procedure over HTTP, with the same call shape:
 
 ```ts showLineNumbers copy
 import { UserRPC } from '@/client';
 
 const user = await UserRPC.getUser({
-  params: { id: '69' },
+  params: { id: '123e4567-e89b-12d3-a456-426614174000' },
   disableClientValidation: true, // disables client-side validation
   meta: { hello: 'world' }, // available as xMetaHeader metadata
 });
@@ -40,13 +40,13 @@ const user = await UserRPC.getUser({
 console.log('User:', user);
 ```
 
-Calling the procedure with `fn` runs it in the current evaluation context — no HTTP, no network, full validation:
+`fn` runs the procedure in the current context, with full validation and no HTTP or network:
 
 ```ts showLineNumbers copy
 import UserController from '@/modules/user/user-controller';
 
 const user = await UserController.getUser.fn({
-  params: { id: '69' },
+  params: { id: '123e4567-e89b-12d3-a456-426614174000' },
   disableClientValidation: true, // disables validation
   meta: { hello: 'world' }, // available as root metadata
 });
@@ -54,18 +54,16 @@ const user = await UserController.getUser.fn({
 console.log('User:', user);
 ```
 
-This will invoke `UserController.getUser` like a normal function, performing validation before executing the handler.
+Local procedures have these main uses:
 
-There are several core use cases for local procedures:
-
-**For SSR, SSG, PPR, and server actions**: You can use the method in a server component:
+**For SSR, SSG, PPR and server actions**: call the method in a server component:
 
 ```tsx showLineNumbers copy filename="src/app/user/page.tsx"
 import UserController from '@/modules/user/user-controller';
 
 export default async function UserPage() {
   const user = await UserController.getUser.fn({
-    params: { id: '69' },
+    params: { id: '123e4567-e89b-12d3-a456-426614174000' },
   });
 
   return (
@@ -74,7 +72,7 @@ export default async function UserPage() {
 }
 ```
 
-**For Next.js server actions**: You can use `fn` inside a server action to call the procedure directly from a form submission. Make sure the procedure has `contentType` set to `'multipart/form-data'` to accept `FormData` as the body:
+**For Next.js server actions**: call `fn` in a server action to run the procedure from a form. Set the procedure's `contentType` to `'multipart/form-data'` so it takes `FormData` as the body:
 
 ```tsx showLineNumbers copy filename="src/app/user/create/page.tsx"
 import UserController from '@/modules/user/user-controller';
@@ -94,7 +92,7 @@ export default function CreateUserPage() {
 }
 ```
 
-**For [AI tool execution](/tools)**: controllers that define procedures with `procedure()` can be passed as a "module" to the `deriveTools` utility to call procedures in the current context without performing HTTP requests.
+**For [AI tool execution](/tools)**: pass a controller with `procedure()` procedures to `deriveTools` as a "module". Its tools call the procedures in the current context, without HTTP requests.
 
 ```ts showLineNumbers copy
 import { deriveTools } from 'vovk';
@@ -103,15 +101,15 @@ const tools = deriveTools({
   modules: { UserController },
 });
 
-console.log(tools); // [{ name, description, parameters, execute }, ...]
+console.log(tools); // [{ name, description, inputSchema, execute, ... }, ...]
 ```
 
 <a name="rules"></a>
 ## Rules of Locally Called Procedures
 
-`fn` functions do not imitate the `Request` object but partially implement the `VovkRequest` interface by exposing only the [custom `vovk` property](/req-vovk) with `async vovk.body()`, `vovk.query()`, `vovk.params()`, and `vovk.meta()`. In other words, properties such as `req.url` or `req.headers` are not defined in the local procedure context. A suitable `req` signature looks like `Pick<VovkRequest<TBody, TQuery, TParams>, 'vovk'>{:ts}`.
+`fn` doesn't imitate the `Request` object. Its `req` has only the [custom `vovk` property](/req-vovk), with `async vovk.body()`, `vovk.query()`, `vovk.params()` and `vovk.meta()`, so properties such as `req.url` or `req.headers` are not defined in a local call. A fitting `req` type is `Pick<VovkRequest<TBody, TQuery, TParams>, 'vovk'>{:ts}`. `vovk.body()` reads a `FormData{:ts}`, `URLSearchParams{:ts}`, `Blob{:ts}`, `ArrayBuffer{:ts}` or typed array body as the server reads a request that carries it, by the content type the RPC client would send. Any other body is passed as it is.
 
-To ensure that the implemented HTTP handler can also be called with `fn`, you can use request object destructuring when defining the handler to use only the `vovk` property:
+So that an HTTP handler also works with `fn`, destructure the request and use only its `vovk` property:
 
 ```ts showLineNumbers copy {16}
 export default class UserController {
@@ -139,7 +137,7 @@ export default class UserController {
 }
 ```
 
-Local procedure is [decorated](./decorator) with the same decorators as the HTTP handler. If you create a decorator to wrap an HTTP handler for use with `fn`, avoid using `NextRequest`‑specific properties like `req.headers`, or `req.nextUrl`.
+A local call runs the same [decorators](./decorator) as the HTTP handler. In a decorator for a handler you call with `fn`, don't use `NextRequest` properties such as `req.headers` or `req.nextUrl`.
 
 ```ts showLineNumbers copy {4}
 import { createDecorator } from 'vovk';
@@ -151,7 +149,7 @@ const myDecorator = createDecorator(({ vovk }, next) => {
 });
 ```
 
-You can detect if the procedure is called locally by checking `req.url`, which is `undefined` when called via `fn`:
+To detect a local call, check `req.url`: it is `undefined` in a call through `fn`:
 
 ```ts showLineNumbers copy {4}
 import { createDecorator } from 'vovk';
@@ -167,7 +165,7 @@ const myDecorator = createDecorator((req, next) => {
 });
 ```
 
-Even though `req` is not a `Request`, you can still use Next.js features like `headers` or `cookies` from `next/headers` in the local procedure context:
+`req` is not a `Request`, but a local call can still use Next.js functions such as `headers` or `cookies` from `next/headers`:
 
 ```ts showLineNumbers copy {5}
 import { createDecorator } from 'vovk';
@@ -182,7 +180,7 @@ const myDecorator = createDecorator(async ({ vovk }, next) => {
 
 ---
 
-An HTTP decorator such as `@get`, `@post`, etc., is not required for a local procedure to work. The only requirement is to use the `procedure` function to create the procedure.
+A local procedure needs no HTTP decorator such as `@get` or `@post`. It only needs to be made with the `procedure` function.
 
 ```ts showLineNumbers copy filename="src/modules/user/user-procedures.ts"
 import { z } from 'zod';
@@ -204,7 +202,7 @@ UserProcedures.updateUser.fn({
 });
 ```
 
-When a static class is implemented this way, it behaves like a "validated service", which can be attached to the controller later or used as a standalone collection of validated functions.
+A class written this way works as a "validated service". Attach its procedures to a controller later, or use it on its own as a set of validated functions.
 
 ```ts showLineNumbers copy filename="src/modules/user/user-controller.ts" {7}
 import { prefix, post } from 'vovk';
@@ -213,6 +211,8 @@ import UserProcedures from './user-procedures';
 @prefix('users')
 export default class UserController {
   @post('{id}')
-  static updateUser = UserProcedures.updateUser.bind(UserProcedures);
+  static updateUser = UserProcedures.updateUser;
 }
 ```
+
+Assign the procedure itself. `.bind()` returns a plain function: it has no `fn`, and the emitted schema loses the procedure's validation, which client-side validation, OpenAPI, the Python and Rust clients and AI tools read.

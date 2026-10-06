@@ -342,10 +342,10 @@ For connections outlasting what proxies / load-balancers tolerate, or when you w
 ```ts
 // Server — yield until a break point, then let the stream end
 static streamPoll = procedure({
-  query: z.object({ i: z.string() }),
+  query: z.object({ i: z.string().regex(/^\d{1,6}$/) }), // from 2^53 on, ++i stays put and the stream never ends
   iteration: z.object({ i: z.number() }),
 }).handle(async function* (req) {
-  let i = parseInt(req.vovk.query().i, 10);
+  let i = Number(req.vovk.query().i);
   while (true) {
     yield { i: ++i };
     await new Promise((r) => setTimeout(r, 1000));

@@ -3,6 +3,7 @@ mod test_common;
 mod test_segments;
 mod test_shapes;
 mod test_requests;
+mod test_runtime;
 
 // Helper function to create objects with specific validation issues
 pub fn get_constraining_object(key: Option<String>) -> serde_json::Value {        

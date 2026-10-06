@@ -1,10 +1,10 @@
 # Decorators Overview
 
-Vovk.ts uses decorators to attach metadata and behavior to controller methods. This page gives a comprehensive overview of all built-in decorators, the `decorate` alternative, and guidance on when to use each approach.
+Vovk.ts uses decorators to add metadata and behavior to controllers and their procedures.
 
 ## HTTP Method Decorators
 
-HTTP method decorators define the HTTP method and path for a procedure. They are the only **required** decorator for a procedure to be reachable via HTTP.
+An HTTP method decorator sets the HTTP method and path of a procedure. It is the only decorator a procedure **requires** to be reachable over HTTP.
 
 | Decorator | HTTP Method |
 |-----------|-------------|
@@ -16,15 +16,15 @@ HTTP method decorators define the HTTP method and path for a procedure. They are
 | `@head()` | HEAD |
 | `@options()` | OPTIONS |
 
-Each accepts an optional path and options object:
+Each takes an optional path and an optional options object:
 
 ```ts showLineNumbers copy
-import { get, prefix } from 'vovk';
+import { get, prefix, type VovkRequest } from 'vovk';
 
 @prefix('users')
 export default class UserController {
   @get('{id}', { cors: true, headers: { 'x-custom': 'value' } })
-  static getUser(req, { id }: { id: string }) {
+  static getUser(req: VovkRequest, { id }: { id: string }) {
     return { id };
   }
 }
@@ -32,13 +32,14 @@ export default class UserController {
 
 **Options:**
 
-- `cors?: boolean` — adds CORS headers and handles OPTIONS automatically, for the methods of that path that set it.
+- `cors?: boolean` — adds CORS headers and answers OPTIONS, for the methods of that path that set it.
 - `headers?: Record<string, string>` — custom response headers. See [Response Headers](/response#headers) for dynamic headers.
-- `staticParams?: Record<string, string>[]` — (`@get` only) static params for `generateStaticParams()`. See [Static Segment](/static-segment) for details.
+- `staticParams?: Record<string, string>[]` — `@get` only: static params for `generateStaticParams()`. See [Static Segment](/static-segment).
+- `before?: (req: VovkRequest) => unknown` — runs on an HTTP request before the segment's [`onBefore`](/segment#creating-segments), the custom decorators and the handler, with the controller as `this`; an error it throws becomes the response.
 
 ### Auto-Generated Paths
 
-Every HTTP decorator provides an `.auto()` method that derives the path from the method name in kebab-case:
+Every HTTP decorator has an `.auto()` method that makes the path from the method name, in kebab-case:
 
 ```ts showLineNumbers copy
 export default class UserController {
@@ -50,25 +51,11 @@ export default class UserController {
 }
 ```
 
-## Class Decorators
+With a `params` schema, `.auto()` also adds each param to the path: `getUser` with `{ id }` becomes `get-user/{id}`.
 
-### `@prefix`
+## `@operation`
 
-Prepends a sub-path to all endpoints in a controller:
-
-```ts showLineNumbers copy
-import { prefix, get } from 'vovk';
-
-@prefix('users')
-export default class UserController {
-  @get('{id}') // => GET /api/users/{id}
-  static getUser() { /* ... */ }
-}
-```
-
-### `@operation`
-
-Attaches [OpenAPI](/openapi) metadata to a procedure:
+Adds [OpenAPI](/openapi) metadata to a procedure:
 
 ```ts showLineNumbers copy
 import { operation, get } from 'vovk';
@@ -80,11 +67,27 @@ export default class UserController {
 }
 ```
 
-Also provides `@operation.error()` for documenting error responses and `@operation.tool()` for [AI tool](/tools) metadata.
+`@operation.error()` documents error responses, and `@operation.tool()` sets [AI tool](/tools) metadata.
+
+## Class Decorators
+
+### `@prefix`
+
+Adds a path in front of every endpoint of a controller:
+
+```ts showLineNumbers copy
+import { prefix, get } from 'vovk';
+
+@prefix('users')
+export default class UserController {
+  @get('{id}') // => GET /api/users/{id}
+  static getUser() { /* ... */ }
+}
+```
 
 ### `@cloneControllerMetadata`
 
-Copies all metadata from a parent controller to a child class, useful for reusing a controller in multiple [segments](/segment):
+Copies all metadata from a parent controller to a child class. Use it to reuse a controller in several [segments](/segment):
 
 ```ts showLineNumbers copy
 import { prefix, cloneControllerMetadata } from 'vovk';
@@ -97,7 +100,7 @@ export default class UserControllerV2 extends UserController {}
 
 ## Custom Decorators
 
-Use `createDecorator` to build custom middleware-style decorators for cross-cutting concerns like authentication, logging, or caching. See the [Custom Decorators](/decorator) page for full API documentation and the [Decorator Examples](/decorator-examples) page for practical patterns.
+`createDecorator` builds your own middleware-style decorators for concerns that many procedures share, such as authentication, logging or caching. See the [Custom Decorators](/decorator) page for the API and the [Decorator Examples](/decorator-examples) page for common patterns.
 
 ```ts showLineNumbers copy
 import { createDecorator, get, HttpException, HttpStatus, type VovkRequest } from 'vovk';
@@ -116,135 +119,5 @@ export default class UserController {
     const { userId } = req.vovk.meta();
     // ...
   }
-}
-```
-
-## `decorate` Function
-
-The `decorate` function provides an alternative to the stacked decorator syntax. Instead of using `@decorator` annotations, you pass decorator results to `decorate` (which returns `{ handle }`). The controller prefix is defined via `static prefix`. This is useful when you want to avoid decorators entirely or need more flexibility in how procedures are defined.
-
-```ts showLineNumbers copy
-import { decorate, get, post, operation, HttpStatus, procedure } from 'vovk';
-import { z } from 'zod';
-
-class UserController {
-  static prefix = 'users';
-
-  static updateUser = decorate(
-    post('{id}'),
-    operation({
-      summary: 'Update user',
-      description: 'Updates a user by ID',
-    }),
-    operation.error(HttpStatus.BAD_REQUEST, 'Invalid input'),
-    procedure({
-      params: z.object({ id: z.string() }),
-      body: z.object({ email: z.email() }),
-      query: z.object({ notify: z.enum(['email', 'push', 'none']) }),
-    }),
-  ).handle(async (req, { id }) => {
-    const body = await req.vovk.body();
-    const { notify } = req.vovk.query();
-    return { id, ...body, notify };
-  });
-}
-
-export default UserController;
-```
-
-All arguments to `decorate` are decorator results; `decorate` returns an object with a `.handle()` method that accepts the handler (or a `procedure` can be included as one of the arguments). The prefix is set as a `static prefix` property on the class — equivalent to using the `@prefix()` decorator.
-
-### With Custom Decorators
-
-Custom decorators created with `createDecorator` work with `decorate` as well:
-
-```ts showLineNumbers copy
-static getUser = decorate(
-  get('{id}'),
-  authGuard(),
-).handle(async (req: VovkRequest) => {
-  const { userId } = req.vovk.meta();
-  // ...
-});
-```
-
-### Without Validation
-
-For handlers that don't need validation, pass a plain function to `.handle()`:
-
-```ts showLineNumbers copy
-static listUsers = decorate(
-  get(),
-).handle(
-  async () => {
-    return [];
-  }
-);
-```
-
-## Decorator Syntax vs `decorate`
-
-Both approaches produce identical results in terms of functionality, types, and generated RPC modules. Choose based on your preference and project conventions.
-
-### When to Use Decorators
-
-- You're already using TypeScript decorators in your project.
-- You prefer the visual separation of concerns that stacked decorators provide.
-- You want the most concise syntax for simple procedures.
-
-```ts showLineNumbers copy
-@operation({ summary: 'Get user' })
-@get('{id}')
-@authGuard()
-static getUser = procedure({
-  params: z.object({ id: z.string() }),
-}).handle(async (req, { id }) => {
-  return { id };
-});
-```
-
-### When to Use `decorate`
-
-- You want to avoid decorators (`experimentalDecorators` or TC39 Stage 3).
-- You prefer a functional composition style.
-- You want all metadata for a procedure in one expression.
-
-```ts showLineNumbers copy
-class UserController {
-  static prefix = 'users';
-
-  static getUser = decorate(
-    get('{id}'),
-    authGuard(),
-    operation({ summary: 'Get user' }),
-    procedure({
-      params: z.object({ id: z.string() }),
-    }),
-  ).handle(async (req, { id }) => {
-    return { id };
-  });
-}
-
-export default UserController;
-```
-
-### Mixing Both
-
-You can mix decorator and `decorate` syntax within the same controller:
-
-```ts showLineNumbers copy
-@prefix('users')
-export default class UserController {
-  // Decorator syntax
-  @get()
-  static listUsers = procedure().handle(async () => []);
-
-  // decorate syntax
-  static getUser = decorate(
-    get('{id}'),
-    procedure({
-      params: z.object({ id: z.string() }),
-    }),
-  ).handle(async (req, { id }) => ({ id }));
 }
 ```

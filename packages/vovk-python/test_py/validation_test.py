@@ -1,8 +1,9 @@
+import json
 import unittest
 from typing import Generator, cast, List
 from jsonschema import ValidationError
-from generated_python_client.src.test_generated_python_client import HttpException, WithValidationRPC
-from utils import noop, get_constraining_object
+from generated_python_client.src.test_generated_python_client import ClientSweepRPC, HttpException, PetstoreAPI, WithValidationRPC
+from utils import fake_transport, json_response, noop, get_constraining_object
 from io import BytesIO
 
 class TestValidation(unittest.TestCase):
@@ -282,6 +283,21 @@ class TestValidation(unittest.TestCase):
     def test_union_body(self) -> None:
         data = WithValidationRPC.handle_octet_stream_or_json_data(body={"hello": "world"})
         self.assertEqual(data, {'type': 'none', 'hello': 'world'})
+
+    def test_union_body_file(self) -> None:
+        # the file branch of a file-or-JSON body goes out as the binary type the procedure declares
+        data = WithValidationRPC.handle_octet_stream_or_json_data(body=b'abc')
+        self.assertEqual(data, {'type': 'image/png', 'hello': 'none'})
+
+    def test_javascript_patterns(self) -> None:
+        # z.emoji(), /^\p{L}+$/u, a named group and \u{...}: valid JavaScript patterns that Python's re can't compile
+        body: ClientSweepRPC.PostPatternsBody = {'emoji': '😀', 'letters': 'Zoë', 'user': 'ab@x', 'smile': '😀'}
+        self.assertEqual(ClientSweepRPC.post_patterns(body=body), body)
+
+    def test_javascript_pattern_properties(self) -> None:
+        with fake_transport(json_response(None)) as sent:
+            PetstoreAPI.create_tags(body={'Zoë': 'x'})
+        self.assertEqual(json.loads(sent[0].request.body or ''), {'Zoë': 'x'})
 
     def test_binary_octet_stream(self) -> None:
         binary_content = b"hello binary world"

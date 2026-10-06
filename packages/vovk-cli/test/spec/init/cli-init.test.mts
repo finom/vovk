@@ -12,14 +12,7 @@ import { DOWN, ENTER, runScript, SPACE } from '../../lib/run-script.mts';
 const skipOtherPackageManagers = process.env.VOVK_TEST_ALL_PACKAGE_MANAGERS !== '1';
 
 const combos = {
-  /*
-    Answers sequence for prompts:
-    - validationLibrary
-    - updateTsConfig
-    - bundle
-    - updateScripts
-    - langs
-  */
+  // answers in prompt order: validationLibrary, updateTsConfig, bundle, updateScripts, langs
   NO_VALIDATION: [
     // Validation library: None
     'N',
@@ -148,6 +141,12 @@ await describe('CLI init', async () => {
     });
   }
 
+  async function setDevScript(dev: string) {
+    const packageJSON = JSON.parse(await fs.readFile(path.join(cwd, dir, 'package.json'), 'utf-8')) as PackageJson;
+    packageJSON.scripts = { ...packageJSON.scripts, dev };
+    await fs.writeFile(path.join(cwd, dir, 'package.json'), JSON.stringify(packageJSON, null, 2));
+  }
+
   await it('Works with --yes and does not change other scripts', async () => {
     await createNextApp();
 
@@ -221,7 +220,7 @@ await describe('CLI init', async () => {
 
   await it('Works with --yes and --update-scripts=implicit --skip-install', async () => {
     await createNextApp();
-    await vovkInit('--yes --update-scripts=implicit');
+    await vovkInit('--yes --update-scripts=implicit --skip-install');
     await assertConfig(['vovk.config.mjs'], assertConfig.makeConfig('zod'));
 
     await assertDeps({
@@ -257,19 +256,21 @@ await describe('CLI init', async () => {
 
   await it('Preserves next dev flags with --update-scripts=implicit', async () => {
     await createNextApp();
+    await setDevScript('next dev --turbopack -p 4000');
     await vovkInit('--yes --update-scripts=implicit --skip-install');
 
     await assertScripts({
-      dev: 'vovk dev --next-dev',
+      dev: 'vovk dev --next-dev -- --turbopack -p 4000',
     });
   });
 
   await it('Preserves next dev flags with --update-scripts=explicit', async () => {
     await createNextApp();
+    await setDevScript('next dev --turbopack -p 4000');
     await vovkInit('--yes --update-scripts=explicit');
 
     await assertScripts({
-      dev: 'cross-env PORT=3000 concurrently "next dev" "vovk dev" --kill-others',
+      dev: 'cross-env PORT=4000 concurrently "next dev --turbopack -p 4000" "vovk dev" --kill-others',
     });
   });
 
@@ -400,6 +401,12 @@ await describe('CLI init', async () => {
     });
 
     await assertTsConfig();
+  });
+
+  await it('Works with --yes and --no-update-ts-config', async () => {
+    await createNextApp();
+    await vovkInit('--yes --no-update-ts-config --skip-install');
+    await assertTsConfig(true);
   });
 
   await it('Works with prompting and --validation-library=none', async () => {

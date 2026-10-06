@@ -7,13 +7,13 @@ import { ProgressiveExample } from '../../components/vovk-examples';
   [View Progressive example on examples.vovk.dev »](https://examples.vovk.dev/progressive)
 </div>
 
-A common use of the [JSON Lines](/jsonlines) format is to sequentially send multiple data chunks in response to a single request. This is useful for long‑running operations, such as LLM completions, where you want to deliver partial results as they become available.
+[JSON Lines](/jsonlines) is often used to send several chunks of data, one after another, in answer to one request. Long-running operations, such as LLM completions, use it to deliver partial results as they become ready.
 
-But what if you don’t know which chunk will arrive first, second, and so on? In this case, you can use an experimental feature called “progressive response,” inspired by Dan Abramov’s proposal [Progressive JSON](https://overreacted.io/progressive-json/), from which the “progressive” name originates.
+When you don't know which chunk comes first, use the experimental “progressive response”. It is inspired by Dan Abramov's proposal [Progressive JSON](https://overreacted.io/progressive-json/), which gave it its name.
 
-Let's say you have two functions that return data after some random delay: `getUsers` and `getTasks`, implemented as static methods of a service class. In a real application, these could be API calls or queries to different databases.
+Take two functions that return data after a random delay: `getUsers` and `getTasks`, static methods of a service class. In a real app, these could be API calls or queries to different databases.
 
-With the help of the [JSONLinesResponder class](#jsonlinesresponder), we can create a simple service method that looks like this:
+With the [JSONLinesResponder class](/jsonlines#jsonlinesresponder), a service method sends each result when it is ready:
 
 ```ts showLineNumbers copy
 // ...
@@ -26,11 +26,11 @@ void Promise.all([
 // ...
 ```
 
-- Once `getUsers()` or `getTasks()` resolves, `resp.send` sends a JSON line to the client.
+- When `getUsers()` or `getTasks()` resolves, `resp.send` sends a JSON line to the client.
 - When all promises resolve, `resp.close` closes the response stream.
-- If any promise rejects, `resp.throw` sends an error response to the client.
+- If a promise rejects, `resp.throw` sends an error to the client.
 
-The full implementation of the service module looks like this:
+The full service module:
 
 ```ts showLineNumbers copy filename="src/modules/progressive/progressive-service.ts" source="examples/kitchen-sink"
 import type { JSONLinesResponder, VovkIteration } from 'vovk';
@@ -73,7 +73,7 @@ export default class ProgressiveService {
 ```
 *[The code above is fetched from GitHub repository.](https://github.com/finom/vovk/blob/main/examples/kitchen-sink/src/modules/progressive/progressive-service.ts)*
 
-On the controller side, instantiate `JSONLinesResponder`, pass it to the service method, and return it as the response.
+In the controller, create a `JSONLinesResponder`, pass it to the service method and return it as the response.
 
 ```ts showLineNumbers copy
 // ...
@@ -83,7 +83,7 @@ return responder;
 // ...
 ```
 
-The full controller implementation with typing and validation looks like this:
+The full controller, with types and validation:
 
 ```ts showLineNumbers copy filename="src/modules/progressive/progressive-controller.ts" source="examples/kitchen-sink"
 import { procedure, get, JSONLinesResponder, prefix, type VovkIteration } from 'vovk';
@@ -127,13 +127,13 @@ export default class ProgressiveController {
 ```
 *[The code above is fetched from GitHub repository.](https://github.com/finom/vovk/blob/main/examples/kitchen-sink/src/modules/progressive/progressive-controller.ts)*
 
-For the client-side, we will use the `progressive` function from the `vovk` package, which creates a promise for each property of the resulting object. It accepts the RPC method to call (e.g., `ProgressiveRPC.streamProgressiveResponse`) and optional input parameters. The function returns an object with promises per property, which can be awaited separately.
+On the client, use the `progressive` function from the `vovk` package. It takes the RPC method to call (such as `ProgressiveRPC.streamProgressiveResponse`) and optional input parameters. It returns an object with a promise for each property, and you await each one on its own.
 
 ```ts showLineNumbers copy
 const { users: usersPromise, tasks: tasksPromise } = progressive(ProgressiveRPC.streamProgressiveResponse);
 ```
 
-If the RPC method requires input parameters, you can pass them as the second argument:
+If the RPC method takes input parameters, pass them as the second argument:
 
 ```ts showLineNumbers copy
 const { users: usersPromise, tasks: tasksPromise } = progressive(ProgressiveRPC.streamProgressiveResponse, {
@@ -142,7 +142,7 @@ const { users: usersPromise, tasks: tasksPromise } = progressive(ProgressiveRPC.
 });
 ```
 
-After that, the promises can be awaited separately, and the data will be available as soon as the corresponding JSON line is received from the server:
+Each promise resolves as soon as its JSON line arrives from the server:
 
 ```ts showLineNumbers copy
 usersPromise.then(console.log).catch(console.error);
@@ -151,9 +151,9 @@ tasksPromise.then(console.log).catch(console.error);
 
 ---
 
-Behind the scenes, `progressive` returns a [Proxy](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Proxy) that implements a `get` trap to return a promise for each accessed property.
+`progressive` returns a [Proxy](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Proxy) whose `get` trap returns a promise for each property you read.
 
-- When a new JSON line arrives, the corresponding promise resolves with that data.
-- If a JSON line arrives for a property without an existing promise, the promise is created and resolved (so it can be retrieved later).
-- When the response closes, all unsettled promises are rejected with an error indicating that the connection closed before sending a value for that property.
-- If the response errors, all unsettled promises are rejected with that error.
+- When a JSON line arrives, the matching promise resolves with its data.
+- A JSON line for a property that has no promise yet creates the promise, already resolved, for you to read later.
+- When the response closes, every pending promise is rejected with an error saying that the connection closed before a value for that property came.
+- If the response fails, every pending promise is rejected with its error.

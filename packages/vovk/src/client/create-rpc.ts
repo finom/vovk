@@ -11,9 +11,10 @@ import { defaultHandler } from './default-handler.js';
 import { defaultStreamHandler } from './default-stream-handler.js';
 import { fetcher as defaultFetcher } from './fetcher.js';
 import { encodeURIComponentWellFormed, serializeQuery } from './serialize-query.js';
-import { getStyledSerializers } from './serialize-styled.js';
+import { fromJSON, getStyledSerializers } from './serialize-styled.js';
+import { takesNullBody } from './takes-null-body.js';
 
-export type { CombinedSpec, VovkHandlerSchema, VovkRequest };
+export type { CombinedSpec, VovkHandlerSchema, VovkRequest, VovkRPCModule, VovkValidateOnClient };
 
 const trimPath = (path: string) => path.trim().replace(/^\/|\/$/g, '');
 
@@ -22,8 +23,10 @@ const isUnsafeSegment = (value: string) => /^(?:\.|%2e){0,2}$/i.test(value);
 
 const getHandlerPath = <T extends ControllerStaticMethod>(endpoint: string, params?: VovkControllerParams<T>) => {
   let result = endpoint;
-  for (const [key, value] of Object.entries(params ?? {})) {
+  for (const [key, given] of Object.entries(params ?? {})) {
     const placeholder = `{${key}}`;
+    // as in the query, a Date is written as its ISO string, an invalid one as nothing
+    const value = fromJSON(given);
     // a missing value keeps its placeholder, which the fetcher reports
     if (!result.includes(placeholder) || value === undefined || value === null) continue;
     const segment = String(value);
@@ -81,6 +84,14 @@ const toFormBody = (
   return form;
 };
 
+// a FormData without files goes urlencoded, as an object does, when the procedure takes no multipart
+const toURLEncodedForm = (form: FormData, contentTypes: string[]) =>
+  contentTypes.includes('application/x-www-form-urlencoded') &&
+  !contentTypes.includes('multipart/form-data') &&
+  !Array.from(form.values()).some((value) => value instanceof Blob)
+    ? new URLSearchParams(Array.from(form.entries()) as [string, string][])
+    : form;
+
 // a module promise, as from import('vovk-ajv'), gives its validateOnClient export
 const resolveValidateOnClient = async <OPTS>(
   validateOnClient: VovkValidateOnClient<OPTS> | Promise<{ validateOnClient: VovkValidateOnClient<OPTS> }> | undefined
@@ -113,7 +124,6 @@ export const createRPC = <T, OPTS extends Record<string, KnownAny> = VovkFetcher
   options?: VovkFetcherOptions<OPTS> & { segmentNameOverride?: string }
 ): VovkRPCModule<T, OPTS> => {
   const schema = givenSchema as VovkSchema; // fixes incompatibilities with JSON module
-  // fetcher ??= defaultFetcher as NonNullable<typeof fetcher>;
   const segmentNamePath = options?.segmentNameOverride ?? segmentName;
   const segmentSchema = schema.segments[segmentName];
   if (!segmentSchema)
@@ -135,7 +145,9 @@ export const createRPC = <T, OPTS extends Record<string, KnownAny> = VovkFetcher
 
   const forceApiRoot = segmentSchema.forceApiRoot;
   const configRootEntry = schema.meta?.config?.rootEntry;
-  const originalApiRoot = forceApiRoot ?? options?.apiRoot ?? (configRootEntry ? `/${configRootEntry}` : '/api');
+  // an empty rootEntry serves the API from the root of the origin
+  const originalApiRoot =
+    forceApiRoot ?? options?.apiRoot ?? (typeof configRootEntry === 'string' ? `/${configRootEntry}` : '/api');
 
   for (const [staticMethodName, handlerSchema] of Object.entries(controllerSchema.handlers ?? {})) {
     const { path, httpMethod, validation } = handlerSchema;
@@ -179,15 +191,21 @@ export const createRPC = <T, OPTS extends Record<string, KnownAny> = VovkFetcher
           : (givenFetcher ?? (defaultFetcher as unknown as VovkFetcher<OPTS>)));
 
       const contentTypes: string[] = validation?.body?.['x-contentType'] ?? [];
+      // null is no body, as undefined is, unless the body schema takes null; the validator sees the same
+      const givenBody = input.body === null && !takesNullBody(validation?.body) ? undefined : input.body;
       // an object goes out as a form only when JSON can't carry it: no JSON declared, or a file inside;
       // it's validated as the object, so numbers and arrays keep their types
       const formSource =
         contentTypes.some((type) => FORM_CONTENT_TYPES.includes(type)) &&
-        isFormSource(input.body) &&
-        (!contentTypes.some(isJSONContentType) || holdsBlob(input.body))
-          ? input.body
+        isFormSource(givenBody) &&
+        (!contentTypes.some(isJSONContentType) || holdsBlob(givenBody))
+          ? givenBody
           : null;
-      const body = formSource ? toFormBody(formSource, contentTypes, styled?.appendFormField) : input.body;
+      const body = formSource
+        ? toFormBody(formSource, contentTypes, styled?.appendFormField)
+        : givenBody instanceof FormData
+          ? toURLEncodedForm(givenBody, contentTypes)
+          : givenBody;
 
       const validate: Parameters<typeof fetcher>[0]['validate'] = async (
         validationInput,
@@ -226,7 +244,8 @@ export const createRPC = <T, OPTS extends Record<string, KnownAny> = VovkFetcher
 
       const internalInput = {
         ...mergeOptions<OPTS>(options, { validateOnClient: optionsResolvedValidateOnClient }, input),
-        body: body ?? null,
+        // undefined is no body; null is left only for a body schema that takes it
+        body,
         query: input.query ?? {},
         params: input.params ?? {},
       };
@@ -238,7 +257,7 @@ export const createRPC = <T, OPTS extends Record<string, KnownAny> = VovkFetcher
       return input.transform ? input.transform(respData, resp) : respData;
     }) as ClientMethod<KnownAny, KnownAny, KnownAny>;
 
-    // TODO use Object.freeze, Object.seal or Object.defineProperty to avoid mutation
+    // TODO: make these read-only
     handler.schema = handlerSchema;
     handler.controllerSchema = controllerSchema;
     handler.segmentSchema = segmentSchema;

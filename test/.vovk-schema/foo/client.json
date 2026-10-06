@@ -239,7 +239,8 @@
                   },
                   "required": [
                     "hello"
-                  ]
+                  ],
+                  "additionalProperties": false
                 },
                 "query": {
                   "type": "object",
@@ -250,7 +251,8 @@
                   },
                   "required": [
                     "search"
-                  ]
+                  ],
+                  "additionalProperties": false
                 },
                 "params": {
                   "type": "object",
@@ -265,7 +267,8 @@
                   "required": [
                     "foo",
                     "bar"
-                  ]
+                  ],
+                  "additionalProperties": false
                 },
                 "vovkParams": {
                   "type": "object",
@@ -280,7 +283,8 @@
                   "required": [
                     "foo",
                     "bar"
-                  ]
+                  ],
+                  "additionalProperties": false
                 }
               },
               "required": [
@@ -288,7 +292,8 @@
                 "query",
                 "params",
                 "vovkParams"
-              ]
+              ],
+              "additionalProperties": false
             }
           },
           "operationObject": {
@@ -507,7 +512,8 @@
               },
               "required": [
                 "hello"
-              ]
+              ],
+              "additionalProperties": false
             }
           },
           "path": "handle-output",
@@ -534,16 +540,10 @@
             },
             "output": {
               "$schema": "https://json-schema.org/draft/2020-12/schema",
-              "anyOf": [
-                {
-                  "type": "boolean"
-                },
-                {
-                  "type": "number"
-                },
-                {
-                  "type": "string"
-                }
+              "type": [
+                "boolean",
+                "number",
+                "string"
               ]
             }
           },
@@ -578,7 +578,8 @@
               },
               "required": [
                 "value"
-              ]
+              ],
+              "additionalProperties": false
             }
           },
           "path": "handle-stream",
@@ -633,7 +634,8 @@
               },
               "required": [
                 "value"
-              ]
+              ],
+              "additionalProperties": false
             }
           },
           "path": "handle-responder-stream",
@@ -698,7 +700,7 @@
                 "str_email": {
                   "type": "string",
                   "format": "email",
-                  "pattern": "^(?!\\.)(?!.*\\.\\.)([A-Za-z0-9_'+\\-\\.]*)[A-Za-z0-9_+-]@([A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
+                  "pattern": "^(?:[A-Za-z0-9_'+\\-]+\\.)*[A-Za-z0-9_'+\\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
                 },
                 "str_url": {
                   "type": "string",
@@ -712,7 +714,7 @@
                 "str_datetime": {
                   "type": "string",
                   "format": "date-time",
-                  "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+                  "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
                 },
                 "arr_minItems": {
                   "minItems": 1,
@@ -769,31 +771,18 @@
                   ]
                 },
                 "logical_allOf": {
-                  "allOf": [
-                    {
-                      "type": "object",
-                      "properties": {
-                        "a": {
-                          "type": "string"
-                        }
-                      },
-                      "required": [
-                        "a"
-                      ],
-                      "additionalProperties": {}
+                  "type": "object",
+                  "properties": {
+                    "a": {
+                      "type": "string"
                     },
-                    {
-                      "type": "object",
-                      "properties": {
-                        "b": {
-                          "type": "number"
-                        }
-                      },
-                      "required": [
-                        "b"
-                      ],
-                      "additionalProperties": {}
+                    "b": {
+                      "type": "number"
                     }
+                  },
+                  "required": [
+                    "a",
+                    "b"
                   ]
                 }
               },
@@ -928,7 +917,8 @@
               "required": [
                 "hello",
                 "search"
-              ]
+              ],
+              "additionalProperties": false
             }
           },
           "path": "handle-multipart-and-json-data",
@@ -989,7 +979,8 @@
                 "hello",
                 "file",
                 "search"
-              ]
+              ],
+              "additionalProperties": false
             }
           },
           "path": "handle-multipart-data-with-file",
@@ -1056,7 +1047,8 @@
                 "hello",
                 "files",
                 "search"
-              ]
+              ],
+              "additionalProperties": false
             }
           },
           "path": "handle-multipart-data-with-multiple-files",
@@ -1107,7 +1099,8 @@
               "required": [
                 "hello",
                 "search"
-              ]
+              ],
+              "additionalProperties": false
             }
           },
           "path": "handle-url-encoded-data",
@@ -1150,7 +1143,8 @@
               "required": [
                 "hello",
                 "search"
-              ]
+              ],
+              "additionalProperties": false
             }
           },
           "path": "handle-text-plain-data",
@@ -1177,7 +1171,8 @@
               },
               "required": [
                 "fileName"
-              ]
+              ],
+              "additionalProperties": false
             }
           },
           "path": "handle-octet-stream-data",
@@ -1226,7 +1221,8 @@
               "required": [
                 "type",
                 "hello"
-              ]
+              ],
+              "additionalProperties": false
             }
           },
           "path": "handle-octet-stream-or-json-data",
@@ -1346,7 +1342,8 @@
               },
               "required": [
                 "value"
-              ]
+              ],
+              "additionalProperties": false
             }
           },
           "path": "validate-each-iteration",
@@ -1380,7 +1377,8 @@
               },
               "required": [
                 "value"
-              ]
+              ],
+              "additionalProperties": false
             }
           },
           "path": "validate-each-responder-iteration",
@@ -1441,7 +1439,8 @@
                   },
                   "required": [
                     "hello"
-                  ]
+                  ],
+                  "additionalProperties": false
                 },
                 "query": {
                   "type": "object",
@@ -1452,7 +1451,8 @@
                   },
                   "required": [
                     "search"
-                  ]
+                  ],
+                  "additionalProperties": false
                 },
                 "params": {
                   "type": "object",
@@ -1467,7 +1467,8 @@
                   "required": [
                     "foo",
                     "bar"
-                  ]
+                  ],
+                  "additionalProperties": false
                 },
                 "vovkParams": {
                   "type": "object",
@@ -1482,7 +1483,8 @@
                   "required": [
                     "foo",
                     "bar"
-                  ]
+                  ],
+                  "additionalProperties": false
                 }
               },
               "required": [
@@ -1490,7 +1492,8 @@
                 "query",
                 "params",
                 "vovkParams"
-              ]
+              ],
+              "additionalProperties": false
             }
           },
           "path": "all-as-func/{foo}/{bar}",
@@ -1551,7 +1554,8 @@
                   },
                   "required": [
                     "hello"
-                  ]
+                  ],
+                  "additionalProperties": false
                 },
                 "query": {
                   "type": "object",
@@ -1562,7 +1566,8 @@
                   },
                   "required": [
                     "search"
-                  ]
+                  ],
+                  "additionalProperties": false
                 },
                 "params": {
                   "type": "object",
@@ -1577,7 +1582,8 @@
                   "required": [
                     "foo",
                     "bar"
-                  ]
+                  ],
+                  "additionalProperties": false
                 },
                 "vovkParams": {
                   "type": "object",
@@ -1592,7 +1598,8 @@
                   "required": [
                     "foo",
                     "bar"
-                  ]
+                  ],
+                  "additionalProperties": false
                 }
               },
               "required": [
@@ -1600,7 +1607,8 @@
                 "query",
                 "params",
                 "vovkParams"
-              ]
+              ],
+              "additionalProperties": false
             }
           },
           "path": "all-no-http-as-func/{foo}/{bar}",
@@ -1643,7 +1651,8 @@
                     "required": [
                       "id",
                       "name"
-                    ]
+                    ],
+                    "additionalProperties": false
                   }
                 },
                 "hasNextPage": {
@@ -1656,7 +1665,8 @@
               "required": [
                 "items",
                 "hasNextPage"
-              ]
+              ],
+              "additionalProperties": false
             }
           },
           "path": "handle-pagination",
@@ -1687,7 +1697,8 @@
               "required": [
                 "size",
                 "type"
-              ]
+              ],
+              "additionalProperties": false
             }
           },
           "path": "handle-wildcard-content-type",
@@ -1721,7 +1732,8 @@
               },
               "required": [
                 "hello"
-              ]
+              ],
+              "additionalProperties": false
             }
           },
           "path": "handle-wildcard-content-type-with-json-body",
@@ -1744,7 +1756,8 @@
               },
               "required": [
                 "ok"
-              ]
+              ],
+              "additionalProperties": false
             }
           },
           "path": "handle-content-type-without-body",
@@ -1767,7 +1780,8 @@
               },
               "required": [
                 "ok"
-              ]
+              ],
+              "additionalProperties": false
             }
           },
           "path": "handle-content-type-disabled",
@@ -1798,7 +1812,8 @@
               "required": [
                 "size",
                 "type"
-              ]
+              ],
+              "additionalProperties": false
             }
           },
           "path": "handle-image-wildcard",
@@ -1829,7 +1844,8 @@
               "required": [
                 "size",
                 "content"
-              ]
+              ],
+              "additionalProperties": false
             }
           },
           "path": "handle-binary-octet-stream",
@@ -1949,7 +1965,8 @@
               "required": [
                 "hello",
                 "search"
-              ]
+              ],
+              "additionalProperties": false
             }
           },
           "path": "handle-string-content-type-json",
@@ -1992,7 +2009,8 @@
               "required": [
                 "hello",
                 "search"
-              ]
+              ],
+              "additionalProperties": false
             }
           },
           "path": "handle-string-content-type-text-plain",
@@ -2060,7 +2078,8 @@
                   },
                   "required": [
                     "hello"
-                  ]
+                  ],
+                  "additionalProperties": false
                 },
                 "query": {
                   "type": "object",
@@ -2071,7 +2090,8 @@
                   },
                   "required": [
                     "search"
-                  ]
+                  ],
+                  "additionalProperties": false
                 },
                 "params": {
                   "type": "object",
@@ -2086,7 +2106,8 @@
                   "required": [
                     "foo",
                     "bar"
-                  ]
+                  ],
+                  "additionalProperties": false
                 },
                 "vovkParams": {
                   "type": "object",
@@ -2101,7 +2122,8 @@
                   "required": [
                     "foo",
                     "bar"
-                  ]
+                  ],
+                  "additionalProperties": false
                 }
               },
               "required": [
@@ -2109,7 +2131,8 @@
                 "query",
                 "params",
                 "vovkParams"
-              ]
+              ],
+              "additionalProperties": false
             }
           },
           "operationObject": {
@@ -2239,7 +2262,8 @@
               },
               "required": [
                 "hello"
-              ]
+              ],
+              "additionalProperties": false
             }
           },
           "path": "handle-output",
@@ -2273,7 +2297,8 @@
               },
               "required": [
                 "value"
-              ]
+              ],
+              "additionalProperties": false
             }
           },
           "path": "handle-stream",

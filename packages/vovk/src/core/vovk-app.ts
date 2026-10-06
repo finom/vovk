@@ -11,7 +11,7 @@ import type {
 import { HttpMethod, HttpStatus } from '../types/enums.js';
 import type { VovkRequest } from '../types/request.js';
 import { HttpException, isHttpException } from './http-exception.js';
-import { JSONLinesResponder, Responder } from './json-lines-responder.js';
+import { JSONLinesResponder, Responder, setResponderHooks } from './json-lines-responder.js';
 
 // conflictsWith: the other controllers whose own handler has the same method and path in the segment
 type Route = { staticMethod: RouteHandler; controller: VovkController; conflictsWith?: VovkController[] };
@@ -19,9 +19,8 @@ type Route = { staticMethod: RouteHandler; controller: VovkController; conflicts
 // a route segment as the literals around its params: "{from}-{to}.json" is ['', '-', '.json'] around ['from', 'to']
 type ParamSegment = { literals: string[]; paramNames: string[] };
 
-// the param values of a path segment in paramNames order, each as long as possible from the left, as a greedy
-// regex would take it; the literals are found from the right with lastIndexOf, so a long segment costs linear time
-// where a regex could backtrack for seconds
+// param values in paramNames order, each as long as a greedy regex would take it; lastIndexOf finds the literals
+// from the right, so a long segment costs linear time where a regex could backtrack for seconds
 function matchParamSegment(pathSegment: string, { literals }: ParamSegment) {
   const prefix = literals[0];
   const suffix = literals[literals.length - 1];
@@ -49,7 +48,9 @@ type SegmentHooks = {
 };
 
 // the catch-all is the one array param, a dynamic parent folder such as [lang] adds string params
-export const getCatchAllPath = (params: Record<string, string[] | string | undefined>) =>
+export type VovkRouteParams = Record<string, string | string[] | undefined>;
+
+export const getCatchAllPath = (params: VovkRouteParams) =>
   Object.values(params).find((value): value is string[] => Array.isArray(value)) ?? [];
 
 // redirect(), notFound(), forbidden() and unauthorized() from next/navigation throw these for Next.js to answer
@@ -122,26 +123,26 @@ class VovkApp {
     OPTIONS: new Map(),
   };
 
-  GET = async (req: Request, data: { params: Promise<Record<string, string[]>> }, segmentName: string) =>
+  GET = async (req: Request, data: { params: Promise<VovkRouteParams> }, segmentName: string) =>
     this.#callMethod({ httpMethod: HttpMethod.GET, req, params: await data.params, segmentName });
 
-  POST = async (req: Request, data: { params: Promise<Record<string, string[]>> }, segmentName: string) =>
+  POST = async (req: Request, data: { params: Promise<VovkRouteParams> }, segmentName: string) =>
     this.#callMethod({ httpMethod: HttpMethod.POST, req, params: await data.params, segmentName });
-  PUT = async (req: Request, data: { params: Promise<Record<string, string[]>> }, segmentName: string) =>
+  PUT = async (req: Request, data: { params: Promise<VovkRouteParams> }, segmentName: string) =>
     this.#callMethod({ httpMethod: HttpMethod.PUT, req, params: await data.params, segmentName });
 
-  PATCH = async (req: Request, data: { params: Promise<Record<string, string[]>> }, segmentName: string) =>
+  PATCH = async (req: Request, data: { params: Promise<VovkRouteParams> }, segmentName: string) =>
     this.#callMethod({ httpMethod: HttpMethod.PATCH, req, params: await data.params, segmentName });
 
-  DELETE = async (req: Request, data: { params: Promise<Record<string, string[]>> }, segmentName: string) =>
+  DELETE = async (req: Request, data: { params: Promise<VovkRouteParams> }, segmentName: string) =>
     this.#callMethod({ httpMethod: HttpMethod.DELETE, req, params: await data.params, segmentName });
 
-  HEAD = async (req: Request, data: { params: Promise<Record<string, string[]>> }, segmentName: string) =>
+  HEAD = async (req: Request, data: { params: Promise<VovkRouteParams> }, segmentName: string) =>
     VovkApp.withoutBody(
       await this.#callMethod({ httpMethod: HttpMethod.HEAD, req, params: await data.params, segmentName })
     );
 
-  OPTIONS = async (req: Request, data: { params: Promise<Record<string, string[]>> }, segmentName: string) =>
+  OPTIONS = async (req: Request, data: { params: Promise<VovkRouteParams> }, segmentName: string) =>
     this.#callMethod({ httpMethod: HttpMethod.OPTIONS, req, params: await data.params, segmentName });
 
   // synchronous, so a body JSON can't serialize throws where the handler's errors are caught
@@ -171,9 +172,10 @@ class VovkApp {
     return response;
   };
 
-  // the status, message and cause a caught error answers with
   private static toErrorResponse(e: unknown) {
-    if (isHttpException(e)) {
+    // status 0 is what a client throws for a call that got no response, its message and cause hold the URL and the
+    // input, so in production it is internal too
+    if (isHttpException(e) && !(e.statusCode === HttpStatus.NULL && process.env.NODE_ENV === 'production')) {
       // Response takes a status from 200 to 599 only
       const isValidStatus = e.statusCode >= 200 && e.statusCode <= 599;
       return {
@@ -243,7 +245,6 @@ class VovkApp {
       onBefore: controller?._onBefore,
     };
 
-  // per route: its path segments, the ones holding params by index, and a param named twice
   #routeShapeCache = new Map<
     string,
     { segments: string[]; paramSegments: Map<number, ParamSegment>; duplicateParam: string | undefined }
@@ -278,7 +279,6 @@ class VovkApp {
     return shape;
   };
 
-  // the params of a route for a path, or null when the path doesn't match the route
   #matchRoute = (route: string, path: string[]) => {
     const { segments, paramSegments, duplicateParam } = this.#getRouteShape(route);
     if (segments.length !== path.length) return null;
@@ -310,7 +310,6 @@ class VovkApp {
     const pathStr = path.join('/');
     const isCacheable = !hasEncodedSlash && pathStr.length <= VovkApp.#ROUTE_MATCH_CACHE_MAX_PATH_LENGTH;
 
-    // Fast path: Check if this exact path has been matched before
     let matchCache = isCacheable ? this.#routeMatchCache.get(handlers) : undefined;
     const cachedMatch = matchCache?.get(pathStr);
     if (cachedMatch) {
@@ -343,7 +342,6 @@ class VovkApp {
 
       [methodKey] = methodKeys;
 
-      // Cache successful matches, an ambiguous joined path must not become a cache key
       if (methodKey && isCacheable) {
         if (!matchCache) {
           matchCache = new Map();
@@ -375,7 +373,7 @@ class VovkApp {
       // a segment set up without initSegment names its controllers by _segmentName
       const isInSegment = segment ? segment.controllers.has(controller) : controller._segmentName === segmentName;
       if (!isInSegment) return;
-      const prefix = controller.prefix ?? '';
+      const prefix = controller._prefix ?? '';
 
       Object.entries(staticMethods ?? {}).forEach(([path, staticMethod]) => {
         const fullPath = [prefix, path].filter(Boolean).join('/');
@@ -469,7 +467,7 @@ class VovkApp {
   }: {
     httpMethod: HttpMethod;
     req: Request;
-    params: Record<string, string[]>;
+    params: VovkRouteParams;
     segmentName: string;
   }) => {
     const req = request as VovkRequest;
@@ -478,7 +476,7 @@ class VovkApp {
     try {
       headerList = request.headers;
     } catch {
-      // this is static rendering environment, headers are not available
+      // static rendering has no headers
       headerList = null;
     }
     const xMeta = headerList?.get('x-meta');
@@ -487,7 +485,6 @@ class VovkApp {
       try {
         xMetaHeader = JSON.parse(xMeta);
       } catch {
-        // malformed client input is a 400, not an uncaught SyntaxError
         return this.#respondWithError({
           req,
           statusCode: HttpStatus.BAD_REQUEST,
@@ -499,7 +496,7 @@ class VovkApp {
     if (xMetaHeader) reqMeta(req, { xMetaHeader });
 
     let route: Route | null = null;
-    // the body of a result the catch answers instead, cancelled so what produces it stops
+    // cancelled when the catch answers instead, so whatever produces the body stops
     let unsentBody: ReadableStream | null = null;
 
     try {
@@ -545,6 +542,7 @@ class VovkApp {
         meta: <T = unknown>(meta?: T | null) => reqMeta<T>(req, meta),
         params: () => methodParams,
       };
+      setResponderHooks(req, { onError: (error) => void VovkApp.callOnError(onError, error, req) });
 
       await staticMethod._options?.before?.call(controller, req);
       await onBefore?.(req);

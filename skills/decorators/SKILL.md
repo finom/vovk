@@ -1,6 +1,6 @@
 ---
 name: decorators
-description: Vovk.ts decorators — built-in (`@prefix`, `@operation`, `@get/@post/@put/@patch/@del`, `.auto()`) and custom via `createDecorator`. Covers authorization / auth decorators, middleware-style wrapping (pre-handler + post-handler logic), `req.vovk.meta()` for cross-decorator state, stacking order, the `decorate()` alternative for projects without `experimentalDecorators`, and the local (`.fn()`) vs HTTP context distinction. Use whenever the user asks to "write a custom decorator", "add auth middleware", "protect an endpoint", "build an authorization decorator", "createDecorator", "use decorate without experimentalDecorators", "stack decorators", "share data between decorator and handler", "prefix all routes", "@auto", "decorator execution order". Does NOT cover procedure authoring → hand off to `procedure` skill. Does NOT cover `@operation` for OpenAPI beyond auth-related fields → hand off to `openapi` skill. Does NOT cover `@operation.x-tool` for tool derivation → hand off to `tools` skill.
+description: Vovk.ts decorators — built-in (`@prefix`, `@operation`, `@get/@post/@put/@patch/@del`, `.auto()`) and custom via `createDecorator`. Covers authorization / auth decorators, middleware-style wrapping (pre-handler + post-handler logic), `req.vovk.meta()` for cross-decorator state, stacking order, and the local (`.fn()`) vs HTTP context distinction. Use whenever the user asks to "write a custom decorator", "add auth middleware", "protect an endpoint", "build an authorization decorator", "createDecorator", "stack decorators", "share data between decorator and handler", "prefix all routes", "@auto", "decorator execution order". Does NOT cover procedure authoring → hand off to `procedure` skill. Does NOT cover `@operation` for OpenAPI beyond auth-related fields → hand off to `openapi` skill. Does NOT cover `@operation.x-tool` for tool derivation → hand off to `tools` skill.
 ---
 
 # Vovk.ts decorators
@@ -11,7 +11,7 @@ Decorators wrap static methods on controllers. Three kinds:
 - **Metadata decorators** (`@prefix`, `@operation`) — attach info, no behavior change.
 - **Custom decorators** (`createDecorator`) — middleware wrapping handler. How auth, logging, feature flags attach.
 
-Two syntaxes: `@decorator` (needs `experimentalDecorators`) — default. `decorate(...)` — function-form fallback, no TS flag; only on request.
+One syntax: `@decorator`. `vovk init` enables `experimentalDecorators` in `tsconfig.json`; a webpack build (`next build --webpack`, Next.js 15's default) needs it, Turbopack (Next.js 16's default) compiles vovk's decorators either way.
 
 ## Scope
 
@@ -23,7 +23,6 @@ Covers:
 - `createDecorator` — runs before/after handler.
 - Auth pattern with `req.vovk.meta()` state passing.
 - Stacking order (top-down — outermost runs first).
-- `decorate()` alt syntax.
 - Local (`.fn()`) context detection.
 
 Out of scope:
@@ -214,44 +213,15 @@ Auth: put authentication **at top** (outermost) → populates `meta()` before do
 
 Not every decorator uses `req`. Placement rule depends on what decorator does:
 
-- **Wrapping decorators** — read `req` / call `next()` (auth, logging, timing, any `createDecorator(handler, …)` with non-null handler). Stack **below `@get`/`@post`/etc.** in source order. HTTP decorator registers handler by capturing `controller[propertyKey]` at application time (TS bottom-up) → decorators below already baked into what gets registered. Decorators **above** `@get` applied after route registered → wrapping is dead code for HTTP calls, never see `req`.
+- **Wrapping decorators** — read `req` / call `next()` (auth, logging, timing, any `createDecorator(handler, …)` with non-null handler). Run on HTTP and `.fn()` calls on either side of `@get`/`@post`/etc.: dispatcher calls latest wrapper, so one applied after HTTP decorator (written above it) still sees `req`. Order stays top-to-bottom. Convention: stack them **below** HTTP decorator.
 - **Schema-only decorators** — `@operation`, anything written as `createDecorator(null, initHandler)`. Only mutate handler schema (OpenAPI, tool derivation, etc.), pass through at runtime. Placement doesn't change behavior; convention puts them **on top** (above `@get`) for readability — metadata reads naturally before HTTP verb line.
 
 ```ts
 @operation({ summary: 'List users' })  // schema-only — on top, reads like a doc comment
 @get('/users')                          // HTTP decorator
-@authGuard()                            // wrapping — must be below @get
+@authGuard()                            // wrapping — below @get by convention
 static listUsers = procedure().handle(/* ... */);
 ```
-
-## `decorate()` — no `experimentalDecorators`
-
-**Use only when user explicitly asks** (or when something forbids TS flag). `@decorator` syntax is default + what every other example here uses. `decorate()` is pure-function alt with same effect, no `experimentalDecorators`:
-
-```ts
-import { decorate, put, operation, procedure } from 'vovk';
-import { z } from 'zod';
-
-class UserController {
-  static prefix = 'users';
-
-  static updateUser = decorate(
-    put('{id}'),
-    operation({ summary: 'Update user' }),
-    procedure({
-      params: z.object({ id: z.string().uuid() }),
-      body: z.object({ email: z.string().email() }),
-    }),
-  ).handle(async (req, { id }) => {
-    const { email } = await req.vovk.body();
-    return UserService.update(id, { email });
-  });
-}
-```
-
-Order: args to `decorate()` execute top-to-bottom at runtime — first arg (`put('{id}')`) outermost, runs first pre-handler; last arg innermost, runs last. Same rule as `@` syntax, written as list.
-
-`@prefix` static-property equivalent: `static prefix = 'users';`.
 
 ## Local vs HTTP context
 
@@ -299,10 +269,6 @@ Stack `@authGuard() @roleGuard('admin')` — auth at top (runs first, sets `user
 
 Timing decorator wrapping `next()` — record start, await, record end. Apply to class via shared constant + `@` on every method, or lift to Next.js middleware if every route needs it.
 
-### "Use Vovk without `experimentalDecorators`"
-
-`decorate(put('x'), procedure({ ... }))` for every route. `static prefix = '...'` instead of `@prefix`.
-
 ### "Share state between two decorators"
 
 Define shared type (`type SharedMeta = { user: User }`). Decorator 1: `req.vovk.meta<SharedMeta>({ user })`. Decorator 2: `const { user } = req.vovk.meta<SharedMeta>()`. Same alias both sides — `meta()` merges, TypeScript stays in sync.
@@ -321,7 +287,6 @@ If you skip guard for one callsite, audit every other `.fn()` callsite for same 
 - **`meta()` merges, doesn't replace.** Pass `null` to clear. Multiple decorators setting different keys all land in final object.
 - **Client `x-meta` sandboxed.** Under `xMetaHeader` in `meta()` — server-trusted state stays safe. Don't collapse together.
 - **Throw to short-circuit.** `throw new HttpException(...)` is standard control-flow for auth failures. Returning response works but unusual + easy to misread.
-- **`experimentalDecorators` vs `decorate()`**: default to `@decorator` syntax with `experimentalDecorators` enabled — every example in this skill (and Vovk's own docs) uses it. Reach for `decorate()` only when user asks, or when something forbids TS flag. Mixing both in one project is legal but confusing; pick one.
 - **Local context has no `req.url`.** If decorator dereferences HTTP-specific fields, guard. `next/headers` works in both contexts for header/cookie access.
 - **Decorators on `.fn()` still run.** If you don't want auth in SSR, either don't stack decorator on that procedure or branch inside body. Controller-only procedures (no HTTP decorator) can still have custom decorators — run on every `.fn()` call.
 - **CORS via `cors: true`** is coarse + needs segment's `route.ts` to export `OPTIONS` from `initSegment()` (`export const { GET, POST, ..., OPTIONS } = initSegment();`) — else preflight 405s. For per-origin allowlists, skip option + use custom decorator or Next.js middleware.

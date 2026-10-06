@@ -1,7 +1,7 @@
 'use client';
 import { useQuery } from '@tanstack/react-query';
 import { useParams } from 'next/navigation';
-import { CustomerRPC } from '@/client';
+import { CustomerRPC } from '@/client/customer';
 import Demo from '@/components/demo';
 
 export default function SpecificCustomerTenantPage() {

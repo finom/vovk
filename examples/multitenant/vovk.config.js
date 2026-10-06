@@ -1,6 +1,12 @@
 // @ts-check
 /** @type {import('vovk').VovkConfig} */
 const config = {
+  composedClient: {
+    enabled: false,
+  },
+  segmentedClient: {
+    enabled: true,
+  },
   outputConfig: {
     imports: {
       validateOnClient: 'vovk-ajv',

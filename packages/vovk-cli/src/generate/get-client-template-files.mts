@@ -17,7 +17,12 @@ export interface ClientTemplateFile {
   // the client's output directory, a segmented client puts a folder per segment into it
   outCwdRelativeDir: string;
   templateDef: VovkStrictConfig['clientTemplateDefs'][string];
+  // the package name a Python or Rust template, or a template one requires, uses
+  packageNameKey?: 'py_name' | 'rs_name';
 }
+
+const getPackageNameKey = (templatePath: string | null | undefined) =>
+  templatePath?.startsWith('vovk-python/') ? 'py_name' : templatePath?.startsWith('vovk-rust/') ? 'rs_name' : undefined;
 
 export async function getClientTemplateFiles({
   config,
@@ -47,7 +52,6 @@ export async function getClientTemplateFiles({
 
   for (const templateName of fromTemplates) {
     if (!(templateName in config.clientTemplateDefs)) {
-      // js family removed in v4
       if (['js', 'jsBase', 'schemaJs', 'openapiJs'].includes(templateName)) {
         throw new Error(`The "${templateName}" template was removed in v4. Use "ts" instead.`);
       }
@@ -63,7 +67,7 @@ export async function getClientTemplateFiles({
   const entries = Object.entries(usedTemplateDefs) as [] as [
     string,
     VovkStrictConfig['clientTemplateDefs'][string],
-    { outCwdRelativeDir: string; relativeDir: string } | undefined,
+    Pick<ClientTemplateFile, 'outCwdRelativeDir' | 'relativeDir' | 'packageNameKey'> | undefined,
     string[] | undefined,
   ][];
 
@@ -91,16 +95,21 @@ export async function getClientTemplateFiles({
 
     const outCwdRelativeDir = requiredAt?.outCwdRelativeDir ?? cliOutDir ?? defOutDir ?? configOutDir;
     const templateRelativeDir = requiredAt?.relativeDir ?? '';
+    const packageNameKey = getPackageNameKey(templateDef.templatePath) ?? requiredAt?.packageNameKey;
 
     if (templateAbsolutePath) {
       if (entryType === FileSystemEntryType.FILE) {
         files = [{ filePath: templateAbsolutePath, isSingleFileTemplate: true }];
       } else {
         // the pattern stays relative: glob reads "\" and brackets in a path as pattern syntax
-        files = (await glob('**/*.*', { cwd: templateAbsolutePath, absolute: true, nodir: true })).map((filePath) => ({
-          filePath,
-          isSingleFileTemplate: false,
-        }));
+        const filePaths = await glob('**/*', {
+          cwd: templateAbsolutePath,
+          absolute: true,
+          nodir: true,
+          dot: true,
+          ignore: '**/.DS_Store',
+        });
+        files = filePaths.map((filePath) => ({ filePath, isSingleFileTemplate: false }));
       }
 
       if (files.length === 0) {
@@ -121,6 +130,7 @@ export async function getClientTemplateFiles({
           ),
           outCwdRelativeDir,
           templateDef,
+          packageNameKey,
         });
       }
     }
@@ -149,7 +159,7 @@ export async function getClientTemplateFiles({
         entries.push([
           tName,
           def,
-          { outCwdRelativeDir, relativeDir: path.join(templateRelativeDir, reqRelativeDir) },
+          { outCwdRelativeDir, relativeDir: path.join(templateRelativeDir, reqRelativeDir), packageNameKey },
           chain,
         ]);
       }

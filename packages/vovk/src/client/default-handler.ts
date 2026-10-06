@@ -4,7 +4,6 @@ import type { KnownAny } from '../types/utils.js';
 
 export const DEFAULT_ERROR_MESSAGE = 'Unknown error at defaultHandler';
 
-// Helper function to get a value from an object using dot notation path
 const getNestedValue = (obj: Record<string, KnownAny>, path: string): unknown => {
   return path.split('.').reduce((o, key) => (o && typeof o === 'object' ? o[key] : undefined), obj);
 };
@@ -13,11 +12,10 @@ export const defaultHandler = async ({ response, schema }: { response: Response;
   let result: unknown;
 
   try {
-    // HEAD answers, 204, 205 and 304 have no body, nor has one of zero length: nothing to parse
-    const isEmpty = response.body === null || response.headers.get('content-length') === '0';
-    result = isEmpty ? null : await response.json();
+    // HEAD answers, 204, 205 and 304 have no body, and one sent chunked may have no bytes and no length either
+    const text = response.body === null ? '' : await response.text();
+    result = text === '' ? null : JSON.parse(text);
   } catch (e) {
-    // handle parsing errors
     throw new HttpException(response.status, (e as Error)?.message ?? DEFAULT_ERROR_MESSAGE);
   }
 
@@ -26,7 +24,6 @@ export const defaultHandler = async ({ response, schema }: { response: Response;
       schema.operationObject && 'x-errorMessageKey' in schema.operationObject
         ? (schema.operationObject['x-errorMessageKey'] as string)
         : 'message';
-    // handle server errors
     const errorResponse = (result ?? {}) as Record<string, unknown>;
     // a problem details document (RFC 9457) has no message, its detail or title says what went wrong
     const message = getNestedValue(errorResponse, errorKey) ?? errorResponse.detail ?? errorResponse.title;

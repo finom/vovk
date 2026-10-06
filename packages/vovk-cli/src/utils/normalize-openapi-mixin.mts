@@ -1,8 +1,8 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import type { OpenAPIObject } from 'openapi3-ts/oas31';
-import type { HttpMethod, VovkConfig } from 'vovk';
-import { toIdentifier, type VovkOperationObject, type VovkStrictConfig } from 'vovk/internal';
+import type { VovkConfig } from 'vovk';
+import { type HttpMethod, toIdentifier, type VovkOperationObject, type VovkStrictConfig } from 'vovk/internal';
 import * as YAML from 'yaml';
 import type { ProjectInfo } from '../get-project-info/index.mjs';
 import { chalkHighlightThing } from './chalk-highlight-thing.mjs';
@@ -131,7 +131,6 @@ async function getOpenApiSpecRemote({
 }
 
 export async function normalizeOpenAPIMixin({
-  // mixinName,
   mixinModule,
   log,
   cwd = process.cwd(),

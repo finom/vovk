@@ -104,12 +104,8 @@ export default function getCLIAssertions({ cwd, dir }: { cwd: string; dir: strin
         await initVovkApp(tmpVovkProjectDir);
       }
 
-      // Copy the cached project but exclude `.next`: Next.js dev (run while building the
-      // cache) writes volatile `.next/dev/_events_<pid>.json` files and reaps them
-      // asynchronously. Touching a live `.next` races intermittently — `cp -R` fails
-      // "cannot stat ..._events_*.json" and `rm -rf` fails "Directory not empty" (BSD/macOS).
-      // rsync with --exclude never traverses `.next`, sidestepping the race entirely.
-      // Tests regenerate `.next` as needed; only `.vovk-schema` is reused from the cache.
+      // next dev may still write and reap files in the cache's `.next`, which fails cp -R and rm -rf,
+      // so rsync leaves `.next` out; the tests rebuild it
       await runScript(`rsync -a --exclude='.next' ${tmpVovkProjectDir}/ ${projectDir}/`);
     } else {
       // Use createNextApp to create the base project directly

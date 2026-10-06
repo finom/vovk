@@ -77,7 +77,7 @@ const config = {
 export default config;
 ```
 
-**Bake prod API URL** via `clientTemplateDefs.py.outputConfig.origin` — generated client uses this by default. Pattern from hello-world:
+**Bake prod API URL** via `clientTemplateDefs.py.outputConfig.origin` — generated client uses this by default. Required: client sends calls to an absolute URL, so without an origin every call needs `api_root`, and `vovk generate` warns. Pattern from hello-world:
 
 ```ts
 // vovk.config.js
@@ -99,7 +99,7 @@ After this, every `npx vovk generate` (+ every `vovk dev` regen) refreshes Pytho
 
 ## Generated call shape
 
-Types follow `[PascalCaseMethodName][Body|Query|Params|Output]` as `TypedDict`. Methods static, snake_case. Positional arg order from generator (`packages/vovk-python/client-templates/pySrc/__init__.py.ejs:39-49`): only emits slots where validation declared, in this order: `body`, `files` (multipart only, sits between `body` and `query`), `query`, `params`, then always-present trailing kwargs `headers`, `api_root`, `disable_client_validation`.
+Types follow `[PascalCaseMethodName][Body|Query|Params|Output]` as `TypedDict`. Methods static, snake_case. Positional arg order from generator (`packages/vovk-python/client-templates/py-src/__init__.py.ejs:67-78`): only emits slots where validation declared, in this order: `body`, `files` (multipart only, sits between `body` and `query`), `query`, `params`, then always-present trailing kwargs `headers`, `api_root`, `disable_client_validation`.
 
 ```python
 from my_api_client import UserRPC  # whatever package the generator wrote
@@ -117,7 +117,7 @@ params: UserRPC.UpdateUserParams = {
 response = UserRPC.update_user(body=body, query=query, params=params)
 ```
 
-Method names snake_case. Type names PascalCase.
+Method names snake_case. Type names PascalCase. Names alike in snake_case (`getUserByID`, `getUserById`) get the first free suffix, per RPC class in schema order: `get_user_by_id`, `get_user_by_id_2`.
 
 ### Multipart uploads via `files`
 
@@ -237,14 +237,13 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-requires-python = ">=3.8"
-dependencies = ["requests", "jsonschema", "rfc3987", "urllib3==1.26.15"]
+requires-python = ">=3.9"
+dependencies = ["requests", "jsonschema[format-nongpl]", "typing_extensions>=4.0.0; python_version < '3.11'"]
 ```
 
-- `requests` — HTTP client.
-- `jsonschema` — client-side validation.
-- `rfc3987` — URI/IRI validation (used by `jsonschema` format checkers).
-- `urllib3==1.26.15` — pinned to dodge `requests`/`urllib3` v2 compat issues.
+- `requests` — HTTP client; picks its own `urllib3`.
+- `jsonschema[format-nongpl]` — client-side validation; the extra checks formats such as `uri` and `date-time` without GPL libraries. A `pattern` Python's `re` can't compile (`\p{L}`) is left to the server.
+- `typing_extensions` — `NotRequired` and `TypeAlias` before Python 3.11.
 
 Build backend **hatchling**, no runtime overhead past deps above.
 

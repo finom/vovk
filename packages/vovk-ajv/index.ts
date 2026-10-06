@@ -8,10 +8,9 @@ import {
   HttpStatus,
   type VovkJSONSchemaBase,
   type VovkSchema,
-  type VovkValidateOnClient,
 } from 'vovk/create-validate-on-client';
 
-// Handle ESM/CJS interop - these packages export CJS and may have .default wrapper
+// CJS packages: imported from ESM, the export may sit on .default
 const Ajv2020 = _Ajv2020.default ?? _Ajv2020;
 const ajvFormats = _ajvFormats.default ?? _ajvFormats;
 const ajvErrors = _ajvErrors.default ?? _ajvErrors;
@@ -25,7 +24,22 @@ type Target = NonNullable<VovkAjvConfig['target']>;
 
 const DEFAULT_OPTIONS: Options = {};
 
-const createAjv = (options: Options, target: Target, isForm: boolean) => {
+// a pattern is read with the u flag, which \p{…} needs (z.emoji()), and without it when the u flag refuses it,
+// as it does escapes such as \- or \_ that JavaScript and Zod's regexes allow
+const regExp = Object.assign(
+  (pattern: string, flags: string) => {
+    try {
+      return new RegExp(pattern, flags);
+    } catch (error) {
+      if (!flags.includes('u')) throw error;
+      return new RegExp(pattern, flags.replace('u', ''));
+    }
+  },
+  // the code standalone validation would write, which vovk-ajv doesn't generate
+  { code: 'new RegExp' }
+);
+
+const createAjv = (options: Options, target: Target, coercesStrings: boolean) => {
   const AjvClass = target === 'draft-2020-12' ? Ajv2020 : Ajv;
   const ajv = new AjvClass({
     allErrors: true,
@@ -33,11 +47,10 @@ const createAjv = (options: Options, target: Target, isForm: boolean) => {
     addUsedSchema: false,
     // strict mode refuses keywords JSON Schema doesn't define, such as Zod's example or OpenAPI's discriminator and x-*
     strict: false,
-    // with the u flag a pattern refuses escapes that JavaScript and Zod's regexes allow, such as \- or \_
-    unicodeRegExp: false,
-    // a form holds strings, so "5" is checked as the number the server reads it as
-    ...(isForm && { coerceTypes: true }),
+    // a form, the query and params hold strings, so "5" is checked as the number the server reads it as
+    ...(coercesStrings && { coerceTypes: true }),
     ...options,
+    code: { regExp, ...options.code },
   });
   ajvFormats(ajv);
   ajvErrors(ajv);
@@ -54,8 +67,8 @@ type Validator = ValidateFunction | null;
 // Ajv keeps every function it compiles, so a schema compiles once per text, also when each call brings a new object
 type CachedAjv = { ajv: AjvInstance; validators: WeakMap<object, Validator>; byText: Map<string, Validator> };
 
-// one Ajv per options object, draft, and form or not
-const cache = new WeakMap<Options, Partial<Record<`${Target}${'' | ' form'}`, CachedAjv>>>();
+// one Ajv per options object, draft, and whether it coerces strings
+const cache = new WeakMap<Options, Partial<Record<`${Target}${'' | ' coerced'}`, CachedAjv>>>();
 
 // formats ajv-formats doesn't know, such as Zod's cuid, nanoid or e164, pass instead of failing compilation;
 // Zod emits a pattern for most of them, which is still checked
@@ -108,14 +121,14 @@ const getValidator = (
   schema: VovkJSONSchemaBase,
   options: Options,
   target: Target,
-  isForm: boolean,
+  coercesStrings: boolean,
   description: string
 ) => {
   const instances = cache.get(options) ?? {};
   cache.set(options, instances);
-  const key = isForm ? (`${target} form` as const) : target;
+  const key = coercesStrings ? (`${target} coerced` as const) : target;
   const cached = instances[key] ?? {
-    ajv: createAjv(options, target, isForm),
+    ajv: createAjv(options, target, coercesStrings),
     validators: new WeakMap(),
     byText: new Map(),
   };
@@ -154,6 +167,20 @@ const withBinaryPlaceholders = (input: unknown) =>
     ? Object.fromEntries(Object.entries(input).map(([key, value]) => [key, toValidatable(value)]))
     : input;
 
+const isPlainObject = (value: unknown): value is Record<string, unknown> =>
+  typeof value === 'object' && value !== null && [Object.prototype, null].includes(Object.getPrototypeOf(value));
+
+// Ajv coerces in place, so the query and params are checked as a copy and sent as given
+const copyContainers = (value: unknown): unknown =>
+  Array.isArray(value)
+    ? value.map(copyContainers)
+    : isPlainObject(value)
+      ? Object.fromEntries(Object.entries(value).map(([key, item]) => [key, copyContainers(item)]))
+      : value;
+
+// options that make Ajv edit the data it checks, which the caller's query and params must not see
+const writesIntoData = (options: Options) => !!(options.useDefaults || options.removeAdditional || options.coerceTypes);
+
 // a repeated key becomes an array, the way the server parses a form
 const formToObject = (form: FormData | URLSearchParams) => {
   const result: Record<string, unknown> = {};
@@ -184,20 +211,23 @@ const validate = ({
   options: Options;
   target: VovkAjvConfig['target'] | undefined;
 }) => {
-  // binary data is not validated
-  if (!input || !schema || input instanceof Blob) return;
+  // a falsy value is checked, but no value and binary data are not
+  if (input === undefined || !schema || input instanceof Blob) return;
   const schemaTarget = schema.$schema?.includes('://json-schema.org/draft-07/schema') ? 'draft-07' : 'draft-2020-12';
   const isForm = input instanceof FormData || input instanceof URLSearchParams;
-  const { ajv, validator } = getValidator(
-    schema,
-    options,
-    target ?? schemaTarget,
-    isForm,
-    `the ${type} of ${endpoint}`
-  );
+  // a URL carries the query and params as strings
+  const isURLPart = type === 'query' || type === 'params';
+  const description = `the ${type} of ${endpoint}`;
+  // query and params that are valid as given need no copy and no coercion
+  if (isURLPart && !isForm && !writesIntoData(options)) {
+    const { validator } = getValidator(schema, options, target ?? schemaTarget, false, description);
+    // a schema Ajv can't compile is left to the server
+    if (!validator || validator(input)) return;
+  }
+  const { ajv, validator } = getValidator(schema, options, target ?? schemaTarget, isForm || isURLPart, description);
   // the server validates the input anyway
   if (!validator) return;
-  const data = isForm ? formToObject(input) : withBinaryPlaceholders(input);
+  const data = isForm ? formToObject(input) : isURLPart ? copyContainers(input) : withBinaryPlaceholders(input);
 
   if (!validator(data)) {
     throw new HttpException(
@@ -221,7 +251,7 @@ const getConfig = (schema: VovkSchema) => {
   return { options, target };
 };
 
-const validateOnClientAjv = createValidateOnClient({
+export const validateOnClient = createValidateOnClient({
   validate: (input, schema, { endpoint, type, fullSchema }) => {
     const { options, target } = getConfig(fullSchema);
 
@@ -234,23 +264,4 @@ const validateOnClientAjv = createValidateOnClient({
       type,
     });
   },
-});
-
-const configure = ({ options: givenOptions, target: givenTarget }: VovkAjvConfig): VovkValidateOnClient<unknown> =>
-  createValidateOnClient({
-    validate: (input, schema, { endpoint, type, fullSchema }) => {
-      const { options, target } = getConfig(fullSchema);
-      validate({
-        input,
-        schema,
-        target: givenTarget ?? target,
-        endpoint,
-        options: givenOptions ?? options,
-        type,
-      });
-    },
-  });
-
-export const validateOnClient = Object.assign(validateOnClientAjv, {
-  configure,
 });

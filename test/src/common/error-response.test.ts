@@ -1,12 +1,44 @@
-import { deepStrictEqual, strictEqual } from 'node:assert';
+import { deepStrictEqual, ok, strictEqual } from 'node:assert';
 import { describe, it } from 'node:test';
 import { HttpException, HttpStatus } from 'vovk';
-import { type VovkErrorResponse, vovkApp } from 'vovk/internal';
+import { createRPC } from 'vovk/create-rpc';
+import { vovkApp } from '../../../packages/vovk/dist/core/vovk-app.js';
+import type { VovkErrorResponse } from '../../../packages/vovk/dist/types/core.js';
+import { validateOnClient } from '../../../packages/vovk-ajv/index.js';
+
+// the schema a generated client carries for another API: GET customers/{id}, with a params schema
+const billingSchema = {
+  segments: {
+    '': {
+      segmentName: '',
+      emitSchema: true,
+      controllers: {
+        BillingRPC: {
+          rpcModuleName: 'BillingRPC',
+          prefix: 'customers',
+          handlers: {
+            get: {
+              path: '{id}',
+              httpMethod: 'GET',
+              validation: {
+                params: { type: 'object', properties: { id: { type: 'string', pattern: '^cus_' } }, required: ['id'] },
+              },
+            },
+          },
+        },
+      },
+    },
+  },
+};
+const BillingRPC = createRPC(billingSchema, '', 'BillingRPC', undefined, { validateOnClient }) as unknown as {
+  get: (input: { params: { id: string }; apiRoot: string }) => Promise<unknown>;
+};
+// a credential in the API root, as a bot API takes it
+const billingApiRoot = 'https://billing.example/bot123456:SECRET-TOKEN';
 
 // drives the dispatcher directly so NODE_ENV can be toggled per case
 class ErrorResponseController {
   static _segmentName = 'error-response-test';
-  static prefix = '';
 
   static internal = () => {
     throw new Error('connect ECONNREFUSED 10.0.3.14:5432', { cause: { host: 'internal-db.local' } });
@@ -25,6 +57,18 @@ class ErrorResponseController {
     yield { n: 1 };
     throw new HttpException(HttpStatus.PAYMENT_REQUIRED, 'Not enough credits');
   };
+
+  // a handler that answers with what another API sent, through that API's vovk client
+  static clientNetworkFailure = async () =>
+    Response.json(await BillingRPC.get({ params: { id: 'cus_1' }, apiRoot: billingApiRoot }));
+
+  static clientValidationFailure = async () =>
+    Response.json(await BillingRPC.get({ params: { id: 'not-a-customer-7f3a' }, apiRoot: billingApiRoot }));
+
+  static streamClientNetworkFailure = async function* () {
+    yield { n: 1 };
+    yield await BillingRPC.get({ params: { id: 'cus_1' }, apiRoot: billingApiRoot });
+  };
 }
 
 const onErrorCalls: string[] = [];
@@ -40,6 +84,9 @@ vovkApp.routes.GET.set(ErrorResponseController as unknown as ControllerKey, {
   expected: ErrorResponseController.expected,
   'stream-internal': ErrorResponseController.streamInternal,
   'stream-expected': ErrorResponseController.streamExpected,
+  'client-network-failure': ErrorResponseController.clientNetworkFailure,
+  'client-validation-failure': ErrorResponseController.clientValidationFailure,
+  'stream-client-network-failure': ErrorResponseController.streamClientNetworkFailure,
 });
 
 const call = async (route: string) => {
@@ -67,6 +114,17 @@ const withNodeEnv = async (value: string, fn: () => Promise<void>) => {
     await fn();
   } finally {
     env.NODE_ENV = original;
+  }
+};
+
+// fetch() as it fails when the host can't be reached
+const withUnreachableHost = async (fn: () => Promise<void>) => {
+  const original = globalThis.fetch;
+  globalThis.fetch = () => Promise.reject(new TypeError('fetch failed'));
+  try {
+    await fn();
+  } finally {
+    globalThis.fetch = original;
   }
 };
 
@@ -141,5 +199,43 @@ describe('Error response details', () => {
     });
 
     deepStrictEqual(onErrorCalls, ['connect ECONNREFUSED 10.0.3.14:5432']);
+  });
+
+  it('Hides the URL and the credential of a vovk client call that failed to connect in production', async () => {
+    await withUnreachableHost(() =>
+      withNodeEnv('production', async () => {
+        const { status, body } = await call('client-network-failure');
+        const text = JSON.stringify(body);
+
+        strictEqual(status, 500);
+        ok(!text.includes('SECRET-TOKEN') && !text.includes('billing.example'), text);
+      })
+    );
+  });
+
+  it('Hides the URL and the credential of a vovk client call that failed to connect mid stream in production', async () => {
+    await withUnreachableHost(() =>
+      withNodeEnv('production', async () => {
+        const { lines } = await callStream('stream-client-network-failure');
+        const text = JSON.stringify(lines);
+
+        deepStrictEqual(lines[0], { n: 1 });
+        strictEqual(lines[1]?.isError, true);
+        ok(!text.includes('SECRET-TOKEN') && !text.includes('billing.example'), text);
+      })
+    );
+  });
+
+  it('Hides the input and the URL of a failed client-side validation in production', async () => {
+    await withUnreachableHost(() =>
+      withNodeEnv('production', async () => {
+        const { status, body } = await call('client-validation-failure');
+        const text = JSON.stringify(body);
+
+        strictEqual(status, 500);
+        ok(!text.includes('not-a-customer-7f3a'), text);
+        ok(!text.includes('SECRET-TOKEN') && !text.includes('billing.example'), text);
+      })
+    );
   });
 });

@@ -36,53 +36,53 @@ Options:
   -h, --help                                                   display help for command
 ```
 
-The `vovk generate` command creates [TypeScript](/typescript), [Rust](/rust), and [Python](/python) clients from existing [schema](/schema) files and from [OpenAPI mixins](/mixins) declared in the [config](/config). Relevant configuration spans several options and documentation pages, including:
+`vovk generate` creates [TypeScript](/typescript), [Rust](/rust) and [Python](/python) clients from the [schema](/schema) files and from the [OpenAPI mixins](/mixins) of the [config](/config). It uses these config options:
 
-- `composedClient`: settings for the [composed client](/composed), including the output directory, included/excluded segments, and [templates](/templates).
-- `segmentedClient`: settings for the [segmented client](/segmented), including the output directory, included/excluded segments, and [templates](/templates).
-- `outputConfig`: options to configure `origin`, [imports](/imports), [OpenAPI mixins](/mixins), and more.
-- `clientTemplateDefs`: definitions of available [templates](/templates).
+- `composedClient`: the output folder of the [composed client](/composed), the segments it includes or excludes, and its [templates](/templates).
+- `segmentedClient`: the output folder of the [segmented client](/segmented), the segments it includes or excludes, and its [templates](/templates).
+- `outputConfig`: `origin`, [imports](/imports), [OpenAPI mixins](/mixins) and more.
+- `clientTemplateDefs`: the definitions of the [templates](/templates).
 
-See the [config](/config) page for details.
+See the [config](/config) page.
 
-In a Next.js project, a segment whose route file is gone while its schema file remains is left out of the client, with a warning; delete the schema file once the segment is removed.
+In a Next.js project, a segment whose schema file remains after its route file is gone is left out of the client, with a warning. Delete the schema file when you remove a segment. A schema folder given with `--schema-path`, such as that of another project, is used as it is, unless it's the `schemaOutDir` folder.
 
 ## Available Flags
 
 ### Composed Client Flags
 
-- `--composed-only` — generate only the composed client, even if the segmented client is enabled.
-- `--out`, `--composed-out <path>` — override `composedClient.outDir`.
-- `--from`, `--composed-from <templates...>` — override `composedClient.templates`.
-- `--include`, `--composed-include-segments <segments...>` — override `composedClient.includeSegments`.
-- `--exclude`, `--composed-exclude-segments <segments...>` — override `composedClient.excludeSegments`.
+- `--composed-only` — generates only the composed client, even if the segmented client is enabled.
+- `--out`, `--composed-out <path>` — overrides `composedClient.outDir`.
+- `--from`, `--composed-from <templates...>` — overrides `composedClient.fromTemplates`.
+- `--include`, `--composed-include-segments <segments...>` — overrides `composedClient.includeSegments`.
+- `--exclude`, `--composed-exclude-segments <segments...>` — overrides `composedClient.excludeSegments`.
 
 ### Segmented Client Flags
 
-- `--segmented-only` — generate only the segmented client, even if the composed client is enabled.
-- `--segmented-out <path>` — override `segmentedClient.outDir`.
-- `--segmented-from <templates...>` — override `segmentedClient.templates`.
-- `--segmented-include-segments <segments...>` — override `segmentedClient.includeSegments`.
-- `--segmented-exclude-segments <segments...>` — override `segmentedClient.excludeSegments`.
+- `--segmented-only` — generates only the segmented client, even if the composed client is enabled.
+- `--segmented-out <path>` — overrides `segmentedClient.outDir`.
+- `--segmented-from <templates...>` — overrides `segmentedClient.fromTemplates`.
+- `--segmented-include-segments <segments...>` — overrides `segmentedClient.includeSegments`.
+- `--segmented-exclude-segments <segments...>` — overrides `segmentedClient.excludeSegments`.
 
 ### OpenAPI mixin Flags
 
-Mixins extend the sclient declared in one or more OpenAPI specs. See [OpenAPI mixins](/mixins).
+Mixins add the APIs of one or more OpenAPI specs to the client. See [OpenAPI mixins](/mixins).
 
-- `--openapi`, `--openapi-spec <openapi_path_or_urls...>` — use one or more OpenAPI specs (local paths or URLs). For URLs, the command fetches the spec via HTTP GET. Mirrors `outputConfig.segments.mixinName.openAPIMixin.source.url` (remote) or `.source.file` (local).
-- `--openapi-module-name`, `--openapi-get-module-name <names...>` — module names aligned by index with `--openapi`. Mirrors `outputConfig.segments.mixinName.openAPIMixin.getModuleName`. Without it, a module is named after its mixin (`--openapi-mixin-name petstore` gives `petstore`), and mixins without a name give `api`, `api2`, …
-- `--openapi-method-name`, `--openapi-get-method-name <names...>` — method names aligned by index with `--openapi`. Mirrors `outputConfig.segments.mixinName.openAPIMixin.getMethodName`.
-- `--openapi-root-url <urls...>` — root URLs aligned by index with `--openapi`. Mirrors `outputConfig.segments.mixinName.openAPIMixin.apiRoot`.
-- `--openapi-mixin-name <names...>` — mixin names aligned by index with `--openapi`, `mixin`, `mixin2`, … by default. In config, serves as the key in `outputConfig.segments` and defines pseudo-segment names for the mixins.
-- `--openapi-fallback <paths...>` — save OpenAPI specs to the specified paths and use them as a fallback if the URL is unavailable. Paths align by index with `--openapi`.
-- `--watch <s>` — generate the client on start, then watch the schema or OpenAPI spec and regenerate it. Accepts a throttle interval in seconds. For remote specs, performs an HTTP request every `s` seconds; for local files, regenerates on change, once the changed file has stayed the same size for 300 ms.
+- `--openapi`, `--openapi-spec <openapi_path_or_urls...>` — one or more OpenAPI specs, as local paths or URLs. A URL is fetched with HTTP GET. Mirrors `outputConfig.segments.mixinName.openAPIMixin.source.url` (remote) or `.source.file` (local).
+- `--openapi-module-name`, `--openapi-get-module-name <names...>` — module names, matched by index to `--openapi`. Mirrors `outputConfig.segments.mixinName.openAPIMixin.getModuleName`. Without it, a module is named after its mixin (`--openapi-mixin-name petstore` gives `petstore`), and mixins without a name give `api`, `api2`, …
+- `--openapi-method-name`, `--openapi-get-method-name <names...>` — method names, matched by index to `--openapi`. Mirrors `outputConfig.segments.mixinName.openAPIMixin.getMethodName`.
+- `--openapi-root-url <urls...>` — root URLs, matched by index to `--openapi`. Mirrors `outputConfig.segments.mixinName.openAPIMixin.apiRoot`.
+- `--openapi-mixin-name <names...>` — mixin names, matched by index to `--openapi`; `mixin`, `mixin2`, … by default. In the config, the name is the key in `outputConfig.segments` and the pseudo-segment name of the mixin.
+- `--openapi-fallback <paths...>` — saves the OpenAPI specs to these paths and uses them when the URL is unavailable. The paths match `--openapi` by index.
+- `--watch <s>` — generates the client on start, then again on each change of the schema or the OpenAPI spec. Takes a throttle interval in seconds. A remote spec is requested every `s` seconds; a changed local file counts once it has kept the same size for 300 ms.
 
 ### Other Flags
 
-- `--prettify` — prettify output files with [Prettier](https://prettier.io/). Mirrors `composedClient.prettifyClient` and `segmentedClient.prettifyClient`.
-- `--force` — replace files at the output paths that vovk-cli did not generate. Without it, the command writes nothing and names those files. A file counts as generated when its first line is the `Generated by vovk-cli` banner; a JSON file, which can't hold one, when it sits beside a file with the banner. Files that a template copies as they are, or renders without the banner, are replaced either way.
-- `--schema`, `--schema-path <path>` — override the schema folder defined by `schemaOutDir`.
-- `--config`, `--config-path <config>` — override the config file path. By default, all supported filenames are checked; a warning is shown if multiple are found.
-- `--origin <url>` — override `outputConfig.origin`.
-- `--log-level <level>` — set log level: `trace`, `debug`, `info`, `warn`, `error`, `fatal` (default: `info`).
-- `-h, --help` — show help.
+- `--prettify` — formats the output files with [Prettier](https://prettier.io/). Mirrors `composedClient.prettifyClient` and `segmentedClient.prettifyClient`.
+- `--force` — replaces files at the output paths that vovk-cli did not generate. Without it, the command writes nothing and names those files. A file counts as generated when its first line is the `Generated by vovk-cli` banner; a JSON file, which can't hold one, when it sits next to a file with the banner. Files that a template copies as they are, or renders without the banner, are replaced either way.
+- `--schema`, `--schema-path <path>` — overrides the schema folder, `schemaOutDir`.
+- `--config`, `--config-path <config>` — overrides the config file path. By default, the CLI checks every supported file name and warns if it finds more than one.
+- `--origin <url>` — overrides `outputConfig.origin`.
+- `--log-level <level>` — the log level: `trace`, `debug`, `info`, `warn`, `error`, `silent` (default: `info`).
+- `-h, --help` — shows help.

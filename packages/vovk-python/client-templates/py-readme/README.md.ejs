@@ -1,5 +1,10 @@
+---
+imports: ['vovk-python']
+---
 <%- t.getFirstLineBanner('html') %>
-# <%= t.underscoredPackageName %> v<%= t.package.version %> [![Checked with mypy](http://www.mypy-lang.org/static/mypy_badge.svg)](http://mypy-lang.org/) [![Vovk.ts](https://badgen.net/badge/Built%20with/Vovk.ts/333333?icon=https://vovk.dev/icon-white.svg)](https://vovk.dev)
+<% if (t.readme.banner) { %><%- t.readme.banner %>
+
+<% } %># <%= t.underscoredPackageName %> v<%= t.package.version %> [![Checked with mypy](http://www.mypy-lang.org/static/mypy_badge.svg)](http://mypy-lang.org/) [![Vovk.ts](https://badgen.net/badge/Built%20with/Vovk.ts/333333?icon=https://vovk.dev/icon-white.svg)](https://vovk.dev)
 
 
 <%- t.readme.description ?? (`${t.package.description ? `> ${t.package.description}` : ''}`) %>
@@ -16,11 +21,14 @@
     const meta = t.segmentMeta[segment.segmentName] ?? {};
     const segmentPath = segment.forceApiRoot ? '' : typeof meta.segmentNameOverride === 'string' ? meta.segmentNameOverride : segmentName;
     const segmentRoot = (meta.forceApiRoot ?? t.apiRoot ?? '').replace(/\/+$/, '');
-    Object.values(segment.controllers).forEach((controllerSchema) => { %>
+    Object.values(segment.controllers).forEach((controllerSchema) => {
+    // the names the package has
+    const pyModuleName = t.imports['vovk-python'].toPythonIdentifier(controllerSchema.rpcModuleName);
+    const methodNames = t.imports['vovk-python'].getMethodNames(Object.keys(controllerSchema.handlers), t._.snakeCase); %>
 
-## <%= controllerSchema.rpcModuleName %>
+## <%= pyModuleName %>
         <% Object.entries(controllerSchema.handlers).forEach(([handlerName, handlerSchema]) => { %>
-### <%= controllerSchema.rpcModuleName %>.<%= t._.snakeCase(handlerName) %>
+### <%= pyModuleName %>.<%= methodNames.get(handlerName) %>
 <%- handlerSchema.operationObject?.summary ? `> ${handlerSchema.operationObject.summary}` : '' %>
 
 <%- handlerSchema.operationObject?.description ? `${handlerSchema.operationObject.description}` : '' %>

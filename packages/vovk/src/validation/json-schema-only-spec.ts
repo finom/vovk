@@ -32,9 +32,8 @@ export function jsonSchemaToJSONSchemaOnlySpec({ jsonSchema }: { jsonSchema: Vov
   return makeSpec(jsonSchema, (value) => ({ value }));
 }
 
-// Same, but combines body/query/params into one object schema (same envelope as
-// validationSchemasObjectToSingleValidationSchema); validate checks the envelope only
-// (object shape, required slots, unknown keys) and lets slot contents pass
+// the same for body, query and params in one envelope; validate checks only the envelope's shape, required slots
+// and unknown keys, and lets the slot contents pass
 export function jsonSchemasObjectToSingleJSONSchemaOnlySpec({
   schemas,
 }: {

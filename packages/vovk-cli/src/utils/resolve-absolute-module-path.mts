@@ -5,7 +5,6 @@ import { getPublicModuleNameFromPath } from './get-public-module-name-from-path.
 // the root of the running vovk-cli package, this file sits in dist/utils/
 const cliPackageRoot = path.resolve(import.meta.dirname, '../..');
 
-// Returns the path up to and including the last occurrence of the given module name
 export function getPathUpToModule(moduleName: string, fullPath: string) {
   const idx = fullPath.lastIndexOf(moduleName);
   if (idx === -1) return moduleName;
@@ -13,7 +12,6 @@ export function getPathUpToModule(moduleName: string, fullPath: string) {
 }
 
 export function resolveAbsoluteModulePath(modulePath: string, cwd: string) {
-  // If it's an absolute path or starts with '.' (relative), resolve it directly
   if (path.isAbsolute(modulePath) || modulePath.startsWith('.')) {
     return path.resolve(cwd, modulePath);
   }

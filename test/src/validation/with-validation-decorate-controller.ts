@@ -1,9 +1,9 @@
 import {
-  decorate,
   get,
   HttpStatus,
   operation,
   post,
+  prefix,
   procedure,
   put,
   type VovkBody,
@@ -42,20 +42,17 @@ class WithValidationDecorateService {
   }
 }
 
+@prefix('with-validation-decorate')
 class WithValidationDecorateController {
-  static prefix = 'with-validation-decorate';
-
-  static handleAll = decorate(
-    post('all/{foo}/{bar}'),
-    operation({
-      summary: 'Decorate version of handleAll',
-      description: 'This is a decorate description',
-    }),
-    operation.error(HttpStatus.BAD_REQUEST, 'This is a bad request'),
-    procedure({
-      ...HandleAllInput,
-    })
-  ).handle(async ({ vovk }, params) => {
+  @post('all/{foo}/{bar}')
+  @operation({
+    summary: 'Decorate version of handleAll',
+    description: 'This is a decorate description',
+  })
+  @operation.error(HttpStatus.BAD_REQUEST, 'This is a bad request')
+  static handleAll = procedure({
+    ...HandleAllInput,
+  }).handle(async ({ vovk }, params) => {
     const body = await vovk.body();
     const { search } = vovk.query();
     const vovkParams = vovk.params();
@@ -67,50 +64,40 @@ class WithValidationDecorateController {
     });
   });
 
-  static handleBody = decorate(
-    post.auto(),
-    procedure({
-      body: z.object({ hello: z.string().max(5) }),
-    })
-  ).handle(async (req) => {
+  @post.auto()
+  static handleBody = procedure({
+    body: z.object({ hello: z.string().max(5) }),
+  }).handle(async (req) => {
     return req.vovk.body();
   });
 
-  static handleQuery = decorate(
-    get.auto(),
-    procedure({
-      query: z.object({ search: z.string().max(5) }),
-    })
-  ).handle((req) => {
+  @get.auto()
+  static handleQuery = procedure({
+    query: z.object({ search: z.string().max(5) }),
+  }).handle((req) => {
     return req.vovk.query();
   });
 
-  static handleParams = decorate(
-    put('x/{foo}/{bar}/y'),
-    procedure({
-      params: z.object({ foo: z.string().max(5), bar: z.string().max(5) }),
-    })
-  ).handle(async (req) => {
+  @put('x/{foo}/{bar}/y')
+  static handleParams = procedure({
+    params: z.object({ foo: z.string().max(5), bar: z.string().max(5) }),
+  }).handle(async (req) => {
     return req.vovk.params();
   });
 
-  static handleOutput = decorate(
-    get.auto(),
-    procedure({
-      query: z.object({ helloOutput: z.string() }),
-      output: z.object({ hello: z.string().max(5) }),
-    })
-  ).handle(async (req) => {
+  @get.auto()
+  static handleOutput = procedure({
+    query: z.object({ helloOutput: z.string() }),
+    output: z.object({ hello: z.string().max(5) }),
+  }).handle(async (req) => {
     return { hello: req.vovk.query().helloOutput };
   });
 
-  static handleStream = decorate(
-    get.auto(),
-    procedure({
-      query: z.object({ values: z.string().array() }),
-      iteration: z.object({ value: z.string().max(5) }),
-    })
-  ).handle(async function* (req) {
+  @get.auto()
+  static handleStream = procedure({
+    query: z.object({ values: z.string().array() }),
+    iteration: z.object({ value: z.string().max(5) }),
+  }).handle(async function* (req) {
     for (const value of req.vovk.query().values) {
       yield { value };
     }

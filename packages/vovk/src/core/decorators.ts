@@ -39,7 +39,7 @@ const assignSchema = ({
     );
   }
 
-  // the same handler again is fine: initSegment applies the decorate() decorators of a controller in every segment
+  // the same handler declaring the route again is no conflict
   const routes = declaredRoutes.get(controller) ?? new Map<string, string>();
   declaredRoutes.set(controller, routes);
   const declaredBy = routes.get(`${httpMethod} ${path}`);
@@ -68,8 +68,6 @@ const assignSchema = ({
   originalMethod._controller = controller;
   originalMethod._sourceMethod = originalMethod._sourceMethod ?? originalMethod;
   const schema = originalMethod._sourceMethod._getSchema?.(controller);
-  // TODO: Some of these assignments probably not needed anymore
-  originalMethod.schema = schema;
   originalMethod.fn = originalMethod._sourceMethod?.fn;
   originalMethod.definition = originalMethod._sourceMethod?.definition;
   originalMethod._sourceMethod.wrapper = originalMethod;
@@ -82,6 +80,8 @@ const assignSchema = ({
       httpMethod,
     },
   };
+  // the schema of the RPC method, with what the decorators applied before this one added
+  originalMethod.schema = controller._handlers[propertyKey];
 
   methods[path] = originalMethod as RouteHandler;
   methods[path]._options = options;
@@ -115,7 +115,7 @@ function createHTTPDecorator<T extends HttpMethod>(httpMethod: T) {
     function decorator(givenTarget: unknown, propertyKeyOrContext?: unknown): KnownAny {
       return applyDecoratorAdapter(givenTarget, propertyKeyOrContext, (controller, propertyKey) => {
         type Source = { schema?: VovkHandlerSchema; definition?: Record<string, KnownAny> };
-        // a procedure's schema reaches _handlers only once the HTTP decorator is applied, read it from the source method
+        // a procedure's schema reaches _handlers only with the HTTP decorator, so it's read from the source method
         const method = controller[propertyKey] as (Source & { _sourceMethod?: Source }) | undefined;
         const source = method?._sourceMethod ?? method;
         const validation = controller._handlers?.[propertyKey]?.validation ?? source?.schema?.validation;
@@ -146,25 +146,46 @@ function createHTTPDecorator<T extends HttpMethod>(httpMethod: T) {
   return decoratorFactoryWithAuto;
 }
 
+// 2018-09 decorators (SWC without experimentalDecorators) get a class descriptor and reach the class in a finisher
+const isClassDescriptor = (target: unknown) =>
+  typeof target === 'object' && target !== null && (target as { kind?: unknown }).kind === 'class';
+
 /**
  * Prefix for all routes in the controller.
  */
 export const prefix = (givenPath = '') => {
   const path = trimPath(givenPath);
 
-  return (givenTarget: KnownAny, _context?: KnownAny) => {
+  const decorator = (givenTarget: KnownAny, _context?: KnownAny): KnownAny => {
+    if (isClassDescriptor(givenTarget)) {
+      return {
+        ...givenTarget,
+        finisher(klass: KnownAny) {
+          decorator(klass);
+        },
+      };
+    }
     const controller = givenTarget as VovkController;
-    controller.prefix = path;
+    controller._prefix = path;
 
     return givenTarget;
   };
+  return decorator;
 };
 
 /**
  * Clones metadata from parent controller to child controller.
  */
 export function cloneControllerMetadata() {
-  return function inherit<T extends new (...args: KnownAny[]) => KnownAny>(c: T, _context?: KnownAny) {
+  return function inherit<T extends new (...args: KnownAny[]) => KnownAny>(c: T, _context?: KnownAny): T {
+    if (isClassDescriptor(c)) {
+      return {
+        ...(c as object),
+        finisher(klass: T) {
+          inherit(klass);
+        },
+      } as unknown as T;
+    }
     const parent = Object.getPrototypeOf(c) as VovkController;
     const controller = c as unknown as VovkController;
     controller._handlers = { ...parent._handlers, ...controller._handlers };

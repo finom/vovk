@@ -1,67 +1,73 @@
 import type { NextRequest } from 'next/server.js';
-import { createDecorator, decorate, del, get, head, options, patch, post, put, type VovkRequest } from 'vovk';
+import { createDecorator, del, get, head, options, patch, post, prefix, put, type VovkRequest } from 'vovk';
 
 const customDecorator = createDecorator((req: NextRequest & { hello: string }, next, hello: string) => {
   req.hello = hello;
   return next();
 });
 
+@prefix('decorate')
 class DecorateController {
-  static prefix = 'decorate';
-
-  static getMethod = decorate(get()).handle(async () => {
+  @get()
+  static async getMethod() {
     return { method: 'get' };
-  });
+  }
 
-  static postMethod = decorate(post()).handle(async () => {
+  @post()
+  static async postMethod() {
     return { method: 'post' };
-  });
+  }
 
-  static putMethod = decorate(put()).handle(async () => {
+  @put()
+  static async putMethod() {
     return { method: 'put' };
-  });
+  }
 
-  static delMethod = decorate(del()).handle(async () => {
+  @del()
+  static async delMethod() {
     return { method: 'del' };
-  });
+  }
 
-  static patchMethod = decorate(patch()).handle(async () => {
+  @patch()
+  static async patchMethod() {
     return { method: 'patch' };
-  });
+  }
 
-  static headMethod = decorate(head('', { headers: { 'x-head-header': 'head' } })).handle(async () => {
+  @head('', { headers: { 'x-head-header': 'head' } })
+  static async headMethod() {
     return {};
-  });
+  }
 
-  static optionsMethod = decorate(options('', { headers: { 'x-options-header': 'options' } })).handle(async () => {
+  @options('', { headers: { 'x-options-header': 'options' } })
+  static async optionsMethod() {
     return {};
-  });
+  }
 
-  static getWithPath = decorate(get('custom-path')).handle(async () => {
+  @get('custom-path')
+  static async getWithPath() {
     return { path: 'custom-path' };
-  });
+  }
 
-  static getWithHeader = decorate(get('get-with-header', { headers: { 'x-decorator-header': 'hello' } })).handle(
-    async () => {
-      return {};
-    }
-  );
-
-  static getWithCors = decorate(get('get-with-cors', { cors: true })).handle(async () => {
+  @get('get-with-header', { headers: { 'x-decorator-header': 'hello' } })
+  static async getWithHeader() {
     return {};
-  });
+  }
 
-  static getWithBefore = decorate(get('get-with-before', { before: (req) => req.vovk.meta({ before: true }) })).handle(
-    async (req: VovkRequest) => {
-      return { before: req.vovk.meta<{ before: boolean }>().before };
-    }
-  );
+  @get('get-with-cors', { cors: true })
+  static async getWithCors() {
+    return {};
+  }
 
-  static getWithCustomDecorator = decorate(get('get-with-custom-decorator'), customDecorator('world')).handle(
-    async (req: NextRequest & { hello: string }) => {
-      return { hello: req.hello };
-    }
-  );
+  @get('get-with-before', { before: (req) => req.vovk.meta({ before: true }) })
+  static async getWithBefore(req: VovkRequest) {
+    return { before: req.vovk.meta<{ before: boolean }>().before };
+  }
+
+  @get('get-with-custom-decorator')
+  @customDecorator('world')
+  static async getWithCustomDecorator(req: NextRequest & { hello: string }) {
+    return { hello: req.hello };
+  }
 }
 
 export default DecorateController;

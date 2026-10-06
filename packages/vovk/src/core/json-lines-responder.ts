@@ -1,4 +1,5 @@
 import type { StreamAbortMessage } from '../types/core.js';
+import { HttpStatus } from '../types/enums.js';
 import { isHttpException } from './http-exception.js';
 import '../utils/shim.js';
 
@@ -9,9 +10,30 @@ export abstract class Responder {
 // bytes queued for a slow client before send() waits for it to read
 const HIGH_WATER_MARK = 64 * 1024;
 
-// before anything reads the stream, as while a handler sends before it returns the responder, send() waits only
-// past this, so the handler isn't stuck waiting for a read that can't start
+// until something reads the stream, send() waits only past this, so a handler that sends before it returns the
+// responder isn't stuck waiting for a read that can't start
 const UNREAD_LIMIT = 16 * 1024 * 1024;
+
+// the digests of notFound(), forbidden() and unauthorized() from next/navigation: once a stream started Next.js can't
+// answer them, so the error line carries their status
+const NAVIGATION_ERROR_LINES: Record<string, StreamAbortMessage> = {
+  'NEXT_HTTP_ERROR_FALLBACK;401': { isError: true, reason: 'Unauthorized', statusCode: HttpStatus.UNAUTHORIZED },
+  'NEXT_HTTP_ERROR_FALLBACK;403': { isError: true, reason: 'Forbidden', statusCode: HttpStatus.FORBIDDEN },
+  'NEXT_HTTP_ERROR_FALLBACK;404': { isError: true, reason: 'Not found', statusCode: HttpStatus.NOT_FOUND },
+};
+
+type ResponderHooks = { onBeforeSend?: (item: unknown, i: number) => unknown; onError?: (error: unknown) => void };
+
+// what vovk sets on a request before its handler runs, so a responder made with it checks and reports a line the
+// handler sends before it returns the responder
+const HOOKS = Symbol('vovk.responderHooks');
+
+type WithHooks = { [HOOKS]?: ResponderHooks };
+
+export function setResponderHooks(request: object, hooks: ResponderHooks) {
+  const current = (request as WithHooks)[HOOKS];
+  (request as WithHooks)[HOOKS] = current ? { ...current, ...hooks } : hooks;
+}
 
 /**
  * Responder subclass for streaming JSON Lines. @see https://vovk.dev/jsonlines
@@ -69,9 +91,7 @@ export class JSONLinesResponder<T> extends Responder {
         start: (controller) => {
           readableController = controller;
         },
-        // the client read enough of the queue for more lines
         pull: () => this.resume(),
-        // the client stopped reading
         cancel: () => this.stop(),
       },
       { highWaterMark: HIGH_WATER_MARK, size: (chunk: Uint8Array) => chunk.byteLength }
@@ -92,8 +112,12 @@ export class JSONLinesResponder<T> extends Responder {
     this.controller = readableController!;
     this.response = getResponse?.(this) ?? new Response(readableStream, { headers });
 
-    // this will make promise on the client-side to resolve immediately, before sending the first JSON line
+    // an empty first chunk lets the client's fetch resolve before the first line
     this.controller?.enqueue(encoder?.encode(''));
+
+    const hooks = (request as (Request & WithHooks) | null | undefined)?.[HOOKS];
+    if (hooks?.onBeforeSend) this.onBeforeSend = hooks.onBeforeSend as (item: T, i: number) => T | Promise<T>;
+    if (hooks?.onError) this._onError = hooks.onError;
 
     if (request?.signal?.aborted) this.abort();
     else request?.signal?.addEventListener('abort', this.abort, { once: true });
@@ -109,8 +133,7 @@ export class JSONLinesResponder<T> extends Responder {
     await this.enqueue(async () => {
       if (!this.hasSent) {
         this.hasSent = true;
-        // zero timeout lets withValidationLibrary set onBeforeSend before the first send,
-        // otherwise immediate streaming would skip the first iteration validation
+        // a tick for withValidationLibrary to set onBeforeSend, or the first line skips iteration validation
         await new Promise((resolve) => setTimeout(resolve, 0));
       }
       const line = await this.onBeforeSend(item, this.i++);
@@ -138,8 +161,7 @@ export class JSONLinesResponder<T> extends Responder {
     return this.enqueue(() => this.end(errorLine));
   };
 
-  // a step runs after the queued ones, chained so unawaited calls keep their order; one that throws, as a send that
-  // fails iteration validation, ends the stream with an error line and drops the rest
+  // a step that throws, as a send failing iteration validation, ends the stream with an error line and drops the rest
   private enqueue(step: () => unknown) {
     this.queue = this.queue.then(async () => {
       if (this.closed) return;
@@ -161,16 +183,26 @@ export class JSONLinesResponder<T> extends Responder {
   }
 
   private toErrorLine(e: unknown) {
-    // same rule as a non streaming handler, an error other than an HttpException is internal
-    if (!isHttpException(e) && process.env.NODE_ENV === 'production') {
+    const digest = (e as { digest?: unknown } | null)?.digest;
+    if (typeof digest === 'string' && Object.hasOwn(NAVIGATION_ERROR_LINES, digest)) {
+      return JSON.stringify(NAVIGATION_ERROR_LINES[digest]);
+    }
+    // same rule as a non streaming handler: an error other than an HttpException is internal, and so is status 0,
+    // which a client throws for a call that got no response
+    if ((!isHttpException(e) || e.statusCode === HttpStatus.NULL) && process.env.NODE_ENV === 'production') {
       console.error('🐺 Unhandled error in a Vovk stream:', e);
       return JSON.stringify({ isError: true, reason: 'Internal server error' } satisfies StreamAbortMessage);
     }
-    // the client takes a line for an error only with these keys, and statusCode only as a number
+    // the client takes a line for an error only with these keys, and statusCode only as a number; a status outside
+    // 200-599 is 500, as on a JSON response
     const errorLine: StreamAbortMessage = {
       isError: true,
       reason: e instanceof Error ? e.message : e,
-      ...(isHttpException(e) && typeof e.statusCode === 'number' ? { statusCode: e.statusCode } : {}),
+      ...(isHttpException(e) && typeof e.statusCode === 'number'
+        ? {
+            statusCode: e.statusCode >= 200 && e.statusCode <= 599 ? e.statusCode : HttpStatus.INTERNAL_SERVER_ERROR,
+          }
+        : {}),
     };
     try {
       return JSON.stringify(errorLine);

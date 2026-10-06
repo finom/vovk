@@ -10,7 +10,6 @@ export type VovkModuleRenderResult = {
   code: string;
 };
 
-/* CLI Commands */
 export interface DevOptions {
   schemaOut?: string;
   nextDev?: boolean;

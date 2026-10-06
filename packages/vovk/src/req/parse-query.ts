@@ -18,23 +18,19 @@ const MAX_DEPTH = 32;
 
 // bracket key to path segments: "z[d][0][x]" => ["z", "d", "0", "x"], "arr[]" => ["arr", ""] ("" means push)
 function parseKey(key: string): string[] {
-  // The first segment is everything up to the first '[' (or the entire key if no '[')
   const segments: string[] = [];
   const topKeyMatch = key.match(/^([^[\]]+)/);
   if (topKeyMatch) {
     segments.push(topKeyMatch[1]);
   } else {
-    // If it starts with brackets, treat it as empty? (edge case)
     segments.push('');
   }
 
-  // Now capture all bracket parts: [something], [0], []
   const bracketRegex = /\[([^[\]]*)\]/g;
   let match: RegExpExecArray | null;
   while (true) {
     match = bracketRegex.exec(key);
     if (match === null) break;
-    // match[1] is the content inside the brackets
     segments.push(match[1]);
   }
 
@@ -56,11 +52,13 @@ function setEntry(container: QueryContainer, key: string, node: QueryNode): void
   if (isIndex(key)) container.nextIndex = Math.max(container.nextIndex, Number(key) + 1);
 }
 
-// the container under a key; a scalar there can't take a nested key, so a container replaces it
+// the container under a key; a scalar there can't take a nested key, so a container replaces it and keeps the scalar
+// as its first element, as appendValue does
 function getContainer(container: QueryContainer, key: string): QueryContainer {
   const existing = container.get(key);
   if (existing instanceof QueryContainer) return existing;
   const next = new QueryContainer();
+  if (existing !== undefined) setEntry(next, '0', existing);
   setEntry(container, key, next);
   return next;
 }
@@ -134,10 +132,7 @@ export function parseQuery(queryString: string): Record<string, unknown> {
 
   if (!queryString) return {};
 
-  // Split into key=value pairs
-  const pairs = queryString
-    .replace(/^\?/, '') // Remove leading "?" if present
-    .split('&');
+  const pairs = queryString.replace(/^\?/, '').split('&');
 
   for (const pair of pairs) {
     // split at the first "=" only, unencoded "=" is legal inside values (base64, JWTs, signatures)
@@ -148,7 +143,6 @@ export function parseQuery(queryString: string): Record<string, unknown> {
     const decodedKey = decodeQueryComponent(rawKey);
     const decodedVal = decodeQueryComponent(rawVal);
 
-    // Parse bracket notation
     const pathSegments = parseKey(decodedKey);
 
     if (pathSegments.length > MAX_DEPTH + 1) {

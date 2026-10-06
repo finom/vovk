@@ -22,8 +22,8 @@ function prefixIssues(issues: ReadonlyArray<StandardSchemaV1.Issue>, slot: SlotK
   }));
 }
 
-// combines body/query/params Standard Schemas into a single CombinedSpec; top level object
-// shape is validated here, per slot validation and JSON Schema are delegated to slot schemas
+// checks the envelope here and each slot with its own schema; a valid input comes back unchanged, as the AI SDK
+// hands it to execute, which validates and transforms it once
 export function validationSchemasObjectToSingleValidationSchema<TSchemas extends SchemasObject>(
   schemas: TSchemas
 ): CombinedSpec & TSchemas {
@@ -69,15 +69,10 @@ export function validationSchemasObjectToSingleValidationSchema<TSchemas extends
       resolved: { slot: SlotKey; result: StandardSchemaV1.Result<unknown> }[]
     ): StandardSchemaV1.Result<unknown> => {
       const issues: StandardSchemaV1.Issue[] = [...topLevelIssues];
-      const value: Record<string, unknown> = {};
       for (const { slot, result } of resolved) {
-        if (result.issues?.length) {
-          issues.push(...prefixIssues(result.issues, slot));
-        } else {
-          value[slot] = (result as StandardSchemaV1.SuccessResult<unknown>).value;
-        }
+        if (result.issues?.length) issues.push(...prefixIssues(result.issues, slot));
       }
-      return issues.length > 0 ? { issues } : { value };
+      return issues.length > 0 ? { issues } : { value: input };
     };
 
     if (pending.some(({ result }) => isThenable(result))) {
@@ -87,11 +82,11 @@ export function validationSchemasObjectToSingleValidationSchema<TSchemas extends
     return combine(pending as { slot: SlotKey; result: StandardSchemaV1.Result<unknown> }[]);
   };
 
-  const buildJSONSchema = (options: StandardJSONSchemaV1.Options, direction: 'input' | 'output') =>
+  const buildJSONSchema = (options: StandardJSONSchemaV1.Options) =>
     toEnvelopeJSONSchema(
       definedEntries.map(([slot, schema]): [SlotKey, unknown] => [
         slot,
-        schema['~standard'].jsonSchema?.[direction](options) ?? {},
+        schema['~standard'].jsonSchema?.input(options) ?? {},
       ])
     );
 
@@ -99,10 +94,8 @@ export function validationSchemasObjectToSingleValidationSchema<TSchemas extends
     version: 1,
     vendor: 'vovk',
     validate,
-    jsonSchema: {
-      input: (options) => buildJSONSchema(options, 'input'),
-      output: (options) => buildJSONSchema(options, 'output'),
-    },
+    // the output is the input itself, see validate
+    jsonSchema: { input: buildJSONSchema, output: buildJSONSchema },
   };
 
   const result: SchemasObject & { '~standard': CombinedProps } = { '~standard': standard };

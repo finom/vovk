@@ -1,48 +1,52 @@
 import type { ComponentsObject } from 'openapi3-ts/oas31';
+import { decodeJSONPointerToken } from '../../utils/map-json-schema-refs.js';
 
-// collects the trailing name of every $ref in the tree, both `#/components/schemas/X` and `#/$defs/X` styles
-function collectRefNames(node: unknown, into: Set<string>): void {
+function forEachRef(node: unknown, fn: (ref: string) => void): void {
   if (!node || typeof node !== 'object') return;
   if (Array.isArray(node)) {
     for (const item of node) {
-      collectRefNames(item, into);
+      forEachRef(item, fn);
     }
     return;
   }
   for (const [key, value] of Object.entries(node)) {
-    if (key === '$ref' && typeof value === 'string') {
-      const name = value.split('/').pop();
-      if (name) into.add(name);
-    } else {
-      collectRefNames(value, into);
-    }
+    if (key === '$ref' && typeof value === 'string') fn(value);
+    else forEachRef(value, fn);
   }
 }
 
-// shrinks components.schemas to the transitive $ref closure of roots, BFS with a visited set
-// (big specs like Stripe are cyclic); preserves key order for deterministic output
+// the component a $ref points to or into: `#/components/responses/NotFound` is the response NotFound
+function componentOfRef(ref: string): { section: string; name: string } | null {
+  const [hash, components, section, token] = ref.split('/');
+  const name = token === undefined ? null : decodeJSONPointerToken(token);
+  if (hash !== '#' || components !== 'components' || !section || name === null) return null;
+  return { section, name };
+}
+
+// the schemas the roots reach through $refs, also through other components such as a response; the reached set
+// stops a cycle, which big specs such as Stripe's have, and the result keeps the key order
 export function pruneComponentsSchemas(
   roots: unknown,
-  componentsSchemas: NonNullable<ComponentsObject['schemas']>
+  components: ComponentsObject
 ): NonNullable<ComponentsObject['schemas']> {
-  const required = new Set<string>();
-  collectRefNames(roots, required);
-  const queue = [...required];
-  const visited = new Set<string>();
+  const reached = new Set<string>();
+  const queue: unknown[] = [roots];
 
   while (queue.length) {
-    const name = queue.pop();
-    if (!name || visited.has(name)) continue;
-    visited.add(name);
-    const component = componentsSchemas[name];
-    if (!component) continue;
-    const refs = new Set<string>();
-    collectRefNames(component, refs);
-    for (const ref of refs) {
-      required.add(ref);
-      if (!visited.has(ref)) queue.push(ref);
-    }
+    forEachRef(queue.pop(), (ref) => {
+      const component = componentOfRef(ref);
+      if (!component) return;
+      const key = `${component.section}/${component.name}`;
+      if (reached.has(key)) return;
+      reached.add(key);
+      const section: unknown = components[component.section as keyof ComponentsObject];
+      if (section && typeof section === 'object' && Object.hasOwn(section, component.name)) {
+        queue.push((section as Record<string, unknown>)[component.name]);
+      }
+    });
   }
 
-  return Object.fromEntries(Object.entries(componentsSchemas).filter(([name]) => required.has(name)));
+  return Object.fromEntries(
+    Object.entries(components.schemas ?? {}).filter(([name]) => reached.has(`schemas/${name}`))
+  );
 }

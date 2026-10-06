@@ -55,7 +55,6 @@ export async function parseBody(
   // every reader shares one copy: a decorator or onBefore may read the body before a procedure validates it
   await bufferBody(req);
 
-  // no Content-Type, application/json or a +json suffix type (e.g. application/ld+json, application/vnd.api+json) → object
   if (!mediaType || mediaType === 'application/json' || mediaType.endsWith('+json')) {
     let body: Record<string, unknown>;
     try {
@@ -68,7 +67,6 @@ export async function parseBody(
     return body;
   }
 
-  // multipart/form-data → FormData
   if (formTypes.includes(mediaType)) {
     let body: FormData;
     try {
@@ -82,7 +80,6 @@ export async function parseBody(
     return parseForm(body);
   }
 
-  // text/* or known text-based application types → string
   if (
     mediaType.startsWith('text/') ||
     (textTypes as readonly string[]).includes(mediaType) ||
@@ -93,7 +90,6 @@ export async function parseBody(
     return body;
   }
 
-  // Everything else (octet-stream, image/*, video/*, application/pdf, etc.) → File
   const fileName = getFileName(req.headers?.get('content-disposition') ?? '') || 'file';
   const body = await req.blob();
   req.blob = () => Promise.resolve(body);

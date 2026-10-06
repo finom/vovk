@@ -14,12 +14,10 @@ const data = {
   }
 };
 
-// Add keywords if they exist
 if (t.package.keywords && t.package.keywords.length) {
   data.project.keywords = t.package.keywords;
 }
 
-// Build authors array
 data.project.authors = [];
 if (t.package.author) {
   if (typeof t.package.author === 'string') {
@@ -43,18 +41,16 @@ if (t.package.contributors && t.package.contributors.length) {
   });
 }
 
-// Dependencies
 // requests picks its own urllib3; the extra checks formats such as uri and date-time without GPL libraries
 data.project.dependencies = [
   "requests",
   "jsonschema[format-nongpl]",
-  // NotRequired is in typing from 3.11
+  // NotRequired is in typing from 3.11, TypeAlias from 3.10
   "typing_extensions>=4.0.0; python_version < '3.11'"
 ];
 
 data.project.readme = "README.md";
 
-// Optional dependencies
 data.project["optional-dependencies"] = {
   dev: [
     "types-requests",
@@ -62,7 +58,6 @@ data.project["optional-dependencies"] = {
   ]
 };
 
-// URLs
 if (t.package.repository || t.package.homepage || t.package.bugs) {
   data.project.urls = {};
   
@@ -92,6 +87,5 @@ where = ["src"]
 "*" = ["py.typed"]
 
 [tool.mypy]
-python_version = "3.9"
 warn_return_any = true
 warn_unused_configs = true

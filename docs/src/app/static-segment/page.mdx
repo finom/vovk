@@ -1,10 +1,10 @@
 # Static Segment
 
 ```sh npm2yarn copy
-npx vovk new segment openapi --static # creates a new static segment named "openapi" at src/app/api/openapi/[[...vovk]]/route.ts
+npm exec -- vovk new segment openapi --static # creates the static segment "openapi" at src/app/api/openapi/[[...vovk]]/route.ts
 ```
 
-Next.js can pre-render API endpoints at build time using [generateStaticParams](https://nextjs.org/docs/app/api-reference/functions/generate-static-params). Vovk.ts provides the `controllersToStaticParams` helper to take advantage of this and emit static API endpoints for minimal latency. Use it to serve OpenAPI definitions, historical datasets (refreshed periodically via CI/CD), or other infrequently changing data. It also works in [Static Export mode](https://nextjs.org/docs/pages/building-your-application/deploying/static-exports) with the `output: 'export'` Next.js option:
+Next.js can pre-render API endpoints at build time with [generateStaticParams](https://nextjs.org/docs/app/api-reference/functions/generate-static-params). The Vovk.ts `controllersToStaticParams` helper uses this to emit static API endpoints, for minimal latency. Use it for OpenAPI definitions, historical datasets (refreshed from time to time by CI/CD) or other data that rarely changes. It also works in [Static Export mode](https://nextjs.org/docs/pages/building-your-application/deploying/static-exports), with the `output: 'export'` Next.js option:
 
 ```ts showLineNumbers copy filename="next.config.js"
 /** @type {import('next').NextConfig} */
@@ -15,7 +15,7 @@ const nextConfig = {
 module.exports = nextConfig;
 ```
 
-Export `dynamic = 'force-static'` so Next.js pre-renders the route handler at build time, implement `generateStaticParams`, and return `controllersToStaticParams` with your controller list.
+Export `dynamic = 'force-static'` so Next.js pre-renders the route handler at build time, and make `generateStaticParams` return `controllersToStaticParams` with your controllers.
 
 ```ts showLineNumbers copy filename="src/app/api/[[...vovk]]/route.ts"
 // ...
@@ -30,7 +30,7 @@ export function generateStaticParams() {
 export const { GET } = initSegment({ controllers });
 ```
 
-When deploying to static hosting (e.g., GitHub Pages), include a `.json` extension in endpoint paths to ensure proper HTTP headers are served.
+On static hosting, such as GitHub Pages, end the endpoint paths with `.json`, so the host sends the right HTTP headers.
 
 ```ts showLineNumbers copy
 import { get, prefix } from 'vovk';
@@ -44,9 +44,9 @@ export default class HelloController {
 }
 ```
 
-This produces an endpoint like: [https://vovk.dev/api/hello/greeting.json](https://vovk.dev/api/hello/greeting.json) (hosted on GitHub Pages).
+This gives an endpoint such as [https://vovk.dev/api/hello/greeting.json](https://vovk.dev/api/hello/greeting.json), hosted on GitHub Pages.
 
-If you use a custom slug (e.g., `/src/app/api/[[...custom]]/route.ts`) instead of the default `vovk`, pass it as the second argument:
+With a slug other than the default `vovk`, such as `/src/app/api/[[...custom]]/route.ts`, pass it as the second argument:
 
 ```ts showLineNumbers copy
 export function generateStaticParams() {
@@ -56,7 +56,7 @@ export function generateStaticParams() {
 
 ## Static Endpoint Parameters
 
-The `@get` decorator accepts an options object. One of the options, `staticParams`, lets you enumerate static parameter combinations to simulate conditional routing. A param in the controller's prefix, such as `@prefix('users/{userId}')`, takes its value from the same objects. The example below shows a single handler that renders six variants for two parameters: section (`a | b`) and page (`1 | 2 | 3`).
+The `staticParams` option of `@get` lists the param combinations to render, so one handler serves several static paths. A param in the controller's prefix, such as `@prefix('users/{userId}')`, takes its value from the same objects. Below, one handler renders six variants of two params: section (`a | b`) and page (`1 | 2 | 3`).
 
 ```ts showLineNumbers copy
 import { z } from 'zod';
@@ -102,5 +102,5 @@ This builds six JSON files:
 
 ## Real-world example: static-klines
 
-[static-klines](https://github.com/finom/static-klines) is a Vovk.ts static segment that pre-renders historical Binance Spot candles into ~17,000 plain JSON files on GitHub Pages. The whole API ships as static assets with no runtime — no rate limits, no server compute, infinitely cacheable — and auto-generated TypeScript and Python clients are published from the same Zod schemas the server uses. It's a practical illustration of `controllersToStaticParams` scaled to a full dataset.
+[static-klines](https://github.com/finom/static-klines) is a Vovk.ts static segment. It pre-renders historical Binance Spot candles into ~17,000 plain JSON files on GitHub Pages. The whole API is static files with no server: no rate limits, no server compute, and no limit on caching. Its TypeScript and Python clients are generated from the same Zod schemas the server uses, and published. It shows `controllersToStaticParams` on a full dataset.
 

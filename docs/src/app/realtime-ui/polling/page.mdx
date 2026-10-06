@@ -3,44 +3,45 @@ import { PollExample } from '@/components/vovk-examples';
 
 # Realtime Database Polling
 
-[State normalization](./state) and the corresponding backend implementation keep the UI updated while the user interacts with the app by making HTTP requests. The implementation also covers AI features such as [Text Chat AI](./text-ai) and [Voice AI](./voice-ai), explained in later articles. The rule of thumb is that data should always be processed by the entity registry.
+[State normalization](./state) and its backend code keep the UI up to date while the user works with the app through HTTP requests. They also cover the AI features, [Text Chat AI](./text-ai) and [Voice AI](./voice-ai), explained in later articles. The rule of thumb: data always goes through the entity registry.
 
-But what if the database is changed by other users or third-party services? How do we keep the UI in sync with backend data in real time? One way is to implement database polling powered by [JSONLines](/jsonlines). The server sends updates to clients whenever the database changes, and the client reconnects automatically when the connection is closed.
+Other users or third-party services can also change the database. One way to keep the UI in sync with the backend in real time is database polling over [JSON Lines](/jsonlines). The server sends updates to clients whenever the database changes, and the client reconnects automatically when the connection closes.
 
-The component below demonstrates a simple polling example that receives incremental updates from the server every second. After 10 updates, the server closes the connection, and the client reconnects automatically. We can use the same approach to receive database updates in real time by having the server send updates whenever the database changes.
+The component below is a polling example. It gets an update from the server every second. After 10 updates, the server closes the connection, and the client reconnects automatically. Database updates work the same way.
 
 <div className="example">
   <PollExample />
   [View Polling example on examples.vovk.dev »](https://examples.vovk.dev/polling)
 </div>
 
-A small delay (up to half a second) is expected due to the CORS preflight. See the Network tab in DevTools for details.
+Expect a short delay (up to half a second) for the CORS preflight. The Network tab in DevTools shows it.
 
 ---
 
-Here's a video demonstration of the polling in action. While it uses different browser tabs to simulate multiple users, the same logic applies to real-time updates from any source, including third-party services.
+The video below shows polling at work. Browser tabs stand in for several users, but updates from any source, third-party services included, work the same way.
 
 <video src="/video/kanban_polling.mp4" type="video/mp4" className='mt-4' controls loop />
 
 
 ## Redis DB as event bus
 
-While we could poll the main Postgres database for changes, that approach is inefficient. Instead, we use Redis as an event bus: whenever the main database changes, we write a small event to the Redis database. Our polling service reads these events every second and sends them to clients with the app open.
+Polling the main Postgres database for changes would be inefficient. The app uses Redis as an event bus instead: each change to the main database writes a small event to Redis. The polling service reads these events every second and sends them to the clients that have the app open.
 
 <img src="/diagrams/collaborative_polling_flow.svg" alt="Collaborative Polling Flow" className="mt-4 dark:invert" />
 
-Because we use [Prisma](https://www.prisma.io/) as our ORM, we can use [Prisma Extensions](https://www.prisma.io/docs/orm/prisma-client/client-extensions) to hook into database operations and write events to Redis. This is where the `DatabaseService` mentioned in the [Endpoints](./endpoints) article comes into play.
+The app uses [Prisma](https://www.prisma.io/) as its ORM, so [Prisma Extensions](https://www.prisma.io/docs/orm/prisma-client/client-extensions) can hook into database operations and write the events to Redis. This is the job of the `DatabaseService` from the [Endpoints](./endpoints) article.
 
 > [!IMPORTANT]
 >
-> The existing implementation has the following limitations:
-> - Deletions need to be explicit, even if cascade deletions are handled automatically by the database. See the [`UserController.deleteUser`](https://github.com/finom/vovk/blob/main/examples/realtime-kanban/src/modules/user/UserService.ts) method for more details.
-> - All write operations must select the `updatedAt` field for change detection to work properly.
-> - The list of supported write operations is limited to `create`, `update`, `upsert`, and `delete` for simplicity. Read operations are passed through as-is. For more complex operations, additional handling or abstraction is required.
+> The implementation has these limits:
+> - Deletions must be explicit, even when the database deletes rows by cascade. See the [`UserService.deleteUser`](https://github.com/finom/vovk/blob/main/examples/realtime-kanban/src/modules/user/user-service.ts) method.
+> - Every write operation must select the `updatedAt` field, or change detection fails.
+> - To keep it simple, the only supported write operations are `create`, `update`, `upsert`, and `delete`. Read operations such as `find...` and `count` pass through unchanged and record no change. More complex operations need extra handling.
 
-```ts showLineNumbers copy filename="src/modules/database/database-service.ts" source="examples/realtime-kanban" {20,124}
+```ts showLineNumbers copy filename="src/modules/database/database-service.ts" source="examples/realtime-kanban" {24,133}
 import { PrismaNeon } from '@prisma/adapter-neon';
-import { PrismaClient } from '@prisma/client';
+import { Prisma, PrismaClient } from '@prisma/client';
+import { HttpException, HttpStatus } from 'vovk';
 import type { BaseEntity } from '@/types';
 import DatabaseEventsService, {
   type DBChange,
@@ -106,7 +107,12 @@ export default class DatabaseService {
                   `Unsupported database operation "${operation}" on model "${model}"`,
                 );
               }
-              const result = (await query(args)) as BaseEntity | BaseEntity[];
+              let result: BaseEntity | BaseEntity[];
+              try {
+                result = (await query(args)) as BaseEntity | BaseEntity[];
+              } catch (error) {
+                throw DatabaseService.toHttpException(error, model);
+              }
 
               const now = new Date().toISOString();
               let change: DBChange | null = null;
@@ -174,12 +180,33 @@ export default class DatabaseService {
         },
       });
   }
+
+  // a missing record, a taken unique value or a missing related record is the caller's error, not a 500
+  private static toHttpException(error: unknown, model: string) {
+    if (!(error instanceof Prisma.PrismaClientKnownRequestError)) return error;
+    switch (error.code) {
+      case 'P2025':
+        return new HttpException(HttpStatus.NOT_FOUND, `${model} not found`);
+      case 'P2002':
+        return new HttpException(
+          HttpStatus.CONFLICT,
+          `${model} with the same unique field already exists`,
+        );
+      case 'P2003':
+        return new HttpException(
+          HttpStatus.BAD_REQUEST,
+          `${model} refers to a record that doesn't exist`,
+        );
+      default:
+        return error;
+    }
+  }
 }
 ```
 *[The code above is fetched from GitHub repository.](https://github.com/finom/vovk/blob/main/examples/realtime-kanban/src/modules/database/database-service.ts)*
 
-- The `getClient` method calls `DatabaseEventsService.beginEmitting(){:ts}` to start emitting events. The `beginEmitting` function runs a `setInterval` that connects to Redis and periodically checks for new events. When a new event is found, it emits it via [mitt](https://npmjs.com/package/mitt).
-- `prisma.$extends` hooks into some of the Prisma model operations, determines whether an operation modifies data, and if so calls `await DatabaseEventsService.createChanges([change]){:ts}` to persist a change entry in Redis. The change captures creates, updates, and deletions:
+- The `getClient` method calls `DatabaseEventsService.beginEmitting(){:ts}` to start emitting events. `beginEmitting` runs a `setInterval` that connects to Redis and checks for new events. It emits each new event with [mitt](https://npmjs.com/package/mitt).
+- `prisma.$extends` hooks into some of the Prisma model operations. When an operation changes data, it calls `await DatabaseEventsService.createChanges([change]){:ts}`, which stores a change entry in Redis. A change records a create, an update, or a delete:
 
 ```ts showLineNumbers copy
 export type DBChange = {
@@ -190,16 +217,14 @@ export type DBChange = {
 };
 ```
 
-The `date` field indicates when the change occurred to help clients fetch only the latest changes.
+The `date` field holds the time of the change, so clients fetch only the latest changes.
 
-- For `create`, `update`, and `upsert` operations, it uses the `updatedAt` DB field (all write operations must select this field).
-- For `delete` operations, it uses the current time.
+- For `create`, `update`, and `upsert`, it is the `updatedAt` field of the row (so every write operation must select this field).
+- For `delete`, it is the current time.
 
-The `delete` operation also adds an `__isDeleted` property. The frontend checks this property to hide the deleted entity by setting `enumerable: false` on the entity registry item (see the [State](./state) page).
+The `delete` operation also adds an `__isDeleted` property. The frontend uses it to hide the entity: the registry item gets `enumerable: false` (see the [State](./state) page).
 
-Operations like `find...` and `count` do not trigger changes and are passed through as-is.
-
-In addition to `beginEmitting` and `createChanges`, `DatabaseEventsService` provides a `connect` method and an `emitter` (a `mitt` instance). These are used by the polling service (`DatabasePollService`, discussed next) to be notified about new events.
+Besides `beginEmitting` and `createChanges`, `DatabaseEventsService` has an `emitter` (a `mitt` instance). The polling service (`DatabasePollService`, below) listens to it for new events. A private `connect` method opens the Redis connection.
 
 ```ts showLineNumbers copy filename="src/modules/database/database-events-service.ts" source="examples/realtime-kanban"
 import type { EntityType } from '@prisma/client';
@@ -249,10 +274,15 @@ export default class DatabaseEventsService {
       value: JSON.stringify({ id, entityType, date, type }),
     }));
 
-    // one multi(): batch ZADD + EXPIRE
+    // one multi(): batch ZADD, drop the entries older than the key's lifetime, EXPIRE
     await DatabaseEventsService.redisClient
       .multi()
       .zAdd(DatabaseEventsService.DB_KEY, entries)
+      .zRemRangeByScore(
+        DatabaseEventsService.DB_KEY,
+        '-inf',
+        Date.now() - DatabaseEventsService.INTERVAL * 60,
+      )
       .expire(
         DatabaseEventsService.DB_KEY,
         (DatabaseEventsService.INTERVAL * 60) / 1000,
@@ -290,9 +320,9 @@ export default class DatabaseEventsService {
 
 ## Polling controller and service
 
-With Redis change entries and the change emitter in place, we can implement a polling endpoint that streams updates to clients in real time. The `DatabasePollController` exposes a single [JSONLines](/jsonlines) endpoint, and `DatabasePollService` uses a [JSONLinesResponder](/jsonlines#jsonlinesresponder) instance (received from the controller) to send data to clients. The service closes the connection safely after 30 seconds, so clients should reconnect.
+With the change entries in Redis and the emitter in place, a polling procedure can stream updates to clients in real time. `DatabasePollController` has a single [JSON Lines](/jsonlines) procedure. `DatabasePollService` gets a [JSONLinesResponder](/jsonlines#jsonlinesresponder) instance from the controller and sends data to clients through it. The service closes the connection after 30 seconds, so clients must reconnect. It removes its change listener then, or at the first change after the client has left.
 
-<Tabs items={['DatabasePollService.ts', 'DatabasePollController.ts']}>
+<Tabs items={['database-poll-service.ts', 'database-poll-controller.ts']}>
 <Tabs.Tab>
 ```ts showLineNumbers copy filename="src/modules/database/database-poll-service.ts" source="examples/realtime-kanban"
 import { forEach, groupBy } from 'lodash';
@@ -309,58 +339,71 @@ export default class PollService {
       VovkIteration<typeof DatabasePollController.poll>
     >,
   ) {
-    setTimeout(() => responder.close(), 30_000);
-
     let asOldAs = new Date();
     // 10 minutes ago; TODO: use latest update date from registry
     asOldAs.setMinutes(asOldAs.getMinutes() - 10);
 
-    DatabaseEventsService.emitter.on(
-      DatabaseEventsService.DB_KEY,
-      (changes) => {
-        const deleted = changes.filter((change) => change.type === 'delete');
-        const createdOrUpdated = changes.filter(
-          (change) => change.type === 'create' || change.type === 'update',
+    const onChanges = (changes: DBChange[]) => {
+      // the client left before the timeout
+      if (responder.isClosed) {
+        DatabaseEventsService.emitter.off(
+          DatabaseEventsService.DB_KEY,
+          onChanges,
+        );
+        return;
+      }
+      const deleted = changes.filter((change) => change.type === 'delete');
+      const createdOrUpdated = changes.filter(
+        (change) => change.type === 'create' || change.type === 'update',
+      );
+
+      for (const deletedEntity of deleted) {
+        void responder.send({
+          id: deletedEntity.id,
+          entityType: deletedEntity.entityType,
+          __isDeleted: true,
+        });
+      }
+      // group by entityType and date, so the date is maximum date for the given entity: { entityType: string, date: string }[]
+      forEach(groupBy(createdOrUpdated, 'entityType'), (changes) => {
+        const maxDateItem = changes.reduce(
+          (max, change) => {
+            const changeDate = new Date(change.date);
+            return changeDate.getTime() > new Date(max.date).getTime()
+              ? change
+              : max;
+          },
+          { date: new Date(0) } as unknown as DBChange,
         );
 
-        for (const deletedEntity of deleted) {
-          void responder.send({
-            id: deletedEntity.id,
-            entityType: deletedEntity.entityType,
-            __isDeleted: true,
-          });
-        }
-        // group by entityType and date, so the date is maximum date for the given entity: { entityType: string, date: string }[]
-        forEach(groupBy(createdOrUpdated, 'entityType'), (changes) => {
-          const maxDateItem = changes.reduce(
-            (max, change) => {
-              const changeDate = new Date(change.date);
-              return changeDate.getTime() > new Date(max.date).getTime()
-                ? change
-                : max;
-            },
-            { date: new Date(0) } as unknown as DBChange,
-          );
-
-          if (new Date(maxDateItem.date).getTime() > asOldAs.getTime()) {
-            void DatabaseService.prisma[maxDateItem.entityType as 'user']
-              .findMany({
-                where: {
-                  updatedAt: {
-                    gt: asOldAs,
-                  },
+        if (new Date(maxDateItem.date).getTime() > asOldAs.getTime()) {
+          void DatabaseService.prisma[maxDateItem.entityType as 'user']
+            .findMany({
+              where: {
+                updatedAt: {
+                  gt: asOldAs,
                 },
-              })
-              .then((entities) => {
-                for (const entity of entities) {
-                  void responder.send(entity);
-                }
-              });
-            asOldAs = new Date(maxDateItem.date);
-          }
-        });
-      },
-    );
+              },
+            })
+            .then((entities) => {
+              for (const entity of entities) {
+                void responder.send(entity);
+              }
+            });
+          asOldAs = new Date(maxDateItem.date);
+        }
+      });
+    };
+
+    DatabaseEventsService.emitter.on(DatabaseEventsService.DB_KEY, onChanges);
+
+    setTimeout(() => {
+      DatabaseEventsService.emitter.off(
+        DatabaseEventsService.DB_KEY,
+        onChanges,
+      );
+      responder.close();
+    }, 30_000);
   }
 }
 ```
@@ -416,16 +459,16 @@ export default class DatabasePollController {
 </Tabs.Tab>
 </Tabs>
 
-- When a `delete` DB change is emitted via `DatabaseEventsService.emitter`, the service sends an event with `id`, `entityType`, and `__isDeleted: true`. The frontend uses `__isDeleted` to hide the entity by making it non-enumerable in the registry.
-- When an `update` or `create` change is emitted, the service fetches the full entity from Postgres (since Redis stores only metadata) and sends it to clients.
+- When `DatabaseEventsService.emitter` emits a `delete` change, the service sends an event with `id`, `entityType`, and `__isDeleted: true`, and the registry hides the entity.
+- For an `update` or `create` change, the service fetches the full entity from Postgres (Redis stores only metadata) and sends it to clients.
 
 ## Client-side logic
 
-On the client side (for example, in a React component), call `DatabasePollRPC.poll()` to receive a stream of database events. As with any [JSONLines](/jsonlines) RPC method, it returns an async iterable that you can consume in a `for await` loop. Because the server may close the connection or a network error may occur, wrap the logic in a retry loop. Since the [fetcher](/imports#fetcher) is already [configured](./state#setting-up-the-fetcher), the loop body can be empty—you do not need to handle data manually.
+On the client, for example in a React component, call `DatabasePollRPC.poll()` to get a stream of database events. Like any [JSON Lines](/jsonlines) RPC method, it returns an async iterable that you read in a `for await` loop. The server may close the connection, or the network may fail, so wrap the logic in a retry loop. The [fetcher](/imports#fetcher) is already [configured](./state#setting-up-the-fetcher), so the loop body can be empty: you don't handle the data yourself.
 
-The frontend code, besides the polling logic, also includes an on/off toggle persisted to `localStorage`, so users can enable or disable polling as needed.
-  
-Here’s the `useDatabasePolling` hook that implements the described logic, returning the `[isPollingEnabled, setIsPollingEnabled, hasError]` state tuple:
+The frontend code also has an on/off switch, saved in `localStorage`, so users can turn polling on or off.
+
+The `useDatabasePolling` hook implements this logic and returns the `[isPollingEnabled, setIsPollingEnabled, hasError]` state tuple:
 
 ```ts showLineNumbers copy filename="src/hooks/use-database-polling.ts" source="examples/realtime-kanban"
 import { useEffect, useRef, useState } from 'react';
@@ -501,5 +544,3 @@ Usage:
 ```tsx copy
 const [isPollingEnabled, setIsPollingEnabled, hasError] = useDatabasePolling(false);
 ```
-
-From now on, when the database is changed by other users or third-party services, the frontend receives updates in real time and the entity registry is updated accordingly, keeping the UI in sync with the backend data.

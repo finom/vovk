@@ -11,7 +11,7 @@ type Prettier = {
 let prettierPromise: Promise<Prettier | null> | undefined;
 let warned = false;
 
-/** Prettier is not a CLI dependency; it's resolved from the user's project if installed. */
+// prettier isn't a CLI dependency, it comes from the project when installed
 function getPrettier() {
   prettierPromise ??= (async () => {
     try {
@@ -26,7 +26,7 @@ function getPrettier() {
   return prettierPromise;
 }
 
-/** Formats with the project-installed prettier; returns the code unchanged when it's not installed. */
+// returns the code unchanged when the project has no prettier
 export async function prettify(code: string, absoluteFilePath: string) {
   const prettier = await getPrettier();
 
@@ -48,7 +48,7 @@ export async function prettify(code: string, absoluteFilePath: string) {
   }
 }
 
-/** Warns once per run when prettifyClient is enabled but prettier is not installed. */
+// warns once per process
 export async function warnIfPrettierMissing(log: ReturnType<typeof getLogger>) {
   if (warned || (await getPrettier())) return;
   warned = true;

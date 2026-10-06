@@ -8,6 +8,7 @@ import type { StaticClass } from '../types/utils.js';
  * export function generateStaticParams() {
  *  return controllersToStaticParams(controllers);
  * }
+ * ```
  */
 export function controllersToStaticParams(c: Record<string, StaticClass>, slug = 'vovk'): Record<string, string[]>[] {
   const controllers = c as Record<string, VovkController>;
@@ -18,7 +19,7 @@ export function controllersToStaticParams(c: Record<string, StaticClass>, slug =
 
       return Object.entries(handlers ?? {}).flatMap(([name, handler]) => {
         const staticParams = controller._handlersMetadata?.[name]?.staticParams;
-        const segments = [...(controller.prefix?.split('/') ?? []), ...handler.path.split('/')].filter(Boolean);
+        const segments = [...(controller._prefix?.split('/') ?? []), ...handler.path.split('/')].filter(Boolean);
 
         if (staticParams?.length) {
           // the prefix holds params too, and a value stays one segment even with a slash in it

@@ -9,11 +9,8 @@ import {
 const DEFS_KEYWORDS = ['$defs', 'definitions'] as const;
 type DefsKeyword = (typeof DEFS_KEYWORDS)[number];
 
-/**
- * Builds the `{ body, query, params }` object schema of a tool input. A slot's refs point at the slot's own root,
- * so its `$defs` (or `definitions`) move to the envelope root, renamed when two slots use the same name, and a slot
- * that refers to its own root moves to `$defs` too.
- */
+// the { body, query, params } schema of a tool input: each slot's $defs and definitions move to the root $defs,
+// renamed when two slots use one name, and a slot that refers to its own root moves there too
 export function toEnvelopeJSONSchema(slots: [slot: string, schema: unknown][]): Record<string, unknown> {
   const properties: Record<string, unknown> = {};
   const defs = new Map<string, unknown>();

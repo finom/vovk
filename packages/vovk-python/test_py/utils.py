@@ -39,6 +39,10 @@ def fake_transport(respond: Callable[[requests.PreparedRequest], FakeResponse]) 
     sent: List[Sent] = []
 
     def send(adapter: HTTPAdapter, request: requests.PreparedRequest, **options: Any) -> requests.Response:
+        # the network reads a body sent in blocks; the tests read the bytes it held
+        read = getattr(request.body, 'read', None)
+        if read is not None:
+            request.body = read()
         sent.append(Sent(request, options))
         status, headers, body = respond(request)
         response = requests.Response()

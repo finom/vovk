@@ -1,6 +1,6 @@
 # OpenAPI Specification and `@operation` Decorator
 
-Vovk.ts generates an OpenAPI specification from the procedures that have an operation object, using validation models to populate it with `parameters`, `requestBody`, and `responses`. The `@operation` decorator gives a procedure its operation object and enriches it with metadata such as `summary`, `description`, `tags`, and more; `@operation.tool` and `@operation.error` give it one too. A procedure without any of them is left out of the specification, and [deriveTools](/tools) makes no tool of it either. The decorator accepts `OperationObject` type from [openapi3-ts/oas31](https://www.npmjs.com/package/openapi3-ts), enhanced with Vovk-specific `x-tool` property related to [deriveTools](/tools) function.
+Vovk.ts generates an OpenAPI specification from the procedures that have an operation object. It fills `parameters`, `requestBody` and `responses` from the validation models. The `@operation` decorator gives a procedure its operation object, with metadata such as `summary`, `description` and `tags`. `@operation.tool` and `@operation.error` give it one too. A procedure without any of them is left out of the specification, and [deriveTools](/tools) makes no tool of it either. The decorator takes the `OperationObject` type from [openapi3-ts/oas31](https://www.npmjs.com/package/openapi3-ts), plus the Vovk.ts `x-tool` property for the [deriveTools](/tools) function.
 
 ```ts showLineNumbers copy filename="src/modules/user/user-controller.ts"
 import { procedure, put, prefix, operation } from 'vovk';
@@ -19,19 +19,19 @@ export default class UserController {
 }
 ```
 
-The validation models, accepted by the [procedure](/procedure) are converted to OpenAPI operation objects according to the following mapping:
+The validation models of a [procedure](/procedure) map to the operation object like this:
 
-- `params` → `parameters` with `in: "path"`, each one required; a `{name}` of the path that no `params` model describes is a string parameter
-- `query` → `parameters` with `in: "query"`; an object parameter gets `style: "deepObject"`, as the server reads `filter[status]=sold`
-- `body` → `requestBody` with the `application/json` (or custom `contentType`) content type
-- `output` → `responses` with status `200` and `application/json` content type
-- `iteration` → `responses` with status `200` and `application/jsonl` content type, with an example of three lines; the server sends `text/plain` unless the `Accept` header includes `application/jsonl`
+- `params` → `parameters` with `in: "path"`, each one required. A `{name}` in the path that no `params` model describes is a string parameter.
+- `query` → `parameters` with `in: "query"`. An object parameter gets `style: "deepObject"`, since the server reads `filter[status]=sold`. An array parameter keeps the default style, `form` (`tags=a&tags=b`), and the server reads a single `tags=a` as a one-item array. OpenAPI has no style for an array of objects; the server reads `items[0][a]=x`, the form that Vovk.ts clients send.
+- `body` → `requestBody` with the `application/json` (or custom `contentType`) content type.
+- `output` → `responses` with status `200` and the `application/json` content type.
+- `iteration` → `responses` with status `200` and the `application/jsonl` content type, with an example of three lines. The server sends `text/plain` unless the `Accept` header includes `application/jsonl`.
 
-A schema with an id, such as a Zod schema with `.meta({ id })`, goes to `components.schemas`. A name OpenAPI doesn't allow has its other characters replaced with `_` (`User Profile` becomes `User_Profile`), and a schema whose name another schema took, one of `openAPIObject.components` included, gets the RPC module, procedure and slot names in front: `UserRPCCreateUserBodyUser`.
+A schema with an id, such as a Zod schema with `.meta({ id })`, goes to `components.schemas`. In a name, each character OpenAPI doesn't allow becomes `_`: `User Profile` becomes `User_Profile`. When another schema already has the name, including one in `openAPIObject.components`, the RPC module, procedure and slot names go in front of it: `UserRPCCreateUserBodyUser`.
 
 ## Configuring the OpenAPI Specification
 
-The OpenAPI specification can be configured in the [vovk.config](/config) file under the [`outputConfig.openAPIObject` option](/config#openapiobject). This object is merged with the generated specification, allowing you to set global properties such as `info`, `servers`, and more.
+Configure the specification in the [vovk.config](/config) file, with the [`outputConfig.openAPIObject` option](/config#openapiobject). The object is merged into the generated specification, so you can set global properties such as `info` and `servers`.
 
 ```ts showLineNumbers copy filename="vovk.config.js"
 // @ts-check
@@ -66,7 +66,7 @@ const config = {
 module.exports = config;
 ```
 
-The `openAPIObject` can also be configured individually for each [segment](/segment) using `outputConfig.segments.[segmentName].openAPIObject`.
+You can also set `openAPIObject` for each [segment](/segment), with `outputConfig.segments.[segmentName].openAPIObject`.
 
 ```ts showLineNumbers copy filename="vovk.config.js"
 // @ts-check
@@ -88,22 +88,22 @@ const config = {
 };
 ```
 
-## Utilizing the OpenAPI Specification
+## Using the OpenAPI Specification
 
-The generated RPC client exports an `openapi` object from `openapi` module that contains the full back-end specification for the [composed client](/composed). When using the [segmented client](/segmented), each [segment](/segment) also exports its own specification.
+The generated RPC client exports an `openapi` object from its `openapi` module. For the [composed client](/composed), it holds the specification of the whole back end. With the [segmented client](/segmented), each [segment](/segment) also exports its own specification.
 
 ```ts showLineNumbers copy
 import { openapi } from '@/client/openapi'; // composed client
 ```
 
 ```ts showLineNumbers copy
-import { openapi } from '@/client/admin/openapi.ts'; // segmented client
+import { openapi } from '@/client/admin/openapi'; // segmented client
 ```
 
-You can use the specification directly as a variable or expose it via a static segment with a simple controller that serves it as a JSON endpoint.
+Use the specification as a variable, or serve it as JSON from a controller in a static segment:
 
 ```ts showLineNumbers copy filename="src/modules/static/openapi/openapi-controller.ts"
-import { get, operation } from 'vovk';
+import { get } from 'vovk';
 import { openapi } from '@/client/openapi';
 
 export default class OpenApiController {
@@ -112,7 +112,7 @@ export default class OpenApiController {
 }
 ```
 
-If you prefer to skip Vovk entirely for the spec endpoint, a plain Next.js route handler works just as well. This avoids registering a controller and keeps the docs route outside the generated schema:
+A plain Next.js route handler can serve the spec too. Then you register no controller, and the route stays out of the generated schema:
 
 ```ts showLineNumbers copy filename="src/app/openapi.json/route.ts"
 import { openapi } from '@/client/openapi';
@@ -120,13 +120,13 @@ import { openapi } from '@/client/openapi';
 export const GET = () => Response.json(openapi);
 ```
 
-You can also emit `openapi.json` as a standalone file with the [openapiJson](/templates#openapijson) template, without generating a client. Useful for serving the spec as a static asset or handing it to another tool:
+The [openapiJson](/templates#openapijson) template writes `openapi.json` as a file of its own, without a client. Use it to serve the spec as a static file or to pass it to another tool:
 
 ```sh npm2yarn copy
-npx vovk generate --from openapiJson --out ./public
+npm exec -- vovk generate --from openapiJson --out ./public
 ```
 
-On the client side, you can use any OpenAPI documentation generator. [Scalar](https://www.npmjs.com/package/@scalar/api-reference-react) is a recommended choice as Vovk.ts generates code snippets for the generated RPC modules.
+On the client side, any OpenAPI documentation generator works. [Scalar](https://www.npmjs.com/package/@scalar/api-reference-react) is recommended, because Vovk.ts adds code samples for the generated RPC modules to the spec.
 
 ```ts showLineNumbers copy
 import { ApiReferenceReact } from "@scalar/api-reference-react";
@@ -148,11 +148,11 @@ export default App;
 <img src="/screenshots/scalar-screenshot-light.png" className='dark:hidden mt-4' />
 <img src="/screenshots/scalar-screenshot-dark.png" className='hidden dark:block mt-4' />
 
-For a live demonstration, see the ["Hello World" application spec](https://hello-world.vovk.dev/openapi). Check ["Hello World"](/hello-world) page for details.
+For a live demo, see the ["Hello World" application spec](https://hello-world.vovk.dev/openapi). The ["Hello World"](/hello-world) page has the details.
 
 ---
 
-The `@operation` decorator also provides `tool` property that defines tool-specific attributes for [deriveTools](/tools) function. It's set under `x-tool` key in the OpenAPI operation object.
+`@operation.tool` sets attributes for the [deriveTools](/tools) function. They go under the `x-tool` key of the operation object.
 
 ```ts showLineNumbers copy filename="src/modules/user/user-controller.ts"
 import { procedure, put, operation } from 'vovk';
@@ -173,4 +173,4 @@ export default class UserController {
 }
 ```
 
-For more details, see the [deriveTools](/tools) documentation.
+For details, see the [deriveTools](/tools) documentation.

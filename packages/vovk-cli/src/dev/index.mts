@@ -20,11 +20,17 @@ import { chalkHighlightThing } from '../utils/chalk-highlight-thing.mjs';
 import { debounceWithArgs } from '../utils/debounce-with-args.mjs';
 import { formatLoggedSegmentName } from '../utils/format-logged-segment-name.mjs';
 import { locateSegments, type Segment } from '../utils/locate-segments.mjs';
+import { oneAtATime } from '../utils/one-at-a-time.mjs';
 import { toPosixPath } from '../utils/to-import-path.mjs';
-import { debouncedEnsureSchemaFiles, ensureSchemaFiles } from './ensure-schema-files.mjs';
+import { watchFolder } from '../utils/watch-folder.mjs';
+import { ensureSchemaFiles, getPlaceholderSchema } from './ensure-schema-files.mjs';
 import { logDiffResult } from './log-diff-result.mjs';
 import { writeMetaJson } from './write-meta-json.mjs';
-import { assertSegmentName, writeOneSegmentSchemaFile } from './write-one-segment-schema-file.mjs';
+import {
+  assertSegmentName,
+  ROOT_SEGMENT_FILE_NAME,
+  writeOneSegmentSchemaFile,
+} from './write-one-segment-schema-file.mjs';
 
 // chokidar reports native paths, so both separators are accepted
 export const SEGMENT_ROUTE_FILE_REGEX = /[\\/]?\[\[\.\.\.[a-zA-Z-_]+\]\][\\/]route\.ts$/;
@@ -82,6 +88,12 @@ export class VovkDev {
   // accepts the self-signed certificate of next dev --experimental-https; used for the schema requests only
   #selfSignedDispatcher: Agent | null = null;
 
+  // a 404 comes back on every attempt, so it's reported once per URL
+  #notFoundEndpoints = new Set<string>();
+
+  // requested again on the next change in a watched folder, the fix can be in any file
+  #failedSegmentNames = new Set<string>();
+
   constructor({ schemaOut, devHttps, logLevel }: Pick<DevOptions, 'schemaOut' | 'devHttps' | 'logLevel'>) {
     this.#schemaOut = schemaOut || null;
     // null when the flag is omitted so config.devHttps can take effect
@@ -94,20 +106,22 @@ export class VovkDev {
     return this.#schemaOut ? path.resolve(this.#projectInfo.cwd, this.#schemaOut) : undefined;
   }
 
+  #getSchemaOutAbsolutePath() {
+    return path.resolve(this.#projectInfo.cwd, this.#schemaOut ?? this.#projectInfo.config.schemaOutDir);
+  }
+
   #watchSegments = (callback: () => void) => {
-    const { cwd, log, config, apiDirAbsolutePath } = this.#projectInfo;
+    const { log, apiDirAbsolutePath } = this.#projectInfo;
     if (!apiDirAbsolutePath) {
       throw new Error('Unable to watch segments. It looks like CWD is not a Next.js app.');
     }
-    const schemaOutAbsolutePath = path.resolve(cwd, this.#schemaOut ?? config.schemaOutDir);
     const getSegmentName = (filePath: string) =>
       getSegmentNameFromRouteFile(path.relative(apiDirAbsolutePath, filePath));
     log.debug(`Watching segments at ${apiDirAbsolutePath}`);
-    this.#segmentWatcher = chokidar
-      .watch(apiDirAbsolutePath, {
-        persistent: true,
-        ignoreInitial: true,
-      })
+    this.#segmentWatcher = watchFolder(apiDirAbsolutePath, {
+      persistent: true,
+      ignoreInitial: true,
+    })
       .on('add', (filePath: string) => {
         log.debug(`File ${filePath} has been added to segments folder`);
         if (SEGMENT_ROUTE_FILE_REGEX.test(filePath)) {
@@ -130,12 +144,8 @@ export class VovkDev {
               ];
           log.info(`${capitalize(formatLoggedSegmentName(segmentName))} has been added`);
           log.debug(`Full list of segments: ${this.#segments.map((s) => s.segmentName).join(', ')}`);
-
-          void debouncedEnsureSchemaFiles(
-            this.#projectInfo,
-            schemaOutAbsolutePath,
-            this.#segments.map((s) => s.segmentName)
-          );
+          void this.#requestSchema(segmentName);
+          this.#cleanUpSchemaFiles();
         }
       })
       .on('change', (filePath: string) => {
@@ -147,6 +157,7 @@ export class VovkDev {
 
       .on('addDir', async (dirPath: string) => {
         log.debug(`Directory ${dirPath} has been added to segments folder`);
+        this.#cleanUpSchemaFiles();
         await this.#locateSegments();
         for (const { segmentName } of this.#segments) {
           void this.#requestSchema(segmentName);
@@ -155,6 +166,7 @@ export class VovkDev {
 
       .on('unlinkDir', async (dirPath: string) => {
         log.debug(`Directory ${dirPath} has been removed from segments folder`);
+        this.#cleanUpSchemaFiles();
         await this.#locateSegments();
         for (const { segmentName } of this.#segments) {
           void this.#requestSchema(segmentName);
@@ -168,14 +180,10 @@ export class VovkDev {
           log.info(`${formatLoggedSegmentName(segmentName, { upperFirst: true })} has been removed`);
           log.debug(`Full list of segments: ${this.#segments.map((s) => s.segmentName).join(', ')}`);
           this.#dropRemovedSegments();
-
-          void debouncedEnsureSchemaFiles(
-            this.#projectInfo,
-            schemaOutAbsolutePath,
-            this.#segments.map((s) => s.segmentName)
-          );
+          this.#cleanUpSchemaFiles();
         }
       })
+      .on('all', () => this.#requestFailedSchemas())
       .on('ready', () => {
         callback();
         log.debug('Segments watcher is ready');
@@ -190,11 +198,10 @@ export class VovkDev {
     const modulesDirAbsolutePath = path.resolve(cwd, config.modulesDir);
     log.debug(`Watching modules at ${modulesDirAbsolutePath}`);
     const processControllerChange = debounceWithArgs(this.#processControllerChange, 500);
-    this.#modulesWatcher = chokidar
-      .watch(modulesDirAbsolutePath, {
-        persistent: true,
-        ignoreInitial: true,
-      })
+    this.#modulesWatcher = watchFolder(modulesDirAbsolutePath, {
+      persistent: true,
+      ignoreInitial: true,
+    })
       .on('add', (filePath: string) => {
         log.debug(`File ${filePath} has been added to modules folder`);
         void processControllerChange(filePath);
@@ -216,6 +223,7 @@ export class VovkDev {
           void this.#requestSchema(segmentName);
         }
       })
+      .on('all', () => this.#requestFailedSchemas())
       .on('ready', () => {
         callback();
         log.debug('Modules watcher is ready');
@@ -242,8 +250,6 @@ export class VovkDev {
         new Promise((resolve) => this.#watchSegments(() => resolve(0))),
       ]);
 
-      const schemaOutAbsolutePath = path.resolve(cwd, this.#schemaOut ?? this.#projectInfo.config.schemaOutDir);
-
       if (isInitial) {
         callback();
         if (!this.#segments.length) {
@@ -256,7 +262,7 @@ export class VovkDev {
         this.#generate();
       }
 
-      await writeMetaJson(schemaOutAbsolutePath, this.#projectInfo);
+      await this.#writeMissingSchemaFiles();
 
       isInitial = false;
     }, 1000);
@@ -272,8 +278,8 @@ export class VovkDev {
       .on('change', () => void handle())
       .on('unlink', () => void handle())
       .on('ready', () => {
+        // this watcher fires ready twice
         if (isReady) return;
-        // for some reason this watcher triggers ready event twice
         log.debug('Config files watcher is ready');
         isReady = true;
       })
@@ -283,6 +289,20 @@ export class VovkDev {
 
     void handle();
   };
+
+  // a git checkout can drop or reorder watcher events, so the segments are read from disk when it runs
+  #cleanUpSchemaFiles = debounce(async () => {
+    await this.#locateSegments();
+    for (const { segmentName } of this.#segments) {
+      if (!this.#schemaSegments[segmentName]) void this.#requestSchema(segmentName);
+    }
+    try {
+      const segmentNames = this.#segments.map((s) => s.segmentName);
+      await ensureSchemaFiles(this.#projectInfo, this.#getSchemaOutAbsolutePath(), segmentNames);
+    } catch (error) {
+      this.#projectInfo.log.error(`Failed to update the schema files: ${(error as Error)?.message ?? error}`);
+    }
+  }, 1000);
 
   // a folder renamed to "root" while the watcher runs is reported, the watcher keeps the segments it knows
   async #locateSegments() {
@@ -324,7 +344,7 @@ export class VovkDev {
       `Starting segments and modules watcher. Detected initial segments: ${JSON.stringify(this.#segments.map((s) => s.segmentName))}.`
     );
 
-    // automatically watches segments and modules
+    // also watches segments and modules
     this.#watchConfig(callback);
   }
 
@@ -336,30 +356,29 @@ export class VovkDev {
       return;
     }
     const namesOfClasses = getControllerClassNames(code);
-    if (namesOfClasses.length) {
-      const affectedSegments = this.#segments.filter((s) => {
-        const segmentSchema = this.#schemaSegments[s.segmentName];
-        if (!segmentSchema) return false;
-        const controllersByOriginalName = keyBy(
-          segmentSchema.controllers,
-          'originalControllerName' satisfies keyof VovkSegmentSchema['controllers'][string]
-        );
+    const affectedSegments = this.#segments.filter((s) => {
+      const segmentSchema = this.#schemaSegments[s.segmentName];
+      if (!segmentSchema || !namesOfClasses.length) return false;
+      const controllersByOriginalName = keyBy(
+        segmentSchema.controllers,
+        'originalControllerName' satisfies keyof VovkSegmentSchema['controllers'][string]
+      );
 
-        return namesOfClasses.some((name) => segmentSchema.controllers[name] || controllersByOriginalName[name]);
-      });
+      return namesOfClasses.some((name) => segmentSchema.controllers[name] || controllersByOriginalName[name]);
+    });
 
-      if (affectedSegments.length) {
-        log.debug(
-          `A file with controller ${namesOfClasses.join(', ')} have been modified at path "${filePath}". Segment(s) affected: ${JSON.stringify(affectedSegments.map((s) => s.segmentName))}`
-        );
+    if (affectedSegments.length) {
+      log.debug(
+        `A file with controller ${namesOfClasses.join(', ')} have been modified at path "${filePath}". Segment(s) affected: ${JSON.stringify(affectedSegments.map((s) => s.segmentName))}`
+      );
 
-        await Promise.all(affectedSegments.map((segment) => this.#requestSchema(segment.segmentName)));
-      } else {
-        log.debug(`The class ${namesOfClasses.join(', ')} does not belong to any segment`);
-      }
-    } else {
-      log.debug(`The file ${filePath} does not contain any controller`);
+      await Promise.all(affectedSegments.map((segment) => this.#requestSchema(segment.segmentName)));
+      return;
     }
+
+    // a renamed controller, a service or a validation module can change any schema
+    log.debug(`The file ${filePath} holds no controller of a known segment, requesting every segment`);
+    await Promise.all(this.#segments.map((segment) => this.#requestSchema(segment.segmentName)));
   };
 
   #getSelfSignedDispatcher() {
@@ -368,6 +387,44 @@ export class VovkDev {
   }
 
   #requestSchema = debounceWithArgs(async (segmentName: string) => {
+    const result = await this.#fetchSchema(segmentName);
+    if (result.isError || result.isRefused) {
+      this.#failedSegmentNames.add(segmentName);
+      await this.#useLastKnownSchema(segmentName);
+    } else {
+      this.#failedSegmentNames.delete(segmentName);
+    }
+    return result;
+  }, 500);
+
+  // a segment without a schema would hold back the client of the others; --exit generates from fresh schemas only
+  async #useLastKnownSchema(segmentName: string) {
+    const isMissing = () =>
+      !this.#schemaSegments[segmentName] && this.#segments.some((s) => s.segmentName === segmentName);
+    if (this.#exit || !isMissing()) return;
+    const schemaFilePath = path.join(this.#getSchemaOutAbsolutePath(), `${segmentName || ROOT_SEGMENT_FILE_NAME}.json`);
+    const lastKnown = await fs
+      .readFile(schemaFilePath, 'utf-8')
+      .then((text) => JSON.parse(text) as VovkSegmentSchema | null)
+      .catch(() => null);
+    // a schema may have come in meanwhile
+    if (!isMissing()) return;
+    this.#schemaSegments[segmentName] =
+      lastKnown?.controllers && (lastKnown.segmentName ?? '') === segmentName
+        ? lastKnown
+        : getPlaceholderSchema(segmentName);
+    this.#generateIfComplete();
+  }
+
+  #requestFailedSchemas() {
+    for (const segmentName of this.#failedSegmentNames) {
+      if (this.#segments.some((s) => s.segmentName === segmentName)) void this.#requestSchema(segmentName);
+      else this.#failedSegmentNames.delete(segmentName);
+    }
+  }
+
+  // isError: no schema came back; isRefused: one came back that can't be used
+  async #fetchSchema(segmentName: string): Promise<{ isError: boolean; isRefused?: boolean }> {
     const { log, port, config } = this.#projectInfo;
     const devHttps = this.#devHttps ?? config.devHttps;
     const endpoint = getSchemaEndpoint({
@@ -382,6 +439,25 @@ export class VovkDev {
     try {
       const resp = await fetch(endpoint, { dispatcher: devHttps ? this.#getSelfSignedDispatcher() : undefined });
       const text = await resp.text();
+      const shortText = text.length > 2000 ? `${text.slice(0, 2000)}...` : text;
+
+      if (resp.status === 404) {
+        const message = `Schema request to ${chalkHighlightThing(endpoint)} for ${formatLoggedSegmentName(segmentName)} got 404. A basePath in the Next.js config is a likely cause: vovk dev requests the schema without it. Otherwise the segment did not compile, or another server listens on this port.`;
+        if (this.#notFoundEndpoints.has(endpoint)) log.debug(message);
+        else log.warn(message);
+        this.#notFoundEndpoints.add(endpoint);
+        return { isError: true };
+      }
+
+      if (resp.status !== 200) {
+        log.warn(
+          `Schema request to ${chalkHighlightThing(endpoint)} for ${formatLoggedSegmentName(segmentName)} failed with status code ${resp.status} but expected 200.`
+        );
+        log.warn(`Response from ${formatLoggedSegmentName(segmentName)}: ${shortText}`);
+        return { isError: true };
+      }
+
+      this.#notFoundEndpoints.delete(endpoint);
       let json: { schema: VovkSegmentSchema | null };
       try {
         json = JSON.parse(text);
@@ -389,18 +465,7 @@ export class VovkDev {
         log.error(
           `Error parsing JSON from ${chalkHighlightThing(endpoint)} for ${formatLoggedSegmentName(segmentName)}: ${(error as Error)?.message}`
         );
-        log.error(`Response text: ${text.length > 2000 ? `${text.slice(0, 2000)}...` : text}`);
-        return { isError: true };
-      }
-
-      if (resp.status !== 200) {
-        const probableCause = {
-          404: 'the segment did not compile or another server listens on this port',
-        }[resp.status];
-        log.warn(
-          `Schema request to ${chalkHighlightThing(endpoint)} for ${formatLoggedSegmentName(segmentName)} failed with status code ${resp.status} but expected 200.${probableCause ? ` Probable cause: ${probableCause}.` : ''}`
-        );
-        log.warn(`Response from ${formatLoggedSegmentName(segmentName)}: ${text}`);
+        log.error(`Response text: ${shortText}`);
         return { isError: true };
       }
 
@@ -411,7 +476,7 @@ export class VovkDev {
         log.error(`Error parsing schema for ${formatLoggedSegmentName(segmentName)}: ${(error as Error)?.message}`);
       }
 
-      await this.#handleSegmentSchema(segmentName, segmentSchema);
+      if (!(await this.#handleSegmentSchema(segmentName, segmentSchema))) return { isError: false, isRefused: true };
     } catch (error) {
       log.error(
         `Error requesting schema for ${formatLoggedSegmentName(segmentName)} at ${endpoint}: ${(error as Error)?.message}`
@@ -421,17 +486,21 @@ export class VovkDev {
     }
 
     return { isError: false };
-  }, 500);
+  }
 
-  #generate = debounce(async () => {
-    const fullSchema = {
-      $schema: VovkSchemaIdEnum.SCHEMA,
-      segments: this.#schemaSegments,
-      meta: getMetaSchema({
-        config: this.#projectInfo.config,
-      }),
-    };
+  #generate = debounce(() => void this.#generateOneAtATime(), 1000);
+
+  // a schema that comes in during a generation makes one more, which reads the newest schemas
+  #generateOneAtATime = oneAtATime(async () => {
     try {
+      await this.#writeMissingSchemaFiles();
+      const fullSchema = {
+        $schema: VovkSchemaIdEnum.SCHEMA,
+        segments: this.#schemaSegments,
+        meta: getMetaSchema({
+          config: this.#projectInfo.config,
+        }),
+      };
       await generate({
         projectInfo: await loadOpenAPIMixins(this.#projectInfo),
         fullSchema,
@@ -443,17 +512,31 @@ export class VovkDev {
       this.#projectInfo.log.error(`Failed to generate the client: ${(error as Error)?.message ?? error}`);
       this.#failExitRun();
     }
-  }, 1000);
+  });
 
   #failExitRun() {
     if (this.#exit) process.exitCode = 1;
   }
 
-  async #handleSegmentSchema(segmentName: string, segmentSchema: VovkSegmentSchema | null) {
+  // the schema folder may be gone, or moved by a config change, and the client imports every file in it
+  async #writeMissingSchemaFiles() {
+    const schemaOutAbsolutePath = this.#getSchemaOutAbsolutePath();
+    await fs.mkdir(schemaOutAbsolutePath, { recursive: true });
+    await writeMetaJson(schemaOutAbsolutePath, this.#projectInfo);
+    await Promise.all(
+      Object.values(this.#schemaSegments).map((segmentSchema) =>
+        writeOneSegmentSchemaFile({ schemaOutAbsolutePath, segmentSchema, skipIfExists: true })
+      )
+    );
+  }
+
+  // false when the schema can't be used
+  async #handleSegmentSchema(segmentName: string, segmentSchema: VovkSegmentSchema | null): Promise<boolean> {
     const { log, config, cwd } = this.#projectInfo;
     if (!segmentSchema) {
       log.warn(`${formatLoggedSegmentName(segmentName, { upperFirst: true })} schema is null`);
-      return;
+      this.#failExitRun();
+      return false;
     }
 
     log.debug(`Handling received schema from ${formatLoggedSegmentName(segmentName)}`);
@@ -462,7 +545,8 @@ export class VovkDev {
       assertSegmentName(segmentName);
     } catch (error) {
       log.error((error as Error).message);
-      return;
+      this.#failExitRun();
+      return false;
     }
 
     // the write path is built from segmentName, an http response must not name a different segment
@@ -470,7 +554,8 @@ export class VovkDev {
       log.error(
         `Schema for ${formatLoggedSegmentName(segmentName)} reported a different segment name ${JSON.stringify(segmentSchema.segmentName)}, ignoring it`
       );
-      return;
+      this.#failExitRun();
+      return false;
     }
 
     const schemaOutAbsolutePath = path.resolve(cwd, this.#schemaOut ?? config.schemaOutDir);
@@ -478,11 +563,12 @@ export class VovkDev {
 
     if (!segment) {
       log.warn(`${formatLoggedSegmentName(segmentName)} not found`);
-      return;
+      return true;
     }
 
     this.#schemaSegments[segmentName] = segmentSchema;
-    if (segmentSchema.emitSchema) {
+    // written with emitSchema off too, so vovk generate leaves the segment out of the client
+    if (segmentSchema.emitSchema || isEmpty(segmentSchema.controllers)) {
       const now = Date.now();
       const { diffResult } = await writeOneSegmentSchemaFile({
         schemaOutAbsolutePath,
@@ -496,13 +582,14 @@ export class VovkDev {
         logDiffResult(segment.segmentName, diffResult, this.#projectInfo);
         log.info(`Schema for ${formatLoggedSegmentName(segment.segmentName)} has been updated in ${timeTook}ms`);
       }
-    } else if (segmentSchema && !isEmpty(segmentSchema.controllers)) {
+    } else {
       log.error(
         `Non-empty schema provided for ${formatLoggedSegmentName(segment.segmentName)} but "emitSchema" is false`
       );
     }
 
     this.#generateIfComplete();
+    return true;
   }
 
   async start({ exit }: { exit: boolean }) {
@@ -537,10 +624,12 @@ export class VovkDev {
 
     await ensureClient(this.#projectInfo, this.#segments, this.#getCliSchemaPath());
 
+    // no segment schema to wait for, the client of the OpenAPI mixins is generated now
+    if (!this.#segments.length && !isEmpty(this.#projectInfo.openAPIMixins)) this.#generate();
+
     const MAX_ATTEMPTS = 5;
     const DELAY = 5000;
 
-    // Request schema every segment in 5 seconds in order to update schema on start
     setTimeout(() => {
       for (const { segmentName } of this.#segments) {
         let attempts = 0;

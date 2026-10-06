@@ -29,11 +29,8 @@ const isNumberedDefinitionName = (name: string) => /^__schema\d+$/.test(name);
 // OpenAPI allows letters, digits, ".", "-" and "_" in a component name
 const toComponentName = (name: string) => name.replace(/[^A-Za-z0-9._-]/g, '_');
 
-/**
- * Moves a slot's `$defs` (or `definitions`) to `components` and returns the slot with its refs rewritten to them.
- * A numbered definition, or one whose name another slot took for a different schema, gets the slot's name in front;
- * a slot that refers to its own root is added to the components as well.
- */
+// moves a slot's $defs and definitions to components; a numbered name, or one another slot took for a different
+// schema, gets the slot's name in front, and a slot that refers to its own root becomes a component too
 function extractComponents(
   schema: VovkJSONSchemaBase | undefined,
   slotName: string,
@@ -125,8 +122,6 @@ function isObjectSchema(schema: unknown, components: Record<string, VovkJSONSche
   );
 }
 
-// returns OpenAPIObject along with resolved configs
-// TODO: Refactor and decompose
 export function vovkSchemaToOpenAPI({
   config,
   rootEntry = 'api',
@@ -332,9 +327,15 @@ export function vovkSchemaToOpenAPI({
                       content: {
                         'application/jsonl': {
                           schema: iterationValidation,
-                          // the body is lines of items, an example of the schema is one item
+                          // one item per line; the example's refs point at the components
                           example: Array(3)
-                            .fill(JSON.stringify(schemaToObject(iterationValidation)))
+                            .fill(
+                              JSON.stringify(
+                                schemaToObject(iterationValidation, {
+                                  components: { schemas: components },
+                                } as VovkJSONSchemaBase)
+                              )
+                            )
                             .join('\n'),
                         },
                       },

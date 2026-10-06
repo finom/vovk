@@ -31,7 +31,7 @@ const toJSONLinesError = (cause: unknown) => {
   return error;
 };
 
-/** ReadableStream of JSON Lines to VovkStreamAsyncIterable, reusable outside HTTP contexts. @see https://vovk.dev/jsonlines */
+// also used without a Response: deriveTools reads a JSONLinesResponder's stream with it
 export const readableStreamToAsyncIterable = <T = unknown>({
   readableStream,
   abortController,
@@ -232,12 +232,10 @@ export const defaultStreamHandler = ({
   response: Response;
   abortController: AbortController;
 }): VovkStreamAsyncIterable<unknown> => {
-  // Handle error responses by creating a stream that fails on first iteration
   if (!response.ok) {
     let cachedError: HttpException | null = null;
     let errorParsed = false;
 
-    // Parse error asynchronously and cache it
     void response
       .json()
       .then((res) => {
@@ -251,7 +249,6 @@ export const defaultStreamHandler = ({
       });
 
     const getError = async (): Promise<HttpException> => {
-      // Wait for error to be parsed
       while (!errorParsed) {
         await new Promise((resolve) => setTimeout(resolve, 0));
       }

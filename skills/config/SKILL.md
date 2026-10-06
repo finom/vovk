@@ -1,6 +1,6 @@
 ---
 name: config
-description: Vovk.ts configuration — vovk.config.{mjs,cjs,js} shape, every config key + default (rootEntry, schemaOutDir, libs, exposeConfigKeys, logLevel, devHttps, moduleTemplates, clientTemplateDefs, composedClient, segmentedClient, outputConfig, bundle, info), tsconfig.json setup (experimentalDecorators), and the decorate() alternative for projects without TS decorators. Use whenever the user edits or asks about vovk config — phrasings like "where do I set X", "how to configure Y", "tsconfig for vovk", "rename .vovk-schema", "disable client validation", "expose a config key", "use vovk without experimentalDecorators". Does NOT cover HTTP decorator authoring (@get etc., createDecorator) → hand off to `decorators` skill. Does NOT cover bundle CLI flow → `bundle` skill. Does NOT cover composed vs segmented client output internals → `rpc` skill.
+description: Vovk.ts configuration — vovk.config.{mjs,cjs,js} shape, every config key + default (rootEntry, schemaOutDir, libs, exposeConfigKeys, logLevel, devHttps, moduleTemplates, clientTemplateDefs, composedClient, segmentedClient, outputConfig, bundle, info), tsconfig.json setup (experimentalDecorators). Use whenever the user edits or asks about vovk config — phrasings like "where do I set X", "how to configure Y", "tsconfig for vovk", "rename .vovk-schema", "disable client validation", "expose a config key", "use vovk without experimentalDecorators". Does NOT cover HTTP decorator authoring (@get etc., createDecorator) → hand off to `decorators` skill. Does NOT cover bundle CLI flow → `bundle` skill. Does NOT cover composed vs segmented client output internals → `rpc` skill.
 ---
 
 # Vovk.ts configuration
@@ -108,7 +108,7 @@ Common keys: `origin` (baked-in API URL), `package` (npm/PyPI/crates.io metadata
 
 ## TypeScript setup
 
-Vovk's HTTP decorators (`@get`, `@post`, `@prefix`, `@operation`, ...) are TypeScript decorators. Enable in `tsconfig.json`:
+Vovk's decorators (`@get`, `@post`, `@prefix`, `@operation`, ...) are the only way to declare routes. `vovk init` enables `experimentalDecorators` in `tsconfig.json`; keep it:
 
 ```json
 {
@@ -118,41 +118,7 @@ Vovk's HTTP decorators (`@get`, `@post`, `@prefix`, `@operation`, ...) are TypeS
 }
 ```
 
-Without `experimentalDecorators`, decorator stacking won't compile — use `decorate()` instead (next section).
-
-## Without `experimentalDecorators` — `decorate()`
-
-Some toolchains can't or won't enable `experimentalDecorators` (Bun + certain transformers, Vite SSR variants, mixed-stack monorepos). Use `decorate()` as the method initializer — variadic decorators, chained `.handle()`:
-
-```ts
-import { get, put, decorate, procedure, operation } from 'vovk';
-import { z } from 'zod';
-
-class UserController {
-  static prefix = 'users';
-
-  static updateUser = decorate(
-    put('{id}'),
-    operation({ summary: 'Update user' }),
-    procedure({
-      params: z.object({ id: z.uuid() }),
-      body: z.object({ email: z.email() }),
-    }),
-  ).handle(async (req, { id }) => {
-    const { email } = await req.vovk.body();
-    // ...
-  });
-
-  // No-validation form:
-  static listUsers = decorate(get()).handle(async (req) => {
-    // ...
-  });
-}
-
-export default UserController;
-```
-
-Same wire output as the `@put('{id}') @operation(...)` stacking. Decorator order: **last argument = innermost = applied first** (matches `@`-stacking semantics). Pass a plain async function to `.handle()` if there's no validation procedure.
+A webpack build needs it: without it `next build --webpack` fails, and webpack is Next.js 15's default build. Turbopack (Next.js 16's default) compiles vovk's decorators with or without it; TypeScript 5.0+ type-checks them either way.
 
 ## Out of scope
 

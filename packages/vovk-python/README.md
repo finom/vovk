@@ -22,7 +22,7 @@
 
 ## vovk-python [![npm version](https://badge.fury.io/js/vovk-python.svg)](https://www.npmjs.com/package/vovk-python)
 
-Provides template files and necessary utilities to generate [Python/mypy](https://vovk.dev/python) client.
+Templates and utilities that generate the [Python/mypy](https://vovk.dev/python) client.
 
 Install:
 

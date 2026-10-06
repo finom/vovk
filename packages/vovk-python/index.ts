@@ -22,14 +22,28 @@ export function toPythonString(value: string): string {
   return JSON.stringify(value);
 }
 
-export function toPythonIdentifier(name: string): string {
-  const ident = name.replace(/[^A-Za-z0-9_]/g, '_').replace(/^(?=[0-9])/, '_') || '_';
-  return PYTHON_KEYWORDS.has(ident) ? `${ident}_` : ident;
+// with a set of the names a scope already has, a taken name gets the first free suffix: name_2, name_3, …
+export function toPythonIdentifier(name: string, used?: Set<string>): string {
+  const base = name.replace(/[^A-Za-z0-9_]/g, '_').replace(/^(?=[0-9])/, '_') || '_';
+  const ident = PYTHON_KEYWORDS.has(base) ? `${base}_` : base;
+  if (!used) return ident;
+  let candidate = ident;
+  for (let i = 2; used.has(candidate); i++) candidate = `${ident}_${i}`;
+  used.add(candidate);
+  return candidate;
 }
 
-// lines for a """ docstring: a quote or a backslash would end the string or start an escape
-export function toPythonDocstringLines(text: string): string[] {
-  return text
+// the method of each handler of a class, by handler name: in schema order, a name already taken gets the first free
+// suffix, so getUserByID and getUserById become get_user_by_id and get_user_by_id_2
+export function getMethodNames(handlerNames: string[], toSnakeCase: (name: string) => string): Map<string, string> {
+  const used = new Set<string>();
+  return new Map(handlerNames.map((name) => [name, toPythonIdentifier(toSnakeCase(name), used)]));
+}
+
+// lines for a """ docstring: a quote or a backslash would end the string or start an escape; a third-party OpenAPI
+// document may hold a number or any other JSON as a title or a description, which is written as text
+export function toPythonDocstringLines(text: unknown): string[] {
+  return String(text)
     .replace(/\\/g, '\\\\')
     .replace(/"/g, '\\"')
     .split(/\r\n|\r|\n/)
@@ -58,24 +72,17 @@ function toPythonLiteral(value: unknown): string | null {
   return null;
 }
 
-/**
- * Check if a schema represents a file upload field (format: binary)
- */
 function isFileUploadSchema(s: VovkJSONSchemaBase): boolean {
-  // Check if it's a string with format: binary
   if (s.type === 'string' && s.format === 'binary') {
     return true;
   }
 
-  // Check if it's an array of type with string included and format: binary
   if (Array.isArray(s.type) && s.type.includes('string') && s.format === 'binary') {
     return true;
   }
 
-  // Check if it's an array of files
   if (s.type === 'array' && s.items && typeof s.items !== 'boolean') {
     if (Array.isArray(s.items)) {
-      // For tuple-style items, check if any is a file
       return s.items.some((item) => typeof item !== 'boolean' && isFileUploadSchema(item));
     } else {
       return isFileUploadSchema(s.items);
@@ -91,14 +98,58 @@ function resolveTopLevelRef(schema: VovkJSONSchemaBase): VovkJSONSchemaBase {
   return (name && (schema.$defs?.[name] ?? schema.definitions?.[name])) || schema;
 }
 
+const MAX_FILE_SEARCH_DEPTH = 16;
+
+function resolveLocalRef(ref: string, root: VovkJSONSchemaBase): VovkJSONSchemaBase | undefined {
+  if (!ref.startsWith('#')) return undefined;
+  let current: unknown = root;
+  for (const part of ref.slice(1).split('/').filter(Boolean)) {
+    if (!current || typeof current !== 'object') return undefined;
+    current = (current as Record<string, unknown>)[part.replace(/~1/g, '/').replace(/~0/g, '~')];
+  }
+  return current && typeof current === 'object' ? (current as VovkJSONSchemaBase) : undefined;
+}
+
+// a field that goes in files: a file, or a list or a union that may be one
+function isFileField(s: VovkJSONSchemaBase | undefined, root: VovkJSONSchemaBase, depth = 0): boolean {
+  if (!s || typeof s !== 'object' || depth > MAX_FILE_SEARCH_DEPTH) return false;
+  if (s.$ref) return isFileField(resolveLocalRef(s.$ref, root), root, depth + 1);
+  if (s.format === 'binary' || s.contentEncoding === 'binary') return true;
+  const items = s.items && typeof s.items === 'object' ? [s.items].flat() : [];
+  return [...items, ...(s.anyOf ?? []), ...(s.oneOf ?? [])].some(
+    (branch) => typeof branch === 'object' && isFileField(branch, root, depth + 1)
+  );
+}
+
+// the objects a body may be: itself and every branch of its unions and intersections
+function bodyObjects(s: VovkJSONSchemaBase | undefined, root: VovkJSONSchemaBase, depth = 0): VovkJSONSchemaBase[] {
+  if (!s || typeof s !== 'object' || depth > MAX_FILE_SEARCH_DEPTH) return [];
+  if (s.$ref) return bodyObjects(resolveLocalRef(s.$ref, root), root, depth + 1);
+  const branches = [...(s.allOf ?? []), ...(s.anyOf ?? []), ...(s.oneOf ?? [])];
+  return [s, ...branches.flatMap((branch) => bodyObjects(branch, root, depth + 1))];
+}
+
+function fileFieldsOf(s: VovkJSONSchemaBase | undefined, root: VovkJSONSchemaBase) {
+  return bodyObjects(s, root).flatMap((object) =>
+    Object.entries(object.properties ?? {}).filter(([, prop]) => isFileField(prop, root))
+  );
+}
+
 export function hasFiles(schema: VovkJSONSchemaBase): boolean {
-  return Object.values(resolveTopLevelRef(schema).properties ?? {}).some((prop) => isFileUploadSchema(prop));
+  return fileFieldsOf(schema, schema).length > 0;
+}
+
+// a call may send no files when a branch of the body holds none, as a JSON-or-file union
+export function areFilesOptional(schema: VovkJSONSchemaBase): boolean {
+  const [target] = bodyObjects(schema, schema);
+  const branches = target?.anyOf ?? target?.oneOf;
+  return !!branches?.some((branch) => !fileFieldsOf(branch, schema).length);
 }
 
 export function hasNormalData(schema: VovkJSONSchemaBase): boolean {
   const { properties } = resolveTopLevelRef(schema);
   // without listed properties, as in an array, a union or a record, any of it may be data
-  return !properties || Object.values(properties).some((prop) => !isFileUploadSchema(prop));
+  return !properties || Object.values(properties).some((prop) => !isFileField(prop, schema));
 }
 
 /**
@@ -110,12 +161,22 @@ export function getBodyKind(schema: VovkJSONSchemaBase | undefined): 'none' | 'f
   const ct = schema['x-contentType'] as string[] | undefined;
   if (ct?.includes('multipart/form-data') || ct?.includes('application/x-www-form-urlencoded')) return 'form';
   if (schema.format === 'binary' || schema.contentEncoding === 'binary') return 'binary';
-  if (ct?.some((c: string) => c.startsWith('text/'))) return 'text';
-  // a declared non JSON content type on a scalar body means raw bytes, e.g. application/octet-stream or image/png
+  // an object or an array goes out as JSON, whatever else the procedure declares
   const isStructured = schema.type === 'object' || schema.type === 'array' || !!schema.properties;
+  if (!isStructured && ct?.some((c: string) => c.startsWith('text/'))) return 'text';
+  // a declared non JSON content type on a scalar body means raw bytes, e.g. application/octet-stream or image/png
   const isJSONContentType = (c: string) => c === '*/*' || c === 'application/json' || c.endsWith('+json');
   if (!isStructured && ct?.length && !ct.some(isJSONContentType)) return 'binary';
   return 'json';
+}
+
+// a text body goes out as the type the procedure declares, as the TypeScript client sends it
+export function getTextContentType(schema: VovkJSONSchemaBase | undefined): string {
+  const isTextLike = (type: string) =>
+    !type.includes('*') &&
+    !['multipart/form-data', 'application/x-www-form-urlencoded', 'application/json'].includes(type) &&
+    !type.endsWith('+json');
+  return (schema?.['x-contentType'] as string[] | undefined)?.find(isTextLike) ?? 'text/plain';
 }
 
 /**
@@ -128,10 +189,8 @@ export function convertJSONSchemaToPythonDataType(options: ConvertOptions): stri
 
   if (!schema) return '';
 
-  // A buffer to collect the generated class definitions, in order of creation.
   const classDefinitions: string[] = [];
 
-  // To avoid re-generating the same schema multiple times
   const seenObjects = new Map<VovkJSONSchemaBase, string>();
 
   // $defs, definitions and components/schemas become one class each, referenced by name
@@ -174,16 +233,14 @@ export function convertJSONSchemaToPythonDataType(options: ConvertOptions): stri
       })
       .join('');
 
-  /**
-   * Turn a schema into a Python type expression
-   */
+  // the Python type expression of a schema
   function buildType(s: VovkJSONSchemaBase, propNameForParent: string, forcedClassName?: string): string {
-    // Skip file upload schemas at the type level
+    // a file property is left out of its object before it gets here; a file anywhere else is Any
     if (isFileUploadSchema(s)) {
-      return 'Any'; // This will be filtered out at property level
+      return 'Any';
     }
 
-    // 0. Named $ref: point at the shared class, registering it first so cycles terminate
+    // a named $ref points at one shared class, registered before it is built so a cycle ends
     if (s.$ref) {
       const refName = refNameOf(s.$ref);
       if (!refName || !namedSchemas[refName]) return 'Any';
@@ -196,25 +253,23 @@ export function convertJSONSchemaToPythonDataType(options: ConvertOptions): stri
 
       unfinished.add(localName);
       const built = buildType(namedSchemas[refName], localName.slice(1), localName);
-      // non-object definitions (enums, primitives) need an alias to keep the reference valid
+      // non-object definitions (enums, primitives) need an alias to keep the reference valid; in a class body mypy
+      // takes `Name = str` for a variable, `Name: TypeAlias = str` for a type
       if (built !== reference(localName)) {
-        classDefinitions.push(`${localName} = ${settle(built, true)}`);
+        classDefinitions.push(`${localName}: TypeAlias = ${settle(built, true)}`);
       }
       unfinished.delete(localName);
 
       return reference(localName);
     }
 
-    // For convenience, handle arrays of type or single type
     const allTypes = Array.isArray(s.type) ? s.type : s.type ? [s.type] : [];
 
-    // 1. Enums
     if (s.enum && s.enum.length > 0) {
       const literalValues = s.enum.map(toPythonLiteral).filter((literal) => literal !== null);
       return literalValues.length ? `Literal[${literalValues.join(', ')}]` : 'Any';
     }
 
-    // 2. allOf
     if (s.allOf && s.allOf.length > 0) {
       const merged: VovkJSONSchemaBase = {
         type: 'object',
@@ -239,7 +294,6 @@ export function convertJSONSchemaToPythonDataType(options: ConvertOptions): stri
       return buildType(merged, propNameForParent);
     }
 
-    // 3. anyOf / oneOf => Union
     if (s.anyOf && s.anyOf.length > 0) {
       const subTypes = s.anyOf.map((sub, i) => buildType(sub, `${propNameForParent}_anyOf_${i}`));
       return `Union[${subTypes.join(', ')}]`;
@@ -249,13 +303,11 @@ export function convertJSONSchemaToPythonDataType(options: ConvertOptions): stri
       return `Union[${subTypes.join(', ')}]`;
     }
 
-    // 4. If we can detect multiple types, produce a Union
     if (allTypes.length > 1) {
       const subTypes = allTypes.map((t) => buildType({ ...s, type: t }, propNameForParent));
       return `Union[${subTypes.join(', ')}]`;
     }
 
-    // 5. If there's exactly one type
     if (allTypes.length === 1) {
       switch (allTypes[0]) {
         case 'string':
@@ -301,7 +353,7 @@ export function convertJSONSchemaToPythonDataType(options: ConvertOptions): stri
           const required = new Set(s.required || []);
           // file upload properties go to the Files type
           const fields = Object.entries(s.properties || {})
-            .filter(([, propSchema]) => !isFileUploadSchema(propSchema))
+            .filter(([, propSchema]) => !isFileField(propSchema, schema))
             .map(([propName, propSchema]) => {
               const childType = buildType(propSchema, `${propNameForParent}_${propName}`);
               // a key that may be missing, not one that may be None
@@ -347,10 +399,9 @@ export function convertJSONSchemaToPythonDataType(options: ConvertOptions): stri
     );
 
   if (!isTypedDictTop) {
-    classDefinitions.push(`${className} = ${settle(topLevelTypeName, true)}`);
+    classDefinitions.push(`${className}: TypeAlias = ${settle(topLevelTypeName, true)}`);
   }
 
-  // If there are no non-file properties, return an empty TypedDict
   if (classDefinitions.length === 0) {
     classDefinitions.push(`class ${className}(TypedDict):\n    pass`);
   }
@@ -364,19 +415,23 @@ export function convertJSONSchemaToPythonDataType(options: ConvertOptions): stri
 
 export function convertJSONSchemaToPythonFilesType(options: ConvertOptions): string {
   const { className, pad } = options;
-  const schema = options.schema && resolveTopLevelRef(options.schema);
-
-  if (schema?.type !== 'object') {
-    // Files must be in an object schema
-    return '';
-  }
+  if (!options.schema) return '';
+  const schema = resolveTopLevelRef(options.schema);
 
   const lines: string[] = [];
-  const props = schema.properties || {};
-  const required = new Set(schema.required || []);
-
-  // Filter to only file upload properties
-  const fileProps = Object.entries(props).filter(([, propSchema]) => isFileUploadSchema(propSchema));
+  // the file fields of the body and of each branch of it; one is required when every branch with it requires it
+  const objects = bodyObjects(options.schema, options.schema);
+  const fileProps: [string, VovkJSONSchemaBase][] = [];
+  for (const [name, prop] of fileFieldsOf(options.schema, options.schema)) {
+    if (!fileProps.some(([seen]) => seen === name)) fileProps.push([name, prop]);
+  }
+  const required = new Set(
+    fileProps
+      .map(([name]) => name)
+      .filter((name) =>
+        objects.every((object) => !object.properties || !(name in object.properties) || object.required?.includes(name))
+      )
+  );
 
   if (fileProps.length === 0) {
     return '';
@@ -388,48 +443,25 @@ export function convertJSONSchemaToPythonFilesType(options: ConvertOptions): str
     ...(schema.description ? toPythonDocstringLines(schema.description) : []),
   ];
 
-  // Check if any property is an array (multiple files)
   const hasArrayFields = fileProps.some(([, propSchema]) => propSchema.type === 'array');
 
-  // If there are array fields or multiple fields, use List[Tuple[...]] format
-  // Otherwise, use TypedDict for single fields
   if (hasArrayFields || fileProps.length > 1) {
-    // Generate as a type alias for list of tuples
-    lines.push(`# File upload type for requests library`);
-    lines.push(`# Use as: files=${className}Value where ${className}Value is a list of tuples`);
+    lines.push(
+      `# a (field name, file) pair per file, as in files=[(${toPythonString(fileProps[0][0])}, ('a.pdf', open('a.pdf', 'rb')))]`
+    );
 
-    // Add docstring if exists
     if (schema.title || schema.description) {
       lines.push(`"""`, ...fileDocLines('File Uploads'), `"""`);
     }
 
-    // Define the file tuple type
     const fileTupleType =
       'Union[Tuple[str, BinaryIO], Tuple[str, BinaryIO, str], Tuple[str, BinaryIO, str, Dict[str, str]]]';
 
-    // Generate the type alias
     lines.push(`${className} = List[Tuple[str, ${fileTupleType}]]`);
-    lines.push(``);
-
-    // Add example usage
-    lines.push(`# Example usage:`);
-    lines.push(`# ${className.toLowerCase()}: ${className} = [`);
-
-    for (const [propName, propSchema] of fileProps) {
-      if (propSchema.type === 'array') {
-        lines.push(`#     (${toPythonString(propName)}, ('file1.pdf', open('file1.pdf', 'rb'), 'application/pdf')),`);
-        lines.push(`#     (${toPythonString(propName)}, ('file2.pdf', open('file2.pdf', 'rb'), 'application/pdf')),`);
-      } else {
-        lines.push(`#     (${toPythonString(propName)}, ('file.jpg', open('file.jpg', 'rb'), 'image/jpeg')),`);
-      }
-    }
-    lines.push(`# ]`);
-    lines.push(`# response = requests.post(url, files=${className.toLowerCase()})`);
   } else {
     const [propName] = fileProps[0];
     const isRequired = required.has(propName);
 
-    // Single file type
     const fileType =
       'Union[BinaryIO, Tuple[str, BinaryIO], Tuple[str, BinaryIO, str], Tuple[str, BinaryIO, str, Dict[str, str]]]';
     const finalType = isRequired ? fileType : `Optional[${fileType}]`;
@@ -443,7 +475,6 @@ export function convertJSONSchemaToPythonFilesType(options: ConvertOptions): str
 
     lines.push(`class ${className}(TypedDict):`);
 
-    // Add docstring if exists
     if (schema.title || schema.description) {
       lines.push(`    """`, ...fileDocLines('File Upload').map((line) => `    ${line}`), `    """`);
     }

@@ -21,4 +21,25 @@ await describe('vovk bin', async () => {
 
     assert.strictEqual(stdout.trim(), version);
   });
+
+  await it('Names the Node.js versions it needs on an older Node.js', async () => {
+    const packageJsonPath = path.join(cliPath, '../../package.json');
+    const { bin } = JSON.parse(await fs.readFile(packageJsonPath, 'utf-8'));
+    // on a real Node.js 20 or 18 a dependency throws at import (undici, @inquirer); this one only reports 20.18.2
+    const olderNode = `data:text/javascript,${encodeURIComponent(
+      "Object.defineProperty(process.versions, 'node', { value: '20.18.2' }); Object.defineProperty(process, 'version', { value: 'v20.18.2' });"
+    )}`;
+    const args = ['--import', olderNode, path.join(packageJsonPath, '..', bin.vovk), '--version'];
+    const { exitCode, output } = await promisify(execFile)(process.execPath, args).then(
+      ({ stdout, stderr }) => ({ exitCode: 0, output: stdout + stderr }),
+      (error: { code: number; stdout: string; stderr: string }) => ({
+        exitCode: error.code,
+        output: error.stdout + error.stderr,
+      })
+    );
+
+    assert.notStrictEqual(exitCode, 0, output);
+    // any uncaught exception ends with Node.js's own "Node.js v24.1.0" line, which names no requirement
+    assert.match(output.replace(/^Node\.js v[\d.]+$/m, ''), /Node\.js/, output);
+  });
 });
