@@ -25,7 +25,6 @@ const data = {
   }
 };
 
-// Add optional fields to package section
 if (t.package.description) {
   data.package.description = t.package.description;
 }
@@ -44,7 +43,6 @@ if (t.package.homepage) {
   data.package.homepage = t.package.homepage;
 }
 
-// Build authors array
 const authors = [];
 if (t.package.author) {
   if (typeof t.package.author === 'string') {
@@ -72,12 +70,10 @@ if (authors.length) {
   data.package.authors = authors;
 }
 
-// Add keywords if they exist
 if (t.package.keywords && t.package.keywords.length) {
   data.package.keywords = t.package.keywords;
 }
 
-// Add bugs if they exist
 if (t.package.bugs) {
   if (!data.package.metadata) {
     data.package.metadata = {};

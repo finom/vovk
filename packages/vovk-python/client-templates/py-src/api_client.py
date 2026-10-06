@@ -96,10 +96,6 @@ def _validate(instance: Any, schema: Dict[str, Any]) -> None:
 class ApiClient:
     @staticmethod
     def _load_full_schema() -> Dict[str, Any]:    
-        """
-        Loads the 'schema.json' file from the ./src/ directory.
-        Returns it as a Python dictionary.
-        """
         current_dir = os.path.dirname(__file__)
         schema_path = os.path.join(current_dir, "schema.json")
         with open(schema_path, "r", encoding="utf-8") as f:
@@ -133,7 +129,6 @@ class ApiClient:
 
     @staticmethod
     def _join_url(root: str, *parts: str) -> str:
-        # a slash at the end of the root or around a part must not double the one the join adds
         return '/'.join(part for part in [root.rstrip('/'), *(part.strip('/') for part in parts)] if part)
 
     def request(
@@ -154,7 +149,6 @@ class ApiClient:
         Make an API request based on a full schema and controller/handler
         configuration.
         """
-        # Extract relevant information from the full schema
         schema = self.full_schema['segments'][segment_name]
         controller = schema['controllers'][rpc_name]
         handlers = controller['handlers']
@@ -230,27 +224,23 @@ class ApiClient:
         # an object goes out as a form only when JSON can't carry it: no JSON declared, or files to send
         TIsForm = any(t in _FORM_MEDIA_TYPES for t in body_ct) and bool(files or not any(_is_json_media_type(t) for t in body_ct))
         TIsMultipart = TIsForm and 'multipart/form-data' in body_ct
-        # Validate inputs if validation schema is provided
         if validation and not disable_client_validation:
-            # Validate body (skip for form data and binary data since they can't be validated client-side)
+            # a form or binary body is left to the server
             if validation.get('body') and not TIsForm and not TIsBinary:
                 if body is None:
                     raise ValueError("Body is required for validation but not provided")
                 _validate(body, validation['body'])
 
-            # Validate query
             if validation.get('query'):
                 if query is None:
                     raise ValueError("Query is required for validation but not provided")
                 _validate(query, validation['query'])
 
-            # Validate params
             if validation.get('params'):
                 if params is None:
                     raise ValueError("Params are required for validation but not provided")
                 _validate(params, validation['params'])
 
-        # Process URL and substitute path parameters
         processed_url = url
         if params:
             for key, value in params.items():
@@ -260,7 +250,6 @@ class ApiClient:
                     raise ValueError(f'Path parameter "{key}" cannot be empty, "." or "..", got "{text}"')
                 processed_url = processed_url.replace(f"{{{key}}}", quote(text, safe=''))
         
-        # Process query parameters if present
         if query:
             query_string = self._build_query_string(query)
             if "?" in processed_url:
@@ -268,12 +257,10 @@ class ApiClient:
             else:
                 processed_url += "?" + query_string
         
-        # Prepare headers
         request_headers = {
             'Accept': 'application/jsonl, application/json'
         }
         
-        # Update with custom headers if provided
         if headers:
             request_headers.update(headers)
         
@@ -309,7 +296,6 @@ class ApiClient:
         settings = self.session.merge_environment_settings(prepared.url, {}, True, None, None)
         response = self.session.send(prepared, timeout=self.timeout, allow_redirects=True, **settings)
 
-        # Handle response based on content type
         content_type = response.headers.get('Content-Type', '')
 
         if response.status_code >= 400:
@@ -370,17 +356,6 @@ class ApiClient:
         return fields
 
     def _build_query_string(self, data: dict[str, Any], prefix: str = '') -> str:
-        """
-        Build a query string from a nested dictionary or list.
-        Handles complex nested structures with the specified format.
-        
-        Args:
-            data: The data to convert to a query string
-            prefix: The prefix for the current level of nesting
-            
-        Returns:
-            The formatted query string
-        """
         parts: List[str] = []
         
         if isinstance(data, dict): # type: ignore
@@ -406,16 +381,6 @@ class ApiClient:
         return "&".join(part for part in parts if part)
 
     def _stream_jsonl_items(self, response: requests.Response) -> Generator[Dict[str, Any], None, None]:
-        """
-        Process a streaming JSONL response.
-        Handles cases where lines might be split across response chunks.
-        
-        Args:
-            response: The response object with a streaming JSONL body
-            
-        Yields:
-            Each parsed JSON object from the response
-        """
         # the line read so far, in pieces: only each new chunk is split, so a long line costs no more than a short one
         pieces: List[str] = []
         # JSON Lines is UTF-8, and application/x-ndjson comes without a charset that requests could decode it with
@@ -440,7 +405,7 @@ class ApiClient:
 
     @staticmethod
     def _chunks(response: requests.Response) -> Iterator[bytes]:
-        """The body as it arrives, also without chunked encoding, where reading 1024 bytes waits for all of them."""
+        # the body as it arrives, also without chunked encoding, where reading 1024 bytes waits for all of them
         read1 = getattr(response.raw, 'read1', None)
         if read1 is None:
             # urllib3 before 2.2 has no read1
@@ -471,15 +436,6 @@ class ApiClient:
             raise ValueError(f'Malformed JSON line in the stream: {line[:200]!r}') from error
             
     def _stream_jsonl(self, response: requests.Response) -> Generator[Dict[str, Any], None, None]:
-        """
-        Stream JSONL data from a response.
-        
-        Args:
-            response: The response object with a streaming JSONL body
-            
-        Yields:
-            Each parsed JSON object from the response
-        """
         # closing gives the connection back to the session, also when iteration stops early
         try:
             for item in self._stream_jsonl_items(response):
