@@ -75,7 +75,7 @@ The main parts of the hook:
 
 `onmessage` also sends the `response.create` message so the Realtime API answers, unless the result of the tool's `execute` function has the `__preventResponseCreate` flag set to `true`.
 
-```ts showLineNumbers copy filename="src/hooks/use-web-rtc-audio-session.ts" source="examples/realtime-kanban" {87-132}
+```ts showLineNumbers copy filename="src/hooks/use-web-rtc-audio-session.ts" source="examples/realtime-kanban" {87-139}
 'use client';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { StandardToolV0 } from 'vovk';
@@ -83,7 +83,7 @@ import { RealtimeRPC } from '@/client';
 
 /**
  * Hook to manage a real-time session with OpenAI's Realtime endpoints.
- * @example const { isActive, isTalking, handleStartStopClick } = useWebRTCAudioSession(voice, tools);
+ * @example const { isActive, isTalking, toggleSession } = useWebRTCAudioSession(voice, tools);
  */
 export default function useWebRTCAudioSession(
   voice: 'ash' | 'ballad' | 'coral' | 'sage' | 'verse',

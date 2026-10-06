@@ -19,6 +19,8 @@ Add `OPENAI_API_KEY` to the project's environment variables. The integrations cr
 
 A `PASSWORD` variable is also recommended. It adds free password protection to the app's pages and API, with any value you choose. It doesn't cover the MCP server or the Telegram webhook.
 
+With `PASSWORD`, also add `SESSION_SECRET`, the key that signs the session cookie. Without it, the app uses a default key from the public repository. Generate one with `openssl rand -base64 32`.
+
 To protect the MCP server, add `MCP_ACCESS_KEY`. Clients then send the key in the `?mcp_access_key=your_key` query parameter. If it isn't set, the MCP server needs no key.
 
 For the Telegram bot, add `TELEGRAM_BOT_TOKEN` and `TELEGRAM_WEBHOOK_SECRET`. The webhook answers only when both are set. See the [Telegram integration](./telegram) article.

@@ -61,6 +61,6 @@ export const sessionGuard = createDecorator(async (req, next) => {
 ```
 *[The code above is fetched from GitHub repository.](https://github.com/finom/vovk/blob/main/examples/realtime-kanban/src/decorators/session-guard.ts)*
 
-Every procedure has the `sessionGuard` decorator. The `typeof req.url !== 'undefined'{:ts}` check tells HTTP requests apart from [`fn`](/fn) calls.
+Every procedure of the root segment has the `sessionGuard` decorator. The `typeof req.url !== 'undefined'{:ts}` check tells HTTP requests apart from [`fn`](/fn) calls.
 
-The Telegram webhook doesn't use `sessionGuard`, because Telegram sends no session cookie. It checks Telegram's secret token instead (see the [Telegram](./telegram) article). The MCP server has its own `MCP_ACCESS_KEY`.
+The Telegram webhook doesn't use `sessionGuard`, because Telegram sends no session cookie. It checks Telegram's secret token instead (see the [Telegram](./telegram) article). The MCP server has its own `MCP_ACCESS_KEY`. The `static` segment (`/api/static/openapi.json` and `/api/static/hello.json`) and the `/openapi` page have no check, so they stay public when `PASSWORD` is set.

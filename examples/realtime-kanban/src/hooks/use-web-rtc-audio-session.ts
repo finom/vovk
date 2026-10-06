@@ -5,7 +5,7 @@ import { RealtimeRPC } from '@/client';
 
 /**
  * Hook to manage a real-time session with OpenAI's Realtime endpoints.
- * @example const { isActive, isTalking, handleStartStopClick } = useWebRTCAudioSession(voice, tools);
+ * @example const { isActive, isTalking, toggleSession } = useWebRTCAudioSession(voice, tools);
  */
 export default function useWebRTCAudioSession(
   voice: 'ash' | 'ballad' | 'coral' | 'sage' | 'verse',
