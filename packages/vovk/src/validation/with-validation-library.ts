@@ -232,6 +232,8 @@ export function withValidationLibrary<
         return data;
       }
 
+      // the generator below checks the items, so the responder vovk makes for it doesn't check them again
+      if (onBeforeSend) setResponderHooks(req, { onBeforeSend: undefined });
       // Return a brand-new async generator that yields validated items
       return (async function* () {
         let i = 0;

@@ -905,7 +905,31 @@ describe('Runtime sweep', () => {
     const errors: string[] = [];
     let isClosedAfterClose = false;
     let finalized = false;
+    let checks = 0;
+    const numericItem = z.object({ n: z.string().transform(Number) });
+    const { validate } = numericItem['~standard'];
+    // the schema above, counting its checks
+    const countedNumericItem: typeof numericItem = Object.create(numericItem, {
+      '~standard': {
+        value: {
+          ...numericItem['~standard'],
+          validate: (value: unknown) => {
+            checks++;
+            return validate(value);
+          },
+        },
+      },
+    });
+    async function* stringItems() {
+      for (let i = 0; i < 3; i++) yield { n: String(i) };
+    }
     class ResponderController {
+      static transformFirst = procedure({ iteration: countedNumericItem }).handle(stringItems);
+
+      static transformEach = procedure({ iteration: countedNumericItem, validateEachIteration: true }).handle(
+        stringItems
+      );
+
       static throwAfterSend(req: VovkRequest) {
         const responder = new JSONLinesResponder<{ n: number | string }>(req);
         void responder.send({ n: 1 });
@@ -983,6 +1007,8 @@ describe('Runtime sweep', () => {
     get('big-int-item')(ResponderController, 'bigIntItem');
     get('undefined-item')(ResponderController, 'undefinedItem');
     get('throw-cycle')(ResponderController, 'throwCycle');
+    get('transform-first')(ResponderController, 'transformFirst');
+    get('transform-each')(ResponderController, 'transformEach');
     const handlers = initSegment({
       segmentName: 'responder',
       controllers: { ResponderController },
@@ -1033,6 +1059,23 @@ describe('Runtime sweep', () => {
       strictEqual(lines[0].isError, true, JSON.stringify(lines));
       ok(lines[0].reason.startsWith('Validation failed. Invalid iteration #0'), lines[0].reason);
       deepStrictEqual(errors, [lines[0].reason]);
+    });
+
+    it('Checks only the first item a generator yields, once, and sends it transformed', async () => {
+      checks = 0;
+      const lines = await readLines(await call(handlers, 'GET', 'transform-first'));
+
+      deepStrictEqual(lines[0], { n: 0 });
+      strictEqual(lines.length, 3, JSON.stringify(lines));
+      strictEqual(checks, 1);
+    });
+
+    it('Checks each item a generator yields once with validateEachIteration, and sends them transformed', async () => {
+      checks = 0;
+      const lines = await readLines(await call(handlers, 'GET', 'transform-each'));
+
+      deepStrictEqual(lines, [{ n: 0 }, { n: 1 }, { n: 2 }]);
+      strictEqual(checks, 3);
     });
 
     it('Ends the stream, calls onError and returns the generator when an item fails to serialize', async () => {
