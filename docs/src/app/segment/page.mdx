@@ -33,7 +33,9 @@ Call `initSegment` in **route.ts** and export the route handlers it returns: `GE
 - `exposeValidation` — whether to expose validation data. Defaults to `true`.
 - `onError` — a function called on errors with:
   - `error: Error` — the error.
-  - `request: NextRequest` — the incoming request (headers, URL and so on).
+  - `request: VovkRequest` — the incoming request (headers, URL and so on).
+- `onBefore` — a function called with the request before the decorators and the handler run; an error it throws becomes the response.
+- `onSuccess` — a function called with the handler's result and the request once the handler returns; for a stream, that is when the stream starts, not when it ends.
 
 **route.ts** also exports `type Controllers = typeof controllers{:ts}`, which the [RPC client](/typescript) infers its types from.
 

@@ -19,12 +19,12 @@ An HTTP method decorator sets the HTTP method and path of a procedure. It is the
 Each takes an optional path and an optional options object:
 
 ```ts showLineNumbers copy
-import { get, prefix } from 'vovk';
+import { get, prefix, type VovkRequest } from 'vovk';
 
 @prefix('users')
 export default class UserController {
   @get('{id}', { cors: true, headers: { 'x-custom': 'value' } })
-  static getUser(req, { id }: { id: string }) {
+  static getUser(req: VovkRequest, { id }: { id: string }) {
     return { id };
   }
 }
@@ -35,6 +35,7 @@ export default class UserController {
 - `cors?: boolean` — adds CORS headers and answers OPTIONS, for the methods of that path that set it.
 - `headers?: Record<string, string>` — custom response headers. See [Response Headers](/response#headers) for dynamic headers.
 - `staticParams?: Record<string, string>[]` — `@get` only: static params for `generateStaticParams()`. See [Static Segment](/static-segment).
+- `before?: (req: VovkRequest) => unknown` — runs on an HTTP request before the segment's [`onBefore`](/segment#creating-segments), the custom decorators and the handler, with the controller as `this`; an error it throws becomes the response.
 
 ### Auto-Generated Paths
 
@@ -49,6 +50,8 @@ export default class UserController {
   }
 }
 ```
+
+With a `params` schema, `.auto()` also adds each param to the path: `getUser` with `{ id }` becomes `get-user/{id}`.
 
 ## `@operation`
 

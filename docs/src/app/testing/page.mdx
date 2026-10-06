@@ -80,7 +80,8 @@ describe('UserController validation', () => {
   it('rejects invalid body', async () => {
     await expect(
       UserController.createUser.fn({
-        body: { name: 123 }, // invalid
+        // @ts-expect-error name must be a string
+        body: { name: 123 },
       })
     ).rejects.toThrow(HttpException);
   });

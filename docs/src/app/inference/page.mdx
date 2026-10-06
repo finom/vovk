@@ -52,10 +52,10 @@ The types of `body`, `query` and `params` come from `VovkRequest<TBody, TQuery, 
 A raw method with `params` as a type argument:
 
 ```ts showLineNumbers copy
-import type { VovkRequest } from 'vovk';
+import { put, type VovkRequest } from 'vovk';
 
 export default class UserController {
-  @get()
+  @put('{param}')
   static async updateUser(req: VovkRequest<{ email: string }, { id: string }, { param: string }>) {
     // ...
   }
@@ -65,10 +65,10 @@ export default class UserController {
 A raw method with `params` as a separate argument:
 
 ```ts showLineNumbers copy
-import type { VovkRequest } from 'vovk';
+import { put, type VovkRequest } from 'vovk';
 
 export default class UserController {
-  @get()
+  @put('{param}')
   static async updateUser(req: VovkRequest<{ email: string }, { id: string }>, params: { param: string }) {
     // ...
   }
@@ -78,11 +78,11 @@ export default class UserController {
 Validated [procedures](/procedure) infer the input types from their schemas:
 
 ```ts showLineNumbers copy
-import { procedure } from 'vovk';
+import { procedure, put } from 'vovk';
 import { z } from 'zod';
 
 export default class UserController {
-  @get()
+  @put('{param}')
   static updateUser = procedure({
     query: z.object({ id: z.string() }),
     params: z.object({ param: z.string() }),
@@ -156,7 +156,7 @@ Only the [procedure](/procedure) function sets output and iteration types.
 For output:
 
 ```ts showLineNumbers copy
-import { procedure } from 'vovk';
+import { procedure, get } from 'vovk';
 import { z } from 'zod';
 
 export default class UserController {
@@ -172,7 +172,7 @@ export default class UserController {
 For [JSON Lines](/jsonlines) responses:
 
 ```ts showLineNumbers copy
-import { procedure } from 'vovk';
+import { procedure, get } from 'vovk';
 import { z } from 'zod';
 
 export default class StreamController {
@@ -188,7 +188,7 @@ export default class StreamController {
 
 ```ts showLineNumbers copy
 import type { VovkOutput, VovkIteration } from 'vovk';
-import { UserRPC } from '@/client';
+import { UserRPC, StreamRPC } from '@/client';
 
 type Output = VovkOutput<typeof UserRPC.updateUser>; // { success: boolean }
 type Iteration = VovkIteration<typeof StreamRPC.streamItems>; // { item: boolean }
