@@ -8,6 +8,8 @@ This package is experimental and its generated output may still shift between re
 
 ## 0.0.5 - unreleased
 
+- **Breaking:** a procedure that takes JSON or a form, with no field that holds a file, takes its typed body and sends JSON; it took a `reqwest::multipart::Form`, so typed fields reached the server as text ([#PR](https://github.com/finom/vovk/pull/PR))
+- **Breaking:** the codegen helpers `indent`, `generateDocComment`, `getNamedSchemas` and `refNeedsBox` are no longer exported; the templates don't use them ([#PR](https://github.com/finom/vovk/pull/PR))
 - Schema text can no longer break out of doc comments, comments or string literals into code ([#35](https://github.com/finom/vovk/pull/35))
 - `["T", "null"]` maps to `Option<T>`, a bare `$ref` slot aliases its type, handler names avoid keywords ([#35](https://github.com/finom/vovk/pull/35))
 - Path params and query keys are percent-encoded and `..` is refused ([#35](https://github.com/finom/vovk/pull/35))
@@ -20,9 +22,15 @@ This package is experimental and its generated output may still shift between re
 - Number and boolean path params work, empty params are refused, declared text and urlencoded content types are sent ([#40](https://github.com/finom/vovk/pull/40))
 - `number` is `f64`, `any` is `serde_json::Value`, a mixed enum reads each value ([#40](https://github.com/finom/vovk/pull/40))
 - Validation follows JSON Schema 2020-12 (jsonschema 0.57, so Rust 1.85+) ([#40](https://github.com/finom/vovk/pull/40))
-- Non-JSON success responses, JSON Lines without an `iteration` schema and `isError` in success data are read correctly ([#40](https://github.com/finom/vovk/pull/40))
+- A success that isn't JSON comes back as a string: text decoded by its charset, UTF-8 by default, and any other type, such as a file, as base64; JSON Lines without an `iteration` schema and `isError` in success data are read correctly ([#40](https://github.com/finom/vovk/pull/40), [#PR](https://github.com/finom/vovk/pull/PR))
 - `HttpException` has `message()`, `status_code()` and `cause()`; one HTTP client per thread, and validators are cached ([#40](https://github.com/finom/vovk/pull/40))
 - `vovk` is an optional peer dependency, since the package's types import from it ([#40](https://github.com/finom/vovk/pull/40))
+- A procedure without a params schema takes the params its path names, as `HashMap<String, String>`, and the file variant of a file-or-JSON union body goes out as bytes ([#PR](https://github.com/finom/vovk/pull/PR))
+- Requests: a header value goes out trimmed, and a header that is still invalid fails the call instead of being dropped; form field names with spaces or non-ASCII letters reach the server; a whole number goes into the query without `.0` ([#PR](https://github.com/finom/vovk/pull/PR))
+- Responses: a status outside 2xx is an error, a redirect reqwest didn't follow included, whose message names the `Location`; an error without `message` takes its `detail` or `title` and keeps the JSON body as `cause()`; a failed call keeps reqwest's error as `source()`, without the URL; `application/jsonlines` is read as JSON Lines ([#PR](https://github.com/finom/vovk/pull/PR))
+- Handler names alike in snake_case get a function each (`get_user_by_id`, `get_user_by_id_2`), `httpRequest` no longer clashes with the crate's own `http_request`, and the README headings name the functions the crate has ([#PR](https://github.com/finom/vovk/pull/PR))
+- `Cargo.toml` declares `rust-version = "1.85"` and resolver 3, so Cargo picks dependencies that build on it; a project on edition 2021 without resolver 3 picks newer ones, which need Rust 1.88 ([#PR](https://github.com/finom/vovk/pull/PR))
+- The crate builds without warnings, the README adds it with `cargo add` and starts with `readme.banner`, and a title or description that isn't a string is written as text ([#PR](https://github.com/finom/vovk/pull/PR))
 
 ## 0.0.4 - 2026-08-05
 
