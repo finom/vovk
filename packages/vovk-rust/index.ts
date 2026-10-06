@@ -1,6 +1,5 @@
 import type { VovkJSONSchemaBase } from 'vovk';
 
-// Rust reserved keywords that cannot be used as identifiers
 const RUST_KEYWORDS = new Set([
   'as',
   'break',
@@ -93,7 +92,7 @@ const SLOT_NAMES = ['body', 'query', 'params', 'output', 'iteration'];
 
 const VALUE = 'serde_json::Value';
 
-// std implements Debug and Clone for tuples of up to 12 items
+// std implements Debug for tuples of up to 12 items
 const MAX_TUPLE_LENGTH = 12;
 
 type Schema = VovkJSONSchemaBase;
@@ -180,12 +179,10 @@ export function getBinaryBodyVariants(schema: VovkJSONSchemaBase | undefined): s
   });
 }
 
-// Helper function for indentation
 function indent(level: number, pad: number = 0): string {
   return ' '.repeat(pad + level * 2);
 }
 
-// Generate documentation comments from title and description
 function generateDocComment(schema: VovkJSONSchemaBase, level: number, pad: number = 0): string {
   if (!schema?.title && !schema?.description) return '';
 
@@ -241,9 +238,8 @@ export function toRustIdent(value: unknown, used?: Set<string>): string {
   return ident;
 }
 
-// the function of each handler of a module, by handler name: in schema order, a name already taken gets the first
-// free suffix, so getUserByID and getUserById become get_user_by_id and get_user_by_id_2; the module imports
-// http_request and http_request_stream, so those names are taken
+// in schema order, a taken name gets the first free suffix: getUserByID and getUserById become get_user_by_id and
+// get_user_by_id_2; the module imports http_request and http_request_stream, so those are taken
 export function getFunctionNames(handlerNames: string[], toSnakeCase: (name: string) => string): Map<string, string> {
   const used = new Set(['http_request', 'http_request_stream']);
   return new Map(handlerNames.map((name) => [name, toRustIdent(toSnakeCase(name), used)]));
@@ -494,24 +490,21 @@ function integerType(schema: Schema): string {
         ? schema.exclusiveMaximum - 1
         : undefined;
 
-  // Check if we need unsigned (no negative values)
   if (min !== undefined && min >= 0) {
-    // Choose appropriate unsigned int size
     if (max !== undefined) {
       if (max <= 255) return 'u8';
       if (max <= 65535) return 'u16';
       if (max <= 4294967295) return 'u32';
     }
-    return 'u64'; // Default unsigned
+    return 'u64';
   }
-  // Choose appropriate signed int size
   if (min !== undefined && max !== undefined) {
     const maxVal = Math.max(Math.abs(min) - 1, Math.abs(max));
     if (maxVal <= 127) return 'i8';
     if (maxVal <= 32767) return 'i16';
     if (maxVal <= 2147483647) return 'i32';
   }
-  return 'i64'; // Default signed
+  return 'i64';
 }
 
 const ANNOTATION_KEYS = new Set(['title', 'description', '$comment', 'examples', 'example', 'default', 'deprecated']);
@@ -599,7 +592,6 @@ function typeExpr(
 
   switch (schema.type) {
     case 'string':
-      // Binary format or a non text content type maps to Vec<u8>
       return getBodyKind(schema) === 'binary' ? 'Vec<u8>' : 'String';
     case 'integer':
       return integerType(schema);
