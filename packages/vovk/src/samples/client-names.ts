@@ -1,6 +1,5 @@
-// The names the generated Python and Rust clients give a module and its handlers. The client templates build them
-// with lodash's snakeCase, which vovk-cli passes to them, and with vovk-python's toPythonIdentifier or vovk-rust's
-// toRustIdent; these are copies, and a test holds them equal to the originals.
+// the module and handler names of the generated Python and Rust clients: copies of lodash's snakeCase and of
+// vovk-python's toPythonIdentifier and vovk-rust's toRustIdent, which a test holds equal to the originals
 
 // lodash's snakeCase (MIT): Latin letters lose their accents, then the words split where the case changes, at digits
 // and at anything but letters

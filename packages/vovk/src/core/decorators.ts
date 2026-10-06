@@ -68,7 +68,6 @@ const assignSchema = ({
   originalMethod._controller = controller;
   originalMethod._sourceMethod = originalMethod._sourceMethod ?? originalMethod;
   const schema = originalMethod._sourceMethod._getSchema?.(controller);
-  // TODO: Some of these assignments probably not needed anymore
   originalMethod.fn = originalMethod._sourceMethod?.fn;
   originalMethod.definition = originalMethod._sourceMethod?.definition;
   originalMethod._sourceMethod.wrapper = originalMethod;
@@ -116,7 +115,7 @@ function createHTTPDecorator<T extends HttpMethod>(httpMethod: T) {
     function decorator(givenTarget: unknown, propertyKeyOrContext?: unknown): KnownAny {
       return applyDecoratorAdapter(givenTarget, propertyKeyOrContext, (controller, propertyKey) => {
         type Source = { schema?: VovkHandlerSchema; definition?: Record<string, KnownAny> };
-        // a procedure's schema reaches _handlers only once the HTTP decorator is applied, read it from the source method
+        // a procedure's schema reaches _handlers only with the HTTP decorator, so it's read from the source method
         const method = controller[propertyKey] as (Source & { _sourceMethod?: Source }) | undefined;
         const source = method?._sourceMethod ?? method;
         const validation = controller._handlers?.[propertyKey]?.validation ?? source?.schema?.validation;

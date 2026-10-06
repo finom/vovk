@@ -12,13 +12,14 @@ import {
   toPythonString,
 } from './schema-to-code.js';
 
+// "myHTTPServer-v2" is "my_http_server_v2"
 const toSnakeCase = (str: string) =>
   str
-    .replace(/-/g, '_') // Replace hyphens with underscores
-    .replace(/([a-z0-9])([A-Z])/g, '$1_$2') // Add underscore between lowercase/digit and uppercase
-    .replace(/([A-Z])([A-Z])(?=[a-z])/g, '$1_$2') // Add underscore between uppercase letters if the second one is followed by a lowercase
+    .replace(/-/g, '_')
+    .replace(/([a-z0-9])([A-Z])/g, '$1_$2')
+    .replace(/([A-Z])([A-Z])(?=[a-z])/g, '$1_$2')
     .toLowerCase()
-    .replace(/^_/, ''); // Remove leading underscore
+    .replace(/^_/, '');
 
 const getIndentSpaces = (level: number): string => ' '.repeat(level);
 
@@ -423,7 +424,7 @@ export function createCodeSamples({
   const hasArg = !!queryValidation || !!bodyValidation || !!paramsValidation || !!config?.apiRoot || !!config?.headers;
   const rpcName = controllerSchema.rpcModuleName;
   const packageName = packageJson?.name || '@/client';
-  // snake fallback avoids invalid "@/client" in py/rs imports
+  // "@/client" isn't a valid Python or Rust import
   const packageNameSnake = toSnakeCase(packageJson?.name || 'client');
   const pyPackageName = packageJson?.py_name ?? packageNameSnake;
   const rsPackageName = packageJson?.rs_name ?? packageNameSnake;

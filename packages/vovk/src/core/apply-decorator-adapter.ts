@@ -1,14 +1,13 @@
 import type { VovkController } from '../types/core.js';
 import type { KnownAny } from '../types/utils.js';
 
-/** TC39 Stage 3 decorator context. */
 type Stage3Context = {
   kind: string;
   name: string | symbol;
   addInitializer: (fn: () => void) => void;
 };
 
-/** 2018-09 decorator proposal descriptor (SWC without experimentalDecorators). */
+// SWC without experimentalDecorators passes a descriptor of the 2018-09 proposal
 type Descriptor2018 = {
   kind: string;
   key: string | symbol;
@@ -18,10 +17,7 @@ type Descriptor2018 = {
   finisher?: (klass: KnownAny) => void;
 };
 
-/**
- * Adapts a decorator callback to work with experimental, 2018-09, and TC39 Stage 3 decorator formats.
- * The callback receives (controller, propertyKey) when the class and field/method value are available.
- */
+// runs the callback under experimental, 2018-09 and TC39 Stage 3 decorators, once the class and the member exist
 export function applyDecoratorAdapter(
   arg1: unknown,
   arg2: unknown,

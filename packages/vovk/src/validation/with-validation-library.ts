@@ -232,7 +232,6 @@ export function withValidationLibrary<
         return data;
       }
 
-      // Return a brand-new async generator that yields validated items
       return (async function* () {
         let i = 0;
         for await (const item of data) {
@@ -275,7 +274,7 @@ export function withValidationLibrary<
         if (!hasNoBody) {
           // a wrong content type gets its 415 before the body is read
           validateContentType(req, contentType ?? ['application/json']);
-          if (isRequest) await bufferBody(req); // buffer the body to make it replayable for validation and actual parsing
+          if (isRequest) await bufferBody(req);
           // an empty JSON body is no body, empty text or an empty file is one
           if (!isRequest || !(await isEmptyJSONBody(req))) data = await req.vovk.body();
         }

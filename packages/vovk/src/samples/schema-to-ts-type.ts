@@ -26,40 +26,33 @@ export function schemaToTsType(jsonSchema: VovkJSONSchemaBase | boolean): string
   // a mixin component ref carries its Mixins type
   if (typeof jsonSchema['x-tsType'] === 'string') return jsonSchema['x-tsType'];
 
-  // Handle const
   if ('const' in jsonSchema) {
     return JSON.stringify(jsonSchema.const);
   }
 
-  // Handle enum
   if (jsonSchema.enum) {
     return jsonSchema.enum.map((v: VovkJSONSchemaBase) => JSON.stringify(v)).join(' | ') || 'never';
   }
 
-  // Handle allOf (intersection)
   if (jsonSchema.allOf) {
     const parts = jsonSchema.allOf.map((s: VovkJSONSchemaBase) => schemaToTsType(s));
     return parts.length ? `(${parts.join(' & ')})` : 'unknown';
   }
 
-  // Handle anyOf (union)
   if (jsonSchema.anyOf) {
     const parts = jsonSchema.anyOf.map((s: VovkJSONSchemaBase) => schemaToTsType(s));
     return parts.length ? `(${parts.join(' | ')})` : 'never';
   }
 
-  // Handle oneOf (union)
   if (jsonSchema.oneOf) {
     const parts = jsonSchema.oneOf.map((s: VovkJSONSchemaBase) => schemaToTsType(s));
     return parts.length ? `(${parts.join(' | ')})` : 'never';
   }
 
-  // Handle not (negate - approximate as unknown)
   if (jsonSchema.not) {
     return 'unknown';
   }
 
-  // Handle type as array (union of types)
   if (Array.isArray(jsonSchema.type)) {
     const types = new Map<string, string>();
     for (const t of jsonSchema.type) {
@@ -71,13 +64,12 @@ export function schemaToTsType(jsonSchema: VovkJSONSchemaBase | boolean): string
 
   const type = jsonSchema.type;
 
-  // Primitives; a binary string is a file, which the client sends as a Blob
+  // a binary string is a file, which the client sends as a Blob
   if (type === 'string') return jsonSchema.format === 'binary' ? 'Blob' : 'string';
   if (type === 'number' || type === 'integer') return 'number';
   if (type === 'boolean') return 'boolean';
   if (type === 'null') return 'null';
 
-  // Object
   if (isObjectType(jsonSchema, type)) {
     const props = jsonSchema.properties || {};
     const required: string[] = jsonSchema.required || [];
@@ -89,7 +81,6 @@ export function schemaToTsType(jsonSchema: VovkJSONSchemaBase | boolean): string
       return `${safeName}${isRequired ? '' : '?'}: ${schemaToTsType(value)}`;
     });
 
-    // Handle additionalProperties
     let additionalType: string | null = null;
     if (jsonSchema.additionalProperties === true) {
       additionalType = 'unknown';
@@ -112,9 +103,7 @@ export function schemaToTsType(jsonSchema: VovkJSONSchemaBase | boolean): string
     return result;
   }
 
-  // Array
   if (isArrayType(jsonSchema, type)) {
-    // Tuple (prefixItems)
     if (jsonSchema.prefixItems) {
       const tupleTypes = jsonSchema.prefixItems.map((s: VovkJSONSchemaBase) => schemaToTsType(s));
       if (jsonSchema.items === false) {
@@ -124,7 +113,6 @@ export function schemaToTsType(jsonSchema: VovkJSONSchemaBase | boolean): string
       return `[${tupleTypes.join(', ')}, ...${restType}[]]`;
     }
 
-    // Regular array
     if (jsonSchema.items) {
       if (Array.isArray(jsonSchema.items)) {
         // Legacy tuple syntax
@@ -141,11 +129,9 @@ export function schemaToTsType(jsonSchema: VovkJSONSchemaBase | boolean): string
     return 'unknown[]';
   }
 
-  // No type specified - try to infer from structure
   if (jsonSchema.properties) {
     return schemaToTsType({ ...jsonSchema, type: 'object' });
   }
 
-  // Fallback for empty or unknown schema
   return 'unknown';
 }

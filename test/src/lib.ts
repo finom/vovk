@@ -67,10 +67,7 @@ export const NESTED_QUERY_EXAMPLE = {
   },
 };
 
-/**
- * Returns an object that follows the ComplaiingModel schema but violates exactly
- * one validation constraint specified by the key parameter.
- */
+// a ConstrainingModel value that breaks only the constraint of key, or none when key is null
 export function getConstrainingObject(key: string | null) {
   // Object that satisfies all validation requirements
   const withoutViolations: z.infer<typeof ConstrainingModel> = {
