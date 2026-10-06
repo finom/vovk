@@ -20,27 +20,27 @@
     "build-other-compiled-sources": "rm -rf other-compiled-test-sources && npm run bundle && node ../packages/vovk-cli/dist/index.mjs generate --segmented-only"
   },
   "dependencies": {
-    "@testing-library/react": "^16.3.2",
-    "@valibot/to-json-schema": "^1.7.1",
-    "arktype": "^2.2.3",
+    "@testing-library/react": "^16.3.3",
+    "@valibot/to-json-schema": "^1.8.0",
+    "arktype": "^2.2.5",
     "react": "^19",
     "react-dom": "^19",
     "reflect-metadata": "^0.2.2",
     "tsdown": "^0.22.14",
-    "valibot": "^1.4.2",
-    "zod": "^4.4.3"
+    "valibot": "^1.5.0",
+    "zod": "^4.6.5"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4.3.3",
-    "@types/node": "^26.1.2",
-    "@types/react": "19.2.18",
+    "@types/node": "^26.6.3",
+    "@types/react": "19.3.0",
     "@types/react-dom": "^19",
     "@types/supertest": "^7.2.1",
     "autoprefixer": "^10",
     "openapi3-ts": "^4.6.1",
     "postcss": "^8",
-    "prettier": "^3.9.6",
-    "supertest": "^7.2.2",
+    "prettier": "^3.9.9",
+    "supertest": "^7.3.0",
     "tailwindcss": "^4"
   }
 }
