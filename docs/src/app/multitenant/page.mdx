@@ -342,13 +342,9 @@ export const config = {
 
 The proxy passes the captured `subdomains` to the API in an `x-subdomains` request header and drops one the client sent, so a client can't choose its tenant. The customer controllers read it with `headers()` from `next/headers`.
 
-## Update Hosts for Local Development
+## Open the Tenants Locally
 
-To use subdomains locally, add a wildcard entry to `/etc/hosts`:
-
-```
-127.0.0.1       *.localhost
-```
+Browsers resolve `localhost` and every name under it to the loopback address, so `admin.localhost:3000` and `acme.customer.localhost:3000` reach the dev server with no change to `/etc/hosts`. A hosts file takes no wildcards: a `*.localhost` line in it does nothing.
 
 </Steps>
 
