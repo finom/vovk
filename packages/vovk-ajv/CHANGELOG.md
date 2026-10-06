@@ -8,7 +8,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ### Removed
 
-- `validateOnClient.configure()`: set the Ajv options and the target draft under `libs.ajv` in `vovk.config` ([#PR](https://github.com/finom/vovk/pull/PR))
+- `validateOnClient.configure()`: set the Ajv options and the target draft under `libs.ajv` in `vovk.config` ([#44](https://github.com/finom/vovk/pull/44))
 
 ### Changed
 
@@ -18,9 +18,9 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ### Fixed
 
-- Params and query values are checked as the strings a URL carries, so `z.coerce.number()` fields pass; the check runs on a copy, so what goes out stays as given, also with `useDefaults` ([#PR](https://github.com/finom/vovk/pull/PR))
-- A falsy body, such as `0`, `''`, `false` or `null`, is validated; only `undefined`, no body, is skipped ([#PR](https://github.com/finom/vovk/pull/PR))
-- Patterns are read with the `u` flag, so `\p{...}` patterns such as `z.emoji()` pass, and without it when the `u` flag refuses them, so escapes such as `\-` compile ([#40](https://github.com/finom/vovk/pull/40), [#PR](https://github.com/finom/vovk/pull/PR))
+- Params and query values are checked as the strings a URL carries, so `z.coerce.number()` fields pass; the check runs on a copy, so what goes out stays as given, also with `useDefaults` ([#44](https://github.com/finom/vovk/pull/44))
+- A falsy body, such as `0`, `''`, `false` or `null`, is validated; only `undefined`, no body, is skipped ([#44](https://github.com/finom/vovk/pull/44))
+- Patterns are read with the `u` flag, so `\p{...}` patterns such as `z.emoji()` pass, and without it when the `u` flag refuses them, so escapes such as `\-` compile ([#40](https://github.com/finom/vovk/pull/40), [#44](https://github.com/finom/vovk/pull/44))
 - OpenAPI 3.0 boolean `exclusiveMinimum` and `exclusiveMaximum` are converted ([#40](https://github.com/finom/vovk/pull/40))
 - `FormData` and `URLSearchParams` bodies are validated with type coercion ([#40](https://github.com/finom/vovk/pull/40))
 - Validators are cached by schema text as well, so fresh copies of one schema compile once ([#40](https://github.com/finom/vovk/pull/40))
