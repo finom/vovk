@@ -259,8 +259,6 @@ export class VovkDev {
         new Promise((resolve) => this.#watchSegments(() => resolve(0))),
       ]);
 
-      const schemaOutAbsolutePath = path.resolve(cwd, this.#schemaOut ?? this.#projectInfo.config.schemaOutDir);
-
       if (isInitial) {
         callback();
         if (!this.#segments.length) {
@@ -273,7 +271,7 @@ export class VovkDev {
         this.#generate();
       }
 
-      await writeMetaJson(schemaOutAbsolutePath, this.#projectInfo);
+      await this.#writeMissingSchemaFiles();
 
       isInitial = false;
     }, 1000);
@@ -486,14 +484,15 @@ export class VovkDev {
   }
 
   #generate = debounce(async () => {
-    const fullSchema = {
-      $schema: VovkSchemaIdEnum.SCHEMA,
-      segments: this.#schemaSegments,
-      meta: getMetaSchema({
-        config: this.#projectInfo.config,
-      }),
-    };
     try {
+      await this.#writeMissingSchemaFiles();
+      const fullSchema = {
+        $schema: VovkSchemaIdEnum.SCHEMA,
+        segments: this.#schemaSegments,
+        meta: getMetaSchema({
+          config: this.#projectInfo.config,
+        }),
+      };
       await generate({
         projectInfo: await loadOpenAPIMixins(this.#projectInfo),
         fullSchema,
@@ -509,6 +508,18 @@ export class VovkDev {
 
   #failExitRun() {
     if (this.#exit) process.exitCode = 1;
+  }
+
+  // the schema folder may be gone, or moved by a config change, and the client imports every file in it
+  async #writeMissingSchemaFiles() {
+    const schemaOutAbsolutePath = this.#getSchemaOutAbsolutePath();
+    await fs.mkdir(schemaOutAbsolutePath, { recursive: true });
+    await writeMetaJson(schemaOutAbsolutePath, this.#projectInfo);
+    await Promise.all(
+      Object.values(this.#schemaSegments).map((segmentSchema) =>
+        writeOneSegmentSchemaFile({ schemaOutAbsolutePath, segmentSchema, skipIfExists: true })
+      )
+    );
   }
 
   // false when the schema can't be used
