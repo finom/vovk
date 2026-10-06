@@ -446,8 +446,9 @@ export function convertJSONSchemaToPythonFilesType(options: ConvertOptions): str
   const hasArrayFields = fileProps.some(([, propSchema]) => propSchema.type === 'array');
 
   if (hasArrayFields || fileProps.length > 1) {
-    lines.push(`# File upload type for requests library`);
-    lines.push(`# Use as: files=${className}Value where ${className}Value is a list of tuples`);
+    lines.push(
+      `# a (field name, file) pair per file, as in files=[(${toPythonString(fileProps[0][0])}, ('a.pdf', open('a.pdf', 'rb')))]`
+    );
 
     if (schema.title || schema.description) {
       lines.push(`"""`, ...fileDocLines('File Uploads'), `"""`);
@@ -457,21 +458,6 @@ export function convertJSONSchemaToPythonFilesType(options: ConvertOptions): str
       'Union[Tuple[str, BinaryIO], Tuple[str, BinaryIO, str], Tuple[str, BinaryIO, str, Dict[str, str]]]';
 
     lines.push(`${className} = List[Tuple[str, ${fileTupleType}]]`);
-    lines.push(``);
-
-    lines.push(`# Example usage:`);
-    lines.push(`# ${className.toLowerCase()}: ${className} = [`);
-
-    for (const [propName, propSchema] of fileProps) {
-      if (propSchema.type === 'array') {
-        lines.push(`#     (${toPythonString(propName)}, ('file1.pdf', open('file1.pdf', 'rb'), 'application/pdf')),`);
-        lines.push(`#     (${toPythonString(propName)}, ('file2.pdf', open('file2.pdf', 'rb'), 'application/pdf')),`);
-      } else {
-        lines.push(`#     (${toPythonString(propName)}, ('file.jpg', open('file.jpg', 'rb'), 'image/jpeg')),`);
-      }
-    }
-    lines.push(`# ]`);
-    lines.push(`# response = requests.post(url, files=${className.toLowerCase()})`);
   } else {
     const [propName] = fileProps[0];
     const isRequired = required.has(propName);
