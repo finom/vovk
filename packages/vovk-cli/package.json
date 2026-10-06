@@ -20,7 +20,7 @@
     "test-only": "npm run pre-test && NODE_ENV=test node --experimental-strip-types --experimental-vm-modules --test --test-only test/spec/**/*.mts",
     "test": "npm run pre-test && NODE_ENV=test node --experimental-strip-types --experimental-vm-modules --test --test-concurrency=1 test/spec/**/*.mts",
     "tsc": "tsc --noEmit",
-    "ncu": "npm-check-updates -u -x commander,tsdown",
+    "ncu": "npm-check-updates -u -x tsdown",
     "npm-publish": "npm publish",
     "clear-test-cache": "rm -rf ./tmp_*"
   },
