@@ -96,16 +96,16 @@ const getStringBodyContentType = (declared: string[]) =>
   declared.find((type) => !type.includes('*') && !FORM_MEDIA_TYPES.includes(type) && !isJSONMediaType(type)) ??
   (!declared.length || declared.some(isJSONMediaType) ? 'application/json' : 'text/plain');
 
-/**
- * Creates a customizable fetcher function for client requests.
- * @see https://vovk.dev/imports
- */
 // spelled out, so the declaration a client bundle ships imports nothing from the server side of the package
 type CreatedFetcher<T> = VovkFetcher<VovkFetcherOptions<T>> & {
   onSuccess(cb: CreateFetcherOnSuccess<T>): () => void;
   onError(cb: CreateFetcherOnError<T>): () => void;
 };
 
+/**
+ * Creates a customizable fetcher function for client requests.
+ * @see https://vovk.dev/imports
+ */
 export function createFetcher<T>({
   prepareRequestInit,
   transformResponse,

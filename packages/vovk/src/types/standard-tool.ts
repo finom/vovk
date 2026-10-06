@@ -1,8 +1,9 @@
 import type { StandardJSONSchemaV1, StandardSchemaV1 } from './standard-schema.js';
 
+// a copy of the published standard-tool type, with no dependency; keep the two identical
 /**
- * Vendored `standard-tool` type (https://standard-tool.js.org), no dependency, no logic.
- * Keep it identical to the published `StandardToolV0` interface.
+ * A tool in the Standard Tool shape (https://standard-tool.js.org). `deriveTools` returns these.
+ * @see https://vovk.dev/tools
  */
 export interface StandardToolV0<Input = unknown, Output = unknown, FormattedOutput = Output, Context = unknown> {
   name: string;
