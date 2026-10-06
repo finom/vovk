@@ -22,7 +22,7 @@
 
 ## vovk [![npm version](https://badge.fury.io/js/vovk.svg)](https://www.npmjs.com/package/vovk)
 
-The Vovk.ts runtime library with [100% self-composition](https://bundlephobia.com/result?p=vovk). It provides a wrapper for Next.js API routes, client-side tooling, utilities and types.
+The Vovk.ts runtime library, with [no dependencies](https://bundlephobia.com/result?p=vovk): the wrapper for Next.js route handlers, client-side tooling, utilities and types.
 
 ```sh
 npm install vovk
