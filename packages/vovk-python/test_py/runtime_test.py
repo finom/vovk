@@ -122,7 +122,8 @@ class TestRuntime(unittest.TestCase):
             )
 
         default = client.timeout
-        client.timeout = (0.5, 30)
+        # macOS opens the send window in large steps, and on a slow machine one step can take longer than 0.5 s
+        client.timeout = (2, 30)
         try:
             with raw_server(handle) as api_root:
                 data = ClientSweepRPC.post_octet(body=body, api_root=api_root)
