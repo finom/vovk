@@ -1758,8 +1758,8 @@ describe('Runtime sweep', () => {
     });
   });
 
-  // SEC-01: grouping repeated field names by copying the array on every repeat cost O(N^2), so a few hundred KB of
-  // `a&a&...` blocked the server for seconds before validation, on any endpoint that reads a form body
+  // copying the array on every repeat of a field name is quadratic: a few hundred KB of `a&a&...` would block the
+  // server for seconds before validation, on any endpoint that reads a form body
   describe('Form body with a repeated field name', () => {
     class RepeatedFieldController {
       static form = procedure({

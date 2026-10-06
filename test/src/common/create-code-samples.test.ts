@@ -1389,9 +1389,8 @@ const response = await MixedFormRPC.uploadProfile({
   });
 
   describe('Names the clients have', () => {
-    // the templates name a Python class toPythonIdentifier(rpcModuleName) and its methods
-    // toPythonIdentifier(snakeCase(handlerName)), a Rust module and its functions toRustIdent(snakeCase(name)),
-    // with the lodash snakeCase vovk-cli gives them; a Rust module imports http_request and http_request_stream
+    // the names the client templates give, with the lodash snakeCase vovk-cli passes them; a Rust module imports
+    // http_request and http_request_stream, so a function of that name gets a suffix
     const lodashSnakeCase: (name: string) => string = createRequire(
       new URL('../../../packages/vovk-cli/package.json', import.meta.url)
     )('lodash/snakeCase');
@@ -1603,9 +1602,8 @@ const response = await MixedFormRPC.uploadProfile({
     });
   });
 
-  // SEC-03: the sample generator expands every $ref with a fresh "seen" set per branch, so a component
-  // that references one of depth N twice is inlined 2^N times. A tiny malicious OpenAPI spec (a developer
-  // generates its README, Rust or Python client) produces a gigantic sample and exhausts memory.
+  // a component that refers twice to one of depth N expands 2^N times without a cap, so a tiny spec could make a
+  // sample that exhausts memory
   describe('malicious OpenAPI spec: deeply shared refs', () => {
     test('does not expand a diamond-ref spec into an exponential code sample', () => {
       const depth = 12;
