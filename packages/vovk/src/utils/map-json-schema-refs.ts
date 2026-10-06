@@ -32,7 +32,7 @@ export function isJSONObject(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
 
-// copies a schema with every `$ref` passed through `rewrite`; data keywords such as `const` or `default` stay as they are
+// a copy with every $ref passed through rewrite; data keywords such as const or default stay as they are
 export function mapJSONSchemaRefs<T>(schema: T, rewrite: (ref: string) => string): T {
   if (Array.isArray(schema)) return schema.map((item) => mapJSONSchemaRefs(item, rewrite)) as T;
   if (!isJSONObject(schema)) return schema;

@@ -55,10 +55,7 @@ function toFields(name: string, given: unknown, { style = 'form', explode = styl
 const encodeField = ({ key, parts, delimiter }: Field) =>
   `${encodeURIComponentWellFormed(key)}=${parts.map(encodeURIComponentWellFormed).join(delimiter === ' ' ? '%20' : delimiter)}`;
 
-/**
- * The serializers of an OpenAPI mixin method: the query and a urlencoded body go out as the document declares,
- * a query parameter that declares nothing as form and exploded, OpenAPI's default.
- */
+// an OpenAPI mixin method's query and urlencoded body go out in the styles its document declares
 export function getStyledSerializers(handlerSchema: VovkHandlerSchema) {
   const { misc } = handlerSchema;
   if (!misc?.isOpenAPIMixin) return null;

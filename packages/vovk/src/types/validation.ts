@@ -58,7 +58,7 @@ export type VovkProcedureInput<
       ? { params?: CombinedSpec.InferInput<TParams> }
       : { params: CombinedSpec.InferInput<TParams> });
 
-/** What a procedure's fn() takes: what its RPC method takes, and a body or a query its handler reads as given. */
+// what a procedure's fn() takes: its RPC method's input, plus a body or a query its handler reads as given
 export type ProcedureFnInput<
   TBody extends CombinedSpec,
   TQuery extends CombinedSpec,

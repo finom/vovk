@@ -3,7 +3,6 @@ import { HttpStatus } from '../types/enums.js';
 import { getMediaType } from './get-media-type.js';
 
 export function validateContentType(request: Request | undefined, allowed: string[]): Response | null {
-  // wildcard, skip validation
   if (!request?.headers || allowed.includes('*/*')) return null;
 
   const raw = request.headers.get('content-type');
@@ -20,7 +19,6 @@ export function validateContentType(request: Request | undefined, allowed: strin
     allowed.some((pattern) => {
       const normalized = pattern.toLowerCase();
 
-      // Partial wildcard: image/*, text/*, etc.
       if (normalized.endsWith('/*')) {
         const prefix = normalized.slice(0, -1);
         return mediaType.startsWith(prefix);

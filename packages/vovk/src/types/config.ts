@@ -101,13 +101,13 @@ export interface VovkOpenAPIMixin {
         object: OpenAPIObject;
       };
   apiRoot?: string;
-  getModuleName?: // if not provided, will use 'api' by default
-    | (string & {}) // literal module name, like MedusaRPC, GithubReposRPC, etc.
-    | 'api' // declared for documentation purposes as default
+  getModuleName?: // 'api' by default
+    | (string & {}) // the module name itself, as GithubReposRPC
+    | 'api'
     | GetOpenAPINameFn;
-  getMethodName?: // if not provided, will use 'camel-case-operation-id' if operationId is snake_case, in other cases will use 'auto' strategy
+  getMethodName?: // 'auto' by default
     | 'camel-case-operation-id' // operation ID to camelCase
-    | 'auto' // auto-detect based on operationObject method and path
+    | 'auto' // a camelCase or snake_case operation ID, else a name from the method and path
     | GetOpenAPINameFn;
   /**
    * Keep only operations the predicate returns `true` for; omitted = keep all. Runs before
@@ -147,7 +147,7 @@ type VovkUserConfig = {
   rootEntry?: string;
   logLevel?: 'error' | 'trace' | 'debug' | 'info' | 'warn';
   libs?: {
-    ajv?: KnownAny; // set by providing the typedoc comment in config
+    ajv?: KnownAny; // typed by a JSDoc @type in the config
     [key: string]: KnownAny;
   };
   devHttps?: boolean;

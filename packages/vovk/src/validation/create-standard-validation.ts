@@ -277,7 +277,6 @@ export function createStandardValidation({
         >;
   };
 
-  // Implementation
   function procedure(options?: KnownAny): KnownAny {
     // a Standard Schema without Standard JSON Schema, as zod before 4.2 or valibot without toStandardJsonSchema,
     // validates but has no JSON Schema to emit

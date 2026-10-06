@@ -5,26 +5,19 @@ const upperFirst = (word: string) => {
   return first.toUpperCase() + rest.join('');
 };
 
-/**
- * An identifier made of the words of a name, camelCase or PascalCase. It is never empty,
- * and one that would start with a digit or a mark gets a leading underscore.
- */
+// never empty: one that would start with a digit or a mark gets a leading underscore
 export function toIdentifier(name: string, { pascalCase = false }: { pascalCase?: boolean } = {}): string {
   const words = camelCase(name);
   const identifier = (pascalCase ? upperFirst(words) : words).replace(/[^\p{ID_Continue}]/gu, '');
   return /^\p{ID_Start}/u.test(identifier) ? identifier : `_${identifier}`;
 }
 
-/**
- * The TypeScript type name of a name from an OpenAPI document, e.g. `Mixins.<TypeName>.<TypeName>`.
- */
+// the TypeScript type name of a name from an OpenAPI document, as in Mixins.<TypeName>.<TypeName>
 export function toTypeName(name: string): string {
   return toIdentifier(name, { pascalCase: true });
 }
 
-/**
- * Type names for a list of names. A name whose type name an earlier one took gets the first free numeric suffix.
- */
+// a name whose type name an earlier one took gets the first free numeric suffix
 export function toTypeNames(names: Iterable<string>): Map<string, string> {
   const typeNames = new Map<string, string>();
   const taken = new Set<string>();

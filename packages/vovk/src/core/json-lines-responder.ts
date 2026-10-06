@@ -10,8 +10,8 @@ export abstract class Responder {
 // bytes queued for a slow client before send() waits for it to read
 const HIGH_WATER_MARK = 64 * 1024;
 
-// before anything reads the stream, as while a handler sends before it returns the responder, send() waits only
-// past this, so the handler isn't stuck waiting for a read that can't start
+// until something reads the stream, send() waits only past this, so a handler that sends before it returns the
+// responder isn't stuck waiting for a read that can't start
 const UNREAD_LIMIT = 16 * 1024 * 1024;
 
 // the digests of notFound(), forbidden() and unauthorized() from next/navigation: once a stream started Next.js can't
@@ -88,9 +88,7 @@ export class JSONLinesResponder<T> extends Responder {
         start: (controller) => {
           readableController = controller;
         },
-        // the client read enough of the queue for more lines
         pull: () => this.resume(),
-        // the client stopped reading
         cancel: () => this.stop(),
       },
       { highWaterMark: HIGH_WATER_MARK, size: (chunk: Uint8Array) => chunk.byteLength }
@@ -111,7 +109,7 @@ export class JSONLinesResponder<T> extends Responder {
     this.controller = readableController!;
     this.response = getResponse?.(this) ?? new Response(readableStream, { headers });
 
-    // this will make promise on the client-side to resolve immediately, before sending the first JSON line
+    // an empty first chunk lets the client's fetch resolve before the first line
     this.controller?.enqueue(encoder?.encode(''));
 
     const hooks = request ? hooksByRequest.get(request) : undefined;
@@ -132,8 +130,7 @@ export class JSONLinesResponder<T> extends Responder {
     await this.enqueue(async () => {
       if (!this.hasSent) {
         this.hasSent = true;
-        // zero timeout lets withValidationLibrary set onBeforeSend before the first send,
-        // otherwise immediate streaming would skip the first iteration validation
+        // a tick for withValidationLibrary to set onBeforeSend, or the first line skips iteration validation
         await new Promise((resolve) => setTimeout(resolve, 0));
       }
       const line = await this.onBeforeSend(item, this.i++);
@@ -161,8 +158,7 @@ export class JSONLinesResponder<T> extends Responder {
     return this.enqueue(() => this.end(errorLine));
   };
 
-  // a step runs after the queued ones, chained so unawaited calls keep their order; one that throws, as a send that
-  // fails iteration validation, ends the stream with an error line and drops the rest
+  // a step that throws, as a send failing iteration validation, ends the stream with an error line and drops the rest
   private enqueue(step: () => unknown) {
     this.queue = this.queue.then(async () => {
       if (this.closed) return;

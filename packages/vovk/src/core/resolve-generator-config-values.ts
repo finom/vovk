@@ -100,7 +100,6 @@ export function resolveGeneratorConfigValues({
     ]
       .filter((value) => value !== undefined)
       .at(-1)
-      // remove trailing slash if any
       ?.replace(/\/$/, '') ?? '';
 
   const imports: NonNullable<VovkOutputConfig['imports']> = deepExtend(
@@ -116,17 +115,15 @@ export function resolveGeneratorConfigValues({
     forceOutputConfigs?.reduce((acc, config) => deepExtend(acc, config.imports), {})
   );
   const reExports: NonNullable<VovkOutputConfig['reExports']> = deepExtend(
-    // segmentName can be an empty string (for the root segment) and null (for composed clients)
-    // therefore, !segmentName indicates that this either a composed client or a root segment of a segmented client
+    // segmentName is '' for the root segment and null for a composed client: the root reExports go to either
     {},
     !segmentName && config?.outputConfig?.reExports,
-    // for segmented client, apply all reExports from all segments
+    // a composed client takes the reExports of every segment
     typeof segmentName !== 'string' &&
       Object.values(config?.outputConfig?.segments ?? {}).reduce(
         (acc, segmentConfig) => deepExtend(acc, segmentConfig.reExports ?? {}),
         {}
       ),
-    // for a specific segment, apply reExports from that segment
     typeof segmentName === 'string' ? config?.outputConfig?.segments?.[segmentName]?.reExports : undefined,
     outputConfigs?.reduce((acc, config) => deepExtend(acc, config.reExports), {}),
     isBundle ? config?.bundle?.outputConfig?.reExports : undefined,

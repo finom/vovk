@@ -7,7 +7,7 @@ export const encodeURIComponentWellFormed = (value: string) =>
 // recursively builds "key=value" strings, key grows like 'user', 'user[0]', 'user[0][name]'
 function buildParams(key: string, value: KnownAny, isToJSONResult = false): string[] {
   if (value === null || value === undefined) {
-    return []; // skip null/undefined values entirely
+    return [];
   }
 
   // as JSON.stringify does, a value with toJSON is sent as its result, once: a Date as an ISO string or nothing
@@ -16,9 +16,7 @@ function buildParams(key: string, value: KnownAny, isToJSONResult = false): stri
     return buildParams(key, value.toJSON(), true);
   }
 
-  // If value is an object or array, we need to recurse
   if (typeof value === 'object') {
-    // Array case
     if (Array.isArray(value)) {
       // index-based brackets: ['aa', 'bb'] + 'foo' -> "foo[0]=aa&foo[1]=bb"; an item that sends nothing, such as
       // null or {}, takes no index, since the server reads indexes with a gap as an object
@@ -30,7 +28,6 @@ function buildParams(key: string, value: KnownAny, isToJSONResult = false): stri
       });
     }
 
-    // Plain object case
     return Object.keys(value).flatMap((k) => {
       const newKey = `${key}[${k}]`;
       return buildParams(newKey, value[k]);
@@ -45,7 +42,6 @@ function buildParams(key: string, value: KnownAny, isToJSONResult = false): stri
 export function serializeQuery(obj: Record<string, KnownAny>): string {
   if (!obj || typeof obj !== 'object') return '';
 
-  // Collect query segments
   const segments: string[] = [];
   for (const key in obj) {
     if (Object.hasOwn(obj, key)) {

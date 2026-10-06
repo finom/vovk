@@ -29,22 +29,19 @@ export type VovkJSONSchemaBase = {
   required?: string[];
   examples?: KnownAny[];
   not?: VovkJSONSchemaBase;
-  // support both $defs and definitions
+  // definitions is the draft-07 name of $defs
   $defs?: { [key: string]: VovkJSONSchemaBase };
   definitions?: { [key: string]: VovkJSONSchemaBase };
   additionalProperties?: boolean | VovkJSONSchemaBase;
   anyOf?: VovkJSONSchemaBase[];
   oneOf?: VovkJSONSchemaBase[];
   allOf?: VovkJSONSchemaBase[];
-  // older schema
   const?: KnownAny;
   example?: KnownAny;
-  // binary
   contentEncoding?: string;
   contentMediaType?: string;
   minLength?: number;
   maxLength?: number;
-  // 'x-foo' extensions
-  'x-contentType'?: ContentType[]; // custom extension to track content type for body schemas
-  'x-tsType'?: string; // custom extension to track TypeScript type for code generation
+  'x-contentType'?: ContentType[]; // the content types a body takes
+  'x-tsType'?: string; // the TypeScript type the generated client writes as is
 };

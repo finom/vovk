@@ -2,7 +2,7 @@ export type RequireFields<T, K extends keyof T> = T & Required<Pick<T, K>>;
 
 export type IsEmptyObject<T> = T extends object
   ? keyof T extends never
-    ? true // Empty object
+    ? true
     : T extends Partial<T>
       ? Partial<T> extends T
         ? true // All properties are optional
