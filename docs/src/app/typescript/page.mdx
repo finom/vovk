@@ -52,7 +52,7 @@ import { UserRPC } from '@/client';
 
 const updatedUser = await UserRPC.updateUser({
   body: { name: 'John Doe', age: 30, email: 'john@example.com' },
-  params: { id: '69' },
+  params: { id: '123e4567-e89b-12d3-a456-426614174000' },
   query: { notify: 'push' },
 });
 ```
@@ -285,9 +285,9 @@ Every RPC method has the emitted schema in these properties:
 For the type of one of them, use `typeof`, such as `typeof UserRPC.updateUser.segmentSchema`.
 
 ```ts showLineNumbers copy
-console.log(UserRPC.updateUser.schema.validation.body); // the JSON schema of the body
+console.log(UserRPC.updateUser.schema.validation?.body); // the JSON schema of the body
 console.log(UserRPC.updateUser.schema.operationObject); // the OpenAPI operation object of this method
-console.log(UserRPC.updateUser.fullSchema.meta.config.libs.ajv); // a config option
+console.log(UserRPC.updateUser.fullSchema.meta?.config.libs?.ajv); // a config option
 ```
 
 [LLM tools](/tools) can use this schema to define their parameters.
@@ -315,7 +315,7 @@ const response = await fetch(
     /* ... */
   }),
   {
-    method: 'PUT',
+    method: 'POST',
     // ... other fetch options
   }
 );
@@ -326,7 +326,7 @@ const response = await fetch(
 
 Every RPC method has a `queryKey` function. It returns a globally unique key for [@tanstack/react-query](https://www.npmjs.com/package/@tanstack/react-query). The key is an array: `[segmentName, controllerPrefix, rpcModuleName, decoratorPath, httpMethod, ...key]{:ts}`. `...key` holds optional extra values that tell similar queries apart.
 
-```ts showLineNumbers copy
+```tsx showLineNumbers copy
 import { useQuery } from '@tanstack/react-query';
 import { UserRPC } from '@/client';
 
@@ -355,7 +355,7 @@ queryClient.invalidateQueries({
 
 For streamed responses, [`streamedQuery`](https://tanstack.com/query/latest/docs/reference/streamedQuery) reads [JSON Lines](/jsonlines) as an array.
 
-```ts showLineNumbers copy
+```tsx showLineNumbers copy
 import { useQuery, experimental_streamedQuery as streamedQuery } from '@tanstack/react-query';
 import { JSONLinesRPC } from '@/client';
 
@@ -377,7 +377,7 @@ const JSONLinesComponent = () => {
 
 RPC methods also work as mutation functions.
 
-```ts showLineNumbers copy
+```tsx showLineNumbers copy
 import { useMutation } from '@tanstack/react-query';
 import { UserRPC } from '@/client';
 
@@ -391,14 +391,15 @@ const MyComponent = () => {
       <button
         onClick={() =>
           mutation.mutate({
-            body: { name: 'John Doe', age: 30 },
-            params: { id: '123' },
+            body: { name: 'John Doe', age: 30, email: 'john@example.com' },
+            params: { id: '123e4567-e89b-12d3-a456-426614174000' },
+            query: { notify: 'push' },
           })
         }
       >
         Update User
       </button>
-      {mutation.isLoading ? 'Loading...' : JSON.stringify(mutation.data)}
+      {mutation.isPending ? 'Loading...' : JSON.stringify(mutation.data)}
     </div>
   );
 };
@@ -423,8 +424,7 @@ The [segmented client](/segmented) has the same exports, but `openapi` and `sche
 
 ```ts showLineNumbers copy
 import { openapi } from '@/client/admin/openapi';
-import { schema } from '@/client/admin/schema';
-import { schema } from '@/client/admin';
+import { schema } from '@/client/admin'; // or from '@/client/admin/schema'
 ```
 
 ## Used Templates

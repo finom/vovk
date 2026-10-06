@@ -33,6 +33,7 @@ The generated `index.ts` imports them, with relative paths adjusted to its folde
 
 ```ts showLineNumbers copy filename="./src/client/index.ts"
 import { createRPC } from 'vovk/create-rpc';
+import { schema } from './schema';
 
 export const UserRPC = createRPC(schema, '', 'UserRPC', import('../lib/fetcher'), {
   validateOnClient: import('../lib/validate-on-client'),

@@ -79,7 +79,7 @@ Every generated method has its schema too:
 
 ```ts showLineNumbers copy
 import { UserAPI } from '@/client';
-UserAPI.updateUser.schema.validation.body; // JSON Schema for request body
+UserAPI.updateUser.schema.validation?.body; // JSON Schema for request body
 ```
 
 ### Deriving AI Tools
@@ -127,10 +127,8 @@ In the [Python](/python) client, the types are `TypedDict`s:
 ```py
 from vovk_client import PetstoreAPI
 
-body: PetstoreAPI.UpdatePetBody = {}
-query: PetstoreAPI.UpdatePetQuery = {}
-params: PetstoreAPI.UpdatePetParams = {}
-output: PetstoreAPI.UpdatePetOutput = {}
+body: PetstoreAPI.UpdatePetBody = {"id": 1, "name": "Doggo", "photoUrls": []}
+output: PetstoreAPI.UpdatePetOutput = {"id": 1, "name": "Doggo", "photoUrls": [], "status": "sold"}
 ```
 
 In the [Rust](/rust) client, the types are nested modules with structs and enums. They follow the structure of the specification's schemas, with the `_::` separator:
@@ -138,10 +136,9 @@ In the [Rust](/rust) client, the types are nested modules with structs and enums
 ```rs
 use vovk_client::petstore_api::update_pet_::{
     body as Body,
-    body_::foo as Foo, // for nested data
-    query as Query,
-    params as Params,
     output as Output,
+    Pet,
+    Pet_::status as Status, // for nested data
 };
 ```
 

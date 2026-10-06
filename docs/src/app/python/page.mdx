@@ -324,8 +324,7 @@ Types for `body`, `query` and `params` are named `[PascalCaseMethodName][InputTy
 Method names are in snake_case: `UserRPC.updateUser` is `UserRPC.update_user`. Each RPC class names its methods in schema order. A name that is already taken gets the first free suffix, `_2`, `_3`, so `getUserByID` and `getUserById` give `get_user_by_id` and `get_user_by_id_2`.
 
 ```py
-from dist_python.src.vovk_hello_world import UserRPC
-import vovk_hello_world
+from vovk_hello_world import UserRPC
 
 def main() -> None:
     body: UserRPC.UpdateUserBody = {
@@ -345,10 +344,10 @@ def main() -> None:
     print('UserRPC.update_user:', update_user_response)
 
 if __name__ == "__main__":
-  try:
-      main()
-  except Exception as e:
-      print(f"Error: {e}")
+    try:
+        main()
+    except Exception as e:
+        print(f"Error: {e}")
 ```
 
 The client uses [requests](https://pypi.org/project/requests/) for HTTP, [jsonschema](https://pypi.org/project/jsonschema/) for client-side validation, and other common libraries. A `pattern` that Python's `re` can't compile, such as `\p{L}`, is left to the server.
@@ -473,8 +472,7 @@ class StreamRPC:
 Usage:
 
 ```py
-from dist_python.src.vovk_hello_world import StreamRPC
-import vovk_hello_world
+from vovk_hello_world import StreamRPC
 
 def main() -> None:
     stream_response = StreamRPC.stream_tokens()
