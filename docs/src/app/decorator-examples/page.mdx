@@ -19,7 +19,7 @@ Import `log` and apply it to a procedure below the HTTP decorator (`@get`, `@pos
 
 ```ts showLineNumbers copy filename="src/modules/user/user-controller.ts"
 import { get, prefix } from 'vovk';
-import log from '../decorators/log';
+import log from '../../decorators/log';
 
 @prefix('users')
 export default class UserController {
@@ -72,7 +72,7 @@ Apply `basicAuthGuard` to procedures below the HTTP decorator.
 
 ```ts showLineNumbers copy filename="src/modules/secure/secure-controller.ts"
 import { get, prefix } from 'vovk';
-import basicAuthGuard from '../decorators/basic-auth-guard';
+import basicAuthGuard from '../../decorators/basic-auth-guard';
 
 @prefix('secure')
 export default class SecureController {
@@ -141,8 +141,8 @@ export default authGuard;
 Import `authGuard` with `Permission` and `AuthMeta`, then apply it to procedures below the HTTP decorator.
 
 ```ts showLineNumbers copy filename="src/modules/user/user-controller.ts"
-import { get, prefix } from 'vovk';
-import authGuard, { Permission, type AuthMeta } from '../decorators/auth-guard';
+import { get, prefix, type VovkRequest } from 'vovk';
+import authGuard, { Permission, type AuthMeta } from '../../decorators/auth-guard';
 
 @prefix('users')
 export default class UserController {
@@ -180,7 +180,7 @@ Apply `cronGuard` to the procedure the cron job calls.
 
 ```ts showLineNumbers copy filename="src/modules/cron/cron-controller.ts"
 import { get, prefix } from 'vovk';
-import cronGuard from '../decorators/cron-guard';
+import cronGuard from '../../decorators/cron-guard';
 
 @prefix('cron')
 export default class CronController {

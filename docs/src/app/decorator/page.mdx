@@ -11,7 +11,7 @@ A decorator adds behavior to a procedure. Use decorators for concerns that many 
 The optional second argument is an init handler. It runs each time the decorator is applied, and it can add validation or custom data to **.vovk-schema/\*.json**. It returns an object with the optional keys `"validation"`, `"operationObject"` and `"misc"` (custom metadata) to merge into the handler schema. Or it returns a function that gets the current handler schema and returns that object, so you merge them yourself.
 
 ```ts showLineNumbers copy
-import { createDecorator, get, HttpException, HttpStatus } from 'vovk';
+import { createDecorator, get, HttpException, HttpStatus, type VovkRequest } from 'vovk';
 
 export interface ReqMeta {
   foo: string;
@@ -52,7 +52,7 @@ const myDecorator = createDecorator(
 export default class MyController {
   @get.auto()
   @myDecorator('baz', 1) // Passes 'baz' as 'a' and 1 as 'b'
-  static doSomething(req) {
+  static doSomething(req: VovkRequest) {
     const meta = req.vovk.meta<ReqMeta>();
     console.log(meta); // { foo: 'bar', a: 'baz', b: 1 }
     // ...
