@@ -10,7 +10,7 @@
   ],
   "scripts": {
     "build": "tsc",
-    "npm-publish": "npm publish",
+    "prepublishOnly": "node -e \"if (!process.env.GITHUB_ACTIONS) { console.error('Publish from CI: PACKAGE=<name> npm run <type> tags a release, and the tag publishes it'); process.exit(1) }\"",
     "tsc": "tsc --noEmit",
     "ncu": "npm-check-updates -u",
     "pre-test": "npm run build",
