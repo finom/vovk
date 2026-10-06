@@ -21,13 +21,13 @@ export const BASE_FIELDS = {
 export const BASE_KEYS = Object.keys(BASE_FIELDS) as (keyof BaseEntity)[];
 ```
 
-For example, `UpdateUserSchema` is the generated `UserSchema` without the base fields:
+For example, `UpdateUserSchema` drops the base fields from the generated `UserSchema` and makes the rest optional, as the `updateUser` body below does:
 
 ```ts showLineNumbers copy
 import { UserSchema } from '@schemas/index';
 import { BASE_FIELDS } from '@/constants';
 
-const UpdateUserSchema = UserSchema.omit(BASE_FIELDS); // fullName, email and imageUrl
+const UpdateUserSchema = UserSchema.omit(BASE_FIELDS).partial(); // optional fullName, email and imageUrl
 ```
 
 ## Implementing Controllers and Services

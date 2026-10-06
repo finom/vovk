@@ -95,6 +95,9 @@ Either way, your entity interfaces use the branded type for `id` instead of `str
 First, set up the [fetcher](/imports#fetcher): the function that every generated RPC method uses to make HTTP requests. Its `onSuccess` event lets other code run on every successful response. The registry subscribes to this event to parse all incoming data.
 
 ```ts showLineNumbers copy filename="src/lib/fetcher.ts"
+import { HttpStatus } from 'vovk';
+import { createFetcher } from 'vovk/fetcher';
+
 export const fetcher = createFetcher<{ bypassRegistry?: boolean }>({
   onError: (error) => {
     if (
