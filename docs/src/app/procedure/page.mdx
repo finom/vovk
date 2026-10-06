@@ -65,6 +65,7 @@ See [TypeScript Client](/typescript).
 > For the root endpoint of a [segment](/segment), use no prefix and no path (or an empty string) in the HTTP decorator.
 > ```ts showLineNumbers copy filename="src/modules/user/user-controller.ts"
 > import { get } from 'vovk';
+> import type { NextRequest } from 'next/server';
 > 
 > export default class UserController {
 >   @get()
@@ -90,13 +91,16 @@ export default class UserController {
   }
 }
 ```
- 
+
+With a `params` schema, `.auto()` also adds each param to the path: `getUser` with `{ id }` becomes `get-user/{id}`.
+
 ## Request Headers
 
 A procedure can use any Next.js API, such as cookies and headers, from the `next` package. See the Next.js [documentation](https://nextjs.org/docs/app/api-reference/functions/headers).
 
 ```ts showLineNumbers copy filename="src/modules/user/user-controller.ts"
 import { put, prefix } from 'vovk';
+import type { NextRequest } from 'next/server';
 import { cookies, headers } from 'next/headers';
 
 @prefix('users')
@@ -226,6 +230,10 @@ Sets the OpenAPI operation details where the `@operation` decorator can't go, su
 
 By default, the [`req.vovk`](/req-vovk) methods return the incoming data as the schemas transform it. The built-in Next.js functions, such as `req.json()` or `req.nextUrl.searchParams.get()`, don't. For the data without transforms, set `preferTransformed` to `false`. Then everything that uses the schemas (`body`, `query`, `params`, `output`, `iteration`) returns the original data instead. The JSON Schema emitted for `output` and `iteration` describes what the server sends: the transformed value, or with `preferTransformed: false` the original one.
 
+#### `target`
+
+The JSON Schema version the validation library emits for the procedure's schemas: `'draft-2020-12'` by default, or another version the library supports, such as `'draft-07'`.
+
 ### `procedure` Features
 
 A procedure made with `procedure()` also has these properties.
@@ -235,15 +243,15 @@ A procedure made with `procedure()` also has these properties.
 `fn` calls the procedure without an HTTP request, for SSR/PPR, server actions, AI tool execution and so on. It takes the same arguments as the generated RPC method:
 
 ```ts showLineNumbers copy
-const result = await UserController.updateUser.fn({
+const localResult = await UserController.updateUser.fn({
   body: { /* ... */ },
   query: { /* ... */ },
   params: { /* ... */ },
   disableClientValidation: false, // default
 });
 
-// same call shape as the RPC client
-const result = await UserRPC.updateUser({
+// the RPC method takes the same input
+const rpcResult = await UserRPC.updateUser({
   body: { /* ... */ },
   query: { /* ... */ },
   params: { /* ... */ },
