@@ -135,13 +135,11 @@ program
   )
   .option('--log-level <level>', 'set the log level')
   .action(async (cliGenerateOptions: GenerateOptions) => {
-    const projectInfo = await loadOpenAPIMixins(
-      await getProjectInfo({
-        configPath: cliGenerateOptions.configPath,
-        srcRootRequired: false,
-        logLevel: cliGenerateOptions.logLevel,
-      })
-    );
+    const projectInfo = await getProjectInfo({
+      configPath: cliGenerateOptions.configPath,
+      srcRootRequired: false,
+      logLevel: cliGenerateOptions.logLevel,
+    });
 
     await new VovkGenerate({
       projectInfo,

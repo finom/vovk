@@ -66,32 +66,33 @@ export async function getProjectInfo(
   };
 }
 
-const withOpenAPIMixins = new WeakMap<ProjectInfo, Promise<ProjectInfo>>();
+// a remote spec is fetched once per loaded config, a local file is read again for every generation
+const remoteMixins = new WeakMap<ProjectInfo, Map<string, ReturnType<typeof normalizeOpenAPIMixin>>>();
 
-// adds the OpenAPI mixins to the config, fetching a remote spec once per loaded config;
-// only client generation needs them, so the other commands work offline
-export function loadOpenAPIMixins(projectInfo: ProjectInfo): Promise<ProjectInfo> {
-  let loaded = withOpenAPIMixins.get(projectInfo);
-  if (!loaded) {
-    loaded = normalizeOpenAPIMixins(projectInfo);
-    withOpenAPIMixins.set(projectInfo, loaded);
-    // the next generation tries a failed fetch again
-    loaded.catch(() => withOpenAPIMixins.delete(projectInfo));
-  }
-  return loaded;
-}
-
-async function normalizeOpenAPIMixins(projectInfo: ProjectInfo): Promise<ProjectInfo> {
+// adds the OpenAPI mixins to the config; only client generation needs them, so the other commands work offline
+export async function loadOpenAPIMixins(projectInfo: ProjectInfo): Promise<ProjectInfo> {
   const { config, openAPIMixins, log, cwd } = projectInfo;
   if (!Object.keys(openAPIMixins).length) return projectInfo;
 
+  let remote = remoteMixins.get(projectInfo);
+  if (!remote) {
+    remote = new Map();
+    remoteMixins.set(projectInfo, remote);
+  }
   const segments = { ...config.outputConfig.segments };
   await Promise.all(
     Object.entries(openAPIMixins).map(async ([segmentName, mixinModule]) => {
-      segments[segmentName] = {
-        ...segments[segmentName],
-        openAPIMixin: await normalizeOpenAPIMixin({ mixinModule, log, cwd }),
-      };
+      let openAPIMixin = remote.get(segmentName);
+      if (!openAPIMixin) {
+        const isRemote = 'url' in mixinModule.source;
+        openAPIMixin = normalizeOpenAPIMixin({ mixinModule, log, cwd });
+        if (isRemote) {
+          remote.set(segmentName, openAPIMixin);
+          // the next generation tries a failed fetch again
+          openAPIMixin.catch(() => remote.delete(segmentName));
+        }
+      }
+      segments[segmentName] = { ...segments[segmentName], openAPIMixin: await openAPIMixin };
     })
   );
 

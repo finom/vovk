@@ -1,7 +1,7 @@
 import path from 'node:path';
 import * as chokidar from 'chokidar';
 import type { VovkSchema } from 'vovk';
-import type { ProjectInfo } from '../get-project-info/index.mjs';
+import { loadOpenAPIMixins, type ProjectInfo } from '../get-project-info/index.mjs';
 import type { GenerateOptions } from '../types.mjs';
 import { chalkHighlightThing } from '../utils/chalk-highlight-thing.mjs';
 import { locateSegments } from '../utils/locate-segments.mjs';
@@ -50,7 +50,7 @@ export class VovkGenerate {
     const { log, config, apiDirAbsolutePath } = this.#projectInfo;
     const locatedSegments = await locateSegments({ dir: apiDirAbsolutePath, config, log });
     await generate({
-      projectInfo: this.#projectInfo,
+      projectInfo: await loadOpenAPIMixins(this.#projectInfo),
       fullSchema: omitRoutelessSegments(
         fullSchema,
         locatedSegments,
