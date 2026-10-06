@@ -124,7 +124,7 @@ export default class HelloController {
 
 `@operation(openAPIOperationObject)` adds OpenAPI documentation to a procedure. It takes an object with `summary`, `description` and any other property of the OpenAPI Operation Object.
 
-Its `tool` helper, `@operation.tool()`, adds AI tool data, stored under the `x-tool` key of the operation object. See [Deriving AI Tools](/tools).
+`@operation.tool()` adds AI tool data under the `x-tool` key of the operation object (see [Deriving AI Tools](/tools)), and `@operation.error(status, message)` documents an error response.
 
 ```ts showLineNumbers copy
 import { operation } from 'vovk';
