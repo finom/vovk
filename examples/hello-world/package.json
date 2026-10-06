@@ -59,7 +59,7 @@
     "tailwindcss": "^4.3.3",
     "tsdown": "^0.22.14",
     "tsx": "^4.23.15",
-    "typescript": "^5",
+    "typescript": "^7",
     "vovk-cli": "^0.3.0-beta.0",
     "vovk-hello-world-published": "npm:vovk-hello-world@^0.0.88",
     "vovk-python": "^0.0.3",

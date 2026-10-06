@@ -3,7 +3,7 @@ import { createRequire } from 'node:module';
 import { describe, it } from 'node:test';
 import { fileURLToPath } from 'node:url';
 import vm from 'node:vm';
-import ts from 'typescript';
+import ts from '@typescript/typescript6';
 import {
   createFetcher,
   HttpException,

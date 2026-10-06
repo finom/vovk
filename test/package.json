@@ -36,6 +36,7 @@
     "@types/react": "19.3.0",
     "@types/react-dom": "^19",
     "@types/supertest": "^7.2.1",
+    "@typescript/typescript6": "^6.0.2",
     "autoprefixer": "^10",
     "openapi3-ts": "^4.6.1",
     "postcss": "^8",

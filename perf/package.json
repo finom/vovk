@@ -41,7 +41,7 @@
     "@types/react-dom": "^19",
     "tailwindcss": "^4",
     "tsx": "^4.23.15",
-    "typescript": "^5.9.3",
+    "typescript": "^7.0.2",
     "vovk-cli": "^0.3.0-beta.0"
   }
 }
