@@ -428,7 +428,7 @@
                 "emoji": {
                   "type": "string",
                   "format": "emoji",
-                  "pattern": "^(\\p{Extended_Pictographic}|\\p{Emoji_Component})+$"
+                  "pattern": "^(?=[\\s\\S]*[\\p{Extended_Pictographic}\\p{Regional_Indicator}\\u20E3])[\\p{Extended_Pictographic}\\p{Emoji_Component}]+$"
                 },
                 "letters": {
                   "type": "string",
