@@ -88,7 +88,7 @@ To keep HTTPS off by default, add a separate NPM script with the flags:
 ```json filename="/package.json"
 "scripts": {
     "dev-https": "vovk dev --https --next-dev -- --experimental-https",
-    "dev": "vovk dev --next-dev",
+    "dev": "vovk dev --next-dev"
 }
 ```
 
@@ -222,13 +222,13 @@ The module paths the client imports `fetcher`, `validateOnClient` and `createRPC
 
 Options for each segment. It takes the same properties as `outputConfig` (`origin`, `package`, `readme`, `samples`, `openAPIObject`, `reExports`, `imports`) and the ones below.
 
-##### `rootEntry: string | null`
+##### `rootEntry: string`
 
-Overrides the root entry of the segment, for example to change `api` to another path for [multitenancy](/multitenant).
+Overrides the root entry of the segment in the generated clients and the OpenAPI document, for example to change `api` to another path for [multitenancy](/multitenant).
 
-##### `segmentNameOverride: string | null`
+##### `segmentNameOverride: string`
 
-Overrides the segment name in the generated code, for example to change the served path for [multitenancy](/multitenant).
+Replaces the segment name in the paths that the generated clients call and in the OpenAPI document. An empty string leaves the segment name out, as the [multitenancy](/multitenant) setup does.
 
 ##### `openAPIMixin: VovkOpenAPIMixin`
 
