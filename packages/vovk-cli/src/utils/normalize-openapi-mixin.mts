@@ -131,7 +131,6 @@ async function getOpenApiSpecRemote({
 }
 
 export async function normalizeOpenAPIMixin({
-  // mixinName,
   mixinModule,
   log,
   cwd = process.cwd(),

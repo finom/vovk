@@ -6,7 +6,7 @@ interface CompileOptions {
   name: string;
   schema: (JSONSchema7 & { components?: OpenAPIObject['components'] }) | boolean;
   refs?: Map<string, JSONSchema7>;
-  dontCreateRefTypes?: boolean; // New option
+  dontCreateRefTypes?: boolean;
   // OpenAPI: a request leaves read-only properties out, a response write-only ones
   direction?: 'request' | 'response';
 }
@@ -21,7 +21,6 @@ interface CompileContext {
 }
 
 export function compileTs(options: CompileOptions): string {
-  // Ensure the main type name is valid
   const mainTypeName = sanitizeTypeName(options.name);
   const context: CompileContext = {
     refs: options.refs || new Map(),
@@ -33,12 +32,10 @@ export function compileTs(options: CompileOptions): string {
   };
 
   const { schema } = options;
-  // Collect all definitions from the schema
   if (isSchema(schema)) collectDefinitions(schema, context.refs);
 
   const mainType = compileSchema(schema, mainTypeName, context);
 
-  // Compile all referenced types, unless dontCreateRefTypes is set
   const compiledRefs = options.dontCreateRefTypes
     ? ''
     : Array.from(context.compiledRefs.entries())
@@ -52,7 +49,6 @@ export function compileTs(options: CompileOptions): string {
 }
 
 function collectDefinitions(schema: JSONSchema7, refs: Map<string, JSONSchema7>) {
-  // Collect from $defs
   if (schema.$defs) {
     Object.entries(schema.$defs).forEach(([key, def]) => {
       if (typeof def === 'object') {
@@ -61,7 +57,6 @@ function collectDefinitions(schema: JSONSchema7, refs: Map<string, JSONSchema7>)
     });
   }
 
-  // Collect from definitions (older spec)
   if (schema.definitions) {
     Object.entries(schema.definitions).forEach(([key, def]) => {
       if (typeof def === 'object') {
@@ -70,7 +65,6 @@ function collectDefinitions(schema: JSONSchema7, refs: Map<string, JSONSchema7>)
     });
   }
 
-  // Collect from components/schemas (OpenAPI spec)
   if ((schema as { components: OpenAPIObject['components'] })?.components?.schemas) {
     Object.entries((schema as { components: OpenAPIObject['components'] })?.components?.schemas ?? {}).forEach(
       ([key, def]) => {
@@ -81,7 +75,6 @@ function collectDefinitions(schema: JSONSchema7, refs: Map<string, JSONSchema7>)
     );
   }
 
-  // Recursively collect from nested schemas
   const schemasToProcess: JSONSchema7[] = [];
 
   if (schema.properties) {
@@ -111,7 +104,6 @@ function isSchema(value: JSONSchema7Definition | boolean): value is JSONSchema7 
 }
 
 function compileSchema(schema: JSONSchema7Definition | boolean, name: string, context: CompileContext): string {
-  // true allows any value, false none
   if (typeof schema === 'boolean') {
     return schema ? 'unknown' : 'never';
   }
@@ -123,7 +115,6 @@ function compileSchema(schema: JSONSchema7Definition | boolean, name: string, co
 }
 
 function compileSchemaType(schema: JSONSchema7, name: string, context: CompileContext): string {
-  // Handle x-tsType extension
   if ('x-tsType' in schema && typeof schema['x-tsType'] === 'string') {
     const tsType = schema['x-tsType'];
     // the type of a component has every property, a request or a response type leaves some out
@@ -131,12 +122,11 @@ function compileSchemaType(schema: JSONSchema7, name: string, context: CompileCo
     return handleRef(schema.$ref, context, sanitizeTypeName(context.name + tsType.slice(tsType.lastIndexOf('.') + 1)));
   }
 
-  // Handle $ref
   if (schema.$ref) {
     return handleRef(schema.$ref, context);
   }
 
-  // Handle combinators, properties next to them apply as well
+  // properties next to a combinator apply as well
   const combined = [
     schema.allOf && handleAllOf(schema.allOf, name, context),
     schema.anyOf && handleAnyOf(schema.anyOf, name, context),
@@ -150,7 +140,6 @@ function compileSchemaType(schema: JSONSchema7, name: string, context: CompileCo
     return intersect(hasOwnMembers ? [...combined, handleObject(schema, name, context)] : combined);
   }
 
-  // Handle type-specific compilation
   if (schema.enum) {
     return handleEnum(schema.enum);
   }
@@ -160,7 +149,6 @@ function compileSchemaType(schema: JSONSchema7, name: string, context: CompileCo
   }
 
   if (!schema.type) {
-    // No type specified, could be object
     if (schema.properties || schema.additionalProperties) {
       return handleObject(schema, name, context);
     }
@@ -181,7 +169,6 @@ function compileSchemaWithType(schema: JSONSchema7, name: string, context: Compi
     case 'boolean':
       return 'boolean';
     case 'string':
-      // binary data, such as a file in a form body
       return schema.format === 'binary' ? 'Blob' : 'string';
     case 'number':
       return 'number';
@@ -197,31 +184,26 @@ function compileSchemaWithType(schema: JSONSchema7, name: string, context: Compi
 }
 
 function handleRef(ref: string, context: CompileContext, typeName = refToTypeName(ref)): string {
-  // Check if we're already compiling this ref (circular reference)
+  // a circular ref
   if (context.refsInProgress.has(ref)) {
     return typeName;
   }
 
-  // Check if already compiled
   if (context.compiledRefs.has(ref)) {
     return typeName;
   }
 
-  // Find the referenced schema
   const referencedSchema = context.refs.get(ref);
   if (!referencedSchema) {
-    return 'any'; // Reference not found
+    return 'any';
   }
 
-  // Mark as in progress
   context.refsInProgress.add(ref);
 
-  // Compile the referenced schema
   const compiledType = compileSchema(referencedSchema, typeName, context);
   const description = toJSDocComment(referencedSchema.description);
   context.compiledRefs.set(ref, `${description}export type ${typeName} = ${compiledType};`);
 
-  // Mark as completed
   context.refsInProgress.delete(ref);
 
   return typeName;
@@ -263,7 +245,7 @@ function handleArray(schema: JSONSchema7, name: string, context: CompileContext)
   }
 
   if (Array.isArray(schema.items)) {
-    // Tuple (ignoring min/max as requested)
+    // a tuple; minItems and maxItems are ignored
     const types = schema.items.map((item, i) => compileSchema(item, `${name}Item${i}`, context));
     return `[${types.join(', ')}]`;
   }
@@ -278,7 +260,6 @@ function handleObject(schema: JSONSchema7, name: string, context: CompileContext
   // TypeScript checks every declared property against the index signature
   const propTypes: string[] = [];
 
-  // Handle known properties
   if (schema.properties) {
     const required = new Set(schema.required || []);
 
@@ -286,11 +267,9 @@ function handleObject(schema: JSONSchema7, name: string, context: CompileContext
       if (!isSchema(propSchema) || isLeftOut(propSchema, context)) continue;
 
       const isRequired = required.has(propName);
-      // Ensure the generated type name for nested properties is valid
       const nestedTypeName = sanitizeTypeName(`${name}-${propName}`);
       const propType = compileSchema(propSchema, nestedTypeName, context);
       const safePropName = /^[a-zA-Z_$][a-zA-Z0-9_$]*$/.test(propName) ? propName : JSON.stringify(propName);
-      // Add JSDoc comment if description is present
       const jsDocComment = toJSDocComment(propSchema.description);
       const comment = jsDocComment && `\n${jsDocComment}`;
       props.push(`${comment}${safePropName}${isRequired ? '' : '?'}: ${propType}`);
@@ -351,13 +330,11 @@ function leavesOutProperty(ref: string, context: CompileContext): boolean {
 }
 
 function refToTypeName(ref: string): string {
-  // Extract the last part of the reference as the type name
   const parts = ref.split('/');
   return sanitizeTypeName(parts[parts.length - 1]);
 }
 
 function wrapUnionType(type: string): string {
-  // Wrap union types in parentheses for array and intersection types
   return type.includes('|') ? `(${type})` : type;
 }
 

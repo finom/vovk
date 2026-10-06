@@ -28,7 +28,6 @@ export async function getProjectFullSchema({
 
   const isEmptyLogOrWarn = isNextInstalled ? log.warn : log.debug;
 
-  // Handle config.json
   const metaPath = path.join(schemaOutAbsolutePath, `${META_FILE_NAME}.json`);
   const metaContent = await readFile(metaPath, 'utf-8').catch(() => null);
   if (metaContent === null) {
@@ -36,10 +35,9 @@ export async function getProjectFullSchema({
   } else {
     result.meta = deepExtend({} as VovkMetaSchema, result.meta, parseSchemaFile(metaPath, metaContent));
   }
-  // Handle segments directory
   const segmentsDir = path.join(schemaOutAbsolutePath);
   try {
-    await access(segmentsDir); // Check if directory exists
+    await access(segmentsDir);
   } catch {
     isEmptyLogOrWarn(`Segments directory not found at ${segmentsDir}. Using empty segments as fallback.`);
     return result;
@@ -49,21 +47,18 @@ export async function getProjectFullSchema({
   const files = await glob('**/*.json', { cwd: segmentsDir, absolute: true });
   const filePaths = [];
   for await (const filePath of files) {
-    if (path.basename(filePath) === `${META_FILE_NAME}.json`) continue; // Skip _meta.json
+    if (path.basename(filePath) === `${META_FILE_NAME}.json`) continue;
     filePaths.push(filePath);
   }
 
-  // Process each JSON file
   for (const filePath of filePaths.toSorted()) {
     const jsonData = parseSchemaFile(filePath, await readFile(filePath, 'utf-8'));
 
-    // Get relative path from segments directory and convert to key
     let relativePath = path
       .relative(segmentsDir, filePath)
-      .replace(/\.json$/, '') // Remove .json extension
-      .replace(/\\/g, '/'); // Normalize to forward slashes
+      .replace(/\.json$/, '')
+      .replace(/\\/g, '/');
 
-    // Special case for _root.json
     if (path.basename(filePath) === `${ROOT_SEGMENT_FILE_NAME}.json` && path.dirname(filePath) === segmentsDir) {
       relativePath = '';
     }

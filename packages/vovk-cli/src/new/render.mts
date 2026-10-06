@@ -58,7 +58,6 @@ export async function render(
   const the__thing = _.kebabCase(moduleName);
 
   const t = {
-    // module name variations
     moduleName,
     theThing,
     theThings: pluralize(theThing),
@@ -71,7 +70,6 @@ export async function render(
     'the-thing': the__thing,
     'the-things': pluralize(the__thing),
 
-    // data
     config,
     withService,
     segmentName,
@@ -84,8 +82,7 @@ export async function render(
     defaultOutDir,
     relativePathToSourceRoot,
 
-    // libraries
-    _, // lodash
+    _,
     pluralize,
   };
 

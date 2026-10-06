@@ -11,9 +11,7 @@ export function getPlaceholderSchema(segmentName: string): VovkSegmentSchema {
   return { $schema: VovkSchemaIdEnum.SEGMENT, emitSchema: false, segmentName, segmentType: 'segment', controllers: {} };
 }
 
-/**
- * Ensure that the schema files are created to avoid any import errors.
- */
+// creates the missing schema files, so the client's imports don't fail
 export async function ensureSchemaFiles(
   projectInfo: ProjectInfo,
   schemaOutAbsolutePath: string,
@@ -24,7 +22,6 @@ export async function ensureSchemaFiles(
   await fs.mkdir(schemaOutAbsolutePath, { recursive: true });
   await writeMetaJson(schemaOutAbsolutePath, projectInfo);
 
-  // Create JSON files (if not exist) with name [segmentName].json (where segmentName can include /, which means the folder structure can be nested)
   await Promise.all(
     segmentNames.map(async (segmentName) => {
       const { isCreated } = await writeOneSegmentSchemaFile({
@@ -50,7 +47,7 @@ export async function ensureSchemaFiles(
     }
   }
 
-  // Recursive function to delete unnecessary JSON files and folders, returns true if anything was deleted
+  // true when anything was deleted
   async function deleteUnnecessaryJsonFiles(
     dirPath: string,
     allow: string[] = [`${META_FILE_NAME}.json`]
@@ -63,7 +60,6 @@ export async function ensureSchemaFiles(
         const absolutePath = path.join(dirPath, entry.name);
 
         if (entry.isDirectory()) {
-          // Recursively delete unnecessary files and folders within nested directories
           const deletedInside = await deleteUnnecessaryJsonFiles(absolutePath);
 
           // remove the directory only when this cleanup emptied it, a pre-existing empty dir is not ours

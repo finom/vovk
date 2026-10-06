@@ -12,14 +12,7 @@ import { DOWN, ENTER, runScript, SPACE } from '../../lib/run-script.mts';
 const skipOtherPackageManagers = process.env.VOVK_TEST_ALL_PACKAGE_MANAGERS !== '1';
 
 const combos = {
-  /*
-    Answers sequence for prompts:
-    - validationLibrary
-    - updateTsConfig
-    - bundle
-    - updateScripts
-    - langs
-  */
+  // answers in prompt order: validationLibrary, updateTsConfig, bundle, updateScripts, langs
   NO_VALIDATION: [
     // Validation library: None
     'N',

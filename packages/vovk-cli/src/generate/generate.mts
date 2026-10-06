@@ -506,7 +506,7 @@ export async function generate({
           outAbsoluteDir: path.resolve(cwd, outCwdRelativeDir),
           package: rendered[0]?.package || {},
           origin: rendered[0]?.origin || '',
-          // what the file looks like inside a segment folder, the pruner tells generated files from user files by it
+          // the file's path inside a segment folder, the pruner tells generated files from user files by it
           relPath: path.join(clientTemplateFile.relativeDir, path.basename(templateFilePath).replace(/\.ejs$/, '')),
           isStamped: rendered.every(({ isStamped }) => isStamped),
         };
@@ -527,7 +527,7 @@ export async function generate({
       config.bundle.prebundleOutDir,
     ].flatMap((dir) => (dir ? [path.resolve(cwd, dir)] : []));
 
-    // once every segment is written, remove the folders of segments that are gone from each output directory
+    // removes the folders of segments that are gone
     afterWrite.push(async () => {
       for (const [outAbsoluteDir, dirResults] of Object.entries(
         _.groupBy(segmentedClientResults, ({ outAbsoluteDir }) => outAbsoluteDir)

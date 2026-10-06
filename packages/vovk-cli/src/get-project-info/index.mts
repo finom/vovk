@@ -26,7 +26,7 @@ export async function getProjectInfo(
 ) {
   const port = givenPort?.toString() ?? process.env.PORT ?? '3000';
 
-  // Make PORT available to the config file at getConfig
+  // the config file may read PORT
   process.env.PORT = port;
 
   const { config, srcRoot, configAbsolutePaths, log, openAPIMixins } = await getConfig({

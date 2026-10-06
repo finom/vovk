@@ -99,7 +99,7 @@ export async function getConfig({
     libs: conf.libs ?? {},
     outputConfig: {
       ...conf.outputConfig,
-      origin: (env.VOVK_ORIGIN ?? conf?.outputConfig?.origin ?? '').replace(/\/$/, ''), // Remove trailing slash
+      origin: (env.VOVK_ORIGIN ?? conf?.outputConfig?.origin ?? '').replace(/\/$/, ''),
       // the mixins come back with loadOpenAPIMixins, which fetches their specs for client generation only
       segments: Object.fromEntries(
         Object.entries(segmentConfigs).map(([segmentName, { openAPIMixin: _openAPIMixin, ...segmentConfig }]) => [

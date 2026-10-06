@@ -248,10 +248,8 @@ export class VovkGenerate {
       }
     };
 
-    // Initial fetch
     pollRemoteSpec();
 
-    // Set up polling
     setInterval(pollRemoteSpec, throttleDelay);
   }
 }

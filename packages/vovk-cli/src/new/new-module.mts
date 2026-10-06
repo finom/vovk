@@ -17,7 +17,6 @@ function splitByLast(str: string, delimiter: string = '/'): [string, string] {
   const index = str.lastIndexOf(delimiter);
 
   if (index === -1) {
-    // Delimiter not found; return empty string and the original string
     return ['', str];
   }
 
@@ -53,7 +52,6 @@ export async function newModule({
   const { isNodeNextResolution, tsExtension } = getTsImportOptions(cwd);
   let templates = config.moduleTemplates as Required<typeof config.moduleTemplates>;
   const [segmentName, moduleName] = splitByLast(moduleNameWithOptionalSegment);
-  // replace c by controller, s by service, everything else keeps the same
   what = what.map((s) => {
     switch (s) {
       case 'c':
@@ -98,7 +96,7 @@ export async function newModule({
   const modules = [];
   for (const type of what) {
     const templatePath = templates[type];
-    if (!templatePath) continue; // suppresses TypeScript error, but it shouldn't happen
+    if (!templatePath) continue; // narrows the type, checked above
     const templateAbsolutePath = resolveAbsoluteModulePath(templatePath, cwd);
     const templateCode = await fs.readFile(templateAbsolutePath, 'utf-8');
 

@@ -25,13 +25,13 @@ export function diffHandlers<T extends VovkControllerSchema['handlers']>(
 ): HandlersDiff {
   const added: string[] = [];
   const removed: string[] = [];
-  const changed: string[] = []; // Array to store changed handlers
+  const changed: string[] = [];
 
   for (const [handler, newHandler] of Object.entries(newHandlers)) {
     if (!(handler in oldHandlers)) {
       added.push(handler);
     } else if (!isEqual(newHandler, oldHandlers[handler])) {
-      changed.push(handler); // Add to changed if handlers are not shallow equal
+      changed.push(handler);
     }
   }
 
@@ -69,7 +69,6 @@ export function diffControllers<T extends VovkSegmentSchema['controllers']>(oldI
   return { added, removed, handlers: handlersDiff };
 }
 
-// returns e.g. { controllers: { added: [...], removed: [...], handlers: [{ nameOfClass, added, removed, changed }] } }
 export function diffSegmentSchema(oldJson: VovkSegmentSchema, newJson: VovkSegmentSchema): DiffResult {
   return {
     controllers: diffControllers<VovkSegmentSchema['controllers']>(
