@@ -23,7 +23,7 @@ import { locateSegments, type Segment } from '../utils/locate-segments.mjs';
 import { oneAtATime } from '../utils/one-at-a-time.mjs';
 import { toPosixPath } from '../utils/to-import-path.mjs';
 import { watchFolder } from '../utils/watch-folder.mjs';
-import { debouncedEnsureSchemaFiles, ensureSchemaFiles, getPlaceholderSchema } from './ensure-schema-files.mjs';
+import { ensureSchemaFiles, getPlaceholderSchema } from './ensure-schema-files.mjs';
 import { logDiffResult } from './log-diff-result.mjs';
 import { writeMetaJson } from './write-meta-json.mjs';
 import {
@@ -111,11 +111,10 @@ export class VovkDev {
   }
 
   #watchSegments = (callback: () => void) => {
-    const { cwd, log, config, apiDirAbsolutePath } = this.#projectInfo;
+    const { log, apiDirAbsolutePath } = this.#projectInfo;
     if (!apiDirAbsolutePath) {
       throw new Error('Unable to watch segments. It looks like CWD is not a Next.js app.');
     }
-    const schemaOutAbsolutePath = path.resolve(cwd, this.#schemaOut ?? config.schemaOutDir);
     const getSegmentName = (filePath: string) =>
       getSegmentNameFromRouteFile(path.relative(apiDirAbsolutePath, filePath));
     log.debug(`Watching segments at ${apiDirAbsolutePath}`);
@@ -146,12 +145,7 @@ export class VovkDev {
           log.info(`${capitalize(formatLoggedSegmentName(segmentName))} has been added`);
           log.debug(`Full list of segments: ${this.#segments.map((s) => s.segmentName).join(', ')}`);
           void this.#requestSchema(segmentName);
-
-          void debouncedEnsureSchemaFiles(
-            this.#projectInfo,
-            schemaOutAbsolutePath,
-            this.#segments.map((s) => s.segmentName)
-          );
+          this.#cleanUpSchemaFiles();
         }
       })
       .on('change', (filePath: string) => {
@@ -163,6 +157,7 @@ export class VovkDev {
 
       .on('addDir', async (dirPath: string) => {
         log.debug(`Directory ${dirPath} has been added to segments folder`);
+        this.#cleanUpSchemaFiles();
         await this.#locateSegments();
         for (const { segmentName } of this.#segments) {
           void this.#requestSchema(segmentName);
@@ -171,6 +166,7 @@ export class VovkDev {
 
       .on('unlinkDir', async (dirPath: string) => {
         log.debug(`Directory ${dirPath} has been removed from segments folder`);
+        this.#cleanUpSchemaFiles();
         await this.#locateSegments();
         for (const { segmentName } of this.#segments) {
           void this.#requestSchema(segmentName);
@@ -184,12 +180,7 @@ export class VovkDev {
           log.info(`${formatLoggedSegmentName(segmentName, { upperFirst: true })} has been removed`);
           log.debug(`Full list of segments: ${this.#segments.map((s) => s.segmentName).join(', ')}`);
           this.#dropRemovedSegments();
-
-          void debouncedEnsureSchemaFiles(
-            this.#projectInfo,
-            schemaOutAbsolutePath,
-            this.#segments.map((s) => s.segmentName)
-          );
+          this.#cleanUpSchemaFiles();
         }
       })
       .on('all', () => this.#requestFailedSchemas())
@@ -298,6 +289,20 @@ export class VovkDev {
 
     void handle();
   };
+
+  // a git checkout can drop or reorder watcher events, so the segments are read from disk when it runs
+  #cleanUpSchemaFiles = debounce(async () => {
+    await this.#locateSegments();
+    for (const { segmentName } of this.#segments) {
+      if (!this.#schemaSegments[segmentName]) void this.#requestSchema(segmentName);
+    }
+    try {
+      const segmentNames = this.#segments.map((s) => s.segmentName);
+      await ensureSchemaFiles(this.#projectInfo, this.#getSchemaOutAbsolutePath(), segmentNames);
+    } catch (error) {
+      this.#projectInfo.log.error(`Failed to update the schema files: ${(error as Error)?.message ?? error}`);
+    }
+  }, 1000);
 
   // a folder renamed to "root" while the watcher runs is reported, the watcher keeps the segments it knows
   async #locateSegments() {

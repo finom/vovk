@@ -1,6 +1,5 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
-import debounce from 'lodash/debounce.js';
 import { VovkSchemaIdEnum, type VovkSegmentSchema } from 'vovk/internal';
 import type { ProjectInfo } from '../get-project-info/index.mjs';
 import { formatLoggedSegmentName } from '../utils/format-logged-segment-name.mjs';
@@ -104,5 +103,3 @@ export async function ensureSchemaFiles(
 
   if (hasChanged) projectInfo?.log.info(`Created empty schema files in ${Date.now() - now}ms`);
 }
-
-export const debouncedEnsureSchemaFiles = debounce(ensureSchemaFiles, 1000);
