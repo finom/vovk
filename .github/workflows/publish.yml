@@ -1,0 +1,218 @@
+name: Publish
+
+# A `<package>-v<version>` tag, pushed by `PACKAGE=<name> npm run <type>`, publishes every package version npm does
+# not have yet, once main.yml has passed on the tagged commit. A manual run is a dry run unless dry_run is off.
+on:
+  push:
+    tags: ['*-v*']
+  workflow_dispatch:
+    inputs:
+      package:
+        description: Package whose tag the run stands in for
+        type: choice
+        required: true
+        options: [vovk, vovk-ajv, vovk-python, vovk-rust, vovk-cli]
+      dry_run:
+        description: npm publish --dry-run and no GitHub Release. Off, the tag must point at the commit
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
+
+# Tags publish one after another, and a later run finds the versions an earlier one published. Dry runs queue apart,
+# so one never takes the place of a pending real run.
+concurrency:
+  group: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run && 'publish-dry-run' || 'publish' }}
+  cancel-in-progress: false
+
+defaults:
+  run:
+    # -eo pipefail: a failed npm publish piped into tee fails the step
+    shell: bash
+
+jobs:
+  check:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 200
+    permissions:
+      actions: read # main.yml's runs
+      contents: read
+    outputs:
+      sha: ${{ steps.tag.outputs.sha }}
+      dry_run: ${{ steps.tag.outputs.dry_run }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      # A mistyped tag would otherwise publish whatever versions the tree holds.
+      - name: Check the tag names a package at its version
+        id: tag
+        env:
+          EVENT: ${{ github.event_name }}
+          REF_NAME: ${{ github.ref_name }}
+          PACKAGE: ${{ inputs.package }}
+          DRY_RUN: ${{ inputs.dry_run }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          sha="$(git rev-parse HEAD)"
+          tag="$REF_NAME"
+          if [ "$EVENT" = workflow_dispatch ]; then
+            tag="$PACKAGE-v$(jq -r .version "packages/$PACKAGE/package.json")"
+          fi
+          package=
+          for dir in vovk vovk-ajv vovk-python vovk-rust vovk-cli; do
+            if [ "$tag" = "$dir-v$(jq -r .version "packages/$dir/package.json")" ]; then
+              package="$dir"
+            fi
+          done
+          if [ -z "$package" ]; then
+            echo "::error::$tag names no package at its version in $sha"
+            exit 1
+          fi
+          dry_run=false
+          if [ "$EVENT" = workflow_dispatch ]; then
+            if [ "$DRY_RUN" = true ]; then
+              dry_run=true
+            # a real publish still goes through the tag
+            elif [ "$(gh api "repos/$GITHUB_REPOSITORY/commits/$tag" --jq .sha 2>/dev/null)" != "$sha" ]; then
+              echo "::error::the tag $tag does not point at $sha"
+              exit 1
+            fi
+          fi
+          echo "$tag: $package at $sha, dry run: $dry_run"
+          echo "sha=$sha" >>"$GITHUB_OUTPUT"
+          echo "dry_run=$dry_run" >>"$GITHUB_OUTPUT"
+      # The release commit's push runs main.yml on every OS and Node version; only a commit it passed publishes.
+      - name: Wait for main.yml on the commit
+        env:
+          SHA: ${{ steps.tag.outputs.sha }}
+          DRY_RUN: ${{ steps.tag.outputs.dry_run }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          runs="repos/$GITHUB_REPOSITORY/actions/workflows/main.yml/runs?head_sha=$SHA&event=push&branch=main&per_page=1"
+          for minute in $(seq 180); do
+            # an API error waits for the next round
+            if run="$(gh api "$runs" --jq '.workflow_runs[0] | select(.) | "\(.status) \(.conclusion) \(.html_url)"')"; then
+              read -r status conclusion url <<<"$run"
+              if [ "$status" = completed ]; then
+                if [ "$conclusion" = success ]; then
+                  echo "main.yml passed: $url"
+                  exit 0
+                fi
+                echo "::error::main.yml ended $conclusion: $url"
+                exit 1
+              fi
+              if [ -z "$run" ] && [ "$DRY_RUN" = true ]; then
+                echo "::warning::main.yml has no run on main for $SHA; a tag here would wait for one, then fail"
+                exit 0
+              fi
+              # the push starts a run within seconds; none after ten minutes means the commit never reached main
+              if [ -z "$run" ] && [ "$minute" -gt 10 ]; then
+                echo "::error::main.yml has no run on main for $SHA"
+                exit 1
+              fi
+            fi
+            sleep 60
+          done
+          echo "::error::main.yml did not finish within three hours on $SHA"
+          exit 1
+
+  publish:
+    needs: check
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    permissions:
+      contents: read
+      id-token: write # npm trusted publishing (OIDC), which adds provenance
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ needs.check.outputs.sha }}
+          persist-credentials: false
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 24
+          registry-url: https://registry.npmjs.org
+          # no npm cache, which the packageManager field turns on: a release installs from the lockfile alone
+          package-manager-cache: false
+      - name: Check for npm 11.5.1 or later, which trusted publishing needs
+        run: |
+          npm --version
+          printf '%s\n' 11.5.1 "$(npm --version)" | sort --version-sort --check=quiet ||
+            { echo "::error::npm $(npm --version) is older than 11.5.1"; exit 1; }
+      # No install scripts in the job that can publish; the build needs none.
+      - run: npm ci --ignore-scripts
+      - run: npm run build
+      - name: Publish every version not yet on npm
+        env:
+          DRY_RUN: ${{ needs.check.outputs.dry_run }}
+        run: |
+          for dir in vovk vovk-ajv vovk-python vovk-rust vovk-cli; do
+            name="$(jq -r .name "packages/$dir/package.json")"
+            version="$(jq -r .version "packages/$dir/package.json")"
+            args=(--provenance)
+            if [ "$DRY_RUN" = true ]; then
+              args+=(--dry-run)
+            fi
+            if [ -n "$(npm view "$name@$version" version 2>/dev/null)" ]; then
+              echo "$name@$version is on npm"
+              # a dry run tries it anyway, so its publish step runs
+              [ "$DRY_RUN" = true ] || continue
+            fi
+            # A prerelease goes to the dist-tag its id names (4.0.0-beta.1 → beta), never to latest. A release takes
+            # npm's default, latest, which npm refuses when it already has a higher version.
+            case "$version" in
+              *-*)
+                tag="${version#*-}"
+                tag="${tag%%.*}"
+                if [ "$tag" = latest ]; then
+                  echo "::error::$name@$version is a prerelease, which never goes to latest"
+                  exit 1
+                fi
+                args+=(--tag "$tag")
+                ;;
+            esac
+            # npm validates a new version for a few minutes, unseen by npm view, so a later run may try it again.
+            (cd "packages/$dir" && npm publish "${args[@]}") 2>&1 | tee publish.log ||
+              grep -qE "previously (staged|published) version" publish.log
+          done
+
+  release:
+    needs: [check, publish]
+    if: needs.check.outputs.dry_run == 'false'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    permissions:
+      contents: write # a GitHub Release per tag
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ needs.check.outputs.sha }}
+          persist-credentials: false
+      # The release carries the npm provenance as an in-toto file, which is what Scorecard's Signed-Releases reads.
+      - name: A GitHub Release per pushed tag, with the npm provenance
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          for dir in vovk vovk-ajv vovk-python vovk-rust vovk-cli; do
+            name="$(jq -r .name "packages/$dir/package.json")"
+            version="$(jq -r .version "packages/$dir/package.json")"
+            tag="$dir-v$version"
+            file="$tag.intoto.jsonl"
+            gh api "repos/$GITHUB_REPOSITORY/git/ref/tags/$tag" --silent 2>/dev/null || continue
+            gh release view "$tag" --json assets --jq '.assets[].name' 2>/dev/null | grep -qxF "$file" && continue
+            # npm serves the attestations with the version, a few minutes after the publish.
+            curl -fsSL --retry 40 --retry-delay 15 --retry-all-errors \
+              "https://registry.npmjs.org/-/npm/v1/attestations/$name@$version" |
+              jq -ce '.attestations[] | select(.predicateType | startswith("https://slsa.dev/provenance/")) | .bundle.dsseEnvelope' \
+                >"$file"
+            if gh release view "$tag" >/dev/null 2>&1; then
+              gh release upload "$tag" "$file" --clobber
+            else
+              prerelease=()
+              case "$version" in *-*) prerelease=(--prerelease) ;; esac
+              gh release create "$tag" "$file" --verify-tag "${prerelease[@]}" --title "$name $version" \
+                --notes "[Changelog](https://github.com/$GITHUB_REPOSITORY/blob/$tag/packages/$dir/CHANGELOG.md) · [npm](https://www.npmjs.com/package/$name/v/$version)"
+            fi
+          done
