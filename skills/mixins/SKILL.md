@@ -41,7 +41,7 @@ Covers:
 Out of scope:
 
 - Authoring own procedures → **`procedure`** skill.
-- RPC client call shape, `customFetcher`, per-call `init` → **`rpc`** skill.
+- RPC client call shape, `createFetcher`, per-call `init` → **`rpc`** skill.
 - AI tool derivation details → **`tools`** skill.
 - Writing OpenAPI specs by hand — this skill consumes them.
 
