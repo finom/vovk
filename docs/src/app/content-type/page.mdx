@@ -67,7 +67,7 @@ export default class UserController {
 }
 ```
 
-The RPC method's `body` type is `TBody | FormData | Blob{:ts}`, where `TBody` comes from the validation schema. The client validates an object as an object, then converts it to `FormData`: `null` and `undefined` fields are left out, an array becomes one entry per item, a `Date{:ts}` is sent as an ISO string and any other object as JSON. When the procedure also takes `application/json`, an object is sent as JSON, unless a field holds a file.
+The RPC method's `body` type is `TBody | FormData | Blob{:ts}`, where `TBody` comes from the validation schema. The client validates an object as an object, then converts it to `FormData`. It leaves out `null` and `undefined` fields, and sends an array as one entry per item, a `Date{:ts}` as an ISO string and any other object as JSON. When the procedure also takes `application/json`, an object is sent as JSON, unless a field holds a file.
 
 ```ts showLineNumbers copy
 import { UserRPC } from '@/client';

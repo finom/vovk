@@ -7,7 +7,7 @@ import { ColdStartChart } from "./cold-start-chart.tsx";
 - Goal: measure Vovk.ts overhead over native Next.js route handlers (not the HTTP stack).
 - Routing: O(1) across 1–10,000 controllers (20,000 endpoints). Median latency ~1.25–1.33 µs even at 10,000 controllers. Throughput ~745k–800k ops/s/core.
 - Cold start: O(n). ~5.7 ms at 1,000 controllers, ~83 ms at 10,000. About 8–10× the cost of no-op decorators.
-- Notes: Tinybench on an Apple M4 Pro. Next.js runtime cost is not measured. Written from real benchmark output with AI help and small edits. The scripts are in the [`perf`](https://github.com/finom/vovk/tree/main/perf) folder of the Vovk.ts repository.
+- Notes: Tinybench on Apple M4 Pro. Next.js runtime cost is not measured. Written from real benchmark output with AI help and small edits. The scripts are in the [`perf`](https://github.com/finom/vovk/tree/main/perf) folder of the Vovk.ts repository.
 
 ## Reproducing the Tests
 

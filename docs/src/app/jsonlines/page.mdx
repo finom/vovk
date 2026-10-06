@@ -120,7 +120,7 @@ Besides `Symbol.asyncIterator`, `Symbol.dispose` and `Symbol.asyncDispose`, the 
 
 With `using`, the stream is aborted with `stream.abortSilently('Stream disposed')` when it goes out of scope.
 
-The client reads the response only as fast as the iteration takes items, so a slow consumer slows the stream down instead of buffering it. An item is kept until every running iteration has passed it: iterations that run at the same time each get all items, an iteration that starts later begins at the oldest kept item, and iterating a consumed stream again yields nothing. After a `break`, the items already read stay for a later iteration or `asPromise()`. A line that isn't JSON, such as a last line the connection cut short, ends the iteration with an error.
+The client reads the response only as fast as the iteration takes items, so a slow consumer slows the stream down instead of buffering it. An item is kept until every running iteration has passed it. Iterations that run at the same time each get all items. An iteration that starts later begins at the oldest kept item, and iterating a consumed stream again yields nothing. After a `break`, the items already read stay for a later iteration or `asPromise()`. A line that isn't JSON, such as a last line the connection cut short, ends the iteration with an error.
 
 ```ts showLineNumbers copy
 console.log('Response status:', stream.status);
