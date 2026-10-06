@@ -50,7 +50,7 @@ The function returns an array of tools. Each tool satisfies the `StandardToolV0`
 
 ## Custom Operation Attributes with `x-tool` or `@operation.tool` Decorator
 
-By default, the tool description comes from the OpenAPI `summary` and `description` fields, and the tool name is `${moduleName}_${handlerName}`. To override them, or to add other tool attributes, use the custom `x-tool` attribute in the `@operation` decorator.
+To override the default tool name and description, or to add other tool attributes, use the custom `x-tool` attribute in the `@operation` decorator.
 
 ```ts showLineNumbers copy filename="src/modules/user/user-controller.ts"
 import { z } from 'zod';
