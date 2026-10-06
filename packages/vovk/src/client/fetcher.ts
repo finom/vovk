@@ -2,6 +2,7 @@ import { HttpException } from '../core/http-exception.js';
 import type { VovkFetcher, VovkFetcherOptions, VovkStreamAsyncIterable } from '../types/client.js';
 import type { VovkHandlerSchema } from '../types/core.js';
 import { HttpStatus } from '../types/enums.js';
+import type { VovkValidateOnClient } from '../types/validation.js';
 import { fileNameToDisposition } from '../utils/file-name-to-disposition.js';
 import {
   FORM_MEDIA_TYPES,
@@ -69,7 +70,8 @@ function anySignal(controller: AbortController, signal: AbortSignal): AbortSigna
   return controller.signal;
 }
 
-export type { VovkFetcher };
+// the return type of createFetcher names these, so a module that exports a fetcher can emit declarations
+export type { HttpException, VovkFetcher, VovkFetcherOptions, VovkHandlerSchema, VovkValidateOnClient };
 
 type CreateFetcherOnSuccess<T> = (
   respData: unknown,
