@@ -416,7 +416,7 @@ export function createCodeSamples({
   const hasArg = !!queryValidation || !!bodyValidation || !!paramsValidation || !!config?.apiRoot || !!config?.headers;
   const rpcName = controllerSchema.rpcModuleName;
   const packageName = packageJson?.name || '@/client';
-// the names the generated Python and Rust packages go by
+  // the names the generated Python and Rust packages go by
   const pyPackageName = packageJson?.py_name ?? toUnderscoredPackageName(packageJson?.name);
   const rsPackageName = packageJson?.rs_name ?? toUnderscoredPackageName(packageJson?.name);
   const handlers = controllerSchema.handlers ?? {};
