@@ -1,14 +1,14 @@
 # WebRTC-based Realtime Voice AI
 
-For a JARVIS-like experience, we're going to set up a voice AI interface that uses the OpenAI Realtime API with WebRTC to send and receive audio data in real time. This time, instead of controller methods executed by the AI SDK on the backend, we're going to derive tools from the generated [RPC modules](/typescript) to make authorized requests directly in the browser.
+This page sets up a voice AI interface. It uses the OpenAI Realtime API with WebRTC to send and receive audio in real time. This time the tools don't come from controller methods that the AI SDK runs on the backend. They are derived from the generated [RPC modules](/typescript) and make authorized requests from the browser.
 
 <img src="/diagrams/voice_ai_realtime_flow.svg" alt="Voice AI Realtime Flow" className="mt-4 dark:invert" />
 
-Since we're going to use WebRTC, audio data is sent and received directly between the client and the OpenAI Realtime API, without passing through our backend server. This makes tool execution extremely low-latency.
+With WebRTC, audio goes directly between the client and the OpenAI Realtime API, not through your backend server. This keeps tool execution latency low.
 
 ## Backend Setup
 
-On the backend, we're going to create a session endpoint implemented using the official OpenAI article [Realtime API with WebRTC](https://platform.openai.com/docs/guides/realtime-webrtc). The endpoint accepts the SDP offer from the client and a voice-selection query parameter, then returns the SDP answer from the OpenAI Realtime API.
+The backend has a session endpoint, based on the official OpenAI article [Realtime API with WebRTC](https://platform.openai.com/docs/guides/realtime-webrtc). It takes the client's SDP offer and a `voice` query parameter, and returns the SDP answer from the OpenAI Realtime API.
 
 ```ts showLineNumbers copy filename="src/modules/realtime/realtime-controller.ts" source="examples/realtime-kanban"
 import { HttpException, HttpStatus, post, prefix, procedure } from 'vovk';
@@ -64,16 +64,16 @@ export default class RealtimeController {
 
 ### WebRTC Audio Session Hook
 
-Next, we're going to create a custom hook `useWebRTCAudioSession` that manages the WebRTC session: starting and stopping it, handling audio streams, and managing the data channel for function calling.
+The custom hook `useWebRTCAudioSession` manages the WebRTC session: it starts and stops it, handles the audio streams, and manages the data channel for function calling.
 
-The hook accepts the selected voice and the tools list as parameters. It returns the session state (`isActive`, `isTalking`) and a function to toggle the session (`toggleSession`).
+The hook takes the selected voice and the list of tools. It returns the session state (`isActive`, `isTalking`) and a function that turns the session on and off (`toggleSession`).
 
-The crucial parts of the hook are:
+The main parts of the hook:
 
-- the `onopen` event handler of the data channel, where we send a `session.update` message with the tools list to inform the OpenAI Realtime API about the available tools, and
-- the `onmessage` event handler, where we listen for function call requests from the model via the `response.function_call_arguments.done` event, execute the corresponding tool, and send back the results.
+- the data channel's `onopen` handler, which sends a `session.update` message with the list of tools, so the OpenAI Realtime API knows which tools exist;
+- the `onmessage` handler, which waits for function calls from the model (the `response.function_call_arguments.done` event), runs the matching tool, and sends back the result.
 
-The `onmessage` handler also takes care of sending the `response.create` message to make the Realtime API respond, unless the tool execution result contains the `__preventResponseCreate` flag set to `true`, returned from the tool’s `execute` function.
+`onmessage` also sends the `response.create` message so the Realtime API answers, unless the result of the tool's `execute` function has the `__preventResponseCreate` flag set to `true`.
 
 ```ts showLineNumbers copy filename="src/hooks/use-web-rtc-audio-session.ts" source="examples/realtime-kanban" {87-132}
 'use client';
@@ -271,11 +271,11 @@ export default function useWebRTCAudioSession(
 
 ### Client-side Tools
 
-The `useWebRTCAudioSession` hook accepts a tools list derived via `deriveTools({ modules: { UserRPC, TaskRPC } }){:ts}`, and also custom client-side tools created with `standardTool` from the [standard-tool](https://www.npmjs.com/package/standard-tool) package for navigation, scrolling, and other UI interactions. The `getCurrentTime` and `partyMode` tools were borrowed from [this repository](https://github.com/cameronking4/openai-realtime-api-nextjs), which was used as an inspiration for this demo.
+`useWebRTCAudioSession` gets the tools derived with `deriveTools({ modules: { UserRPC, TaskRPC } }){:ts}`, plus custom client-side tools made with `standardTool` from the [standard-tool](https://www.npmjs.com/package/standard-tool) package, for navigation, scrolling, and other UI actions. The `getCurrentTime` and `partyMode` tools come from [this repository](https://github.com/cameronking4/openai-realtime-api-nextjs), which inspired this demo.
 
-Since the component is mounted in [layout.tsx](https://github.com/finom/vovk/blob/main/examples/realtime-kanban/src/app/layout.tsx), the component state and WebRTC connection persist across page navigations within this route. This allows you to navigate the app via voice commands using the `navigateTo` tool, which in turn uses Next.js `useRouter` hook.
+The component is mounted in [layout.tsx](https://github.com/finom/vovk/blob/main/examples/realtime-kanban/src/app/layout.tsx), so its state and the WebRTC connection stay alive when you move between pages within this route. That is why you can move around the app by voice with the `navigateTo` tool, which uses the Next.js `useRouter` hook.
 
-The client-side tool execution functions are located in the [lib/tools](https://github.com/finom/vovk/tree/main/examples/realtime-kanban/src/lib/tools) folder for better organization.
+The functions of the client-side tools are in the [lib/tools](https://github.com/finom/vovk/tree/main/examples/realtime-kanban/src/lib/tools) folder.
 
 ```ts showLineNumbers copy filename="src/components/real-time-demo.tsx" source="examples/realtime-kanban"
 'use client';
@@ -386,6 +386,4 @@ export default RealTimeDemo;
 ```
 *[The code above is fetched from GitHub repository.](https://github.com/finom/vovk/blob/main/examples/realtime-kanban/src/components/real-time-demo.tsx)*
 
-The code for the `Floaty` component is not shown here for brevity, but you can find it [in the repository](https://github.com/finom/vovk/blob/main/examples/realtime-kanban/src/components/floaty.tsx).
-
-With that, you now have a fully functional Realtime Voice AI interface that can interact with your application using natural language via voice, powered by OpenAI's Realtime API.
+The code of the `Floaty` component is [in the repository](https://github.com/finom/vovk/blob/main/examples/realtime-kanban/src/components/floaty.tsx).
