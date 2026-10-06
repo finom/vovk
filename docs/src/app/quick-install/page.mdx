@@ -118,7 +118,7 @@ import { useQuery } from '@tanstack/react-query';
 import { UserRPC } from '@/client';
 // ...
 const { data, error, isLoading } = useQuery({
-  queryKey: UserRPC.getSingleUser.queryKey(),
+  queryKey: UserRPC.getSingleUser.queryKey(['123']),
   queryFn: () => UserRPC.getSingleUser({ params: { id: '123' } }),
 });
 ```

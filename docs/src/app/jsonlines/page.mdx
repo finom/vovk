@@ -254,5 +254,5 @@ The `iteration` schema gives `Token` its type, in the service and in the RPC cli
 To end the stream with an error, call `throw`. The client rethrows the error:
 
 ```ts showLineNumbers copy
-await resp.throw(new Error('Stream error'));
+await responder.throw(new Error('Stream error'));
 ```
