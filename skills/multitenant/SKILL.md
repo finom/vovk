@@ -1,6 +1,6 @@
 ---
 name: multitenant
-description: Multi-tenant / multitenancy patterns in Vovk.ts — hosting multiple tenants from one Next.js app via subdomain routing. Covers the `multitenant()` helper from `vovk`, the Next.js `proxy.ts` file that wires it up, the `overrides` shape (static / dynamic / nested subdomain patterns), the `vovk.config.mjs` changes needed (switch to segmented client, `segmentNameOverride`), per-tenant frontend page routes, wildcard DNS, and local `/etc/hosts` setup. Triggers on phrasings like "multi-tenant", "multitenancy", "per-tenant API", "per-tenant frontend", "host `admin.example.com`", "serve per subdomain", "tenant per customer", "wildcard subdomains", "route subdomain to segment". Does NOT cover creating or configuring an individual segment — hand off to the `segment` skill. Does NOT cover writing controllers inside a tenant segment — hand off to the `procedure` skill. Does NOT cover composed-vs-segmented client specifics beyond the flip — hand off to the `rpc` skill.
+description: Multi-tenant / multitenancy patterns in Vovk.ts — hosting multiple tenants from one Next.js app via subdomain routing. Covers the `multitenant()` helper from `vovk`, the Next.js `proxy.ts` file that wires it up, the `overrides` shape (static / dynamic / nested subdomain patterns), the `vovk.config.mjs` changes needed (switch to segmented client, `segmentNameOverride`), per-tenant frontend page routes, wildcard DNS, and local subdomains under `localhost`. Triggers on phrasings like "multi-tenant", "multitenancy", "per-tenant API", "per-tenant frontend", "host `admin.example.com`", "serve per subdomain", "tenant per customer", "wildcard subdomains", "route subdomain to segment". Does NOT cover creating or configuring an individual segment — hand off to the `segment` skill. Does NOT cover writing controllers inside a tenant segment — hand off to the `procedure` skill. Does NOT cover composed-vs-segmented client specifics beyond the flip — hand off to the `rpc` skill.
 ---
 
 # Vovk.ts multi-tenant routing
@@ -26,7 +26,7 @@ Covers:
 - `proxy.ts` wiring with `multitenant()` helper from `vovk`.
 - `overrides` shape (static, dynamic, nested) and reserved-path guard.
 - Per-tenant frontend page routes, how they pair with overrides.
-- DNS wildcard + local `/etc/hosts` setup.
+- DNS wildcard; local subdomains under `localhost`.
 - Add-a-tenant checklist.
 
 Out of scope (hand off):
@@ -219,7 +219,7 @@ Helper also short-circuits on `_schema_` paths (Vovk's dev schema endpoint), ret
 ## 5. DNS / local dev
 
 - **Production**: wildcard DNS at right level. For `<customer>.customer.example.com` need `*.customer.example.com` → host. On Vercel, CNAME `*.multitenant` → `cname.vercel-dns.com.` covers one level; nested patterns need a record at each level you want to catch.
-- **Local**: add `127.0.0.1 *.localhost` to `/etc/hosts`. Most modern resolvers honor `*.localhost` without hosts entry, but adding it explicitly is safe bet. Browser access to `admin.localhost:3000`, `acme.customer.localhost:3000`, etc., then works.
+- **Local**: browsers resolve every name under `localhost` to the loopback address, so `admin.localhost:3000`, `acme.customer.localhost:3000`, etc. reach the dev server with no `/etc/hosts` change. A hosts file takes no wildcards, so a `*.localhost` line does nothing.
 
 ## Adding a new tenant
 
@@ -228,7 +228,7 @@ Helper also short-circuits on `_schema_` paths (Vovk's dev schema endpoint), ret
 3. Add `overrides` entry in `src/proxy.ts` mapping subdomain pattern to both API path (`api` → `api/<tenant>`) and frontend path (`''` → `<tenant>`).
 4. Add `segmentNameOverride: ''` under `outputConfig.segments.<tenant>` in `vovk.config.mjs`.
 5. Run `vovk dev` / `vovk generate` to regenerate segmented client.
-6. **Prod**: confirm wildcard DNS covers new subdomain. **Local**: `*.localhost` already covers it.
+6. **Prod**: confirm wildcard DNS covers new subdomain. **Local**: nothing to do; every name under `localhost` works.
 
 ## Gotchas
 
