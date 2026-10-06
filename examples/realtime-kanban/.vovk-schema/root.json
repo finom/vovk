@@ -76,7 +76,8 @@
                   "updatedAt",
                   "fullName",
                   "email"
-                ]
+                ],
+                "additionalProperties": false
               }
             }
           },
@@ -174,7 +175,8 @@
                   "updatedAt",
                   "fullName",
                   "email"
-                ]
+                ],
+                "additionalProperties": false
               }
             }
           },
@@ -288,7 +290,8 @@
                 "updatedAt",
                 "fullName",
                 "email"
-              ]
+              ],
+              "additionalProperties": false
             }
           },
           "operationObject": {
@@ -409,7 +412,8 @@
                 "updatedAt",
                 "fullName",
                 "email"
-              ]
+              ],
+              "additionalProperties": false
             }
           },
           "operationObject": {
@@ -562,14 +566,16 @@
                     },
                     "required": [
                       "__isDeleted"
-                    ]
+                    ],
+                    "additionalProperties": false
                   }
                 }
               },
               "required": [
                 "__isDeleted",
                 "tasks"
-              ]
+              ],
+              "additionalProperties": false
             }
           },
           "operationObject": {
@@ -660,8 +666,10 @@
                   "updatedAt",
                   "title",
                   "description",
+                  "status",
                   "userId"
-                ]
+                ],
+                "additionalProperties": false
               }
             }
           },
@@ -766,8 +774,10 @@
                   "updatedAt",
                   "title",
                   "description",
+                  "status",
                   "userId"
-                ]
+                ],
+                "additionalProperties": false
               }
             }
           },
@@ -864,8 +874,10 @@
                   "updatedAt",
                   "title",
                   "description",
+                  "status",
                   "userId"
-                ]
+                ],
+                "additionalProperties": false
               }
             }
           },
@@ -994,8 +1006,10 @@
                 "updatedAt",
                 "title",
                 "description",
+                "status",
                 "userId"
-              ]
+              ],
+              "additionalProperties": false
             }
           },
           "operationObject": {
@@ -1130,8 +1144,10 @@
                 "updatedAt",
                 "title",
                 "description",
+                "status",
                 "userId"
-              ]
+              ],
+              "additionalProperties": false
             }
           },
           "operationObject": {
@@ -1224,7 +1240,8 @@
               },
               "required": [
                 "__isDeleted"
-              ]
+              ],
+              "additionalProperties": false
             }
           },
           "operationObject": {
@@ -1284,7 +1301,8 @@
               },
               "required": [
                 "sdp"
-              ]
+              ],
+              "additionalProperties": false
             }
           },
           "path": "session",

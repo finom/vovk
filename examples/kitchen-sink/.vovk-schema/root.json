@@ -30,7 +30,7 @@
                 "email": {
                   "type": "string",
                   "format": "email",
-                  "pattern": "^(?!\\.)(?!.*\\.\\.)([A-Za-z0-9_'+\\-\\.]*)[A-Za-z0-9_+-]@([A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$",
+                  "pattern": "^(?:[A-Za-z0-9_'+\\-]+\\.)*[A-Za-z0-9_'+\\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$",
                   "description": "User email",
                   "example": "john.doe@example.com"
                 }
@@ -87,6 +87,7 @@
               "required": [
                 "success"
               ],
+              "additionalProperties": false,
               "description": "Response object"
             }
           },
@@ -125,7 +126,7 @@
                 "email": {
                   "type": "string",
                   "format": "email",
-                  "pattern": "^(?!\\.)(?!.*\\.\\.)([A-Za-z0-9_'+\\-\\.]*)[A-Za-z0-9_+-]@([A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$",
+                  "pattern": "^(?:[A-Za-z0-9_'+\\-]+\\.)*[A-Za-z0-9_'+\\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$",
                   "description": "User email",
                   "example": "john.doe@example.com"
                 }
@@ -189,6 +190,7 @@
                 "success",
                 "id"
               ],
+              "additionalProperties": false,
               "description": "Response object"
             }
           },
@@ -272,7 +274,7 @@
                       "type": "string",
                       "description": "User ID",
                       "format": "uuid",
-                      "pattern": "[\\da-f]{8}-[\\da-f]{4}-[1-8][\\da-f]{3}-[89ab][\\da-f]{3}-[\\da-f]{12}"
+                      "pattern": "^[\\da-f]{8}-[\\da-f]{4}-[1-8][\\da-f]{3}-[89ab][\\da-f]{3}-[\\da-f]{12}$"
                     },
                     {
                       "const": "00000000-0000-0000-0000-000000000000",
@@ -461,7 +463,8 @@
               },
               "required": [
                 "message"
-              ]
+              ],
+              "additionalProperties": false
             }
           },
           "operationObject": {
@@ -490,7 +493,8 @@
               },
               "required": [
                 "message"
-              ]
+              ],
+              "additionalProperties": false
             }
           },
           "operationObject": {
@@ -594,7 +598,8 @@
               "type": "object",
               "properties": {
                 "i": {
-                  "type": "string"
+                  "type": "string",
+                  "pattern": "^\\d{1,6}$"
                 }
               },
               "required": [
@@ -611,7 +616,8 @@
               },
               "required": [
                 "i"
-              ]
+              ],
+              "additionalProperties": false
             }
           },
           "path": "",
@@ -655,7 +661,7 @@
                     "timestamp": {
                       "type": "string",
                       "format": "date-time",
-                      "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$",
+                      "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$",
                       "description": "Event timestamp"
                     },
                     "message": {
@@ -666,13 +672,15 @@
                   "required": [
                     "timestamp",
                     "message"
-                  ]
+                  ],
+                  "additionalProperties": false
                 }
               },
               "required": [
                 "event",
                 "payload"
-              ]
+              ],
+              "additionalProperties": false
             }
           },
           "path": "",
@@ -772,7 +780,7 @@
                 "email": {
                   "type": "string",
                   "format": "email",
-                  "pattern": "^(?!\\.)(?!.*\\.\\.)([A-Za-z0-9_'+\\-\\.]*)[A-Za-z0-9_+-]@([A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$",
+                  "pattern": "^(?:[A-Za-z0-9_'+\\-]+\\.)*[A-Za-z0-9_'+\\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$",
                   "description": "User email"
                 },
                 "resume": {
@@ -838,7 +846,7 @@
                 "email": {
                   "type": "string",
                   "format": "email",
-                  "pattern": "^(?!\\.)(?!.*\\.\\.)([A-Za-z0-9_'+\\-\\.]*)[A-Za-z0-9_+-]@([A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$",
+                  "pattern": "^(?:[A-Za-z0-9_'+\\-]+\\.)*[A-Za-z0-9_'+\\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$",
                   "description": "User email"
                 },
                 "resume": {
@@ -868,7 +876,8 @@
                     "name",
                     "size",
                     "type"
-                  ]
+                  ],
+                  "additionalProperties": false
                 },
                 "portfolioSamples": {
                   "type": "array",
@@ -899,7 +908,8 @@
                       "name",
                       "size",
                       "type"
-                    ]
+                    ],
+                    "additionalProperties": false
                   },
                   "description": "Array of portfolio sample files"
                 }
@@ -909,6 +919,7 @@
                 "resume",
                 "portfolioSamples"
               ],
+              "additionalProperties": false,
               "description": "Response object"
             }
           },
