@@ -1,4 +1,4 @@
-import { deepStrictEqual, strictEqual } from 'node:assert';
+import { deepStrictEqual, ok, strictEqual } from 'node:assert';
 import { describe, it } from 'node:test';
 import type { PackageJson } from 'type-fest';
 import { resolveGeneratorConfigValues, type VovkStrictConfig } from 'vovk/internal';
@@ -15,7 +15,7 @@ describe('resolveGeneratorConfigValues', () => {
         projectPackageJson: undefined,
       });
 
-      deepStrictEqual(result.package, {});
+      deepStrictEqual(result.package, { version: '0.0.0' });
       strictEqual(result.origin, '');
       deepStrictEqual(result.imports, {
         fetcher: 'vovk/fetcher',
@@ -279,6 +279,7 @@ describe('resolveGeneratorConfigValues', () => {
 
       deepStrictEqual(result.package, {
         name: 'bundled',
+        version: '0.0.0',
         exports: {
           '.': {
             default: './index.js',
@@ -314,6 +315,7 @@ describe('resolveGeneratorConfigValues', () => {
 
       deepStrictEqual(result.package, {
         name: 'base',
+        version: '0.0.0',
       });
       strictEqual(result.origin, '');
     });
@@ -344,6 +346,7 @@ describe('resolveGeneratorConfigValues', () => {
 
       deepStrictEqual(result.package, {
         name: 'users-api',
+        version: '0.0.0',
       });
       strictEqual(result.origin, 'https://users.example.com');
       deepStrictEqual(result.reExports, { User: './models/User' });
@@ -372,7 +375,7 @@ describe('resolveGeneratorConfigValues', () => {
       });
 
       // Should not include segment-specific configs
-      deepStrictEqual(result.package, {});
+      deepStrictEqual(result.package, { version: '0.0.0' });
     });
 
     it('should aggregate reExports for composed client', () => {
@@ -469,7 +472,7 @@ describe('resolveGeneratorConfigValues', () => {
         outputConfigs: [],
       });
 
-      deepStrictEqual(result.package, {});
+      deepStrictEqual(result.package, { version: '0.0.0' });
       strictEqual(result.origin, '');
       deepStrictEqual(result.imports, {
         fetcher: 'vovk/fetcher',
@@ -587,6 +590,20 @@ describe('resolveGeneratorConfigValues', () => {
 
       // Should return empty string when all are null
       strictEqual(result.origin, '');
+    });
+
+    it('should give the OpenAPI info a version when no package.json version is set', () => {
+      const result = resolveGeneratorConfigValues({
+        config: undefined,
+        outputConfigs: [],
+        isBundle: false,
+        segmentName: null,
+        projectPackageJson: { name: 'app' },
+      });
+
+      // OpenAPI requires info.version
+      strictEqual(typeof result.openAPIObject.info.version, 'string');
+      ok(result.openAPIObject.info.version);
     });
 
     it('should handle OpenAPI object defaults correctly', () => {

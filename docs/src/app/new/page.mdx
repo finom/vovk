@@ -175,7 +175,7 @@ Available variables are passed to the EJS template via the `t` object:
 - `t.config: VovkConfig` — the Vovk.ts config.
 - `t.segmentName: string` — the segment name (empty string for the root segment).
 - `t.withService: boolean` — whether a service module is being created alongside the controller.
-- `t.nodeNextResolutionExt: { ts: string; js: string; mjs: string; cjs: string }` — file extension based on the `moduleResolution` in `tsconfig.json`. The object will contain extension values corresponding to the keys, such as `.ts`/`.js`/`.mjs`/`.cjs` for `'node16'` and `'nodenext'` and empty strings for other cases.
+- `t.nodeNextResolutionExt: { ts: string; js: string; mjs: string; cjs: string }` — file extension based on the `moduleResolution` in `tsconfig.json`, or on `module` when `moduleResolution` isn't set. The object will contain extension values corresponding to the keys, such as `.ts`/`.js`/`.mjs`/`.cjs` for `'node16'` and `'nodenext'` and empty strings for other cases. `ts` is `.ts` only with `allowImportingTsExtensions` or `rewriteRelativeImportExtensions`; otherwise it's `.js`, the name TypeScript resolves to the `.ts` file.
 - `t.TheThing`, `t.TheThings` — module name and pluralized module name in PascalCase (e.g., `UserCart`, `UserCarts`).
 - `t.theThing`, `t.theThings` — module name and pluralized module name in camelCase (e.g., `userCart`, `userCarts`).
 - `t['the-thing']`, `t['the-things']` — module name and pluralized module name in kebab-case (e.g., `user-cart`, `user-carts`).

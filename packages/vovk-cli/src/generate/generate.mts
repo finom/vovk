@@ -1,6 +1,5 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
-import { getTsconfig } from 'get-tsconfig';
 import matter from 'gray-matter';
 import _ from 'lodash';
 import type { PackageJson } from 'type-fest';
@@ -18,14 +17,16 @@ import type { ProjectInfo } from '../get-project-info/index.mjs';
 import type { GenerateOptions } from '../types.mjs';
 import { chalkHighlightThing } from '../utils/chalk-highlight-thing.mjs';
 import { hasGeneratedBanner } from '../utils/generated-banner.mjs';
+import { getTsImportOptions } from '../utils/get-ts-import-options.mjs';
 import type { Segment } from '../utils/locate-segments.mjs';
 import { normalizeOpenAPIMixin } from '../utils/normalize-openapi-mixin.mjs';
 import { pickSegmentFullSchema } from '../utils/pick-segment-full-schema.mjs';
 import { removeUnlistedDirectories } from '../utils/remove-unlisted-directories.mjs';
-import { getClientTemplateFiles } from './get-client-template-files.mjs';
+import { type ClientTemplateFile, getClientTemplateFiles } from './get-client-template-files.mjs';
 import { validateComposedModuleNames, validateMixinModuleNames, validateMixinNames } from './validate-client-names.mjs';
 import {
   type ClientFile,
+  getOutputConfigs,
   normalizeOutTemplatePath,
   renderOneClientFile,
   withSegmentPackageName,
@@ -36,23 +37,32 @@ const getIncludedSegmentNames = (
   config: VovkStrictConfig,
   fullSchema: VovkSchema,
   configKey: 'segmentedClient' | 'composedClient',
-  cliGenerateOptions: GenerateOptions | undefined
+  cliGenerateOptions: GenerateOptions | undefined,
+  { templateName, templateDef }: Pick<ClientTemplateFile, 'templateName' | 'templateDef'>,
+  mixinNames: string[]
 ) => {
-  const segments = Object.values(fullSchema.segments);
+  // a configured mixin counts before its spec is loaded, vovk dev starts without it
+  const segmentNames = _.uniq([
+    ...Object.values(fullSchema.segments).map(({ segmentName }) => segmentName),
+    ...mixinNames,
+  ]);
   const cliIncludeSegments =
     cliGenerateOptions?.[configKey === 'segmentedClient' ? 'segmentedIncludeSegments' : 'composedIncludeSegments'];
   const cliExcludeSegments =
     cliGenerateOptions?.[configKey === 'segmentedClient' ? 'segmentedExcludeSegments' : 'composedExcludeSegments'];
-  // CLI options win as a pair so config exclude cannot conflict with CLI include
-  const isFromCli = !!(cliIncludeSegments?.length || cliExcludeSegments?.length);
-  const includeSegments = isFromCli ? cliIncludeSegments : config[configKey].includeSegments;
-  const excludeSegments = isFromCli ? cliExcludeSegments : config[configKey].excludeSegments;
+  const templateOptions = templateDef[configKey];
+  // a pair wins as a whole so one source's exclude cannot conflict with another's include:
+  // CLI options first, then the template's own, then the root config
+  const [{ includeSegments, excludeSegments }, where] =
+    cliIncludeSegments?.length || cliExcludeSegments?.length
+      ? [{ includeSegments: cliIncludeSegments, excludeSegments: cliExcludeSegments }, 'as CLI options']
+      : templateOptions?.includeSegments?.length || templateOptions?.excludeSegments?.length
+        ? [templateOptions, `in "${configKey}" of template "${templateName}"`]
+        : [config[configKey], `in "${configKey}" config`];
   if (includeSegments?.length && excludeSegments?.length) {
-    throw new Error(
-      `Both includeSegments and excludeSegments are set ${isFromCli ? 'as CLI options' : `in "${configKey}" config`}. Please use only one of them.`
-    );
+    throw new Error(`Both includeSegments and excludeSegments are set ${where}. Please use only one of them.`);
   }
-  const segmentExists = (segmentName: string) => segments.some(({ segmentName: sName }) => sName === segmentName);
+  const segmentExists = (segmentName: string) => segmentNames.includes(segmentName);
 
   if (includeSegments?.length) {
     for (const segmentName of includeSegments) {
@@ -69,12 +79,10 @@ const getIncludedSegmentNames = (
         throw new Error(`Segment "${segmentName}" from excludeSegments not found in the config for "${configKey}"`);
       }
     }
-    return segments
-      .filter(({ segmentName }) => !excludeSegments.includes(segmentName))
-      .map(({ segmentName }) => segmentName);
+    return segmentNames.filter((segmentName) => !excludeSegments.includes(segmentName));
   }
 
-  return segments.map(({ segmentName }) => segmentName);
+  return segmentNames;
 };
 
 interface GenerationResult {
@@ -236,9 +244,10 @@ export async function generate({
     validateMixinModuleNames(mixinName, fullSchema.segments[mixinName]);
   }
 
-  const { module, moduleResolution } = getTsconfig(cwd)?.config?.compilerOptions ?? {};
-  // without moduleResolution TypeScript resolves like Node.js only for a node16+ module; no tsconfig at all is a Next.js default
-  const isNodeNextResolution = /^node(16|18|20|next)$/i.test(moduleResolution ?? module ?? '');
+  const { module, isNodeNextResolution, tsExtension } = getTsImportOptions(cwd);
+  const mixinNames = Object.keys(projectInfo.openAPIMixins ?? {});
+  // a mixin whose spec isn't loaded yet keeps its client, but gets no new one
+  const isRendered = (segmentName: string) => Object.hasOwn(fullSchema.segments, segmentName);
   const isVovkProject = !!srcRoot;
   const isComposedEnabled =
     cliGenerateOptions?.composedOnly ||
@@ -259,8 +268,6 @@ export async function generate({
 
   if (isComposedEnabled) {
     const now = Date.now();
-    const segmentNames = getIncludedSegmentNames(config, fullSchema, 'composedClient', cliGenerateOptions);
-    validateComposedModuleNames(fullSchema, segmentNames);
     const { templateFiles: composedClientTemplateFiles, fromTemplates } = await getClientTemplateFiles({
       config,
       cwd,
@@ -268,10 +275,20 @@ export async function generate({
       cliGenerateOptions,
       configKey: 'composedClient',
     });
+    const segmentNamesOf = new Map(
+      composedClientTemplateFiles.map((file) => [
+        file,
+        getIncludedSegmentNames(config, fullSchema, 'composedClient', cliGenerateOptions, file, mixinNames),
+      ])
+    );
+    for (const segmentNames of _.uniqBy([...segmentNamesOf.values()], (names) => names.join('\0'))) {
+      validateComposedModuleNames(fullSchema, segmentNames);
+    }
 
     const composedClientResults = await Promise.all(
       composedClientTemplateFiles.map(async (clientTemplateFile) => {
         const { templateFilePath, templateName, templateDef, outCwdRelativeDir } = clientTemplateFile;
+        const segmentNames = segmentNamesOf.get(clientTemplateFile) ?? [];
         const templateContent = await fs.readFile(templateFilePath, 'utf-8');
 
         const matterResult = templateFilePath.endsWith('.ejs')
@@ -294,14 +311,14 @@ export async function generate({
           config: projectInfo.config,
           rootEntry: config.rootEntry,
           schema: fullSchema,
-          outputConfigs: [config.composedClient.outputConfig ?? {}, templateDef.outputConfig ?? {}],
+          outputConfigs: getOutputConfigs(config, templateDef, 'composedClient'),
           forceOutputConfigs: [{ origin: cliGenerateOptions?.origin }],
           projectPackageJson,
           isBundle,
           segmentName: null,
         });
 
-        const composedFullSchema = pickSegmentFullSchema(fullSchema, segmentNames);
+        const composedFullSchema = pickSegmentFullSchema(fullSchema, segmentNames.filter(isRendered));
         const hasMixins = Object.values(composedFullSchema.segments).some((segment) => segment.segmentType === 'mixin');
         if (templateName === BuiltInTemplateName.mixins && !hasMixins) {
           return null;
@@ -312,7 +329,10 @@ export async function generate({
           projectInfo,
           clientTemplateFile,
           fullSchema: composedFullSchema,
-          prettifyClient: cliGenerateOptions?.prettify ?? config.composedClient.prettifyClient,
+          prettifyClient:
+            cliGenerateOptions?.prettify ??
+            templateDef.composedClient?.prettifyClient ??
+            config.composedClient.prettifyClient,
           segmentName: null,
           templateContent,
           matterResult,
@@ -326,6 +346,8 @@ export async function generate({
           templateDef,
           locatedSegments,
           isNodeNextResolution,
+          tsExtension,
+          tsModule: module,
           hasMixins,
           isVovkProject,
           vovkCliPackage,
@@ -367,7 +389,6 @@ export async function generate({
 
   if (isSegmentedEnabled) {
     const now = Date.now();
-    const segmentNames = getIncludedSegmentNames(config, fullSchema, 'segmentedClient', cliGenerateOptions);
     const { templateFiles: segmentedClientTemplateFiles, fromTemplates } = await getClientTemplateFiles({
       config,
       cwd,
@@ -379,6 +400,14 @@ export async function generate({
     const segmentedClientResults = await Promise.all(
       segmentedClientTemplateFiles.map(async (clientTemplateFile) => {
         const { templateFilePath, templateName, templateDef, outCwdRelativeDir } = clientTemplateFile;
+        const segmentNames = getIncludedSegmentNames(
+          config,
+          fullSchema,
+          'segmentedClient',
+          cliGenerateOptions,
+          clientTemplateFile,
+          mixinNames
+        );
         const templateContent = await fs.readFile(templateFilePath, 'utf-8');
 
         const matterResult = templateFilePath.endsWith('.ejs')
@@ -391,7 +420,7 @@ export async function generate({
           : { data: { imports: [] }, content: templateContent };
 
         const results = await Promise.all(
-          segmentNames.map(async (segmentName) => {
+          segmentNames.filter(isRendered).map(async (segmentName) => {
             const segmentedFullSchema = pickSegmentFullSchema(fullSchema, [segmentName]);
             const hasMixins = Object.values(segmentedFullSchema.segments).some(
               (segment) => segment.segmentType === 'mixin'
@@ -412,22 +441,26 @@ export async function generate({
               schema: fullSchema,
               rootEntry: config.rootEntry,
               segmentName,
-              outputConfigs: [config.segmentedClient.outputConfig ?? {}, templateDef.outputConfig ?? {}],
+              outputConfigs: getOutputConfigs(config, templateDef, 'segmentedClient'),
               forceOutputConfigs: [{ origin: cliGenerateOptions?.origin }],
               isBundle,
               projectPackageJson,
             });
-            // a name set in the segment's own config is used as is
-            const packageJson = config.outputConfig.segments?.[segmentName]?.package?.name
-              ? resolvedPackageJson
-              : withSegmentPackageName(resolvedPackageJson, segmentName);
+            const packageJson = withSegmentPackageName(
+              resolvedPackageJson,
+              segmentName,
+              config.outputConfig.segments?.[segmentName]?.package
+            );
 
             const clientFile = await renderOneClientFile({
               cwd,
               projectInfo,
               clientTemplateFile,
               fullSchema: segmentedFullSchema,
-              prettifyClient: cliGenerateOptions?.prettify ?? config.segmentedClient.prettifyClient,
+              prettifyClient:
+                cliGenerateOptions?.prettify ??
+                templateDef.segmentedClient?.prettifyClient ??
+                config.segmentedClient.prettifyClient,
               segmentName,
               templateContent,
               matterResult,
@@ -441,6 +474,8 @@ export async function generate({
               templateDef,
               locatedSegments,
               isNodeNextResolution,
+              tsExtension,
+              tsModule: module,
               hasMixins,
               isVovkProject,
               vovkCliPackage,
@@ -467,6 +502,7 @@ export async function generate({
         return {
           written: rendered.some(({ written }) => written),
           templateName,
+          segmentNames,
           outAbsoluteDir: path.resolve(cwd, outCwdRelativeDir),
           package: rendered[0]?.package || {},
           origin: rendered[0]?.origin || '',
@@ -498,7 +534,7 @@ export async function generate({
       )) {
         const skippedDirs = await removeUnlistedDirectories(
           outAbsoluteDir,
-          segmentNames.map((s) => s || ROOT_SEGMENT_FILE_NAME),
+          _.uniq(dirResults.flatMap(({ segmentNames }) => segmentNames)).map((s) => s || ROOT_SEGMENT_FILE_NAME),
           dirResults.map(({ relPath }) => relPath),
           {
             unstampedRelPaths: dirResults.filter(({ isStamped }) => !isStamped).map(({ relPath }) => relPath),

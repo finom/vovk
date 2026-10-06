@@ -4,30 +4,39 @@ import { toTypeName } from 'vovk/internal';
 
 interface CompileOptions {
   name: string;
-  schema: JSONSchema7 & { components?: OpenAPIObject['components'] };
+  schema: (JSONSchema7 & { components?: OpenAPIObject['components'] }) | boolean;
   refs?: Map<string, JSONSchema7>;
   dontCreateRefTypes?: boolean; // New option
+  // OpenAPI: a request leaves read-only properties out, a response write-only ones
+  direction?: 'request' | 'response';
 }
 
 interface CompileContext {
   refs: Map<string, JSONSchema7>;
   compiledRefs: Map<string, string>;
   refsInProgress: Set<string>;
+  name: string;
+  leftOutKey?: 'readOnly' | 'writeOnly';
+  leavesOut: Map<string, boolean>;
 }
 
 export function compileTs(options: CompileOptions): string {
+  // Ensure the main type name is valid
+  const mainTypeName = sanitizeTypeName(options.name);
   const context: CompileContext = {
     refs: options.refs || new Map(),
     compiledRefs: new Map(),
     refsInProgress: new Set(),
+    name: mainTypeName,
+    leftOutKey: options.direction && ({ request: 'readOnly', response: 'writeOnly' } as const)[options.direction],
+    leavesOut: new Map(),
   };
 
+  const { schema } = options;
   // Collect all definitions from the schema
-  collectDefinitions(options.schema, context.refs);
+  if (isSchema(schema)) collectDefinitions(schema, context.refs);
 
-  // Ensure the main type name is valid
-  const mainTypeName = sanitizeTypeName(options.name);
-  const mainType = compileSchema(options.schema, mainTypeName, context);
+  const mainType = compileSchema(schema, mainTypeName, context);
 
   // Compile all referenced types, unless dontCreateRefTypes is set
   const compiledRefs = options.dontCreateRefTypes
@@ -36,9 +45,10 @@ export function compileTs(options: CompileOptions): string {
         .map(([, typeDecl]) => typeDecl)
         .join('\n\n');
 
+  const comment = isSchema(schema) ? toJSDocComment(schema.description) : '';
   return compiledRefs
-    ? `${compiledRefs}\n\n${options.schema.description ? `/** ${escapeJSDocComment(options.schema.description)} */\n` : ''}export type ${mainTypeName} = ${mainType};`
-    : `${options.schema.description ? `/** ${escapeJSDocComment(options.schema.description)} */\n` : ''}export type ${mainTypeName} = ${mainType};`;
+    ? `${compiledRefs}\n\n${comment}export type ${mainTypeName} = ${mainType};`
+    : `${comment}export type ${mainTypeName} = ${mainType};`;
 }
 
 function collectDefinitions(schema: JSONSchema7, refs: Map<string, JSONSchema7>) {
@@ -101,8 +111,9 @@ function isSchema(value: JSONSchema7Definition | boolean): value is JSONSchema7 
 }
 
 function compileSchema(schema: JSONSchema7Definition | boolean, name: string, context: CompileContext): string {
+  // true allows any value, false none
   if (typeof schema === 'boolean') {
-    return schema ? 'any' : 'never';
+    return schema ? 'unknown' : 'never';
   }
 
   const type = compileSchemaType(schema, name, context);
@@ -114,7 +125,10 @@ function compileSchema(schema: JSONSchema7Definition | boolean, name: string, co
 function compileSchemaType(schema: JSONSchema7, name: string, context: CompileContext): string {
   // Handle x-tsType extension
   if ('x-tsType' in schema && typeof schema['x-tsType'] === 'string') {
-    return schema['x-tsType'];
+    const tsType = schema['x-tsType'];
+    // the type of a component has every property, a request or a response type leaves some out
+    if (!schema.$ref || !leavesOutProperty(schema.$ref, context)) return tsType;
+    return handleRef(schema.$ref, context, sanitizeTypeName(context.name + tsType.slice(tsType.lastIndexOf('.') + 1)));
   }
 
   // Handle $ref
@@ -167,7 +181,8 @@ function compileSchemaWithType(schema: JSONSchema7, name: string, context: Compi
     case 'boolean':
       return 'boolean';
     case 'string':
-      return 'string';
+      // binary data, such as a file in a form body
+      return schema.format === 'binary' ? 'Blob' : 'string';
     case 'number':
       return 'number';
     case 'integer':
@@ -181,9 +196,7 @@ function compileSchemaWithType(schema: JSONSchema7, name: string, context: Compi
   }
 }
 
-function handleRef(ref: string, context: CompileContext): string {
-  const typeName = refToTypeName(ref);
-
+function handleRef(ref: string, context: CompileContext, typeName = refToTypeName(ref)): string {
   // Check if we're already compiling this ref (circular reference)
   if (context.refsInProgress.has(ref)) {
     return typeName;
@@ -205,9 +218,7 @@ function handleRef(ref: string, context: CompileContext): string {
 
   // Compile the referenced schema
   const compiledType = compileSchema(referencedSchema, typeName, context);
-  const description = referencedSchema.description
-    ? `/** ${escapeJSDocComment(referencedSchema.description)} */\n`
-    : '';
+  const description = toJSDocComment(referencedSchema.description);
   context.compiledRefs.set(ref, `${description}export type ${typeName} = ${compiledType};`);
 
   // Mark as completed
@@ -258,18 +269,21 @@ function handleArray(schema: JSONSchema7, name: string, context: CompileContext)
   }
 
   const itemType = compileSchema(schema.items, `${name}Item`, context);
-  return `${wrapUnionType(itemType)}[]`;
+  // a union or an intersection binds looser than []
+  return /[|&]/.test(itemType) ? `(${itemType})[]` : `${itemType}[]`;
 }
 
 function handleObject(schema: JSONSchema7, name: string, context: CompileContext): string {
   const props: string[] = [];
+  // TypeScript checks every declared property against the index signature
+  const propTypes: string[] = [];
 
   // Handle known properties
   if (schema.properties) {
     const required = new Set(schema.required || []);
 
     for (const [propName, propSchema] of Object.entries(schema.properties)) {
-      if (!isSchema(propSchema)) continue;
+      if (!isSchema(propSchema) || isLeftOut(propSchema, context)) continue;
 
       const isRequired = required.has(propName);
       // Ensure the generated type name for nested properties is valid
@@ -277,33 +291,63 @@ function handleObject(schema: JSONSchema7, name: string, context: CompileContext
       const propType = compileSchema(propSchema, nestedTypeName, context);
       const safePropName = /^[a-zA-Z_$][a-zA-Z0-9_$]*$/.test(propName) ? propName : JSON.stringify(propName);
       // Add JSDoc comment if description is present
-      const comment = propSchema.description ? `\n/** ${escapeJSDocComment(propSchema.description)} */\n` : '';
+      const jsDocComment = toJSDocComment(propSchema.description);
+      const comment = jsDocComment && `\n${jsDocComment}`;
       props.push(`${comment}${safePropName}${isRequired ? '' : '?'}: ${propType}`);
+      propTypes.push(propType, ...(isRequired ? [] : ['undefined']));
     }
   }
 
-  // Handle additional properties
+  // additional and pattern properties share one string index signature
+  const indexTypes: string[] = [];
   if (schema.additionalProperties === true) {
-    props.push('[key: string]: any');
+    indexTypes.push('any');
   } else if (schema.additionalProperties && isSchema(schema.additionalProperties)) {
     const additionalTypeName = sanitizeTypeName(`${name}-additional`);
-    const additionalType = compileSchema(schema.additionalProperties, additionalTypeName, context);
-    props.push(`[key: string]: ${additionalType}`);
+    indexTypes.push(compileSchema(schema.additionalProperties, additionalTypeName, context));
   }
-
-  // Handle pattern properties
   if (schema.patternProperties) {
-    // For simplicity, treat pattern properties as string index signature
-    const patternTypes = Object.values(schema.patternProperties)
-      .filter(isSchema)
-      .map((s, i) => compileSchema(s, sanitizeTypeName(`${name}-pattern-${i}`), context));
-
-    if (patternTypes.length > 0) {
-      props.push(`[key: string]: ${patternTypes.join(' | ')}`);
-    }
+    indexTypes.push(
+      ...Object.values(schema.patternProperties)
+        .filter(isSchema)
+        .map((s, i) => compileSchema(s, sanitizeTypeName(`${name}-pattern-${i}`), context))
+    );
+  }
+  if (indexTypes.length > 0) {
+    const types = indexTypes.includes('any') ? ['any'] : [...new Set([...indexTypes, ...propTypes])];
+    props.push(`[key: string]: ${types.join(' | ')}`);
   }
 
   return props.length > 0 ? `{ ${props.join('; ')} }` : '{}';
+}
+
+function isLeftOut(property: JSONSchema7, context: CompileContext): boolean {
+  const { leftOutKey } = context;
+  if (!leftOutKey) return false;
+  const target = property.$ref ? context.refs.get(property.$ref) : undefined;
+  return property[leftOutKey] === true || target?.[leftOutKey] === true;
+}
+
+// whether the type of a ref has a property the direction leaves out, at any depth
+function leavesOutProperty(ref: string, context: CompileContext): boolean {
+  if (!context.leftOutKey) return false;
+  let leavesOut = context.leavesOut.get(ref);
+  if (leavesOut === undefined) {
+    const seen = new Set<string>();
+    const visit = (value: unknown): boolean => {
+      if (!value || typeof value !== 'object') return false;
+      const { $ref, properties } = value as JSONSchema7;
+      if (properties && Object.values(properties).some((p) => isSchema(p) && isLeftOut(p, context))) return true;
+      if (typeof $ref === 'string' && !seen.has($ref)) {
+        seen.add($ref);
+        if (visit(context.refs.get($ref))) return true;
+      }
+      return Object.values(value).some(visit);
+    };
+    leavesOut = visit({ $ref: ref });
+    context.leavesOut.set(ref, leavesOut);
+  }
+  return leavesOut;
 }
 
 function refToTypeName(ref: string): string {
@@ -323,8 +367,8 @@ function sanitizeTypeName(name: string): string {
   return /^[\p{Lu}\p{Lt}\p{Lo}\p{Lm}\p{Nl}_]\p{ID_Continue}*$/u.test(name) ? name : toTypeName(name);
 }
 
-// Utility function to escape JSDoc comment terminators in descriptions
-function escapeJSDocComment(description: string | undefined): string {
-  if (!description) return '';
-  return description.replace(/\*\//g, '*\\/');
+// a spec may hold a description that isn't a string, it gets no comment
+function toJSDocComment(description: unknown): string {
+  if (typeof description !== 'string' || !description) return '';
+  return `/** ${description.replace(/\*\//g, '*\\/')} */\n`;
 }

@@ -45,7 +45,7 @@ The `vovk generate` command creates [TypeScript](/typescript), [Rust](/rust), an
 
 See the [config](/config) page for details.
 
-In a Next.js project, a segment whose route file is gone while its schema file remains is left out of the client, with a warning; delete the schema file once the segment is removed.
+In a Next.js project, a segment whose route file is gone while its schema file remains is left out of the client, with a warning; delete the schema file once the segment is removed. A schema folder given with `--schema-path`, such as one of another project, is used as it is, unless it is the `schemaOutDir` folder.
 
 ## Available Flags
 

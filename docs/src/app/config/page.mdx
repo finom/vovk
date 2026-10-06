@@ -163,7 +163,7 @@ Base origin used to generate client URLs. Defaults to `''` (relative URLs). To u
 
 Used to generate `package.json` (for the [TypeScript client](/typescript)), `Cargo.toml` (for the [Rust client](/rust)), or `pyproject.toml` (for the [Python client](/python)). It also influences `README.md` generation (name, version, description, etc.) and updates code samples to use the proper package name.
 
-By default, Python and Rust package names are derived from `package.name` by converting `kebab-case` to `snake_case`. You can override them using the `py_name` and `rs_name` fields, respectively.
+By default, Python and Rust package names are derived from `package.name` the way [`[package_name]`](/templates#py) is: `@acme/web-app` becomes `acme_web_app`. You can override them using the `py_name` and `rs_name` fields, respectively; they name the package, its folder and the imports in the README samples.
 
 #### `readme: { banner?: string, installCommand?: string, description?: string }`
 

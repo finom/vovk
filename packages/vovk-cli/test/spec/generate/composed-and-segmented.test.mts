@@ -180,6 +180,8 @@ await describe.only('Composed & Segmented client', async () => {
     const tsconfig = JSON.parse(await fs.readFile(path.join(projectDir, 'tsconfig.json'), 'utf-8'));
     tsconfig.compilerOptions = tsconfig.compilerOptions || {};
     tsconfig.compilerOptions.moduleResolution = 'nodenext';
+    // Node runs the generated .ts files, so they import each other by their .ts names
+    tsconfig.compilerOptions.allowImportingTsExtensions = true;
     await fs.writeFile(path.join(projectDir, 'tsconfig.json'), JSON.stringify(tsconfig, null, 2));
     await runAtProjectDir(`../dist/index.mjs generate`);
     await assertDirFileList({
@@ -340,6 +342,8 @@ await describe.only('Composed & Segmented client', async () => {
     const tsconfig = JSON.parse(await fs.readFile(path.join(projectDir, 'tsconfig.json'), 'utf-8'));
     tsconfig.compilerOptions = tsconfig.compilerOptions || {};
     tsconfig.compilerOptions.moduleResolution = 'nodenext';
+    // Node runs the generated .ts files, so they import each other by their .ts names
+    tsconfig.compilerOptions.allowImportingTsExtensions = true;
     await fs.writeFile(path.join(projectDir, 'tsconfig.json'), JSON.stringify(tsconfig, null, 2));
     await runAtProjectDir(`../dist/index.mjs generate --segmented-only --segmented-out ./segmented-client`);
 
@@ -374,6 +378,8 @@ await describe.only('Composed & Segmented client', async () => {
     const tsconfigPath = path.join(projectDir, 'tsconfig.json');
     const tsconfig = JSON.parse(await fs.readFile(tsconfigPath, 'utf-8'));
     tsconfig.compilerOptions.moduleResolution = 'nodenext';
+    // Node runs the generated .ts files, so they import each other by their .ts names
+    tsconfig.compilerOptions.allowImportingTsExtensions = true;
     await fs.writeFile(tsconfigPath, JSON.stringify(tsconfig, null, 2));
   };
 

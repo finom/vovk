@@ -87,6 +87,37 @@ await describe('compileJSONSchemaToTypeScriptType', async () => {
     assert.strictEqual(code, 'export type T = Base;');
   });
 
+  await it('Wraps the intersection of allOf members in an array item type', () => {
+    const inline = compile(
+      {
+        type: 'array',
+        items: {
+          allOf: [
+            { type: 'object', properties: { id: { type: 'string' } }, required: ['id'] },
+            { type: 'object', properties: { name: { type: 'string' } }, required: ['name'] },
+          ],
+        },
+      },
+      'T'
+    );
+    assert.strictEqual(inline, 'export type T = ({ id: string } & { name: string })[];');
+
+    const refs = compile(
+      {
+        type: 'array',
+        items: { allOf: [{ $ref: '#/components/schemas/Base' }, { $ref: '#/components/schemas/2FAConfig' }] },
+      },
+      'T'
+    );
+    assert.strictEqual(refs, 'export type T = (Base & _2FaConfig)[];');
+  });
+
+  // an OpenAPI 3.1 component or response may be a boolean schema
+  await it('Compiles a boolean schema', () => {
+    assert.strictEqual(compile(true as unknown as JSONSchema7, 'T'), 'export type T = unknown;');
+    assert.strictEqual(compile(false as unknown as JSONSchema7, 'T'), 'export type T = never;');
+  });
+
   await it('Reads OpenAPI 3.0 nullable', () => {
     const code = compile(
       {
@@ -104,6 +135,16 @@ await describe('compileJSONSchemaToTypeScriptType', async () => {
       code,
       'export type T = { name?: string | null; base?: Base | null; tags?: (string | null)[]; plain?: string };'
     );
+  });
+
+  await it('Leaves out a description that is not a string', () => {
+    const schema = {
+      type: 'object',
+      description: 1,
+      properties: { a: { type: 'string', description: 123 }, d: { $ref: '#/$defs/D' } },
+      $defs: { D: { type: 'string', description: 5 } },
+    };
+    assert.strictEqual(compile(schema as unknown as JSONSchema7, 'T'), 'export type T = { a?: string; d?: D };');
   });
 
   await it('Gives a name that starts with a digit a leading underscore, in declarations and refs', () => {

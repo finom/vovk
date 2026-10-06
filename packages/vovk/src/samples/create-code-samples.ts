@@ -1,6 +1,7 @@
 import type { VovkSamplesConfig } from '../types/config.js';
 import type { VovkControllerSchema, VovkHandlerSchema } from '../types/core.js';
 import type { VovkJSONSchemaBase } from '../types/json-schema.js';
+import { toUnderscoredPackageName } from '../utils/to-underscored-package-name.js';
 import { getPythonClassName, getPythonMethodName, getRustFunctionName, getRustModuleName } from './client-names.js';
 import { objectToCode } from './object-to-code.js';
 import {
@@ -11,15 +12,6 @@ import {
   toCodeString,
   toPythonString,
 } from './schema-to-code.js';
-
-// "myHTTPServer-v2" is "my_http_server_v2"
-const toSnakeCase = (str: string) =>
-  str
-    .replace(/-/g, '_')
-    .replace(/([a-z0-9])([A-Z])/g, '$1_$2')
-    .replace(/([A-Z])([A-Z])(?=[a-z])/g, '$1_$2')
-    .toLowerCase()
-    .replace(/^_/, '');
 
 const getIndentSpaces = (level: number): string => ' '.repeat(level);
 
@@ -424,10 +416,9 @@ export function createCodeSamples({
   const hasArg = !!queryValidation || !!bodyValidation || !!paramsValidation || !!config?.apiRoot || !!config?.headers;
   const rpcName = controllerSchema.rpcModuleName;
   const packageName = packageJson?.name || '@/client';
-  // "@/client" isn't a valid Python or Rust import
-  const packageNameSnake = toSnakeCase(packageJson?.name || 'client');
-  const pyPackageName = packageJson?.py_name ?? packageNameSnake;
-  const rsPackageName = packageJson?.rs_name ?? packageNameSnake;
+// the names the generated Python and Rust packages go by
+  const pyPackageName = packageJson?.py_name ?? toUnderscoredPackageName(packageJson?.name);
+  const rsPackageName = packageJson?.rs_name ?? toUnderscoredPackageName(packageJson?.name);
   const handlers = controllerSchema.handlers ?? {};
 
   const commonParams: CodeGenerationParams = {

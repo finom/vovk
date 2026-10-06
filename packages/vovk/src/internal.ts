@@ -21,3 +21,4 @@ export { HttpMethod, VovkSchemaIdEnum } from './types/enums.js';
 export type { VovkOperationObject } from './types/operation.js';
 export { deepExtend } from './utils/deep-extend.js';
 export { toIdentifier, toTypeName, toTypeNames } from './utils/to-identifier.js';
+export { toUnderscoredPackageName } from './utils/to-underscored-package-name.js';

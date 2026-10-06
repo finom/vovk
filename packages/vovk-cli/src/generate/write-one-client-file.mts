@@ -1,5 +1,7 @@
 import fs from 'node:fs/promises';
+import { createRequire, isBuiltin } from 'node:module';
 import path from 'node:path';
+import { pathToFileURL } from 'node:url';
 import TOML from '@iarna/toml';
 import ejs from 'ejs';
 import _ from 'lodash';
@@ -9,6 +11,8 @@ import type { VovkSchema } from 'vovk';
 import {
   createCodeSamples,
   reattachMixinDefs,
+  toUnderscoredPackageName,
+  type VovkPackageJson,
   type VovkReadmeConfig,
   type VovkSamplesConfig,
   VovkSchemaIdEnum,
@@ -20,38 +24,74 @@ import type { ProjectInfo } from '../get-project-info/index.mjs';
 import { chalkHighlightThing } from '../utils/chalk-highlight-thing.mjs';
 import { compileJSONSchemaToTypeScriptType } from '../utils/compile-json-schema-to-typescript-type.mjs';
 import { GENERATED_BANNER_PREFIX, hasGeneratedBanner } from '../utils/generated-banner.mjs';
+import { getJSONImportAttributes } from '../utils/get-ts-import-options.mjs';
 import type { Segment } from '../utils/locate-segments.mjs';
 import { prettify, warnIfPrettierMissing } from '../utils/prettify.mjs';
 import { toImportPath, toPosixPath } from '../utils/to-import-path.mjs';
 import type { ClientTemplateFile } from './get-client-template-files.mjs';
 import { getTemplateClientImports } from './get-template-client-imports.mjs';
 
-// Python and Rust keywords, neither language takes one as a module or package name
-const KEYWORDS = new Set(
-  `False None True and as assert async await break class continue def del elif else except finally for from global if
-  import in is lambda nonlocal not or pass raise return try while with yield abstract become box const crate do dyn
-  enum extern false final fn gen impl let loop macro match mod move mut override priv pub ref self Self static struct
-  super trait true type typeof unsafe unsized use virtual where`.split(/\s+/)
-);
-
-// a valid Python import name and Cargo package name: "@acme/web-app" becomes "acme_web_app"
-export function toUnderscoredPackageName(name: string | undefined): string {
-  const underscored = name?.replace(/^@/, '').replace(/[^A-Za-z0-9_]/g, '_') || 'my_package_name';
-  if (/^\d/.test(underscored)) return `pkg_${underscored}`;
-  return KEYWORDS.has(underscored) ? `${underscored}_pkg` : underscored;
+// a module a template names in its front matter comes from the project, a global or npx vovk-cli can't reach it;
+// vovk itself stays the CLI's own, which the built-in templates expect
+async function importTemplateModule(specifier: string, cwd: string): Promise<unknown> {
+  let resolved: string | undefined;
+  if (!isBuiltin(specifier) && !/^vovk(\/|$)/.test(specifier)) {
+    try {
+      resolved = createRequire(path.join(cwd, 'package.json')).resolve(specifier);
+    } catch {
+      // not in the project
+    }
+  }
+  return import(resolved ? pathToFileURL(resolved).href : specifier);
 }
 
-export function normalizeOutTemplatePath(out: string, packageJson: PackageJson): string {
-  return out.replace('[package_name]', toUnderscoredPackageName(packageJson.name));
+// a template's own client options extend the root ones
+export function getOutputConfigs(
+  config: VovkStrictConfig,
+  templateDef: VovkStrictConfig['clientTemplateDefs'][string],
+  configKey: 'composedClient' | 'segmentedClient'
+) {
+  return [
+    config[configKey].outputConfig ?? {},
+    templateDef[configKey]?.outputConfig ?? {},
+    templateDef.outputConfig ?? {},
+  ];
 }
 
-// a segmented client puts a package into each segment folder, so each one needs a name of its own
-export function withSegmentPackageName<T extends PackageJson>(packageJson: T, segmentName: string): T {
-  if (!packageJson.name) return packageJson;
-  return { ...packageJson, name: `${packageJson.name}-${(segmentName || ROOT_SEGMENT_FILE_NAME).replace(/\//g, '-')}` };
+// the templates warned about a client without an origin, once per run, as vovk dev generates again and again
+const templatesWithoutOrigin = new Set<string>();
+
+// a Python or Rust package goes by py_name or rs_name when the config sets it
+const getUnderscoredPackageName = (packageJson: VovkPackageJson, packageNameKey?: 'py_name' | 'rs_name') =>
+  (packageNameKey && packageJson[packageNameKey]) || toUnderscoredPackageName(packageJson.name);
+
+export function normalizeOutTemplatePath(
+  out: string,
+  packageJson: VovkPackageJson,
+  packageNameKey?: 'py_name' | 'rs_name'
+): string {
+  return out.replace('[package_name]', getUnderscoredPackageName(packageJson, packageNameKey));
+}
+
+// a segmented client puts a package into each segment folder, so each one needs a name of its own;
+// a name set in the segment's own config is used as is
+export function withSegmentPackageName<T extends VovkPackageJson>(
+  packageJson: T,
+  segmentName: string,
+  segmentPackageJson: VovkPackageJson = {}
+): T {
+  const suffix = (segmentName || ROOT_SEGMENT_FILE_NAME).replace(/\//g, '-');
+  const result = { ...packageJson };
+  if (packageJson.name && !segmentPackageJson.name) result.name = `${packageJson.name}-${suffix}`;
+  for (const key of ['py_name', 'rs_name'] as const) {
+    const name = packageJson[key];
+    if (name && !segmentPackageJson[key]) result[key] = toUnderscoredPackageName(`${name}-${suffix}`);
+  }
+  return result;
 }
 
 export interface ClientFile {
+  templateName: string;
   outPath: string;
   content: string;
   // null when there is no file yet
@@ -80,6 +120,8 @@ export async function renderOneClientFile({
   templateDef,
   locatedSegments,
   isNodeNextResolution,
+  tsExtension,
+  tsModule,
   hasMixins,
   isVovkProject,
   vovkCliPackage,
@@ -104,7 +146,7 @@ export async function renderOneClientFile({
     content: string;
   };
   openAPIObject: OpenAPIObject;
-  package: PackageJson;
+  package: VovkPackageJson;
   readme: VovkReadmeConfig;
   samples: VovkSamplesConfig;
   reExports: VovkStrictConfig['outputConfig']['reExports'];
@@ -113,6 +155,8 @@ export async function renderOneClientFile({
   templateDef: VovkStrictConfig['clientTemplateDefs'][string];
   locatedSegments: Segment[];
   isNodeNextResolution: boolean;
+  tsExtension: string;
+  tsModule: string | undefined;
   hasMixins: boolean;
   isVovkProject: boolean;
   vovkCliPackage: PackageJson;
@@ -124,13 +168,13 @@ export async function renderOneClientFile({
 }) {
   const { config, log } = projectInfo;
 
-  const { templateFilePath, relativeDir } = clientTemplateFile;
+  const { templateName, templateFilePath, relativeDir, packageNameKey } = clientTemplateFile;
   const locatedSegmentsByName = _.keyBy(locatedSegments, 'segmentName');
   // a segmented client renders a whole client into each segment folder, required templates included
   const segmentDir = typeof segmentName === 'string' ? segmentName || ROOT_SEGMENT_FILE_NAME : '';
   const outDir = path.resolve(
     cwd,
-    normalizeOutTemplatePath(path.join(outCwdRelativeDir, segmentDir, relativeDir), packageJson)
+    normalizeOutTemplatePath(path.join(outCwdRelativeDir, segmentDir, relativeDir), packageJson, packageNameKey)
   );
   const outPath = path.join(outDir, path.basename(templateFilePath).replace('.ejs', ''));
 
@@ -165,7 +209,7 @@ export async function renderOneClientFile({
     hasMixins,
     isVovkProject,
     package: packageJson,
-    underscoredPackageName: toUnderscoredPackageName(packageJson.name),
+    underscoredPackageName: getUnderscoredPackageName(packageJson, packageNameKey),
     readme,
     samples,
     reExports,
@@ -183,10 +227,11 @@ export async function renderOneClientFile({
     TOML,
     getFirstLineBanner,
     nodeNextResolutionExt: {
-      ts: isNodeNextResolution ? '.ts' : '',
+      ts: isNodeNextResolution ? tsExtension : '',
       js: isNodeNextResolution ? '.js' : '',
       mjs: isNodeNextResolution ? '.mjs' : '',
     },
+    jsonImportAttributes: await getJSONImportAttributes(tsModule, outPath),
     schemaOutDir: toPosixPath(path.relative(outDir, path.resolve(cwd, cliSchemaPath ?? config.schemaOutDir))),
     // a segmented client sits one folder deeper, so its relative imports are resolved from there
     commonImports: (({ composedClient, segmentedClient }) =>
@@ -198,7 +243,7 @@ export async function renderOneClientFile({
         outCwdRelativeDir,
         relativeDir,
         segmentName,
-        outputConfigs: [projectConfig[configKey].outputConfig ?? {}, templateDef.outputConfig ?? {}],
+        outputConfigs: getOutputConfigs(projectConfig, templateDef, configKey),
       })
     ),
     segmentImports: Object.fromEntries(
@@ -210,7 +255,7 @@ export async function renderOneClientFile({
           isBundle,
           outCwdRelativeDir,
           relativeDir,
-          outputConfigs: [projectConfig[configKey].outputConfig ?? {}, templateDef.outputConfig ?? {}],
+          outputConfigs: getOutputConfigs(projectConfig, templateDef, configKey),
         });
         const imports =
           configKey === 'composedClient' ? clientImports.composedClient : clientImports.segmentedClient[sName];
@@ -247,9 +292,28 @@ export async function renderOneClientFile({
     ),
   };
 
+  // a Python or Rust client sends every call to the root it's generated with, a relative one can't be sent;
+  // a README imports the same package for its names but sends nothing
+  const isPythonOrRust =
+    /\.(py|rs)$/.test(outPath) && data.imports?.some((imp) => imp === 'vovk-python' || imp === 'vovk-rust');
+  if (isPythonOrRust && !templatesWithoutOrigin.has(templateName)) {
+    const hasSegmentWithoutOrigin = Object.values(fullSchema.segments).some(
+      ({ segmentName: sName, segmentType, controllers }) =>
+        segmentType !== 'mixin' &&
+        !_.isEmpty(controllers) &&
+        !/^[a-z][a-z\d+.-]*:\/\//i.test(t.segmentMeta[sName]?.forceApiRoot ?? t.apiRoot ?? '')
+    );
+    if (hasSegmentWithoutOrigin) {
+      templatesWithoutOrigin.add(templateName);
+      log.warn(
+        `The "${templateName}" template writes a client without an origin, so its calls can't be sent. Set outputConfig.origin, or pass api_root to every call.`
+      );
+    }
+  }
+
   if (Array.isArray(data.imports)) {
     for (const imp of data.imports) {
-      t.imports[imp] = await import(imp);
+      t.imports[imp] = await importTemplateModule(imp, cwd);
     }
   }
 
@@ -280,7 +344,13 @@ export async function renderOneClientFile({
   // a placeholder never replaces a generated file
   const needsWriting = isEnsuringClient ? !existingContent : existingContent !== rendered;
 
-  return { outPath, content: rendered, existingContent, needsWriting } satisfies ClientFile;
+  return {
+    templateName: clientTemplateFile.templateName,
+    outPath,
+    content: rendered,
+    existingContent,
+    needsWriting,
+  } satisfies ClientFile;
 }
 
 // the files that would replace one vovk-cli can't tell it generated: it stamps every file that can hold a comment,
@@ -308,6 +378,18 @@ export async function writeClientFiles(
   clientFiles: ClientFile[],
   { cwd, log, force = false }: { cwd: string; log: ProjectInfo['log']; force?: boolean }
 ) {
+  // two templates that write one file would overwrite each other
+  const templateNames = new Map<string, string>();
+  for (const { outPath, templateName } of clientFiles) {
+    const otherTemplateName = templateNames.get(outPath) ?? templateName;
+    if (otherTemplateName !== templateName) {
+      throw new Error(
+        `Templates "${otherTemplateName}" and "${templateName}" both write ${path.relative(cwd, outPath)}. Give them separate output directories.`
+      );
+    }
+    templateNames.set(outPath, templateName);
+  }
+
   const foreignFiles = force ? [] : findForeignClientFiles(clientFiles);
 
   if (foreignFiles.length) {

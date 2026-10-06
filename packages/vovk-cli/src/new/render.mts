@@ -21,6 +21,7 @@ export async function render(
     empty,
     templateFileName,
     isNodeNextResolution,
+    tsExtension = '.ts',
     srcRoot,
   }: {
     cwd: string;
@@ -31,6 +32,8 @@ export async function render(
     empty?: boolean;
     templateFileName: string;
     isNodeNextResolution: boolean;
+    // the extension a relative import of a .ts file takes under node16 or nodenext resolution
+    tsExtension?: string;
     srcRoot: string | null;
   }
 ): Promise<VovkModuleRenderResult> {
@@ -73,7 +76,7 @@ export async function render(
     withService,
     segmentName,
     nodeNextResolutionExt: {
-      ts: isNodeNextResolution ? '.ts' : '',
+      ts: isNodeNextResolution ? tsExtension : '',
       js: isNodeNextResolution ? '.js' : '',
       cjs: isNodeNextResolution ? '.cjs' : '',
       mjs: isNodeNextResolution ? '.mjs' : '',

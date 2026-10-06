@@ -1,11 +1,11 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import chalk from 'chalk';
-import { getTsconfig } from 'get-tsconfig';
 import type { ProjectInfo } from '../get-project-info/index.mjs';
 import { chalkHighlightThing } from '../utils/chalk-highlight-thing.mjs';
 import { formatLoggedSegmentName } from '../utils/format-logged-segment-name.mjs';
 import { getFileSystemEntryType } from '../utils/get-file-system-entry-type.mjs';
+import { getTsImportOptions } from '../utils/get-ts-import-options.mjs';
 import { locateSegments } from '../utils/locate-segments.mjs';
 import { prettify } from '../utils/prettify.mjs';
 import { resolveAbsoluteModulePath } from '../utils/resolve-absolute-module-path.mjs';
@@ -50,9 +50,7 @@ export async function newModule({
 }) {
   const { config, log, cwd, apiDirAbsolutePath, srcRoot } = projectInfo;
   const segments = await locateSegments({ dir: apiDirAbsolutePath, config, log });
-  const isNodeNextResolution = ['node16', 'nodenext'].includes(
-    (await getTsconfig(cwd)?.config?.compilerOptions?.moduleResolution?.toLowerCase()) ?? ''
-  );
+  const { isNodeNextResolution, tsExtension } = getTsImportOptions(cwd);
   let templates = config.moduleTemplates as Required<typeof config.moduleTemplates>;
   const [segmentName, moduleName] = splitByLast(moduleNameWithOptionalSegment);
   // replace c by controller, s by service, everything else keeps the same
@@ -120,6 +118,7 @@ export async function newModule({
       empty,
       templateFileName: templateAbsolutePath,
       isNodeNextResolution,
+      tsExtension,
     });
     const outDir = outDirFlag ?? renderedOutDir;
     if (!outDir) {
@@ -189,7 +188,7 @@ export async function newModule({
         path.relative(path.dirname(routeFilePath), absoluteModulePath).replace(/\.(ts|tsx)$/, '')
       );
 
-      importPath += isNodeNextResolution ? '.ts' : '';
+      importPath += isNodeNextResolution ? tsExtension : '';
 
       const newSegmentCode = await prettify(
         addClassToSegmentCode(segmentSourceCode, {

@@ -1,4 +1,5 @@
 import assert from 'node:assert';
+import fs from 'node:fs/promises';
 import path from 'node:path';
 import { describe, it } from 'node:test';
 import { getClientTemplateFiles } from '../../../dist/generate/get-client-template-files.mjs';
@@ -47,5 +48,26 @@ await describe('getClientTemplateFiles', async () => {
       templateFiles.map(({ outCwdRelativeDir, relativeDir }) => path.join(outCwdRelativeDir, relativeDir)).sort(),
       [path.join('out', 'b', './'), path.join('out', 'c', './')]
     );
+  });
+
+  await it('Takes every file of a template folder, dotfiles and files without an extension included', async () => {
+    const templateDir = path.join(process.cwd(), 'tmp_template_files');
+    const files = ['.gitignore', 'LICENSE', 'index.ts.ejs', path.join('bin', 'run')];
+    await fs.rm(templateDir, { recursive: true, force: true });
+    for (const file of files) {
+      await fs.mkdir(path.dirname(path.join(templateDir, file)), { recursive: true });
+      await fs.writeFile(path.join(templateDir, file), '');
+    }
+
+    try {
+      const { templateFiles } = await getTemplateFiles({ custom: { templatePath: templateDir } }, ['custom']);
+
+      assert.deepStrictEqual(
+        templateFiles.map(({ templateFilePath }) => path.relative(templateDir, templateFilePath)).sort(),
+        files.sort()
+      );
+    } finally {
+      await fs.rm(templateDir, { recursive: true, force: true });
+    }
   });
 });

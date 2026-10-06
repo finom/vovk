@@ -5,6 +5,7 @@ import { describe, it } from 'node:test';
 import { Agent, setGlobalDispatcher } from 'undici';
 import type { VovkSegmentSchema } from 'vovk/internal';
 import getCLIAssertions from '../../lib/get-cli-assertions.mts';
+import { getFreePort } from '../../lib/minimal-project.mts';
 
 let dev: Promise<string> & {
   kill: () => void;
@@ -33,10 +34,10 @@ await describe('CLI dev', async () => {
       'npx concurrently "npx next dev --experimental-https" "../dist/index.mjs dev --https" --kill-others',
   };
 
-  const PORT = 3420;
-
   for (const [name, devCommand] of Object.entries(devCommands)) {
     await it(name, async () => {
+      // a port of its own, a next dev left from the previous run can't hold it
+      const PORT = await getFreePort();
       await createVovkApp({
         vovkInitFlags: '--yes --validation-library=none',
       });
