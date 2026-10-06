@@ -1925,9 +1925,14 @@ describe('Runtime sweep', () => {
       const handlers = initSegment({ segmentName: 'realm-upload', controllers: { UploadController } });
       const form = new FormData();
       form.append('file', new Blob(['hello']), 'hello.txt');
-      // the edge runtime of Next.js 15.0 hands out form files that are Blobs but not instances of its global File
+      // the edge runtime of Next.js 15.0 hands out form files that are Blobs but not instances of its global File;
+      // newer undici builds parsed files with the global File, so this one builds real files and recognizes none
       const { File: NativeFile } = globalThis;
-      globalThis.File = class File extends Blob {} as unknown as typeof NativeFile;
+      function ForeignFile(...args: ConstructorParameters<typeof NativeFile>) {
+        return new NativeFile(...args);
+      }
+      Object.defineProperty(ForeignFile, Symbol.hasInstance, { value: () => false });
+      globalThis.File = ForeignFile as unknown as typeof NativeFile;
 
       try {
         const response = await call(handlers, 'POST', 'upload', { body: form });
