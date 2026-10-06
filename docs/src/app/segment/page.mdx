@@ -5,7 +5,7 @@ import Image from 'next/image';
 
 ## Overview
 
-Vovk.ts introduces an additional hierarchy level in backend architecture called **segments**, where controllers are initialized, implemented using [Next.js Optional Catch-All Segments](https://nextjs.org/docs/pages/building-your-application/routing/dynamic-routes#optional-catch-all-segments). Segments allow you to split your backend into smaller, focused serverless functions with different configurations (exported Next.js constants, such as `runtime` or `maxDuration`), improving maintainability and performance.
+A **segment** is the part of the back end where controllers are initialized. Segments are built on [Next.js Optional Catch-All Segments](https://nextjs.org/docs/pages/building-your-application/routing/dynamic-routes#optional-catch-all-segments). They split the back end into smaller serverless functions, each with its own configuration (the Next.js constants it exports, such as `runtime` or `maxDuration`).
 
 
 <Image
@@ -17,25 +17,25 @@ Vovk.ts introduces an additional hierarchy level in backend architecture called 
 />
 
 
-Each segment owns a specific path, such as `/api/foo` or `/api/bar` as focused “mini backends,” similar to how frontend code is split into pages in Next.js. Segments are initialized by calling `initSegment` in the **route.ts** file located in **[[...slug]]** folders, that returns Next.js route handlers (`GET`, `POST`, etc.) for that segment. Vovk.ts uses `vovk` as the slug name, but any valid name works.
+Each segment owns a path, such as `/api/foo` or `/api/bar`, and is a small back end of its own. Segments split the back end as pages split the front end in Next.js. To initialize a segment, call `initSegment` in the **route.ts** file of a **[[...slug]]** folder. It returns the Next.js route handlers (`GET`, `POST` and so on) of the segment. Vovk.ts names the slug `vovk`, but any valid name works.
 
-When `NODE_ENV` is set to `"development"` (by using `next dev`), each segment exposes a `_schema_` endpoint that serves the segment schema. The [dev CLI](/dev) calls this endpoint to retrieve the schema and build JSON files in **.vovk-schema/**. This avoids importing Node.js modules in Next.js code, allows `export const runtime = 'edge'` in **route.ts**, but also simplifies schema retrieval tooling.
+When `NODE_ENV` is `"development"` (as with `next dev`), each segment serves its schema at a `_schema_` endpoint. The [dev CLI](/dev) reads it and writes the JSON files in **.vovk-schema/**. This way, Next.js code imports no Node.js modules, **route.ts** can use `export const runtime = 'edge'`, and the schema tooling stays simple.
 
-Optional Catch-All Segments are used insted of [Catch-All Segments](https://nextjs.org/docs/pages/building-your-application/routing/dynamic-routes#catch-all-segments) in order to be able to easily implement a root endpoint for that segment.
+Vovk.ts uses Optional Catch-All Segments instead of [Catch-All Segments](https://nextjs.org/docs/pages/building-your-application/routing/dynamic-routes#catch-all-segments), so a segment can have a root endpoint.
 
 ## Creating Segments
 
-Initialize a segment by calling `initSegment` in **route.ts** and export the returned route handlers: `GET`, `POST`, `PATCH`, `PUT`, `HEAD`, `OPTIONS` and `DELETE`. A method the file doesn't export never reaches Vovk.ts: Next.js answers `PATCH` with `405`, and a CORS preflight (`OPTIONS`) without CORS headers. The function accepts:
+Call `initSegment` in **route.ts** and export the route handlers it returns: `GET`, `POST`, `PATCH`, `PUT`, `HEAD`, `OPTIONS` and `DELETE`. A method the file doesn't export never reaches Vovk.ts: Next.js answers `PATCH` with `405`, and a CORS preflight (`OPTIONS`) without CORS headers. `initSegment` takes:
 
-- `controllers` — an object with controllers used by the segment. Object keys define generated RPC module names (use a random name if `emitSchema` is `false`); values are the controllers.
-- `segmentName` — the segment name. Defaults to an empty string for the root segment.
-- `emitSchema` — whether to emit the schema for the segment. Defaults to `true`.
+- `controllers` — the controllers of the segment. The object keys are the names of the generated RPC modules (any name works if `emitSchema` is `false`), and the values are the controllers.
+- `segmentName` — the segment name. Defaults to an empty string, the root segment.
+- `emitSchema` — whether to emit the segment schema. Defaults to `true`.
 - `exposeValidation` — whether to expose validation data. Defaults to `true`.
-- `onError` — a callback invoked on errors with:
-  - `error: HttpError` — the error instance.
-  - `request: NextRequest` — the incoming request (headers, URL, etc.).
+- `onError` — a function called on errors with:
+  - `error: Error` — the error.
+  - `request: NextRequest` — the incoming request (headers, URL and so on).
 
-The segment file (**route.ts**) should also export `type Controllers = typeof controllers{:ts}` to enable type inference in the [RPC client](/typescript).
+**route.ts** also exports `type Controllers = typeof controllers{:ts}`, which the [RPC client](/typescript) infers its types from.
 
 ### The Root Segment
 
@@ -43,9 +43,9 @@ The segment file (**route.ts**) should also export `type Controllers = typeof co
 npm exec -- vovk new segment
 ```
 
-See [`vovk new` documentation](/new)
+See [`vovk new` documentation](/new).
 
-For simple single-page apps, a single root segment is sufficient. In this setup, the backend is bundled into one serverless function when deployed.
+A simple single-page app needs only the root segment. It deploys the back end as one serverless function.
 
 Example **route.ts** for a single-segment app:
 
@@ -61,7 +61,7 @@ const controllers = {
   PostRPC: PostController,
 };
 
-// export the controllers type to be used in the client code
+// the client code uses this type
 export type Controllers = typeof controllers;
 
 // export the Next.js route handlers
@@ -70,25 +70,25 @@ export const { GET, POST, PATCH, PUT, HEAD, OPTIONS, DELETE } = initSegment({
 });
 ```
 
-The [schema](/schema) for the root segment is stored at **.vovk-schema/root.json**.
+The [schema](/schema) of the root segment is in **.vovk-schema/root.json**.
 
 <Callout type="info" emoji="ℹ️">
-  The name **root** is used only for file naming. In configuration and elsewhere, the root segment name is an empty string.
+  The name **root** is only for the file name. In the config and elsewhere, the root segment's name is an empty string.
 </Callout>
 
 ### Multiple Segments
 
-Create multiple segments to split your backend into separate serverless functions. Reasons include:
+Create more segments to split the back end into separate serverless functions. Reasons include:
 
-- Using different Next.js route handler options or `initSegment` configurations.
+- Using different Next.js route handler options or `initSegment` options.
 - Reducing bundle size by splitting code.
-- Separating app areas (e.g., root, `admin`, `customer`, `customer/public`).
-- Supporting multiple API versions (e.g., `v1`, `v2`).
-- Creating a [static segment](/static-segment) for OpenAPI specs, historical data, etc.
+- Separating areas of the app, such as root, `admin`, `customer` and `customer/public`.
+- Serving several API versions, such as `v1` and `v2`.
+- Creating a [static segment](/static-segment) for OpenAPI specs, historical data and so on.
 
-Each segment’s nested folder determines both the API path and the segment name. For example, **/src/app/api/`segment-name`/[[...slug]]/** is served at **/api/`segment-name`**. Nesting is unlimited.
+The folder of a segment sets both its API path and its name. For example, **/src/app/api/`segment-name`/[[...slug]]/** is served at **/api/`segment-name`**. Segments can nest to any depth.
 
-For non-root segments, provide `segmentName` to `initSegment`:
+For a segment other than the root, pass `segmentName` to `initSegment`:
 
 ```ts showLineNumbers copy filename="src/app/api/foo/[[...vovk]]/route.ts"
 // ...
@@ -99,27 +99,27 @@ export const { GET, POST, PATCH, PUT, HEAD, OPTIONS, DELETE } = initSegment({
 });
 ```
 
-The schema for `foo` is stored at **.vovk-schema/`foo`.json**.
+The schema of `foo` is in **.vovk-schema/`foo`.json**.
 
-For deeper nesting, e.g., **/src/app/api/`foo/bar/baz`/[[...slug]]/**, set `segmentName` to `"foo/bar/baz"`. The schema is stored at **.vovk-schema/`foo/bar/baz`.json**.
+For a deeper folder, such as **/src/app/api/`foo/bar/baz`/[[...slug]]/**, set `segmentName` to `"foo/bar/baz"`. Its schema is in **.vovk-schema/`foo/bar/baz`.json**.
 
 ## Segment Priority
 
-With multiple segments, the most specific (deepest) one takes priority. For example:
+With several segments, the most specific (deepest) one wins. For example:
 
 - **/src/app/api/[[...slug]]/** — the root segment
-- **/src/app/api/foo/[[...slug]]/** — `foo` segment
-- **/src/app/api/foo/bar/[[...slug]]/** — `foo/bar` segment
+- **/src/app/api/foo/[[...slug]]/** — the `foo` segment
+- **/src/app/api/foo/bar/[[...slug]]/** — the `foo/bar` segment
 
-A request to **/api/foo/bar** is handled by the `foo/bar` segment. If it doesn’t match, but the `foo` segment does, `foo` handles it. Otherwise, the root segment handles it.
+The `foo/bar` segment handles a request to **/api/foo/bar**. A request it doesn't match goes to `foo` if `foo` matches it, and to the root segment otherwise.
 
 <Callout type="info" emoji="ℹ️">
-  You can change the API folder name from `api` to anything else via the `rootEntry` [config](/config) option, including setting it to an empty to serve the API from the app root.
+  The `rootEntry` [config](/config) option changes the API folder name from `api` to any other name. An empty string serves the API from the app root.
 </Callout>
 
 ## RPC Client
 
-Whether the API is [static](/static-segment) or dynamic, you can call it with the same RPC client, including client-side validation and type inference.
+The same RPC client, with client-side validation and type inference, calls a [static](/static-segment) or a dynamic API.
 
 ```ts showLineNumbers copy
 const resp = await StaticParamsRPC.getStaticParams({
