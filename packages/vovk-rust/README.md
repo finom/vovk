@@ -20,9 +20,9 @@
 
 ---
 
-## vovk-python [![npm version](https://badge.fury.io/js/vovk-python.svg)](https://www.npmjs.com/package/vovk-python)
+## vovk-rust [![npm version](https://badge.fury.io/js/vovk-rust.svg)](https://www.npmjs.com/package/vovk-rust)
 
-Provides template files and necessary utilities to generate [Rust](https://vovk.dev/rust) client.
+Templates and utilities that generate the [Rust](https://vovk.dev/rust) client.
 
 Install:
 

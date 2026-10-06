@@ -2,9 +2,9 @@ import { FileTree } from 'nextra/components';
 
 # Segmented Client Mode
 
-The [Composed Client Mode](/composed) works well for single-page applications, but in larger apps exposing the entire schema through a single client may be undesirable. With a small configuration change, you can instruct Vovk.ts to generate separate RPC clients for each segment. This approach—called the **Segmented Client**—splits the client into smaller per-segment TypeScript modules that can be imported independently, keeping RPC modules and their schemas hidden from unrelated pages. For example, “customer” pages won’t import “admin” RPC modules, keeping admin details out of customer code.
+The [Composed Client Mode](/composed) fits single-page apps. In a larger app, you may not want one client to expose the whole schema. The **Segmented Client** is a separate RPC client for each segment: smaller TypeScript modules that you import one by one, so a page doesn't load the RPC modules and schemas of unrelated segments. For example, “customer” pages don't import the “admin” RPC modules, and admin details stay out of customer code.
 
-By default, the segmented client is generated in the `./src/client` folder (or `./client` if you don’t use a `src` folder) from the [ts](/templates#ts) template. For an app with multiple segments, the generated structure may look like this:
+By default, the segmented client is generated in the `./src/client` folder (or `./client` if you don't use a `src` folder) from the [ts](/templates#ts) template. For an app with several segments, it can look like this:
 
 <FileTree>
   <FileTree.Folder name="src/client" defaultOpen>
@@ -167,17 +167,17 @@ By default, the segmented client is generated in the `./src/client` folder (or `
   </FileTree.Folder>
 </FileTree>
 
-When you import an RPC module from one of the `.ts` files, the import tree includes only the schema and RPC modules for that segment. For example, importing `UserRPC` from the `customer` segment pulls in `.vovk-schema/customer.json` only; `.vovk-schema/admin.json` and other segment files are not included.
+An RPC module imported from one of these `.ts` files brings only the schema and the RPC modules of its segment. For example, `UserRPC` from the `customer` segment brings `.vovk-schema/customer.json`, but not `.vovk-schema/admin.json` or the files of other segments.
 
 ```ts showLineNumbers copy
-import { UserRPC } from '@/client/customer'; // import tree will contain customer.json
+import { UserRPC } from '@/client/customer'; // the import tree has customer.json only
 
 await UserRPC.getUser({ params: { id: '123' } });
 ```
 
-The segmented client also applicable to [Rust](/rust) and [Python](/python) templates, though use cases are less common. Each segment folder then holds a whole package, `Cargo.toml` or `pyproject.toml` included, named after the project's package and the segment: for a project named `app`, the `foo` segment's package is `app_foo` and the root segment's is `app_root`, and `py_name` or `rs_name` get the same suffix. A `package.name`, `py_name` or `rs_name` set for the segment in [outputConfig.segments](/config#segments) is used as is. Both templates put a `README.md` into each segment folder, so segmented Python and Rust clients need separate output folders, set by `outDir` in a template definition's [segmentedClient](/templates#segmentedClient) options: `vovk generate` refuses two templates that write the same file.
+The [Rust](/rust) and [Python](/python) templates work with the segmented client too, though it's less common. Each segment folder then holds a whole package, with its `Cargo.toml` or `pyproject.toml`. The package is named after the project's package and the segment: for a project named `app`, the `foo` segment's package is `app_foo` and the root segment's is `app_root`; `py_name` and `rs_name` get the same suffix. A `package.name`, `py_name` or `rs_name` set for the segment in [outputConfig.segments](/config#segments) is used as it is. Both templates write a `README.md` to each segment folder, so segmented Python and Rust clients need separate output folders: set `outDir` in the [segmentedClient](/templates#segmentedClient) options of a template definition. `vovk generate` refuses two templates that write the same file.
 
-To enable the segmented client, set `segmentedClient.enabled` to `true` in `vovk.config.mjs`, and optionally disable the composed client by setting `composedClient.enabled` to `false`.
+To turn on the segmented client, set `segmentedClient.enabled` to `true` in `vovk.config.mjs`. To turn off the composed client, set `composedClient.enabled` to `false`.
 
 ```ts showLineNumbers copy filename="vovk.config.mjs"
 /** @type {import('vovk').VovkConfig} */
@@ -192,9 +192,7 @@ const config = {
 export default config;
 ```
 
-In this case, the composed client files are not generated.
-
-The settings are the same as the settings for the [composed client](/composed).
+The options are the same as the options of the [composed client](/composed):
 
 ```ts showLineNumbers copy filename="vovk.config.mjs"
 /** @type {import('vovk').VovkConfig} */

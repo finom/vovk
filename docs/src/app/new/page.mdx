@@ -27,7 +27,7 @@ Options:
   -h, --help                              display help for command
 ```
 
-The `vovk new` command creates [segments](/segment) and modules (such as controllers, services, or custom modules). It uses the `moduleTemplates` option from the [config](/config) and can be extended with your own templates. It combines two workflows in one: `vovk new segment [segment_name]` and <nobr>`vovk new [module] [module_name_singular]`</nobr>.
+`vovk new` creates [segments](/segment) and modules, such as controllers, services or custom modules. It uses the `moduleTemplates` option of the [config](/config), where you can add your own templates. It has two forms: `vovk new segment [segment_name]` and <nobr>`vovk new [module] [module_name_singular]`</nobr>. It formats the files it writes with [Prettier](https://www.npmjs.com/package/prettier) if the project has Prettier installed.
 
 ## vovk new segment
 
@@ -39,7 +39,7 @@ The `vovk new` command creates [segments](/segment) and modules (such as control
 npm exec -- vovk new segment
 ```
 
-If you run `vovk new segment` without an argument, it creates a root segment at **/src/app/api/[[...vovk]]/route.ts** (formatted with [Prettier](https://www.npmjs.com/package/prettier)). The `segmentName` option of `initSegment` is an empty string and can be omitted. The generated file contains:
+Without an argument, `vovk new segment` creates the root segment at **/src/app/api/[[...vovk]]/route.ts**. The `segmentName` option of `initSegment` is an empty string for the root segment, so the file leaves it out:
 
 ```ts showLineNumbers copy
 import { initSegment } from 'vovk';
@@ -54,11 +54,11 @@ export const { GET, POST, PATCH, PUT, HEAD, OPTIONS, DELETE } = initSegment({
 });
 ```
 
-When you run `vovk dev`, the segment emits a schema at **.vovk-schema/root.json**.
+With `vovk dev` running, the segment emits its schema to **.vovk-schema/root.json**.
 
-The segment exposes an API at **/api/...**.
+Its API is at **/api/...**.
 
-Root segments can be used alongside nested segments of any depth.
+The root segment can sit next to nested segments of any depth.
 
 ### Nested Segment
 
@@ -66,7 +66,7 @@ Root segments can be used alongside nested segments of any depth.
 npm exec -- vovk new segment foo
 ```
 
-Running `vovk new segment foo` creates **/src/app/api/foo/[[...vovk]]/route.ts** (formatted with Prettier). The generated file includes:
+`vovk new segment foo` creates **/src/app/api/foo/[[...vovk]]/route.ts** with:
 
 ```ts showLineNumbers copy
 // ...
@@ -77,13 +77,13 @@ export const { GET, POST, PATCH, PUT, HEAD, OPTIONS, DELETE } = initSegment({
 });
 ```
 
-When you run `vovk dev`, the segment emits a schema at **.vovk-schema/foo.json**.
+With `vovk dev` running, the segment emits its schema to **.vovk-schema/foo.json**.
 
-The segment exposes an API at **/api/foo/...**.
+Its API is at **/api/foo/...**.
 
 ---
 
-`vovk new segment foo/bar/baz` creates a nested segment at **/src/app/api/foo/bar/baz/[[...vovk]]/route.ts**, available at **/api/foo/bar/baz/...**. Here, `segmentName` is `"foo/bar/baz"`.
+`vovk new segment foo/bar/baz` creates a nested segment at **/src/app/api/foo/bar/baz/[[...vovk]]/route.ts**, served at **/api/foo/bar/baz/...**. Its `segmentName` is `"foo/bar/baz"`.
 
 ## vovk new [module] [name]
 
@@ -93,23 +93,23 @@ The segment exposes an API at **/api/foo/...**.
 npm exec -- vovk new controller service foo/user
 ```
 
-`vovk new` (with anything other than `segment`) creates new modules in **/src/modules** (formatted with Prettier).
+`vovk new` with anything other than `segment` creates modules in **/src/modules**.
 
-Command structure:
+The parts of the command:
 
 - `npx vovk new` — the command.
-- Components — the module types to create (`controller`, `service`, or a custom module).
-- Module name (singular) with optional segment prefix: `foo/user` creates a module in **/src/modules/foo/user/** and updates the `foo` segment. Omit the segment to target the root:
+- Components — the module types to create: `controller`, `service` or a custom module.
+- The module name, singular, with an optional segment prefix: `foo/user` creates a module in **/src/modules/foo/user/** and updates the `foo` segment. Without a segment, the module goes to the root segment:
 
 ```sh npm2yarn copy
 npm exec -- vovk new controller service user
 ```
 
-When you create a controller with `vovk new`, the script updates the `controllers` list in the segment file and modifies `route.ts` using [AST](https://www.npmjs.com/package/ts-morph).
+For a new controller, `vovk new` adds it to the `controllers` object in the `route.ts` of the segment, editing the file through its [AST](https://www.npmjs.com/package/ts-morph).
 
 If one of the module's files already exists, `vovk new` writes none of them, unless you pass `--overwrite`. The module name has to start with a letter, since the templates turn it into class and method names.
 
-Template paths are defined via `moduleTemplates` in the [config](/config):
+The `moduleTemplates` option of the [config](/config) sets the template paths:
 
 ```js filename="vovk.config.mjs"
 /** @type {import('vovk').VovkConfig} */
@@ -124,31 +124,31 @@ const config = {
 export default config;
 ```
 
-`npx vovk new controller state user` creates **user-controller.ts** and **user-state.ts** in **/src/modules/user** and updates the root segment with the new controller.
+`npx vovk new controller state user` creates **user-controller.ts** and **user-state.ts** in **/src/modules/user** and adds the controller to the root segment.
 
 ### Built-in Module Templates
 
-The built-in templates cover standard CRUD operations for controllers and services, including methods like `get`, `list`, `create`, `update`, and `delete`.
+The built-in controller and service templates have the CRUD methods: list, get one, create, update and delete.
 
-[vovk init](/init) sets up a Vovk.ts project with the corresponding templates defined in the [config](/config). More specifically:
+[vovk init](/init) puts the matching templates in the [config](/config):
 
 - Zod controller template: [vovk-cli/module-templates/zod/controller.ts.ejs](https://github.com/finom/vovk/blob/main/packages/vovk-cli/module-templates/zod/controller.ts.ejs)
 - Arktype controller template: [vovk-cli/module-templates/arktype/controller.ts.ejs](https://github.com/finom/vovk/blob/main/packages/vovk-cli/module-templates/arktype/controller.ts.ejs)
 - Valibot controller template: [vovk-cli/module-templates/valibot/controller.ts.ejs](https://github.com/finom/vovk/tree/main/packages/vovk-cli/module-templates/valibot/controller.ts.ejs)
-- When no library is selected, it uses the validation-agnostic template [vovk-cli/module-templates/type/controller.ts.ejs](https://github.com/finom/vovk/blob/main/packages/vovk-cli/module-templates/type/controller.ts.ejs).
-- Service template is used regardless of the validation library: [vovk-cli/module-templates/type/service.ts.ejs](https://github.com/finom/vovk/blob/main/packages/vovk-cli/module-templates/type/service.ts.ejs).
+- Without a validation library, it uses the validation-agnostic template [vovk-cli/module-templates/type/controller.ts.ejs](https://github.com/finom/vovk/blob/main/packages/vovk-cli/module-templates/type/controller.ts.ejs).
+- The service template is the same for every validation library: [vovk-cli/module-templates/type/service.ts.ejs](https://github.com/finom/vovk/blob/main/packages/vovk-cli/module-templates/type/service.ts.ejs).
 
 The controller and the service these templates write infer types from each other, which needs TypeScript 5.5+.
 
 ### Shortcuts
 
-Controllers and services can be created with shortcuts:
+`c` and `s` are short for `controller` and `service`:
 
 ```sh
 npx vovk n c s user
 ```
 
-Which is equivalent to:
+This is the same as:
 
 ```sh
 npx vovk new controller service user
@@ -156,36 +156,36 @@ npx vovk new controller service user
 
 ### Custom Module Templates
 
-A module template is created with `.ts.ejs` extension. It uses [EJS](https://ejs.co/) syntax to generate code and [gray-matter](https://www.npmjs.com/package/gray-matter) frontmatter to define metadata in YAML format. 
+A module template is a `.ts.ejs` file. It uses [EJS](https://ejs.co/) to generate the code and [gray-matter](https://www.npmjs.com/package/gray-matter) front matter, in YAML, for its metadata.
 
 #### Module Template Metadata
 
-The metadata supports the following fields:
+The metadata fields:
 
-- `outDir: string` — output directory relative to the project root. A ejs variable `t.defaultOutDir` is available, which points to **/src/modules/[segmentName/]moduleName/**.
-- `fileName: string` — output file name. 
-- `sourceName: string` — a controller name (applicable to controllers only); used to update the `controllers` list in the segment file
-- `compiledName: string` — an RPC module name (applicable to controllers only); used to define the name of the compiled module in the generated client.
+- `outDir: string` — the output folder, relative to the project root. The EJS variable `t.defaultOutDir` holds **/src/modules/[segmentName/]moduleName/**.
+- `fileName: string` — the output file name.
+- `sourceName: string` — the controller name (controllers only), added to the `controllers` object of the segment file.
+- `compiledName: string` — the RPC module name (controllers only): the name of the module in the generated client.
 
 #### Module Template Variables
 
-Available variables are passed to the EJS template via the `t` object:
+The EJS template gets these variables in the `t` object:
 
-- `t.defaultOutDir: string` — default output directory for the module.
+- `t.defaultOutDir: string` — the default output folder of the module.
 - `t.config: VovkConfig` — the Vovk.ts config.
-- `t.segmentName: string` — the segment name (empty string for the root segment).
-- `t.withService: boolean` — whether a service module is being created alongside the controller.
-- `t.nodeNextResolutionExt: { ts: string; js: string; mjs: string; cjs: string }` — file extension based on the `moduleResolution` in `tsconfig.json`, or on `module` when `moduleResolution` isn't set. The object will contain extension values corresponding to the keys, such as `.ts`/`.js`/`.mjs`/`.cjs` for `'node16'` and `'nodenext'` and empty strings for other cases. `ts` is `.ts` only with `allowImportingTsExtensions` or `rewriteRelativeImportExtensions`; otherwise it's `.js`, the name TypeScript resolves to the `.ts` file.
-- `t.TheThing`, `t.TheThings` — module name and pluralized module name in PascalCase (e.g., `UserCart`, `UserCarts`).
-- `t.theThing`, `t.theThings` — module name and pluralized module name in camelCase (e.g., `userCart`, `userCarts`).
-- `t['the-thing']`, `t['the-things']` — module name and pluralized module name in kebab-case (e.g., `user-cart`, `user-carts`).
-- `t.THE_THING`, `t.THE_THINGS` — module name and pluralized module name in SCREAMING_SNAKE_CASE (e.g., `USER_CART`, `USER_CARTS`).
-- `t._` - Lodash library instance for utility functions.
-- `t.pluralize` - Pluralize function from the `pluralize` package.
+- `t.segmentName: string` — the segment name (an empty string for the root segment).
+- `t.withService: boolean` — whether a service is created together with the controller.
+- `t.nodeNextResolutionExt: { ts: string; js: string; mjs: string; cjs: string }` — the import file extensions for the `moduleResolution` of `tsconfig.json`, or for `module` when `moduleResolution` isn't set. For `'node16'`, `'node18'`, `'node20'` and `'nodenext'`, the keys hold `.ts`/`.js`/`.mjs`/`.cjs`; in other cases, empty strings. `ts` is `.ts` only with `allowImportingTsExtensions` or `rewriteRelativeImportExtensions`; otherwise it's `.js`, the name TypeScript resolves to the `.ts` file.
+- `t.TheThing`, `t.TheThings` — the module name and its plural in PascalCase, such as `UserCart` and `UserCarts`.
+- `t.theThing`, `t.theThings` — the module name and its plural in camelCase, such as `userCart` and `userCarts`.
+- `t['the-thing']`, `t['the-things']` — the module name and its plural in kebab-case, such as `user-cart` and `user-carts`.
+- `t.THE_THING`, `t.THE_THINGS` — the module name and its plural in SCREAMING_SNAKE_CASE, such as `USER_CART` and `USER_CARTS`.
+- `t._` — the Lodash library.
+- `t.pluralize` — the `pluralize` function of the `pluralize` package.
 
 #### Controller & Service Template Example
 
-Here is an example of a module template for an Arktype-based controller and service. For code clarity, internal variables are defined in `vars` object.
+A module template for an ArkType controller and service. For readability, the template keeps its own variables in a `vars` object.
 
 <Tabs items={['controller.ts.ejs', 'service.ts.ejs']}>
 <Tabs.Tab>
@@ -344,7 +344,7 @@ When you run:
 npm exec -- vovk new controller service userCart
 ```
 
-It creates **user-cart-controller.ts** and **user-cart-service.ts** in **/src/modules/user-cart/** and updates the root segment with the new controller.
+It creates **user-cart-controller.ts** and **user-cart-service.ts** in **/src/modules/user-cart/** and adds the controller to the root segment.
 
 <Tabs items={['user-cart-controller.ts', 'user-cart-service.ts', 'route.ts']}>
 <Tabs.Tab>
