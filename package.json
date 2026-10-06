@@ -10,7 +10,7 @@
   ],
   "type": "module",
   "packageManager": "npm@11.17.0",
-  "description": "RESTful RPC for Next.js - Transforms Next.js into a powerful REST API platform with RPC capabilities.",
+  "description": "Back-end framework for Next.js App Router",
   "scripts": {
     "ncu": "turbo run ncu --dangerously-disable-package-manager-check && npm run --prefix test ncu && npm-check-updates -u && npm i --legacy-peer-deps",
     "test:main": "npm --prefix test run generate && npm --prefix test run build-other-compiled-sources && npm run lint && turbo run tsc --dangerously-disable-package-manager-check && tsc --project ./test && tsc --project ./test/tsconfig.non-strict.json && npm run unit",
