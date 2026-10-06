@@ -1,6 +1,6 @@
 # Basic Authentication and Authorization for Password Protection
 
-The app has a simple authentication with an optional `PASSWORD` in the `.env` file. When the user enters the password, the app creates a session cookie that authorizes the next requests. The session's `userId` is a hash of the password, so changing the `PASSWORD` variable in production ends all sessions.
+The app has simple authentication with an optional `PASSWORD` in the `.env` file. When the user enters the password, the app creates a session cookie that authorizes the next requests. The session's `userId` is a hash of the password, so changing the `PASSWORD` variable in production ends all sessions.
 
 The flow is a simpler version of the one in the official [Next.js authentication documentation](https://nextjs.org/docs/app/guides/authentication). A [login page](https://github.com/finom/vovk/blob/main/examples/realtime-kanban/src/app/login/page.tsx) has a form that calls a [login server action](https://github.com/finom/vovk/blob/main/examples/realtime-kanban/src/app/actions/auth.ts). [src/lib/session.ts](https://github.com/finom/vovk/blob/main/examples/realtime-kanban/src/lib/session.ts) creates the session, and [src/lib/dal.ts](https://github.com/finom/vovk/blob/main/examples/realtime-kanban/src/lib/dal.ts) is the Data Access Layer (DAL).
 

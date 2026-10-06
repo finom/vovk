@@ -1,6 +1,6 @@
 # Vector Search via Embedding
 
-The database can hold too many entries, too large to fit into a prompt, so the AI tools need a more compact form. The app does two things:
+Database entries can be too many and too large to fit into a prompt. The AI tools need a more compact form, so the app does two things:
 
 1. The `@operation.tool({ hidden: true }){:ts}` decorator keeps the “get all” procedures out of the derived AI tools.
 2. Each user and task gets a vector embedding when it is created or updated. An OpenAI embeddings model creates it, and [pgvector](https://github.com/pgvector/pgvector) stores it in the `embedding` column of each model, declared as `Unsupported("vector(1536)")` in the Prisma schema. See the [Database](./database) article.

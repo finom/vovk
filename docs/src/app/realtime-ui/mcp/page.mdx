@@ -67,7 +67,7 @@ export { authorizedHandler as GET, authorizedHandler as POST };
 ```
 *[The code above is fetched from GitHub repository.](https://github.com/finom/vovk/blob/main/examples/realtime-kanban/src/app/api/mcp/route.ts)*
 
-For simple protection, requests are authorized by the `mcp_access_key` query parameter. When the `MCP_ACCESS_KEY` environment variable is set, the parameter must match it.
+For simple protection, the server authorizes requests by the `mcp_access_key` query parameter. When the `MCP_ACCESS_KEY` environment variable is set, the parameter must match it.
 
 The MCP server runs at the `/api/mcp` endpoint. MCP clients connect to `http://localhost:3000/api/mcp?mcp_access_key=your_access_key`. Replace `your_access_key` with your key, and `localhost` with your server address if needed.
 
