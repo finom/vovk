@@ -9,7 +9,6 @@ This package is experimental and its generated output may still shift between re
 ## 0.0.5 - unreleased
 
 - **Breaking:** a procedure that takes JSON or a form, with no field that holds a file, takes its typed body and sends JSON; it took a `reqwest::multipart::Form`, so typed fields reached the server as text ([#PR](https://github.com/finom/vovk/pull/PR))
-- **Breaking:** the codegen helpers `indent`, `generateDocComment`, `getNamedSchemas` and `refNeedsBox` are no longer exported; the templates don't use them ([#PR](https://github.com/finom/vovk/pull/PR))
 - Schema text can no longer break out of doc comments, comments or string literals into code ([#35](https://github.com/finom/vovk/pull/35))
 - `["T", "null"]` maps to `Option<T>`, a bare `$ref` slot aliases its type, handler names avoid keywords ([#35](https://github.com/finom/vovk/pull/35))
 - Path params and query keys are percent-encoded and `..` is refused ([#35](https://github.com/finom/vovk/pull/35))

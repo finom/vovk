@@ -51,7 +51,6 @@ A cleanup major: removals and renames; the only new exports are types.
 - `procedure()` warns for each schema that has no Standard JSON Schema; its JSON Schema is emitted as `{}`, any value ([#PR](https://github.com/finom/vovk/pull/PR))
 - MCP output puts the `annotations` of `mcpOutput` on each content item, where MCP clients read them ([#PR](https://github.com/finom/vovk/pull/PR))
 - The `vovk-cli-npx` bin, which `pnpm dlx vovk` and `yarn dlx vovk` run, starts the project's vovk-cli and falls back to `npx vovk-cli@latest` only without one ([#PR](https://github.com/finom/vovk/pull/PR))
-- The types compile on TypeScript 5.0+; the client `vovk-cli` generates needs 5.3+ ([#PR](https://github.com/finom/vovk/pull/PR))
 
 ### Added
 
