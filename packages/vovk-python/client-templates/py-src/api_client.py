@@ -13,6 +13,12 @@ from requests.models import Response
 from urllib3.exceptions import DecodeError, ProtocolError, ReadTimeoutError, SSLError
 from typing import Dict, Optional, Any, Generator, Iterator, Literal, List, Tuple, TypedDict, Union
 
+class _Blocks(io.BytesIO):
+    # http.client and urllib3 read a file body 8 or 16 KB at a time; 256 KB blocks keep the timeout per block and the
+    # rewind after a redirect, with far fewer sends
+    def read(self, size: Optional[int] = -1) -> bytes:
+        return super().read(max(size, 256 * 1024) if size and size > 0 else size)
+
 class HttpExceptionResponseBody(TypedDict):
     cause: Any
     statusCode: int
@@ -298,7 +304,7 @@ class ApiClient:
         if isinstance(prepared.body, (bytes, bytearray)) and prepared.body:
             # sent in blocks, the connect timeout bounds each block and not the whole upload; as a stream the body
             # also goes out again from its start after a 307 or a 308
-            prepared.prepare_body(io.BytesIO(prepared.body), None)
+            prepared.prepare_body(_Blocks(prepared.body), None)
         # streamed, so a JSON Lines response is read as it comes
         settings = self.session.merge_environment_settings(prepared.url, {}, True, None, None)
         response = self.session.send(prepared, timeout=self.timeout, allow_redirects=True, **settings)
