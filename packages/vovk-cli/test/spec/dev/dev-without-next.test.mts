@@ -866,6 +866,39 @@ await describe('vovk dev in a project without Next.js', async () => {
     }
   });
 
+  await it('Keeps watching the segments folder after it is removed and created again', async () => {
+    const schemas: Record<string, object> = { '': makeSegmentSchema('') };
+    const server = await startSchemaServer(schemas);
+    const routeFile = path.join(projectDir, 'src/app/api/[[...vovk]]/route.ts');
+    await createProject(projectDir, {
+      'package.json': { name: 'app', version: '1.0.0', type: 'module' },
+      'vovk.config.mjs': configFile({ composedClient: { prettifyClient: false } }),
+      'src/app/api/[[...vovk]]/route.ts': '',
+    });
+    const dev = startCLI(['dev'], { cwd: projectDir, env: { PORT: server.port } });
+
+    try {
+      await dev.waitForOutput(/Composed client is generated/);
+      // a git switch to a branch without the folder and back
+      await fs.rm(path.join(projectDir, 'src/app/api'), { recursive: true });
+      await sleep(2000);
+      await fs.mkdir(path.dirname(routeFile), { recursive: true });
+      await fs.writeFile(routeFile, '');
+      await sleep(2000);
+      schemas[''] = segmentWith('', {
+        UserRPC: { className: 'UserController', handlers: ['getUser'] },
+        PostRPC: { className: 'PostController', handlers: ['getPost'] },
+      });
+      await fs.appendFile(routeFile, '// PostRPC\n');
+
+      const isGenerated = await waitUntil(async () => (await readFile('src/client/index.ts')).includes('PostRPC'));
+      assert.ok(isGenerated, dev.getOutput());
+    } finally {
+      await dev.stop();
+      await server.close();
+    }
+  });
+
   await it('Regenerates the client from the current OpenAPI mixin file', async () => {
     const petsSpec = (operationIds: string[]) => ({
       openapi: '3.1.0',

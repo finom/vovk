@@ -21,6 +21,7 @@ import { debounceWithArgs } from '../utils/debounce-with-args.mjs';
 import { formatLoggedSegmentName } from '../utils/format-logged-segment-name.mjs';
 import { locateSegments, type Segment } from '../utils/locate-segments.mjs';
 import { toPosixPath } from '../utils/to-import-path.mjs';
+import { watchFolder } from '../utils/watch-folder.mjs';
 import { debouncedEnsureSchemaFiles, ensureSchemaFiles, getPlaceholderSchema } from './ensure-schema-files.mjs';
 import { logDiffResult } from './log-diff-result.mjs';
 import { writeMetaJson } from './write-meta-json.mjs';
@@ -117,11 +118,10 @@ export class VovkDev {
     const getSegmentName = (filePath: string) =>
       getSegmentNameFromRouteFile(path.relative(apiDirAbsolutePath, filePath));
     log.debug(`Watching segments at ${apiDirAbsolutePath}`);
-    this.#segmentWatcher = chokidar
-      .watch(apiDirAbsolutePath, {
-        persistent: true,
-        ignoreInitial: true,
-      })
+    this.#segmentWatcher = watchFolder(apiDirAbsolutePath, {
+      persistent: true,
+      ignoreInitial: true,
+    })
       .on('add', (filePath: string) => {
         log.debug(`File ${filePath} has been added to segments folder`);
         if (SEGMENT_ROUTE_FILE_REGEX.test(filePath)) {
@@ -206,11 +206,10 @@ export class VovkDev {
     const modulesDirAbsolutePath = path.resolve(cwd, config.modulesDir);
     log.debug(`Watching modules at ${modulesDirAbsolutePath}`);
     const processControllerChange = debounceWithArgs(this.#processControllerChange, 500);
-    this.#modulesWatcher = chokidar
-      .watch(modulesDirAbsolutePath, {
-        persistent: true,
-        ignoreInitial: true,
-      })
+    this.#modulesWatcher = watchFolder(modulesDirAbsolutePath, {
+      persistent: true,
+      ignoreInitial: true,
+    })
       .on('add', (filePath: string) => {
         log.debug(`File ${filePath} has been added to modules folder`);
         void processControllerChange(filePath);

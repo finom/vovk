@@ -5,6 +5,7 @@ import type { ProjectInfo } from '../get-project-info/index.mjs';
 import type { GenerateOptions } from '../types.mjs';
 import { chalkHighlightThing } from '../utils/chalk-highlight-thing.mjs';
 import { locateSegments } from '../utils/locate-segments.mjs';
+import { watchFolder } from '../utils/watch-folder.mjs';
 import { generate } from './generate.mjs';
 import { getProjectFullSchema } from './get-project-full-schema.mjs';
 import { omitRoutelessSegments } from './omit-routeless-segments.mjs';
@@ -121,12 +122,11 @@ export class VovkGenerate {
       }
     };
 
-    chokidar
-      .watch(schemaPath, {
-        persistent: true,
-        ignoreInitial: true,
-        awaitWriteFinish: AWAIT_WRITE_FINISH,
-      })
+    watchFolder(schemaPath, {
+      persistent: true,
+      ignoreInitial: true,
+      awaitWriteFinish: AWAIT_WRITE_FINISH,
+    })
       // "ready" never reaches the "all" listener, and ignoreInitial skips the files already there
       .on('ready', scheduleGeneration)
       .on('all', (event, path) => {
