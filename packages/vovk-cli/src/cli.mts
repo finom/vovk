@@ -29,7 +29,7 @@ program
   .description('Start schema watcher (optional flag --next-dev to start it with Next.js)')
   .argument('[nextArgs...]', 'extra arguments for the implicit next dev command call')
   .option('--next-dev', 'start schema watcher and Next.js with automatic port allocation')
-  .option('--exit', 'kill the processes when schema and client is generated')
+  .option('--exit', 'kill the processes when schema and client are generated')
   .option('--schema-out <path>', 'path to schema output directory (default: .vovk-schema)')
   .option('--https, --dev-https', 'use HTTPS for the dev server (default: false)')
   .option('--log-level <level>', 'set the log level')
@@ -210,7 +210,7 @@ program
   .option('--static', '(new segment only) if the segment is static')
   .option(
     '--template, --templates <templates...>',
-    '(new module only) override config template; accepts an array of strings that correspond the order of the components'
+    '(new module only) override config template; accepts an array of strings that correspond to the order of the components'
   )
   .option(
     '--out, --out-dir <dirname>',
@@ -232,7 +232,7 @@ program
 
 program
   .command('init')
-  .description('Initialize Vovk.ts at existing Next.js project')
+  .description('Initialize Vovk.ts in an existing Next.js project')
   .option('--prefix <prefix>', 'directory to initialize project in')
   .option('-y, --yes', 'skip all prompts and use default values')
   .option('--log-level <level>', 'set log level', 'info')
@@ -251,7 +251,7 @@ program
   )
   .option(
     '--validation-library <library>',
-    'validation library to use ("zod", "valibot" or "arktype"); set to "none" to skip'
+    'validation library to use ("zod", "valibot", "arktype"); set to "none" to skip'
   )
   .option('--channel <channel>', 'channel to use for fetching packages', 'latest')
   .option('--dry-run', 'do not write files to disk')
