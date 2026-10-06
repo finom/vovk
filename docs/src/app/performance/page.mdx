@@ -2,12 +2,12 @@ import { ColdStartChart } from "./cold-start-chart.tsx";
 
 # Next.js API Route Performance Overhead
 
-## TL;DR
+## Summary
 
-- Goal: measure Vovk.ts overhead over native Next.js route handlers (not HTTP stack).
+- Goal: measure Vovk.ts overhead over native Next.js route handlers (not the HTTP stack).
 - Routing: O(1) across 1–10,000 controllers (20,000 endpoints). Median latency ~1.25–1.33 µs even at 10,000 controllers. Throughput ~745k–800k ops/s/core.
-- Cold start: O(n). ~5.7 ms at 1,000 controllers; ~83 ms at 10,000. About 8–10× the cost of no‑op decorators.
-- Notes: Tinybench on Apple M4 Pro. Next.js runtime cost is out of scope. Compiled from real benchmark output with AI assistance and minor edits. The scripts live in the [`perf`](https://github.com/finom/vovk/tree/main/perf) folder of the Vovk.ts repository.
+- Cold start: O(n). ~5.7 ms at 1,000 controllers, ~83 ms at 10,000. About 8–10× the cost of no-op decorators.
+- Notes: Tinybench on an Apple M4 Pro. Next.js runtime cost is not measured. Written from real benchmark output with AI help and small edits. The scripts are in the [`perf`](https://github.com/finom/vovk/tree/main/perf) folder of the Vovk.ts repository.
 
 ## Reproducing the Tests
 
@@ -27,25 +27,23 @@ cd perf
 npm run perf-test
 ```
 
-Perf suite also runs in CI: [GitHub Actions](https://github.com/finom/vovk/actions/workflows/perf.yml). CI runs on
-GitHub-hosted runners, so numbers are slower than local M4 Pro runs—request-overhead medians are typically
-~7.0–8.7× slower (e.g. ~9–11.5 µs vs ~1.3 µs), and cold-start medians ~3.7–4.9× slower (e.g. ~22 µs vs ~5 µs
-for 1 controller). The scaling trend (O(1) request overhead, O(n) cold start) still holds.
+The suite also runs in CI: [GitHub Actions](https://github.com/finom/vovk/actions/workflows/perf.yml). CI uses
+GitHub-hosted runners, which are slower than a local M4 Pro: request-overhead medians are typically
+~7.0–8.7× slower (~9–11.5 µs vs ~1.3 µs), and cold-start medians ~3.7–4.9× slower (~22 µs vs ~5 µs
+for 1 controller). The scaling (O(1) request overhead, O(n) cold start) stays the same.
 
 ## Overview
 
-Vovk.ts sits on top of Next.js API routes and generates handlers via decorators applied to procedures:
+Vovk.ts runs on top of Next.js API routes and builds the handlers from decorated procedures:
 
 ```ts showLineNumbers copy filename="src/app/api/[[...vovk]]/route.ts"
 export const { GET, POST } = initSegment({ controllers });
 ```
 
-We measure framework overhead in two dimensions:
+The tests measure the overhead in two ways:
 
-- Request Overhead: per-request routing/handler overhead.
-- Cold Start Overhead: initialization time for controllers/metadata.
-
-Source: test scripts in the [`perf`](https://github.com/finom/vovk/tree/main/perf) folder.
+- Request overhead: routing and handler time per request.
+- Cold start overhead: time to initialize controllers and metadata.
 
 ## Request Overhead
 
@@ -81,11 +79,11 @@ export default class AController {
 
 ### Methodology (short)
 
-- Autogenerate N controllers (N ∈ \{1, 10, 100, 1,000, 10,000\}), each exposing:
+- Generate N controllers (N ∈ \{1, 10, 100, 1,000, 10,000\}), each with:
   - GET without params.
   - POST with path param "\{id\}" (pattern match).
-- Minimal handler logic; measure full routing + handler path.
-- Tinybench: 100 ms min per test, nanosecond timing; report median latency/throughput.
+- Minimal handlers; the full routing and handler path is measured.
+- Tinybench: at least 100 ms per test, nanosecond timing; median latency and throughput.
 
 ### Results
 
@@ -100,11 +98,11 @@ export default class AController {
 Key takeaways:
 
 - O(1) routing: flat latency from 1 to 10,000 controllers.
-- ≈1.3 µs overhead at typical scales; GET≈POST indicates efficient param extraction.
+- ≈1.3 µs overhead at typical sizes; GET ≈ POST, so reading the path param costs little.
 
 ## Cold Start Overhead
 
-Example cold-start benchmark (N = 1) contrasting Vovk.ts vs. no-op decorators:
+Example cold-start benchmark (N = 1), Vovk.ts against no-op decorators:
 
 ```ts showLineNumbers copy filename="bench/generated_coldStartPerfTest.ts"
 bench.add("Cold start for 1 controllers", async () => {
@@ -146,8 +144,8 @@ bench.add("No-op decorators for 1 classes", async () => {
 
 For N ∈ \{1, 10, 100, 1,000, 10,000\} measure:
 
-- App creation, decorator processing, metadata build, and initSegment().
-- Compare to equivalent classes using no‑op decorators to isolate framework work.
+- App creation, decorator processing, metadata build and `initSegment()`.
+- Compare with equivalent classes using no-op decorators, to isolate the framework's work.
 
 Example no‑op decorators:
 
@@ -174,8 +172,8 @@ function noopClassDecorator() {
 
 Key takeaways:
 
-- O(n) init: linear growth with a near-constant per-controller cost through 10,000 controllers.
-- Absolute times are small for long-lived services; still acceptable for serverless at typical sizes.
+- O(n) init: linear growth, with a near-constant cost per controller up to 10,000 controllers.
+- Absolute times are small for long-running services, and acceptable for serverless at typical sizes.
 
 <ColdStartChart coldStartData={[
   { controllers: 1, vovk: 5.125, noop: 0.5 },
@@ -187,9 +185,9 @@ Key takeaways:
 
 ## Practical guidance
 
-- For high-performance workloads: split the app into multiple [segments](/segment) (e.g., serverless functions built with Next.js route.ts files), each with a manageable number of procedures (up to 1,000).
-- In theory, with careful segment management and adequate hardware, a single Next.js/Vovk.ts app can host up to ~100,000 procedures. Validate this in your environment; practical limits will be memory, bundle size, cold start budgets, and platform quotas.
+- For high-performance workloads, split the app into several [segments](/segment) (serverless functions built from Next.js route.ts files), each with up to 1,000 procedures.
+- In theory, with well-planned segments and enough hardware, one Next.js/Vovk.ts app can host up to ~100,000 procedures. Test this in your environment: the real limits are memory, bundle size, cold start budgets and platform quotas.
 
 ---
 
-Benchmarks: Tinybench on Node.js; hardware Apple M4 Pro. Numbers can vary by runtime, hardware, and build settings. Scripts: https://github.com/finom/vovk/tree/main/perf
+Benchmarks: Tinybench on Node.js, on an Apple M4 Pro. Numbers can vary with the runtime, hardware and build settings. Scripts: https://github.com/finom/vovk/tree/main/perf
