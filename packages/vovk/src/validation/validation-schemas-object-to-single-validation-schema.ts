@@ -22,9 +22,8 @@ function prefixIssues(issues: ReadonlyArray<StandardSchemaV1.Issue>, slot: SlotK
   }));
 }
 
-// combines body/query/params Standard Schemas into a single CombinedSpec; top level object
-// shape is validated here, per slot validation and JSON Schema are delegated to slot schemas.
-// A valid input comes back unchanged: the AI SDK hands it to execute, which validates and transforms it once
+// checks the envelope here and each slot with its own schema; a valid input comes back unchanged, as the AI SDK
+// hands it to execute, which validates and transforms it once
 export function validationSchemasObjectToSingleValidationSchema<TSchemas extends SchemasObject>(
   schemas: TSchemas
 ): CombinedSpec & TSchemas {

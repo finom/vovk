@@ -990,9 +990,33 @@ describe('Client sweep, pure functions', () => {
       deepStrictEqual(diagnostics, []);
     });
 
-    it('Name the types of a controller and its RPC module in declarations', () => {
-      // a bundled client ships declarations, which can name only what the package's entry points export
+    // a bundled client or a library ships declarations, which can name only what the package's entry points export
+    const getDeclarationDiagnostics = (source: string) => {
       const fileName = fileURLToPath(new URL('./declaration-consumer.mts', import.meta.url));
+      const options: ts.CompilerOptions = {
+        strict: true,
+        noEmit: true,
+        declaration: true,
+        skipLibCheck: true,
+        target: ts.ScriptTarget.ES2022,
+        lib: ['lib.es2022.d.ts', 'lib.dom.d.ts', 'lib.dom.iterable.d.ts'],
+        // as a bundler resolves it, so a type is named by an entry point or not at all
+        module: ts.ModuleKind.ESNext,
+        moduleResolution: ts.ModuleResolutionKind.Bundler,
+      };
+      const host = ts.createCompilerHost(options);
+      const { fileExists, readFile, getSourceFile } = host;
+      host.fileExists = (name) => name === fileName || fileExists(name);
+      host.readFile = (name) => (name === fileName ? source : readFile(name));
+      host.getSourceFile = (name, ...rest) =>
+        name === fileName ? ts.createSourceFile(name, source, ts.ScriptTarget.ES2022) : getSourceFile(name, ...rest);
+      const program = ts.createProgram([fileName], options, host);
+      return ts
+        .getPreEmitDiagnostics(program)
+        .map((diagnostic) => ts.flattenDiagnosticMessageText(diagnostic.messageText, ' '));
+    };
+
+    it('Name the types of a controller and its RPC module in declarations', () => {
       const source = [
         "import { procedure } from 'vovk';",
         "import { createRPC } from 'vovk/create-rpc';",
@@ -1016,29 +1040,19 @@ describe('Client sweep, pure functions', () => {
         "  typeof import('vovk/fetcher').fetcher extends VovkFetcher<infer U> ? U : never",
         ">({}, '', 'UserRPC', import('vovk/fetcher'), { validateOnClient: undefined });",
       ].join('\n');
-      const options: ts.CompilerOptions = {
-        strict: true,
-        noEmit: true,
-        declaration: true,
-        skipLibCheck: true,
-        target: ts.ScriptTarget.ES2022,
-        lib: ['lib.es2022.d.ts', 'lib.dom.d.ts', 'lib.dom.iterable.d.ts'],
-        // as a bundler resolves it, so a type is named by an entry point or not at all
-        module: ts.ModuleKind.ESNext,
-        moduleResolution: ts.ModuleResolutionKind.Bundler,
-      };
-      const host = ts.createCompilerHost(options);
-      const { fileExists, readFile, getSourceFile } = host;
-      host.fileExists = (name) => name === fileName || fileExists(name);
-      host.readFile = (name) => (name === fileName ? source : readFile(name));
-      host.getSourceFile = (name, ...rest) =>
-        name === fileName ? ts.createSourceFile(name, source, ts.ScriptTarget.ES2022) : getSourceFile(name, ...rest);
-      const program = ts.createProgram([fileName], options, host);
-      const diagnostics = ts
-        .getPreEmitDiagnostics(program)
-        .map((diagnostic) => ts.flattenDiagnosticMessageText(diagnostic.messageText, ' '));
 
-      deepStrictEqual(diagnostics, []);
+      deepStrictEqual(getDeclarationDiagnostics(source), []);
+    });
+
+    it('Name the type of a custom fetcher in declarations', () => {
+      // a library that exports its fetcher imports nothing else from vovk
+      const source = [
+        "import { createFetcher } from 'vovk/fetcher';",
+        'export const fetcher = createFetcher<{ token?: string }>();',
+        'export const plainFetcher = createFetcher();',
+      ].join('\n');
+
+      deepStrictEqual(getDeclarationDiagnostics(source), []);
     });
   });
 });

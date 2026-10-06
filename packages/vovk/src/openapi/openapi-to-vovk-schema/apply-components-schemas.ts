@@ -2,7 +2,6 @@ import type { ComponentsObject } from 'openapi3-ts/oas31';
 import type { VovkJSONSchemaBase } from '../../types/json-schema.js';
 import { toTypeName, toTypeNames } from '../../utils/to-identifier.js';
 
-// fast clone JSON object while ignoring Date, RegExp, and Function types
 function cloneJSON(obj: unknown): unknown {
   if (obj === null || typeof obj !== 'object') return obj;
   if (Array.isArray(obj)) return obj.map(cloneJSON);
@@ -29,8 +28,8 @@ export function applyComponentsSchemas(
   schema: VovkJSONSchemaBase,
   components: ComponentsObject['schemas'],
   mixinName: string,
-  // true (default): embed the ref closure in `$defs`, self-contained (AJV + Rust);
-  // false: keep `#/components/schemas/X` refs, no `$defs` (avoids the per-handler dup that overflows big specs)
+  // true: a self-contained slot with the ref closure in $defs, for AJV and Rust; false: the refs to components stay,
+  // which avoids a $defs copy per handler that overflows a big spec
   emitDefs = true
 ): VovkJSONSchemaBase {
   const key = 'components/schemas';
@@ -38,27 +37,21 @@ export function applyComponentsSchemas(
   const mixinTypeName = toTypeName(mixinName);
   const typeNames = getComponentTypeNames(components);
 
-  // Create a deep copy of the schema
   const result = cloneJSON(schema) as VovkJSONSchemaBase;
 
-  // Initialize $defs only when embedding (self-contained slots).
   if (emitDefs) {
     result.$defs = result.$defs || {};
   }
 
-  // Set to track components we've added to $defs
   const addedComponents = new Set<string>();
 
-  // Process a schema object and replace $refs
   function processSchema(obj: VovkJSONSchemaBase): VovkJSONSchemaBase | VovkJSONSchemaBase[] {
     if (!obj || typeof obj !== 'object') return obj;
 
-    // Handle arrays first - they don't have $ref
     if (Array.isArray(obj)) {
       return obj.map((item) => processSchema(item)) as VovkJSONSchemaBase[];
     }
 
-    // Now we know it's an object, so we can safely access $ref
     const newObj = { ...obj };
     const $ref = newObj.$ref;
 
@@ -66,11 +59,10 @@ export function applyComponentsSchemas(
       const componentName = $ref.replace(`#/${key}/`, '');
       const typeName = typeNames.get(componentName);
       if (typeName && components?.[componentName]) {
-        // Set `x-tsType` so TS resolves the ref without local `$defs`.
+        // x-tsType types the ref without local $defs
         newObj['x-tsType'] ??= `Mixins.${mixinTypeName}.${typeName}`;
 
         if (emitDefs) {
-          // Self-contained slot: local $defs + embedded closure.
           newObj.$ref = `#/$defs/${componentName}`;
           if (!addedComponents.has(componentName)) {
             addedComponents.add(componentName);
@@ -81,13 +73,12 @@ export function applyComponentsSchemas(
             }
           }
         }
-        // emitDefs === false: keep `#/components/schemas/X`, no `$defs` (lives once in meta).
+        // otherwise the ref stays on components, kept once in the segment's meta
       } else {
         delete newObj.$ref; // $ref to a component not in components (e.g. Telegram API)
       }
     }
 
-    // Process properties recursively
     for (const key in newObj) {
       if (Object.hasOwn(newObj, key)) {
         newObj[key as keyof VovkJSONSchemaBase] = processSchema(
@@ -99,7 +90,6 @@ export function applyComponentsSchemas(
     return newObj;
   }
 
-  // Process the main schema
   // arrays only come from recursion, the top level is always an object
   return processSchema(result) as VovkJSONSchemaBase;
 }

@@ -7,10 +7,10 @@ import meta, { icons } from './_meta';
 
 # Realtime Kanban — AI-native UI updates with Vovk.ts
 
-**Realtime Kanban** is an example app that keeps a Next.js UI in sync with the back end and layers in a grab-bag of AI features — an MCP server, OpenAI function calling, a voice interface, embeddings, and a Telegram bot.
-This series walks through how it's built, showing how users, bots, AI agents, and MCP clients can all update the same board in real time with very little extra code. It's a worked example to learn from and copy, not a framework or a prescribed architecture — take the parts you need.
+**Realtime Kanban** is an example app. It keeps a Next.js UI in sync with the backend and adds several AI features: an MCP server, OpenAI function calling, a voice interface, embeddings, and a Telegram bot.
+This series shows how it is built. Users, bots, AI agents, and MCP clients all update the same board in real time, with little extra code. It is an example to learn from and copy, not a framework or a required architecture. Take the parts you need.
 
-AI-friendly context for all articles in this series is available <a href="/context/realtime-ui.md">here</a>.
+The AI context file for all articles in this series is <a href="/context/realtime-ui.md">here</a>.
 
 <DocIndexCards meta={meta} icons={icons} hrefPrefix="realtime-ui" />
 
@@ -19,18 +19,18 @@ AI-friendly context for all articles in this series is available <a href="/conte
 
 ### AI agent managing the board via MCP
 
-Claude connects to the Kanban board through an [MCP server](/realtime-ui/mcp) and creates, moves, and deletes cards autonomously.
+Claude connects to the board through an [MCP server](/realtime-ui/mcp) and creates, moves, and deletes cards on its own.
 
 <video src="/video/kanban_mcp.mp4" type="video/mp4" className='mt-4' controls loop />
 
 ### Multi-user collaboration with live polling
 
-Multiple users edit the same board simultaneously — changes propagate in real time through [database polling](/realtime-ui/polling) and [normalized state](/realtime-ui/state).
+Several users edit the same board at once. Changes reach everyone in real time through [database polling](/realtime-ui/polling) and [normalized state](/realtime-ui/state).
 
 <video src="/video/kanban_polling.mp4" type="video/mp4" className='mt-4' controls loop />
 
 ### Chat-driven board updates with function calling
 
-A built-in [text chat interface](/realtime-ui/text-ai) lets users manage cards through natural language, powered by OpenAI function calling.
+A [text chat](/realtime-ui/text-ai) lets users manage cards in plain language. It uses OpenAI function calling.
 
 <video src="/video/kanban_text_chat.mp4" type="video/mp4" className='mt-4' controls loop />

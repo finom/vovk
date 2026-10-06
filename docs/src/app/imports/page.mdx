@@ -204,7 +204,7 @@ export const validateOnClient = createValidateOnClient({
 - Ajv runs with `strict: false` unless your options say otherwise, so it ignores keywords JSON Schema doesn't define, such as Zod's `example` or OpenAPI's `discriminator` and `x-*`.
 - A `pattern` is read with the `u` flag, which `\p{…}` needs, as in `z.emoji()`. A pattern the `u` flag refuses, such as one with a `\-` escape that Zod's regexes allow, is read without it.
 - OpenAPI 3.0's boolean `exclusiveMinimum` and `exclusiveMaximum` are read as the bounds they mark.
-- A `FormData` or `URLSearchParams` body holds strings, and so do `params` and `query`, which the URL carries. So they are validated with `coerceTypes: true`: `"5"` passes as a number. `params` and `query` are checked as a copy and sent as given.
+- A `FormData` or `URLSearchParams` body holds strings, and so do `params` and `query`, which the URL carries. So they are validated with `coerceTypes: true`: `"5"` passes as a number. Ajv never edits the `params` and `query` it checks, so they are sent as given.
 - When Ajv can't compile a schema, the client skips validation for it and logs a warning. The server still validates the request.
 
 ```bash npm2yarn copy

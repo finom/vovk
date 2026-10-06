@@ -2,6 +2,7 @@ import { HttpException } from '../core/http-exception.js';
 import type { VovkFetcher, VovkFetcherOptions, VovkStreamAsyncIterable } from '../types/client.js';
 import type { VovkHandlerSchema } from '../types/core.js';
 import { HttpStatus } from '../types/enums.js';
+import type { VovkValidateOnClient } from '../types/validation.js';
 import { fileNameToDisposition } from '../utils/file-name-to-disposition.js';
 import {
   FORM_MEDIA_TYPES,
@@ -69,7 +70,8 @@ function anySignal(controller: AbortController, signal: AbortSignal): AbortSigna
   return controller.signal;
 }
 
-export type { VovkFetcher };
+// the return type of createFetcher names these, so a module that exports a fetcher can emit declarations
+export type { HttpException, VovkFetcher, VovkFetcherOptions, VovkHandlerSchema, VovkValidateOnClient };
 
 type CreateFetcherOnSuccess<T> = (
   respData: unknown,
@@ -94,16 +96,16 @@ const getStringBodyContentType = (declared: string[]) =>
   declared.find((type) => !type.includes('*') && !FORM_MEDIA_TYPES.includes(type) && !isJSONMediaType(type)) ??
   (!declared.length || declared.some(isJSONMediaType) ? 'application/json' : 'text/plain');
 
-/**
- * Creates a customizable fetcher function for client requests.
- * @see https://vovk.dev/imports
- */
 // spelled out, so the declaration a client bundle ships imports nothing from the server side of the package
 type CreatedFetcher<T> = VovkFetcher<VovkFetcherOptions<T>> & {
   onSuccess(cb: CreateFetcherOnSuccess<T>): () => void;
   onError(cb: CreateFetcherOnError<T>): () => void;
 };
 
+/**
+ * Creates a customizable fetcher function for client requests.
+ * @see https://vovk.dev/imports
+ */
 export function createFetcher<T>({
   prepareRequestInit,
   transformResponse,
@@ -121,8 +123,7 @@ export function createFetcher<T>({
 } = {}): CreatedFetcher<T> {
   const onSuccessCallbacks: CreateFetcherOnSuccess<T>[] = onSuccessInit ? [onSuccessInit] : [];
   const onErrorCallbacks: CreateFetcherOnError<T>[] = onErrorInit ? [onErrorInit] : [];
-  // fetcher uses HttpException class to throw errors of fake HTTP status 0 if client-side error occurs
-  // For normal HTTP errors, it uses message and status code from the response of VovkErrorResponse type
+  // a client-side failure throws an HttpException with status 0, an HTTP error the response's status and message
   const newFetcher: VovkFetcher<VovkFetcherOptions<T>> = async (
     { httpMethod, getURL, validate, defaultHandler, defaultStreamHandler, schema },
     inputOptions
@@ -140,9 +141,7 @@ export function createFetcher<T>({
         try {
           ({ body, query, params } = (await validate(inputOptions, { endpoint })) ?? { body, query, params });
         } catch (e) {
-          // if HttpException is thrown, rethrow it
           if (e instanceof HttpException) throw e;
-          // otherwise, throw HttpException with status 0
           throw new HttpException(HttpStatus.NULL, (e as Error).message ?? DEFAULT_ERROR_MESSAGE, {
             body,
             query,
@@ -186,7 +185,6 @@ export function createFetcher<T>({
                 : 'application/json';
       const resolvedFileName = body instanceof File ? body.name : undefined;
 
-      // Default headers (lowercase keys)
       const defaultHeaders: Record<string, string> = {
         accept: [...JSON_LINES_MEDIA_TYPES, 'application/json'].join(', '),
         ...(resolvedContentType ? { 'content-type': resolvedContentType } : {}),
@@ -194,7 +192,7 @@ export function createFetcher<T>({
         ...(meta ? { 'x-meta': toAsciiJson(meta) } : {}),
       };
 
-      // Normalize user headers to lowercase keys via Headers API (handles plain objects, arrays, and Headers instances)
+      // lowercase keys, as the defaults have, so a user header replaces its default
       const userHeaders = init?.headers ? Object.fromEntries(new Headers(init.headers as HeadersInit).entries()) : {};
 
       requestInit = {

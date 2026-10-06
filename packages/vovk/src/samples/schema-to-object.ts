@@ -8,35 +8,28 @@ export function schemaToObject(
   budget: SampleBudget = createSampleBudget()
 ): unknown {
   if (!schema || typeof schema !== 'object') return null;
-  // Use the input schema as the root if not provided
   rootSchema = rootSchema || schema;
 
-  // If there's an example, use it
   if (schema.example !== undefined) {
     return schema.example;
   }
 
-  // If there are examples, use one of them
   if (schema.examples && schema.examples.length > 0) {
     return schema.examples[0];
   }
 
-  // Handle const if present
   if (schema.const !== undefined) {
     return schema.const;
   }
 
-  // Handle $ref if present
   if (schema.$ref) {
     return handleRef(schema.$ref, rootSchema, seen, budget);
   }
 
-  // Handle enum if present
   if (schema.enum && schema.enum.length > 0) {
     return schema.enum[0];
   }
 
-  // Handle oneOf, anyOf, allOf
   if (schema.oneOf && schema.oneOf.length > 0) {
     return schemaToObject(schema.oneOf[0], rootSchema, seen, budget);
   }
@@ -46,7 +39,6 @@ export function schemaToObject(
   }
 
   if (schema.allOf && schema.allOf.length > 0) {
-    // Merge all schemas in allOf
     const mergedSchema = schema.allOf.reduce(
       (acc: VovkJSONSchemaBase, s: VovkJSONSchemaBase) => Object.assign(acc, s),
       {}
@@ -54,7 +46,6 @@ export function schemaToObject(
     return schemaToObject(mergedSchema, rootSchema, seen, budget);
   }
 
-  // Handle different types
   if (schema.type) {
     switch (schema.type) {
       case 'string':
@@ -75,12 +66,10 @@ export function schemaToObject(
     }
   }
 
-  // If type is not specified but properties are, treat it as an object
   if (schema.properties) {
     return handleObject(schema, rootSchema, seen, budget);
   }
 
-  // Default fallback
   return null;
 }
 
@@ -88,19 +77,15 @@ function handleRef(ref: string, rootSchema: VovkJSONSchemaBase, seen: Set<string
   // a ref already being expanded means the schema is circular, stop instead of recursing forever
   if (seen.has(ref) || !spend(budget)) return null;
 
-  // Parse the reference path
-  const path = ref.split('/').slice(1) as (keyof VovkJSONSchemaBase)[]; // Remove the initial '#'
-
-  // Navigate through the schema to find the referenced definition
+  const path = ref.split('/').slice(1) as (keyof VovkJSONSchemaBase)[];
   let current = rootSchema;
   for (const segment of path) {
     current = current[segment];
     if (current === undefined) {
-      return null; // Reference not found
+      return null;
     }
   }
 
-  // Process the referenced schema
   return schemaToObject(current, rootSchema, new Set(seen).add(ref), budget);
 }
 
@@ -144,7 +129,6 @@ function handleString(schema: VovkJSONSchemaBase): string {
   }
 
   if (schema.pattern) {
-    // For simplicity, return a basic string for patterns
     return 'pattern-string';
   }
 
@@ -178,14 +162,13 @@ function handleObject(
     const required = schema.required || [];
 
     for (const [key, propSchema] of Object.entries<VovkJSONSchemaBase>(schema.properties)) {
-      // Only include required properties or as a basic example
+      // the required properties, or all of them when none is
       if (required.includes(key) || required.length === 0) {
         result[key] = schemaToObject(propSchema, rootSchema, seen, budget);
       }
     }
   }
 
-  // Handle additionalProperties
   if (schema.additionalProperties && typeof schema.additionalProperties === 'object') {
     result.additionalProp = schemaToObject(schema.additionalProperties, rootSchema, seen, budget);
   }
@@ -203,7 +186,6 @@ function handleArray(
     const itemSchema = schema.items;
     const minItems = schema.minItems || 1;
 
-    // Create minimum number of items (capped at a reasonable max for examples)
     const numItems = Math.min(minItems, 3);
 
     const items: unknown[] = [];

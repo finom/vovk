@@ -1,4 +1,4 @@
-// lodash's word rules over Unicode letter classes: an ASCII name splits as lodash splits it, a letter of any script is kept
+// lodash's word rules over Unicode classes: an ASCII name splits as in lodash, and a letter of any script stays
 const UPPER = '[\\p{Lu}\\p{Lt}]';
 const LOWER = '\\p{Ll}';
 // letters without case, like CJK, and combining marks join the word around them
@@ -24,7 +24,6 @@ const capitalize = (word: string) => {
   return first.toUpperCase() + rest.join('');
 };
 
-// converts string to camel case, words split at separators, case changes and digits
 export function camelCase(input: string) {
   const words = String(input ?? '')
     .replace(/['’]/g, '')

@@ -16,7 +16,6 @@ import { responseErrorMessage } from './to-model-error-message.js';
 import { ToModelOutput } from './to-model-output.js';
 import type { DefaultModelOutput } from './to-model-output-default.js';
 
-// Standard tool input type
 type DerivedToolInput = { body?: unknown; query?: unknown; params?: unknown };
 
 type Handler = ((...args: unknown[]) => unknown) & {
@@ -241,7 +240,6 @@ const makeTool = <TOutput, TFormattedOutput>({
   return tool;
 };
 
-// Base options type without toModelOutput
 type DeriveToolsBaseOptions<TOutput = unknown, TFormattedOutput = unknown> = {
   modules: Record<string, object>;
   meta?: Record<string, unknown>;
@@ -277,14 +275,12 @@ type DeriveToolsBaseOptions<TOutput = unknown, TFormattedOutput = unknown> = {
  * });
  * ```
  */
-// Overload: without toModelOutput - returns DefaultModelOutput
 export function deriveTools<TOutput = unknown, TFormattedOutput = DefaultModelOutput<TOutput>>(
   options: DeriveToolsBaseOptions & {
     toModelOutput?: never;
   }
 ): StandardToolV0<DerivedToolInput, TOutput, TFormattedOutput>[];
 
-// Overload: with toModelOutput - infers TFormattedOutput from the function
 export function deriveTools<TOutput = unknown, TFormattedOutput = unknown>(
   options: DeriveToolsBaseOptions & {
     toModelOutput: ToModelOutputFn<unknown, TOutput, TFormattedOutput>;

@@ -1,18 +1,18 @@
 # Vector Search via Embedding
 
-Because database entries can be numerous and too large to fit into the prompt directly, we need a way to represent them in a more compact form for AI tools to use. To achieve this, we do two things:
+Database entries can be too many and too large to fit into a prompt. The AI tools need a more compact form, so the app does two things:
 
-1. “Get all” endpoints are excluded from being derived as AI tools by using the `@operation.tool({ hidden: true }){:ts}` decorator.
-2. Vector embeddings are generated for each user and task entry when they are created or updated. These embeddings use an OpenAI embeddings model and are stored in the database using [pgvector](https://github.com/pgvector/pgvector), described as `Unsupported("vector(1536)")` in the Prisma schema under the `embedding` column for each model. See the [Database](./database) article for more details.
+1. The `@operation.tool({ hidden: true }){:ts}` decorator keeps the “get all” procedures out of the derived AI tools.
+2. Each user and task gets a vector embedding when it is created or updated. An OpenAI embeddings model creates it, and [pgvector](https://github.com/pgvector/pgvector) stores it in the `embedding` column of each model, declared as `Unsupported("vector(1536)")` in the Prisma schema. See the [Database](./database) article.
 
 <img src="/diagrams/embeddings_vector_search.svg" alt="Vector Search via Embedding" className="mt-4 dark:invert" />
 
 
-The `EmbeddingService` class implements the logic of generating embeddings and performing vector search using the pgvector extension in Postgres, exposing two main methods:
-- `generateEntityEmbedding` – generates an embedding for a given entity based on its string fields and updates the database entry with the generated vector.
-- `vectorSearch` – performs vector search for a given query string and returns the most similar entries based on the stored embeddings.
+The `EmbeddingService` class creates the embeddings and runs vector search with the pgvector extension in Postgres. Its two main methods:
+- `generateEntityEmbedding` – creates an embedding from an entity's string fields and writes the vector to its database row.
+- `vectorSearch` – searches the stored embeddings for a query string and returns the most similar entries.
 
-Both methods are entity-type agnostic and work with both `user` and `task` entity types.
+Both methods work with any entity type, `user` and `task` alike.
 
 ```ts showLineNumbers copy filename="src/modules/embedding/embedding-service.ts" source="examples/realtime-kanban"
 import { openai } from '@ai-sdk/openai';

@@ -1,7 +1,4 @@
-/**
- * This file is borrowed from type-fest in order to keep dependencies clean.
- * @see https://github.com/sindresorhus/type-fest
- */
+// from type-fest, copied so vovk needs no dependency: https://github.com/sindresorhus/type-fest
 
 type Primitive = null | undefined | string | number | boolean | symbol | bigint;
 

@@ -1,7 +1,5 @@
-// client
 export { progressive } from './client/progressive.js';
 
-// core
 export { controllersToStaticParams } from './core/controllers-to-static-params.js';
 export { createDecorator } from './core/create-decorator.js';
 export { cloneControllerMetadata, del, get, head, options, patch, post, prefix, put } from './core/decorators.js';
@@ -11,14 +9,11 @@ export { JSONLinesResponder } from './core/json-lines-responder.js';
 export { multitenant } from './core/multitenant.js';
 export { toDownloadResponse } from './core/to-download-response.js';
 
-// openapi
 export { operation } from './openapi/operation.js';
 
-// tools
 export { deriveTools } from './tools/derive-tools.js';
 export { ToModelOutput } from './tools/to-model-output.js';
 
-// types
 export type { VovkStreamAsyncIterable } from './types/client.js';
 export type { VovkConfig } from './types/config.js';
 export type { VovkSchema } from './types/core.js';
@@ -39,5 +34,4 @@ export type { StandardToolV0 } from './types/standard-tool.js';
 export type { VovkNoInference } from './types/utils.js';
 export type { VovkNoSchema, VovkProcedureInput } from './types/validation.js';
 
-// validation
 export { procedure } from './validation/procedure.js';

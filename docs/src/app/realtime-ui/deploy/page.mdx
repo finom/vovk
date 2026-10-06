@@ -2,11 +2,11 @@ import Image from "next/image";
 
 # Deploying to Vercel
 
-You can use any hosting provider that supports Node.js applications, but for simplicity we’re going to use [Vercel](https://vercel.com/), as it requires minimal effort to deploy the app for a quick demo. We’re going to set up two Vercel integrations: [Neon](https://vercel.com/integrations/neon) for Postgres/PGVector database hosting and [Redis](https://vercel.com/integrations/redis) for Redis hosting. Neon is used as the main database, while Redis is used as a database event bus for real-time features described in the [Polling](./polling) article, and as temporary storage for messages consumed by the demo [Telegram bot](./telegram).
+Any host that runs Node.js apps works. This page uses [Vercel](https://vercel.com/), because a quick demo deploy there needs little setup. It uses two Vercel integrations: [Neon](https://vercel.com/integrations/neon) hosts the Postgres/PGVector database, and [Redis](https://vercel.com/integrations/redis) hosts Redis. Neon is the main database. Redis is the database event bus for the real-time features in the [Polling](./polling) article, and temporary storage for the messages of the demo [Telegram bot](./telegram).
 
-**Note:** Vovk.ts is not affiliated with Vercel, Telegram, or Neon in any way.
+**Note:** Vovk.ts is not affiliated with Vercel, Telegram, or Neon.
 
-To deploy the app with this setup, create a new project in Vercel, link it to a fork of the GitHub repository, and add the integrations mentioned above (both are available on the free plan).
+To deploy, create a project in Vercel, link it to a fork of the GitHub repository, and add both integrations. Both are on the free plan.
 
 <Image
   src="/screenshots/vercel-ai-demo-integrations.png"
@@ -15,12 +15,12 @@ To deploy the app with this setup, create a new project in Vercel, link it to a 
   height={1826 / 2}
 />
 
-Add `OPENAI_API_KEY` to the project environment variables. Other variables such as `DATABASE_URL` and `REDIS_URL` are created automatically by the integrations. 
+Add `OPENAI_API_KEY` to the project's environment variables. The integrations create the others, such as `DATABASE_URL` and `REDIS_URL`.
 
-It’s also recommended to add a `PASSWORD` variable to enable simple (and free) password protection for the app's pages and API. You can set it to any desired value. It doesn't cover the MCP server or the Telegram webhook.
+A `PASSWORD` variable is also recommended. It adds free password protection to the app's pages and API, with any value you choose. It doesn't cover the MCP server or the Telegram webhook.
 
-For MCP protection, you can also add the `MCP_ACCESS_KEY` variable to enable basic authorization for the MCP server using the `?mcp_access_key=your_key` query param. If this variable is not set, no authorization is required.
+To protect the MCP server, add `MCP_ACCESS_KEY`. Clients then send the key in the `?mcp_access_key=your_key` query parameter. If it isn't set, the MCP server needs no key.
 
-Finally, for Telegram bot integration, you can add the `TELEGRAM_BOT_TOKEN` and `TELEGRAM_WEBHOOK_SECRET` variables if you want to use the Telegram bot feature. The webhook answers only when both are set. See the [Telegram integration](./telegram) article for more details.
+For the Telegram bot, add `TELEGRAM_BOT_TOKEN` and `TELEGRAM_WEBHOOK_SECRET`. The webhook answers only when both are set. See the [Telegram integration](./telegram) article.
 
-If you run into issues, check the [.env.template](https://github.com/finom/vovk/blob/main/examples/realtime-kanban/.env.template) file for reference.
+If something doesn't work, compare your variables with the [.env.template](https://github.com/finom/vovk/blob/main/examples/realtime-kanban/.env.template) file.

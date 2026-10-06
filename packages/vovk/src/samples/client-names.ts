@@ -1,6 +1,5 @@
-// The names the generated Python and Rust clients give a module and its handlers. The client templates build them
-// with lodash's snakeCase, which vovk-cli passes to them, and with vovk-python's toPythonIdentifier or vovk-rust's
-// toRustIdent; these are copies, and a test holds them equal to the originals.
+// the module and handler names of the generated Python and Rust clients: copies of lodash's snakeCase and of
+// vovk-python's toPythonIdentifier and vovk-rust's toRustIdent, which a test holds equal to the originals
 
 // lodash's snakeCase (MIT): Latin letters lose their accents, then the words split where the case changes, at digits
 // and at anything but letters
@@ -83,7 +82,7 @@ function toRustIdent(name: string): string {
   return RUST_KEYWORDS.has(ident) ? `${ident}_` : ident;
 }
 
-// in schema order, a name already taken in the module gets the first free suffix: get_user_by_id, get_user_by_id_2
+// the name of a handler the module doesn't list, which comes after the module's own
 function getUniqueName(
   handlerName: string,
   moduleHandlerNames: string[],
@@ -92,7 +91,6 @@ function getUniqueName(
 ): string {
   const used = new Set(taken);
   let unique = '';
-  // a handler the module doesn't list comes last
   for (const name of new Set([...moduleHandlerNames, handlerName])) {
     const base = toName(name);
     unique = base;
@@ -103,16 +101,46 @@ function getUniqueName(
   return unique;
 }
 
+// in schema order, a name already taken in the module gets the first free suffix: get_user_by_id, get_user_by_id_2;
+// built once per handlers object, since each of a module's handlers asks for its name
+function getModuleNames(
+  handlers: object,
+  cache: WeakMap<object, Map<string, string>>,
+  toName: (name: string) => string,
+  taken: string[] = []
+): Map<string, string> {
+  let names = cache.get(handlers);
+  if (!names) {
+    names = new Map();
+    const used = new Set(taken);
+    for (const name of Object.keys(handlers)) {
+      const base = toName(name);
+      let unique = base;
+      for (let i = 2; used.has(unique); i++) unique = `${base}_${i}`;
+      used.add(unique);
+      names.set(name, unique);
+    }
+    cache.set(handlers, names);
+  }
+  return names;
+}
+
+const toPythonName = (name: string) => toPythonIdentifier(snakeCase(name));
+const pythonMethodNames = new WeakMap<object, Map<string, string>>();
+
 export const getPythonClassName = (rpcModuleName: string) => toPythonIdentifier(rpcModuleName);
 
-export const getPythonMethodName = (handlerName: string, moduleHandlerNames: string[]) =>
-  getUniqueName(handlerName, moduleHandlerNames, (name) => toPythonIdentifier(snakeCase(name)));
+export const getPythonMethodName = (handlerName: string, handlers: object) =>
+  getModuleNames(handlers, pythonMethodNames, toPythonName).get(handlerName) ??
+  getUniqueName(handlerName, Object.keys(handlers), toPythonName);
+
+// the module imports functions named http_request and http_request_stream
+const RUST_IMPORTS = ['http_request', 'http_request_stream'];
+const toRustName = (name: string) => toRustIdent(snakeCase(name));
+const rustFunctionNames = new WeakMap<object, Map<string, string>>();
 
 export const getRustModuleName = (rpcModuleName: string) => toRustIdent(snakeCase(rpcModuleName));
 
-// the module imports functions named http_request and http_request_stream
-export const getRustFunctionName = (handlerName: string, moduleHandlerNames: string[]) =>
-  getUniqueName(handlerName, moduleHandlerNames, (name) => toRustIdent(snakeCase(name)), [
-    'http_request',
-    'http_request_stream',
-  ]);
+export const getRustFunctionName = (handlerName: string, handlers: object) =>
+  getModuleNames(handlers, rustFunctionNames, toRustName, RUST_IMPORTS).get(handlerName) ??
+  getUniqueName(handlerName, Object.keys(handlers), toRustName, RUST_IMPORTS);

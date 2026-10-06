@@ -6,7 +6,6 @@ export type SampleBudget = { left: number };
 
 export const createSampleBudget = (): SampleBudget => ({ left: SAMPLE_BUDGET });
 
-// takes one expansion from the budget, false once it is spent
 export function spend(budget: SampleBudget): boolean {
   if (budget.left <= 0) return false;
   budget.left -= 1;
