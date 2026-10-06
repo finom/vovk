@@ -4,7 +4,7 @@ description: "Full documentation for the Vovk.ts framework, excluding the Realti
 see_also:
   label: "Realtime Kanban Context"
   url: https://vovk.dev/context/realtime-ui.md
-chars: 402082
+chars: 402083
 est_tokens: 100521
 ---
 
@@ -8746,17 +8746,17 @@ The original package.json is used to populate metadata (`repository`, `homepage`
     "api"
   ],
   "dependencies": {
-    "@scalar/api-reference-react": "^0.9.60",
+    "@scalar/api-reference-react": "^0.9.74",
     "@standard-schema/spec": "^1.1.0",
-    "@tanstack/react-query": "^5.101.4",
+    "@tanstack/react-query": "^5.104.0",
     "ajv": "^8.20.0",
     "ajv-errors": "^3.0.0",
     "next": "^16.3.6",
-    "react": "^19.2.8",
-    "react-dom": "^19.2.8",
+    "react": "^19.3.0",
+    "react-dom": "^19.3.0",
     "vovk": "^4.0.0-beta.0",
     "vovk-ajv": "^0.1.0",
-    "zod": "^4.4.3"
+    "zod": "^4.6.5"
   },
   "devDependencies": {
     "@biomejs/biome": "^2.5.14",
@@ -8765,11 +8765,11 @@ The original package.json is used to populate metadata (`repository`, `homepage`
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "postcss": "^8",
-    "prettier": "^3.9.6",
+    "prettier": "^3.9.9",
     "tailwindcss": "^4.3.3",
     "tsdown": "^0.22.14",
-    "tsx": "^4.23.7",
-    "typescript": "^5",
+    "tsx": "^4.23.15",
+    "typescript": "^7",
     "vovk-cli": "^0.3.0-beta.0",
     "vovk-hello-world-published": "npm:vovk-hello-world@^0.0.88",
     "vovk-python": "^0.0.3",
