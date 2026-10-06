@@ -427,7 +427,7 @@ export function createCodeSamples({
   const packageNameSnake = toSnakeCase(packageJson?.name || 'client');
   const pyPackageName = packageJson?.py_name ?? packageNameSnake;
   const rsPackageName = packageJson?.rs_name ?? packageNameSnake;
-  const handlerNames = Object.keys(controllerSchema.handlers ?? {});
+  const handlers = controllerSchema.handlers ?? {};
 
   const commonParams: CodeGenerationParams = {
     handlerName,
@@ -448,13 +448,13 @@ export function createCodeSamples({
     ...commonParams,
     packageName: pyPackageName,
     rpcName: getPythonClassName(rpcName),
-    methodName: getPythonMethodName(handlerName, handlerNames),
+    methodName: getPythonMethodName(handlerName, handlers),
   });
   const rs = generateRustCode({
     ...commonParams,
     packageName: rsPackageName,
     rpcName: getRustModuleName(rpcName),
-    methodName: getRustFunctionName(handlerName, handlerNames),
+    methodName: getRustFunctionName(handlerName, handlers),
   });
 
   return { ts, py, rs };
