@@ -1,6 +1,6 @@
 # TypeScript RPC Client
 
-Controllers and its procedures implemented as static methods compile to so-called RPC modules that share the same structure but have different argument signatures. For example, given the controller below:
+A controller, with its procedures as static methods, compiles to an RPC module. The module has the same structure, but its methods take different arguments. For example, take this controller:
 
 ```ts showLineNumbers copy filename="src/modules/user/user-controller.ts"
 import { z } from 'zod';
@@ -45,19 +45,19 @@ export default class UserController {
 }
 ```
 
-It compiles to the following RPC module with `updateUser` method, which accepts `body`, `params`, and `query` as a three-part input.
+It compiles to an RPC module with an `updateUser` method. The method takes `body`, `params` and `query` in one object:
 
 ```ts showLineNumbers copy
 import { UserRPC } from '@/client';
 
 const updatedUser = await UserRPC.updateUser({
   body: { name: 'John Doe', age: 30, email: 'john@example.com' },
-  params: { id: '69' },
+  params: { id: '123e4567-e89b-12d3-a456-426614174000' },
   query: { notify: 'push' },
 });
 ```
 
-`updateUser` performs client-side validation, serializes `query` and `params` into the URL, and issues a standard `fetch` request. The server handles it in `UserController.updateUser`. The RPC method returns a promise that resolves to the return type used in the procedure.
+`updateUser` validates the input on the client, puts `query` and `params` into the URL, and sends a standard `fetch` request, which `UserController.updateUser` handles on the server. The RPC method returns a promise of the procedure's return type. In plain `fetch`, the call looks like this:
 
 ```ts showLineNumbers copy
 const resp = await fetch(`/api/users/${id}?notify=push`, {
@@ -70,7 +70,7 @@ const resp = await fetch(`/api/users/${id}?notify=push`, {
 const updatedUser = await resp.json();
 ```
 
-Behind the scenes the RPC module is created by an internal function `createRPC` and uses default imports or imports defined in the [vovk.config](/config) file. See [imports customization](/imports) for details.
+An internal function, `createRPC`, creates the RPC module. It uses the default imports, or the imports set in the [vovk.config](/config) file. See [imports customization](/imports) for details.
 
 ```ts showLineNumbers copy
 import type { VovkFetcher } from "vovk/fetcher";
@@ -79,7 +79,7 @@ import { schema } from "./schema";
 
 import type { Controllers as Controllers0 } from "../../app/api/[[...vovk]]/route.ts";
 
-// The arguments are: schema, segmentName, controllerName, fetcher and options
+// The arguments are: schema, segmentName, rpcModuleName, fetcher and options
 export const UserRPC = createRPC<
   Controllers0["UserRPC"],
   typeof import("vovk/fetcher").fetcher extends VovkFetcher<infer U> ? U : never
@@ -88,19 +88,19 @@ export const UserRPC = createRPC<
 });
 ```
 
-The generated client imports `vovk` subpaths, such as `vovk/fetcher`, and JSON files with import attributes. It compiles on TypeScript 5.3+ with `"moduleResolution"` set to `"bundler"`, the Next.js default, `"node16"` or `"nodenext"`; under `"node"`, TypeScript can't find `vovk/fetcher`.
+The generated client imports `vovk` subpaths, such as `vovk/fetcher`, and JSON files with import attributes. It compiles on TypeScript 5.3+ with `"moduleResolution"` set to `"bundler"` (the Next.js default), `"node16"` or `"nodenext"`. With `"node"`, TypeScript can't find `vovk/fetcher`.
 
 ## RPC Method Options
 
-In addition to `body`, `params`, and `query`, every RPC method accepts a set of options. This list can be [extended via a custom `fetcher`](/imports#fetcher).
+Besides `body`, `params` and `query`, every RPC method accepts the options below. You can [extend the list with a custom `fetcher`](/imports#fetcher).
 
 ### `apiRoot`
 
-Overrides the default API root path. The default is `/api` and can also be [configured](/config) via `rootEntry` and/or `origin`.
+Overrides the API root. The default is `/api`. You can also [configure](/config) it with `rootEntry`, `origin` or both.
 
 ### `init`
 
-Lets you pass `RequestInit` options (the `fetch` options) such as `headers` and `credentials`, as well as [Next.js-specific options](https://nextjs.org/docs/app/api-reference/functions/fetch) like `next: { revalidate: number }{:ts}`.
+Passes `RequestInit` options (the `fetch` options), such as `headers` and `credentials`, and [Next.js-specific options](https://nextjs.org/docs/app/api-reference/functions/fetch) such as `next: { revalidate: number }{:ts}`.
 
 ```ts showLineNumbers copy
 const user = await UserRPC.updateUser({
@@ -125,7 +125,7 @@ const user = await UserRPC.updateUser({
 
 ### `transform`
 
-Allows you to post-process the result. Provide a function that receives the parsed response data and the original `Response` and returns a transformed value.
+Post-processes the result. The function receives the parsed response data and the original `Response`, and returns a new value.
 
 ```ts showLineNumbers copy
 const user = await UserRPC.updateUser({
@@ -145,7 +145,7 @@ const user = await UserRPC.updateUser({
 });
 ```
 
-You can also return the `Response` alongside the data:
+It can also return the `Response` together with the data:
 
 ```ts showLineNumbers copy
 const [user, response] = await UserRPC.updateUser({
@@ -166,7 +166,7 @@ response satisfies Response;
 
 ### `disableClientValidation`
 
-Turns off client-side validation for this call. Useful when debugging to surface server-side validation errors instead.
+Turns off client-side validation for this call. Use it when debugging, to see the server's validation errors instead.
 
 ```ts showLineNumbers copy
 await UserRPC.updateUser({
@@ -177,7 +177,7 @@ await UserRPC.updateUser({
 
 ### `interpretAs`
 
-Overrides how the response content type is interpreted. Useful, for example, when the server returns JSON Lines but does not set `content-type` to `application/jsonl`.
+Sets the content type that the client uses to read the response. For example, use it when the server returns JSON Lines without setting `content-type` to `application/jsonl`.
 
 ```ts showLineNumbers copy
 const user = await UserRPC.updateUser({
@@ -204,7 +204,7 @@ Overrides the [fetcher](/imports#fetcher) for this call, for example one made wi
 
 ## `withDefaults`
 
-An RPC module can be wrapped with default options using the `withDefaults` method. It returns a new RPC module with the specified deeply-merged defaults applied to every method call. Headers merge by name, case-insensitively, whether a layer gives them as an object, a `Headers{:ts}` instance or entries, and a per-call header replaces a default one.
+The `withDefaults` method returns a new RPC module with default options for every call. The defaults are deep-merged with each call's options. Headers merge by name, ignoring case, whether a layer gives them as an object, a `Headers{:ts}` instance or entries. A header given in the call replaces a default one.
 
 ```ts showLineNumbers copy
 import { UserRPC } from '@/client';
@@ -225,7 +225,7 @@ const user = await WithDefaultsUserRPC.updateUser({
 
 ## Customization
 
-You can customize the client's fetch function and its types to match your app’s needs. See the [`fetcher` customization docs](/imports#fetcher) for details.
+You can change the client's fetch function and its option types. See the [`fetcher` customization docs](/imports#fetcher).
 
 ```ts showLineNumbers copy
 await UserRPC.updateUser({
@@ -237,7 +237,7 @@ await UserRPC.updateUser({
 
 ## Type Override
 
-If type inference cannot determine the return type, you can specify it explicitly—no need to cast to `unknown` first.
+If type inference can't find the return type, pass it as a type argument. You don't need to cast to `unknown` first.
 
 ```ts showLineNumbers copy
 import { UserRPC } from '@/client';
@@ -261,7 +261,7 @@ export default class UserController {
 }
 ```
 
-If the handler returns an async iterable, the client casts the method to a [disposable](https://github.com/tc39/proposal-explicit-resource-management) [async iterator](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/AsyncIterator) to enable [JSON Lines](/jsonlines) streaming.
+If the handler returns an async iterable, the RPC method resolves to a [disposable](https://github.com/tc39/proposal-explicit-resource-management) [async iterator](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/AsyncIterator) that reads the [JSON Lines](/jsonlines) stream.
 
 ```ts showLineNumbers copy
 import { StreamRPC } from '@/client';
@@ -275,26 +275,26 @@ for await (const { message } of stream) {
 
 ## Access to Schema
 
-Every RPC method exposes the emitted JSON schema through the following properties:
+Every RPC method has the emitted schema in these properties:
 
-- `schema` - the schema for this method;
-- `controllerSchema` - the schema object of the method's controller;
-- `segmentSchema` - the schema object of the segment;
-- `fullSchema` - the full schema object of type `VovkSchema` that includes all available segments as well as emitted config (by default, `"libs"` and `"rootEntry"` options only; see [config documentation](/config)).
+- `schema` - the method's schema;
+- `controllerSchema` - the schema of the method's controller;
+- `segmentSchema` - the schema of the segment;
+- `fullSchema` - the full schema, of type `VovkSchema`, with all segments and the emitted config (by default, only the `libs` and `rootEntry` options; see [config documentation](/config)).
 
-To name the type of one of them, use `typeof`, such as `typeof UserRPC.updateUser.segmentSchema`.
+For the type of one of them, use `typeof`, such as `typeof UserRPC.updateUser.segmentSchema`.
 
 ```ts showLineNumbers copy
-console.log(UserRPC.updateUser.schema.validation.body); // get body validation JSON schema
-console.log(UserRPC.updateUser.schema.operationObject); // get OpenAPI operationObject spec for this method
-console.log(UserRPC.updateUser.fullSchema.meta.config.libs.ajv); // get config option
+console.log(UserRPC.updateUser.schema.validation?.body); // the JSON schema of the body
+console.log(UserRPC.updateUser.schema.operationObject); // the OpenAPI operation object of this method
+console.log(UserRPC.updateUser.fullSchema.meta?.config.libs?.ajv); // a config option
 ```
 
-This design also allows you to create [LLM tools](/tools) that can use the schema to define the tool parameters.
+[LLM tools](/tools) can use this schema to define their parameters.
 
 ## `getURL` method
 
-Every RPC method exposes a type-safe `getURL` utility that returns the URL for the method, including serialized `params` and `query`.
+Every RPC method has a type-safe `getURL` function. It returns the method's URL, with `params` and `query` in it.
 
 ```ts showLineNumbers copy
 import { UserRPC } from '@/client';
@@ -307,7 +307,7 @@ const url = UserRPC.updateUser.getURL({
 console.log(url); // "https://api.example.com/v1/users/69?notify=push"
 ```
 
-It can be used to call `fetch` directly if needed.
+Use it to call `fetch` directly:
 
 ```ts showLineNumbers copy
 const response = await fetch(
@@ -315,7 +315,7 @@ const response = await fetch(
     /* ... */
   }),
   {
-    method: 'PUT',
+    method: 'POST',
     // ... other fetch options
   }
 );
@@ -324,9 +324,9 @@ const response = await fetch(
 <a id="react-query" />
 ## React Query
 
-Every RPC method exposes a `queryKey` utility that returns a globally unique key for use with [@tanstack/react-query](https://www.npmjs.com/package/@tanstack/react-query). It is an array: `[segmentName, controllerPrefix, rpcModuleName, decoratorPath, httpMethod, ...key]{:ts}`, where `...key` is an optional array of extra values you provide to differentiate similar queries.
+Every RPC method has a `queryKey` function. It returns a globally unique key for [@tanstack/react-query](https://www.npmjs.com/package/@tanstack/react-query). The key is an array: `[segmentName, controllerPrefix, rpcModuleName, decoratorPath, httpMethod, ...key]{:ts}`. `...key` holds optional extra values that tell similar queries apart.
 
-```ts showLineNumbers copy
+```tsx showLineNumbers copy
 import { useQuery } from '@tanstack/react-query';
 import { UserRPC } from '@/client';
 
@@ -345,7 +345,7 @@ const MyComponent = () => {
 
 [View live example on examples.vovk.dev »](https://examples.vovk.dev/react-query)
 
-You can use the key for cache invalidation, refetching, and other React Query features.
+Use the key to invalidate the cache, to refetch, and with other React Query features.
 
 ```ts showLineNumbers copy
 queryClient.invalidateQueries({
@@ -353,9 +353,9 @@ queryClient.invalidateQueries({
 });
 ```
 
-Streamed responses can utilize [`streamedQuery`](https://tanstack.com/query/latest/docs/reference/streamedQuery), which lets you consume [JSON Lines](/jsonlines) as an array.
+For streamed responses, [`streamedQuery`](https://tanstack.com/query/latest/docs/reference/streamedQuery) reads [JSON Lines](/jsonlines) as an array.
 
-```ts showLineNumbers copy
+```tsx showLineNumbers copy
 import { useQuery, experimental_streamedQuery as streamedQuery } from '@tanstack/react-query';
 import { JSONLinesRPC } from '@/client';
 
@@ -375,9 +375,9 @@ const JSONLinesComponent = () => {
 };
 ```
 
-Mutations work with RPC module methods as expected.
+RPC methods also work as mutation functions.
 
-```ts showLineNumbers copy
+```tsx showLineNumbers copy
 import { useMutation } from '@tanstack/react-query';
 import { UserRPC } from '@/client';
 
@@ -391,14 +391,15 @@ const MyComponent = () => {
       <button
         onClick={() =>
           mutation.mutate({
-            body: { name: 'John Doe', age: 30 },
-            params: { id: '123' },
+            body: { name: 'John Doe', age: 30, email: 'john@example.com' },
+            params: { id: '123e4567-e89b-12d3-a456-426614174000' },
+            query: { notify: 'push' },
           })
         }
       >
         Update User
       </button>
-      {mutation.isLoading ? 'Loading...' : JSON.stringify(mutation.data)}
+      {mutation.isPending ? 'Loading...' : JSON.stringify(mutation.data)}
     </div>
   );
 };
@@ -406,33 +407,32 @@ const MyComponent = () => {
 
 ## `openapi` and `schema`
 
-The generated client also exposes `openapi` and `schema` exports in corresponding modules for accessing the OpenAPI spec and the Vovk Schema, respectively.
+The generated client also exports the OpenAPI spec as `openapi` and the Vovk Schema as `schema`, each from a module of the same name.
 
 ```ts showLineNumbers copy
 import { openapi } from '@/client/openapi';
 import { schema } from '@/client/schema';
 ```
 
-The `schema` object can also be exported from the main module.
+The main module exports `schema` too.
 
 ```ts showLineNumbers copy
 import { schema } from '@/client';
 ```
 
-This also works with the [segmented client](/segmented); in that case, both `openapi` and `schema` include data only for the selected segment:
+The [segmented client](/segmented) has the same exports, but `openapi` and `schema` hold only the data of their segment:
 
 ```ts showLineNumbers copy
 import { openapi } from '@/client/admin/openapi';
-import { schema } from '@/client/admin/schema';
-import { schema } from '@/client/admin';
+import { schema } from '@/client/admin'; // or from '@/client/admin/schema'
 ```
 
 ## Used Templates
 
-The TypeScript RPC client is generated from the following templates:
+The TypeScript RPC client is generated from these templates:
 
-- [ts](/templates#ts) - uncompiled TypeScript module with type definitions; used by default in both the [composed client](/composed) and the [segmented client](/segmented);
-- [mixins](/templates#mixins) - `.d.ts` types and `.json` files generated when [OpenAPI mixins](/mixins) are used;
-- [readme](/templates#readme), [packageJson](/templates#packagejson) - `README.md` with RPC documentation and `package.json` suitable for publishing the generated library as an NPM package.
+- [ts](/templates#ts) - the uncompiled TypeScript module with its types; the default for both the [composed client](/composed) and the [segmented client](/segmented);
+- [mixins](/templates#mixins) - the `.d.ts` types and `.json` files for [OpenAPI mixins](/mixins);
+- [readme](/templates#readme), [packageJson](/templates#packagejson) - a `README.md` that documents the RPC modules, and a `package.json` for publishing the client as an npm package.
 
-For more information, see the [client templates documentation](/templates).
+For more, see the [client templates documentation](/templates).

@@ -4,9 +4,9 @@ import { FileTree, Tabs } from 'nextra/components';
 
 > [!WARNING]
 >
-> The Python client library is experimental and may contain bugs. Use with caution.
+> The Python client is experimental and may have bugs. Use it with caution.
 
-The Python client can be generated with `vovk generate` using the [py](/templates#py) or [pySrc](/templates#pysrc) template.
+`vovk generate` creates the Python client from the [py](/templates#py) or [pySrc](/templates#pysrc) template.
 
 Install the generator package:
 
@@ -14,7 +14,7 @@ Install the generator package:
 npm install vovk-python --save-dev
 ```
 
-Create a Python package with the [CLI](/generate) command:
+Create a Python package with the [CLI](/generate):
 
 ```sh npm2yarn copy
 npm exec -- vovk generate --from py --out ./python_package
@@ -42,7 +42,7 @@ Publish to [PyPI](https://pypi.org/) with:
 python3 -m build ./python_package --wheel --sdist && python3 -m twine upload ./python_package/dist/*
 ```
 
-If you prefer generating source files to embed in another Python project, use the `pySrc` template:
+To generate source files for another Python project instead, use the `pySrc` template:
 
 ```sh npm2yarn copy
 npm exec -- vovk generate --from pySrc --out ./python_src
@@ -61,7 +61,7 @@ This generates:
 
 ## Configuring the Python Client
 
-You can [configure](/config) generation so the client is produced automatically by the default [generate](/generate) command (no flags) and during [vovk dev](/dev), which performs “hot generation” on schema changes. Add the `py` template to the [composed client](/composed) config:
+You can [configure](/config) the default [generate](/generate) command (without flags) to create the client. [vovk dev](/dev) creates it too, and creates it again on every schema change. Add the `py` template to the [composed client](/composed) config:
 
 ```ts showLineNumbers copy filename="vovk.config.mjs"
 /** @type {import('vovk').VovkConfig} */
@@ -81,9 +81,9 @@ const config = {
 export default config;
 ```
 
-The Python client sends its calls to an absolute URL, so it needs [`outputConfig.origin`](/config#outputconfig). Set on the `py` template, it leaves the TypeScript client's relative URLs as they are. Without an origin, `vovk generate` warns, and every call needs its own `api_root`.
+The Python client calls an absolute URL, so it needs [`outputConfig.origin`](/config#outputconfig). Set it on the `py` template, and the TypeScript client keeps its relative URLs. Without an origin, `vovk generate` warns, and every call needs its own `api_root`.
 
-The [py](/templates#py) template (and others) has a default `outDir` (`./dist_python`) for composed clients. Override it via [template definitions](/templates#defs):
+Like other templates, the [py](/templates#py) template has a default `outDir` for composed clients: `./dist_python`. Change it in the [template definitions](/templates#defs):
 
 ```ts showLineNumbers copy filename="vovk.config.mjs"
 /** @type {import('vovk').VovkConfig} */
@@ -105,7 +105,7 @@ export default config;
 
 ### JSON Endpoints
 
-The snippets below are adapted from a real example described on the [Hello World](/hello-world) page.
+The samples below are based on the example from the [Hello World](/hello-world) page.
 
 A controller like this:
 
@@ -238,7 +238,7 @@ export const { GET, POST, PATCH, PUT, HEAD, OPTIONS, DELETE } = initSegment({
 </Tabs.Tab>
 </Tabs>
 
-...emits a [Vovk.ts schema](/schema), which is then used to generate the Python client, following Python conventions, adding comments from `description`, and selecting appropriate number types. For example, `age` is generated as `int`, matching the controller definition.
+...emits a [Vovk.ts schema](/schema). The Python client is generated from it. It follows Python conventions, adds comments from `description`, and picks matching number types: `age` becomes an `int`, as in the controller.
 
 ```py filename="./dist_python/src/package_name/__init__.py"
 from __future__ import annotations
@@ -317,15 +317,14 @@ class UserRPC:
         )
 ```
 
-All RPC modules are generated in `__init__.py`, which contains the RPC functions and the associated types. Types for nested structures are emitted as `TypedDict`s. A key the schema doesn't require is `NotRequired`, imported from `typing_extensions` before Python 3.11. A type that isn't a `TypedDict`, such as a `str` output, is a `TypeAlias`, imported the same way.
+All RPC modules are in `__init__.py`, with the RPC functions and their types. Nested structures get `TypedDict` types. A key the schema doesn't require is `NotRequired`, imported from `typing_extensions` before Python 3.11. A type that isn't a `TypedDict`, such as a `str` output, is a `TypeAlias`, imported the same way.
 
-Types for `body`, `query`, and `params` follow the pattern `[PascalCaseMethodName][InputType]`. For a method `updateUser`, you get `UpdateUserBody`, `UpdateUserQuery`, and `UpdateUserParams`.
+Types for `body`, `query` and `params` are named `[PascalCaseMethodName][InputType]`. For `updateUser`, they are `UpdateUserBody`, `UpdateUserQuery` and `UpdateUserParams`.
 
-Method names are in snake_case: `UserRPC.updateUser` is `UserRPC.update_user`. They are per RPC class, in schema order: a name already taken gets the first free suffix, `_2`, `_3`, so `getUserByID` and `getUserById` give `get_user_by_id` and `get_user_by_id_2`.
+Method names are in snake_case: `UserRPC.updateUser` is `UserRPC.update_user`. Each RPC class names its methods in schema order. A name that is already taken gets the first free suffix, `_2`, `_3`, so `getUserByID` and `getUserById` give `get_user_by_id` and `get_user_by_id_2`.
 
 ```py
-from dist_python.src.vovk_hello_world import UserRPC
-import vovk_hello_world
+from vovk_hello_world import UserRPC
 
 def main() -> None:
     body: UserRPC.UpdateUserBody = {
@@ -345,19 +344,19 @@ def main() -> None:
     print('UserRPC.update_user:', update_user_response)
 
 if __name__ == "__main__":
-  try:
-      main()
-  except Exception as e:
-      print(f"Error: {e}")
+    try:
+        main()
+    except Exception as e:
+        print(f"Error: {e}")
 ```
 
-Under the hood, it uses [requests](https://pypi.org/project/requests/) for HTTP, [jsonschema](https://pypi.org/project/jsonschema/) for client-side validation, and other common libraries. A `pattern` that Python's `re` can't compile, such as `\p{L}`, is left to the server.
+The client uses [requests](https://pypi.org/project/requests/) for HTTP, [jsonschema](https://pypi.org/project/jsonschema/) for client-side validation, and other common libraries. A `pattern` that Python's `re` can't compile, such as `\p{L}`, is left to the server.
 
-A call returns the parsed JSON, or `None` for an empty JSON body. A response of a `text/*` type, or of any type with a charset, comes back as `str`, decoded as UTF-8 unless the charset names another encoding. Any other response, such as a file, comes back as `bytes`.
+A call returns the parsed JSON, or `None` for an empty JSON body. A `text/*` response, or a response of any type with a charset, comes back as a `str`, decoded as UTF-8 unless the charset names another encoding. Any other response, such as a file, comes back as `bytes`.
 
 ### JSON Lines Endpoints
 
-For continuous streaming with [JSON Lines](/jsonlines) endpoints, the Python client returns a `Generator` you can iterate over.
+For [JSON Lines](/jsonlines) endpoints, the Python client returns a `Generator` that you iterate over.
 
 A controller like this:
 
@@ -473,8 +472,7 @@ class StreamRPC:
 Usage:
 
 ```py
-from dist_python.src.vovk_hello_world import StreamRPC
-import vovk_hello_world
+from vovk_hello_world import StreamRPC
 
 def main() -> None:
     stream_response = StreamRPC.stream_tokens()
@@ -491,7 +489,7 @@ if __name__ == "__main__":
 
 ### Timeout and Session
 
-All calls share one `requests.Session`, so connections stay open between them. The client waits 10 seconds to connect and 300 seconds for each read, and an upload fails when the server takes no data for 10 seconds. Both are attributes of the module-level `client`:
+All calls share one `requests.Session`, so connections stay open between them. The client waits 10 seconds to connect and 300 seconds for each read. An upload fails when the server takes no data for 10 seconds. The timeout and the session are attributes of the module-level `client`:
 
 ```py
 from package_name import client
@@ -500,7 +498,7 @@ client.timeout = 30  # seconds, or a (connect, read) tuple; None waits forever
 client.session.headers["Authorization"] = "Bearer ..."
 ```
 
-The session keeps no cookie a response sets, since one client serves every call and thread. A cookie set by hand, as `client.session.cookies.set("session", "...")`, goes with every call. To keep the cookies responses set, call `client.session.cookies.set_policy(http.cookiejar.DefaultCookiePolicy())`.
+The session doesn't keep cookies that responses set, because one client serves every call and thread. A cookie you set by hand, such as `client.session.cookies.set("session", "...")`, goes with every call. To keep the cookies that responses set, call `client.session.cookies.set_policy(http.cookiejar.DefaultCookiePolicy())`.
 
 ## Roadmap/bugs
 

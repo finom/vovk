@@ -1,10 +1,10 @@
 # Deriving AI Tools from Controllers and RPC Modules
 
-Controllers as well as generated RPC/API modules can be converted into AI tools for LLM function calling, using `deriveTools` utility. This makes your back-end functionality accessible to AI models (including MCP clients) with minimum code. The function accepts `modules` record with 
+`deriveTools` turns controllers and generated RPC or API modules into AI tools for LLM function calling. AI models, MCP clients included, can then call your back end. The function takes a `modules` record with:
 
-- Controllers for same-context execution to be used on back-end.
-- RPC modules generated from controllers for HTTP calls or be used on front-end or other environments that support `fetch`.
-- Third-party OpenAPI-based modules (called [OpenAPI mixins](/mixins) in this documentation), enabling to combine back-end functionality with external APIs in a single agent.
+- Controllers, which run in the current context, on the back end.
+- RPC modules generated from controllers, which make HTTP calls, on the front end or anywhere else with `fetch`.
+- Third-party modules generated from OpenAPI ([OpenAPI mixins](/mixins) in these docs), so one agent can use both your back end and external APIs.
 
 A tool comes from a [procedure](/procedure) or an RPC method that has an operation object, given by [`@operation`](/openapi), `@operation.tool` or `@operation.error`. Every [OpenAPI mixin](/mixins) method has one. Other members of a module are left out.
 
@@ -24,33 +24,33 @@ const tools = deriveTools({
 console.log('Derived tools:', tools); // [{ name, description, inputSchema, execute, ... }, ...]
 ```
 
-The function returns an array of tools. Each tool satisfies the `StandardToolV0` interface from the [standard-tool](https://standard-tool.js.org/) convention:
+The function returns an array of tools. Each tool satisfies the `StandardToolV0` interface of the [standard-tool](https://standard-tool.js.org/) convention:
 
-- `name: string{:ts}` - the name of the tool, derived from the module and method names as `${moduleName}_${handlerName}` (can be overridden with `x-tool.name`, see below). As model APIs require, a character other than `A-Z`, `a-z`, `0-9`, `_` and `-` becomes `_`, and a name longer than 64 characters is cut to 64, ending with a hash of the whole name. Two tools with the same name make `deriveTools` throw.
-- `title?: string{:ts}` - optional title for the tool. Used mainly for MCPs, derived from OpenAPI `summary` or `x-tool.title` if available.
-- `description: string{:ts}` - the description of the tool, derived concatenating `summary` and `description` from OpenAPI operation (can be overridden with `x-tool.description`, see below).
-- `inputSchema?: StandardSchemaV1 & StandardJSONSchemaV1{:ts}` - a single merged Standard Schema of the procedure's `body`, `query`, and `params`, when available.
-- `outputSchema?: StandardSchemaV1 & StandardJSONSchemaV1{:ts}` - equals to the procedure's `output` schema, when available.
-- `meta?: Record<string, unknown>{:ts}` - static data about the tool, copied as is from `x-tool.meta` (see below). It's read by the code that consumes the tools and never sent to the LLM.
-- `execute: (input: { body?, query?, params? }) => Promise<unknown>{:ts}` - the function to execute the tool logic. For RPC modules, it performs an HTTP request; for controllers, it calls the `fn` method to execute in the current context without HTTP. A [JSON Lines](/jsonlines) result, from a generator or a `JSONLinesResponder`, reaches the model as the array of its items.
+- `name: string{:ts}` - the tool name, made from the module and method names as `${moduleName}_${handlerName}`. `x-tool.name` overrides it (see below). As model APIs require, each character other than `A-Z`, `a-z`, `0-9`, `_` and `-` becomes `_`. A name longer than 64 characters is cut to 64 and ends with a hash of the whole name. Two tools with the same name make `deriveTools` throw.
+- `title?: string{:ts}` - an optional title, used mainly by MCP. It comes from `x-tool.title` or the OpenAPI `summary`, if there is one.
+- `description: string{:ts}` - the tool description: the `summary` and `description` of the OpenAPI operation, joined. `x-tool.description` overrides it (see below).
+- `inputSchema?: StandardSchemaV1 & StandardJSONSchemaV1{:ts}` - one Standard Schema that merges the procedure's `body`, `query` and `params`, when there are any.
+- `outputSchema?: StandardSchemaV1 & StandardJSONSchemaV1{:ts}` - the procedure's `output` schema, when there is one.
+- `meta?: Record<string, unknown>{:ts}` - static data about the tool, copied as is from `x-tool.meta` (see below). The code that uses the tools reads it; the LLM never gets it.
+- `execute: (input: { body?, query?, params? }) => Promise<unknown>{:ts}` - runs the tool. For RPC modules, it sends an HTTP request. For controllers, it calls the `fn` method, which runs in the current context without HTTP. A [JSON Lines](/jsonlines) result, from a generator or a `JSONLinesResponder`, reaches the model as the array of its items.
 
-> `inputSchema` validates the `{ body, query, params }` envelope itself and delegates slot values to your original library schemas (Zod, Valibot, ArkType). For RPC modules and OpenAPI mixins it's reconstructed from the generated JSON Schemas, so only the envelope is checked and the values are validated during execution.
+> `inputSchema` validates the `{ body, query, params }` envelope itself, and leaves each slot's value to your original library schema (Zod, Valibot, ArkType). For RPC modules and OpenAPI mixins, it's rebuilt from the generated JSON Schemas, so it checks only the envelope, and the values are validated when the tool runs.
 
 ## `deriveTools` Options
 
-The `deriveTools` function accepts an options object with the following properties:
+`deriveTools` takes an options object with these properties:
 
-- `modules: Record<string, object>{:ts}` - a record of modules (RPC/API modules or controllers) to derive tools from.
-- `onExecute?: (result: unknown, tool: StandardToolV0) => void{:ts}` - optional callback invoked when a tool's `execute` function completes successfully.
-- `onError?: (error: Error, tool: StandardToolV0) => void{:ts}` - optional callback invoked when a tool's `execute` function throws an error, or when a controller returns a `Response` with an error status. The error for a `Response` is an `HttpException` with its status and the message from the body: the `message`, `detail` or `title` of a JSON body, else its text. `ToModelOutput.DEFAULT` gives the model `{ error: message }{:ts}` for both.
-- `toModelOutput?: ToModelOutputFn<TInput, TOutput, TFormattedOutput>{:ts}` - optional function to format the output returned to the LLM. Can be set to a custom function or one of the built-in formatters, defined in `ToModelOutput` object, exported from `vovk`, such as 
+- `modules: Record<string, object>{:ts}` - the modules (RPC or API modules, or controllers) to derive tools from.
+- `onExecute?: (result: unknown, tool: StandardToolV0, req: Pick<VovkRequest, 'vovk'> | null) => void{:ts}` - an optional callback that runs when a tool's `execute` function succeeds. For a controller, `req` is the call's request object, with `req.vovk`; for an RPC method, it's `null`.
+- `onError?: (error: Error, tool: StandardToolV0, req: Pick<VovkRequest, 'vovk'> | null) => void{:ts}` - an optional callback that runs when a tool's `execute` function throws, or when a controller returns a `Response` with an error status. For a `Response`, the error is an `HttpException` with its status and the message from the body: the `message`, `detail` or `title` of a JSON body, else its text. `ToModelOutput.DEFAULT` gives the model `{ error: message }{:ts}` in both cases. `req` is as in `onExecute`, or `null` for a thrown error.
+- `toModelOutput?: ToModelOutputFn<TInput, TOutput, TFormattedOutput>{:ts}` - an optional function that formats the output for the LLM. Set it to your own function or to a built-in formatter from the `ToModelOutput` object, exported from `vovk`:
   - `ToModelOutput.MCP` for MCP formatting.
-  - `ToModelOutput.DEFAULT` that's used by default when `toModelOutput` is not provided.
-- `meta?: Record<string, unknown>{:ts}` - optional metadata passed to each controller/RPC method. The meta can be read on the back end using [req.vovk.meta](/req-vovk#meta). When passed to a controller procedure, it's merged with procedure-level meta normally. When passed to an RPC method, it's available as `xMetaHeader` key. [OpenAPI mixins](/mixins) don't get it, as their hosts are third parties.
+  - `ToModelOutput.DEFAULT`, the default when `toModelOutput` isn't set.
+- `meta?: Record<string, unknown>{:ts}` - optional metadata for each controller or RPC method. The back end reads it with [req.vovk.meta](/req-vovk#meta). A controller procedure merges it with its own meta as usual. An RPC method gets it under the `xMetaHeader` key. [OpenAPI mixins](/mixins) don't get it, since their hosts are third parties.
 
 ## Custom Operation Attributes with `x-tool` or `@operation.tool` Decorator
 
-By default, tool description is derived from OpenAPI `summary` and `description` fields and the tool name is generated in the form of `${moduleName}_${handlerName}`. You can override these values and add tool-specific attributes using `x-tool` custom attributes in the `@operation` decorator.
+To override the default tool name and description, or to add other tool attributes, use the custom `x-tool` attribute in the `@operation` decorator.
 
 ```ts showLineNumbers copy filename="src/modules/user/user-controller.ts"
 import { z } from 'zod';
@@ -62,7 +62,7 @@ export default class UserController {
     summary: 'Get user by ID',
     description: 'Retrieves a user by their unique ID.',
     'x-tool': {
-      // tool-specific attributes
+      // tool attributes
     }
   })
   @get('{id}')
@@ -74,7 +74,7 @@ export default class UserController {
 }
 ```
 
-`@operation` also provides `tool` property that defines tool-specific attributes for `deriveTools` function. It's set under `x-tool` key in the OpenAPI operation object and created for cleaner syntax.
+`@operation.tool` sets the same attributes with shorter syntax. They go under the `x-tool` key of the OpenAPI operation object.
 
 ```ts showLineNumbers copy filename="src/modules/user/user-controller.ts"
 import { z } from 'zod';
@@ -100,19 +100,19 @@ export default class UserController {
 }
 ```
 
-The tool attributes available under `x-tool` are:
+The attributes under `x-tool` are:
 
-- `hidden?: boolean` - if set to `true`, the tool is excluded from the derived tools.
+- `hidden?: boolean` - `true` leaves the tool out of the derived tools.
 - `name?: string` - overrides the generated tool name.
-- `title?: string` - optional title for the tool. Used mainly for MCPs.
+- `title?: string` - an optional title for the tool, used mainly by MCP.
 - `description?: string` - overrides the generated tool description.
-- `meta?: Record<string, unknown>` - static data that lands on the derived tool as its `meta` field. Don't confuse it with the `meta` option of `deriveTools`, which is runtime metadata passed to the procedure instead.
+- `meta?: Record<string, unknown>` - static data that becomes the derived tool's `meta` field. It's not the `meta` option of `deriveTools`, which is runtime metadata for the procedure.
 
 ## Tips 
 
 ### Selecting Specific Procedures
 
-To include only certain procedures from a module (besides using `hidden` attribute), use the `pick`/`omit` pattern from `lodash` or a similar utility.
+To include only some procedures of a module, besides the `hidden` attribute, use `pick` or `omit` from `lodash` or a similar utility.
 
 ```ts showLineNumbers copy
 import { deriveTools } from 'vovk';
@@ -128,11 +128,11 @@ const tools = deriveTools({
 });
 ```
 
-The resulting `tools` include `createPost` and `getPost` from `PostRPC`, and all methods from `UserController` except `deleteUser`.
+The resulting `tools` include `createPost` and `getPost` from `PostRPC`, and all methods of `UserController` except `deleteUser`.
 
 ### Authorizing API Calls
 
-Third-party API calls may require authorization headers that can be passed by using `withDefaults` function, available for all [generated RPC/API modules](/typescript). Having `GithubIssuesAPI` module, described in [OpenAPI mixins](/mixins), you can create authorized tools for Github Issues API:
+Third-party APIs may need authorization headers. Pass them with the `withDefaults` function, which all [generated RPC/API modules](/typescript) have. With the `GithubIssuesAPI` module from [OpenAPI mixins](/mixins), you can create authorized tools for the GitHub Issues API:
 
 ```ts showLineNumbers copy
 
@@ -156,7 +156,7 @@ const tools = deriveTools({
 
 ## Standalone Tools
 
-The `createTool` utility was removed in v4. Since derived tools follow the standard-tool convention, standalone tools that don't map to back-end functionality can be created with the [standard-tool](https://www.npmjs.com/package/standard-tool) package (or written as plain objects of the same shape) and mixed freely with derived tools:
+The `createTool` utility was removed in v4. Derived tools follow the standard-tool convention. So you can create standalone tools, which don't map to your back end, with the [standard-tool](https://www.npmjs.com/package/standard-tool) package, or write them as plain objects of the same shape. Mix them with derived tools as you like:
 
 ```ts showLineNumbers copy
 import { standardTool } from 'standard-tool';
@@ -178,15 +178,15 @@ const allTools = [...tools, sumNumbers];
 
 ## Vercel AI SDK Example
 
-That's an example of Vercel AI SDK chat that uses `UserController` to derive tools. [View live example on examples.vovk.dev »](https://examples.vovk.dev/ai-sdk)
+This example is a Vercel AI SDK chat that derives its tools from `UserController`. The Realtime Kanban app runs a fuller version of it: [source on GitHub »](https://github.com/finom/vovk/blob/main/examples/realtime-kanban/src/modules/ai/ai-sdk-controller.ts)
 
-First, create an empty controller. The command will also update the root `route.ts` file.
+First, create an empty controller. The command also updates the root `route.ts` file.
 
 ```sh npm2yarn copy
 npm exec -- vovk new controller aiSdk --empty
 ```
 
-Paste the following into the newly created `src/modules/ai-sdk/ai-sdk-controller.ts`, adjusting imports as needed:
+Paste this into the new `src/modules/ai-sdk/ai-sdk-controller.ts`, and fix the imports if needed:
 
 ```ts showLineNumbers copy filename="src/modules/ai-sdk/ai-sdk-controller.ts" {24-26, 28-37}
 import {
@@ -241,9 +241,9 @@ export default class AiSdkController {
 }
 ```
 
-Here, the tool's `inputSchema` is passed to Vercel AI SDK as is: the SDK supports Standard Schema and Standard JSON Schema natively, using it for both argument validation and JSON Schema conversion. A procedure without input has no `inputSchema`, and the SDK requires one, so the example passes an empty object schema instead. For other libraries, you can map the tools differently.
+The tool's `inputSchema` goes to the Vercel AI SDK as is. The SDK supports Standard Schema and Standard JSON Schema, and uses the schema both to validate arguments and to convert to JSON Schema. A procedure without input has no `inputSchema`, and the SDK requires one, so the example passes an empty object schema instead. Other libraries may need the tools mapped another way.
 
-On the client-side, create a component using the [useChat](https://ai-sdk.dev/docs/reference/ai-sdk-ui/use-chat) hook:
+On the client side, create a component with the [useChat](https://ai-sdk.dev/docs/reference/ai-sdk-ui/use-chat) hook:
 
 ```tsx showLineNumbers copy filename="src/app/page.tsx"
 'use client';
@@ -290,9 +290,9 @@ export default function Page() {
 
 ---
 
-See [Realtime Kanban / Text AI Chat](/realtime-ui/text-ai) for more info.
+See [Realtime Kanban / Text AI Chat](/realtime-ui/text-ai) for more.
 
 
 ## Roadmap
 
-- ✨ Add a `router` option to `deriveTools` to support hundreds of functions without hitting LLM tools limits. Routing can be implemented using vector search or other approaches.
+- ✨ Add a `router` option to `deriveTools`, so it can serve hundreds of functions within the LLM tool limits. Routing could use vector search or other methods.
