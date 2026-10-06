@@ -20,6 +20,7 @@ import { chalkHighlightThing } from '../utils/chalk-highlight-thing.mjs';
 import { debounceWithArgs } from '../utils/debounce-with-args.mjs';
 import { formatLoggedSegmentName } from '../utils/format-logged-segment-name.mjs';
 import { locateSegments, type Segment } from '../utils/locate-segments.mjs';
+import { oneAtATime } from '../utils/one-at-a-time.mjs';
 import { toPosixPath } from '../utils/to-import-path.mjs';
 import { watchFolder } from '../utils/watch-folder.mjs';
 import { debouncedEnsureSchemaFiles, ensureSchemaFiles, getPlaceholderSchema } from './ensure-schema-files.mjs';
@@ -482,7 +483,10 @@ export class VovkDev {
     return { isError: false };
   }
 
-  #generate = debounce(async () => {
+  #generate = debounce(() => void this.#generateOneAtATime(), 1000);
+
+  // a schema that comes in during a generation makes one more, which reads the newest schemas
+  #generateOneAtATime = oneAtATime(async () => {
     try {
       await this.#writeMissingSchemaFiles();
       const fullSchema = {
@@ -503,7 +507,7 @@ export class VovkDev {
       this.#projectInfo.log.error(`Failed to generate the client: ${(error as Error)?.message ?? error}`);
       this.#failExitRun();
     }
-  }, 1000);
+  });
 
   #failExitRun() {
     if (this.#exit) process.exitCode = 1;
