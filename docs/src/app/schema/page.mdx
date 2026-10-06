@@ -2,11 +2,11 @@ import { FileTree } from 'nextra/components';
 
 # Schema
 
-The `npm run dev` script runs [vovk dev](/dev) alongside `next dev` via [concurrently](https://www.npmjs.com/package/concurrently). The Vovk process watches the `modules` folder and the segment route files. On the first run or after a change, it calls the Next.js dev server’s `_schema_` endpoint (available only when `process.env.NODE_ENV` is `development`) of the segment whose controller changed, or of every segment when the changed file holds no known controller, such as a service or a validation module. That endpoint returns the schema for the target segment, enabling isolated JSON emission per segment.
+The `npm run dev` script runs [vovk dev](/dev) next to `next dev` with [concurrently](https://www.npmjs.com/package/concurrently). The Vovk process watches the `modules` folder and the segment route files. On the first run and after a change, it calls the `_schema_` endpoint of the Next.js dev server (served only when `process.env.NODE_ENV` is `development`). It calls the endpoint of the segment whose controller changed, or of every segment when the changed file holds no known controller, such as a service or a validation module. The endpoint returns the schema of its own segment.
 
-Each segment emits its backend schema to an individual JSON file, which is then used to generate client-side RPC modules. If your application has multiple areas (e.g., root, admin, customer), each area has its own schema file.
+Each segment writes its back-end schema to a JSON file of its own, and the client RPC modules are generated from these files. An app with several areas, such as root, admin and customer, has a schema file for each area.
 
-For a segment structure like this:
+For these segments:
 
 <FileTree>
   <FileTree.Folder name="src/app/api" defaultOpen>
@@ -61,7 +61,7 @@ For a segment structure like this:
   </FileTree.Folder>
 </FileTree>
 
-The resulting schema files are written to `.vovk-schema/`:
+The schema files in `.vovk-schema/` are:
 
 <FileTree>
   <FileTree.Folder name=".vovk-schema" defaultOpen>
@@ -75,11 +75,11 @@ The resulting schema files are written to `.vovk-schema/`:
   </FileTree.Folder>
 </FileTree>
 
-Emitted files mirror the segment tree. For example, a `foo/bar/baz` segment emits `.vovk-schema/foo/bar/baz.json`. The root segment is the only exception and uses `root.json` for clarity.
+The files follow the segment tree: a `foo/bar/baz` segment emits `.vovk-schema/foo/bar/baz.json`. Only the root segment is different: its file is `root.json`, for clarity.
 
-`_meta.json` contains additional metadata, including selected fields from [vovk.config](/config) under the `config` key.
+`_meta.json` holds more metadata, such as the selected fields of [vovk.config](/config) under the `config` key.
 
-When the Vovk CLI reads these files, it builds a single object with `segments` and `meta`. `segments` is flat, keyed by segment name, and `meta` contains the `_meta.json` content. This object powers client generation and OpenAPI output.
+The CLI reads these files into one object with `segments` and `meta`. `segments` is flat, keyed by segment name; `meta` holds the content of `_meta.json`. The client and the OpenAPI output are generated from this object.
 
 ```ts showLineNumbers copy
 {
@@ -93,7 +93,7 @@ When the Vovk CLI reads these files, it builds a single object with `segments` a
 }
 ```
 
-The schema is available as the `schema` export.
+The client exports it as `schema`.
 
 ```ts showLineNumbers copy
 import { schema } from '@/client';
@@ -104,9 +104,9 @@ console.log(schema); // full schema
 console.log(schema.segments.admin); // admin segment schema
 ```
 
-The `schema` object is typed from the JSON files it's built from, where every string field is a plain `string`, so it isn't assignable to the `VovkSchema` type, whose fields are literal unions.
+The `schema` object is typed from its JSON files, where every string field is a plain `string`. So it isn't assignable to the `VovkSchema` type, whose fields are literal unions.
 
-The `schema` is also available in the [segmented client](/segmented), containing exactly one segment:
+The [segmented client](/segmented) exports `schema` too, with exactly one segment:
 
 ```ts showLineNumbers copy
 {
@@ -125,35 +125,35 @@ import { schema } from '@client/root/schema';
 
 ---
 
-Example of a segment schema file:
+A segment schema file:
 
 ```js filename=".vovk-schema/foo.json"
 {
   // Segment schema version
   "$schema": "https://vovk.dev/api/schema/v3/segment.json",
-  // vovkInit function option that defines is the schema going to be emitted for this segment
+  // The initSegment option that sets whether the segment emits its schema
   "emitSchema": true,
-  // Segment name, for the root segment it's an empty string
+  // Segment name, an empty string for the root segment
   "segmentName": "foo",
   // "segment", or "mixin" for an OpenAPI mixin
   "segmentType": "segment",
-  // List of controllers as key-value pairs for fast access
-  // Key is a name of the variable that's going to be exported from "@/client"
-  // Value is controller information
+  // Controllers by name, for fast access
+  // The key is the name that "@/client" exports
+  // The value describes the controller
   "controllers": {
     "HelloRPC": {
-      // RPC name that's going to be used in the client
+      // RPC module name in the client
       "rpcModuleName": "HelloRPC",
-      // Original name of the controller class, used to determine segment name when the controller is changed on "vovk dev"
+      // Controller class name; "vovk dev" uses it to find the segment of a changed controller
       "originalControllerName": "HelloController",
-      // An argument of @prefix class decorator
+      // The argument of the @prefix class decorator
       "prefix": "hello",
-      // List of handlers as key-value pairs for fast access
-      // Key is a static method name
-      // Value is a handler information
+      // Handlers by name, for fast access
+      // The key is the static method name
+      // The value describes the handler
       "handlers": {
         "getHello": {
-          // Endpoint that's concatenated with the prefix
+          // Endpoint path, appended to the prefix
           "path": "greeting",
           // HTTP method
           "httpMethod": "POST",
@@ -195,7 +195,7 @@ Example of a segment schema file:
               "$schema": "https://json-schema.org/draft/2020-12/schema"
             },
             "output": {
-              // or "iteration" for JSONLines response
+              // or "iteration" for a JSON Lines response
               "type": "object",
               "properties": {
                 "hello": {
@@ -207,20 +207,20 @@ Example of a segment schema file:
               "$schema": "https://json-schema.org/draft/2020-12/schema"
             }
           },
-          // OpenAPI object that can be used to generate OpenAPI documentation, LLM tools, MCP etc.
+          // OpenAPI operation, for OpenAPI documentation, LLM tools, MCP and so on
           "operationObject": {
             "summary": "Hello world",
             "description": "Hello world",
-            // Custom field for AI tools generation
+            // Custom field for AI tools
             "x-tool": { 
               "name": "getHello", // custom name for an AI tool
               "title": "Get Hello", // custom title for an AI tool
               "description": "Hello world", // custom description for an AI tool
-              "hidden": false, // whether to hide the tool from AI tool generation
+              "hidden": false, // whether to leave the tool out of the derived tools
               "meta": { "category": "greetings" } // static data copied to the derived tool
             } 
           },
-          // Custom data that can be defined by a custom decorator
+          // Custom data, set by a custom decorator
           "misc": {
             "hello": "World"
           }
