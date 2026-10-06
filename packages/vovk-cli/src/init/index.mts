@@ -302,8 +302,7 @@ export class Init {
 
     if (!(await getFileSystemEntryType(path.join(root, 'package.json')))) {
       log.warn(
-        `${chalkHighlightThing('package.json')} not found at ${chalkHighlightThing(root)}. Run "npx create-next-app" to create a new Next.js project
-        .`
+        `${chalkHighlightThing('package.json')} not found at ${chalkHighlightThing(root)}. Run "npx create-next-app" to create a new Next.js project.`
       );
     } else if (pkgJson && !(await getFileSystemEntryType(path.join(root, 'tsconfig.json')))) {
       log.warn(
