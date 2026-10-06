@@ -178,6 +178,9 @@ const copyContainers = (value: unknown): unknown =>
       ? Object.fromEntries(Object.entries(value).map(([key, item]) => [key, copyContainers(item)]))
       : value;
 
+// options that make Ajv edit the data it checks, which the caller's query and params must not see
+const writesIntoData = (options: Options) => !!(options.useDefaults || options.removeAdditional || options.coerceTypes);
+
 // a repeated key becomes an array, the way the server parses a form
 const formToObject = (form: FormData | URLSearchParams) => {
   const result: Record<string, unknown> = {};
@@ -214,13 +217,14 @@ const validate = ({
   const isForm = input instanceof FormData || input instanceof URLSearchParams;
   // a URL carries the query and params as strings
   const isURLPart = type === 'query' || type === 'params';
-  const { ajv, validator } = getValidator(
-    schema,
-    options,
-    target ?? schemaTarget,
-    isForm || isURLPart,
-    `the ${type} of ${endpoint}`
-  );
+  const description = `the ${type} of ${endpoint}`;
+  // query and params that are valid as given need no copy and no coercion
+  if (isURLPart && !isForm && !writesIntoData(options)) {
+    const { validator } = getValidator(schema, options, target ?? schemaTarget, false, description);
+    // a schema Ajv can't compile is left to the server
+    if (!validator || validator(input)) return;
+  }
+  const { ajv, validator } = getValidator(schema, options, target ?? schemaTarget, isForm || isURLPart, description);
   // the server validates the input anyway
   if (!validator) return;
   const data = isForm ? formToObject(input) : isURLPart ? copyContainers(input) : withBinaryPlaceholders(input);
