@@ -1,12 +1,14 @@
-# Packages and Repos
+# Packages
 
-## Packages of the [Main Monorepo](https://github.com/finom/vovk)
+The [Vovk.ts repository](https://github.com/finom/vovk) holds the npm packages, the examples, the performance tests and this documentation.
+
+## npm Packages
 
 ### [vovk](https://www.npmjs.com/package/vovk)
 
 <a href="https://www.npmjs.com/package/vovk"><img src="https://img.shields.io/npm/v/vovk" alt="NPM Version" className="inline-block" /></a>
 
-The core/runtime library providing decorators, utilities, types, and other features used by both server-side and client-side code. It peer-depends only on type-focused [openapi3-ts](https://www.npmjs.com/package/openapi3-ts) and is reported as 100% self-composed on [Bundlephobia](https://bundlephobia.com/package/vovk).
+The runtime library: decorators, utilities, types and other code used on the server and on the client. Its only peer dependency is [openapi3-ts](https://www.npmjs.com/package/openapi3-ts), for types, and [Bundlephobia](https://bundlephobia.com/package/vovk) reports it as 100% self-composed.
 
 ```sh npm2yarn copy
 npm install vovk
@@ -16,7 +18,7 @@ npm install vovk
 
 <a href="https://www.npmjs.com/package/vovk-cli"><img src="https://img.shields.io/npm/v/vovk-cli" alt="NPM Version" className="inline-block" /></a>
 
-The CLI package. Install globally or as a dev dependency. Provides the `vovk` binary.
+The CLI. Install it globally or as a dev dependency. It provides the `vovk` binary.
 
 ```sh npm2yarn copy
 npm install vovk-cli --save-dev
@@ -36,7 +38,7 @@ npm exec -- vovk <command>
 
 <a href="https://www.npmjs.com/package/vovk-ajv"><img src="https://img.shields.io/npm/v/vovk-ajv" alt="NPM Version" className="inline-block" /></a>
 
-Exposes `validateOnClient` to validate input data on the client using the emitted JSON Schema.
+Exports `validateOnClient`, which validates input on the client with the emitted JSON Schema.
 
 ```sh npm2yarn copy
 npm install vovk-ajv
@@ -46,7 +48,7 @@ npm install vovk-ajv
 
 <a href="https://www.npmjs.com/package/vovk-python"><img src="https://img.shields.io/npm/v/vovk-python" alt="NPM Version" className="inline-block" /></a>
 
-Provides Python client templates and utilities to generate the [Python client library](/python).
+Templates and utilities that generate the [Python client library](/python).
 
 ```sh npm2yarn copy
 npm install vovk-python --save-dev
@@ -56,42 +58,42 @@ npm install vovk-python --save-dev
 
 <a href="https://www.npmjs.com/package/vovk-rust"><img src="https://img.shields.io/npm/v/vovk-rust" alt="NPM Version" className="inline-block" /></a>
 
-Provides Rust client templates and utilities to generate the [Rust client library](/rust).
+Templates and utilities that generate the [Rust client library](/rust).
 
 ```sh npm2yarn copy
 npm install vovk-rust --save-dev
 ```
 
-## Other Repos and Packages
+## Examples and Other Folders
 
-### [vovk-examples](https://examples.vovk.dev/)
+### [examples/kitchen-sink](https://github.com/finom/vovk/tree/main/examples/kitchen-sink)
 
 <a href="https://www.npmjs.com/package/vovk-examples"><img src="https://img.shields.io/npm/v/vovk-examples" alt="NPM Version" className="inline-block" /></a>
 
-A collection of examples and proofs of concept. The client library is published on [NPM](https://www.npmjs.com/package/vovk-examples) and used on this site.
+Examples and proofs of concept, served at [examples.vovk.dev](https://examples.vovk.dev/). Its client library is published to npm as [vovk-examples](https://www.npmjs.com/package/vovk-examples), and this site uses it.
 
-### [vovk-hello-world](https://github.com/finom/vovk/tree/main/examples/hello-world)
+### [examples/hello-world](https://github.com/finom/vovk/tree/main/examples/hello-world)
 
 <a href="https://www.npmjs.com/package/vovk-hello-world"><img src="https://img.shields.io/npm/v/vovk-hello-world" alt="NPM Version" className="inline-block" /></a>
 <a href="https://crates.io/crates/vovk-hello-world"><img src="https://img.shields.io/crates/v/vovk-hello-world.svg" alt="crates.io" className="inline-block" /></a>
 <a href="https://pypi.org/project/vovk-hello-world/"><img src="https://badge.fury.io/py/vovk-hello-world.svg" alt="PyPI version" className="inline-block" /></a>
 
-A minimal example of using Vovk.ts. See the ["Hello World"](/hello-world) page for details. The client library is published on [NPM](https://www.npmjs.com/package/vovk-hello-world), [Crate](https://crates.io/crates/vovk-hello-world), and [PyPI](https://pypi.org/project/vovk-hello-world/).
+A minimal Vovk.ts example, served at [hello-world.vovk.dev](https://hello-world.vovk.dev/). See the ["Hello World"](/hello-world) page. Its client library is published as `vovk-hello-world` on [npm](https://www.npmjs.com/package/vovk-hello-world), [crates.io](https://crates.io/crates/vovk-hello-world) and [PyPI](https://pypi.org/project/vovk-hello-world/).
 
-### [vovk-multitenant-example](https://github.com/finom/vovk/tree/main/examples/multitenant)
+### [examples/multitenant](https://github.com/finom/vovk/tree/main/examples/multitenant)
 
-Demonstrates [multitenancy](/multitenant) with Vovk.ts.
+Shows [multitenancy](/multitenant) with Vovk.ts, served at [multitenant.vovk.dev](https://multitenant.vovk.dev/).
 
 <div hidden>
-### [realtime-kanban](https://github.com/finom/vovk/tree/main/examples/realtime-kanban)
+### [examples/realtime-kanban](https://github.com/finom/vovk/tree/main/examples/realtime-kanban)
 
-A realtime Kanban board application built with Vovk.ts, described in the [Realtime Kanban](/realtime-ui) series of articles.
+A realtime Kanban board built with Vovk.ts, described in the [Realtime Kanban](/realtime-ui) series of articles.
 </div>
 
-### [vovk-perf-test](https://github.com/finom/vovk/tree/main/perf)
+### [perf](https://github.com/finom/vovk/tree/main/perf)
 
 [Overhead performance](/performance) tests for Vovk.ts.
 
-### [vovk.dev](https://github.com/finom/vovk/tree/main/docs)
+### [docs](https://github.com/finom/vovk/tree/main/docs)
 
-This documentation.
+This documentation, served at [vovk.dev](https://vovk.dev).

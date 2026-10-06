@@ -135,6 +135,37 @@ describe('vovk-ajv', () => {
     await rejects(validate({ query: { page: 'two' } }), /Invalid query: data\/page must be number/);
   });
 
+  it('Leaves the query and params as the caller gave them, a coercible string included', async () => {
+    const getItems = procedure({
+      params: z.object({ id: z.coerce.number() }),
+      query: z.object({ page: z.coerce.number(), range: z.object({ min: z.coerce.number() }) }),
+    }).handle(async () => null);
+    const params = { id: '1' };
+    const query = { page: '5', range: { min: '0' } };
+
+    await validateOnClient({ params, query }, getItems.schema.validation ?? {}, { fullSchema, endpoint: '/x' });
+    deepStrictEqual(params, { id: '1' });
+    deepStrictEqual(query, { page: '5', range: { min: '0' } });
+  });
+
+  it('Leaves the query as the caller gave it under Ajv options that edit the data', async () => {
+    const listItems = procedure({ query: z.object({ page: z.coerce.number().default(1) }) }).handle(async () => null);
+    // each query is one that an option edits in place: a default, a coerced string, an extra key
+    const queries = [{}, { page: '5' }, { page: 5, sort: 'name' }];
+
+    for (const options of [{ useDefaults: true }, { coerceTypes: true }, { removeAdditional: 'all' }]) {
+      const withOptions = { ...fullSchema, meta: { $schema: '', config: { $schema: '', libs: { ajv: { options } } } } };
+      for (const query of queries) {
+        const given = structuredClone(query);
+        await validateOnClient({ query }, listItems.schema.validation ?? {}, {
+          fullSchema: withOptions,
+          endpoint: '/x',
+        });
+        deepStrictEqual(query, given);
+      }
+    }
+  });
+
   it('Validates a falsy body, and leaves a missing one alone', async () => {
     const cases: [unknown, object][] = [
       ['', { type: 'string', minLength: 1 }],

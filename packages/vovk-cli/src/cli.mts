@@ -75,7 +75,8 @@ program
         {
           killOthersOn: ['failure', 'success'],
           prefix: 'none',
-          successCondition: 'first',
+          // with --exit the run succeeds only when the watcher generates the client and exits
+          successCondition: exit ? 'command-1' : 'first',
           shell: getCommandShell(),
         }
       );
@@ -84,8 +85,9 @@ program
       } catch (closeEvents) {
         // concurrently rejects with child close events on shutdown; children already logged the reason
         const hasFailure =
-          Array.isArray(closeEvents) &&
-          closeEvents.some((event) => typeof event?.exitCode === 'number' && event.exitCode !== 0);
+          exit ||
+          (Array.isArray(closeEvents) &&
+            closeEvents.some((event) => typeof event?.exitCode === 'number' && event.exitCode !== 0));
         if (hasFailure) process.exit(1);
       }
     } else {
@@ -133,13 +135,11 @@ program
   )
   .option('--log-level <level>', 'set the log level')
   .action(async (cliGenerateOptions: GenerateOptions) => {
-    const projectInfo = await loadOpenAPIMixins(
-      await getProjectInfo({
-        configPath: cliGenerateOptions.configPath,
-        srcRootRequired: false,
-        logLevel: cliGenerateOptions.logLevel,
-      })
-    );
+    const projectInfo = await getProjectInfo({
+      configPath: cliGenerateOptions.configPath,
+      srcRootRequired: false,
+      logLevel: cliGenerateOptions.logLevel,
+    });
 
     await new VovkGenerate({
       projectInfo,
@@ -241,7 +241,8 @@ program
   .option('--use-pnpm', 'use pnpm as package manager')
   .option('--use-bun', 'use bun as package manager')
   .option('--skip-install', 'skip installing dependencies')
-  .option('--update-ts-config', 'update tsconfig.json')
+  .option('--update-ts-config', 'add "experimentalDecorators" to tsconfig.json')
+  .option('--no-update-ts-config', 'leave tsconfig.json as it is')
   .option('--update-scripts <mode>', 'update package.json scripts ("implicit" or "explicit")')
   .option('--bundle', 'set up "tsdown" bundler')
   .option(

@@ -22,7 +22,7 @@ export namespace CombinedSpec {
 }
 
 /** The type of a procedure() schema option that is left out. */
-export type NoSchema = CombinedSpec & { readonly __noSchema: true };
+export type VovkNoSchema = CombinedSpec & { readonly __noSchema: true };
 
 // the type that says whether an empty value passes a schema: its input, or its output where the input is unknown,
 // as with z.preprocess()
@@ -33,12 +33,12 @@ type EmptyValueCheck<T extends CombinedSpec> =
  * What a procedure's RPC method takes: a key for each schema, typed with the schema's input and optional when the
  * server accepts a request without it (it validates a missing body as undefined, a missing query or params as {}).
  */
-export type ProcedureInput<
+export type VovkProcedureInput<
   TBody extends CombinedSpec,
   TQuery extends CombinedSpec,
   TParams extends CombinedSpec,
   TContentType extends ContentType[],
-> = ([TBody] extends [NoSchema]
+> = ([TBody] extends [VovkNoSchema]
   ? // no body schema: a declared content type other than JSON still takes a body
     TContentType[number] extends 'application/json'
     ? unknown
@@ -46,27 +46,27 @@ export type ProcedureInput<
   : undefined extends EmptyValueCheck<TBody>
     ? { body?: BodyTypeFromContentType<TContentType, CombinedSpec.InferInput<TBody>> }
     : { body: BodyTypeFromContentType<TContentType, CombinedSpec.InferInput<TBody>> }) &
-  ([TQuery] extends [NoSchema]
+  ([TQuery] extends [VovkNoSchema]
     ? unknown
     : {} extends EmptyValueCheck<TQuery>
       ? { query?: CombinedSpec.InferInput<TQuery> }
       : { query: CombinedSpec.InferInput<TQuery> }) &
-  ([TParams] extends [NoSchema]
+  ([TParams] extends [VovkNoSchema]
     ? // a procedure doesn't know its route, which may have params
       { params?: Record<string, string> }
     : {} extends EmptyValueCheck<TParams>
       ? { params?: CombinedSpec.InferInput<TParams> }
       : { params: CombinedSpec.InferInput<TParams> });
 
-/** What a procedure's fn() takes: what its RPC method takes, and a body or a query its handler reads as given. */
+// what a procedure's fn() takes: its RPC method's input, plus a body or a query its handler reads as given
 export type ProcedureFnInput<
   TBody extends CombinedSpec,
   TQuery extends CombinedSpec,
   TParams extends CombinedSpec,
   TContentType extends ContentType[],
-> = ([TBody] extends [NoSchema] ? { body?: unknown } : unknown) &
-  ([TQuery] extends [NoSchema] ? { query?: unknown } : unknown) &
-  ProcedureInput<TBody, TQuery, TParams, TContentType>;
+> = ([TBody] extends [VovkNoSchema] ? { body?: unknown } : unknown) &
+  ([TQuery] extends [VovkNoSchema] ? { query?: unknown } : unknown) &
+  VovkProcedureInput<TBody, TQuery, TParams, TContentType>;
 
 /** Application MIME types that are parsed as text (derived from parseBody.ts textTypes). */
 type TextLikeApplicationType = (typeof textTypes)[number];

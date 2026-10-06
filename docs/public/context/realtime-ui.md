@@ -4,36 +4,36 @@ description: "Walkthrough of the Realtime Kanban example app — a live-updating
 see_also:
   label: "Vovk.ts Docs Context"
   url: https://vovk.dev/context/docs.md
-chars: 116206
-est_tokens: 29052
+chars: 109598
+est_tokens: 27400
 ---
 
 Page: https://vovk.dev/realtime-ui
 
 # Realtime Kanban — AI-native UI updates with Vovk.ts
 
-**Realtime Kanban** is an example app that keeps a Next.js UI in sync with the back end and layers in a grab-bag of AI features — an MCP server, OpenAI function calling, a voice interface, embeddings, and a Telegram bot.
-This series walks through how it's built, showing how users, bots, AI agents, and MCP clients can all update the same board in real time with very little extra code. It's a worked example to learn from and copy, not a framework or a prescribed architecture — take the parts you need.
+**Realtime Kanban** is an example app. It keeps a Next.js UI in sync with the backend and adds several AI features: an MCP server, OpenAI function calling, a voice interface, embeddings, and a Telegram bot.
+This series shows how it is built. Users, bots, AI agents, and MCP clients all update the same board in real time, with little extra code. It is an example to learn from and copy, not a framework or a required architecture. Take the parts you need.
 
-AI-friendly context for all articles in this series is available here.
+The AI context file for all articles in this series is here.
 
 ## See it in action
 
 ### AI agent managing the board via MCP
 
-Claude connects to the Kanban board through an [MCP server](https://vovk.dev/realtime-ui/mcp) and creates, moves, and deletes cards autonomously.
+Claude connects to the board through an [MCP server](https://vovk.dev/realtime-ui/mcp) and creates, moves, and deletes cards on its own.
 
 Video: https://vovk.dev/video/kanban_mcp.mp4
 
 ### Multi-user collaboration with live polling
 
-Multiple users edit the same board simultaneously — changes propagate in real time through [database polling](https://vovk.dev/realtime-ui/polling) and [normalized state](https://vovk.dev/realtime-ui/state).
+Several users edit the same board at once. Changes reach everyone in real time through [database polling](https://vovk.dev/realtime-ui/polling) and [normalized state](https://vovk.dev/realtime-ui/state).
 
 Video: https://vovk.dev/video/kanban_polling.mp4
 
 ### Chat-driven board updates with function calling
 
-A built-in [text chat interface](https://vovk.dev/realtime-ui/text-ai) lets users manage cards through natural language, powered by OpenAI function calling.
+A [text chat](https://vovk.dev/realtime-ui/text-ai) lets users manage cards in plain language. It uses OpenAI function calling.
 
 Video: https://vovk.dev/video/kanban_text_chat.mp4
 
@@ -43,24 +43,24 @@ Page: https://vovk.dev/realtime-ui/overview
 
 # Realtime Kanban Overview
 
-This series walks through **Realtime Kanban**, a full‑stack example app that shows one way to keep a Next.js UI live-updating with Vovk.ts. The app behaves like a standard web application, but it’s also designed to be operated by **AI agents** via text or voice, and by **MCP clients**—including navigation and workflow automation—while keeping both front‑end and back‑end code short and easy to follow.
+This series walks through **Realtime Kanban**, a full-stack example app. It shows one way to keep a Next.js UI up to date with Vovk.ts. The app works like a normal web app. It is also built so that **AI agents** (by text or voice) and **MCP clients** can operate it, including navigation and workflow automation. The frontend and backend code stay short.
 
 ![Realtime Kanban Screenshot](https://vovk.dev/screenshots/kanban-dark.png)
 ![Realtime Kanban Screenshot](https://vovk.dev/screenshots/kanban-light.png)
 
-The app is intentionally minimal—just **Users** and **Tasks**—with lightweight features like password protection instead of full auth management. This makes it easy to reproduce, study, and adapt for your own projects.
+The app is small on purpose, so you can reproduce, study, and adapt it: only **Users** and **Tasks**, and a simple password instead of full auth management.
 
-Key building blocks:
+Building blocks:
 
-- **Entity-driven state normalization (front end)** with [Zustand](https://github.com/pmndrs/zustand): back-end responses are parsed through an entity registry that updates a normalized store, so components can read entities by ID and re-render with minimal wiring.
-- **Database schema as the source of truth**: Postgres + Prisma define structure and drive Zod schemas via [prisma-zod-generator](https://www.npmjs.com/package/prisma-zod-generator). The same schemas validate back-end procedure inputs to keep the codebase DRY.
-- **Database polling events** via Redis, exposed as [JSON Lines](https://vovk.dev/jsonlines) streaming endpoints: changes from users, MCP clients, or bots propagate to the UI without manual refreshes.
-- **Text-based AI chat** using the Vercel [AI SDK](https://ai-sdk.dev/docs/introduction) and [AI Elements](https://ai-sdk.dev/elements): existing controllers are reused to define AI tools, and results flow back through the entity registry pipeline.
-- **Voice interface** with the [OpenAI Realtime API](https://platform.openai.com/docs/guides/realtime) + WebRTC: the agent performs authorized HTTP requests through generated RPC modules; responses update the UI through the same entity registry flow. The example also includes client-side tools for in-app navigation.
-- **MCP server**: procedures run locally on the back end and trigger polling events, updating front-end state through the entity registry.
-- **External updates** (Telegram bot): manage tasks through text/voice inside Telegram, showing how the same app can be controlled from multiple surfaces.
+- **Entity-driven state normalization (frontend)** with [Zustand](https://github.com/pmndrs/zustand): an entity registry parses backend responses and updates a normalized store. Components read entities by ID and re-render with little wiring.
+- **Database schema as the source of truth**: Postgres and Prisma define the structure, and [prisma-zod-generator](https://www.npmjs.com/package/prisma-zod-generator) turns it into Zod schemas. The same schemas validate procedure inputs on the backend, so nothing is defined twice.
+- **Database polling events** through Redis, served as [JSON Lines](https://vovk.dev/jsonlines) streaming endpoints: changes from users, MCP clients, or bots reach the UI without a manual refresh.
+- **Text AI chat** with the Vercel [AI SDK](https://ai-sdk.dev/docs/introduction) and [AI Elements](https://ai-sdk.dev/elements): the existing controllers become AI tools, and the results go back through the entity registry.
+- **Voice interface** with the [OpenAI Realtime API](https://platform.openai.com/docs/guides/realtime) and WebRTC: the agent makes authorized HTTP requests through the generated RPC modules, and the responses update the UI through the same entity registry. Client-side tools handle navigation inside the app.
+- **MCP server**: procedures run locally on the backend and trigger polling events, which update the frontend state through the entity registry.
+- **External updates** (Telegram bot): manage tasks by text or voice in Telegram. The same app is controlled from more than one place.
 
-You can [run the app locally](./run) with Docker Compose or deploy it to any Node.js platform (for example, [Vercel](./deploy)).
+You can [run the app locally](./run) with Docker Compose or deploy it to any Node.js platform, such as [Vercel](./deploy).
 
 ---
 
@@ -68,15 +68,15 @@ Page: https://vovk.dev/realtime-ui/run
 
 # Running the Project Locally
 
-The Realtime Kanban app is available in the [GitHub repository](https://github.com/finom/vovk/tree/main/examples/realtime-kanban) and can be run locally.
+The Realtime Kanban app is in the [GitHub repository](https://github.com/finom/vovk/tree/main/examples/realtime-kanban).
 
-Create a copy of the app; this also installs the dependencies:
+Copy the app. This also installs the dependencies:
 
 ```bash copy
 npx create-next-app@latest --example https://github.com/finom/vovk/tree/main/examples/realtime-kanban realtime-kanban && cd realtime-kanban
 ```
 
-Create a `.env` file in the root directory and add your OpenAI API key and database connection strings:
+Create a `.env` file in the project root with your OpenAI API key and the database connection strings:
 
 ```env filename=".env"
 OPENAI_API_KEY=change_me
@@ -104,20 +104,21 @@ Start the development server:
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) in your browser to see the result. The UI should be self-explanatory. Users and tasks can be created with the UI (click “+ Add Team Member”, etc.), or by clicking one of the floating AI-related buttons: Text or Voice.
+Open [http://localhost:3000](http://localhost:3000) in your browser. Create users and tasks in the UI (click “+ Add a Team Member” and so on), or with one of the floating AI buttons: Text or Voice.
 
-The variables in the `.env` file are used as follows:
+The variables in `.env`:
 
-- `OPENAI_API_KEY` – your OpenAI API key, required for AI features. Creating or updating a user or a task also calls the embeddings API: without a working key, the row is saved without an embedding, and search skips it until an update adds one.
-- `DATABASE_URL` – the database connection string for Prisma ORM, used to instantiate the Prisma client in [database-service.ts](https://github.com/finom/vovk/blob/main/examples/realtime-kanban/src/modules/database/database-service.ts).
-- `DATABASE_URL_UNPOOLED` – the database connection string for direct connections, used for migrations in [prisma.config.ts](https://github.com/finom/vovk/blob/main/examples/realtime-kanban/prisma.config.ts).
-- `REDIS_URL` – the Redis connection string for realtime features, explained in more detail in the [Polling](./polling) article.
+- `OPENAI_API_KEY` – your OpenAI API key, needed for the AI features. Creating or updating a user or a task also calls the embeddings API. Without a working key, the row is saved without an embedding, and search skips it until an update adds one.
+- `DATABASE_URL` – the database connection string. [database-service.ts](https://github.com/finom/vovk/blob/main/examples/realtime-kanban/src/modules/database/database-service.ts) creates the Prisma client with it.
+- `DATABASE_URL_UNPOOLED` – the connection string for direct connections. [prisma.config.ts](https://github.com/finom/vovk/blob/main/examples/realtime-kanban/prisma.config.ts) uses it for migrations.
+- `REDIS_URL` – the Redis connection string for the realtime features. See the [Polling](./polling) article.
 
-You can also define additional env variables in `.env`:
+Optional variables:
 
-- `PASSWORD` – a simple password protection for the app's pages and API. It doesn't cover the MCP server or the Telegram webhook, which have their own keys below. It’s described in more detail in the [Authentication](./authentication) article.
-- `MCP_ACCESS_KEY` – a simple authorization key for the MCP server using the `?mcp_access_key=your_key` query param. If this variable is not set, no authorization is required. See the [MCP](./mcp) article for details.
-- `TELEGRAM_BOT_TOKEN` – enables the Telegram bot integration. See the [Telegram Integration](./telegram) article for more information.
+- `PASSWORD` – password protection for the app's pages and API. It doesn't cover the MCP server or the Telegram webhook, which have their own keys below. See the [Authentication](./authentication) article.
+- `SESSION_SECRET` – the key that signs the session cookie. Set it whenever you set `PASSWORD`. Without it, the app uses a default key from the public repository. Generate one with `openssl rand -base64 32`.
+- `MCP_ACCESS_KEY` – an authorization key for the MCP server, sent in the `?mcp_access_key=your_key` query parameter. If it isn't set, the MCP server needs no key. See the [MCP](./mcp) article.
+- `TELEGRAM_BOT_TOKEN` – turns on the Telegram bot. See the [Telegram Integration](./telegram) article.
 - `TELEGRAM_WEBHOOK_SECRET` – the secret Telegram sends with each webhook call. The webhook answers only when both Telegram variables are set.
 
 ---
@@ -126,23 +127,25 @@ Page: https://vovk.dev/realtime-ui/deploy
 
 # Deploying to Vercel
 
-You can use any hosting provider that supports Node.js applications, but for simplicity we’re going to use [Vercel](https://vercel.com/), as it requires minimal effort to deploy the app for a quick demo. We’re going to set up two Vercel integrations: [Neon](https://vercel.com/integrations/neon) for Postgres/PGVector database hosting and [Redis](https://vercel.com/integrations/redis) for Redis hosting. Neon is used as the main database, while Redis is used as a database event bus for real-time features described in the [Polling](./polling) article, and as temporary storage for messages consumed by the demo [Telegram bot](./telegram).
+Any host that runs Node.js apps works. This page uses [Vercel](https://vercel.com/), because a quick demo deploy there needs little setup. It uses two Vercel integrations: [Neon](https://vercel.com/integrations/neon) hosts the Postgres/PGVector database, and [Redis](https://vercel.com/integrations/redis) hosts Redis. Neon is the main database. Redis is the database event bus for the real-time features in the [Polling](./polling) article, and temporary storage for the messages of the demo [Telegram bot](./telegram).
 
-**Note:** Vovk.ts is not affiliated with Vercel, Telegram, or Neon in any way.
+**Note:** Vovk.ts is not affiliated with Vercel, Telegram, or Neon.
 
-To deploy the app with this setup, create a new project in Vercel, link it to a fork of the GitHub repository, and add the integrations mentioned above (both are available on the free plan).
+To deploy, create a project in Vercel, link it to a fork of the GitHub repository, and add both integrations. Both are on the free plan.
 
 ![Vercel integrations for AI demo](https://vovk.dev/screenshots/vercel-ai-demo-integrations.png)
 
-Add `OPENAI_API_KEY` to the project environment variables. Other variables such as `DATABASE_URL` and `REDIS_URL` are created automatically by the integrations. 
+Add `OPENAI_API_KEY` to the project's environment variables. The integrations create the others, such as `DATABASE_URL` and `REDIS_URL`.
 
-It’s also recommended to add a `PASSWORD` variable to enable simple (and free) password protection for the app's pages and API. You can set it to any desired value. It doesn't cover the MCP server or the Telegram webhook.
+A `PASSWORD` variable is also recommended. It adds free password protection to the app's pages and API, with any value you choose. It doesn't cover the MCP server or the Telegram webhook.
 
-For MCP protection, you can also add the `MCP_ACCESS_KEY` variable to enable basic authorization for the MCP server using the `?mcp_access_key=your_key` query param. If this variable is not set, no authorization is required.
+With `PASSWORD`, also add `SESSION_SECRET`, the key that signs the session cookie. Without it, the app uses a default key from the public repository. Generate one with `openssl rand -base64 32`.
 
-Finally, for Telegram bot integration, you can add the `TELEGRAM_BOT_TOKEN` and `TELEGRAM_WEBHOOK_SECRET` variables if you want to use the Telegram bot feature. The webhook answers only when both are set. See the [Telegram integration](./telegram) article for more details.
+To protect the MCP server, add `MCP_ACCESS_KEY`. Clients then send the key in the `?mcp_access_key=your_key` query parameter. If it isn't set, the MCP server needs no key.
 
-If you run into issues, check the [.env.template](https://github.com/finom/vovk/blob/main/examples/realtime-kanban/.env.template) file for reference.
+For the Telegram bot, add `TELEGRAM_BOT_TOKEN` and `TELEGRAM_WEBHOOK_SECRET`. The webhook answers only when both are set. See the [Telegram integration](./telegram) article.
+
+If something doesn't work, compare your variables with the [.env.template](https://github.com/finom/vovk/blob/main/examples/realtime-kanban/.env.template) file.
 
 ---
 
@@ -150,15 +153,15 @@ Page: https://vovk.dev/realtime-ui/state
 
 # Entity-driven state normalization with Zustand registry
 
-Entity-driven state normalization is the most efficient way to manage application state in complex apps that deal with a lot of interconnected data. Instead of passing raw data to components or storing responses as-is in state, extracting entities and storing them in a centralized registry gives you a single source of truth, O(1) lookups by ID, and automatic updates everywhere an entity is referenced. Components subscribe to specific entities by their IDs; when an entity is updated, all components that use it re-render automatically.
+Entity-driven state normalization suits apps with a lot of connected data. Instead of passing raw data to components or storing responses as they are, you extract the entities and store them in one central registry. This gives you a single source of truth, O(1) lookups by ID, and updates everywhere an entity is used. Components subscribe to entities by ID. When an entity changes, every component that uses it re-renders.
 
-The demo above shows the same user entity rendered in four different places: the header greeting, the sidebar, the page title, and the form input. When you update the name and hit Save, every component reflects the change instantly — because they all read from the same entity in the registry.
+The demo above shows one user entity in four places: the header greeting, the sidebar, the page title, and the form input. Change the name and click Save: every component shows the change at once, because they all read the same entity from the registry.
 
-Here's how this works under the hood: raw API responses are passed through a `parse` method that recursively extracts entities, normalizes them into flat dictionaries keyed by ID, and merges them into a Zustand store. Components subscribe to specific entities by ID and re-render only when their data changes.
+How it works: a `parse` method takes each raw API response, extracts the entities recursively, normalizes them into flat dictionaries keyed by ID, and merges them into a Zustand store. A component re-renders only when its own data changes.
 
 ![Entity Registry Pattern](https://vovk.dev/diagrams/entity_registry_pattern.svg)
 
-An item in the registry can be used in any component as follows:
+Any component can read an item from the registry:
 
 ```ts showLineNumbers copy
 export const UserProfile = ({ userId }: { userId: User['id'] }) => {
@@ -167,7 +170,7 @@ export const UserProfile = ({ userId }: { userId: User['id'] }) => {
 }
 ```
 
-Arrays of entities can be derived by mapping over the IDs:
+To get an array of entities, map over the IDs:
 
 ```ts showLineNumbers copy
 export const UserList = ({ userIds }: { userIds: User['id'][] }) => {
@@ -178,7 +181,7 @@ export const UserList = ({ userIds }: { userIds: User['id'][] }) => {
 }
 ```
 
-The implementation explained below also considers soft deletions, where deleted entities are marked as non-enumerable without actually removing them from the state. This prevents errors in components that might still reference them.
+The implementation below also handles soft deletions: a deleted entity is marked non-enumerable but stays in the state. This prevents errors in components that still reference it.
 
 ```ts showLineNumbers copy
 export const UserList = ({ userIds }: { userIds: User['id'][] }) => {
@@ -191,13 +194,13 @@ export const UserList = ({ userIds }: { userIds: User['id'][] }) => {
 
 ## Prior art and portability
 
-The idea of normalizing front-end state into flat entity maps originates from the Redux ecosystem. [`normalizr`](https://github.com/paularmstrong/normalizr) (originally created by Dan Abramov) introduced declarative schema-based normalization of nested JSON, and Redux Toolkit's [`createEntityAdapter`](https://redux-toolkit.js.org/api/createEntityAdapter) later provided built-in CRUD reducers and selectors for normalized state. The approach described here applies the same core principle — flat entity dictionaries keyed by ID — but relies on convention (`id` + `entityType`) instead of upfront schema definitions.
+Normalizing frontend state into flat entity maps comes from the Redux ecosystem. [`normalizr`](https://github.com/paularmstrong/normalizr) (first created by Dan Abramov) added declarative, schema-based normalization of nested JSON. Later, Redux Toolkit's [`createEntityAdapter`](https://redux-toolkit.js.org/api/createEntityAdapter) added built-in CRUD reducers and selectors for normalized state. This page uses the same idea, flat entity dictionaries keyed by ID, but relies on a convention (`id` + `entityType`) instead of schemas defined up front.
 
-While this article uses [Zustand](https://github.com/pmndrs/zustand), the pattern itself is not tied to it. The core requirements from a state library are: a centralized store that holds plain objects, the ability to update state and trigger selective re-renders, and a subscription mechanism so components only re-render when their specific entity changes. Any library that provides these can host the same registry. Compatible alternatives include [Jotai](https://jotai.org/) (where each entity map could be an atom) and [Valtio](https://valtio.dev/) (using proxy-based reactivity for automatic fine-grained subscriptions). The `getEntitiesFromData` extraction function and the `parse` logic are completely library-agnostic — only the store creation and subscription wiring need to be adapted.
+This article uses [Zustand](https://github.com/pmndrs/zustand), but the pattern doesn't depend on it. A state library needs three things: a central store of plain objects, a way to update the state and re-render only some components, and subscriptions, so a component re-renders only when its own entity changes. Any library with these can host the registry, for example [Jotai](https://jotai.org/) (each entity map could be an atom) or [Valtio](https://valtio.dev/) (proxy-based reactivity gives automatic fine-grained subscriptions). The `getEntitiesFromData` function and the `parse` logic work with any library. Only the store creation and the subscription code change.
 
 ## Defining entity types
 
-The pattern relies on a simple contract: every entity in your data has an `id` field and an `entityType` field that identifies what kind of entity it is. In a real project, `EntityType` can be pulled from `@prisma/client`, generated from your schema, or imported from wherever your source of truth lives. Here we list it explicitly for documentation purposes:
+The pattern relies on one rule: every entity in your data has an `id` field and an `entityType` field that says what kind of entity it is. In a real project, `EntityType` can come from `@prisma/client`, be generated from your schema, or be imported from wherever your source of truth lives. This page writes it out by hand:
 
 ```ts showLineNumbers copy filename="src/types.ts"
 enum EntityType {
@@ -211,7 +214,7 @@ interface BaseEntity {
 }
 ```
 
-Entity IDs should be **branded strings** rather than plain `string` types. This prevents accidentally passing a user ID where a task ID is expected — a common source of bugs in apps with many entity types. With Zod, you can define a branded ID schema per entity:
+Entity IDs should be **branded strings**, not plain `string` types. Then you can't pass a user ID where a task ID is expected, a common bug in apps with many entity types. With Zod, define a branded ID schema per entity:
 
 ```ts showLineNumbers copy
 import { z } from 'zod';
@@ -223,7 +226,7 @@ type UserId = z.infer<typeof UserIdSchema>;   // string & { __brand: 'user' }
 type TaskId = z.infer<typeof TaskIdSchema>;   // string & { __brand: 'task' }
 ```
 
-Without Zod, you can achieve the same with a simple TypeScript utility type:
+Without Zod, a TypeScript utility type does the same:
 
 ```ts showLineNumbers copy
 type BrandedId<T extends string> = string & { readonly __brand: T };
@@ -232,15 +235,18 @@ type UserId = BrandedId<'user'>;
 type TaskId = BrandedId<'task'>;
 ```
 
-Either way, your entity interfaces then use the branded type for `id` instead of bare `string`, making it a compile-time error to mix up IDs across entity types.
+Either way, your entity interfaces use the branded type for `id` instead of `string`, so mixing up IDs of different entity types is a compile-time error.
 
-> In the Realtime Kanban project, `EntityType` is imported from `@prisma/client` and the entity types (including branded IDs) are generated via a Zod generator, as described in the [Database](./database) article.
+> In Realtime Kanban, `EntityType` comes from `@prisma/client`, and a Zod generator creates the entity types, branded IDs included. See the [Database](./database) article.
 
 ## Setting up the fetcher
 
-Before diving into the registry implementation, let's set up the [fetcher](https://vovk.dev/imports#fetcher) — a function that all generated RPC methods use to make HTTP requests. The fetcher exposes an `onSuccess` event that lets external code hook into every successful response. The registry will subscribe to this event to automatically parse all incoming data.
+First, set up the [fetcher](https://vovk.dev/imports#fetcher): the function that every generated RPC method uses to make HTTP requests. Its `onSuccess` event lets other code run on every successful response. The registry subscribes to this event to parse all incoming data.
 
 ```ts showLineNumbers copy filename="src/lib/fetcher.ts"
+import { HttpStatus } from 'vovk';
+import { createFetcher } from 'vovk/fetcher';
+
 export const fetcher = createFetcher<{ bypassRegistry?: boolean }>({
   onError: (error) => {
     if (
@@ -253,9 +259,9 @@ export const fetcher = createFetcher<{ bypassRegistry?: boolean }>({
 });
 ```
 
-The `onError` handler redirects to the login page on authentication failures in the browser. The Telegram mixin calls the same fetcher on the server, where there is no `document`, so the error is thrown as it is. The `bypassRegistry` generic parameter adds a type-safe option that callers can pass (e.g. `await UserRPC.getUsers({ bypassRegistry: true }){:ts}`) to skip registry processing for specific requests — useful for cases where you only need the raw response.
+In the browser, the `onError` handler sends the user to the login page when authentication fails. The Telegram mixin calls the same fetcher on the server, where there is no `document`, so there the error is thrown as it is. The `bypassRegistry` type parameter adds a typed option that callers can pass, for example `await UserRPC.getUsers({ bypassRegistry: true }){:ts}`, to skip the registry for one request when you only need the raw response.
 
-Declare the fetcher in the [config](https://vovk.dev/config) so that it replaces the default one imported by the generated [client](https://vovk.dev/typescript):
+Set the fetcher in the [config](https://vovk.dev/config), so the generated [client](https://vovk.dev/typescript) imports it instead of the default one:
 
 ```ts showLineNumbers copy filename="vovk.config.mjs"
 // @ts-check
@@ -274,7 +280,7 @@ export default config;
 
 ## Implementing the registry
 
-The registry hook is built on Zustand. It defines a `Registry` interface describing the shape of the state — entity maps keyed by `EntityType` and a `parse` method — and exports a `RegistryProvider`, a `useRegistry` selector hook, and a `useRegistryStore` hook for imperative access.
+The registry is built on Zustand. A `Registry` interface describes the state: entity maps keyed by `EntityType`, and a `parse` method. The file exports a `RegistryProvider`, a `useRegistry` selector hook, and a `useRegistryStore` hook for imperative access.
 
 ```ts showLineNumbers copy filename="src/hooks/use-registry.tsx" source="examples/realtime-kanban"
 'use client';
@@ -424,11 +430,9 @@ export function useRegistry<T>(selector: (state: Registry) => T): T {
 ```
 *[The code above is fetched from GitHub repository.](https://github.com/finom/vovk/blob/main/examples/realtime-kanban/src/hooks/use-registry.tsx)*
 
-Let's break this down piece by piece.
-
 ### `getEntitiesFromData` function
 
-`getEntitiesFromData` is a recursive function that extracts entities from any data structure based on the presence of `entityType` and `id` properties. For each discovered `entityType`, it builds a record whose keys are entity IDs and whose values are the entity objects themselves. Nested entities (like `user` inside `task`) are extracted alongside their parents in a single pass, so one call normalizes the entire response. Let's say the server returns the following response:
+`getEntitiesFromData` is a recursive function. It extracts entities from any data structure: every object with `entityType` and `id` properties. For each `entityType` it finds, it builds a record of the entity objects keyed by ID. Nested entities (like `user` inside `task`) are extracted with their parents in the same pass, so one call normalizes the whole response. Say the server returns this response:
 
 ```json {6,10,16,20}
 {
@@ -457,7 +461,7 @@ Let's break this down piece by piece.
 }
 ```
 
-The function walks through the entire structure and produces a normalized intermediate shape (without mutating the original objects):
+The function walks the whole structure and returns a normalized shape. It doesn't change the original objects:
 
 ```ts showLineNumbers copy
 {
@@ -474,7 +478,7 @@ The function walks through the entire structure and produces a normalized interm
 
 ### `createRegistryStore` factory
 
-The `createRegistryStore` function accepts initial data (the arrays fetched during SSR) and returns a vanilla Zustand store pre-populated with that data. It uses `getEntitiesFromData` to normalize the initial arrays into entity maps, then passes them directly as the initial state of the store:
+`createRegistryStore` takes the initial data (the arrays fetched during SSR) and returns a vanilla Zustand store that already holds it. It normalizes the arrays into entity maps with `getEntitiesFromData` and passes them as the store's initial state:
 
 ```ts showLineNumbers copy
 function createRegistryStore(initialData: {
@@ -493,17 +497,17 @@ function createRegistryStore(initialData: {
 }
 ```
 
-The key detail here is that the initial data is passed **inline to `createStore`** rather than populated after creation via `parse`. This matters for SSR: Zustand's `useStore` hook relies on `useSyncExternalStore`, which calls `getInitialState()` during server-side rendering. `getInitialState()` returns the state as it was at store creation time — so if you create the store empty and call `parse` afterward, the server render sees empty state and produces empty HTML. By passing the data inline, `getInitialState()` returns the populated state, and SSR produces the correct HTML from the start.
+The initial data goes **inline to `createStore`**, not through `parse` after the store is created. This matters for SSR. Zustand's `useStore` hook relies on `useSyncExternalStore`, which calls `getInitialState()` during server-side rendering. `getInitialState()` returns the state from the moment the store was created. If you create the store empty and call `parse` afterward, the server render sees an empty state and returns empty HTML. With the data inline, `getInitialState()` returns the filled state, and SSR returns the right HTML from the start.
 
 ### `parse` method
 
-The `parse` method accepts any data, extracts entities from it, and stores them in the registry. Instead of simply extending the state with new entities, it uses `Object.getOwnPropertyDescriptors` to get the property descriptors of the existing entities. This allows us to check whether an entity already exists in state and, if it does, compare it with the new entity using the [fast-deep-equal](https://www.npmjs.com/package/fast-deep-equal) library. If the entities are equal, we don't update state; otherwise, we create a new property descriptor with the updated entity. This helps avoid unnecessary re-renders of components that consume this entity.
+The `parse` method takes any data, extracts the entities, and stores them in the registry. Rather than adding the new entities to the state as they are, it reads the property descriptors of the existing entities with `Object.getOwnPropertyDescriptors`. If an entity already exists, `parse` compares it with the new one using the [fast-deep-equal](https://www.npmjs.com/package/fast-deep-equal) library. If they are equal, the state doesn't change. If not, `parse` creates a new property descriptor with the updated entity. This avoids re-rendering the components that use an unchanged entity.
 
 #### Soft deletions via `__isDeleted` property
 
-The `__isDeleted` property is used to mark entities as deleted without actually removing them from the state, which avoids errors in components that might still reference them.
+The `__isDeleted` property marks an entity as deleted. The entity stays in the state.
 
-The key mechanism here is JavaScript property descriptors. When a property is defined with `enumerable: false`, it becomes invisible to `Object.values`, `Object.keys`, and `{ ...spread }` operations — but it can still be accessed directly by key. This means consumers iterating over entities won't see deleted ones, while components that still hold a reference to the ID won't crash:
+This works through JavaScript property descriptors. A property defined with `enumerable: false` is invisible to `Object.values`, `Object.keys`, and `{ ...spread }`, but you can still read it by key. Code that iterates over entities doesn't see deleted ones, and components that still hold the ID don't crash:
 
 ```ts showLineNumbers copy
 const obj = Object.defineProperties({}, {
@@ -511,13 +515,13 @@ const obj = Object.defineProperties({}, {
   'task-2': { value: { id: 'task-2', title: 'Task 2' }, enumerable: false, configurable: true },
 });
 
-Object.keys(obj);  // ['task-1'] — task-2 is invisible to iteration
-obj['task-2'];     // { id: 'task-2', title: 'Task 2' } — but still accessible by ID
+Object.keys(obj);  // ['task-1']: iteration doesn't see task-2
+obj['task-2'];     // { id: 'task-2', title: 'Task 2' }: still readable by ID
 ```
 
-This approach was chosen over alternatives like maintaining a separate `deletedIds` Set or filtering on a boolean flag because it requires zero awareness from consuming components — they don't need to add any filter logic, the deleted entities simply disappear from enumeration.
+Descriptors are used instead of a separate `deletedIds` set or a filter on a boolean flag, because components then need no filter code: deleted entities drop out of enumeration by themselves.
 
-Once `__isDeleted` is received as part of an entity, the property descriptor is marked as non-enumerable automatically. To soft-delete an entity, the server needs to send an object like this:
+When an entity arrives with `__isDeleted`, its property descriptor becomes non-enumerable. To soft-delete an entity, the server sends an object like this:
 
 ```json
 {
@@ -529,7 +533,7 @@ Once `__isDeleted` is received as part of an entity, the property descriptor is 
 
 ### `RegistryProvider` and SSR
 
-The `RegistryProvider` is the glue between the Zustand store, the fetcher, and the React component tree. It creates the store once (via `useRef`), pre-populated with server-fetched data, and wires up the fetcher's `onSuccess` event so that every subsequent RPC response is automatically parsed into the registry.
+`RegistryProvider` connects the Zustand store, the fetcher, and the React component tree. It creates the store once (with `useRef`), filled with the data fetched on the server. It also subscribes to the fetcher's `onSuccess` event, so every later RPC response is parsed into the registry.
 
 ```ts showLineNumbers copy
 export function RegistryProvider({ initialData, children }) {
@@ -541,7 +545,7 @@ export function RegistryProvider({ initialData, children }) {
     fetcher.onSuccess((data, { bypassRegistry }) => {
       if (bypassRegistry) return;
 
-      if (/* data is an async iterable (JSONLines stream) */) {
+      if (/* data is an async iterable (JSON Lines stream) */) {
         data.onIterate(parse);
       }
 
@@ -557,15 +561,15 @@ export function RegistryProvider({ initialData, children }) {
 }
 ```
 
-The `fetcher.onSuccess` handler does two things: for regular JSON responses, it calls `parse` directly; for [JSONLines](https://vovk.dev/jsonlines) streaming responses (async iterables), it also registers `parse` as the `onIterate` callback so each streamed chunk is parsed into the registry as it arrives. If `bypassRegistry` was passed as an option to the RPC call, the handler returns early without processing.
+The `fetcher.onSuccess` handler calls `parse` on regular JSON responses. For [JSON Lines](https://vovk.dev/jsonlines) streaming responses (async iterables), it also registers `parse` as the `onIterate` callback, so each streamed item goes into the registry as it arrives. If the RPC call got the `bypassRegistry` option, the handler returns early and does nothing.
 
-`fetcher.onSuccess` (and `fetcher.onError`) return an unsubscribe function that removes the callback. Since the `RegistryProvider` typically wraps the entire app and never unmounts, unsubscribing isn't needed here — but in other contexts (e.g. a component that conditionally listens) you can call the returned function to clean up.
+`fetcher.onSuccess` and `fetcher.onError` return a function that removes the callback. `RegistryProvider` usually wraps the whole app and never unmounts, so it doesn't unsubscribe. Elsewhere, for example in a component that listens only under some condition, call the returned function to clean up.
 
-The store creation and the `onSuccess` registration happen synchronously inside the `useRef` initialization — not in `useEffect`. This is safe because `useQuery` and other client-side fetches only fire after mount (in effects), so the handler is guaranteed to be registered before any response arrives.
+The store is created and the `onSuccess` callback is registered synchronously, in the `useRef` initialization, not in `useEffect`. This is safe: `useQuery` and other client-side fetches start only after mount (in effects), so the handler is always registered before any response arrives.
 
 ### `useRegistry` and `useRegistryStore` hooks
 
-The `useRegistry` hook reads the store from context and applies a selector, providing the same API that components would get from a standard Zustand `create` hook:
+`useRegistry` reads the store from the context and applies a selector. Components get the same API as from a standard Zustand `create` hook:
 
 ```ts showLineNumbers copy
 export function useRegistry<T>(selector: (state: Registry) => T): T {
@@ -573,7 +577,7 @@ export function useRegistry<T>(selector: (state: Registry) => T): T {
 }
 ```
 
-For imperative access outside of selectors (for example, calling `parse` from an effect), `useRegistryStore` returns the raw store:
+For imperative access outside selectors, for example to call `parse` from an effect, `useRegistryStore` returns the store itself:
 
 ```ts showLineNumbers copy
 const store = useRegistryStore();
@@ -582,7 +586,7 @@ store.getState().parse(data);
 
 ## Using the registry with SSR
 
-The server component fetches data using the controller's `.fn()` method (a direct server-side call that bypasses HTTP) and passes it to `RegistryProvider`. Child components select data from the store — no `initialData` props needed:
+The server component fetches the data with the controller's `.fn()` method, a direct server-side call without HTTP, and passes it to `RegistryProvider`. Child components select data from the store and need no `initialData` props:
 
 ```tsx showLineNumbers copy filename="src/app/page.tsx"
 export default async function Home() {
@@ -601,7 +605,7 @@ export default async function Home() {
 }
 ```
 
-Components are clean — they select from the registry and fire a `useQuery` to refresh the data on the client:
+Each component selects from the registry and runs a `useQuery` to refresh the data on the client:
 
 ```tsx showLineNumbers copy filename="src/components/user-list.tsx"
 const UserList = () => {
@@ -616,21 +620,15 @@ const UserList = () => {
 };
 ```
 
-The data flow is:
+The data flow:
 
-1. **SSR**: The server fetches data via `.fn()`, `RegistryProvider` creates a store with that data inline, components render with it — the HTML sent to the client already contains the full UI.
-2. **Hydration**: React hydrates on the client. The store is recreated with the same initial data, producing identical output — no hydration mismatch.
-3. **Client refresh**: `useQuery` fires after mount, calls the RPC method via the fetcher, the `onSuccess` handler calls `parse`, the store updates, and components re-render with fresh data.
+1. **SSR**: the server fetches data with `.fn()`, `RegistryProvider` creates a store with that data inline, and the components render with it. The HTML sent to the client already holds the full UI.
+2. **Hydration**: React hydrates on the client. The store is created again with the same initial data, so the output is identical and there is no hydration mismatch.
+3. **Client refresh**: `useQuery` runs after mount and calls the RPC method through the fetcher. The `onSuccess` handler calls `parse`, the store updates, and the components re-render with fresh data.
 
-This gives you two renders total (SSR data, then fresh data) with no empty-state flicker and no workarounds.
+That is two renders in total (SSR data, then fresh data), with no empty-state flicker.
 
----
-
-## Summary
-
-With this pattern in place you get: centralized entity storage with automatic extraction from any response shape, zero-config normalization via `parse` that deduplicates and diff-checks all incoming data, soft deletes that hide entities from iteration without breaking components that still reference them by ID, and SSR support where the store is pre-populated with server-fetched data so the first render already contains the full UI.
-
-Each time data is received from any source — whether from `useQuery`, a streaming JSONLines connection, or an AI tool call — it flows through the registry's `parse` method, and all components that reference that data by ID are updated automatically.
+Data from any source, whether `useQuery`, a JSON Lines stream, or an AI tool call, goes through the registry's `parse` method, and every component that references it by ID updates.
 
 ---
 
@@ -638,11 +636,11 @@ Page: https://vovk.dev/realtime-ui/database
 
 # Designing the Database with Prisma and Zod Generator
 
-[Application state normalization](./state) relies on the ability to extract entities from data structures returned by the server, based on the presence of `entityType` and `id` properties. Therefore, the database schema should be designed so that each table includes an `entityType` column with a fixed value representing the entity type.
+[Application state normalization](./state) extracts entities from server responses by their `entityType` and `id` properties. So each table in the database has an `entityType` column with a fixed value: the entity type.
 
-In the database we’re going to have two tables: `User` and `Task`. The `entityType` column will be set to either `user` or `task`—lowercased entity names in singular form—via the `EntityType` enum. Each table has this column with a default value (ideally, this column should be read-only).
+The database has two tables: `User` and `Task`. The `EntityType` enum sets the `entityType` column to `user` or `task`: the entity name in lowercase, singular. In each table this column has a default value. Ideally, it should be read-only.
 
-We’re also going to use [prisma-zod-generator](https://www.npmjs.com/package/prisma-zod-generator?activeTab=readme) to generate Zod schemas from our Prisma models. This allows us to define Zod models automatically and keeps our server-side code concise.
+[prisma-zod-generator](https://www.npmjs.com/package/prisma-zod-generator?activeTab=readme) generates Zod schemas from the Prisma models, so you don't write them by hand and the server code stays short.
 
 ```ts showLineNumbers copy filename="prisma/schema.prisma" source="examples/realtime-kanban"
 // This is your Prisma schema file,
@@ -722,13 +720,13 @@ enum TaskStatus {
 ```
 *[The code above is fetched from GitHub repository.](https://github.com/finom/vovk/blob/main/examples/realtime-kanban/prisma/schema.prisma)*
 
-Notice the triple-slash comments. Because React components and other app logic work with entity IDs, we need to distinguish IDs of different entity types for type safety in React components and other places. For that, [branded](https://zod.dev/api?id=branded-types) types are a good fit.
+Note the triple-slash comments. React components and other app code work with entity IDs, so IDs of different entity types must be told apart for type safety. [Branded](https://zod.dev/api?id=branded-types) types do this.
 
-We’re also using literal types for `entityType` columns and defining `examples` and `descriptions` for better OpenAPI documentation generation and for [AI tools](https://vovk.dev/tools).
+The `entityType` columns use literal types, and the fields have `examples` and a `description` for the generated OpenAPI documentation and for [AI tools](https://vovk.dev/tools).
 
-That’s it. Each time you run `npx prisma generate`, the Zod schemas are generated automatically in the `prisma/generated/schemas` folder with all the necessary type information. 
+Each time you run `npx prisma generate`, the Zod schemas, with their types, are written to the `prisma/generated/schemas` folder.
 
-For easier access to the generated schemas, we add a path mapping to `tsconfig.json`:
+A path mapping in `tsconfig.json` makes the generated schemas easier to import:
 
 ```json filename="tsconfig.json"
 {
@@ -746,11 +744,11 @@ Page: https://vovk.dev/realtime-ui/endpoints
 
 # Setting Up API Endpoints
 
-This article describes how to set up API endpoints/procedures for `User` and `Task` entities with full CRUD operations. The OpenAPI documentation generated from these procedures can be explored [here](https://kanban.vovk.dev/openapi).
+This article sets up procedures with full CRUD operations for the `User` and `Task` entities. You can browse the OpenAPI documentation generated from them [here](https://kanban.vovk.dev/openapi).
 
 ## Preparations
 
-For the sake of shorter code, we create a reusable constant `BASE_FIELDS` that is used to omit `id`, `entityType`, `createdAt`, and `updatedAt` fields from the Zod models, and a `BASE_KEYS` array that contains the keys of these fields for use with `lodash.omit`. This helps us build proper create/update Zod models and omit these fields from entity objects when we need to construct input objects.
+To keep the code short, two constants list the base fields. `BASE_FIELDS` omits the `id`, `entityType`, `createdAt`, and `updatedAt` fields from the Zod models. `BASE_KEYS` holds the same keys for `lodash.omit`. They build the create and update Zod models, and drop these fields from entity objects when you build input objects.
 
 ```ts showLineNumbers copy filename="src/constants.ts"
 import type { BaseEntity } from './types';
@@ -765,31 +763,31 @@ export const BASE_FIELDS = {
 export const BASE_KEYS = Object.keys(BASE_FIELDS) as (keyof BaseEntity)[];
 ```
 
-For example, here’s how the `UpdateUserSchema` can be created by omitting the base fields from the generated `UserSchema`:
+For example, `UpdateUserSchema` drops the base fields from the generated `UserSchema` and makes the rest optional, as the `updateUser` body below does:
 
 ```ts showLineNumbers copy
 import { UserSchema } from '@schemas/index';
 import { BASE_FIELDS } from '@/constants';
 
-const UpdateUserSchema = UserSchema.omit(BASE_FIELDS); // fullName and email fields only
+const UpdateUserSchema = UserSchema.omit(BASE_FIELDS).partial(); // optional fullName, email and imageUrl
 ```
 
 ## Implementing Controllers and Services
 
-The controllers declare full CRUD operations for `User` and `Task` entities, implemented as follows:
+The controllers declare full CRUD operations for the `User` and `Task` entities:
 
-- Each method is decorated with the [@operation](https://vovk.dev/openapi) decorator that describes the operation, including `summary` and `description`.
-- Each method is created with the [procedure](https://vovk.dev/procedure) function that implements request validation and schema emission.
-- Each method uses the `sessionGuard` decorator to protect the endpoints, as described in the [Authentication](./authentication) article.
-- The “get all” endpoints use the `x-tool['hidden']` operation option implemented with the `@operation.tool()` decorator to exclude them from being used as AI tools. Instead, the tools use search endpoints that rely on OpenAI Embeddings to simulate more realistic scenarios.
+- Each method has the [@operation](https://vovk.dev/openapi) decorator, which describes the operation with a `summary` and a `description`.
+- Each method is created with the [procedure](https://vovk.dev/procedure) function, which validates the request and emits the schema.
+- Each method has the `sessionGuard` decorator, which protects the endpoint. See the [Authentication](./authentication) article.
+- The “get all” procedures set the `x-tool['hidden']` operation option with the `@operation.tool()` decorator, so they don't become AI tools. The tools use search procedures based on OpenAI embeddings instead, which is closer to a real app.
 
-The services implement the actual business logic for each procedure, including database operations and vector generation/search via OpenAI embeddings.
+The services hold the business logic of each procedure: database operations, and creating and searching vectors with OpenAI embeddings.
 
-- Database requests are invoked using `DatabaseService.prisma`, where the `prisma` property is a regular Prisma client instance with [extensions](https://www.prisma.io/docs/orm/prisma-client/client-extensions). This is explained in more detail in the [Database Polling](./polling) article.
-  - Deletion operations return the `__isDeleted` property to help the frontend reconcile state properly for soft deletions (see the [State](./state) page). The property is added by a Prisma client extension when `DatabaseService.prisma.xxx.delete` methods are invoked.
-  - To trigger database events on task deletions, tasks are deleted explicitly, even though `ON DELETE CASCADE` is configured at the database level.
-- Creations and updates are followed by `EmbeddingService.generateEntityEmbedding` calls, and the search endpoints use `EmbeddingService.vectorSearch` to perform vector search using OpenAI embeddings and pgvector. For details, see the [Embeddings](./embeddings) article.
-- The controller procedures use [req.vovk](https://vovk.dev/req-vovk) to access request data such as `params`, `query`, and `body`, because we want to call these methods directly from code (not only through HTTP requests) via the [fn](https://vovk.dev/fn) interface for SSR/PPR, server actions, and AI tool execution.
+- Database requests go through `DatabaseService.prisma`, a regular Prisma client with [extensions](https://www.prisma.io/docs/orm/prisma-client/client-extensions). See the [Database Polling](./polling) article.
+  - Delete operations return the `__isDeleted` property, so the frontend can apply soft deletions to its state (see the [State](./state) page). A Prisma client extension adds the property when a `DatabaseService.prisma.xxx.delete` method runs.
+  - Tasks are deleted explicitly, even though the database has `ON DELETE CASCADE`, so that each task deletion fires a database event.
+- After each create and update, the service calls `EmbeddingService.generateEntityEmbedding`. The search procedures use `EmbeddingService.vectorSearch` to search vectors with OpenAI embeddings and pgvector. See the [Embeddings](./embeddings) article.
+- The procedures read `params`, `query`, and `body` through [req.vovk](https://vovk.dev/req-vovk). This lets code call them directly, not only over HTTP, through the [fn](https://vovk.dev/fn) interface: for SSR/PPR, server actions, and AI tool execution.
 
 ```ts showLineNumbers copy filename="src/modules/user/user-controller.ts" source="examples/realtime-kanban"
 import { TaskSchema, UserSchema } from '@schemas/index';
@@ -1123,18 +1121,18 @@ Page: https://vovk.dev/realtime-ui/embeddings
 
 # Vector Search via Embedding
 
-Because database entries can be numerous and too large to fit into the prompt directly, we need a way to represent them in a more compact form for AI tools to use. To achieve this, we do two things:
+Database entries can be too many and too large to fit into a prompt. The AI tools need a more compact form, so the app does two things:
 
-1. “Get all” endpoints are excluded from being derived as AI tools by using the `@operation.tool({ hidden: true }){:ts}` decorator.
-2. Vector embeddings are generated for each user and task entry when they are created or updated. These embeddings use an OpenAI embeddings model and are stored in the database using [pgvector](https://github.com/pgvector/pgvector), described as `Unsupported("vector(1536)")` in the Prisma schema under the `embedding` column for each model. See the [Database](./database) article for more details.
+1. The `@operation.tool({ hidden: true }){:ts}` decorator keeps the “get all” procedures out of the derived AI tools.
+2. Each user and task gets a vector embedding when it is created or updated. An OpenAI embeddings model creates it, and [pgvector](https://github.com/pgvector/pgvector) stores it in the `embedding` column of each model, declared as `Unsupported("vector(1536)")` in the Prisma schema. See the [Database](./database) article.
 
 ![Vector Search via Embedding](https://vovk.dev/diagrams/embeddings_vector_search.svg)
 
-The `EmbeddingService` class implements the logic of generating embeddings and performing vector search using the pgvector extension in Postgres, exposing two main methods:
-- `generateEntityEmbedding` – generates an embedding for a given entity based on its string fields and updates the database entry with the generated vector.
-- `vectorSearch` – performs vector search for a given query string and returns the most similar entries based on the stored embeddings.
+The `EmbeddingService` class creates the embeddings and runs vector search with the pgvector extension in Postgres. Its two main methods:
+- `generateEntityEmbedding` – creates an embedding from an entity's string fields and writes the vector to its database row.
+- `vectorSearch` – searches the stored embeddings for a query string and returns the most similar entries.
 
-Both methods are entity-type agnostic and work with both `user` and `task` entity types.
+Both methods work with any entity type, `user` and `task` alike.
 
 ```ts showLineNumbers copy filename="src/modules/embedding/embedding-service.ts" source="examples/realtime-kanban"
 import { openai } from '@ai-sdk/openai';
@@ -1233,36 +1231,36 @@ Page: https://vovk.dev/realtime-ui/polling
 
 # Realtime Database Polling
 
-[State normalization](./state) and the corresponding backend implementation keep the UI updated while the user interacts with the app by making HTTP requests. The implementation also covers AI features such as [Text Chat AI](./text-ai) and [Voice AI](./voice-ai), explained in later articles. The rule of thumb is that data should always be processed by the entity registry.
+[State normalization](./state) and its backend code keep the UI up to date while the user works with the app through HTTP requests. They also cover the AI features, [Text Chat AI](./text-ai) and [Voice AI](./voice-ai), explained in later articles. The rule of thumb: data always goes through the entity registry.
 
-But what if the database is changed by other users or third-party services? How do we keep the UI in sync with backend data in real time? One way is to implement database polling powered by [JSONLines](https://vovk.dev/jsonlines). The server sends updates to clients whenever the database changes, and the client reconnects automatically when the connection is closed.
+Other users or third-party services can also change the database. One way to keep the UI in sync with the backend in real time is database polling over [JSON Lines](https://vovk.dev/jsonlines). The server sends updates to clients whenever the database changes, and the client reconnects automatically when the connection closes.
 
-The component below demonstrates a simple polling example that receives incremental updates from the server every second. After 10 updates, the server closes the connection, and the client reconnects automatically. We can use the same approach to receive database updates in real time by having the server send updates whenever the database changes.
+The component below is a polling example. It gets an update from the server every second. After 10 updates, the server closes the connection, and the client reconnects automatically. Database updates work the same way.
 
   [View Polling example on examples.vovk.dev »](https://examples.vovk.dev/polling)
 
-A small delay (up to half a second) is expected due to the CORS preflight. See the Network tab in DevTools for details.
+Expect a short delay (up to half a second) for the CORS preflight. The Network tab in DevTools shows it.
 
 ---
 
-Here's a video demonstration of the polling in action. While it uses different browser tabs to simulate multiple users, the same logic applies to real-time updates from any source, including third-party services.
+The video below shows polling at work. Browser tabs stand in for several users, but updates from any source, third-party services included, work the same way.
 
 Video: https://vovk.dev/video/kanban_polling.mp4
 
 ## Redis DB as event bus
 
-While we could poll the main Postgres database for changes, that approach is inefficient. Instead, we use Redis as an event bus: whenever the main database changes, we write a small event to the Redis database. Our polling service reads these events every second and sends them to clients with the app open.
+Polling the main Postgres database for changes would be inefficient. The app uses Redis as an event bus instead: each change to the main database writes a small event to Redis. The polling service reads these events every second and sends them to the clients that have the app open.
 
 ![Collaborative Polling Flow](https://vovk.dev/diagrams/collaborative_polling_flow.svg)
 
-Because we use [Prisma](https://www.prisma.io/) as our ORM, we can use [Prisma Extensions](https://www.prisma.io/docs/orm/prisma-client/client-extensions) to hook into database operations and write events to Redis. This is where the `DatabaseService` mentioned in the [Endpoints](./endpoints) article comes into play.
+The app uses [Prisma](https://www.prisma.io/) as its ORM, so [Prisma Extensions](https://www.prisma.io/docs/orm/prisma-client/client-extensions) can hook into database operations and write the events to Redis. This is the job of the `DatabaseService` from the [Endpoints](./endpoints) article.
 
 > [!IMPORTANT]
 >
-> The existing implementation has the following limitations:
-> - Deletions need to be explicit, even if cascade deletions are handled automatically by the database. See the [`UserService.deleteUser`](https://github.com/finom/vovk/blob/main/examples/realtime-kanban/src/modules/user/user-service.ts) method for more details.
-> - All write operations must select the `updatedAt` field for change detection to work properly.
-> - The list of supported write operations is limited to `create`, `update`, `upsert`, and `delete` for simplicity. Read operations are passed through as-is. For more complex operations, additional handling or abstraction is required.
+> The implementation has these limits:
+> - Deletions must be explicit, even when the database deletes rows by cascade. See the [`UserService.deleteUser`](https://github.com/finom/vovk/blob/main/examples/realtime-kanban/src/modules/user/user-service.ts) method.
+> - Every write operation must select the `updatedAt` field, or change detection fails.
+> - To keep it simple, the only supported write operations are `create`, `update`, `upsert`, and `delete`. Read operations such as `find...` and `count` pass through unchanged and record no change. More complex operations need extra handling.
 
 ```ts showLineNumbers copy filename="src/modules/database/database-service.ts" source="examples/realtime-kanban" {24,133}
 import { PrismaNeon } from '@prisma/adapter-neon';
@@ -1431,8 +1429,8 @@ export default class DatabaseService {
 ```
 *[The code above is fetched from GitHub repository.](https://github.com/finom/vovk/blob/main/examples/realtime-kanban/src/modules/database/database-service.ts)*
 
-- The `getClient` method calls `DatabaseEventsService.beginEmitting(){:ts}` to start emitting events. The `beginEmitting` function runs a `setInterval` that connects to Redis and periodically checks for new events. When a new event is found, it emits it via [mitt](https://npmjs.com/package/mitt).
-- `prisma.$extends` hooks into some of the Prisma model operations, determines whether an operation modifies data, and if so calls `await DatabaseEventsService.createChanges([change]){:ts}` to persist a change entry in Redis. The change captures creates, updates, and deletions:
+- The `getClient` method calls `DatabaseEventsService.beginEmitting(){:ts}` to start emitting events. `beginEmitting` runs a `setInterval` that connects to Redis and checks for new events. It emits each new event with [mitt](https://npmjs.com/package/mitt).
+- `prisma.$extends` hooks into some of the Prisma model operations. When an operation changes data, it calls `await DatabaseEventsService.createChanges([change]){:ts}`, which stores a change entry in Redis. A change records a create, an update, or a delete:
 
 ```ts showLineNumbers copy
 export type DBChange = {
@@ -1443,16 +1441,14 @@ export type DBChange = {
 };
 ```
 
-The `date` field indicates when the change occurred to help clients fetch only the latest changes.
+The `date` field holds the time of the change, so clients fetch only the latest changes.
 
-- For `create`, `update`, and `upsert` operations, it uses the `updatedAt` DB field (all write operations must select this field).
-- For `delete` operations, it uses the current time.
+- For `create`, `update`, and `upsert`, it is the `updatedAt` field of the row (so every write operation must select this field).
+- For `delete`, it is the current time.
 
-The `delete` operation also adds an `__isDeleted` property. The frontend checks this property to hide the deleted entity by setting `enumerable: false` on the entity registry item (see the [State](./state) page).
+The `delete` operation also adds an `__isDeleted` property. The frontend uses it to hide the entity: the registry item gets `enumerable: false` (see the [State](./state) page).
 
-Operations like `find...` and `count` do not trigger changes and are passed through as-is.
-
-In addition to `beginEmitting` and `createChanges`, `DatabaseEventsService` provides a `connect` method and an `emitter` (a `mitt` instance). These are used by the polling service (`DatabasePollService`, discussed next) to be notified about new events.
+Besides `beginEmitting` and `createChanges`, `DatabaseEventsService` has an `emitter` (a `mitt` instance). The polling service (`DatabasePollService`, below) listens to it for new events. A private `connect` method opens the Redis connection.
 
 ```ts showLineNumbers copy filename="src/modules/database/database-events-service.ts" source="examples/realtime-kanban"
 import type { EntityType } from '@prisma/client';
@@ -1548,7 +1544,7 @@ export default class DatabaseEventsService {
 
 ## Polling controller and service
 
-With Redis change entries and the change emitter in place, we can implement a polling endpoint that streams updates to clients in real time. The `DatabasePollController` exposes a single [JSONLines](https://vovk.dev/jsonlines) endpoint, and `DatabasePollService` uses a [JSONLinesResponder](https://vovk.dev/jsonlines#jsonlinesresponder) instance (received from the controller) to send data to clients. The service closes the connection after 30 seconds, so clients should reconnect, and removes its change listener then, or at the first change after the client has left.
+With the change entries in Redis and the emitter in place, a polling procedure can stream updates to clients in real time. `DatabasePollController` has a single [JSON Lines](https://vovk.dev/jsonlines) procedure. `DatabasePollService` gets a [JSONLinesResponder](https://vovk.dev/jsonlines#jsonlinesresponder) instance from the controller and sends data to clients through it. The service closes the connection after 30 seconds, so clients must reconnect. It removes its change listener then, or at the first change after the client has left.
 
 ```ts showLineNumbers copy filename="src/modules/database/database-poll-service.ts" source="examples/realtime-kanban"
 import { forEach, groupBy } from 'lodash';
@@ -1681,16 +1677,16 @@ export default class DatabasePollController {
 ```
 *[The code above is fetched from GitHub repository.](https://github.com/finom/vovk/blob/main/examples/realtime-kanban/src/modules/database/database-poll-controller.ts)*
 
-- When a `delete` DB change is emitted via `DatabaseEventsService.emitter`, the service sends an event with `id`, `entityType`, and `__isDeleted: true`. The frontend uses `__isDeleted` to hide the entity by making it non-enumerable in the registry.
-- When an `update` or `create` change is emitted, the service fetches the full entity from Postgres (since Redis stores only metadata) and sends it to clients.
+- When `DatabaseEventsService.emitter` emits a `delete` change, the service sends an event with `id`, `entityType`, and `__isDeleted: true`, and the registry hides the entity.
+- For an `update` or `create` change, the service fetches the full entity from Postgres (Redis stores only metadata) and sends it to clients.
 
 ## Client-side logic
 
-On the client side (for example, in a React component), call `DatabasePollRPC.poll()` to receive a stream of database events. As with any [JSONLines](https://vovk.dev/jsonlines) RPC method, it returns an async iterable that you can consume in a `for await` loop. Because the server may close the connection or a network error may occur, wrap the logic in a retry loop. Since the [fetcher](https://vovk.dev/imports#fetcher) is already [configured](./state#setting-up-the-fetcher), the loop body can be empty—you do not need to handle data manually.
+On the client, for example in a React component, call `DatabasePollRPC.poll()` to get a stream of database events. Like any [JSON Lines](https://vovk.dev/jsonlines) RPC method, it returns an async iterable that you read in a `for await` loop. The server may close the connection, or the network may fail, so wrap the logic in a retry loop. The [fetcher](https://vovk.dev/imports#fetcher) is already [configured](./state#setting-up-the-fetcher), so the loop body can be empty: you don't handle the data yourself.
 
-The frontend code, besides the polling logic, also includes an on/off toggle persisted to `localStorage`, so users can enable or disable polling as needed.
+The frontend code also has an on/off switch, saved in `localStorage`, so users can turn polling on or off.
 
-Here’s the `useDatabasePolling` hook that implements the described logic, returning the `[isPollingEnabled, setIsPollingEnabled, hasError]` state tuple:
+The `useDatabasePolling` hook implements this logic and returns the `[isPollingEnabled, setIsPollingEnabled, hasError]` state tuple:
 
 ```ts showLineNumbers copy filename="src/hooks/use-database-polling.ts" source="examples/realtime-kanban"
 import { useEffect, useRef, useState } from 'react';
@@ -1767,19 +1763,17 @@ Usage:
 const [isPollingEnabled, setIsPollingEnabled, hasError] = useDatabasePolling(false);
 ```
 
-From now on, when the database is changed by other users or third-party services, the frontend receives updates in real time and the entity registry is updated accordingly, keeping the UI in sync with the backend data.
-
 ---
 
 Page: https://vovk.dev/realtime-ui/authentication
 
 # Basic Authentication and Authorization for Password Protection
 
-The app implements a simple authentication mechanism with an optional `PASSWORD` stored in the `.env` file. Once the user enters the password, a session cookie is created that authorizes the user for subsequent requests. The `userId` is a hashed version of the password, which allows all sessions to be invalidated by changing the `PASSWORD` env variable in production.
+The app has simple authentication with an optional `PASSWORD` in the `.env` file. When the user enters the password, the app creates a session cookie that authorizes the next requests. The session's `userId` is a hash of the password, so changing the `PASSWORD` variable in production ends all sessions.
 
-The authentication flow is a simplified version of the solution provided in the official [Next.js authentication documentation](https://nextjs.org/docs/app/guides/authentication). It implements a [login page](https://github.com/finom/vovk/blob/main/examples/realtime-kanban/src/app/login/page.tsx) with a form that invokes a [login server action](https://github.com/finom/vovk/blob/main/examples/realtime-kanban/src/app/actions/auth.ts). The session is created in [src/lib/session.ts](https://github.com/finom/vovk/blob/main/examples/realtime-kanban/src/lib/session.ts), and the Data Access Layer file is defined in [src/lib/dal.ts](https://github.com/finom/vovk/blob/main/examples/realtime-kanban/src/lib/dal.ts).
+The flow is a simpler version of the one in the official [Next.js authentication documentation](https://nextjs.org/docs/app/guides/authentication). A [login page](https://github.com/finom/vovk/blob/main/examples/realtime-kanban/src/app/login/page.tsx) has a form that calls a [login server action](https://github.com/finom/vovk/blob/main/examples/realtime-kanban/src/app/actions/auth.ts). [src/lib/session.ts](https://github.com/finom/vovk/blob/main/examples/realtime-kanban/src/lib/session.ts) creates the session, and [src/lib/dal.ts](https://github.com/finom/vovk/blob/main/examples/realtime-kanban/src/lib/dal.ts) is the Data Access Layer (DAL).
 
-The DAL file exports the `verifySession` function, which is invoked in [page.tsx](https://github.com/finom/vovk/blob/main/examples/realtime-kanban/src/app/page.tsx) and redirects the user to the login page if the session is invalid.
+The DAL file exports `verifySession`. [page.tsx](https://github.com/finom/vovk/blob/main/examples/realtime-kanban/src/app/page.tsx) calls it, and it redirects the user to the login page when the session is invalid.
 
 ```ts showLineNumbers copy filename="src/lib/dal.ts" source="examples/realtime-kanban"
 import crypto from 'node:crypto';
@@ -1821,7 +1815,7 @@ export default async function Home() {
   // ...
 ```
 
-It also exports the `isLoggedIn` function, which is used by the `sessionGuard` [decorator](https://vovk.dev/decorator) to check if the user is logged in when invoking procedures.
+The DAL also exports `isLoggedIn`. The `sessionGuard` [decorator](https://vovk.dev/decorator) uses it to check that the user is logged in before a procedure runs.
 
 ```ts showLineNumbers copy filename="src/decorators/session-guard.ts" source="examples/realtime-kanban"
 import { createDecorator, HttpException, HttpStatus } from 'vovk';
@@ -1836,9 +1830,9 @@ export const sessionGuard = createDecorator(async (req, next) => {
 ```
 *[The code above is fetched from GitHub repository.](https://github.com/finom/vovk/blob/main/examples/realtime-kanban/src/decorators/session-guard.ts)*
 
-The `sessionGuard` decorator is applied to all procedures. The `typeof req.url !== 'undefined'{:ts}` check is required to distinguish between HTTP requests and [`fn`](https://vovk.dev/fn) invocations.
+Every procedure of the root segment has the `sessionGuard` decorator. The `typeof req.url !== 'undefined'{:ts}` check tells HTTP requests apart from [`fn`](https://vovk.dev/fn) calls.
 
-The Telegram webhook doesn't use `sessionGuard`, as Telegram sends no session cookie. It checks Telegram's secret token instead; see the [Telegram](./telegram) article. The MCP server has its own `MCP_ACCESS_KEY`.
+The Telegram webhook doesn't use `sessionGuard`, because Telegram sends no session cookie. It checks Telegram's secret token instead (see the [Telegram](./telegram) article). The MCP server has its own `MCP_ACCESS_KEY`. The `static` segment (`/api/static/openapi.json` and `/api/static/hello.json`) and the `/openapi` page have no check, so they stay public when `PASSWORD` is set.
 
 ---
 
@@ -1846,21 +1840,21 @@ Page: https://vovk.dev/realtime-ui/text-ai
 
 # Text Chat AI Interface
 
-In the previous articles, we set up the backend and frontend to automatically synchronize component state with backend data, independent of the data-fetching method, while the user interacts with the app via UI elements. On this page we’re going to make the UI AI-powered, allowing users to interact with the application using natural language.
+The previous articles keep the component state in sync with the backend data, whatever method fetches it, while the user works with the UI. This page adds an AI chat, so users can work with the app in plain language.
 
 ![Text AI Chat Flow](https://vovk.dev/diagrams/text_ai_chat_flow.svg)
 
-We’re going to set up a text AI chat via the [AI SDK](https://ai-sdk.dev/), adding function-calling capabilities and deriving AI tools from the backend controllers via the [deriveTools](https://vovk.dev/tools) function.
+The chat uses the [AI SDK](https://ai-sdk.dev/) with function calling. The [deriveTools](https://vovk.dev/tools) function derives the AI tools from the backend controllers.
 
 Video: https://vovk.dev/video/kanban_text_chat.mp4
 
 ## Backend Setup
 
-For the backend setup, we need to create a procedure powered by the AI SDK, adding `tools` and `stopWhen` options to the `streamText` function.
+On the backend, a procedure calls the AI SDK's `streamText` function with the `tools` and `stopWhen` options.
 
-Because the procedures already follow the [rules of locally called procedures](https://vovk.dev/fn#rules)—their handlers use only the `vovk` property of the request, for example `async ({ vovk }) => UserService.createUser(await vovk.body()){:ts}` (see the [API Endpoints](./endpoints) page)—we can use the `deriveTools` function to create AI tools from the controllers and call them in the current backend context without performing HTTP requests.
+The procedures already follow the [rules of locally called procedures](https://vovk.dev/fn#rules): their handlers use only the `vovk` property of the request, for example `async ({ vovk }) => UserService.createUser(await vovk.body()){:ts}` (see the [API Endpoints](./endpoints) page). So `deriveTools` can turn the controllers into AI tools that run in the current backend context, without HTTP requests.
 
-```ts showLineNumbers copy filename="src/modules/ai/ai-sdk-controller.ts" source="examples/realtime-kanban"  {26-31,37-46}
+```ts showLineNumbers copy filename="src/modules/ai/ai-sdk-controller.ts" source="examples/realtime-kanban"  {28-33,35-45,51-52}
 import { openai } from '@ai-sdk/openai';
 import {
   convertToModelMessages,
@@ -1930,13 +1924,13 @@ export default class AiSdkController {
 ```
 *[The code above is fetched from GitHub repository.](https://github.com/finom/vovk/blob/main/examples/realtime-kanban/src/modules/ai/ai-sdk-controller.ts)*
 
-The resulting endpoint is served at `/api/ai-sdk/function-calling`.
+The endpoint is `/api/ai-sdk/function-calling`.
 
 ## Frontend Setup
 
-On the frontend we’re going to use the AI SDK, represented by the [ai](https://www.npmjs.com/package/ai) and [@ai-sdk/react](https://www.npmjs.com/package/@ai-sdk/react) packages, as well as the [AI Elements](https://ai-sdk.dev/elements/) library. AI Elements provides pre-built React components for building AI-powered user interfaces, built on top of [shadcn/ui](https://ui.shadcn.com/).
+The frontend uses the AI SDK packages [ai](https://www.npmjs.com/package/ai) and [@ai-sdk/react](https://www.npmjs.com/package/@ai-sdk/react), and the [AI Elements](https://ai-sdk.dev/elements/) library. AI Elements has ready-made React components for AI interfaces, built on [shadcn/ui](https://ui.shadcn.com/).
 
-```tsx showLineNumbers copy filename="src/components/expandable-chat-demo.tsx"  {27}
+```tsx showLineNumbers copy filename="src/components/expandable-chat-demo.tsx"  {26}
 'use client';
 // ...
 import { useChat } from '@ai-sdk/react';
@@ -1944,7 +1938,6 @@ import { useState } from 'react';
 import { DefaultChatTransport } from 'ai';
 import { AiSdkRPC } from '@/client';
 import { Conversation, ConversationContent, ConversationEmptyState } from '@/components/ai-elements/conversation';
-import { useRegistry } from '@/hooks/use-registry';
 import useParseSDKToolCallOutputs from '@/hooks/use-parse-sdk-tool-call-outputs';
 
 export function ExpandableChatDemo() {
@@ -1975,11 +1968,11 @@ export function ExpandableChatDemo() {
 }
 ```
 
-[Check the full code for the component here](https://github.com/finom/vovk/blob/main/examples/realtime-kanban/src/components/expandable-chat-demo.tsx)
+[See the full code of the component](https://github.com/finom/vovk/blob/main/examples/realtime-kanban/src/components/expandable-chat-demo.tsx)
 
-The key part of the code is the `useParseSDKToolCallOutputs` hook, which extracts tool call outputs from assistant messages and passes them to the registry’s `parse` method. The registry processes the results and triggers UI updates accordingly. The hook also ensures that each tool call output is parsed only once by keeping track of parsed tool call IDs in a `Set`.
+The main part is the `useParseSDKToolCallOutputs` hook. It takes the tool call outputs from the assistant messages and passes them to the registry's `parse` method, which updates the UI. The hook parses each tool call output only once: it keeps the parsed tool call IDs in a `Set`.
 
-```ts showLineNumbers copy filename="src/hooks/use-parse-sdk-tool-call-outputs.ts" source="examples/realtime-kanban" {26}
+```ts showLineNumbers copy filename="src/hooks/use-parse-sdk-tool-call-outputs.ts" source="examples/realtime-kanban" {27}
 import type { ToolUIPart, UIMessage } from 'ai';
 import { useEffect, useRef } from 'react';
 import { useRegistryStore } from '@/hooks/use-registry';
@@ -2013,7 +2006,7 @@ export default function useParseSDKToolCallOutputs(messages: UIMessage[]) {
 ```
 *[The code above is fetched from GitHub repository.](https://github.com/finom/vovk/blob/main/examples/realtime-kanban/src/hooks/use-parse-sdk-tool-call-outputs.ts)*
 
-Without optimizations, the code can be reduced to this small snippet:
+Without the optimizations, the hook comes down to this:
 
 ```ts showLineNumbers copy
 // ...
@@ -2025,7 +2018,7 @@ useEffect(() => {
 // ...
 ```
 
-That’s it: now you have a fully functional AI text chat interface that can call your backend functions and update the UI based on the results. The procedures return updated data that includes `id` and `entityType` fields, as well as the `__isDeleted` field for soft deletions.
+The chat can now call your backend functions and update the UI from the results: the procedures return the updated data with its `id` and `entityType` fields, and the `__isDeleted` field for soft deletions.
 
 ---
 
@@ -2033,15 +2026,15 @@ Page: https://vovk.dev/realtime-ui/voice-ai
 
 # WebRTC-based Realtime Voice AI
 
-For a JARVIS-like experience, we're going to set up a voice AI interface that uses the OpenAI Realtime API with WebRTC to send and receive audio data in real time. This time, instead of controller methods executed by the AI SDK on the backend, we're going to derive tools from the generated [RPC modules](https://vovk.dev/typescript) to make authorized requests directly in the browser.
+This page sets up a voice AI interface. It uses the OpenAI Realtime API with WebRTC to send and receive audio in real time. This time the tools don't come from controller methods that the AI SDK runs on the backend. They are derived from the generated [RPC modules](https://vovk.dev/typescript) and make authorized requests from the browser.
 
 ![Voice AI Realtime Flow](https://vovk.dev/diagrams/voice_ai_realtime_flow.svg)
 
-Since we're going to use WebRTC, audio data is sent and received directly between the client and the OpenAI Realtime API, without passing through our backend server. This makes tool execution extremely low-latency.
+With WebRTC, audio goes directly between the client and the OpenAI Realtime API, not through your backend server. This keeps tool execution latency low.
 
 ## Backend Setup
 
-On the backend, we're going to create a session endpoint implemented using the official OpenAI article [Realtime API with WebRTC](https://platform.openai.com/docs/guides/realtime-webrtc). The endpoint accepts the SDP offer from the client and a voice-selection query parameter, then returns the SDP answer from the OpenAI Realtime API.
+The backend has a session endpoint, based on the official OpenAI article [Realtime API with WebRTC](https://platform.openai.com/docs/guides/realtime-webrtc). It takes the client's SDP offer and a `voice` query parameter, and returns the SDP answer from the OpenAI Realtime API.
 
 ```ts showLineNumbers copy filename="src/modules/realtime/realtime-controller.ts" source="examples/realtime-kanban"
 import { HttpException, HttpStatus, post, prefix, procedure } from 'vovk';
@@ -2097,26 +2090,26 @@ export default class RealtimeController {
 
 ### WebRTC Audio Session Hook
 
-Next, we're going to create a custom hook `useWebRTCAudioSession` that manages the WebRTC session: starting and stopping it, handling audio streams, and managing the data channel for function calling.
+The custom hook `useWebRTCAudioSession` manages the WebRTC session: it starts and stops it, handles the audio streams, and manages the data channel for function calling.
 
-The hook accepts the selected voice and the tools list as parameters. It returns the session state (`isActive`, `isTalking`) and a function to toggle the session (`toggleSession`).
+The hook takes the selected voice and the list of tools. It returns the session state (`isActive`, `isTalking`) and a function that turns the session on and off (`toggleSession`).
 
-The crucial parts of the hook are:
+The main parts of the hook:
 
-- the `onopen` event handler of the data channel, where we send a `session.update` message with the tools list to inform the OpenAI Realtime API about the available tools, and
-- the `onmessage` event handler, where we listen for function call requests from the model via the `response.function_call_arguments.done` event, execute the corresponding tool, and send back the results.
+- the data channel's `onopen` handler, which sends a `session.update` message with the list of tools, so the OpenAI Realtime API knows which tools exist;
+- the `onmessage` handler, which waits for function calls from the model (the `response.function_call_arguments.done` event), runs the matching tool, and sends back the result.
 
-The `onmessage` handler also takes care of sending the `response.create` message to make the Realtime API respond, unless the tool execution result contains the `__preventResponseCreate` flag set to `true`, returned from the tool’s `execute` function.
+`onmessage` also sends the `response.create` message so the Realtime API answers, unless the result of the tool's `execute` function has the `__preventResponseCreate` flag set to `true`.
 
-```ts showLineNumbers copy filename="src/hooks/use-web-rtc-audio-session.ts" source="examples/realtime-kanban" {87-132}
+```ts showLineNumbers copy filename="src/hooks/use-web-rtc-audio-session.ts" source="examples/realtime-kanban" {87-139}
 'use client';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import type { StandardToolV0 } from 'vovk/internal';
+import type { StandardToolV0 } from 'vovk';
 import { RealtimeRPC } from '@/client';
 
 /**
  * Hook to manage a real-time session with OpenAI's Realtime endpoints.
- * @example const { isActive, isTalking, handleStartStopClick } = useWebRTCAudioSession(voice, tools);
+ * @example const { isActive, isTalking, toggleSession } = useWebRTCAudioSession(voice, tools);
  */
 export default function useWebRTCAudioSession(
   voice: 'ash' | 'ballad' | 'coral' | 'sage' | 'verse',
@@ -2304,11 +2297,11 @@ export default function useWebRTCAudioSession(
 
 ### Client-side Tools
 
-The `useWebRTCAudioSession` hook accepts a tools list derived via `deriveTools({ modules: { UserRPC, TaskRPC } }){:ts}`, and also custom client-side tools created with `standardTool` from the [standard-tool](https://www.npmjs.com/package/standard-tool) package for navigation, scrolling, and other UI interactions. The `getCurrentTime` and `partyMode` tools were borrowed from [this repository](https://github.com/cameronking4/openai-realtime-api-nextjs), which was used as an inspiration for this demo.
+`useWebRTCAudioSession` gets the tools derived with `deriveTools({ modules: { UserRPC, TaskRPC } }){:ts}`, plus custom client-side tools made with `standardTool` from the [standard-tool](https://www.npmjs.com/package/standard-tool) package, for navigation, scrolling, and other UI actions. The `getCurrentTime` and `partyMode` tools come from [this repository](https://github.com/cameronking4/openai-realtime-api-nextjs), which inspired this demo.
 
-Since the component is mounted in [layout.tsx](https://github.com/finom/vovk/blob/main/examples/realtime-kanban/src/app/layout.tsx), the component state and WebRTC connection persist across page navigations within this route. This allows you to navigate the app via voice commands using the `navigateTo` tool, which in turn uses Next.js `useRouter` hook.
+The component is mounted in [layout.tsx](https://github.com/finom/vovk/blob/main/examples/realtime-kanban/src/app/layout.tsx), so its state and the WebRTC connection stay alive when you move between pages within this route. That is why you can move around the app by voice with the `navigateTo` tool, which uses the Next.js `useRouter` hook.
 
-The client-side tool execution functions are located in the [lib/tools](https://github.com/finom/vovk/tree/main/examples/realtime-kanban/src/lib/tools) folder for better organization.
+The functions of the client-side tools are in the [lib/tools](https://github.com/finom/vovk/tree/main/examples/realtime-kanban/src/lib/tools) folder.
 
 ```ts showLineNumbers copy filename="src/components/real-time-demo.tsx" source="examples/realtime-kanban"
 'use client';
@@ -2419,9 +2412,7 @@ export default RealTimeDemo;
 ```
 *[The code above is fetched from GitHub repository.](https://github.com/finom/vovk/blob/main/examples/realtime-kanban/src/components/real-time-demo.tsx)*
 
-The code for the `Floaty` component is not shown here for brevity, but you can find it [in the repository](https://github.com/finom/vovk/blob/main/examples/realtime-kanban/src/components/floaty.tsx).
-
-With that, you now have a fully functional Realtime Voice AI interface that can interact with your application using natural language via voice, powered by OpenAI's Realtime API.
+The code of the `Floaty` component is [in the repository](https://github.com/finom/vovk/blob/main/examples/realtime-kanban/src/components/floaty.tsx).
 
 ---
 
@@ -2429,15 +2420,15 @@ Page: https://vovk.dev/realtime-ui/mcp
 
 # Setting up MCP server with `mcp-handler`
 
-[Database Polling](./polling) and [State Normalization](./state) are set up, so the app is ready to accept changes made by external systems. Let’s now set up the MCP server to allow MCP clients to interact with our application.
+With [Database Polling](./polling) and [State Normalization](./state) set up, the app accepts changes from outside systems. This page adds an MCP server, so MCP clients can work with the app.
 
-As an MCP server, we use the [`mcp-handler`](https://npmjs.com/package/mcp-handler) package, which provides a simple way to create an MCP server in a Next.js API route. The server will expose tools derived from our controllers.
+The server uses the [`mcp-handler`](https://npmjs.com/package/mcp-handler) package, which creates an MCP server in a Next.js API route.
 
 ![MCP Polling Flow](https://vovk.dev/diagrams/mcp_polling_flow.svg)
 
 Video: https://vovk.dev/video/kanban_mcp.mp4
 
-The tools, as usual, are derived from the controllers using the `deriveTools` function from the `vovk` package. For more details, see [Deriving AI Tools](https://vovk.dev/tools).
+As on the other pages, the `deriveTools` function from the `vovk` package derives the server's tools from the controllers. See [Deriving AI Tools](https://vovk.dev/tools).
 
 ```ts filename="src/app/api/mcp/route.ts" source="examples/realtime-kanban"
 import { createMcpHandler } from 'mcp-handler';
@@ -2494,19 +2485,19 @@ export { authorizedHandler as GET, authorizedHandler as POST };
 ```
 *[The code above is fetched from GitHub repository.](https://github.com/finom/vovk/blob/main/examples/realtime-kanban/src/app/api/mcp/route.ts)*
 
-For simple protection, we use the `mcp_access_key` query parameter to authorize requests. It’s compared against the `MCP_ACCESS_KEY` environment variable when that variable is set.
+For simple protection, the server authorizes requests by the `mcp_access_key` query parameter. When the `MCP_ACCESS_KEY` environment variable is set, the parameter must match it.
 
-The MCP server is now set up at the `/api/mcp` endpoint and can be accessed by MCP clients via the URL `http://localhost:3000/api/mcp?mcp_access_key=your_access_key` (replace `your_access_key` with the actual key, and `localhost` with your server address if needed).
+The MCP server runs at the `/api/mcp` endpoint. MCP clients connect to `http://localhost:3000/api/mcp?mcp_access_key=your_access_key`. Replace `your_access_key` with your key, and `localhost` with your server address if needed.
 
 ## Running the MCP Inspector Locally
 
-Run the following command to start the MCP Inspector, which allows you to interact with the MCP server we just set up. The app needs to be running locally.
+Start the MCP Inspector to try the MCP server. The app must be running locally.
 
 ```sh
 npx @modelcontextprotocol/inspector
 ```
 
-Update the server configuration in the Inspector, select a tool, and run it to see the results.
+In the Inspector, set the server configuration, select a tool, and run it to see the result.
 
 ![MCP Inspector](https://vovk.dev/screenshots/mcp-inspector.png)
 
@@ -2516,15 +2507,15 @@ Page: https://vovk.dev/realtime-ui/telegram
 
 # Telegram Bot with OpenAPI Mixins
 
-A combination of three features—[State Normalization](./state), [Database Polling](./polling), and [Tool derivation](https://vovk.dev/tools)—enables real-time database and UI updates from any third-party source of changes: API calls, MCP clients, bots, interactions by other users, and so on.
+Together, [State Normalization](./state), [Database Polling](./polling), and [Tool derivation](https://vovk.dev/tools) let any third-party source update the database and the UI in real time: API calls, MCP clients, bots, other users, and so on.
 
 ![Telegram Bot Flow](https://vovk.dev/diagrams/telegram_bot_flow.svg)
 
-As a proof of concept, this article briefly describes the Telegram bot integration, which allows users to create tasks and assign them to team members by sending text or voice messages to the bot.
+As a proof of concept, this article describes the Telegram bot. Users send it text or voice messages to create tasks and assign them to team members.
 
 ## Telegram API Mixin
 
-The Telegram API library is implemented with [OpenAPI mixins](https://vovk.dev/mixins) and used as a module with a hard-coded name `TelegramAPI` in the `telegram` pseudo-segment.
+The Telegram API client is built with [OpenAPI mixins](https://vovk.dev/mixins). It is a module with the fixed name `TelegramAPI` in the `telegram` pseudo-segment.
 
 ```ts showLineNumbers copy filename="vovk.config.mjs"
 // @ts-check
@@ -2552,7 +2543,7 @@ const config = {
 export default config;
 ```
 
-After running `vovk dev` or `vovk generate`, the `TelegramAPI` module is available for import from the generated client library.
+After `vovk dev` or `vovk generate`, you can import the `TelegramAPI` module from the generated client.
 
 ```ts
 import { TelegramAPI } from '@/client';
@@ -2566,7 +2557,7 @@ await TelegramAPI.sendMessage({
 });
 ```
 
-Because the Telegram Bot API requires authentication via the bot token in the URL, the API module can be recreated with the `withDefaults` method to set the `apiRoot` permanently.
+The Telegram Bot API takes the bot token in the URL, so recreate the module with the `withDefaults` method to set the `apiRoot` once.
 
 ```ts
 import { TelegramAPI as TelegramRawAPI } from '@/client';
@@ -2578,7 +2569,7 @@ const TelegramAPI = TelegramRawAPI.withDefaults({
 
 ## Segment, Controller and Procedure
 
-We’re going to create a new segment called `bots` that contains a `TelegramController` under the `TelegramBot` key. The segment isn’t going to emit any schema, as it’s not needed on the client side; this is configured by setting `emitSchema: false` in the `initSegment` call. Because the schema is not emitted, the controller key name can be any string.
+A new segment, `bots`, holds the `TelegramController` under the `TelegramBot` key. The client doesn't need its schema, so the segment emits none: `emitSchema: false` in the `initSegment` call. With no schema emitted, the controller key can be any string.
 
 ```ts showLineNumbers copy filename="src/app/api/bots/[[...vovk]]/route.ts" source="examples/realtime-kanban"
 import { initSegment } from 'vovk';
@@ -2598,7 +2589,7 @@ export const { GET, POST, PATCH, PUT, HEAD, OPTIONS, DELETE } = initSegment({
 ```
 *[The code above is fetched from GitHub repository.](https://github.com/finom/vovk/blob/main/examples/realtime-kanban/src/app/api/bots/[[...vovk]]/route.ts)*
 
-The `TelegramController` class contains a single `handle` procedure, implementing the `/api/bots/telegram/bot` endpoint, which is called by the Telegram webhook for each incoming message.
+The `TelegramController` class has a single `handle` procedure. It serves the `/api/bots/telegram/bot` endpoint, which the Telegram webhook calls for each incoming message.
 
 ```ts showLineNumbers copy filename="src/modules/telegram/telegram-controller.ts" source="examples/realtime-kanban"
 import { post, prefix } from 'vovk';
@@ -2614,7 +2605,7 @@ export default class TelegramController {
 ```
 *[The code above is fetched from GitHub repository.](https://github.com/finom/vovk/blob/main/examples/realtime-kanban/src/modules/telegram/telegram-controller.ts)*
 
-The app's `PASSWORD` doesn't cover this endpoint, as Telegram sends no session cookie. The `telegramGuard` decorator checks the `X-Telegram-Bot-Api-Secret-Token` header instead: the endpoint answers `404` until both `TELEGRAM_BOT_TOKEN` and `TELEGRAM_WEBHOOK_SECRET` are set, and `401` to a request whose header doesn't hold the secret.
+The app's `PASSWORD` doesn't cover this endpoint, because Telegram sends no session cookie. The `telegramGuard` decorator checks the `X-Telegram-Bot-Api-Secret-Token` header instead. The endpoint answers `404` until both `TELEGRAM_BOT_TOKEN` and `TELEGRAM_WEBHOOK_SECRET` are set, and `401` to a request whose header doesn't hold the secret.
 
 ```ts showLineNumbers copy filename="src/decorators/telegram-guard.ts" source="examples/realtime-kanban"
 import { timingSafeEqual } from 'node:crypto';
@@ -2638,7 +2629,7 @@ export const telegramGuard = createDecorator(async (req, next) => {
 ```
 *[The code above is fetched from GitHub repository.](https://github.com/finom/vovk/blob/main/examples/realtime-kanban/src/decorators/telegram-guard.ts)*
 
-Telegram sends the header once the webhook is registered with the same secret as `secret_token`. The secret can hold 1 to 256 characters: `A-Z`, `a-z`, `0-9`, `_` and `-`.
+Telegram sends the header once you register the webhook with the same secret as `secret_token`. The secret can hold 1 to 256 characters: `A-Z`, `a-z`, `0-9`, `_` and `-`.
 
 ```sh
 curl "https://api.telegram.org/bot$TELEGRAM_BOT_TOKEN/setWebhook" \
@@ -2648,7 +2639,7 @@ curl "https://api.telegram.org/bot$TELEGRAM_BOT_TOKEN/setWebhook" \
 
 ## Service
 
-The `TelegramService` class contains the main logic for handling incoming messages, generating AI responses with the Vercel AI SDK, updating the database via derived tools, and sending text or voice messages back to the user.
+The `TelegramService` class holds the main logic: it handles incoming messages, generates AI responses with the Vercel AI SDK, updates the database through derived tools, and sends text or voice messages back to the user.
 
 ```ts showLineNumbers copy filename="src/modules/telegram/telegram-service.ts"
 // ...
@@ -2722,6 +2713,4 @@ export default class TelegramService {
 }
 ```
 
-You can explore the full implementation of `TelegramService` in the [GitHub repository](https://github.com/finom/vovk/blob/main/examples/realtime-kanban/src/modules/telegram/telegram-service.ts), as it’s too long to fit here.
-
-Now the app is ready to receive incoming messages from Telegram users, process them with AI, update the database and UI, and respond back to users.
+The full `TelegramService` is too long for this page. See it in the [GitHub repository](https://github.com/finom/vovk/blob/main/examples/realtime-kanban/src/modules/telegram/telegram-service.ts).

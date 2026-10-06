@@ -410,6 +410,12 @@ await describe('CLI init', async () => {
     await assertTsConfig();
   });
 
+  await it('Works with --yes and --no-update-ts-config', async () => {
+    await createNextApp();
+    await vovkInit('--yes --no-update-ts-config --skip-install');
+    await assertTsConfig(true);
+  });
+
   await it('Works with prompting and --validation-library=none', async () => {
     await createNextApp();
     await vovkInit('--validation-library=none --skip-install', { combo: combos.ONE_FLAG_PASSED });

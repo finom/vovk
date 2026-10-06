@@ -1,4 +1,4 @@
-import type { HttpMethod } from 'vovk';
+import type { HttpMethod } from 'vovk/internal';
 
 export interface VerbMapEntry {
   noParams?: string;

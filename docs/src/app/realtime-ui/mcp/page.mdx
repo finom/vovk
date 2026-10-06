@@ -2,15 +2,15 @@ import Image from "next/image";
 
 # Setting up MCP server with `mcp-handler`
 
-[Database Polling](./polling) and [State Normalization](./state) are set up, so the app is ready to accept changes made by external systems. Let’s now set up the MCP server to allow MCP clients to interact with our application.
+With [Database Polling](./polling) and [State Normalization](./state) set up, the app accepts changes from outside systems. This page adds an MCP server, so MCP clients can work with the app.
 
-As an MCP server, we use the [`mcp-handler`](https://npmjs.com/package/mcp-handler) package, which provides a simple way to create an MCP server in a Next.js API route. The server will expose tools derived from our controllers.
+The server uses the [`mcp-handler`](https://npmjs.com/package/mcp-handler) package, which creates an MCP server in a Next.js API route.
 
 <img src="/diagrams/mcp_polling_flow.svg" alt="MCP Polling Flow" className="mt-4 dark:invert" />
 
 <video src="/video/kanban_mcp.mp4" type="video/mp4" className='mt-4' controls loop />
 
-The tools, as usual, are derived from the controllers using the `deriveTools` function from the `vovk` package. For more details, see [Deriving AI Tools](/tools).
+As on the other pages, the `deriveTools` function from the `vovk` package derives the server's tools from the controllers. See [Deriving AI Tools](/tools).
 
 ```ts filename="src/app/api/mcp/route.ts" source="examples/realtime-kanban"
 import { createMcpHandler } from 'mcp-handler';
@@ -67,18 +67,18 @@ export { authorizedHandler as GET, authorizedHandler as POST };
 ```
 *[The code above is fetched from GitHub repository.](https://github.com/finom/vovk/blob/main/examples/realtime-kanban/src/app/api/mcp/route.ts)*
 
-For simple protection, we use the `mcp_access_key` query parameter to authorize requests. It’s compared against the `MCP_ACCESS_KEY` environment variable when that variable is set.
+For simple protection, the server authorizes requests by the `mcp_access_key` query parameter. When the `MCP_ACCESS_KEY` environment variable is set, the parameter must match it.
 
-The MCP server is now set up at the `/api/mcp` endpoint and can be accessed by MCP clients via the URL `http://localhost:3000/api/mcp?mcp_access_key=your_access_key` (replace `your_access_key` with the actual key, and `localhost` with your server address if needed).
+The MCP server runs at the `/api/mcp` endpoint. MCP clients connect to `http://localhost:3000/api/mcp?mcp_access_key=your_access_key`. Replace `your_access_key` with your key, and `localhost` with your server address if needed.
 
 ## Running the MCP Inspector Locally
 
-Run the following command to start the MCP Inspector, which allows you to interact with the MCP server we just set up. The app needs to be running locally.
+Start the MCP Inspector to try the MCP server. The app must be running locally.
 
 ```sh
 npx @modelcontextprotocol/inspector
 ```
 
-Update the server configuration in the Inspector, select a tool, and run it to see the results.
+In the Inspector, set the server configuration, select a tool, and run it to see the result.
 
 <Image src="/screenshots/mcp-inspector.png" alt="MCP Inspector" width={3456} height={1908} className="dark:invert" />

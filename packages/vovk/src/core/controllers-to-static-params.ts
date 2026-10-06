@@ -8,6 +8,7 @@ import type { StaticClass } from '../types/utils.js';
  * export function generateStaticParams() {
  *  return controllersToStaticParams(controllers);
  * }
+ * ```
  */
 export function controllersToStaticParams(c: Record<string, StaticClass>, slug = 'vovk'): Record<string, string[]>[] {
   const controllers = c as Record<string, VovkController>;

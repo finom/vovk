@@ -1,16 +1,16 @@
 # Testing
 
-Vovk.ts procedures expose an [`.fn` method](/fn) that calls the handler directly, skipping the HTTP round-trip. The same method powers SSR, server actions, and testing. This makes unit testing straightforward — no server required.
+A procedure's [`.fn` method](/fn) calls the handler without the HTTP round trip. SSR, server actions and tests use the same method, so unit tests need no server.
 
 ## Setup
 
-Any test runner works (Vitest, Jest, Node.js test runner, etc.). Examples below use Vitest.
+Any test runner works: Vitest, Jest, the Node.js test runner and others. The examples use Vitest.
 
 The `vovk` package is ES modules only. Jest set up with `next/jest` can't load it as is, so add `transpilePackages: ['vovk']` to the Next.js config.
 
 ## Testing with `.fn`
 
-Given a controller:
+Given this controller:
 
 ```ts showLineNumbers copy filename="src/modules/user/user-controller.ts"
 import { z } from 'zod';
@@ -63,13 +63,13 @@ describe('UserController', () => {
 });
 ```
 
-The `.fn` method runs the full procedure pipeline including validation and [decorators](/decorator-overview), but without HTTP overhead. This makes it a perfect fit for tests built around mocked or stubbed data — there is no server to start, no network latency, and no cold-start penalty, so test suites complete remarkably fast.
+`.fn` runs the whole procedure, with validation and [decorators](/decorator-overview), but without HTTP. That fits tests with mocked or stubbed data: there is no server to start, no network latency and no cold start, so the tests run fast.
 
-The trade-off is that `.fn()` bypasses `proxy.js` (previously `middleware.js` in earlier Next.js versions). Any logic that lives there — authentication checks, rate limiting, header injection — will not run during `.fn()` calls. If your tests need to exercise that layer, use [integration tests with RPC modules](#integration-testing-with-rpc-modules) against a running dev server instead.
+The trade-off: `.fn()` skips `proxy.js` (`middleware.js` in earlier Next.js versions). Logic that lives there, such as authentication checks, rate limiting or added headers, doesn't run in `.fn()` calls. To test that layer, use [integration tests with RPC modules](#integration-testing-with-rpc-modules) against a running dev server instead.
 
 ## Testing Validation
 
-Since procedures validate input, you can test that invalid data is rejected:
+Procedures validate their input, so you can test that invalid data is rejected:
 
 ```ts showLineNumbers copy filename="src/modules/user/user-controller.test.ts"
 import { describe, it, expect } from 'vitest';
@@ -80,7 +80,8 @@ describe('UserController validation', () => {
   it('rejects invalid body', async () => {
     await expect(
       UserController.createUser.fn({
-        body: { name: 123 }, // invalid
+        // @ts-expect-error name must be a string
+        body: { name: 123 },
       })
     ).rejects.toThrow(HttpException);
   });
@@ -89,7 +90,7 @@ describe('UserController validation', () => {
 
 ## Integration Testing with RPC Modules
 
-For end-to-end tests that go through the HTTP layer, use the generated [RPC modules](/typescript) against a running dev server:
+For end-to-end tests through HTTP, call the generated [RPC modules](/typescript) against a running dev server:
 
 ```ts showLineNumbers copy filename="src/modules/user/user-controller.e2e.test.ts"
 import { describe, it, expect } from 'vitest';

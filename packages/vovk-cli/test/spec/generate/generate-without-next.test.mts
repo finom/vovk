@@ -1,14 +1,53 @@
 import assert from 'node:assert';
+import { execFile } from 'node:child_process';
 import fs from 'node:fs/promises';
+import { createRequire } from 'node:module';
 import os from 'node:os';
 import path from 'node:path';
 import { after, describe, it } from 'node:test';
+import { promisify } from 'node:util';
 import { createProject, runCLI, startCLI, userSegmentSchema } from '../../lib/minimal-project.mts';
 
 const projectDir = path.join(process.cwd(), 'tmp_generate_without_next');
 const read = (file: string) => fs.readFile(path.join(projectDir, file), 'utf-8');
 const exists = async (file: string) => !!(await fs.stat(path.join(projectDir, file)).catch(() => null));
 const configFile = (config: object) => `export default ${JSON.stringify(config)};`;
+const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
+// the root segment schema with one controller holding these procedures
+const withHandlers = (handlers: string[], rpcModuleName = 'UserRPC') => ({
+  ...userSegmentSchema,
+  controllers: {
+    [rpcModuleName]: {
+      ...userSegmentSchema.controllers.UserRPC,
+      rpcModuleName,
+      handlers: Object.fromEntries(handlers.map((name) => [name, { httpMethod: 'GET', path: name, validation: {} }])),
+    },
+  },
+});
+
+// polls, so a watcher that gets there later passes too
+async function waitUntil(check: () => Promise<boolean>, timeoutMs = 10_000) {
+  const start = Date.now();
+  while (!(await check())) {
+    if (Date.now() - start > timeoutMs) return false;
+    await sleep(250);
+  }
+  return true;
+}
+const segmentSchema = (segmentName: string, rpcModuleName: string) => ({
+  ...userSegmentSchema,
+  segmentName,
+  controllers: { [rpcModuleName]: { ...userSegmentSchema.controllers.UserRPC, rpcModuleName } },
+});
+
+const tscPath = createRequire(import.meta.url).resolve('typescript/bin/tsc');
+// the errors tsc reports for the project's own tsconfig.json, empty when it type-checks
+const typecheckProject = (cwd: string) =>
+  promisify(execFile)(process.execPath, [tscPath, '--noEmit', '-p', 'tsconfig.json'], { cwd }).then(
+    () => '',
+    (error: { stdout: string }) => error.stdout
+  );
 
 after(async () => {
   await fs.rm(projectDir, { recursive: true, force: true });
@@ -66,6 +105,68 @@ await describe('vovk generate in a project without Next.js', async () => {
 
     const index = await read('src/client/index.ts');
     assert.ok(index.includes(`import { schema } from './schema.ts';`), index);
+  });
+
+  await it('Writes a client that type-checks under module nodenext without allowImportingTsExtensions', async () => {
+    await createProject(projectDir, {
+      'package.json': { name: 'app', version: '1.0.0', type: 'module' },
+      'tsconfig.json': {
+        compilerOptions: {
+          module: 'nodenext',
+          strict: true,
+          noEmit: true,
+          skipLibCheck: true,
+          resolveJsonModule: true,
+        },
+        include: ['client'],
+      },
+      'vovk.config.mjs': configFile({ composedClient: { outDir: 'client', prettifyClient: false } }),
+      '.vovk-schema/root.json': userSegmentSchema,
+    });
+
+    await runCLI(['generate'], { cwd: projectDir });
+
+    assert.strictEqual(await typecheckProject(projectDir), '');
+  });
+
+  await it('Writes a client that type-checks under module nodenext in a CommonJS package', async () => {
+    await createProject(projectDir, {
+      // no "type": "module", so nodenext reads every .ts file as CommonJS, like in a default Next.js app
+      'package.json': { name: 'app', version: '1.0.0' },
+      'tsconfig.json': {
+        compilerOptions: {
+          module: 'nodenext',
+          allowImportingTsExtensions: true,
+          strict: true,
+          noEmit: true,
+          skipLibCheck: true,
+          resolveJsonModule: true,
+        },
+        include: ['client'],
+      },
+      'vovk.config.mjs': configFile({ composedClient: { outDir: 'client', prettifyClient: false } }),
+      '.vovk-schema/root.json': userSegmentSchema,
+    });
+
+    await runCLI(['generate'], { cwd: projectDir });
+
+    assert.strictEqual(await typecheckProject(projectDir), '');
+  });
+
+  await it('Writes a client that type-checks under module node16', async () => {
+    await createProject(projectDir, {
+      'package.json': { name: 'app', version: '1.0.0', type: 'module' },
+      'tsconfig.json': {
+        compilerOptions: { module: 'node16', strict: true, noEmit: true, skipLibCheck: true, resolveJsonModule: true },
+        include: ['client'],
+      },
+      'vovk.config.mjs': configFile({ composedClient: { outDir: 'client', prettifyClient: false } }),
+      '.vovk-schema/root.json': userSegmentSchema,
+    });
+
+    await runCLI(['generate'], { cwd: projectDir });
+
+    assert.strictEqual(await typecheckProject(projectDir), '');
   });
 
   await it('Resets the root origin to relative URLs with a client origin of null or an empty string', async () => {
@@ -474,5 +575,373 @@ imports:
     await runCLI(['generate'], { cwd: projectDir });
 
     assert.strictEqual(await read('out/imports.txt'), 'function function');
+  });
+
+  await it('Imports the template front matter modules from the project, not from vovk-cli', async () => {
+    await createProject(projectDir, {
+      'package.json': { name: 'app', version: '1.0.0', type: 'module' },
+      'vovk.config.mjs': configFile({
+        clientTemplateDefs: { greeting: { templatePath: './templates/greeting' } },
+        composedClient: { fromTemplates: ['greeting'], outDir: 'out', prettifyClient: false },
+      }),
+      // installed in the project only, as a global or npx vovk-cli finds vovk-python and vovk-rust
+      'node_modules/greeting-helpers/package.json': { name: 'greeting-helpers', type: 'module', exports: './index.js' },
+      'node_modules/greeting-helpers/index.js': "export const greet = (name) => 'Hello, ' + name;\n",
+      'templates/greeting/greeting.txt.ejs': `---
+imports:
+  - greeting-helpers
+---
+<%= t.imports['greeting-helpers'].greet(t.package.name) %>`,
+      '.vovk-schema/root.json': userSegmentSchema,
+    });
+
+    await runCLI(['generate'], { cwd: projectDir });
+
+    assert.strictEqual(await read('out/greeting.txt'), 'Hello, app');
+  });
+
+  await it('Applies the composedClient options of a template definition', async () => {
+    await createProject(projectDir, {
+      'package.json': { name: 'app', version: '1.0.0', type: 'module' },
+      'vovk.config.mjs': configFile({
+        composedClient: { fromTemplates: ['ts', 'tsPublic', 'tsAdmin'], prettifyClient: false },
+        clientTemplateDefs: {
+          tsPublic: { extends: 'ts', composedClient: { outDir: './public-client', excludeSegments: ['admin'] } },
+          tsAdmin: {
+            extends: 'ts',
+            composedClient: {
+              outDir: './admin-client',
+              includeSegments: ['admin'],
+              outputConfig: { origin: 'https://admin.example.com' },
+            },
+          },
+        },
+      }),
+      'src/app/api/[[...vovk]]/route.ts': '',
+      'src/app/api/admin/[[...vovk]]/route.ts': '',
+      '.vovk-schema/root.json': userSegmentSchema,
+      '.vovk-schema/admin.json': segmentSchema('admin', 'AdminRPC'),
+    });
+
+    await runCLI(['generate'], { cwd: projectDir });
+
+    const client = await read('src/client/index.ts');
+    assert.ok(client.includes('export const UserRPC') && client.includes('export const AdminRPC'), client);
+    const publicClient = await read('public-client/index.ts');
+    assert.ok(publicClient.includes('export const UserRPC'), publicClient);
+    assert.ok(!publicClient.includes('AdminRPC'), publicClient);
+    const adminClient = await read('admin-client/index.ts');
+    assert.ok(adminClient.includes('export const AdminRPC'), adminClient);
+    assert.ok(!adminClient.includes('UserRPC'), adminClient);
+    assert.ok(adminClient.includes('https://admin.example.com'), adminClient);
+  });
+
+  await it('Applies the segmentedClient options of a template definition', async () => {
+    await createProject(projectDir, {
+      'package.json': { name: 'app', version: '1.0.0', type: 'module' },
+      'vovk.config.mjs': configFile({
+        composedClient: { enabled: false },
+        segmentedClient: { enabled: true, fromTemplates: ['ts', 'tsPublic'], prettifyClient: false },
+        clientTemplateDefs: {
+          tsPublic: { extends: 'ts', segmentedClient: { outDir: './public-client', excludeSegments: ['admin'] } },
+        },
+      }),
+      'src/app/api/[[...vovk]]/route.ts': '',
+      'src/app/api/admin/[[...vovk]]/route.ts': '',
+      '.vovk-schema/root.json': userSegmentSchema,
+      '.vovk-schema/admin.json': segmentSchema('admin', 'AdminRPC'),
+    });
+
+    await runCLI(['generate'], { cwd: projectDir });
+
+    assert.deepStrictEqual((await fs.readdir(path.join(projectDir, 'src/client'))).sort(), ['admin', 'root']);
+    assert.deepStrictEqual(await fs.readdir(path.join(projectDir, 'public-client')), ['root']);
+  });
+
+  await it('Names Python and Rust packages after py_name and rs_name', async () => {
+    await createProject(projectDir, {
+      'package.json': { name: 'acme-api', version: '1.0.0', type: 'module' },
+      'vovk.config.mjs': configFile({
+        composedClient: { prettifyClient: false },
+        outputConfig: { package: { py_name: 'acme_py', rs_name: 'acme_rs' } },
+      }),
+      '.vovk-schema/root.json': userSegmentSchema,
+    });
+
+    await runCLI(['generate', '--from', 'py', '--out', 'dist_python'], { cwd: projectDir });
+    await runCLI(['generate', '--from', 'rs', '--out', 'dist_rust'], { cwd: projectDir });
+
+    assert.deepStrictEqual(await fs.readdir(path.join(projectDir, 'dist_python/src')), ['acme_py']);
+    assert.match(await read('dist_python/pyproject.toml'), /^name = "acme_py"$/m);
+    assert.match(await read('dist_python/README.md'), /^from acme_py import UserRPC$/m);
+    assert.match(await read('dist_rust/Cargo.toml'), /^name = "acme_rs"$/m);
+    assert.match(await read('dist_rust/README.md'), /^use acme_rs::user_rpc;$/m);
+  });
+
+  await it('Imports a package with a scoped name by its Python and Rust name in the README samples', async () => {
+    await createProject(projectDir, {
+      'package.json': { name: '@acme/web-app', version: '1.0.0', type: 'module' },
+      'vovk.config.mjs': configFile({ composedClient: { prettifyClient: false } }),
+      '.vovk-schema/root.json': userSegmentSchema,
+    });
+
+    await runCLI(['generate', '--from', 'py', '--out', 'dist_python'], { cwd: projectDir });
+    await runCLI(['generate', '--from', 'rs', '--out', 'dist_rust'], { cwd: projectDir });
+
+    assert.match(await read('dist_python/README.md'), /^from acme_web_app import UserRPC$/m);
+    assert.match(await read('dist_rust/README.md'), /^use acme_web_app::user_rpc;$/m);
+  });
+
+  await it('Generates the client from the schema folder of another project given with --schema-path', async () => {
+    await createProject(projectDir, {
+      'backend/.vovk-schema/root.json': userSegmentSchema,
+      // a Next.js app with no segments of its own
+      'frontend/package.json': { name: 'frontend', version: '1.0.0', type: 'module' },
+      'frontend/vovk.config.mjs': configFile({ composedClient: { prettifyClient: false } }),
+      'frontend/src/app/page.tsx': 'export default function Page() { return null; }',
+    });
+
+    const { stdout, stderr } = await runCLI(
+      ['generate', '--schema-path', '../backend/.vovk-schema', '--out', 'client'],
+      {
+        cwd: path.join(projectDir, 'frontend'),
+      }
+    );
+
+    const index = await read('frontend/client/index.ts');
+    assert.ok(index.includes('export const UserRPC'), index);
+    assert.doesNotMatch(stdout + stderr, /no route file/);
+  });
+
+  await it('Removes the client files of a removed segment that holds another segment', async () => {
+    await createProject(projectDir, {
+      'package.json': { name: 'app', version: '1.0.0', type: 'module' },
+      'vovk.config.mjs': configFile({
+        composedClient: { enabled: false },
+        segmentedClient: { enabled: true, prettifyClient: false },
+      }),
+      'src/app/api/[[...vovk]]/route.ts': '',
+      'src/app/api/admin/[[...vovk]]/route.ts': '',
+      'src/app/api/admin/users/[[...vovk]]/route.ts': '',
+      '.vovk-schema/root.json': userSegmentSchema,
+      '.vovk-schema/admin.json': segmentSchema('admin', 'AdminRPC'),
+      '.vovk-schema/admin/users.json': segmentSchema('admin/users', 'AdminUsersRPC'),
+    });
+    await runCLI(['generate'], { cwd: projectDir });
+    assert.ok((await read('src/client/admin/index.ts')).includes('AdminRPC'));
+
+    await fs.rm(path.join(projectDir, 'src/app/api/admin/[[...vovk]]'), { recursive: true });
+    await fs.rm(path.join(projectDir, '.vovk-schema/admin.json'));
+    await runCLI(['generate'], { cwd: projectDir });
+
+    assert.deepStrictEqual(await fs.readdir(path.join(projectDir, 'src/client/admin')), ['users']);
+    assert.ok((await read('src/client/admin/users/index.ts')).includes('AdminUsersRPC'));
+  });
+
+  await it('Says nothing about build output inside the folder of a segment', async () => {
+    // what cargo build and Python leave next to the generated files
+    for (const [template, buildFile] of [
+      ['rs', 'seg/root/target/debug/build.log'],
+      ['py', 'seg/root/src/app_root/__pycache__/__init__.cpython-311.pyc'],
+    ]) {
+      await createProject(projectDir, {
+        'package.json': { name: 'app', version: '1.0.0', type: 'module' },
+        'vovk.config.mjs': configFile({
+          composedClient: { enabled: false },
+          segmentedClient: { enabled: true, fromTemplates: [template], outDir: 'seg', prettifyClient: false },
+        }),
+        'src/app/api/[[...vovk]]/route.ts': '',
+        '.vovk-schema/root.json': userSegmentSchema,
+      });
+      await runCLI(['generate'], { cwd: projectDir });
+      await fs.mkdir(path.dirname(path.join(projectDir, buildFile)), { recursive: true });
+      await fs.writeFile(path.join(projectDir, buildFile), 'build output');
+
+      const { stdout, stderr } = await runCLI(['generate'], { cwd: projectDir });
+
+      assert.doesNotMatch(stdout + stderr, /not a known segment/, template);
+      assert.ok(await exists(buildFile), buildFile);
+    }
+  });
+
+  await it('Refuses two templates that write the same file', async () => {
+    await createProject(projectDir, {
+      'package.json': { name: 'app', version: '1.0.0', type: 'module' },
+      'vovk.config.mjs': configFile({
+        composedClient: { enabled: false },
+        // both put a README.md into each segment folder
+        segmentedClient: { enabled: true, fromTemplates: ['py', 'rs'], outDir: 'seg', prettifyClient: false },
+      }),
+      'src/app/api/[[...vovk]]/route.ts': '',
+      '.vovk-schema/root.json': userSegmentSchema,
+    });
+
+    await assert.rejects(runCLI(['generate'], { cwd: projectDir }), (error: Error) => {
+      assert.ok(error.message.includes(path.join('seg', 'root', 'README.md')), error.message);
+      assert.ok(error.message.includes('pyReadme') && error.message.includes('rsReadme'), error.message);
+      return true;
+    });
+  });
+
+  await it('Refuses two templates that write the same file into one --out folder', async () => {
+    await createProject(projectDir, {
+      'package.json': { name: 'app', version: '1.0.0', type: 'module' },
+      'vovk.config.mjs': configFile({ composedClient: { prettifyClient: false } }),
+      '.vovk-schema/root.json': userSegmentSchema,
+    });
+
+    await assert.rejects(
+      runCLI(['generate', '--from', 'py', '--from', 'rs', '--out', 'x'], { cwd: projectDir }),
+      (error: Error) => {
+        assert.ok(error.message.includes(path.join('x', 'README.md')), error.message);
+        assert.ok(error.message.includes('pyReadme') && error.message.includes('rsReadme'), error.message);
+        return true;
+      }
+    );
+    await assert.rejects(fs.access(path.join(projectDir, 'x')));
+  });
+
+  await it('Warns once per template that a Python or Rust client has no origin to send its calls to', async () => {
+    await createProject(projectDir, {
+      'package.json': { name: 'app', version: '1.0.0', type: 'module' },
+      'vovk.config.mjs': configFile({ composedClient: { prettifyClient: false } }),
+      '.vovk-schema/root.json': userSegmentSchema,
+      '.vovk-schema/admin.json': segmentSchema('admin', 'AdminRPC'),
+    });
+
+    // the TypeScript client calls relative URLs, the Python and Rust ones can't
+    const { stdout, stderr } = await runCLI(['generate', '--from', 'ts', '--from', 'py', '--from', 'rs'], {
+      cwd: projectDir,
+    });
+    const warnings = `${stdout}${stderr}`.split('\n').filter((line) => line.includes('outputConfig.origin'));
+    assert.strictEqual(warnings.length, 2, stdout + stderr);
+    for (const templateName of ['pySrc', 'rsSrc']) {
+      assert.ok(
+        warnings.some((line) => line.includes(`"${templateName}"`) && line.includes('api_root')),
+        stdout + stderr
+      );
+    }
+
+    const withOrigin = await runCLI(['generate', '--from', 'py', '--from', 'rs', '--origin', 'https://example.com'], {
+      cwd: projectDir,
+    });
+    assert.doesNotMatch(withOrigin.stdout + withOrigin.stderr, /outputConfig\.origin/);
+  });
+
+  await it('Gives the OpenAPI document and the Python package a version when package.json has none', async () => {
+    await createProject(projectDir, {
+      'package.json': { name: 'app', type: 'module' },
+      'vovk.config.mjs': configFile({ composedClient: { prettifyClient: false } }),
+      '.vovk-schema/root.json': userSegmentSchema,
+    });
+
+    await runCLI(['generate', '--from', 'openapiJson', '--from', 'pyPkg', '--out', 'out'], { cwd: projectDir });
+
+    const { info } = JSON.parse(await read('out/openapi.json'));
+    assert.ok(typeof info.version === 'string' && info.version, JSON.stringify(info));
+    assert.match(await read('out/pyproject.toml'), /^version = "[^"]+"$/m);
+  });
+
+  await it('Keeps watching the schema folder after it is removed and created again', async () => {
+    await createProject(projectDir, {
+      'package.json': { name: 'app', version: '1.0.0', type: 'module' },
+      'vovk.config.mjs': configFile({ composedClient: { prettifyClient: false } }),
+      'src/app/api/[[...vovk]]/route.ts': '',
+      '.vovk-schema/root.json': userSegmentSchema,
+    });
+
+    const cli = startCLI(['generate', '--watch', '1'], { cwd: projectDir });
+    try {
+      await cli.waitForOutput(/Composed client is generated/, 10_000);
+      // a git switch to a branch without the folder and back
+      await fs.rm(path.join(projectDir, '.vovk-schema'), { recursive: true });
+      await sleep(2000);
+      await fs.mkdir(path.join(projectDir, '.vovk-schema'));
+      await fs.writeFile(path.join(projectDir, '.vovk-schema/root.json'), JSON.stringify(withHandlers(['getUser'])));
+      await sleep(2000);
+      await fs.writeFile(
+        path.join(projectDir, '.vovk-schema/root.json'),
+        JSON.stringify(withHandlers(['getUser'], 'PostRPC'))
+      );
+
+      const isRegenerated = await waitUntil(async () => (await read('src/client/index.ts')).includes('PostRPC'));
+      assert.ok(isRegenerated, cli.getOutput());
+    } finally {
+      await cli.stop();
+    }
+  });
+
+  await it('Regenerates with --watch from the current OpenAPI mixin file of the config', async () => {
+    const petsSpec = (operationIds: string[]) => ({
+      openapi: '3.1.0',
+      info: { title: 'Pets', version: '1.0.0' },
+      servers: [{ url: 'https://pets.example.com' }],
+      paths: Object.fromEntries(
+        operationIds.map((operationId) => [
+          `/${operationId}`,
+          { get: { operationId, responses: { 200: { description: 'OK' } } } },
+        ])
+      ),
+    });
+    await createProject(projectDir, {
+      'package.json': { name: 'app', version: '1.0.0', type: 'module' },
+      'vovk.config.mjs': configFile({
+        composedClient: { prettifyClient: false },
+        outputConfig: {
+          segments: { pets: { openAPIMixin: { source: { file: './pets.json' }, getModuleName: 'PetsRPC' } } },
+        },
+      }),
+      'pets.json': petsSpec(['listPets']),
+      'src/app/api/[[...vovk]]/route.ts': '',
+      '.vovk-schema/root.json': userSegmentSchema,
+    });
+
+    const cli = startCLI(['generate', '--watch', '1'], { cwd: projectDir });
+    try {
+      await cli.waitForOutput(/Composed client is generated/, 10_000);
+      await sleep(1500);
+      await fs.writeFile(path.join(projectDir, 'pets.json'), JSON.stringify(petsSpec(['listPets', 'getOwners'])));
+      await sleep(1500);
+      // and a schema change, which regenerates the client
+      await fs.writeFile(
+        path.join(projectDir, '.vovk-schema/root.json'),
+        JSON.stringify(withHandlers(['getUser'], 'PostRPC'))
+      );
+
+      const isRegenerated = await waitUntil(async () => (await read('src/client/mixins.json')).includes('getOwners'));
+      assert.ok(isRegenerated, await read('src/client/mixins.json'));
+    } finally {
+      await cli.stop();
+    }
+  });
+
+  await it('Writes the newest client when --watch generations overlap', async () => {
+    await createProject(projectDir, {
+      'package.json': { name: 'app', version: '1.0.0', type: 'module' },
+      'vovk.config.mjs': configFile({
+        composedClient: { fromTemplates: ['handlers'], prettifyClient: false },
+        clientTemplateDefs: { handlers: { templatePath: './handlers-template/' } },
+      }),
+      // takes 4 s while a procedure is named "slow", like a big client under prettier on a busy machine
+      'handlers-template/handlers.ts.ejs':
+        "<%- t.getFirstLineBanner() %>\n<% const names = Object.values(t.schema.segments).flatMap((s) => Object.values(s.controllers).flatMap((c) => Object.keys(c.handlers))); if (names.includes('slow')) await new Promise((resolve) => setTimeout(resolve, 4000)); %>export const handlers = <%- JSON.stringify(names) %>;\n",
+      'src/app/api/[[...vovk]]/route.ts': '',
+      '.vovk-schema/root.json': withHandlers(['getUser']),
+    });
+    const schemaFile = path.join(projectDir, '.vovk-schema/root.json');
+
+    const cli = startCLI(['generate', '--watch', '0.5'], { cwd: projectDir });
+    try {
+      await cli.waitForOutput(/Composed client is generated/, 10_000);
+      await sleep(1500);
+      await fs.writeFile(schemaFile, JSON.stringify(withHandlers(['getUser', 'slow'])));
+      await sleep(2000);
+      await fs.writeFile(schemaFile, JSON.stringify(withHandlers(['getUser', 'fast'])));
+      await sleep(7000);
+    } finally {
+      await cli.stop();
+    }
+
+    assert.match(await read('src/client/handlers.ts'), /\["getUser","fast"\]/);
   });
 });

@@ -1,10 +1,10 @@
 # Services
 
-A service is part of the Controller–Service–Repository pattern. It separates business logic from request handlers, keeping controllers focused on HTTP concerns while the service encapsulates the actual work and data manipulation.
+A service is part of the Controller–Service–Repository pattern. It keeps business logic out of the request handlers: the controller deals with HTTP, and the service does the work and changes the data.
 
-Like controllers, services are often written as static classes with static methods, but they do not require decorators or any special structure. The static-class style is simply a convention—you can instead use instantiated classes, standalone functions, or plain objects. This pattern also does **not** require dependency injection (DI): services can be plain modules you import and call directly.
+Like controllers, services are often classes with static methods, but they need no decorators and no special structure. The static class is only a convention: you can use class instances, standalone functions or plain objects instead. The pattern does **not** need dependency injection (DI) either: a service can be a plain module that you import and call.
 
-Let's say you have the following controller class:
+Take this controller:
 
 ```ts showLineNumbers copy filename="src/modules/user/user-controller.ts" {22}
 import { z } from 'zod';
@@ -33,7 +33,7 @@ export default class UserController {
 }
 ```
 
-The `handle` method returns the result of `UserService.updateUser`. That method, in turn, infers its types from the procedure, making the validation models (Zod schemas in this case) the single source of truth for input and output types, with no need to define separate types, thanks to the legendary [Anders Hejlsberg](https://github.com/ahejlsberg) for the fix in [#58616](https://github.com/microsoft/TypeScript/issues/58616)—without this TypeScript change, Vovk.ts would not be possible.
+The `handle` method returns the result of `UserService.updateUser`, and that method takes its types from the procedure. So the validation schemas (Zod here) are the single source of truth for the input and output types, and you define no separate types. Thanks to [Anders Hejlsberg](https://github.com/ahejlsberg) for the fix in [#58616](https://github.com/microsoft/TypeScript/issues/58616): without this TypeScript change, Vovk.ts would not be possible.
 
 ```ts showLineNumbers copy filename="src/modules/user/user-service.ts"
 import type { VovkBody, VovkOutput, VovkParams, VovkQuery } from 'vovk';
@@ -45,11 +45,11 @@ export default class UserService {
     query: VovkQuery<typeof UserController.updateUser>,
     params: VovkParams<typeof UserController.updateUser>
   ) {
-    // perform DB operations or other business logic here
+    // database calls or other business logic
     console.log(body, query, params);
     return { success: true, id: params.id } satisfies VovkOutput<typeof UserController.updateUser>;
   }
 }
 ```
 
-In other words, service methods can infer types from procedures, and procedures can call service methods without self-referencing type issues.
+Service methods infer their types from procedures, and procedures call service methods, without circular type errors.

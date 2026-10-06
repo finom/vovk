@@ -163,7 +163,7 @@ Base origin used to generate client URLs. Defaults to `''` (relative URLs). To u
 
 Used to generate `package.json` (for the [TypeScript client](/typescript)), `Cargo.toml` (for the [Rust client](/rust)), or `pyproject.toml` (for the [Python client](/python)). It also influences `README.md` generation (name, version, description, etc.) and updates code samples to use the proper package name.
 
-By default, Python and Rust package names are derived from `package.name` by converting `kebab-case` to `snake_case`. You can override them using the `py_name` and `rs_name` fields, respectively.
+By default, Python and Rust package names are derived from `package.name` the way [`[package_name]`](/templates#py) is: `@acme/web-app` becomes `acme_web_app`. You can override them using the `py_name` and `rs_name` fields, respectively; they name the package, its folder and the imports in the README samples.
 
 #### `readme: { banner?: string, installCommand?: string, description?: string }`
 
@@ -214,9 +214,9 @@ When the [segmented](/segmented) client is used, top-level `outputConfig.reExpor
 import { type MyType, MyClass, myFunction, RenamedComponent, MyDefault } from '@/client/root';
 ```
 
-#### `imports: { fetcher: VovkFetcher, validateOnClient: VovkValidateOnClient }`
+#### `imports: { fetcher?: string, validateOnClient?: string | null, createRPC?: string }`
 
-Customizes the imports for `fetcher` and `validateOnClient`. See [Imports](/imports) for details.
+Module paths the client imports `fetcher`, `validateOnClient` and `createRPC` from; the defaults are `vovk/fetcher`, no client-side validation, and `vovk/create-rpc`. A segment sets `fetcher` and `validateOnClient` only. See [Imports](/imports) for details.
 
 #### `segments`
 

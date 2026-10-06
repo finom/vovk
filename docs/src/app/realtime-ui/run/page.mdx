@@ -1,14 +1,14 @@
 # Running the Project Locally
 
-The Realtime Kanban app is available in the [GitHub repository](https://github.com/finom/vovk/tree/main/examples/realtime-kanban) and can be run locally.
+The Realtime Kanban app is in the [GitHub repository](https://github.com/finom/vovk/tree/main/examples/realtime-kanban).
 
-Create a copy of the app; this also installs the dependencies:
+Copy the app. This also installs the dependencies:
 
 ```bash copy
 npx create-next-app@latest --example https://github.com/finom/vovk/tree/main/examples/realtime-kanban realtime-kanban && cd realtime-kanban
 ```
 
-Create a `.env` file in the root directory and add your OpenAI API key and database connection strings:
+Create a `.env` file in the project root with your OpenAI API key and the database connection strings:
 
 ```env filename=".env"
 OPENAI_API_KEY=change_me
@@ -36,18 +36,19 @@ Start the development server:
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) in your browser to see the result. The UI should be self-explanatory. Users and tasks can be created with the UI (click “+ Add Team Member”, etc.), or by clicking one of the floating AI-related buttons: Text or Voice.
+Open [http://localhost:3000](http://localhost:3000) in your browser. Create users and tasks in the UI (click “+ Add a Team Member” and so on), or with one of the floating AI buttons: Text or Voice.
 
-The variables in the `.env` file are used as follows:
+The variables in `.env`:
 
-- `OPENAI_API_KEY` – your OpenAI API key, required for AI features. Creating or updating a user or a task also calls the embeddings API: without a working key, the row is saved without an embedding, and search skips it until an update adds one.
-- `DATABASE_URL` – the database connection string for Prisma ORM, used to instantiate the Prisma client in [database-service.ts](https://github.com/finom/vovk/blob/main/examples/realtime-kanban/src/modules/database/database-service.ts).
-- `DATABASE_URL_UNPOOLED` – the database connection string for direct connections, used for migrations in [prisma.config.ts](https://github.com/finom/vovk/blob/main/examples/realtime-kanban/prisma.config.ts).
-- `REDIS_URL` – the Redis connection string for realtime features, explained in more detail in the [Polling](./polling) article.
+- `OPENAI_API_KEY` – your OpenAI API key, needed for the AI features. Creating or updating a user or a task also calls the embeddings API. Without a working key, the row is saved without an embedding, and search skips it until an update adds one.
+- `DATABASE_URL` – the database connection string. [database-service.ts](https://github.com/finom/vovk/blob/main/examples/realtime-kanban/src/modules/database/database-service.ts) creates the Prisma client with it.
+- `DATABASE_URL_UNPOOLED` – the connection string for direct connections. [prisma.config.ts](https://github.com/finom/vovk/blob/main/examples/realtime-kanban/prisma.config.ts) uses it for migrations.
+- `REDIS_URL` – the Redis connection string for the realtime features. See the [Polling](./polling) article.
 
-You can also define additional env variables in `.env`:
+Optional variables:
 
-- `PASSWORD` – a simple password protection for the app's pages and API. It doesn't cover the MCP server or the Telegram webhook, which have their own keys below. It’s described in more detail in the [Authentication](./authentication) article.
-- `MCP_ACCESS_KEY` – a simple authorization key for the MCP server using the `?mcp_access_key=your_key` query param. If this variable is not set, no authorization is required. See the [MCP](./mcp) article for details.
-- `TELEGRAM_BOT_TOKEN` – enables the Telegram bot integration. See the [Telegram Integration](./telegram) article for more information.
+- `PASSWORD` – password protection for the app's pages and API. It doesn't cover the MCP server or the Telegram webhook, which have their own keys below. See the [Authentication](./authentication) article.
+- `SESSION_SECRET` – the key that signs the session cookie. Set it whenever you set `PASSWORD`. Without it, the app uses a default key from the public repository. Generate one with `openssl rand -base64 32`.
+- `MCP_ACCESS_KEY` – an authorization key for the MCP server, sent in the `?mcp_access_key=your_key` query parameter. If it isn't set, the MCP server needs no key. See the [MCP](./mcp) article.
+- `TELEGRAM_BOT_TOKEN` – turns on the Telegram bot. See the [Telegram Integration](./telegram) article.
 - `TELEGRAM_WEBHOOK_SECRET` – the secret Telegram sends with each webhook call. The webhook answers only when both Telegram variables are set.

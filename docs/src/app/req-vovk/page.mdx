@@ -1,16 +1,16 @@
 # `req.vovk` Interface
 
-While using built-in `NextRequest` functions like `req.json()` and `req.nextUrl.searchParams.get()` are sufficient for most use cases, Vovk.ts also patches the request object with `vovk` property that provides additional methods for more advanced input data handling. It covers the following scenarios:
+The built-in `NextRequest` functions, such as `req.json()` and `req.nextUrl.searchParams.get()`, cover most cases. Vovk.ts also adds a `vovk` property to the request, with methods for more advanced input handling. Use them to:
 
-- Receive data transformed by the validation library (`req.json()` and `req.nextUrl.searchParams.get()` return data as is), unless the procedure sets [`preferTransformed`](/procedure#prefertransformed--true) to `false`.
-- Implement nested query parameters parsing.
-- Read form data as a typed object, instead of `FormData`, provided by `req.formData()`.
-- Implement request metadata storage.
+- Get the data as the validation library transforms it (`req.json()` and `req.nextUrl.searchParams.get()` return it as sent), unless the procedure sets [`preferTransformed`](/procedure#prefertransformed--true) to `false`.
+- Parse nested query parameters.
+- Read form data as a typed object, instead of the `FormData` that `req.formData()` returns.
+- Store request metadata.
 
 <a name="body"></a>
 ## `async req.vovk.body()`
 
-The `req.vovk.body` function returns the request body parsed as an object. In most cases, it behaves the same as `req.json()`, but can also return data based on non-JSON content type set at `procedure` function (see [Content Type](/content-type) for details).
+`req.vovk.body()` returns the parsed request body. Mostly it works as `req.json()` does, but it also parses the non-JSON content types that `procedure` declares (see [Content Type](/content-type)).
 
 ```ts showLineNumbers copy
 import { post, type VovkRequest } from 'vovk';
@@ -23,12 +23,12 @@ export default class UserController {
 }
 ```
 
-Once a body schema or `req.vovk.body()` has read the body, the body methods of `req`, `req.body` and `req.clone()` replay it. To forward the request, use `new Request(url, req)` or pass `body: req.body` to `fetch()`. `new Request(req)` and `fetch(req)` take the request's own body, which is read by then, and throw.
+Once a body schema or `req.vovk.body()` has read the body, the body methods of `req`, `req.body` and `req.clone()` replay it. To forward the request, use `new Request(url, req)`, or pass `body: req.body` to `fetch()`. `new Request(req)` and `fetch(req)` throw: they take the request's own body, which is read by then.
 
 <a name="query"></a>
 ## `req.vovk.query()`
 
-The `req.vovk.query` function returns typed query parameters, allowing for nested data structures.
+`req.vovk.query()` returns the typed query parameters, nested data included.
 
 ```ts showLineNumbers copy
 import { get, type VovkRequest } from 'vovk';
@@ -41,25 +41,25 @@ export default class UserController {
 }
 ```
 
-Nested data is serialized as a query string with square brackets, commonly referred to as "PHP‑style" or "bracket notation".
+Nested data goes in the query string with square brackets, known as "PHP-style" or "bracket notation".
 
-- Square brackets `[ ]` denote keys for arrays or nested objects.
+- Square brackets `[ ]` hold the keys of arrays and nested objects.
 - Indices `[0]` to `[n-1]`, none missing, make an array of any length; `[]` appends an element after the highest index.
-- Any other keys make an object: named keys (e.g., `[f]`, `[u]`), and numeric keys with gaps, so `record[7]=on` gives `{ record: { 7: "on" } }`.
+- Any other keys make an object: named keys (such as `[f]` and `[u]`), and numeric keys with gaps, so `record[7]=on` gives `{ record: { 7: "on" } }`.
 - A key given more than once collects its values into an array, so `tag=a&tag=b` gives `{ tag: ["a", "b"] }`. A repeated index names the same element, so its last value wins.
 - With a `query` schema in a [procedure](/procedure), a key given once where the schema takes an array is a one-item array, so `tag=a` gives `{ tag: ["a"] }`, as OpenAPI's default style sends it.
 - `[]` followed by more brackets adds to the last element until that element already has the key: `items[][name]=a&items[][price]=1&items[][name]=b` gives `{ items: [{ name: "a", price: "1" }, { name: "b" }] }`.
-- The structure can be nested up to 32 levels deep. A key with more brackets gets a 400 response.
+- Nesting goes up to 32 levels. A key with more brackets gets a 400 response.
 
 The RPC client leaves out `null`, `undefined` and empty objects or arrays, and numbers the remaining array items without gaps, so `{ tags: ['a', null, 'b'] }{:ts}` arrives as `{ tags: ['a', 'b'] }{:ts}`. A value with a `toJSON` method is sent as its result, as `JSON.stringify` does: a `Date{:ts}` as an ISO string, a `URL{:ts}` as its `href`.
 
-The following query string:
+This query string:
 
 ```
 ?simple=value&array[0]=first&array[1]=second&object[key]=value&nested[obj][prop]=data&nested[arr][0]=item1&nested[arr][1]=item2&complex[items][0][name]=product&complex[items][0][price]=9.99&complex[items][0][tags][0]=new&complex[items][0][tags][1]=featured
 ```
 
-Is parsed as:
+is parsed as:
 
 ```ts showLineNumbers copy
 {
@@ -89,7 +89,7 @@ Is parsed as:
 <a name="params"></a>
 ## `req.vovk.params()`
 
-The `req.vovk.params` function returns typed route parameters. To type it properly, use the third generic argument of `VovkRequest` (alternative to the second procedure argument).
+`req.vovk.params()` returns the typed route parameters, as the handler's second argument does. To type it, use the third type argument of `VovkRequest`.
 
 ```ts showLineNumbers copy
 import { get, type VovkRequest } from 'vovk';
@@ -103,18 +103,18 @@ export default class UserController {
 }
 ```
 
-A path segment can hold several params, e.g. `@get('range/{from}-{to}'){:ts}` or `@get('files/{name}.{ext}'){:ts}`. Each request gets its own params object. With a `params` schema, `req.vovk.params()` and the handler's second argument both return the validated value.
+A path segment can hold several params, such as `@get('range/{from}-{to}'){:ts}` or `@get('files/{name}.{ext}'){:ts}`. Each request gets its own params object. With a `params` schema, `req.vovk.params()` and the handler's second argument both return the validated value.
 
 <a name="meta"></a>
 ## `req.vovk.meta()`
 
-Custom metadata is accessible through the `vovk.meta` method in the procedure and in [custom decorators](/decorator).
+`req.vovk.meta()` reads and writes custom metadata, in the procedure and in [custom decorators](/decorator).
 
 ```ts showLineNumbers copy {4,13}
 import { createDecorator, get, type VovkRequest } from 'vovk';
 
 const myDecorator = createDecorator(async (req, next) => {
-  req.vovk.meta({ hello: 'world' }); // set request meta for the request
+  req.vovk.meta({ hello: 'world' }); // set the request metadata
   // ...
   return next();
 });
@@ -129,7 +129,7 @@ export default class MyController {
 }
 ```
 
-The metadata is a key‑value object that is merged when you call `vovk.meta` multiple times with different keys.
+The metadata is a key-value object. Calls with different keys merge into it, and every call returns it.
 
 ```ts showLineNumbers copy
 // ...
@@ -138,35 +138,29 @@ req.vovk.meta({ baz: 'qux' });
 console.log(req.vovk.meta<{ foo: string; baz: string }>()); // { foo: 'bar', baz: 'qux' }
 ```
 
-As you can see, a generic is required only when you want type‑safe access to metadata. If you don't provide a generic, the metadata is inferred from the argument.
+A type argument is needed only to read the metadata with types. Without one, the type comes from the argument.
 
-To reset metadata, call `req.vovk.meta(null)`, which clears the metadata object.
+To clear the metadata, call `req.vovk.meta(null)`:
 
 ```ts showLineNumbers copy
 req.vovk.meta(null);
 console.log(req.vovk.meta()); // {}
 ```
 
-To summarize:
-
-- To set metadata, use `req.vovk.meta({ key: value })`. It will return the metadata object typed as the passed object.
-- To access metadata, use `req.vovk.meta<{ key: Type }>()`, which will return the metadata object typed as the passed generic type.
-- To reset metadata, use `req.vovk.meta(null)`, which will clear the metadata object.
-
 #### Client-Side Meta with `xMetaHeader` Key
 
-[The TypeScript client](/typescript) can send custom metadata to the server in the `x-meta` header as a JSON string.
+[The TypeScript client](/typescript) can send metadata to the server as a JSON string in the `x-meta` header.
 
 ```ts showLineNumbers copy {5}
 import { UserRPC } from '@/client';
 
 const user = await UserRPC.getUser({
   params: { id: '123' },
-  meta: { hello: 'world' }, // pass metadata to the server via x-meta header
+  meta: { hello: 'world' }, // sent in the x-meta header
 });
 ```
 
-The `getUser` procedure, as well as [decorators](./decorator), can access this metadata via `req.vovk.meta` under the `xMetaHeader` key:
+The `getUser` procedure and [decorators](./decorator) read it with `req.vovk.meta()`, under the `xMetaHeader` key:
 
 ```ts showLineNumbers copy {6-7}
 import { get, type VovkRequest } from 'vovk';
@@ -181,5 +175,5 @@ export default class UserController {
 }
 ```
 
-This design prevents server‑side metadata from being overwritten by client input, as client values are only exposed under the `xMetaHeader` key.
+Client values stay under the `xMetaHeader` key, so client input can't overwrite server-side metadata.
 

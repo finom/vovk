@@ -11,15 +11,22 @@ const handlerNamespaces = new Map(
   mixins.flatMap((segment) =>
     Object.values(segment.controllers).map((controllerSchema) => [controllerSchema, toTypeNames(Object.keys(controllerSchema.handlers))])
   )
+);
+// every ref of a component carries the Mixins type of its target
+const componentsOf = new Map(
+  mixins.map((segment) => {
+    const schemas = segment.meta?.openAPIObject?.components?.schemas ?? {};
+    return [segment, { schemas: t._.mapValues(schemas, (schema) => applyComponentsSchemas(schema, schemas, segment.segmentName, false)) }];
+  })
 ); %>
 
 export namespace Mixins {
   <% for (const segment of mixins) { %>
     <% const schemas = segment.meta?.openAPIObject?.components?.schemas; %>
-    <% if (schemas) { const typeNames = toTypeNames(Object.keys(schemas)); %>
+    <% if (schemas) { const typeNames = toTypeNames(Object.keys(schemas)); const components = componentsOf.get(segment); %>
       export namespace <%= toTypeName(segment.segmentName) %> {
-        <% for (const [componentName, componentSchema] of Object.entries(schemas)) { %>
-          <%- t.compileJSONSchemaToTypeScriptType(applyComponentsSchemas(componentSchema, schemas, segment.segmentName, false), typeNames.get(componentName), segment.meta.openAPIObject.components, { dontCreateRefTypes: true }) %>
+        <% for (const [componentName, componentSchema] of Object.entries(components.schemas)) { %>
+          <%- t.compileJSONSchemaToTypeScriptType(componentSchema, typeNames.get(componentName), components, { dontCreateRefTypes: true }) %>
         <% } %>
       }
     <% } %>
@@ -27,17 +34,20 @@ export namespace Mixins {
 }
 
 export namespace Types {
-  <% for (const segment of mixins) { %>
+  <% for (const segment of mixins) { const components = componentsOf.get(segment); %>
     export namespace <%= toTypeName(segment.segmentName) %> {
       <% for (const controllerSchema of Object.values(segment.controllers)) { %>
         export namespace <%= controllerSchema.rpcModuleName %> {
           <% for (const [handlerName, handlerSchema] of Object.entries(controllerSchema.handlers)) { %>
+            <% const { body, query, params, output, iteration } = handlerSchema.validation ?? {};
+            // a form, text or binary body has the type vovk gives it
+            const isJSONBody = (body?.['x-contentType'] ?? ['application/json']).every((contentType) => contentType === 'application/json'); %>
             export namespace <%= handlerNamespaces.get(controllerSchema).get(handlerName) %> {
-              <%- t.compileJSONSchemaToTypeScriptType(handlerSchema.validation?.body, 'Body') %>
-              <%- t.compileJSONSchemaToTypeScriptType(handlerSchema.validation?.query, 'Query') %>
-              <%- t.compileJSONSchemaToTypeScriptType(handlerSchema.validation?.params, 'Params') %>
-              <%- t.compileJSONSchemaToTypeScriptType(handlerSchema.validation?.output, 'Output') %>
-              <%- t.compileJSONSchemaToTypeScriptType(handlerSchema.validation?.iteration,  'Iteration') %>
+              <%- t.compileJSONSchemaToTypeScriptType(body, 'Body', components, { direction: isJSONBody ? 'request' : undefined }) %>
+              <%- t.compileJSONSchemaToTypeScriptType(query, 'Query') %>
+              <%- t.compileJSONSchemaToTypeScriptType(params, 'Params') %>
+              <%- t.compileJSONSchemaToTypeScriptType(output, 'Output', components, { direction: 'response' }) %>
+              <%- t.compileJSONSchemaToTypeScriptType(iteration, 'Iteration', components, { direction: 'response' }) %>
             }
           <% } %>
         }
@@ -62,11 +72,20 @@ export type Controllers = {
       <% for (const controllerSchema of Object.values(segment.controllers)) { %>
       <%- JSON.stringify(controllerSchema.rpcModuleName) %>: {
         <% for (const [handlerName, handlerSchema] of Object.entries(controllerSchema.handlers)) { %>
-          <%- JSON.stringify(handlerName) %>: (req: VovkRequest<
+          <%- JSON.stringify(handlerName) %>: ((req: VovkRequest<
             <%- getType(segment, controllerSchema, handlerName, 'body') %>,
             <%- getType(segment, controllerSchema, handlerName, 'query') %>,
             <%- getType(segment, controllerSchema, handlerName, 'params')  %>
-          >) => <%- handlerSchema.validation?.output ? `Promise<${getType(segment, controllerSchema, handlerName, 'output')}>` : handlerSchema.validation?.iteration ? `Promise<VovkStreamAsyncIterable<${getType(segment, controllerSchema, handlerName, 'iteration')}>>` : 'Promise<any>' %>,
+          >) => <%- handlerSchema.validation?.output ? `Promise<${getType(segment, controllerSchema, handlerName, 'output')}>` : handlerSchema.validation?.iteration ? `Promise<VovkStreamAsyncIterable<${getType(segment, controllerSchema, handlerName, 'iteration')}>>` : 'Promise<any>' %>) & {
+            __types: {
+              body: <%- getType(segment, controllerSchema, handlerName, 'body') %>;
+              query: <%- getType(segment, controllerSchema, handlerName, 'query') %>;
+              params: <%- getType(segment, controllerSchema, handlerName, 'params') %>;
+              output: <%- handlerSchema.validation?.output ? getType(segment, controllerSchema, handlerName, 'output') : 'unknown' %>;
+              iteration: <%- handlerSchema.validation?.iteration ? getType(segment, controllerSchema, handlerName, 'iteration') : 'unknown' %>;
+              contentType: <%- JSON.stringify(handlerSchema.validation?.body?.['x-contentType'] ?? ['application/json']) %>;
+            };
+          },
         <% } %>
       };
      <% } %>

@@ -106,7 +106,7 @@ pub async fn update_user(
 ) -> Result<update_user_::output, HttpException>
 ```
 
-**Per-endpoint type variation** (verified in `packages/vovk-rust/client-templates/rsSrc/lib.rs.ejs:60-67`): each of `query`, `params` typed `<handler_name>_::query` / `_::params` **only when procedure declares validation for that key**; else slot is Rust unit type `()` → pass `()` at call site. `body` has three cases: `multipart/form-data` content-type → `reqwest::multipart::Form`; declared body validation (JSON / urlencoded form / text / binary) → `<handler>_::body`, which is `String` for a text type and `Vec<u8>` for a binary one; no body → `()`. A urlencoded form goes out with `.form()`, a text or binary body with the content type the procedure declares. So endpoint with no body/query/params signature:
+**Per-endpoint type variation** (verified in `packages/vovk-rust/client-templates/rs-src/lib.rs.ejs:84-90`): each of `query`, `params` typed `<handler_name>_::query` / `_::params` **only when procedure declares validation for that key**; else slot is Rust unit type `()` → pass `()` at call site. `body` has three cases: `multipart/form-data` content-type → `reqwest::multipart::Form`; declared body validation (JSON / urlencoded form / text / binary) → `<handler>_::body`, which is `String` for a text type and `Vec<u8>` for a binary one; no body → `()`. A urlencoded form goes out with `.form()`, a text or binary body with the content type the procedure declares. So endpoint with no body/query/params signature:
 
 ```rust
 pub async fn ping(

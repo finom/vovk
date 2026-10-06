@@ -1,6 +1,8 @@
 import { deepStrictEqual, ok, rejects, strictEqual } from 'node:assert';
 import { describe, it } from 'node:test';
-import { createValidateOnClient, fetcher, HttpException, HttpStatus } from 'vovk';
+import { HttpException, HttpStatus } from 'vovk';
+import { createValidateOnClient } from 'vovk/create-validate-on-client';
+import { fetcher } from 'vovk/fetcher';
 import { ClientSweepRPC } from '../generated-client/index.ts';
 
 const isHttpException = (statusCode: number, message: RegExp | string) => (error: unknown) => {

@@ -23,8 +23,8 @@ function componentOfRef(ref: string): { section: string; name: string } | null {
   return { section, name };
 }
 
-// shrinks components.schemas to the schemas the roots reach through $refs, also through other components such as
-// a response; BFS with a visited set (big specs like Stripe are cyclic); preserves key order for deterministic output
+// the schemas the roots reach through $refs, also through other components such as a response; the reached set
+// stops a cycle, which big specs such as Stripe's have, and the result keeps the key order
 export function pruneComponentsSchemas(
   roots: unknown,
   components: ComponentsObject

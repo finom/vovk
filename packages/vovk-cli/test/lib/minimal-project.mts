@@ -106,26 +106,6 @@ export async function startSchemaServer(schemas: Record<string, object>) {
   };
 }
 
-// serves the files of a directory, read again on every request
-export async function startFileServer(dir: string) {
-  const server = http.createServer((req, res) => {
-    const filePath = path.join(dir, decodeURIComponent(new URL(req.url ?? '/', 'http://localhost').pathname));
-    fs.readFile(filePath).then(
-      (content) => res.writeHead(200).end(content),
-      () => res.writeHead(404).end()
-    );
-  });
-  await new Promise<void>((resolve) => server.listen(0, resolve));
-
-  return {
-    origin: `http://localhost:${(server.address() as AddressInfo).port}`,
-    close: () => {
-      server.closeAllConnections();
-      return new Promise((resolve) => server.close(resolve));
-    },
-  };
-}
-
 // an npm registry, such as a company mirror, that has only the given packages and their dist-tags
 export async function startRegistry(packages: Record<string, Record<string, string>>) {
   const server = http.createServer((req, res) => {

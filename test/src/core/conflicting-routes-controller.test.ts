@@ -1,6 +1,6 @@
 import { deepStrictEqual, strictEqual } from 'node:assert';
 import { describe, it } from 'node:test';
-import type { VovkErrorResponse } from 'vovk/internal';
+import type { VovkErrorResponse } from '../../../packages/vovk/dist/types/core.js';
 import { request } from '../lib.ts';
 
 describe('Conflicting routes', () => {

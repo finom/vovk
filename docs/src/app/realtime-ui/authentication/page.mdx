@@ -1,10 +1,10 @@
 # Basic Authentication and Authorization for Password Protection
 
-The app implements a simple authentication mechanism with an optional `PASSWORD` stored in the `.env` file. Once the user enters the password, a session cookie is created that authorizes the user for subsequent requests. The `userId` is a hashed version of the password, which allows all sessions to be invalidated by changing the `PASSWORD` env variable in production.
+The app has simple authentication with an optional `PASSWORD` in the `.env` file. When the user enters the password, the app creates a session cookie that authorizes the next requests. The session's `userId` is a hash of the password, so changing the `PASSWORD` variable in production ends all sessions.
 
-The authentication flow is a simplified version of the solution provided in the official [Next.js authentication documentation](https://nextjs.org/docs/app/guides/authentication). It implements a [login page](https://github.com/finom/vovk/blob/main/examples/realtime-kanban/src/app/login/page.tsx) with a form that invokes a [login server action](https://github.com/finom/vovk/blob/main/examples/realtime-kanban/src/app/actions/auth.ts). The session is created in [src/lib/session.ts](https://github.com/finom/vovk/blob/main/examples/realtime-kanban/src/lib/session.ts), and the Data Access Layer file is defined in [src/lib/dal.ts](https://github.com/finom/vovk/blob/main/examples/realtime-kanban/src/lib/dal.ts).
+The flow is a simpler version of the one in the official [Next.js authentication documentation](https://nextjs.org/docs/app/guides/authentication). A [login page](https://github.com/finom/vovk/blob/main/examples/realtime-kanban/src/app/login/page.tsx) has a form that calls a [login server action](https://github.com/finom/vovk/blob/main/examples/realtime-kanban/src/app/actions/auth.ts). [src/lib/session.ts](https://github.com/finom/vovk/blob/main/examples/realtime-kanban/src/lib/session.ts) creates the session, and [src/lib/dal.ts](https://github.com/finom/vovk/blob/main/examples/realtime-kanban/src/lib/dal.ts) is the Data Access Layer (DAL).
 
-The DAL file exports the `verifySession` function, which is invoked in [page.tsx](https://github.com/finom/vovk/blob/main/examples/realtime-kanban/src/app/page.tsx) and redirects the user to the login page if the session is invalid.
+The DAL file exports `verifySession`. [page.tsx](https://github.com/finom/vovk/blob/main/examples/realtime-kanban/src/app/page.tsx) calls it, and it redirects the user to the login page when the session is invalid.
 
 ```ts showLineNumbers copy filename="src/lib/dal.ts" source="examples/realtime-kanban"
 import crypto from 'node:crypto';
@@ -46,7 +46,7 @@ export default async function Home() {
   // ...
 ```
 
-It also exports the `isLoggedIn` function, which is used by the `sessionGuard` [decorator](/decorator) to check if the user is logged in when invoking procedures.
+The DAL also exports `isLoggedIn`. The `sessionGuard` [decorator](/decorator) uses it to check that the user is logged in before a procedure runs.
 
 ```ts showLineNumbers copy filename="src/decorators/session-guard.ts" source="examples/realtime-kanban"
 import { createDecorator, HttpException, HttpStatus } from 'vovk';
@@ -61,6 +61,6 @@ export const sessionGuard = createDecorator(async (req, next) => {
 ```
 *[The code above is fetched from GitHub repository.](https://github.com/finom/vovk/blob/main/examples/realtime-kanban/src/decorators/session-guard.ts)*
 
-The `sessionGuard` decorator is applied to all procedures. The `typeof req.url !== 'undefined'{:ts}` check is required to distinguish between HTTP requests and [`fn`](/fn) invocations.
+Every procedure of the root segment has the `sessionGuard` decorator. The `typeof req.url !== 'undefined'{:ts}` check tells HTTP requests apart from [`fn`](/fn) calls.
 
-The Telegram webhook doesn't use `sessionGuard`, as Telegram sends no session cookie. It checks Telegram's secret token instead; see the [Telegram](./telegram) article. The MCP server has its own `MCP_ACCESS_KEY`.
+The Telegram webhook doesn't use `sessionGuard`, because Telegram sends no session cookie. It checks Telegram's secret token instead (see the [Telegram](./telegram) article). The MCP server has its own `MCP_ACCESS_KEY`. The `static` segment (`/api/static/openapi.json` and `/api/static/hello.json`) and the `/openapi` page have no check, so they stay public when `PASSWORD` is set.

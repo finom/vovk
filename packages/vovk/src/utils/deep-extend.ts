@@ -62,9 +62,6 @@ function cloneSpecificValue(val: SpecificValue): SpecificValue {
   }
 }
 
-/**
- * Recursive cloning array.
- */
 function deepCloneArray<T = KnownAny>(arr: T[]): T[] {
   const clone: T[] = [];
   arr.forEach((item, index) => {
@@ -111,53 +108,37 @@ function deepExtend(...args: KnownAny[]): KnownAny {
   }
 
   const target = args[0];
-  // convert arguments to array and cut off target object
   const sources = args.slice(1);
 
   sources.forEach((obj: KnownAny) => {
-    // skip argument if isn't an object, is null, or is an array
     if (typeof obj !== 'object' || obj === null || Array.isArray(obj)) {
       return;
     }
 
     Object.keys(obj).forEach((key: string) => {
-      const src = safeGetProperty(target, key); // source value
-      const val = safeGetProperty(obj, key); // new value
+      const old = safeGetProperty(target, key);
+      const val = safeGetProperty(obj, key);
 
       // recursion prevention
       if (val === target) {
         return;
       } else if (typeof val !== 'object' || val === null) {
-        /**
-         * if new value isn't object then just overwrite by new value
-         * instead of extending.
-         */
         target[key] = val;
         return;
-      }
-      // just clone arrays (and recursive clone objects inside)
-      else if (Array.isArray(val)) {
+      } else if (Array.isArray(val)) {
         target[key] = deepCloneArray(val);
         return;
-      }
-      // custom cloning and overwrite for specific objects
-      else if (isSpecificValue(val)) {
+      } else if (isSpecificValue(val)) {
         target[key] = cloneSpecificValue(val);
         return;
-      }
-      // pass class instances by reference, cloning by enumerable keys would produce {}
-      else if (!isPlainObject(val)) {
+      } else if (!isPlainObject(val)) {
         target[key] = val;
         return;
-      }
-      // overwrite by new value if source isn't a plain object or is an array
-      else if (typeof src !== 'object' || src === null || Array.isArray(src) || !isPlainObject(src)) {
+      } else if (typeof old !== 'object' || old === null || Array.isArray(old) || !isPlainObject(old)) {
         target[key] = deepExtend({}, val);
         return;
-      }
-      // source value and new value is objects both, extending...
-      else {
-        target[key] = deepExtend(src, val);
+      } else {
+        target[key] = deepExtend(old, val);
         return;
       }
     });

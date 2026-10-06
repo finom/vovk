@@ -2,7 +2,8 @@ import { deepStrictEqual, ok, strictEqual } from 'node:assert';
 import { describe, it } from 'node:test';
 import { HttpException, HttpStatus } from 'vovk';
 import { createRPC } from 'vovk/create-rpc';
-import { type VovkErrorResponse, vovkApp } from 'vovk/internal';
+import { vovkApp } from '../../../packages/vovk/dist/core/vovk-app.js';
+import type { VovkErrorResponse } from '../../../packages/vovk/dist/types/core.js';
 import { validateOnClient } from '../../../packages/vovk-ajv/index.js';
 
 // the schema a generated client carries for another API: GET customers/{id}, with a params schema

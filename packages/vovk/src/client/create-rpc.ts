@@ -14,7 +14,7 @@ import { encodeURIComponentWellFormed, serializeQuery } from './serialize-query.
 import { fromJSON, getStyledSerializers } from './serialize-styled.js';
 import { takesNullBody } from './takes-null-body.js';
 
-export type { CombinedSpec, VovkHandlerSchema, VovkRequest };
+export type { CombinedSpec, VovkHandlerSchema, VovkRequest, VovkRPCModule, VovkValidateOnClient };
 
 const trimPath = (path: string) => path.trim().replace(/^\/|\/$/g, '');
 
@@ -124,7 +124,6 @@ export const createRPC = <T, OPTS extends Record<string, KnownAny> = VovkFetcher
   options?: VovkFetcherOptions<OPTS> & { segmentNameOverride?: string }
 ): VovkRPCModule<T, OPTS> => {
   const schema = givenSchema as VovkSchema; // fixes incompatibilities with JSON module
-  // fetcher ??= defaultFetcher as NonNullable<typeof fetcher>;
   const segmentNamePath = options?.segmentNameOverride ?? segmentName;
   const segmentSchema = schema.segments[segmentName];
   if (!segmentSchema)
@@ -258,7 +257,7 @@ export const createRPC = <T, OPTS extends Record<string, KnownAny> = VovkFetcher
       return input.transform ? input.transform(respData, resp) : respData;
     }) as ClientMethod<KnownAny, KnownAny, KnownAny>;
 
-    // TODO use Object.freeze, Object.seal or Object.defineProperty to avoid mutation
+    // TODO: make these read-only
     handler.schema = handlerSchema;
     handler.controllerSchema = controllerSchema;
     handler.segmentSchema = segmentSchema;

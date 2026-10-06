@@ -99,7 +99,7 @@ After this, every `npx vovk generate` (+ every `vovk dev` regen) refreshes Pytho
 
 ## Generated call shape
 
-Types follow `[PascalCaseMethodName][Body|Query|Params|Output]` as `TypedDict`. Methods static, snake_case. Positional arg order from generator (`packages/vovk-python/client-templates/pySrc/__init__.py.ejs:39-49`): only emits slots where validation declared, in this order: `body`, `files` (multipart only, sits between `body` and `query`), `query`, `params`, then always-present trailing kwargs `headers`, `api_root`, `disable_client_validation`.
+Types follow `[PascalCaseMethodName][Body|Query|Params|Output]` as `TypedDict`. Methods static, snake_case. Positional arg order from generator (`packages/vovk-python/client-templates/py-src/__init__.py.ejs:67-78`): only emits slots where validation declared, in this order: `body`, `files` (multipart only, sits between `body` and `query`), `query`, `params`, then always-present trailing kwargs `headers`, `api_root`, `disable_client_validation`.
 
 ```python
 from my_api_client import UserRPC  # whatever package the generator wrote

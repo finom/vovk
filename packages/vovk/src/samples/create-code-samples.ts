@@ -1,6 +1,7 @@
 import type { VovkSamplesConfig } from '../types/config.js';
 import type { VovkControllerSchema, VovkHandlerSchema } from '../types/core.js';
 import type { VovkJSONSchemaBase } from '../types/json-schema.js';
+import { toUnderscoredPackageName } from '../utils/to-underscored-package-name.js';
 import { getPythonClassName, getPythonMethodName, getRustFunctionName, getRustModuleName } from './client-names.js';
 import { objectToCode } from './object-to-code.js';
 import {
@@ -11,14 +12,6 @@ import {
   toCodeString,
   toPythonString,
 } from './schema-to-code.js';
-
-const toSnakeCase = (str: string) =>
-  str
-    .replace(/-/g, '_') // Replace hyphens with underscores
-    .replace(/([a-z0-9])([A-Z])/g, '$1_$2') // Add underscore between lowercase/digit and uppercase
-    .replace(/([A-Z])([A-Z])(?=[a-z])/g, '$1_$2') // Add underscore between uppercase letters if the second one is followed by a lowercase
-    .toLowerCase()
-    .replace(/^_/, ''); // Remove leading underscore
 
 const getIndentSpaces = (level: number): string => ' '.repeat(level);
 
@@ -423,11 +416,10 @@ export function createCodeSamples({
   const hasArg = !!queryValidation || !!bodyValidation || !!paramsValidation || !!config?.apiRoot || !!config?.headers;
   const rpcName = controllerSchema.rpcModuleName;
   const packageName = packageJson?.name || '@/client';
-  // snake fallback avoids invalid "@/client" in py/rs imports
-  const packageNameSnake = toSnakeCase(packageJson?.name || 'client');
-  const pyPackageName = packageJson?.py_name ?? packageNameSnake;
-  const rsPackageName = packageJson?.rs_name ?? packageNameSnake;
-  const handlerNames = Object.keys(controllerSchema.handlers ?? {});
+// the names the generated Python and Rust packages go by
+  const pyPackageName = packageJson?.py_name ?? toUnderscoredPackageName(packageJson?.name);
+  const rsPackageName = packageJson?.rs_name ?? toUnderscoredPackageName(packageJson?.name);
+  const handlers = controllerSchema.handlers ?? {};
 
   const commonParams: CodeGenerationParams = {
     handlerName,
@@ -448,13 +440,13 @@ export function createCodeSamples({
     ...commonParams,
     packageName: pyPackageName,
     rpcName: getPythonClassName(rpcName),
-    methodName: getPythonMethodName(handlerName, handlerNames),
+    methodName: getPythonMethodName(handlerName, handlers),
   });
   const rs = generateRustCode({
     ...commonParams,
     packageName: rsPackageName,
     rpcName: getRustModuleName(rpcName),
-    methodName: getRustFunctionName(handlerName, handlerNames),
+    methodName: getRustFunctionName(handlerName, handlers),
   });
 
   return { ts, py, rs };

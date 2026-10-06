@@ -10,21 +10,21 @@ import { Suspense } from 'react';
 
 ## Overview
 
-Vovk.ts includes first‑class support for the [JSON Lines](https://jsonlines.org/) format, a convenient way to implement “one request—many responses.” JSON Lines is another output type that uses the `iteration` validation field and produces the `application/jsonl` content type if the client sends an `Accept: application/jsonl` header. If the `Accept` header doesn’t include `application/jsonl`, the output is returned as `text/plain` so it’s viewable when the endpoint URL is opened directly in a browser.
+Vovk.ts supports the [JSON Lines](https://jsonlines.org/) format, which answers one request with many responses. It is an output type with its own validation field, `iteration`. The response has the `application/jsonl` content type when the client sends an `Accept: application/jsonl` header. Otherwise it is `text/plain`, so a browser shows it when you open the endpoint URL.
 
-The use cases for JSON Lines include:
+Use JSON Lines for:
 
-- Type-safe alternative to Server-Sent Events (SSE) for streaming data to clients.
-- Long‑running operations that produce multiple results over time, such as LLM completions or database polling.
-- [Progressive](/progressive) data loading, where partial results are sent as they become available.
+- A type-safe alternative to Server-Sent Events (SSE) for streaming data to clients.
+- Long-running operations that produce results over time, such as LLM completions or database polling.
+- [Progressive](/progressive) data loading, which sends partial results as they become ready.
 
 > [!IMPORTANT]
 >
-> Because the response size is not known in advance, JSON Lines responses cannot be compressed with Gzip, Brotli, or other algorithms. Keep this in mind for large responses.
+> The response size isn't known in advance, so a JSON Lines response can't be compressed with Gzip, Brotli or other algorithms. Keep this in mind for large responses.
 
 ## Creating a JSON Lines Generator Procedure
 
-To create a JSON Lines procedure, define a procedure as a generator or async generator function. Each yielded object is serialized to JSON and sent as a separate line in the response.
+To stream JSON Lines, write the handler as a generator or an async generator. Each yielded value is serialized to JSON and sent as its own line.
 
 ```ts showLineNumbers copy
 import { z } from 'zod';
@@ -55,7 +55,7 @@ export default class StreamController {
 }
 ```
 
-When used with a service, the iterable can be delegated using the `yield*` syntax:
+To stream from a service, delegate to it with `yield*`:
 
 ```ts showLineNumbers copy filename="src/modules/stream/stream-controller.ts"
 import { z } from 'zod';
@@ -98,7 +98,7 @@ export default class StreamService {
 }
 ```
 
-On the client side, the JSON Lines output can be consumed using [disposable](https://github.com/tc39/proposal-explicit-resource-management) [async iterators](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/AsyncIterator), to process each line as it arrives:
+On the client, read each line as it arrives with [disposable](https://github.com/tc39/proposal-explicit-resource-management) [async iterators](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/AsyncIterator):
 
 ```ts showLineNumbers copy
 import { StreamRPC } from '@/client';
@@ -110,17 +110,17 @@ for await (const { message } of stream) {
 }
 ```
 
-The iterable (represented as `stream` above), besides `Symbol.asyncIterator`, `Symbol.dispose`, and `Symbol.asyncDispose`, also provides:
+Besides `Symbol.asyncIterator`, `Symbol.dispose` and `Symbol.asyncDispose`, the iterable (`stream` above) has:
 
-- `status`: The HTTP response status (e.g., 200 for OK, 404 for Not Found).
-- `asPromise`: A promise that resolves with an array of all emitted values when the stream completes. Every call gets the same items.
-- `onIterate`: Registers a callback for each iteration.
-- `abortController`: An `AbortController` instance to abort the stream. When the stream is closed with `abortController.abort()`, it throws an `AbortError` on the stream reader that can be caught on the client side via error `cause` property.
-- `abortSilently`: A method to abort the stream without throwing an error on the stream reader. This is useful when you want to stop processing the stream gracefully.
+- `status`: the HTTP response status, such as 200 for OK or 404 for Not Found.
+- `asPromise`: returns a promise that resolves with an array of all items when the stream ends. Every call gets the same items.
+- `onIterate`: registers a callback for each item.
+- `abortController`: an `AbortController` that aborts the stream. `abortController.abort()` makes the stream reader throw an `AbortError`, which the client finds in the error's `cause` property.
+- `abortSilently`: aborts the stream without an error on the stream reader, to stop reading it quietly.
 
-The `using` statement ensures the stream is aborted with `stream.abortSilently('Stream disposed')` when it goes out of scope.
+With `using`, the stream is aborted with `stream.abortSilently('Stream disposed')` when it goes out of scope.
 
-The client reads the response only as fast as the iteration takes items, so a slow consumer slows the stream down instead of buffering it. An item is kept until every running iteration has passed it: iterations that run at the same time each get all items, an iteration that starts later begins at the oldest kept item, and iterating a consumed stream again yields nothing. After a `break`, the items already read stay for a later iteration or `asPromise()`. A line that isn't JSON, such as a last line the connection cut short, ends the iteration with an error.
+The client reads the response only as fast as the iteration takes items, so a slow consumer slows the stream down instead of buffering it. An item is kept until every running iteration has passed it. Iterations that run at the same time each get all items. An iteration that starts later begins at the oldest kept item, and iterating a consumed stream again yields nothing. After a `break`, the items already read stay for a later iteration or `asPromise()`. A line that isn't JSON, such as a last line the connection cut short, ends the iteration with an error.
 
 ```ts showLineNumbers copy
 console.log('Response status:', stream.status);
@@ -135,7 +135,7 @@ console.log('All messages:', await stream.asPromise());
 
 ## OpenAI Chat Example
 
-Create a procedure that delegates iterable output from OpenAI's streaming chat completions:
+This procedure streams OpenAI's chat completions by delegating to them:
 
 ```ts showLineNumbers copy filename="src/modules/llm/llm-controller.ts"
 import { post, prefix, operation, type VovkRequest } from 'vovk';
@@ -162,7 +162,7 @@ export default class OpenAiController {
 }
 ```
 
-On the client side, consume the streamed completion as follows:
+On the client, read the streamed completion:
 
 ```ts showLineNumbers copy
 // ...
@@ -180,7 +180,7 @@ for await (const part of completion) {
 <a name="jsonlinesresponder" />
 ## `JSONLinesResponder` Class
 
-`JSONLinesResponder` class is a lower-level API that works behind the scenes of the generator-based approach described above. It gives more control over the streaming logic, allowing to send messages manually. It constructs `ReadableStream` internally that's used as the response body.
+`JSONLinesResponder` is the lower-level API behind generator handlers. It gives you more control: you send the lines yourself. It creates the `ReadableStream` that is the response body.
 
 ```ts showLineNumbers copy
 const responder = new JSONLinesResponder<IterationType>(req);
@@ -190,22 +190,22 @@ const responder = new JSONLinesResponder<IterationType>(req);
 const responder = new JSONLinesResponder<IterationType>(req, ({ readableStream, headers }) => new Response(readableStream, { headers }));
 ```
 
-The constructor accepts two optional parameters:
+The constructor takes two optional parameters:
 
-- `request?: Request | null` – The incoming request object. If provided, it checks for `Accept: application/jsonl` header to create `headers` record for the response with `Content-Type: application/jsonl`. If not provided or the header is missing, it defaults to `text/plain`. The RPC client streams only a JSON Lines response and returns any other `Response` as is, so pass the request when the client reads the stream. In a procedure with `iteration`, the request also lets the responder validate a line sent before the handler returns it.
-- `getResponse?: (responder: JSONLinesResponder<T>) => Response` – A function that allows to construct a custom `Response` object. Allows to set custom headers or other response options. If not provided, `Response` is created internally with default headers.
+- `request?: Request | null`: the incoming request. When given, the responder checks its `Accept: application/jsonl` header and sets `Content-Type: application/jsonl` in the `headers` of the response. Without the request or the header, the content type is `text/plain`. The RPC client streams only a JSON Lines response and returns any other `Response` as is, so pass the request when the client reads the stream. In a procedure with `iteration`, the request also lets the responder validate a line sent before the handler returns it.
+- `getResponse?: (responder: JSONLinesResponder<T>) => Response`: builds a custom `Response`, for example with your own headers or other response options. Without it, the responder creates a `Response` with the default headers.
 
-The responder instance provides the following members:
+The responder has these members:
 
-- `send(item: T): Promise<void>` – Sends a JSON line to the client. The item is validated (if `iteration` is present; by default only the first item is validated unless `validateEachIteration: true` is set), serialized to JSON and followed by a newline character. Lines go out in call order, also when `send()` is not awaited. A send that fails, on iteration validation or with an item JSON can't serialize, ends the stream as `throw()` does, and the segment's `onError` receives the error.
-- `close(): Promise<void>` – Closes the response stream once the lines sent before it are out. A line sent after `close()` is dropped.
-- `throw(err: Error): Promise<void>` – Sends an error line after the lines sent before it and closes the stream; a line sent after `throw()` is dropped. The error line is `{"isError":true,"reason":"…"}`, plus the `statusCode` of an `HttpException{:ts}`, which is 500 for a status outside 200-599 as on a JSON response; the client rethrows it as an `HttpException{:ts}` with that status. The error of `notFound(){:ts}`, `forbidden(){:ts}` or `unauthorized(){:ts}` from `next/navigation`, which Next.js can no longer answer once the stream started, sends its status: 404, 403 or 401. In production, an error that is not an `HttpException{:ts}`, or is one with status 0, which a client throws for a call that got no response, reads "Internal server error".
-- `isClosed: boolean` – Whether the stream is closed: by `close()` or `throw()`, from the moment either is called, by a failed send, or by the client going away. `send()` waits while the client reads slower than the handler writes, and a generator handler is stopped, with its `finally` run, when the client disconnects or an item fails.
-- `response: Response` – The underlying `Response` object that will be returned from the Next.js route handler.
-- `headers: Record<string, string>` – The `content-type` for the response.
-- `readableStream: ReadableStream<Uint8Array>` – The readable stream used as the response body.
+- `send(item: T): Promise<void>`: sends a JSON line to the client. The item is validated (when the procedure has `iteration`, only the first item, unless `validateEachIteration: true` is set), serialized to JSON and followed by a newline. Lines go out in call order, also when `send()` is not awaited. A send that fails, on iteration validation or with an item JSON can't serialize, ends the stream as `throw()` does, and the segment's `onError` gets the error.
+- `close(): Promise<void>`: closes the response stream once the lines sent before it are out. A line sent after `close()` is dropped.
+- `throw(err: Error): Promise<void>`: sends an error line after the lines sent before it, and closes the stream; a line sent after `throw()` is dropped. The error line is `{"isError":true,"reason":"…"}`, plus the `statusCode` of an `HttpException{:ts}`, which is 500 for a status outside 200-599 as on a JSON response. The client rethrows it as an `HttpException{:ts}` with that status. The error of `notFound(){:ts}`, `forbidden(){:ts}` or `unauthorized(){:ts}` from `next/navigation`, which Next.js can no longer answer once the stream started, sends its status: 404, 403 or 401. In production, an error that is not an `HttpException{:ts}`, or is one with status 0, which a client throws for a call that got no response, reads "Internal server error".
+- `isClosed: boolean`: whether the stream is closed, by `close()` or `throw()` (from the moment either is called), by a failed send, or by the client going away. `send()` waits while the client reads slower than the handler writes, and a generator handler is stopped, with its `finally` run, when the client disconnects or an item fails.
+- `response: Response`: the `Response` that the Next.js route handler returns.
+- `headers: Record<string, string>`: the `content-type` of the response.
+- `readableStream: ReadableStream<Uint8Array>`: the stream used as the response body.
 
-With `JSONLinesResponder` a service method is implemented as a regular function (not a generator) that accepts a `JSONLinesResponder` instance as a pointer to send messages manually.
+With `JSONLinesResponder`, the service method is a regular function, not a generator. It takes the responder and sends the lines through it.
 
 ```ts showLineNumbers copy filename="src/modules/stream/stream-service.ts"
 import type { JSONLinesResponder, VovkIteration } from 'vovk';
@@ -227,9 +227,7 @@ export default class StreamService {
 }
 ```
 
-Tokens are sent with `JSONLinesResponder#send`, and when the stream completes, close it with `JSONLinesResponder#close`.
-
-The controller class returns an instance of `JSONLinesResponder`, and the streaming is performed in a floating Promise above the `return` statement.
+The handler returns the responder. The streaming runs in a promise that starts before `return` and isn't awaited.
 
 ```ts showLineNumbers copy
 import { z } from 'zod';
@@ -253,8 +251,8 @@ export default class StreamController {
 
 The `iteration` schema gives `Token` its type, in the service and in the RPC client.
 
-The `JSONLinesResponder` class also provides a `throw` method that safely closes the stream and causes the client to rethrow the received error.
+To end the stream with an error, call `throw`. The client rethrows the error:
 
 ```ts showLineNumbers copy
-await resp.throw(new Error('Stream error'));
+await responder.throw(new Error('Stream error'));
 ```

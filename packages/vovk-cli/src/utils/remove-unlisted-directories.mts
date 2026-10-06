@@ -139,6 +139,46 @@ async function isSegmentContent({ basePath, allowedDirs, generated }: PruneConte
   );
 }
 
+// a folder kept only for a segment inside it, such as admin/ for admin/users, still holds the files of its own segment
+// once that segment is gone; they go, along with the folders they leave empty, and anything else stays
+async function removeOwnGeneratedFiles(
+  { basePath, allowedDirs, generated, excludedDirs }: PruneContext,
+  relativePath: string
+) {
+  if (!generated) return;
+  const dirPath = path.join(basePath, relativePath);
+  const { files } = await listFiles(dirPath);
+  const stampedFiles: string[] = [];
+  const unstampedFiles: string[] = [];
+
+  for (const file of files) {
+    const fullPath = path.join(dirPath, file);
+    const isElsewhere =
+      allowedDirs.some((dir) => path.join(relativePath, file).startsWith(dir + path.sep)) ||
+      excludedDirs.some((dir) => fullPath.startsWith(dir + path.sep));
+    if (isElsewhere || !getSegmentDirs(file, generated.relPaths).includes('')) continue;
+
+    if (path.extname(file) === '.json' || getSegmentDirs(file, generated.unstampedRelPaths).includes('')) {
+      unstampedFiles.push(file);
+    } else if (await isGeneratedFile(fullPath)) {
+      stampedFiles.push(file);
+    }
+  }
+
+  // json and copied files count only beside a bannered file
+  const generatedFiles = stampedFiles.length ? [...stampedFiles, ...unstampedFiles] : [];
+  const dirs = new Set<string>();
+  for (const file of generatedFiles) {
+    await fs.rm(path.join(dirPath, file), { force: true });
+    for (let dir = path.dirname(file); dir !== '.'; dir = path.dirname(dir)) dirs.add(dir);
+  }
+  for (const dir of [...dirs].sort((a, b) => b.length - a.length)) {
+    await fs.rmdir(path.join(dirPath, dir)).catch(() => {
+      // holds something else
+    });
+  }
+}
+
 // a case-insensitive file system keeps the old folder name when a segment is renamed in letter case only,
 // so a folder that is the same one as an allowed path stands for it
 async function findAllowedAlias({ basePath, allowedDirs }: PruneContext, relativePath: string) {
@@ -171,6 +211,8 @@ async function processDirectory(context: PruneContext, relativePath: string): Pr
     // If it's not a directory, return early
     return;
   }
+
+  if (relativePath && !allowedDirs.includes(relativePath)) await removeOwnGeneratedFiles(context, relativePath);
 
   // Read all entries in the current directory
   const entries = await fs.readdir(currentDirPath, { withFileTypes: true }).catch(() => []);
@@ -212,8 +254,10 @@ async function processDirectory(context: PruneContext, relativePath: string): Pr
         if (await isSegmentContent(context, newRelativePath)) continue;
 
         const origin = await getDirectoryOrigin(fullPath, generated.relPaths, generated.unstampedRelPaths);
-        // an empty directory is left alone silently, one holding anything else is reported
-        if (origin === 'foreign') skipped.push(fullPath);
+        // an empty directory is left alone silently, one holding anything else is reported,
+        // unless it sits in a segment folder, as what a build leaves there does
+        const isInSegment = allowedDirs.some((allowedDir) => newRelativePath.startsWith(allowedDir + path.sep));
+        if (origin === 'foreign' && !isInSegment) skipped.push(fullPath);
         if (origin !== 'generated') continue;
       }
 

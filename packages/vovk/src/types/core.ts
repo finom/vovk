@@ -116,7 +116,6 @@ export type RouteHandler = ((
 ) => Response | Promise<Response> | Responder | Promise<Responder> | Iterable<unknown> | AsyncIterable<unknown>) & {
   _options?: DecoratorOptions;
   _sourceMethod?: { wrapper?: RouteHandler };
-  // the OPTIONS handler that the cors option adds
   _isCorsPreflight?: boolean;
 };
 

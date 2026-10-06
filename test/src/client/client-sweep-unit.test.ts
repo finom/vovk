@@ -5,7 +5,6 @@ import { fileURLToPath } from 'node:url';
 import vm from 'node:vm';
 import ts from '@typescript/typescript6';
 import {
-  createFetcher,
   HttpException,
   initSegment,
   post,
@@ -13,10 +12,13 @@ import {
   procedure,
   progressive,
   type VovkRequest,
+  type VovkStreamAsyncIterable,
 } from 'vovk';
 import { createRPC } from 'vovk/create-rpc';
-import { deepExtend, readableStreamToAsyncIterable, type VovkStreamAsyncIterable } from 'vovk/internal';
+import { createFetcher } from 'vovk/fetcher';
+import { deepExtend } from 'vovk/internal';
 import { z } from 'zod';
+import { readableStreamToAsyncIterable } from '../../../packages/vovk/dist/client/default-stream-handler.js';
 import { validateOnClient } from '../../../packages/vovk-ajv/index.js';
 
 const streamOf = (chunks: Uint8Array[]) =>
@@ -986,6 +988,71 @@ describe('Client sweep, pure functions', () => {
       });
 
       deepStrictEqual(diagnostics, []);
+    });
+
+    // a bundled client or a library ships declarations, which can name only what the package's entry points export
+    const getDeclarationDiagnostics = (source: string) => {
+      const fileName = fileURLToPath(new URL('./declaration-consumer.mts', import.meta.url));
+      const options: ts.CompilerOptions = {
+        strict: true,
+        noEmit: true,
+        declaration: true,
+        skipLibCheck: true,
+        target: ts.ScriptTarget.ES2022,
+        lib: ['lib.es2022.d.ts', 'lib.dom.d.ts', 'lib.dom.iterable.d.ts'],
+        // as a bundler resolves it, so a type is named by an entry point or not at all
+        module: ts.ModuleKind.ESNext,
+        moduleResolution: ts.ModuleResolutionKind.Bundler,
+      };
+      const host = ts.createCompilerHost(options);
+      const { fileExists, readFile, getSourceFile } = host;
+      host.fileExists = (name) => name === fileName || fileExists(name);
+      host.readFile = (name) => (name === fileName ? source : readFile(name));
+      host.getSourceFile = (name, ...rest) =>
+        name === fileName ? ts.createSourceFile(name, source, ts.ScriptTarget.ES2022) : getSourceFile(name, ...rest);
+      const program = ts.createProgram([fileName], options, host);
+      return ts
+        .getPreEmitDiagnostics(program)
+        .map((diagnostic) => ts.flattenDiagnosticMessageText(diagnostic.messageText, ' '));
+    };
+
+    it('Name the types of a controller and its RPC module in declarations', () => {
+      const source = [
+        "import { procedure } from 'vovk';",
+        "import { createRPC } from 'vovk/create-rpc';",
+        "import type { VovkFetcher } from 'vovk/fetcher';",
+        "import { z } from 'zod';",
+        'export class UserController {',
+        '  static updateUser = procedure({',
+        '    body: z.object({ name: z.string() }),',
+        '    query: z.object({ notify: z.string() }),',
+        '    params: z.object({ id: z.string() }),',
+        '  }).handle(async () => ({ ok: true }));',
+        '  static streamTokens = procedure({',
+        '    query: z.object({ from: z.string() }),',
+        '    iteration: z.object({ token: z.string() }),',
+        '  }).handle(async function* () {',
+        "    yield { token: 'a' };",
+        '  });',
+        '}',
+        'export const UserRPC = createRPC<',
+        '  typeof UserController,',
+        "  typeof import('vovk/fetcher').fetcher extends VovkFetcher<infer U> ? U : never",
+        ">({}, '', 'UserRPC', import('vovk/fetcher'), { validateOnClient: undefined });",
+      ].join('\n');
+
+      deepStrictEqual(getDeclarationDiagnostics(source), []);
+    });
+
+    it('Name the type of a custom fetcher in declarations', () => {
+      // a library that exports its fetcher imports nothing else from vovk
+      const source = [
+        "import { createFetcher } from 'vovk/fetcher';",
+        'export const fetcher = createFetcher<{ token?: string }>();',
+        'export const plainFetcher = createFetcher();',
+      ].join('\n');
+
+      deepStrictEqual(getDeclarationDiagnostics(source), []);
     });
   });
 });

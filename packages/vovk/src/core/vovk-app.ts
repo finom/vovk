@@ -19,9 +19,8 @@ type Route = { staticMethod: RouteHandler; controller: VovkController; conflicts
 // a route segment as the literals around its params: "{from}-{to}.json" is ['', '-', '.json'] around ['from', 'to']
 type ParamSegment = { literals: string[]; paramNames: string[] };
 
-// the param values of a path segment in paramNames order, each as long as possible from the left, as a greedy
-// regex would take it; the literals are found from the right with lastIndexOf, so a long segment costs linear time
-// where a regex could backtrack for seconds
+// param values in paramNames order, each as long as a greedy regex would take it; lastIndexOf finds the literals
+// from the right, so a long segment costs linear time where a regex could backtrack for seconds
 function matchParamSegment(pathSegment: string, { literals }: ParamSegment) {
   const prefix = literals[0];
   const suffix = literals[literals.length - 1];
@@ -173,7 +172,6 @@ class VovkApp {
     return response;
   };
 
-  // the status, message and cause a caught error answers with
   private static toErrorResponse(e: unknown) {
     // status 0 is what a client throws for a call that got no response, its message and cause hold the URL and the
     // input, so in production it is internal too
@@ -247,7 +245,6 @@ class VovkApp {
       onBefore: controller?._onBefore,
     };
 
-  // per route: its path segments, the ones holding params by index, and a param named twice
   #routeShapeCache = new Map<
     string,
     { segments: string[]; paramSegments: Map<number, ParamSegment>; duplicateParam: string | undefined }
@@ -282,7 +279,6 @@ class VovkApp {
     return shape;
   };
 
-  // the params of a route for a path, or null when the path doesn't match the route
   #matchRoute = (route: string, path: string[]) => {
     const { segments, paramSegments, duplicateParam } = this.#getRouteShape(route);
     if (segments.length !== path.length) return null;
@@ -314,7 +310,6 @@ class VovkApp {
     const pathStr = path.join('/');
     const isCacheable = !hasEncodedSlash && pathStr.length <= VovkApp.#ROUTE_MATCH_CACHE_MAX_PATH_LENGTH;
 
-    // Fast path: Check if this exact path has been matched before
     let matchCache = isCacheable ? this.#routeMatchCache.get(handlers) : undefined;
     const cachedMatch = matchCache?.get(pathStr);
     if (cachedMatch) {
@@ -347,7 +342,6 @@ class VovkApp {
 
       [methodKey] = methodKeys;
 
-      // Cache successful matches, an ambiguous joined path must not become a cache key
       if (methodKey && isCacheable) {
         if (!matchCache) {
           matchCache = new Map();
@@ -482,7 +476,7 @@ class VovkApp {
     try {
       headerList = request.headers;
     } catch {
-      // this is static rendering environment, headers are not available
+      // static rendering has no headers
       headerList = null;
     }
     const xMeta = headerList?.get('x-meta');
@@ -491,7 +485,6 @@ class VovkApp {
       try {
         xMetaHeader = JSON.parse(xMeta);
       } catch {
-        // malformed client input is a 400, not an uncaught SyntaxError
         return this.#respondWithError({
           req,
           statusCode: HttpStatus.BAD_REQUEST,
@@ -503,7 +496,7 @@ class VovkApp {
     if (xMetaHeader) reqMeta(req, { xMetaHeader });
 
     let route: Route | null = null;
-    // the body of a result the catch answers instead, cancelled so what produces it stops
+    // cancelled when the catch answers instead, so whatever produces the body stops
     let unsentBody: ReadableStream | null = null;
 
     try {

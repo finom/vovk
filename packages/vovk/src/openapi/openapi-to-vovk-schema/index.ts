@@ -109,7 +109,7 @@ function getTsTypeString(contentType: ContentType[], schema: VovkJSONSchemaBase)
   return [...tsTypes].join(' | ') || schemaToTsType(schema);
 }
 
-// a JSON body is typed from its schema like any other slot; a form, text or binary body also accepts the JS types the client sends
+// a form, text or binary body also takes the JS types the client sends; a JSON body is typed from its schema only
 function withBodyTsType(body: VovkJSONSchemaBase, contentTypes: ContentType[]): VovkJSONSchemaBase {
   if (contentTypes.every((contentType) => contentType === 'application/json')) return body;
   return { ...body, 'x-tsType': getTsTypeString(contentTypes, body) };
@@ -166,7 +166,6 @@ export function openAPIToVovkSchema({
   segmentName,
 }: VovkOpenAPIMixinNormalized & { segmentName?: string }): VovkSchema {
   segmentName = segmentName ?? '';
-  // x-tsType is emitted verbatim into the generated client, only ours may reach it
   openAPIObject = stripXTsType(openAPIObject);
   if (String(openAPIObject.openapi).startsWith('3.0')) openAPIObject = normalizeOpenAPI30(openAPIObject);
   const forceApiRoot =
@@ -319,7 +318,7 @@ export function openAPIToVovkSchema({
         body: withBodyTsType(toRequestBody(applyComponentsSchemas(body, keptSchemas, segmentName)), bodyContentTypes),
       }),
       ...(output && {
-        // Response slot: not validated + typed via x-tsType → skip $defs (dedup).
+        // a response isn't validated and is typed by x-tsType, so it needs no $defs
         output: applyComponentsSchemas(output, keptSchemas, segmentName, false),
       }),
       ...(iteration && {
@@ -329,7 +328,7 @@ export function openAPIToVovkSchema({
   }
 
   if (keptSchemas !== componentsSchemas) {
-    // reassign with fresh objects only, the caller's spec shares references so its components.schemas must stay untouched
+    // fresh objects only: the caller's spec shares references, so its components.schemas must stay untouched
     segment.meta = {
       openAPIObject: {
         ...noPathsOpenAPIObject,

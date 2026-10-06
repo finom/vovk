@@ -11,9 +11,7 @@
   "bin": {
     "vovk": "./dist/index.mjs"
   },
-  "main": "./dist/index.mjs",
   "type": "module",
-  "types": "./dist/index.d.mts",
   "prefix": ".",
   "scripts": {
     "build": "rm -rf dist tsconfig.build.tsbuildinfo && tsc -P tsconfig.build.json",

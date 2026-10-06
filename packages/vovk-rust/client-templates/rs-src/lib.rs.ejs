@@ -47,7 +47,7 @@ vars.convertJSONSchemasToRustTypes({
         body: validation?.body,
         query: validation?.query,
         params: validation?.params,
-        // Re-attach deduped $defs so Rust resolves refs as before (no-op for non-mixin).
+        // a mixin keeps its components once, in the segment's meta: a response schema gets its $defs back
         output: t.reattachMixinDefs(validation?.output, segment),
         iteration: t.reattachMixinDefs(validation?.iteration, segment)
     },
@@ -64,7 +64,6 @@ vars.convertJSONSchemasToRustTypes({
     validation?.output?.description ? `Returns: ${validation?.output?.description}`: ''
 ]).filter(Boolean).flatMap((s) => vars.toRustDocLines(s)).map((s) => ' '.repeat(4) + '///' + (s ? ' ' + s : '')).join('\n') %>
 <%
-    // Determine body kind: 'none', 'form', 'urlencoded', 'binary', 'text', or 'json'
     const bodyKind = vars.getBodyKind(validation?.body);
     const typedBody = bodyKind === 'json' || bodyKind === 'urlencoded';
     // the file variants of a file-or-JSON union go out as bytes

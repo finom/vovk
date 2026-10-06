@@ -8,10 +8,9 @@ import {
   HttpStatus,
   type VovkJSONSchemaBase,
   type VovkSchema,
-  type VovkValidateOnClient,
 } from 'vovk/create-validate-on-client';
 
-// Handle ESM/CJS interop - these packages export CJS and may have .default wrapper
+// CJS packages: imported from ESM, the export may sit on .default
 const Ajv2020 = _Ajv2020.default ?? _Ajv2020;
 const ajvFormats = _ajvFormats.default ?? _ajvFormats;
 const ajvErrors = _ajvErrors.default ?? _ajvErrors;
@@ -179,6 +178,9 @@ const copyContainers = (value: unknown): unknown =>
       ? Object.fromEntries(Object.entries(value).map(([key, item]) => [key, copyContainers(item)]))
       : value;
 
+// options that make Ajv edit the data it checks, which the caller's query and params must not see
+const writesIntoData = (options: Options) => !!(options.useDefaults || options.removeAdditional || options.coerceTypes);
+
 // a repeated key becomes an array, the way the server parses a form
 const formToObject = (form: FormData | URLSearchParams) => {
   const result: Record<string, unknown> = {};
@@ -215,13 +217,14 @@ const validate = ({
   const isForm = input instanceof FormData || input instanceof URLSearchParams;
   // a URL carries the query and params as strings
   const isURLPart = type === 'query' || type === 'params';
-  const { ajv, validator } = getValidator(
-    schema,
-    options,
-    target ?? schemaTarget,
-    isForm || isURLPart,
-    `the ${type} of ${endpoint}`
-  );
+  const description = `the ${type} of ${endpoint}`;
+  // query and params that are valid as given need no copy and no coercion
+  if (isURLPart && !isForm && !writesIntoData(options)) {
+    const { validator } = getValidator(schema, options, target ?? schemaTarget, false, description);
+    // a schema Ajv can't compile is left to the server
+    if (!validator || validator(input)) return;
+  }
+  const { ajv, validator } = getValidator(schema, options, target ?? schemaTarget, isForm || isURLPart, description);
   // the server validates the input anyway
   if (!validator) return;
   const data = isForm ? formToObject(input) : isURLPart ? copyContainers(input) : withBinaryPlaceholders(input);
@@ -248,7 +251,7 @@ const getConfig = (schema: VovkSchema) => {
   return { options, target };
 };
 
-const validateOnClientAjv = createValidateOnClient({
+export const validateOnClient = createValidateOnClient({
   validate: (input, schema, { endpoint, type, fullSchema }) => {
     const { options, target } = getConfig(fullSchema);
 
@@ -261,23 +264,4 @@ const validateOnClientAjv = createValidateOnClient({
       type,
     });
   },
-});
-
-const configure = ({ options: givenOptions, target: givenTarget }: VovkAjvConfig): VovkValidateOnClient<unknown> =>
-  createValidateOnClient({
-    validate: (input, schema, { endpoint, type, fullSchema }) => {
-      const { options, target } = getConfig(fullSchema);
-      validate({
-        input,
-        schema,
-        target: givenTarget ?? target,
-        endpoint,
-        options: givenOptions ?? options,
-        type,
-      });
-    },
-  });
-
-export const validateOnClient = Object.assign(validateOnClientAjv, {
-  configure,
 });

@@ -1,16 +1,39 @@
 import { deepStrictEqual, ok, strictEqual } from 'node:assert';
 import fs from 'node:fs/promises';
+import http from 'node:http';
+import type { AddressInfo } from 'node:net';
 import path from 'node:path';
 import { describe, it } from 'node:test';
 import type { OpenAPIObject } from 'openapi3-ts/oas31';
 import { Project, ts } from 'ts-morph';
-import { HttpMethod, type VovkSchema } from 'vovk';
+import type { VovkSchema } from 'vovk';
+import { HttpMethod } from 'vovk/internal';
 import * as YAML from 'yaml';
 import { importFresh } from '../../lib/import-fresh.mts';
-import { createProject, runCLI, startFileServer, userSegmentSchema } from '../../lib/minimal-project.mts';
+import { createProject, runCLI, userSegmentSchema } from '../../lib/minimal-project.mts';
 import { runScript } from '../../lib/run-script.mts';
 
 const artifactsDir = path.join(path.resolve(import.meta.dirname, '../../..'), 'tmp_artifacts_dir');
+
+// serves the artifacts folder on a port the OS picks, so a server left from another test can't hold it
+async function serveArtifacts() {
+  const server = http.createServer((req, res) => {
+    const { pathname } = new URL(req.url ?? '/', 'http://localhost');
+    fs.readFile(path.join(artifactsDir, decodeURIComponent(pathname))).then(
+      (body) => res.end(body),
+      () => res.writeHead(404).end()
+    );
+  });
+  await new Promise<void>((resolve) => server.listen(0, resolve));
+
+  return {
+    origin: `http://localhost:${(server.address() as AddressInfo).port}`,
+    async close() {
+      server.closeAllConnections();
+      await new Promise((resolve) => server.close(resolve));
+    },
+  };
+}
 
 function runAtProjectDir(command: string, options?: Omit<Parameters<typeof runScript>[1], 'cwd'>) {
   return runScript(command, { cwd: artifactsDir, ...options });
@@ -250,14 +273,14 @@ await describe('OpenAPI flags', async () => {
   });
 
   await it('can use JSON URL and write fallback', async () => {
-    const fileServer = await startFileServer(artifactsDir);
+    const specServer = await serveArtifacts();
     const generatedClientDir = path.join(artifactsDir, `generated-client${Date.now()}`);
 
     try {
       await writeSpec();
 
       await runAtProjectDir(
-        `../dist/index.mjs generate --openapi ${fileServer.origin}/spec.json --out ${generatedClientDir} --from ts --openapi-fallback fallback.json`
+        `../dist/index.mjs generate --openapi ${specServer.origin}/spec.json --out ${generatedClientDir} --from ts --openapi-fallback fallback.json`
       );
 
       const { schema } = await import(path.join(generatedClientDir, 'index.ts'));
@@ -267,24 +290,24 @@ await describe('OpenAPI flags', async () => {
       strictEqual(fallback.openapi, '3.1.0');
       strictEqual(fallback.paths['/test']?.post?.operationId, 'postTest');
     } catch (e) {
-      await fileServer.close();
+      await specServer.close();
       await fs.rm(generatedClientDir, { recursive: true });
       throw e;
     }
 
-    await fileServer.close();
+    await specServer.close();
     await fs.rm(generatedClientDir, { recursive: true });
   });
 
   await it('can use YAML URL and write fallback', async () => {
-    const fileServer = await startFileServer(artifactsDir);
+    const specServer = await serveArtifacts();
     const generatedClientDir = path.join(artifactsDir, `generated-client${Date.now()}`);
 
     try {
       await writeSpec({}, 'yaml');
 
       await runAtProjectDir(
-        `../dist/index.mjs generate --openapi ${fileServer.origin}/spec.yaml --out ${generatedClientDir} --from ts --openapi-fallback fallback.yaml`
+        `../dist/index.mjs generate --openapi ${specServer.origin}/spec.yaml --out ${generatedClientDir} --from ts --openapi-fallback fallback.yaml`
       );
 
       const { schema } = await import(path.join(generatedClientDir, 'index.ts'));
@@ -294,12 +317,12 @@ await describe('OpenAPI flags', async () => {
       strictEqual(fallback.openapi, '3.1.0');
       strictEqual(fallback.paths['/test']?.post?.operationId, 'postTest');
     } catch (e) {
-      await fileServer.close();
+      await specServer.close();
       await fs.rm(generatedClientDir, { recursive: true });
       throw e;
     }
 
-    await fileServer.close();
+    await specServer.close();
     await fs.rm(generatedClientDir, { recursive: true });
   });
 
@@ -338,11 +361,11 @@ await describe('OpenAPI flags', async () => {
   });
 
   await it('can watch JSON URL and regenerate on spec change', async () => {
-    const fileServer = await startFileServer(artifactsDir);
+    const specServer = await serveArtifacts();
     const generatedClientDir = path.join(artifactsDir, `generated-client${Date.now()}`);
 
     const watch = runAtProjectDir(
-      `../dist/index.mjs generate --openapi ${fileServer.origin}/spec.json --out ${generatedClientDir} --from ts --watch 1`
+      `../dist/index.mjs generate --openapi ${specServer.origin}/spec.json --out ${generatedClientDir} --from ts --watch 1`
     );
 
     try {
@@ -364,14 +387,14 @@ await describe('OpenAPI flags', async () => {
       strictEqual(schema2.segments.mixin.controllers.api.handlers.postTest2.httpMethod, HttpMethod.POST);
     } catch (e) {
       await watch.kill();
-      await fileServer.close();
+      await specServer.close();
 
       await fs.rm(generatedClientDir, { recursive: true, force: true });
       throw e;
     }
 
     await watch.kill();
-    await fileServer.close();
+    await specServer.close();
 
     await fs.rm(generatedClientDir, { recursive: true, force: true });
   });
@@ -411,11 +434,11 @@ await describe('OpenAPI flags', async () => {
   });
 
   await it('can watch YAML URL and regenerate on spec change', async () => {
-    const fileServer = await startFileServer(artifactsDir);
+    const specServer = await serveArtifacts();
     const generatedClientDir = path.join(artifactsDir, `generated-client${Date.now()}`);
 
     const watch = runAtProjectDir(
-      `../dist/index.mjs generate --openapi ${fileServer.origin}/spec.yaml --out ${generatedClientDir} --from ts --watch 1`
+      `../dist/index.mjs generate --openapi ${specServer.origin}/spec.yaml --out ${generatedClientDir} --from ts --watch 1`
     );
 
     try {
@@ -437,14 +460,14 @@ await describe('OpenAPI flags', async () => {
       strictEqual(schema2.segments.mixin.controllers.api.handlers.postTest2.httpMethod, HttpMethod.POST);
     } catch (e) {
       await watch.kill();
-      await fileServer.close();
+      await specServer.close();
 
       await fs.rm(generatedClientDir, { recursive: true, force: true });
       throw e;
     }
 
     await watch.kill();
-    await fileServer.close();
+    await specServer.close();
 
     await fs.rm(generatedClientDir, { recursive: true, force: true });
   });
@@ -521,6 +544,27 @@ function typecheck(rootFile: string, dir: string) {
       ({ file, messageText }) => `${path.relative(dir, file)}: ${ts.flattenDiagnosticMessageText(messageText, '\n')}`
     );
 }
+
+// generates the client of a spec with the default mixin and module names, then type-checks code that uses it
+async function typecheckMixinClient(spec: OpenAPIObject, consumerCode: string) {
+  await fs.mkdir(artifactsDir, { recursive: true });
+  const specFile = `spec-${Date.now()}.json`;
+  await fs.writeFile(path.join(artifactsDir, specFile), JSON.stringify(spec));
+  const generatedClientDir = path.join(artifactsDir, `generated-client${Date.now()}`);
+  try {
+    await runAtProjectDir(`../dist/index.mjs generate --openapi ${specFile} --out ${generatedClientDir} --from ts`);
+    const consumer = path.join(generatedClientDir, 'consumer.ts');
+    await fs.writeFile(consumer, consumerCode);
+    return typecheck(consumer, generatedClientDir);
+  } finally {
+    await fs.rm(path.join(artifactsDir, specFile), { force: true });
+    await fs.rm(generatedClientDir, { recursive: true, force: true });
+  }
+}
+
+const jsonResponse = <T,>(schema: T) => ({
+  '200': { description: 'ok', content: { 'application/json': { schema } } },
+});
 
 await describe('Generated mixin client', async () => {
   await it('typechecks with skipLibCheck false', async () => {
@@ -639,6 +683,214 @@ export async function check() {
 
     deepStrictEqual(typecheck(consumer, generatedClientDir), []);
     await fs.rm(generatedClientDir, { recursive: true, force: true });
+  });
+
+  await it('infers the output and the iteration of a mixin method', async () => {
+    const spec: OpenAPIObject = {
+      openapi: '3.1.0',
+      info: { title: 'Things', version: '1.0.0' },
+      servers: [{ url: 'https://example.com/api' }],
+      paths: {
+        '/thing': { get: { operationId: 'getThing', responses: jsonResponse({ $ref: '#/components/schemas/Thing' }) } },
+        '/events': {
+          get: {
+            operationId: 'streamEvents',
+            responses: {
+              '200': {
+                description: 'ok',
+                content: { 'application/jsonl': { schema: { $ref: '#/components/schemas/Event' } } },
+              },
+            },
+          },
+        },
+      },
+      components: {
+        schemas: {
+          Thing: { type: 'object', properties: { id: { type: 'string' } }, required: ['id'] },
+          Event: { type: 'object', properties: { n: { type: 'number' } }, required: ['n'] },
+        },
+      },
+    };
+
+    const diagnostics = await typecheckMixinClient(
+      spec,
+      `import type { VovkIteration, VovkOutput } from 'vovk';
+import { api, type Mixins } from './index.ts';
+type Equal<A, B> = (<T>() => T extends A ? 1 : 2) extends <T>() => T extends B ? 1 : 2 ? true : false;
+export const output: Equal<VovkOutput<typeof api.getThing>, Mixins.Mixin.Thing> = true;
+export const iteration: Equal<VovkIteration<typeof api.streamEvents>, Mixins.Mixin.Event> = true;
+`
+    );
+
+    deepStrictEqual(diagnostics, []);
+  });
+
+  await it('types an object whose properties sit next to additionalProperties or patternProperties', async () => {
+    // openapi3-ts declares no patternProperties
+    const spec = {
+      openapi: '3.1.0',
+      info: { title: 'Settings', version: '1.0.0' },
+      servers: [{ url: 'https://example.com/api' }],
+      paths: {
+        '/settings': {
+          get: { operationId: 'getSettings', responses: jsonResponse({ $ref: '#/components/schemas/Settings' }) },
+          put: {
+            operationId: 'putSettings',
+            requestBody: {
+              required: true,
+              content: { 'application/json': { schema: { $ref: '#/components/schemas/Settings' } } },
+            },
+            responses: { '204': { description: 'ok' } },
+          },
+        },
+        '/labels': {
+          get: { operationId: 'getLabels', responses: jsonResponse({ $ref: '#/components/schemas/Labels' }) },
+        },
+      },
+      components: {
+        schemas: {
+          Settings: {
+            type: 'object',
+            properties: { version: { type: 'integer' } },
+            required: ['version'],
+            additionalProperties: { type: 'string' },
+          },
+          Labels: {
+            type: 'object',
+            patternProperties: { '^n_': { type: 'number' } },
+            additionalProperties: { type: 'string' },
+          },
+        },
+      },
+    } as OpenAPIObject;
+
+    const diagnostics = await typecheckMixinClient(
+      spec,
+      `import { api } from './index.ts';
+export async function check() {
+  const settings = await api.getSettings();
+  const version: number = settings.version;
+  await api.putSettings({ body: { version: 2, theme: 'dark' } });
+  return [version, await api.getLabels()];
+}
+`
+    );
+
+    deepStrictEqual(diagnostics, []);
+  });
+
+  await it('types a binary field of a form body component as a Blob', async () => {
+    const spec: OpenAPIObject = {
+      openapi: '3.1.0',
+      info: { title: 'Files', version: '1.0.0' },
+      servers: [{ url: 'https://example.com/api' }],
+      paths: {
+        '/upload': {
+          post: {
+            operationId: 'upload',
+            requestBody: {
+              required: true,
+              content: { 'multipart/form-data': { schema: { $ref: '#/components/schemas/Upload' } } },
+            },
+            responses: { '204': { description: 'ok' } },
+          },
+        },
+      },
+      components: {
+        schemas: {
+          Upload: {
+            type: 'object',
+            properties: { file: { type: 'string', format: 'binary' }, note: { type: 'string' } },
+            required: ['file'],
+          },
+        },
+      },
+    };
+
+    const diagnostics = await typecheckMixinClient(
+      spec,
+      `import { api } from './index.ts';
+export async function check() {
+  await api.upload({ body: { file: new Blob(['hello']), note: 'a note' } });
+}
+`
+    );
+
+    deepStrictEqual(diagnostics, []);
+  });
+
+  await it('leaves read-only properties out of the request and write-only ones out of the response', async () => {
+    const spec: OpenAPIObject = {
+      openapi: '3.1.0',
+      info: { title: 'Users', version: '1.0.0' },
+      servers: [{ url: 'https://example.com/api' }],
+      paths: {
+        '/users': {
+          post: {
+            operationId: 'createUser',
+            requestBody: {
+              required: true,
+              content: { 'application/json': { schema: { $ref: '#/components/schemas/User' } } },
+            },
+            responses: jsonResponse({ $ref: '#/components/schemas/User' }),
+          },
+        },
+      },
+      components: {
+        schemas: {
+          User: {
+            type: 'object',
+            properties: {
+              id: { type: 'integer', readOnly: true },
+              name: { type: 'string' },
+              password: { type: 'string', writeOnly: true },
+            },
+            required: ['id', 'name', 'password'],
+          },
+        },
+      },
+    };
+
+    const diagnostics = await typecheckMixinClient(
+      spec,
+      `import { api } from './index.ts';
+export async function check() {
+  // the server sets the id and never sends the password back
+  const user = await api.createUser({ body: { name: 'Ann', password: 'secret' } });
+  const id: number = user.id;
+  const sent: Awaited<ReturnType<typeof api.createUser>> = { id: 1, name: 'Ann' };
+  return [id, sent];
+}
+`
+    );
+
+    deepStrictEqual(diagnostics, []);
+  });
+
+  await it('generates a client from a spec with boolean schemas', async () => {
+    const spec = {
+      openapi: '3.1.0',
+      info: { title: 'Anything', version: '1.0.0' },
+      servers: [{ url: 'https://example.com/api' }],
+      paths: {
+        '/things': { get: { operationId: 'listThings', responses: jsonResponse(true) } },
+        '/thing': {
+          get: { operationId: 'getThing', responses: jsonResponse({ $ref: '#/components/schemas/Anything' }) },
+        },
+      },
+      components: { schemas: { Anything: true } },
+    } as unknown as OpenAPIObject;
+
+    const diagnostics = await typecheckMixinClient(
+      spec,
+      `import { api } from './index.ts';
+export async function check() {
+  return [await api.listThings(), await api.getThing()];
+}
+`
+    );
+
+    deepStrictEqual(diagnostics, []);
   });
 });
 

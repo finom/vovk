@@ -2,7 +2,7 @@ import { deepStrictEqual } from 'node:assert';
 import { describe, it } from 'node:test';
 import { createRPC } from 'vovk/create-rpc';
 import { fetcher } from 'vovk/fetcher';
-import type { VovkFetcherOptions } from 'vovk/internal';
+import type { VovkFetcherOptions } from '../../../packages/vovk/dist/types/client.js';
 import { schema } from '../generated-client/index.ts';
 import type ClientController from './common-controller.ts';
 

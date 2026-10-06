@@ -3,7 +3,6 @@ name = "test_project"
 version = "0.1.0"
 edition = "2021"
 
-# No dependencies needed for basic testing
 [dependencies]
 generated_rust_client = { path = "../generated_rust_client" }
 generated_shapes_client = { path = "../generated_shapes_client" }

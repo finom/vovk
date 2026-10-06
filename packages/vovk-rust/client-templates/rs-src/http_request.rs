@@ -15,7 +15,6 @@ use futures_util::{Stream, StreamExt, TryStreamExt};
 use tokio_util::codec::{FramedRead, LinesCodec};
 use tokio_util::io::StreamReader;
 
-// Custom error type for HTTP exceptions
 #[derive(Debug, Serialize)]
 pub struct HttpException {
     message: String,
@@ -90,7 +89,6 @@ pub enum RequestBody<'a, B: ?Sized> {
     Binary(Vec<u8>, &'static str),
 }
 
-// Load the full schema only once using lazy initialization
 static FULL_SCHEMA: Lazy<Result<Value, String>> = Lazy::new(|| {
     read_full_schema::read_full_schema()
         .map(|schema| serde_json::to_value(schema).expect("Failed to convert schema to Value"))
@@ -191,7 +189,6 @@ fn to_form_fields(value: &Value) -> Result<Vec<(String, String)>, String> {
     Ok(fields)
 }
 
-// Private helper function for request preparation
 fn prepare_request<B, Q, P>(
     endpoint: &Endpoint,
     body: RequestBody<'_, B>,
@@ -206,7 +203,6 @@ where
     Q: Serialize + ?Sized,
     P: Serialize + ?Sized,
 {
-    // Extract schema information
     let schema = match &*FULL_SCHEMA {
         Ok(schema) => schema,
         Err(e) => return Err(format!("Failed to load schema: {}", e).into()),
@@ -241,7 +237,6 @@ where
         .get("validation")
         .unwrap_or(&default_validation);
 
-    // Construct the base URL, the parts are joined with single slashes whatever slashes they start or end with
     let path = [endpoint.segment_path, prefix, handler_path]
         .iter()
         .flat_map(|part| part.split('/'))
@@ -251,7 +246,6 @@ where
     let root = api_root.unwrap_or(endpoint.api_root).trim_end_matches('/');
     let mut url = if path.is_empty() { root.to_string() } else { format!("{}/{}", root, path) };
 
-    // Convert generic types to Value for validation if needed
     let body_value = match &body {
         RequestBody::Json(b) | RequestBody::UrlEncoded(b) => {
             Some(serde_json::to_value(b).map_err(|e| format!("Failed to serialize body: {}", e))?)
@@ -294,7 +288,6 @@ where
         }
     }
 
-    // Substitute path parameters in the URL
     if let Some(Value::Object(map)) = &params_value {
         for (key, value) in map {
             let placeholder = format!("{{{}}}", key);
@@ -325,7 +318,6 @@ where
         return Err(format!("Missing params: {}", missing.join(", ")).into());
     }
 
-    // Append query string if query parameters are provided
     if let Some(ref query_val) = query_value {
         let query_string = build_query_string(query_val, "");
         if !query_string.is_empty() {
@@ -338,7 +330,6 @@ where
         }
     }
 
-    // Set up request headers
     let mut headers_map = reqwest::header::HeaderMap::new();
     headers_map.insert("Accept", "application/jsonl, application/json".parse().unwrap());
     let content_type = match &body {
@@ -367,7 +358,6 @@ where
         }
     }
 
-    // Map HTTP method string to reqwest::Method
     let method = match http_method.to_uppercase().as_str() {
         "GET" => Method::GET,
         "POST" => Method::POST,
@@ -379,7 +369,6 @@ where
         _ => return Err("Invalid HTTP method".into()),
     };
 
-    // Build the HTTP request
     let client = CLIENT.with(Client::clone);
     let request = client.request(method, &url).headers(headers_map);
 
@@ -396,7 +385,6 @@ where
     Ok((request, http_method.to_string()))
 }
 
-// where a redirect points
 fn location(response: &reqwest::Response) -> Option<String> {
     let value = response.headers().get(reqwest::header::LOCATION)?;
     value.to_str().ok().map(str::to_string)
@@ -491,7 +479,6 @@ fn base64(bytes: &[u8]) -> String {
     out
 }
 
-// Main request function for regular (non-streaming) responses
 #[allow(dead_code)]
 pub async fn http_request<T, B, Q, P>(
     endpoint: &Endpoint,
@@ -565,7 +552,6 @@ where
     read_bytes(&bytes, status_code)
 }
 
-// Request function specifically for streaming responses
 #[allow(dead_code)]
 pub async fn http_request_stream<T, B, Q, P>(
     endpoint: &Endpoint,
@@ -663,7 +649,6 @@ fn error_from_line(value: &Value, status_code: i32) -> HttpException {
     HttpException::new(message, line_status_code.unwrap_or(status_code), None)
 }
 
-// Helper function to build query strings from nested JSON
 fn build_query_string(data: &Value, prefix: &str) -> String {
     match data {
         Value::Object(map) => {

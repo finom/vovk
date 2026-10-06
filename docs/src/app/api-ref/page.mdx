@@ -194,14 +194,14 @@ See the [decorator docs](/decorator) for more details.
 
 ### `fetcher`
 
-Function that creates a data-fetching layer for the RPC client. It is used by default when the fetcher is not [customized](/imports#fetcher). A new fetcher can be created using the [createFetcher](#createfetcher) function.
+Function that creates a data-fetching layer for the RPC client. It is used by default when the fetcher is not [customized](/imports#fetcher). A new fetcher can be created using the [createFetcher](#createfetcher) function. Exported from `vovk/fetcher`.
 
 ### `createFetcher`
 
 Function that creates a custom fetcher for the RPC client. It accepts a generic type parameter that defines additional options for the resulting RPC methods. The function returns a `fetcher` function that will be used to build the client.
 
 ```ts showLineNumbers copy filename="./src/lib/fetcher.ts"
-import { createFetcher } from 'vovk';
+import { createFetcher } from 'vovk/fetcher';
 
 export const fetcher = createFetcher<{
   successMessage?: string; // "Successfully created a new user"
@@ -305,7 +305,7 @@ Utility that turns RPC modules or controllers into AI tools that satisfy the [st
 
 The function accepts the following options:
 
-- `modules: Record<string, object>{:ts}` – key-value object where keys are module names and values are objects with methods. Each method should have a `schema: VovkHandlerSchema` property and either `isRPC: true` (for RPC modules) or the [fn](/fn) function (for controllers).
+- `modules: Record<string, object>{:ts}` – key-value object where keys are module names and values are objects with methods. Each method should have the `schema` property that RPC methods and procedures have, and either `isRPC: true` (for RPC modules) or the [fn](/fn) function (for controllers).
 - `onExecute?: (result: unknown, tool: StandardToolV0) => void | Promise<void>{:ts}` – called after each tool execution.
 - `onError?: (e: Error, tool: StandardToolV0) => void | Promise<void>{:ts}` – called when an error is thrown during tool execution.
 - `toModelOutput` – function that formats the tool result into a model-friendly output.
@@ -345,7 +345,7 @@ Creates the `validateOnClient` function, which controls how client-side validati
 
 ```ts showLineNumbers copy filename="./src/lib/validate-on-client.ts"
 import { validateData } from 'validation-library';
-import { createValidateOnClient, HttpException, HttpStatus } from 'vovk';
+import { createValidateOnClient, HttpException, HttpStatus } from 'vovk/create-validate-on-client';
 
 export const validateOnClient = createValidateOnClient({
   validate: async (input, schema, meta) => {
@@ -561,32 +561,9 @@ export enum HttpStatus {
 }
 ```
 
-#### `HttpMethod` enum
-
-Represents the HTTP methods:
-
-```ts showLineNumbers copy
-export enum HttpMethod {
-  GET = 'GET',
-  POST = 'POST',
-  PUT = 'PUT',
-  PATCH = 'PATCH',
-  DELETE = 'DELETE',
-  HEAD = 'HEAD',
-  OPTIONS = 'OPTIONS',
-}
-```
-
 ### `VovkSchema`
 
-The full schema of the composed client or of a single segment in a segmented client. Shape:
-
-```ts showLineNumbers copy
-{
-  segments: { [key: string]: VovkSegmentSchema };
-  meta?: VovkMetaSchema
-}
-```
+The full schema of the composed client or of a single segment in a segmented client. It has `segments`, the schema of each segment by its name, and an optional `meta` with the emitted config. A segment's schema is typed as `typeof UserRPC.updateUser.segmentSchema`.
 
 See the [schema docs](/schema) for more details.
 
@@ -596,7 +573,7 @@ The shape of the [config](/config) file.
 
 ### `StandardToolV0`
 
-The shape of an LLM tool returned by the [deriveTools](#derivetools) function, defined by the [standard-tool](https://standard-tool.js.org/) convention. Exported from `vovk/internal`.
+The shape of an LLM tool returned by the [deriveTools](#derivetools) function, defined by the [standard-tool](https://standard-tool.js.org/) convention.
 
 See the [Deriving AI Tools](/tools) documentation for more information.
 
@@ -606,7 +583,7 @@ Basic JSON Schema object with `type`, `properties`, and other standard JSON Sche
 
 ### `VovkFetcher`
 
-Object that represents a [fetcher](#fetcher) function used to make API requests.
+Object that represents a [fetcher](#fetcher) function used to make API requests. Exported from `vovk/fetcher`.
 
 See the [fetcher docs](/imports#fetcher) for more information.
 
@@ -616,6 +593,6 @@ The stream a client method returns for a [JSON Lines](/jsonlines) response: an a
 
 ### `VovkValidateOnClient`
 
-Function type that represents the client-side validation function created by [createValidateOnClient](#createvalidateonclient).
+Function type that represents the client-side validation function created by [createValidateOnClient](#createvalidateonclient). Exported from `vovk/create-validate-on-client`.
 
 See the [client-side validation docs](/imports#validateonclient) for more details.

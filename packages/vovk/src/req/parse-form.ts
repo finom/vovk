@@ -5,7 +5,7 @@ export async function parseForm<T>(body: FormData): Promise<T> {
     // assigning "__proto__" would replace the object's prototype; the query parser drops it too
     if (key === '__proto__') continue;
 
-    // an entry is a string or a File: instanceof File misses one from another realm, as on the Next.js 15.0 edge runtime
+    // a string or a File: instanceof File misses a File from another realm, as on the Next.js 15.0 edge runtime
     const entry = value;
 
     // own keys only: an inherited name such as toString is not an earlier value, and "" is one
