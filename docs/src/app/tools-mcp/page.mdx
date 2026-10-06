@@ -1,7 +1,7 @@
 
 # MCP (Model Context Protocol) Output Formatting
 
-[Derived tools](/tools) can be used as MCP tools with `ToModelOutput.MCP` formatter. It formats the tool output to meet [MCP tool specification](https://modelcontextprotocol.io/specification/2025-11-25/server/tools), supporting the following types of outputs: `text`, `image`, `audio`, alongside with meta information, described with `annotations` object.
+With the `ToModelOutput.MCP` formatter, [derived tools](/tools) work as MCP tools. It formats the tool output to the [MCP tool specification](https://modelcontextprotocol.io/specification/2025-11-25/server/tools), with `text`, `image` and `audio` output, and meta information in an `annotations` object.
 
 ```ts
 const tools = deriveTools({
@@ -12,7 +12,7 @@ const tools = deriveTools({
 
 ## JSON Content
 
-JSON responses (including ones created with `Response` or `NextResponse`, and `+json` types such as `application/problem+json`) will be formatted as text content with `structuredContent` field. A `Response` with an error status is reported with `isError: true` and no `structuredContent`. A thrown error is reported the same way; in production only an `HttpException{:ts}` keeps its message, and any other error reads "Internal server error".
+A JSON response becomes text content with a `structuredContent` field. This includes responses made with `Response` or `NextResponse`, and `+json` types such as `application/problem+json`. A `Response` with an error status gives `isError: true` and no `structuredContent`. A thrown error is reported the same way. In production, only an `HttpException{:ts}` keeps its message, and any other error reads "Internal server error".
 
 ```ts showLineNumbers copy
 export default class UserController {
@@ -24,7 +24,7 @@ export default class UserController {
 }
 ```
 
-When the tool is executed with `ToModelOutput.MCP` formatter, the output will be:
+With the `ToModelOutput.MCP` formatter, the tool's output is:
 
 ```json
 {
@@ -40,7 +40,7 @@ When the tool is executed with `ToModelOutput.MCP` formatter, the output will be
 
 ## Audio and Image Content
 
-If procedure returns a `Response` with `Content-Type` header set to `audio/*` or `image/*`, the output will be formatted accordingly. Its `data` field holds the body in base64.
+When a procedure returns a `Response` with the `Content-Type` header set to `audio/*` or `image/*`, the output is audio or image content. Its `data` field holds the body in base64.
 
 ```ts showLineNumbers copy
 export default class MediaController {
@@ -54,7 +54,7 @@ export default class MediaController {
 }
 ```
 
-When the tool is executed with `ToModelOutput.MCP` formatter, the output will be:
+With the `ToModelOutput.MCP` formatter, the tool's output is:
 
 ```json
 {
@@ -68,7 +68,7 @@ When the tool is executed with `ToModelOutput.MCP` formatter, the output will be
 }
 ```
 
-The response can be created with [`toDownloadResponse`](/response#downloads) utility, or using `fetch` to get media from an external source.
+You can create the response with the [`toDownloadResponse`](/response#downloads) utility, or get the media from another source with `fetch`.
 
 ```ts showLineNumbers copy
 import { toDownloadResponse } from 'vovk';
@@ -94,7 +94,7 @@ export default class MediaController {
 
 ## Text Content
 
-If procedure returns a `Response` with `Content-Type` header set to `text/*` or other text-based types, such as XML, the output will be formatted as text content.
+When a procedure returns a `Response` with the `Content-Type` header set to `text/*` or another text type, such as XML, the output is text content.
 
 ```ts showLineNumbers copy
 export default class TextController {
@@ -108,7 +108,7 @@ export default class TextController {
 }
 ```
 
-When the tool is executed with `ToModelOutput.MCP` formatter, the output will be:
+With the `ToModelOutput.MCP` formatter, the tool's output is:
 
 ```json
 {
@@ -123,7 +123,7 @@ When the tool is executed with `ToModelOutput.MCP` formatter, the output will be
 
 ## `annotations`
 
-Annotations can be added to the output by setting a special metadata key `mcpOutput` using [req.vovk.meta](/req-vovk#meta) function. This approach makes sure that if the procedure used as an endpoint, the response will not be affected. MCP takes a `priority` from 0 (least important) to 1 (most important).
+To add annotations to the output, set the `mcpOutput` metadata key with the [req.vovk.meta](/req-vovk#meta) function. When the procedure serves as an endpoint, its response stays the same. MCP takes a `priority` from 0 (least important) to 1 (most important).
 
 ```ts showLineNumbers copy
 export default class AnnotatedController {
@@ -138,7 +138,7 @@ export default class AnnotatedController {
 }
 ```
 
-When the tool is executed with `ToModelOutput.MCP` formatter, each content item will include the `annotations` object, as MCP annotates content items:
+With the `ToModelOutput.MCP` formatter, each content item gets the `annotations` object, as MCP annotates content items:
 
 ```json
 {
@@ -156,13 +156,13 @@ When the tool is executed with `ToModelOutput.MCP` formatter, each content item 
 }
 ```
 
-Note that `mcpOutput` metadata key can also override other MCP output properties, including `content` and `structuredContent`; its `annotations` go on each content item. This might be useful if you want to customize the MCP output without changing the actual procedure response.
+The `mcpOutput` key can also override other MCP output properties, including `content` and `structuredContent`; its `annotations` go on each content item. This way you can change the MCP output without changing the procedure's response.
 
 ## MCP Handler Example
 
-With [mcp-handler](https://www.npmjs.com/package/mcp-handler) package, you can create an MCP-compatible API route that is going to control the back-end functionality exposed to MCP clients.
+With the [mcp-handler](https://www.npmjs.com/package/mcp-handler) package, you can create an MCP API route that controls what your back end exposes to MCP clients.
 
-By writing this documentation, **mcp-handler** supports Zod schemas only. The tool's merged `inputSchema` is a single Standard Schema, so we convert its JSON Schema back to a Zod object with [`z.fromJSONSchema()`](https://zod.dev/json-schema?id=zfromjsonschema) and pass its `.shape` — the `body`/`query`/`params` slots — to `registerTool`.
+At the time of writing, **mcp-handler** supports only Zod schemas. The tool's merged `inputSchema` is a single Standard Schema. So the example converts its JSON Schema back to a Zod object with [`z.fromJSONSchema()`](https://zod.dev/json-schema?id=zfromjsonschema), and passes its `.shape` (the `body`, `query` and `params` slots) to `registerTool`.
 
 ```ts showLineNumbers copy filename="src/app/api/mcp/route.ts"
 import { createMcpHandler } from "mcp-handler";
@@ -193,7 +193,7 @@ export { handler as GET, handler as POST };
 
 ## Standalone Tools with `withFormattedOutput`
 
-`ToModelOutput.MCP` is compatible with the `withFormattedOutput` helper from the [standard-tool](https://www.npmjs.com/package/standard-tool) package: both operate on a result-or-`Error` value. Wrap a [standalone tool](/tools#standalone-tools) with it, passing `null` as the request argument, and its `execute` produces the same MCP output shape as derived tools, so it can be registered on the same MCP server:
+`ToModelOutput.MCP` works with the `withFormattedOutput` helper from the [standard-tool](https://www.npmjs.com/package/standard-tool) package: both take a result or an `Error`. Wrap a [standalone tool](/tools#standalone-tools) with it, and pass `null` as the request argument. Its `execute` then gives the same MCP output as derived tools, so you can register it on the same MCP server:
 
 ```ts showLineNumbers copy
 import { standardTool, withFormattedOutput } from 'standard-tool';
@@ -217,4 +217,4 @@ const sumNumbersMCP = withFormattedOutput(sumNumbers, (result) =>
 
 ---
 
-See [Realtime Kanban / MCP](/realtime-ui/mcp) for more info.
+See [Realtime Kanban / MCP](/realtime-ui/mcp) for more.
