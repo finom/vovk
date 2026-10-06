@@ -24,12 +24,15 @@ const NAVIGATION_ERROR_LINES: Record<string, StreamAbortMessage> = {
 
 type ResponderHooks = { onBeforeSend?: (item: unknown, i: number) => unknown; onError?: (error: unknown) => void };
 
-// what vovk sets for a request before its handler runs, so a responder made with it checks and reports a line the
+// what vovk sets on a request before its handler runs, so a responder made with it checks and reports a line the
 // handler sends before it returns the responder
-const hooksByRequest = new WeakMap<object, ResponderHooks>();
+const HOOKS = Symbol('vovk.responderHooks');
+
+type WithHooks = { [HOOKS]?: ResponderHooks };
 
 export function setResponderHooks(request: object, hooks: ResponderHooks) {
-  hooksByRequest.set(request, { ...hooksByRequest.get(request), ...hooks });
+  const current = (request as WithHooks)[HOOKS];
+  (request as WithHooks)[HOOKS] = current ? { ...current, ...hooks } : hooks;
 }
 
 /**
@@ -112,7 +115,7 @@ export class JSONLinesResponder<T> extends Responder {
     // an empty first chunk lets the client's fetch resolve before the first line
     this.controller?.enqueue(encoder?.encode(''));
 
-    const hooks = request ? hooksByRequest.get(request) : undefined;
+    const hooks = (request as (Request & WithHooks) | null | undefined)?.[HOOKS];
     if (hooks?.onBeforeSend) this.onBeforeSend = hooks.onBeforeSend as (item: T, i: number) => T | Promise<T>;
     if (hooks?.onError) this._onError = hooks.onError;
 

@@ -70,18 +70,33 @@ const takesArray = (schema: unknown): boolean => {
   );
 };
 
+// the query keys whose schema takes an array (nested: null), or holds such keys (nested: their plan)
+type ArrayPlan = { key: string; nested: ArrayPlan | null }[];
+
+const toArrayPlan = (schema: unknown): ArrayPlan | null => {
+  if (!isJSONObject(schema) || !isJSONObject(schema.properties)) return null;
+  const plan: ArrayPlan = [];
+  for (const [key, property] of Object.entries(schema.properties)) {
+    const isArray = takesArray(property);
+    const nested = isArray ? null : toArrayPlan(property);
+    if (isArray || nested) plan.push({ key, nested });
+  }
+  return plan.length ? plan : null;
+};
+
 // a key given once is a string, so where the query schema takes an array, as in the OpenAPI form style a client sends
 // one item as tags=a, it is read as a one-item array; also in nested objects
-const withLoneValuesAsArrays = (query: unknown, schema: unknown): unknown => {
-  if (!isJSONObject(query) || !isJSONObject(schema) || !isJSONObject(schema.properties)) return query;
-  const { properties } = schema;
-  return Object.fromEntries(
-    Object.entries(query).map(([key, value]) => {
-      const property = Object.hasOwn(properties, key) ? properties[key] : undefined;
-      const isLoneItem = typeof value === 'string' && takesArray(property);
-      return [key, isLoneItem ? [value] : withLoneValuesAsArrays(value, property)];
-    })
-  );
+const withLoneValuesAsArrays = (query: unknown, plan: ArrayPlan | null): unknown => {
+  if (!plan || !isJSONObject(query)) return query;
+  let result = query;
+  for (const { key, nested } of plan) {
+    const value = query[key];
+    const next = nested ? withLoneValuesAsArrays(value, nested) : typeof value === 'string' ? [value] : value;
+    if (next === value || !Object.hasOwn(query, key)) continue;
+    if (result === query) result = { ...query };
+    result[key] = next;
+  }
+  return result;
 };
 
 // a buffered body read as JSON that has no bytes, as fetch() sends a JSON content type for a call without a body
@@ -162,16 +177,16 @@ export function withValidationLibrary<
   const skipSchemaEmissionKeys =
     skipSchemaEmission === false ? [] : skipSchemaEmission === true ? validationTypes : (skipSchemaEmission ?? []);
   // made on the first request; a schema JSON Schema can't describe leaves the query as it is
-  let querySchema: unknown;
-  const getQuerySchema = () => {
-    if (querySchema === undefined) {
+  let arrayPlan: ArrayPlan | null | undefined;
+  const getArrayPlan = () => {
+    if (arrayPlan === undefined) {
       try {
-        querySchema = (query && toJSONSchema?.(query, { validationType: 'query' })) ?? null;
+        arrayPlan = toArrayPlan(query && toJSONSchema?.(query, { validationType: 'query' }));
       } catch {
-        querySchema = null;
+        arrayPlan = null;
       }
     }
-    return querySchema;
+    return arrayPlan;
   };
   const outputHandler = async (req: VovkRequestAny, handlerParams: Parameters<THandle>[1]) => {
     const { __disableClientValidation } = req.vovk.meta<Meta>();
@@ -232,6 +247,8 @@ export function withValidationLibrary<
         return data;
       }
 
+      // the generator below checks the items, so the responder vovk makes for it doesn't check them again
+      if (onBeforeSend) setResponderHooks(req, { onBeforeSend: undefined });
       return (async function* () {
         let i = 0;
         for await (const item of data) {
@@ -284,7 +301,7 @@ export function withValidationLibrary<
       }
 
       if (query && !disableServerSideValidationKeys.includes('query')) {
-        const data = withLoneValuesAsArrays(req.vovk.query(), getQuerySchema());
+        const data = withLoneValuesAsArrays(req.vovk.query(), getArrayPlan());
         const parsed = (await validate(data, query, { validationType: 'query', req })) ?? data;
         const instance = preferTransformed ? parsed : data;
         req.vovk.query = () => instance;
