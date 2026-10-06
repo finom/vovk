@@ -13,6 +13,8 @@ It takes:
 - `exposeValidation?: boolean` – `false` leaves the validation schemas out of the emitted schema, so the client code doesn't see them. The declared content types stay, since the clients encode the body by them. Defaults to `true`.
 - `emitSchema?: boolean{:ts}` – `false` emits no schema for the segment. Defaults to `true`.
 - `onError?: (err: Error, req: VovkRequest) => void | Promise<void>{:ts}` – called when a controller throws, for example to log the error. The second argument is the request, with its URL, authorization data and other details.
+- `onBefore?: (req: VovkRequest) => void | Promise<void>{:ts}` – called with the request after the route's `before` and before the custom decorators and the handler run. An error it throws becomes the response.
+- `onSuccess?: (result: unknown, req: VovkRequest) => void | Promise<void>{:ts}` – called with the handler's result and the request once the handler returns. For a stream, that is when the stream starts, not when it ends.
 
 ### `JSONLinesResponder`
 
@@ -75,32 +77,36 @@ export default class MediaController {
 These decorators set the HTTP method of a handler. A `HEAD` request to a path without a `@head` route gets the response of the `GET` route: its status and headers, without the body. A request to a path that has routes only for other methods gets `405` and an `Allow` header that lists those methods. The decorators take two optional arguments:
 
 - `path? = ''` – the path of the route.
-- `opts?: { cors?: boolean, headers?: Record<string, string>, staticParams?: Record<string, string>[] }` – route options:
+- `opts?: { cors?: boolean, headers?: Record<string, string>, staticParams?: Record<string, string>[], before?: (req: VovkRequest) => unknown }` – route options:
   - `cors: true` adds CORS headers to the response and answers the `OPTIONS` preflight. The preflight allows and lists only the methods whose route on that path has `cors`, so a browser can't call a route without it from another origin. The preflight skips the decorator's `before` and the segment's `onBefore` hooks.
   - `headers` are added to the response.
   - `staticParams` (`@get` only) is an array of path parameter values, for example `[{ id: '123' }]`.
+  - `before` runs on an HTTP request before the segment's `onBefore`, the custom decorators and the handler, with the controller as `this`. An error it throws becomes the response.
 
 ```ts showLineNumbers copy
-import { get } from 'vovk';
+import { get, type VovkRequest } from 'vovk';
 
 export default class HelloController {
-  @get('world', { cors: true, headers: { 'x-hello': 'world' }, staticParams: [{ id: '123' }] })
-  static getHelloWorld(req, { id }: { id: string }) {
+  @get('world/{id}', { cors: true, headers: { 'x-hello': 'world' }, staticParams: [{ id: '123' }] })
+  static getHelloWorld(req: VovkRequest, { id }: { id: string }) {
     return { hello: 'world', id };
   }
 }
 ```
 
-Each HTTP method decorator has an `.auto()` form. It builds the path from the method name in kebab case, so `getHelloWorld` is served at `get-hello-world`, and adds a `{name}` segment for each property of the procedure's `params` schema. It takes the same options as the decorator.
+Each HTTP method decorator has an `.auto()` form. It builds the path from the method name in kebab case and adds a `{name}` segment for each property of the procedure's `params` schema, so `getHelloWorld` below is served at `get-hello-world/{id}`. It takes the same options as the decorator.
 
 ```ts showLineNumbers copy
-import { get } from 'vovk';
+import { get, procedure } from 'vovk';
+import { z } from 'zod';
 
 export default class HelloController {
   @get.auto({ cors: true, headers: { 'x-hello': 'world' }, staticParams: [{ id: '123' }] })
-  static getHelloWorld(req, { id }: { id: string }) {
+  static getHelloWorld = procedure({
+    params: z.object({ id: z.string() }),
+  }).handle((req, { id }) => {
     return { hello: 'world', id };
-  }
+  });
 }
 ```
 
@@ -175,6 +181,7 @@ import { createDecorator, get } from 'vovk';
 const myDecorator = createDecorator(
   (req, next, a: string, b: number) => {
     // do something with the request
+    return next();
   },
   (a: string, b: number) => {
     // change the schema here
@@ -241,12 +248,12 @@ Lists the routes as static params, so the API is built at build time instead of 
 
 **Arguments:**
 
-- `controllers: Record<string, Function>{:ts}` — the controllers whose `@get(...)` routes it lists, `staticParams` variants included.
+- `controllers: Record<string, Function>{:ts}` — the controllers. It lists the path of every handler, whatever its HTTP method: the controller prefix and the handler path. A handler with `staticParams` gives one path per item, with the `{name}` placeholders filled in; other paths keep their placeholders.
 - `slugName = 'vovk'{:ts}` — *(optional)* the name of the Optional Catch‑all Segment param, the folder name in `[[...<slugName>]]`. Set it when the folder isn't `[[...vovk]]`.
 
 **Returns:**
 
-- `Array<Record<string, string[]>>{:ts}` — params objects for `generateStaticParams()`, such as `{ vovk: ['hello', 'greeting.json'] }`.
+- `Array<Record<string, string[]>>{:ts}` — params objects for `generateStaticParams()`: `{ vovk: ['_schema_'] }` for the schema endpoint, then one per path, such as `{ vovk: ['hello', 'greeting.json'] }`.
 
 ```ts showLineNumbers copy filename="src/app/api/[[...vovk]]/route.ts"
 // ...
@@ -306,8 +313,8 @@ Turns RPC modules or controllers into AI tools that follow the [standard-tool](h
 Options:
 
 - `modules: Record<string, object>{:ts}` – module names mapped to objects with methods. Each method needs the `schema` property that RPC methods and procedures have, and either `isRPC: true` (RPC modules) or the [fn](/fn) function (controllers).
-- `onExecute?: (result: unknown, tool: StandardToolV0) => void | Promise<void>{:ts}` – called after each successful tool call.
-- `onError?: (e: Error, tool: StandardToolV0) => void | Promise<void>{:ts}` – called when a tool call throws.
+- `onExecute?: (result: unknown, tool: StandardToolV0, req: Pick<VovkRequest, 'vovk'> | null) => void{:ts}` – called after each successful tool call. For a controller, `req` is the request of the call, with `req.vovk`; for an RPC method, it's `null`.
+- `onError?: (e: Error, tool: StandardToolV0, req: Pick<VovkRequest, 'vovk'> | null) => void{:ts}` – called when a tool call throws, or when a controller returns a `Response` with an error status. `req` is as in `onExecute`, or `null` for a thrown error.
 - `toModelOutput` – formats the tool result for the model.
 - `meta?: Record<string, any>{:ts}` – data passed to each call of a controller handler or RPC method; see [`req.vovk.meta()`](/req-vovk#meta).
 
@@ -396,6 +403,7 @@ Without `.handle()`, the procedure throws a Not Implemented error.
 - `validateEachIteration` — validates every streamed item, not only the first one.
 - `operationObject` — OpenAPI operation details, for when you can't use the `@operation` decorator.
 - `preferTransformed` — whether `req.vovk.*` and the response use the transformed values or the raw ones.
+- `target` — the JSON Schema version the validation library emits for the procedure's schemas: `'draft-2020-12'` by default, or another version the library supports, such as `'draft-07'`.
 
 A procedure also has:
 
