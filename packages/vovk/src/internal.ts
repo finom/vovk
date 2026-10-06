@@ -11,6 +11,7 @@ export { createCodeSamples } from './samples/create-code-samples.js';
 export type {
   VovkBundleConfig,
   VovkOpenAPIMixin,
+  VovkOutputConfig,
   VovkPackageJson,
   VovkReadmeConfig,
   VovkSamplesConfig,
