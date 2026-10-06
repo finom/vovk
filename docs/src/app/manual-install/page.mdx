@@ -16,8 +16,8 @@ cd my-app
 
 ## Install vovk and vovk-cli
 
-- `vovk` is the core/runtime library.
-- `vovk-cli` is the command-line interface for Vovk.ts (development dependency). 
+- `vovk` is the runtime library.
+- `vovk-cli` is the Vovk.ts command-line tool, a development dependency.
 
 ```sh npm2yarn copy
 npm i vovk
@@ -33,7 +33,7 @@ npm i -D vovk-cli
 
 ## Create the config file
 
-Create **vovk.config.mjs** at the project root with the following content:
+Create **vovk.config.mjs** in the project root:
 
 ```ts showLineNumbers copy filename="vovk.config.mjs"
 // @ts-check
@@ -49,13 +49,13 @@ export default vovkConfig;
 
 ## Install a validation library and enable client-side validation
 
-For Zod validation on the server and Ajv on the client, install:
+To validate with Zod on the server and with Ajv on the client, install:
 
 ```sh npm2yarn copy
 npm i zod vovk-ajv
 ```
 
-Configure `validateOnClient` in your config file to enable client-side validation:
+Set `validateOnClient` in the config file to turn on client-side validation:
 
 ```ts showLineNumbers copy filename="vovk.config.mjs"
 // @ts-check
@@ -78,13 +78,13 @@ export default vovkConfig;
 
 ## Update the dev script and add a prebuild script
 
-There are two ways to run Vovk.ts and the Next.js server together: explicitly and implicitly. The explicit option uses the `concurrently` package to run both processes (you must set `PORT`). The implicit option lets the Vovk.ts CLI start Next.js for you; in that case, **vovk-cli** assigns the port automatically.
+You can run Vovk.ts and the Next.js server together in two ways. The explicit way runs both with the `concurrently` package, and you set `PORT`. The implicit way lets the Vovk.ts CLI start Next.js, and **vovk-cli** picks the port.
 
-The `prebuild` script runs `vovk generate` before `next build` so the client library is generated ahead of the Next.js build. Yarn 2+ doesn't run `pre` scripts: there, use `"build": "vovk generate && next build"` instead.
+The `prebuild` script runs `vovk generate` before `next build`, so the client library exists when Next.js builds. Yarn 2+ doesn't run `pre` scripts: there, use `"build": "vovk generate && next build"` instead.
 
 <Tabs items={['Explicit', 'Implicit']} >
   <Tabs.Tab>
-    Install concurrently, and cross-env, which sets `PORT` on Windows too:
+    Install `concurrently`, and `cross-env`, which sets `PORT` on Windows too:
 ```sh npm2yarn copy
 npm i -D concurrently cross-env
 ```
@@ -121,7 +121,7 @@ npm i -D concurrently cross-env
 
 ## Enable decorators
 
-In your **tsconfig.json**, set `"experimentalDecorators"` to `true`. `vovk init` sets it too.
+In **tsconfig.json**, set `"experimentalDecorators"` to `true`. `vovk init` sets it too.
 
 ```json
 {
@@ -132,7 +132,7 @@ In your **tsconfig.json**, set `"experimentalDecorators"` to `true`. `vovk init`
 }
 ```
 
-A webpack build needs the flag: without it, `next build --webpack` fails, and webpack is the default build of Next.js 15. Turbopack, the default of Next.js 16, compiles Vovk.ts decorators with or without it, and TypeScript 5.0+ type-checks them either way. See [Decorators Overview](/decorator-overview) for the decorators Vovk.ts provides.
+A webpack build needs the flag: without it, `next build --webpack` fails, and webpack is the default build in Next.js 15. Turbopack, the default in Next.js 16, compiles Vovk.ts decorators with or without the flag, and TypeScript 5.0+ type-checks them either way. See [Decorators Overview](/decorator-overview) for the decorators Vovk.ts provides.
 
 ## Create a controller
 
@@ -156,9 +156,9 @@ export default class HelloController {
 
 ## Create a root segment
 
-Create the root [segment](/segment) **/src/app/api/[[...vovk]]/route.ts**, where **[[...vovk]]** is an ["Optional Catch-all Segment"](https://nextjs.org/docs/app/api-reference/file-conventions/dynamic-routes#optional-catch-all-segments). The slug can be any valid name, such as <nobr>**[[...mySlug]]**</nobr>.
+Create the root [segment](/segment) **/src/app/api/[[...vovk]]/route.ts**. **[[...vovk]]** is an ["Optional Catch-all Segment"](https://nextjs.org/docs/app/api-reference/file-conventions/dynamic-routes#optional-catch-all-segments); the slug can be any valid name, such as <nobr>**[[...mySlug]]**</nobr>.
 
-In the code below, `HelloRPC` is the name of the generated RPC module, and `HelloController` is the controller created above.
+In the code below, `HelloRPC` is the name of the generated RPC module, and `HelloController` is the controller from the previous step.
 
 ```ts showLineNumbers copy filename="src/app/api/[[...vovk]]/route.ts"
 import { initSegment } from 'vovk';
@@ -166,7 +166,7 @@ import HelloController from '../../../modules/hello/hello-controller';
 
 const controllers = { HelloRPC: HelloController };
 
-// export types that are inferred by the client
+// the client infers its types from this
 export type Controllers = typeof controllers;
 
 // export Next.js route handlers
@@ -179,17 +179,17 @@ export const { GET, POST, PATCH, PUT, HEAD, OPTIONS, DELETE } = initSegment({ co
 
 ## Run the dev server
 
-Run `npm run dev` to start Vovk.ts and Next.js concurrently.
+Run `npm run dev` to start Vovk.ts and Next.js together.
 
 ```sh npm2yarn copy
 npm run dev
 ```
 
-Navigate to [http://localhost:3000/api/greetings/greeting](http://localhost:3000/api/greetings/greeting) to see the result.
+Open [http://localhost:3000/api/greetings/greeting](http://localhost:3000/api/greetings/greeting) to see the result.
 
 ## Create a React component
 
-Once the client is generated to `src/client`, you can import it as **@/client** (or with a relative path if your project doesn't define the `@/*` alias).
+Once the client is generated to `src/client`, import it as **@/client**, or with a relative path if your project has no `@/*` alias.
 
 ```ts showLineNumbers copy filename="src/app/page.tsx"
 'use client';
@@ -219,10 +219,10 @@ export default function MyComponent() {
 Open [http://localhost:3000](http://localhost:3000) to see the result.
 
 <Callout type="info" emoji="ℹ️">
-  If you're using VSCode, you may need to
+  In VS Code, you may need to
   <a href="https://stackoverflow.com/questions/64454845/where-is-vscodes-restart-ts-server">restart the TS server</a>
-  when you add a new controller class. This is the only time a manual restart is typically required; other changes—like
-  adding methods or updating validation—are picked up automatically.
+  after you add a new controller class. Other changes, such as new methods or new validation, are picked up without a
+  restart.
 </Callout>
 
 **More info:**
