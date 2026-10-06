@@ -4,8 +4,8 @@ description: "Walkthrough of the Realtime Kanban example app — a live-updating
 see_also:
   label: "Vovk.ts Docs Context"
   url: https://vovk.dev/context/docs.md
-chars: 108899
-est_tokens: 27225
+chars: 109598
+est_tokens: 27400
 ---
 
 Page: https://vovk.dev/realtime-ui
@@ -116,6 +116,7 @@ The variables in `.env`:
 Optional variables:
 
 - `PASSWORD` – password protection for the app's pages and API. It doesn't cover the MCP server or the Telegram webhook, which have their own keys below. See the [Authentication](./authentication) article.
+- `SESSION_SECRET` – the key that signs the session cookie. Set it whenever you set `PASSWORD`. Without it, the app uses a default key from the public repository. Generate one with `openssl rand -base64 32`.
 - `MCP_ACCESS_KEY` – an authorization key for the MCP server, sent in the `?mcp_access_key=your_key` query parameter. If it isn't set, the MCP server needs no key. See the [MCP](./mcp) article.
 - `TELEGRAM_BOT_TOKEN` – turns on the Telegram bot. See the [Telegram Integration](./telegram) article.
 - `TELEGRAM_WEBHOOK_SECRET` – the secret Telegram sends with each webhook call. The webhook answers only when both Telegram variables are set.
@@ -137,6 +138,8 @@ To deploy, create a project in Vercel, link it to a fork of the GitHub repositor
 Add `OPENAI_API_KEY` to the project's environment variables. The integrations create the others, such as `DATABASE_URL` and `REDIS_URL`.
 
 A `PASSWORD` variable is also recommended. It adds free password protection to the app's pages and API, with any value you choose. It doesn't cover the MCP server or the Telegram webhook.
+
+With `PASSWORD`, also add `SESSION_SECRET`, the key that signs the session cookie. Without it, the app uses a default key from the public repository. Generate one with `openssl rand -base64 32`.
 
 To protect the MCP server, add `MCP_ACCESS_KEY`. Clients then send the key in the `?mcp_access_key=your_key` query parameter. If it isn't set, the MCP server needs no key.
 
@@ -241,6 +244,9 @@ Either way, your entity interfaces use the branded type for `id` instead of `str
 First, set up the [fetcher](https://vovk.dev/imports#fetcher): the function that every generated RPC method uses to make HTTP requests. Its `onSuccess` event lets other code run on every successful response. The registry subscribes to this event to parse all incoming data.
 
 ```ts showLineNumbers copy filename="src/lib/fetcher.ts"
+import { HttpStatus } from 'vovk';
+import { createFetcher } from 'vovk/fetcher';
+
 export const fetcher = createFetcher<{ bypassRegistry?: boolean }>({
   onError: (error) => {
     if (
@@ -757,13 +763,13 @@ export const BASE_FIELDS = {
 export const BASE_KEYS = Object.keys(BASE_FIELDS) as (keyof BaseEntity)[];
 ```
 
-For example, `UpdateUserSchema` is the generated `UserSchema` without the base fields:
+For example, `UpdateUserSchema` drops the base fields from the generated `UserSchema` and makes the rest optional, as the `updateUser` body below does:
 
 ```ts showLineNumbers copy
 import { UserSchema } from '@schemas/index';
 import { BASE_FIELDS } from '@/constants';
 
-const UpdateUserSchema = UserSchema.omit(BASE_FIELDS); // fullName, email and imageUrl
+const UpdateUserSchema = UserSchema.omit(BASE_FIELDS).partial(); // optional fullName, email and imageUrl
 ```
 
 ## Implementing Controllers and Services
@@ -1824,9 +1830,9 @@ export const sessionGuard = createDecorator(async (req, next) => {
 ```
 *[The code above is fetched from GitHub repository.](https://github.com/finom/vovk/blob/main/examples/realtime-kanban/src/decorators/session-guard.ts)*
 
-Every procedure has the `sessionGuard` decorator. The `typeof req.url !== 'undefined'{:ts}` check tells HTTP requests apart from [`fn`](https://vovk.dev/fn) calls.
+Every procedure of the root segment has the `sessionGuard` decorator. The `typeof req.url !== 'undefined'{:ts}` check tells HTTP requests apart from [`fn`](https://vovk.dev/fn) calls.
 
-The Telegram webhook doesn't use `sessionGuard`, because Telegram sends no session cookie. It checks Telegram's secret token instead (see the [Telegram](./telegram) article). The MCP server has its own `MCP_ACCESS_KEY`.
+The Telegram webhook doesn't use `sessionGuard`, because Telegram sends no session cookie. It checks Telegram's secret token instead (see the [Telegram](./telegram) article). The MCP server has its own `MCP_ACCESS_KEY`. The `static` segment (`/api/static/openapi.json` and `/api/static/hello.json`) and the `/openapi` page have no check, so they stay public when `PASSWORD` is set.
 
 ---
 
@@ -1848,7 +1854,7 @@ On the backend, a procedure calls the AI SDK's `streamText` function with the `t
 
 The procedures already follow the [rules of locally called procedures](https://vovk.dev/fn#rules): their handlers use only the `vovk` property of the request, for example `async ({ vovk }) => UserService.createUser(await vovk.body()){:ts}` (see the [API Endpoints](./endpoints) page). So `deriveTools` can turn the controllers into AI tools that run in the current backend context, without HTTP requests.
 
-```ts showLineNumbers copy filename="src/modules/ai/ai-sdk-controller.ts" source="examples/realtime-kanban"  {26-31,37-46}
+```ts showLineNumbers copy filename="src/modules/ai/ai-sdk-controller.ts" source="examples/realtime-kanban"  {28-33,35-45,51-52}
 import { openai } from '@ai-sdk/openai';
 import {
   convertToModelMessages,
@@ -1924,7 +1930,7 @@ The endpoint is `/api/ai-sdk/function-calling`.
 
 The frontend uses the AI SDK packages [ai](https://www.npmjs.com/package/ai) and [@ai-sdk/react](https://www.npmjs.com/package/@ai-sdk/react), and the [AI Elements](https://ai-sdk.dev/elements/) library. AI Elements has ready-made React components for AI interfaces, built on [shadcn/ui](https://ui.shadcn.com/).
 
-```tsx showLineNumbers copy filename="src/components/expandable-chat-demo.tsx"  {27}
+```tsx showLineNumbers copy filename="src/components/expandable-chat-demo.tsx"  {26}
 'use client';
 // ...
 import { useChat } from '@ai-sdk/react';
@@ -1932,7 +1938,6 @@ import { useState } from 'react';
 import { DefaultChatTransport } from 'ai';
 import { AiSdkRPC } from '@/client';
 import { Conversation, ConversationContent, ConversationEmptyState } from '@/components/ai-elements/conversation';
-import { useRegistry } from '@/hooks/use-registry';
 import useParseSDKToolCallOutputs from '@/hooks/use-parse-sdk-tool-call-outputs';
 
 export function ExpandableChatDemo() {
@@ -1967,7 +1972,7 @@ export function ExpandableChatDemo() {
 
 The main part is the `useParseSDKToolCallOutputs` hook. It takes the tool call outputs from the assistant messages and passes them to the registry's `parse` method, which updates the UI. The hook parses each tool call output only once: it keeps the parsed tool call IDs in a `Set`.
 
-```ts showLineNumbers copy filename="src/hooks/use-parse-sdk-tool-call-outputs.ts" source="examples/realtime-kanban" {26}
+```ts showLineNumbers copy filename="src/hooks/use-parse-sdk-tool-call-outputs.ts" source="examples/realtime-kanban" {27}
 import type { ToolUIPart, UIMessage } from 'ai';
 import { useEffect, useRef } from 'react';
 import { useRegistryStore } from '@/hooks/use-registry';
@@ -2096,7 +2101,7 @@ The main parts of the hook:
 
 `onmessage` also sends the `response.create` message so the Realtime API answers, unless the result of the tool's `execute` function has the `__preventResponseCreate` flag set to `true`.
 
-```ts showLineNumbers copy filename="src/hooks/use-web-rtc-audio-session.ts" source="examples/realtime-kanban" {87-132}
+```ts showLineNumbers copy filename="src/hooks/use-web-rtc-audio-session.ts" source="examples/realtime-kanban" {87-139}
 'use client';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { StandardToolV0 } from 'vovk';
@@ -2104,7 +2109,7 @@ import { RealtimeRPC } from '@/client';
 
 /**
  * Hook to manage a real-time session with OpenAI's Realtime endpoints.
- * @example const { isActive, isTalking, handleStartStopClick } = useWebRTCAudioSession(voice, tools);
+ * @example const { isActive, isTalking, toggleSession } = useWebRTCAudioSession(voice, tools);
  */
 export default function useWebRTCAudioSession(
   voice: 'ash' | 'ballad' | 'coral' | 'sage' | 'verse',
