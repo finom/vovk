@@ -8,7 +8,6 @@ import {
   HttpStatus,
   type VovkJSONSchemaBase,
   type VovkSchema,
-  type VovkValidateOnClient,
 } from 'vovk/create-validate-on-client';
 
 // Handle ESM/CJS interop - these packages export CJS and may have .default wrapper
@@ -248,7 +247,7 @@ const getConfig = (schema: VovkSchema) => {
   return { options, target };
 };
 
-const validateOnClientAjv = createValidateOnClient({
+export const validateOnClient = createValidateOnClient({
   validate: (input, schema, { endpoint, type, fullSchema }) => {
     const { options, target } = getConfig(fullSchema);
 
@@ -261,23 +260,4 @@ const validateOnClientAjv = createValidateOnClient({
       type,
     });
   },
-});
-
-const configure = ({ options: givenOptions, target: givenTarget }: VovkAjvConfig): VovkValidateOnClient<unknown> =>
-  createValidateOnClient({
-    validate: (input, schema, { endpoint, type, fullSchema }) => {
-      const { options, target } = getConfig(fullSchema);
-      validate({
-        input,
-        schema,
-        target: givenTarget ?? target,
-        endpoint,
-        options: givenOptions ?? options,
-        type,
-      });
-    },
-  });
-
-export const validateOnClient = Object.assign(validateOnClientAjv, {
-  configure,
 });

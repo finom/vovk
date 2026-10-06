@@ -277,10 +277,12 @@ for await (const { message } of stream) {
 
 Every RPC method exposes the emitted JSON schema through the following properties:
 
-- `schema` - the schema for this method of type `VovkHandlerSchema`;
-- `controllerSchema` - the schema object of the method's controller of type `VovkControllerSchema`;
-- `segmentSchema` - the schema object of the segment of type `VovkSegmentSchema`;
+- `schema` - the schema for this method;
+- `controllerSchema` - the schema object of the method's controller;
+- `segmentSchema` - the schema object of the segment;
 - `fullSchema` - the full schema object of type `VovkSchema` that includes all available segments as well as emitted config (by default, `"libs"` and `"rootEntry"` options only; see [config documentation](/config)).
+
+To name the type of one of them, use `typeof`, such as `typeof UserRPC.updateUser.segmentSchema`.
 
 ```ts showLineNumbers copy
 console.log(UserRPC.updateUser.schema.validation.body); // get body validation JSON schema

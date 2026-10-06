@@ -1,4 +1,5 @@
-import { createFetcher, HttpStatus } from 'vovk';
+import { HttpStatus } from 'vovk';
+import { createFetcher } from 'vovk/fetcher';
 
 export const fetcher = createFetcher<{ bypassRegistry?: boolean }>({
   onError: (error) => {

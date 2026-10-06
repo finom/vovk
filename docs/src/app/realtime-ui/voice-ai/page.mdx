@@ -78,7 +78,7 @@ The `onmessage` handler also takes care of sending the `response.create` message
 ```ts showLineNumbers copy filename="src/hooks/use-web-rtc-audio-session.ts" source="examples/realtime-kanban" {87-132}
 'use client';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import type { StandardToolV0 } from 'vovk/internal';
+import type { StandardToolV0 } from 'vovk';
 import { RealtimeRPC } from '@/client';
 
 /**

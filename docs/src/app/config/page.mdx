@@ -214,9 +214,9 @@ When the [segmented](/segmented) client is used, top-level `outputConfig.reExpor
 import { type MyType, MyClass, myFunction, RenamedComponent, MyDefault } from '@/client/root';
 ```
 
-#### `imports: { fetcher: VovkFetcher, validateOnClient: VovkValidateOnClient }`
+#### `imports: { fetcher?: string, validateOnClient?: string | null, createRPC?: string }`
 
-Customizes the imports for `fetcher` and `validateOnClient`. See [Imports](/imports) for details.
+Module paths the client imports `fetcher`, `validateOnClient` and `createRPC` from; the defaults are `vovk/fetcher`, no client-side validation, and `vovk/create-rpc`. A segment sets `fetcher` and `validateOnClient` only. See [Imports](/imports) for details.
 
 #### `segments`
 

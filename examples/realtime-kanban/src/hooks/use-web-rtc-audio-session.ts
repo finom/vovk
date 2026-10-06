@@ -1,6 +1,6 @@
 'use client';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import type { StandardToolV0 } from 'vovk/internal';
+import type { StandardToolV0 } from 'vovk';
 import { RealtimeRPC } from '@/client';
 
 /**

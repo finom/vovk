@@ -3,15 +3,15 @@ import type { JSONLinesResponder } from '../core/json-lines-responder.js';
 import type { VovkValidationType } from '../types/core.js';
 import type { VovkOperationObject } from '../types/operation.js';
 import type { VovkRequest } from '../types/request.js';
-import type { IsEmptyObject, KnownAny, NoInference, Prettify } from '../types/utils.js';
+import type { IsEmptyObject, KnownAny, Prettify, VovkNoInference } from '../types/utils.js';
 import type {
   CombinedSpec,
   ContentType,
   NormalizeContentType,
-  NoSchema,
   ParsedBodyTypeFromContentType,
   ProcedureFnInput,
-  ProcedureInput,
+  VovkNoSchema,
+  VovkProcedureInput,
 } from '../types/validation.js';
 import { HttpStatus } from './create-validate-on-client.js';
 import { withValidationLibrary } from './with-validation-library.js';
@@ -90,7 +90,7 @@ type HandlerRequest<
     : Received<TBody, TPreferTransformed>,
   Received<TQuery, TPreferTransformed>,
   HandlerParams<TParams, TPreferTransformed>,
-  [TBody] extends [NoSchema]
+  [TBody] extends [VovkNoSchema]
     ? ParsedBodyTypeFromContentType<NormalizeContentType<TContentType>>
     : CombinedSpec.InferInput<TBody>,
   CombinedSpec.InferInput<TQuery>
@@ -198,7 +198,7 @@ export function createStandardValidation({
       iteration: Received<TIteration, TPreferTransformed>;
       contentType: NormalizeContentType<TContentType>;
       // what a caller sends: a default, a coercion or a transform makes it differ from what the handler gets
-      input: ProcedureInput<TBody, TQuery, TParams, NormalizeContentType<TContentType>>;
+      input: VovkProcedureInput<TBody, TQuery, TParams, NormalizeContentType<TContentType>>;
     };
     __handleFn: THandleFn;
     isRPC?: boolean;
@@ -214,7 +214,7 @@ export function createStandardValidation({
       // a type argument sets the result, the type the caller expects doesn't
       <TReturnType = FnResult<THandleFn, Received<TIteration, TPreferTransformed>>>(
         ...input: FnArgs<TFnInput>
-      ): Promise<Awaited<NoInference<TReturnType>>>;
+      ): Promise<Awaited<VovkNoInference<TReturnType>>>;
       (...input: FnArgs<TFnInput>): Promise<FnResult<THandleFn, Received<TIteration, TPreferTransformed>>>;
     };
     definition: KnownAny;
@@ -222,13 +222,13 @@ export function createStandardValidation({
     wrapper?: KnownAny;
   };
 
-  // a schema left out gets NoSchema, so a schema whose input type is unknown, such as z.unknown(), still counts
+  // a schema left out gets VovkNoSchema, so a schema whose input type is unknown, such as z.unknown(), still counts
   function procedure<
-    TBody extends CombinedSpec = NoSchema,
-    TQuery extends CombinedSpec = NoSchema,
-    TParams extends CombinedSpec = NoSchema,
-    TOutput extends CombinedSpec = NoSchema,
-    TIteration extends CombinedSpec = NoSchema,
+    TBody extends CombinedSpec = VovkNoSchema,
+    TQuery extends CombinedSpec = VovkNoSchema,
+    TParams extends CombinedSpec = VovkNoSchema,
+    TOutput extends CombinedSpec = VovkNoSchema,
+    TIteration extends CombinedSpec = VovkNoSchema,
     TContentType extends ContentType | ContentType[] = ['application/json'],
     TPreferTransformed extends boolean = true,
     TReq extends VovkRequest<KnownAny, KnownAny, KnownAny> = HandlerRequest<

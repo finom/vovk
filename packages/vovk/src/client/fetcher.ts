@@ -10,7 +10,8 @@ import {
   JSON_LINES_MEDIA_TYPES,
 } from '../utils/media-types.js';
 import { takesNullBody } from './takes-null-body.js';
-export const DEFAULT_ERROR_MESSAGE = 'Unknown error at default fetcher';
+
+const DEFAULT_ERROR_MESSAGE = 'Unknown error at default fetcher';
 
 // header values must be ByteString, escape non-ASCII as \uXXXX which JSON.parse reads natively
 const toAsciiJson = (value: unknown) =>
@@ -70,13 +71,13 @@ function anySignal(controller: AbortController, signal: AbortSignal): AbortSigna
 
 export type { VovkFetcher };
 
-export type CreateFetcherOnSuccess<T> = (
+type CreateFetcherOnSuccess<T> = (
   respData: unknown,
   options: VovkFetcherOptions<T>,
   info: { response: Response; init: RequestInit; schema: VovkHandlerSchema }
 ) => void | Promise<void>;
 
-export type CreateFetcherOnError<T> = (
+type CreateFetcherOnError<T> = (
   error: HttpException,
   options: VovkFetcherOptions<T>,
   info: {
