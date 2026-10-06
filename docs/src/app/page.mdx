@@ -42,9 +42,9 @@ Back-end Framework for Next.js App Router. One codebase → type-safe clients, O
 
 <CodeOrbit />
 
-Vovk.ts adds a structured API layer on top of Next.js App Router Route Handlers. The unit is the **procedure** — a typed function paired with its schema. From that single source, Vovk derives the HTTP endpoint, the local `.fn()` call, the typed RPC client, the OpenAPI document, and the AI tool with `execute`. No separate contract layer, no glue code.
+Vovk.ts adds an API layer on top of Next.js App Router Route Handlers. Its unit is the **procedure**: a typed function with its schema. From one procedure, Vovk.ts derives the HTTP endpoint, the local `.fn()` call, the typed RPC client, the OpenAPI document and the AI tool with `execute`. You don't write a separate contract or glue code.
 
-Run `init` command in an existing Next.js project to get started.
+To start, run the `init` command in an existing Next.js project.
 
 ```bash npm2yarn
 npx vovk-cli@latest init
@@ -56,7 +56,7 @@ npx vovk-cli@latest init
 
 ## What it looks like
 
-A procedure is a typed, validated callable. Define inputs and output with [`procedure`](/procedure) — params, query, body — and call it directly on the server for SSR, server components, or server actions:
+A procedure is a typed, validated function. Define its params, query, body and output with [`procedure`](/procedure), and call it on the server in SSR, server components or server actions:
 
 ```ts
 export default class UserController {
@@ -73,7 +73,7 @@ export default class UserController {
 const user = await UserController.getUser.fn({ params: { id: '123e4567-e89b-12d3-a456-426614174000' } });
 ```
 
-Services hold business logic separately. Plain classes, no decorators:
+Services hold the business logic. Plain classes, no decorators:
 
 ```ts
 export default class UserService {
@@ -83,7 +83,7 @@ export default class UserService {
 }
 ```
 
-Add an HTTP decorator and the same procedure becomes a Next.js Route Handler — call shape unchanged:
+Add an HTTP decorator, and the same procedure is also a Next.js Route Handler, with the same call shape:
 
 ```ts
 export default class UserController {
@@ -97,7 +97,7 @@ export default class UserController {
 }
 ```
 
-Codegen reads the emitted schema and produces a `fetch`-powered client that mirrors the `.fn()` signature:
+The CLI reads the emitted schema and generates a `fetch`-based client with the `.fn()` signature:
 
 ```ts
 import { UserRPC } from '@/client';
@@ -125,7 +125,7 @@ for await (const { message } of stream) {
 }
 ```
 
-Annotate with `@operation` and the same procedure exposes as an LLM tool — pass controllers (in-process) or RPC modules (HTTP) to `deriveTools`:
+Add `@operation`, and the same procedure is also an LLM tool. Pass controllers (in-process) or RPC modules (over HTTP) to `deriveTools`:
 
 ```ts
 const tools = deriveTools({ modules: { UserRPC, TaskController } });
@@ -136,16 +136,14 @@ const tools = deriveTools({ modules: { UserRPC, TaskController } });
 
 ## What one procedure becomes
 
-Function plus schema is a complete unit. From that pair Vovk derives:
+From one function and its schema, Vovk.ts derives:
 
-- the **Next.js Route Handler** — add an HTTP decorator and the same procedure mounts as an endpoint
-- the **local `.fn()` callable** — same call shape as the RPC client; use it in SSR, server components, and server actions
-- the **typed RPC client module** — `fetch`-powered, generated from the emitted schema
-- the **OpenAPI 3.x document** — derived from the same schema, no parallel spec to maintain
-- the **LLM tool** with `name`, `description`, `inputSchema`, and `execute` — via `deriveTools`
-- a generated **`README.md`** — client library documentation rendered from the procedure surface
-
-One source, multiple destinations. The sections below cover each in detail.
+- the **Next.js Route Handler**: add an HTTP decorator to serve the procedure as an endpoint
+- the **local `.fn()` call**, with the same call shape as the RPC client, for SSR, server components and server actions
+- the **typed RPC client module**, generated from the emitted schema, using `fetch`
+- the **OpenAPI 3.x document**, from the same schema, so you don't maintain a separate spec
+- the **LLM tool** with `name`, `description`, `inputSchema` and `execute`, from `deriveTools`
+- a generated **`README.md`** that documents the client library
 
 ---
 
@@ -153,7 +151,7 @@ One source, multiple destinations. The sections below cover each in detail.
 
 ### Segments
 
-Every group of controllers lives in a [segment](/segment) — a Next.js catch-all route that compiles into its own serverless function. Segments are configured independently.
+Controllers live in a [segment](/segment): a Next.js catch-all route that compiles into its own serverless function. Each segment has its own configuration.
 
 ```ts filename="src/app/api/[[...vovk]]/route.ts"
 const controllers = { UserRPC: UserController };
@@ -163,7 +161,7 @@ export const { GET, POST, PATCH, PUT, HEAD, OPTIONS, DELETE } = initSegment({ co
 
 ### Schema emission
 
-Handlers are the source of truth. Vovk.ts derives schema from the code you already wrote and emits it as a build artifact to `.vovk-schema/`. The runtime stays lean; tooling reads the schema.
+Handlers are the source of truth. Vovk.ts derives the schema from your code and writes it to `.vovk-schema/` as a build artifact. The tools read the schema; the server runtime doesn't.
 
 <FileTree>
   <FileTree.Folder name=".vovk-schema" defaultOpen>
@@ -179,18 +177,18 @@ Handlers are the source of truth. Vovk.ts derives schema from the code you alrea
 
 ### Generated TypeScript clients
 
-Controllers compile into RPC modules with a consistent `{ params, query, body }` call signature. Generate a single [composed client](/composed) or [per-segment clients](/segmented). See [TypeScript Client](/typescript).
+Controllers compile into RPC modules that all take `{ params, query, body }`. Generate one [composed client](/composed) or [per-segment clients](/segmented). See [TypeScript Client](/typescript).
 
-Direct type mapping between server and client code gives you jump-to-definition and JSDoc on hover over generated RPC methods.
+Client types map directly to server code, so jump-to-definition and JSDoc on hover work on generated RPC methods.
 
 
 ### Validation
 
-Vovk.ts works with any library that implements [Standard Schema](https://standardschema.dev/schema) + [Standard JSON Schema](https://standardschema.dev/json-schema) — including **Zod**, **Valibot**, and **ArkType**.
+Vovk.ts works with any library that implements [Standard Schema](https://standardschema.dev/schema) and [Standard JSON Schema](https://standardschema.dev/json-schema), such as **Zod**, **Valibot** and **ArkType**.
 
 ### OpenAPI mixins
 
-Third-party OpenAPI 3.x schemas can be converted into modules that share the same calling convention as your own endpoints — then used through the same client and tooling pipeline:
+Vovk.ts converts third-party OpenAPI 3.x schemas into modules with the same call shape as your own endpoints. You use them through the same client and tools:
 
 ```ts
 import { PetstoreAPI } from '@/client';
@@ -202,7 +200,7 @@ See [OpenAPI Mixins](/mixins).
 
 ### AI tool derivation
 
-Annotate methods with `@operation`, then derive tool definitions for LLM function calling — from controllers (same-context), RPC modules (HTTP), or third-party APIs:
+Add `@operation` to methods, then derive tools for LLM function calling from controllers (in-process), RPC modules (over HTTP) or third-party APIs:
 
 ```ts
 export default class TaskController {
@@ -225,7 +223,7 @@ const tools = deriveTools({ modules: { TaskRPC, PetstoreAPI } });
 // [{ name, description, inputSchema, execute, ... }, ...]
 ```
 
-Each tool has `name`, `description`, `inputSchema` (a Standard Schema that also gives JSON Schema), and an `execute` function. See [Deriving AI Tools](/tools).
+Each tool has `name`, `description`, `inputSchema` (a Standard Schema that also gives JSON Schema) and an `execute` function. See [Deriving AI Tools](/tools).
 
 ### Streaming
 
@@ -233,11 +231,11 @@ Procedures can yield JSON Lines for real-time responses. See [JSON Lines](/jsonl
 
 ### Local procedure calls
 
-Procedures call directly on the server with `.fn()` — same call shape as the generated HTTP client. Use them in SSR/PPR, server components, and server actions. See [Calling Procedures Locally](/fn).
+Call a procedure on the server with `.fn()`. It takes the same arguments as the generated HTTP client. Use it in SSR/PPR, server components and server actions. See [Calling Procedures Locally](/fn).
 
 ### Docs and publishing
 
-Generate OpenAPI 3.x documentation and package client libraries for publishing in TypeScript, Python, or Rust.
+Generate OpenAPI 3.x documentation, and package TypeScript, Python or Rust client libraries for publishing.
 
 See [Generate Command](/generate) · [Bundle Command](/bundle) · [Python Client](/python) · [Rust Client](/rust)
 
@@ -247,8 +245,8 @@ See [Generate Command](/generate) · [Bundle Command](/bundle) · [Python Client
 
 | Package | Role | Version | Install |
 |---------|------|--------|---------|
-| **`vovk`** | Runtime — decorators, `procedure`, routing, `deriveTools` | [![NPM Version](https://img.shields.io/npm/v/vovk)](https://www.npmjs.com/package/vovk) | production |
-| **`vovk-cli`** | Toolchain — codegen, mixins, docs, bundling | [![NPM Version](https://img.shields.io/npm/v/vovk-cli)](https://www.npmjs.com/package/vovk-cli) | dev |
+| **`vovk`** | Runtime: decorators, `procedure`, routing, `deriveTools` | [![NPM Version](https://img.shields.io/npm/v/vovk)](https://www.npmjs.com/package/vovk) | production |
+| **`vovk-cli`** | CLI: codegen, mixins, docs, bundling | [![NPM Version](https://img.shields.io/npm/v/vovk-cli)](https://www.npmjs.com/package/vovk-cli) | dev |
 | **`vovk-ajv`** | Client-side validation with AJV | [![NPM Version](https://img.shields.io/npm/v/vovk-ajv)](https://www.npmjs.com/package/vovk-ajv) | production (optional) |
 | **`vovk-python`** | Python client generation (experimental) | [![NPM Version](https://img.shields.io/npm/v/vovk-python)](https://www.npmjs.com/package/vovk-python) | dev (optional) |
 | **`vovk-rust`** | Rust client generation (experimental) | [![NPM Version](https://img.shields.io/npm/v/vovk-rust)](https://www.npmjs.com/package/vovk-rust) | dev (optional) |
@@ -259,9 +257,9 @@ See [Packages](/packages).
 
 ## Claude Plugin
 
-The official **Claude Code plugin** ships 15 topic-based skills that teach the coding agent how to use Vovk.ts when you describe what you want to build. Skills load only when relevant — typing *"scaffold a tenant"* loads the multitenant skill, *"stream chat tokens"* loads JSON Lines.
+The official **Claude Code plugin** has 15 topic skills that teach the coding agent Vovk.ts as you describe what to build. A skill loads only when needed: *"scaffold a tenant"* loads the multitenant skill, *"stream chat tokens"* the JSON Lines one.
 
-Install (inside Claude Code):
+Install it inside Claude Code:
 
 ```
 /plugin marketplace add finom/vovk
@@ -269,19 +267,19 @@ Install (inside Claude Code):
 /reload-plugins
 ```
 
-See [Claude Plugin](/claude) for the full skill list, the AI mind model behind the framework, and why the pairing works.
+See [Claude Plugin](/claude) for the full skill list and how the framework's layout helps the agent.
 
 ---
 
 ## Examples
 
-The ["Hello World" example](/hello-world) shows Vovk.ts end-to-end in a single project: Zod-validated endpoints, JSON Lines streaming, composed and segmented clients, OpenAPI docs via Scalar, and bundled client libraries in TypeScript, Python, and Rust.
+The ["Hello World" example](/hello-world) shows Vovk.ts end to end in one project: Zod-validated endpoints, JSON Lines streaming, composed and segmented clients, OpenAPI docs with Scalar, and bundled client libraries in TypeScript, Python and Rust.
 
-The [Multitenancy Tutorial](/multitenant) walks through hosting multiple tenants from different subdomains within a single Next.js app.
+The [Multitenancy Tutorial](/multitenant) shows how to serve several tenants from different subdomains in one Next.js app.
 
-The [Realtime Kanban](/realtime-ui) example builds a full-stack board where users, bots, AI agents, and MCP clients all update it in real time — covering state normalization, database polling, AI chat, voice AI, and Telegram integration.
+The [Realtime Kanban](/realtime-ui) example builds a board that users, bots, AI agents and MCP clients update in real time. It covers state normalization, database polling, AI chat, voice AI and Telegram.
 
-Browse more snippets on the [Random Examples](https://examples.vovk.dev) site.
+More snippets are on the [Random Examples](https://examples.vovk.dev) site.
 
 ---
 
@@ -289,8 +287,8 @@ Browse more snippets on the [Random Examples](https://examples.vovk.dev) site.
 
 | Term | Meaning |
 |------|---------|
-| **Controller** | Class that groups procedures as `static` members; HTTP decorators expose them as endpoints |
-| **Procedure** | A typed, validated callable created with [`procedure`](/procedure). Call it locally with `.fn()`, expose it over HTTP with a decorator, or derive it as an LLM tool |
-| **Segment** | A routed back-end slice, compiled independently into its own function |
-| **RPC module** | Generated client module mirroring a controller |
+| **Controller** | A class that groups procedures as `static` members; HTTP decorators serve them as endpoints |
+| **Procedure** | A typed, validated function made with [`procedure`](/procedure). Call it locally with `.fn()`, serve it over HTTP with a decorator, or derive an LLM tool from it |
+| **Segment** | A part of the back end with its own route and function |
+| **RPC module** | Generated client module that mirrors a controller |
 | **API module** | Generated module from a controller or an OpenAPI schema |
