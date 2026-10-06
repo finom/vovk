@@ -59,6 +59,8 @@ const vovkConfig = {
         fixedExtension: true,
         clean: true,
         outDir,
+        // on TypeScript 7 tsdown runs tsc over every file the tsconfig includes, so the bundle gets its own
+        tsconfig: './tsconfig.bundle.json',
         // next is resolved from the monorepo root, keep its types external
         deps: { neverBundle: [/^next(\/|$)/] },
       });

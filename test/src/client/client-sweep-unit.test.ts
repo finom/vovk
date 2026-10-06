@@ -3,7 +3,7 @@ import { createRequire } from 'node:module';
 import { describe, it } from 'node:test';
 import { fileURLToPath } from 'node:url';
 import vm from 'node:vm';
-import ts from 'typescript';
+import ts from '@typescript/typescript6';
 import {
   HttpException,
   initSegment,
@@ -1050,6 +1050,21 @@ describe('Client sweep, pure functions', () => {
         "import { createFetcher } from 'vovk/fetcher';",
         'export const fetcher = createFetcher<{ token?: string }>();',
         'export const plainFetcher = createFetcher();',
+      ].join('\n');
+
+      deepStrictEqual(getDeclarationDiagnostics(source), []);
+    });
+
+    it('Name the types of the route handlers a segment exports in declarations', () => {
+      // a route file, as tsc on TypeScript 7 emits it when tsdown bundles a client
+      const source = [
+        "import { initSegment, procedure } from 'vovk';",
+        'class UserController {',
+        '  static getUser = procedure().handle(async () => ({ ok: true }));',
+        '}',
+        'const controllers = { UserRPC: UserController };',
+        'export type Controllers = typeof controllers;',
+        'export const { GET, POST, PATCH, PUT, HEAD, OPTIONS, DELETE } = initSegment({ controllers });',
       ].join('\n');
 
       deepStrictEqual(getDeclarationDiagnostics(source), []);

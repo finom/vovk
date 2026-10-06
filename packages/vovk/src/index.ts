@@ -8,6 +8,7 @@ export { initSegment } from './core/init-segment.js';
 export { JSONLinesResponder } from './core/json-lines-responder.js';
 export { multitenant } from './core/multitenant.js';
 export { toDownloadResponse } from './core/to-download-response.js';
+export type { VovkRouteParams } from './core/vovk-app.js';
 
 export { operation } from './openapi/operation.js';
 

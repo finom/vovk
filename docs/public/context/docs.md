@@ -4,8 +4,8 @@ description: "Full documentation for the Vovk.ts framework, excluding the Realti
 see_also:
   label: "Realtime Kanban Context"
   url: https://vovk.dev/context/realtime-ui.md
-chars: 402082
-est_tokens: 100521
+chars: 393073
+est_tokens: 98269
 ---
 
 Page: https://vovk.dev
@@ -16,9 +16,9 @@ Vovk.ts
 
 Back-end Framework for Next.js App Router. One codebase → type-safe clients, OpenAPI, and AI tools.
 
-Vovk.ts adds a structured API layer on top of Next.js App Router Route Handlers. The unit is the **procedure** — a typed function paired with its schema. From that single source, Vovk derives the HTTP endpoint, the local `.fn()` call, the typed RPC client, the OpenAPI document, and the AI tool with `execute`. No separate contract layer, no glue code.
+Vovk.ts adds an API layer on top of Next.js App Router Route Handlers. Its unit is the **procedure**: a typed function with its schema. From one procedure, Vovk.ts derives the HTTP endpoint, the local `.fn()` call, the typed RPC client, the OpenAPI document and the AI tool with `execute`. You don't write a separate contract or glue code.
 
-Run `init` command in an existing Next.js project to get started.
+To start, run the `init` command in an existing Next.js project.
 
 ```bash npm2yarn
 npx vovk-cli@latest init
@@ -30,7 +30,7 @@ npx vovk-cli@latest init
 
 ## What it looks like
 
-A procedure is a typed, validated callable. Define inputs and output with [`procedure`](https://vovk.dev/procedure) — params, query, body — and call it directly on the server for SSR, server components, or server actions:
+A procedure is a typed, validated function. Define its params, query, body and output with [`procedure`](https://vovk.dev/procedure), and call it on the server in SSR, server components or server actions:
 
 ```ts
 export default class UserController {
@@ -47,7 +47,7 @@ export default class UserController {
 const user = await UserController.getUser.fn({ params: { id: '123e4567-e89b-12d3-a456-426614174000' } });
 ```
 
-Services hold business logic separately. Plain classes, no decorators:
+Services hold the business logic. Plain classes, no decorators:
 
 ```ts
 export default class UserService {
@@ -57,7 +57,7 @@ export default class UserService {
 }
 ```
 
-Add an HTTP decorator and the same procedure becomes a Next.js Route Handler — call shape unchanged:
+Add an HTTP decorator, and the same procedure is also a Next.js Route Handler, with the same call shape:
 
 ```ts
 export default class UserController {
@@ -71,7 +71,7 @@ export default class UserController {
 }
 ```
 
-Codegen reads the emitted schema and produces a `fetch`-powered client that mirrors the `.fn()` signature:
+The CLI reads the emitted schema and generates a `fetch`-based client with the `.fn()` signature:
 
 ```ts
 import { UserRPC } from '@/client';
@@ -99,7 +99,7 @@ for await (const { message } of stream) {
 }
 ```
 
-Annotate with `@operation` and the same procedure exposes as an LLM tool — pass controllers (in-process) or RPC modules (HTTP) to `deriveTools`:
+Add `@operation`, and the same procedure is also an LLM tool. Pass controllers (in-process) or RPC modules (over HTTP) to `deriveTools`:
 
 ```ts
 const tools = deriveTools({ modules: { UserRPC, TaskController } });
@@ -110,16 +110,14 @@ const tools = deriveTools({ modules: { UserRPC, TaskController } });
 
 ## What one procedure becomes
 
-Function plus schema is a complete unit. From that pair Vovk derives:
+From one function and its schema, Vovk.ts derives:
 
-- the **Next.js Route Handler** — add an HTTP decorator and the same procedure mounts as an endpoint
-- the **local `.fn()` callable** — same call shape as the RPC client; use it in SSR, server components, and server actions
-- the **typed RPC client module** — `fetch`-powered, generated from the emitted schema
-- the **OpenAPI 3.x document** — derived from the same schema, no parallel spec to maintain
-- the **LLM tool** with `name`, `description`, `inputSchema`, and `execute` — via `deriveTools`
-- a generated **`README.md`** — client library documentation rendered from the procedure surface
-
-One source, multiple destinations. The sections below cover each in detail.
+- the **Next.js Route Handler**: add an HTTP decorator to serve the procedure as an endpoint
+- the **local `.fn()` call**, with the same call shape as the RPC client, for SSR, server components and server actions
+- the **typed RPC client module**, generated from the emitted schema, using `fetch`
+- the **OpenAPI 3.x document**, from the same schema, so you don't maintain a separate spec
+- the **LLM tool** with `name`, `description`, `inputSchema` and `execute`, from `deriveTools`
+- a generated **`README.md`** that documents the client library
 
 ---
 
@@ -127,7 +125,7 @@ One source, multiple destinations. The sections below cover each in detail.
 
 ### Segments
 
-Every group of controllers lives in a [segment](https://vovk.dev/segment) — a Next.js catch-all route that compiles into its own serverless function. Segments are configured independently.
+Controllers live in a [segment](https://vovk.dev/segment): a Next.js catch-all route that compiles into its own serverless function. Each segment has its own configuration.
 
 ```ts filename="src/app/api/[[...vovk]]/route.ts"
 const controllers = { UserRPC: UserController };
@@ -137,7 +135,7 @@ export const { GET, POST, PATCH, PUT, HEAD, OPTIONS, DELETE } = initSegment({ co
 
 ### Schema emission
 
-Handlers are the source of truth. Vovk.ts derives schema from the code you already wrote and emits it as a build artifact to `.vovk-schema/`. The runtime stays lean; tooling reads the schema.
+Handlers are the source of truth. Vovk.ts derives the schema from your code and writes it to `.vovk-schema/` as a build artifact. The tools read the schema; the server runtime doesn't.
 
 ```
 .vovk-schema/
@@ -150,17 +148,17 @@ Handlers are the source of truth. Vovk.ts derives schema from the code you alrea
 
 ### Generated TypeScript clients
 
-Controllers compile into RPC modules with a consistent `{ params, query, body }` call signature. Generate a single [composed client](https://vovk.dev/composed) or [per-segment clients](https://vovk.dev/segmented). See [TypeScript Client](https://vovk.dev/typescript).
+Controllers compile into RPC modules that all take `{ params, query, body }`. Generate one [composed client](https://vovk.dev/composed) or [per-segment clients](https://vovk.dev/segmented). See [TypeScript Client](https://vovk.dev/typescript).
 
-Direct type mapping between server and client code gives you jump-to-definition and JSDoc on hover over generated RPC methods.
+Client types map directly to server code, so jump-to-definition and JSDoc on hover work on generated RPC methods.
 
 ### Validation
 
-Vovk.ts works with any library that implements [Standard Schema](https://standardschema.dev/schema) + [Standard JSON Schema](https://standardschema.dev/json-schema) — including **Zod**, **Valibot**, and **ArkType**.
+Vovk.ts works with any library that implements [Standard Schema](https://standardschema.dev/schema) and [Standard JSON Schema](https://standardschema.dev/json-schema), such as **Zod**, **Valibot** and **ArkType**.
 
 ### OpenAPI mixins
 
-Third-party OpenAPI 3.x schemas can be converted into modules that share the same calling convention as your own endpoints — then used through the same client and tooling pipeline:
+Vovk.ts converts third-party OpenAPI 3.x schemas into modules with the same call shape as your own endpoints. You use them through the same client and tools:
 
 ```ts
 import { PetstoreAPI } from '@/client';
@@ -172,7 +170,7 @@ See [OpenAPI Mixins](https://vovk.dev/mixins).
 
 ### AI tool derivation
 
-Annotate methods with `@operation`, then derive tool definitions for LLM function calling — from controllers (same-context), RPC modules (HTTP), or third-party APIs:
+Add `@operation` to methods, then derive tools for LLM function calling from controllers (in-process), RPC modules (over HTTP) or third-party APIs:
 
 ```ts
 export default class TaskController {
@@ -195,19 +193,19 @@ const tools = deriveTools({ modules: { TaskRPC, PetstoreAPI } });
 // [{ name, description, inputSchema, execute, ... }, ...]
 ```
 
-Each tool has `name`, `description`, `inputSchema` (a Standard Schema that also gives JSON Schema), and an `execute` function. See [Deriving AI Tools](https://vovk.dev/tools).
+Each tool has `name`, `description`, `inputSchema` (a Standard Schema that also gives JSON Schema) and an `execute` function. See [Deriving AI Tools](https://vovk.dev/tools).
 
 ### Streaming
 
-Procedures can yield JSON Lines for real-time responses. See [JSON Lines](https://vovk.dev/jsonlines).
+See [JSON Lines](https://vovk.dev/jsonlines) for generator handlers, the client's async iterator and `JSONLinesResponder`.
 
 ### Local procedure calls
 
-Procedures call directly on the server with `.fn()` — same call shape as the generated HTTP client. Use them in SSR/PPR, server components, and server actions. See [Calling Procedures Locally](https://vovk.dev/fn).
+Call a procedure on the server with `.fn()`. It takes the same arguments as the generated HTTP client. Use it in SSR/PPR, server components and server actions. See [Calling Procedures Locally](https://vovk.dev/fn).
 
 ### Docs and publishing
 
-Generate OpenAPI 3.x documentation and package client libraries for publishing in TypeScript, Python, or Rust.
+Generate OpenAPI 3.x documentation, and package TypeScript, Python or Rust client libraries for publishing.
 
 See [Generate Command](https://vovk.dev/generate) · [Bundle Command](https://vovk.dev/bundle) · [Python Client](https://vovk.dev/python) · [Rust Client](https://vovk.dev/rust)
 
@@ -217,8 +215,8 @@ See [Generate Command](https://vovk.dev/generate) · [Bundle Command](https://vo
 
 | Package | Role | Version | Install |
 |---------|------|--------|---------|
-| **`vovk`** | Runtime — decorators, `procedure`, routing, `deriveTools` |  | production |
-| **`vovk-cli`** | Toolchain — codegen, mixins, docs, bundling |  | dev |
+| **`vovk`** | Runtime: decorators, `procedure`, routing, `deriveTools` |  | production |
+| **`vovk-cli`** | CLI: codegen, mixins, docs, bundling |  | dev |
 | **`vovk-ajv`** | Client-side validation with AJV |  | production (optional) |
 | **`vovk-python`** | Python client generation (experimental) |  | dev (optional) |
 | **`vovk-rust`** | Rust client generation (experimental) |  | dev (optional) |
@@ -229,9 +227,9 @@ See [Packages](https://vovk.dev/packages).
 
 ## Claude Plugin
 
-The official **Claude Code plugin** ships 15 topic-based skills that teach the coding agent how to use Vovk.ts when you describe what you want to build. Skills load only when relevant — typing *"scaffold a tenant"* loads the multitenant skill, *"stream chat tokens"* loads JSON Lines.
+The official **Claude Code plugin** has 15 topic skills that teach the coding agent Vovk.ts as you describe what to build. A skill loads only when needed: *"scaffold a tenant"* loads the multitenant skill, *"stream chat tokens"* the JSON Lines one.
 
-Install (inside Claude Code):
+Install it inside Claude Code:
 
 ```
 /plugin marketplace add finom/vovk
@@ -239,19 +237,19 @@ Install (inside Claude Code):
 /reload-plugins
 ```
 
-See [Claude Plugin](https://vovk.dev/claude) for the full skill list, the AI mind model behind the framework, and why the pairing works.
+See [Claude Plugin](https://vovk.dev/claude) for the full skill list and how the framework's layout helps the agent.
 
 ---
 
 ## Examples
 
-The ["Hello World" example](https://vovk.dev/hello-world) shows Vovk.ts end-to-end in a single project: Zod-validated endpoints, JSON Lines streaming, composed and segmented clients, OpenAPI docs via Scalar, and bundled client libraries in TypeScript, Python, and Rust.
+The ["Hello World" example](https://vovk.dev/hello-world) shows Vovk.ts end to end in one project: Zod-validated endpoints, JSON Lines streaming, composed and segmented clients, OpenAPI docs with Scalar, and bundled client libraries in TypeScript, Python and Rust.
 
-The [Multitenancy Tutorial](https://vovk.dev/multitenant) walks through hosting multiple tenants from different subdomains within a single Next.js app.
+The [Multitenancy Tutorial](https://vovk.dev/multitenant) shows how to serve several tenants from different subdomains in one Next.js app.
 
-The [Realtime Kanban](https://vovk.dev/realtime-ui) example builds a full-stack board where users, bots, AI agents, and MCP clients all update it in real time — covering state normalization, database polling, AI chat, voice AI, and Telegram integration.
+The [Realtime Kanban](https://vovk.dev/realtime-ui) example builds a board that users, bots, AI agents and MCP clients update in real time. It covers state normalization, database polling, AI chat, voice AI and Telegram.
 
-Browse more snippets on the [Random Examples](https://examples.vovk.dev) site.
+More snippets are on the [Random Examples](https://examples.vovk.dev) site.
 
 ---
 
@@ -259,10 +257,10 @@ Browse more snippets on the [Random Examples](https://examples.vovk.dev) site.
 
 | Term | Meaning |
 |------|---------|
-| **Controller** | Class that groups procedures as `static` members; HTTP decorators expose them as endpoints |
-| **Procedure** | A typed, validated callable created with [`procedure`](https://vovk.dev/procedure). Call it locally with `.fn()`, expose it over HTTP with a decorator, or derive it as an LLM tool |
-| **Segment** | A routed back-end slice, compiled independently into its own function |
-| **RPC module** | Generated client module mirroring a controller |
+| **Controller** | A class that groups procedures as `static` members; HTTP decorators serve them as endpoints |
+| **Procedure** | A typed, validated function made with [`procedure`](https://vovk.dev/procedure). Call it locally with `.fn()`, serve it over HTTP with a decorator, or derive an LLM tool from it |
+| **Segment** | A part of the back end with its own route and function |
+| **RPC module** | Generated client module that mirrors a controller |
 | **API module** | Generated module from a controller or an OpenAPI schema |
 
 ---
@@ -282,7 +280,7 @@ cd my-app
 
 ### Initialize Vovk.ts
 
-You will be prompted to answer a few questions. The CLI will install the selected dependencies, update npm scripts, enable `experimentalDecorators` in **tsconfig.json**, and create a [config](https://vovk.dev/config) file.
+The CLI asks a few questions. Then it installs the dependencies you chose, updates the npm scripts, enables `experimentalDecorators` in **tsconfig.json** and creates a [config](https://vovk.dev/config) file.
 
 ```bash npm2yarn copy
 npx vovk-cli@latest init
@@ -294,7 +292,7 @@ npx vovk-cli@latest init
 
 ### Create a segment
 
-Run the following to create the root segment at **./src/app/api/[[...vovk]]/route.ts**:
+Create the root segment at **./src/app/api/[[...vovk]]/route.ts**:
 
 ```bash npm2yarn copy
 npm exec -- vovk new segment
@@ -306,7 +304,7 @@ npm exec -- vovk new segment
 
 ### Generate a controller and a service
 
-This command scaffolds **user-controller.ts** and **user-service.ts** from built-in (customizable) templates under **./src/modules/user/** and updates the segment’s **route.ts**:
+This command writes **user-controller.ts** and **user-service.ts** to **./src/modules/user/** from built-in templates, which you can customize, and updates the segment’s **route.ts**:
 
 ```bash npm2yarn copy
 npm exec -- vovk new controller service user
@@ -342,16 +340,15 @@ export default class UserController {
 
 ### Start the server and inspect an endpoint
 
-The `dev` script runs the Next.js dev server and the Vovk.ts watcher in parallel. While running, Vovk.ts generates schema files in **.vovk-schema/** (commit these) and the client library in **src/client** (git-ignored; regenerated on every build).
+The `dev` script runs the Next.js dev server and the Vovk.ts watcher together. Meanwhile, Vovk.ts writes the schema files to **.vovk-schema/** (commit them) and the client library to **src/client** (git-ignored, generated again on every build).
 
 ```bash npm2yarn copy
 npm run dev
 ```
 
-Then open: http://localhost:3000/api/users/123  
-You’ll see a placeholder response from `UserController.getSingleUser`: `{"message":"TODO: get single user","id":"123"}{:json}`
+Then open http://localhost:3000/api/users/123 to see a placeholder response from `UserController.getSingleUser`: `{"message":"TODO: get single user","id":"123"}{:json}`
 
-You can also check the schema endpoint (available only when NODE_ENV is set to development) at [http://localhost:3000/api/\_schema\_](http://localhost:3000/api/_schema_)
+The segment also serves its schema at [http://localhost:3000/api/\_schema\_](http://localhost:3000/api/_schema_), only when `NODE_ENV` is `development`.
 
 **More info:**
 
@@ -380,14 +377,14 @@ export default function Home() {
 }
 ```
 
-You can alternatively use [React Query](https://react-query.tanstack.com/) for request state management:
+Or manage the request state with [React Query](https://react-query.tanstack.com/):
 
 ```ts showLineNumbers copy
 import { useQuery } from '@tanstack/react-query';
 import { UserRPC } from '@/client';
 // ...
 const { data, error, isLoading } = useQuery({
-  queryKey: UserRPC.getSingleUser.queryKey(),
+  queryKey: UserRPC.getSingleUser.queryKey(['123']),
   queryFn: () => UserRPC.getSingleUser({ params: { id: '123' } }),
 });
 ```
@@ -398,7 +395,7 @@ const { data, error, isLoading } = useQuery({
 
 ### Deploy
 
-The `vovk init` command adds a `prebuild` script so `vovk generate` runs automatically before `next build`. Yarn 2+ doesn't run `pre` scripts, so there `vovk init` puts `vovk generate` at the start of `build`. If you adjust scripts manually, run:
+`vovk init` adds a `prebuild` script, so `vovk generate` runs before `next build`. Yarn 2+ doesn't run `pre` scripts, so there `vovk init` puts `vovk generate` at the start of `build`. If you change the scripts yourself, run it before the build:
 
 ```bash npm2yarn copy
 npm exec -- vovk generate
@@ -426,8 +423,8 @@ cd my-app
 
 ## Install vovk and vovk-cli
 
-- `vovk` is the core/runtime library.
-- `vovk-cli` is the command-line interface for Vovk.ts (development dependency). 
+- `vovk` is the runtime library.
+- `vovk-cli` is the Vovk.ts command-line tool, a development dependency.
 
 ```sh npm2yarn copy
 npm i vovk
@@ -443,7 +440,7 @@ npm i -D vovk-cli
 
 ## Create the config file
 
-Create **vovk.config.mjs** at the project root with the following content:
+Create **vovk.config.mjs** in the project root:
 
 ```ts showLineNumbers copy filename="vovk.config.mjs"
 // @ts-check
@@ -459,13 +456,13 @@ export default vovkConfig;
 
 ## Install a validation library and enable client-side validation
 
-For Zod validation on the server and Ajv on the client, install:
+To validate with Zod on the server and with Ajv on the client, install:
 
 ```sh npm2yarn copy
 npm i zod vovk-ajv
 ```
 
-Configure `validateOnClient` in your config file to enable client-side validation:
+Set `validateOnClient` in the config file to turn on client-side validation:
 
 ```ts showLineNumbers copy filename="vovk.config.mjs"
 // @ts-check
@@ -488,11 +485,11 @@ export default vovkConfig;
 
 ## Update the dev script and add a prebuild script
 
-There are two ways to run Vovk.ts and the Next.js server together: explicitly and implicitly. The explicit option uses the `concurrently` package to run both processes (you must set `PORT`). The implicit option lets the Vovk.ts CLI start Next.js for you; in that case, **vovk-cli** assigns the port automatically.
+You can run Vovk.ts and the Next.js server together in two ways. The explicit way runs both with the `concurrently` package, and you set `PORT`. The implicit way lets the Vovk.ts CLI start Next.js, and **vovk-cli** picks the port.
 
-The `prebuild` script runs `vovk generate` before `next build` so the client library is generated ahead of the Next.js build. Yarn 2+ doesn't run `pre` scripts: there, use `"build": "vovk generate && next build"` instead.
+The `prebuild` script runs `vovk generate` before `next build`, so the client library exists when Next.js builds. Yarn 2+ doesn't run `pre` scripts: there, use `"build": "vovk generate && next build"` instead.
 
-    Install concurrently, and cross-env, which sets `PORT` on Windows too:
+    Install `concurrently`, and `cross-env`, which sets `PORT` on Windows too:
 ```sh npm2yarn copy
 npm i -D concurrently cross-env
 ```
@@ -524,7 +521,7 @@ npm i -D concurrently cross-env
 
 ## Enable decorators
 
-In your **tsconfig.json**, set `"experimentalDecorators"` to `true`. `vovk init` sets it too.
+In **tsconfig.json**, set `"experimentalDecorators"` to `true`. `vovk init` sets it too.
 
 ```json
 {
@@ -535,7 +532,7 @@ In your **tsconfig.json**, set `"experimentalDecorators"` to `true`. `vovk init`
 }
 ```
 
-A webpack build needs the flag: without it, `next build --webpack` fails, and webpack is the default build of Next.js 15. Turbopack, the default of Next.js 16, compiles Vovk.ts decorators with or without it, and TypeScript 5.0+ type-checks them either way. See [Decorators Overview](https://vovk.dev/decorator-overview) for the decorators Vovk.ts provides.
+A webpack build needs the flag: without it, `next build --webpack` fails, and webpack is the default build in Next.js 15. Turbopack, the default in Next.js 16, compiles Vovk.ts decorators with or without the flag, and TypeScript 5.0+ type-checks them either way. See [Decorators Overview](https://vovk.dev/decorator-overview) for the decorators Vovk.ts provides.
 
 ## Create a controller
 
@@ -559,9 +556,9 @@ export default class HelloController {
 
 ## Create a root segment
 
-Create the root [segment](https://vovk.dev/segment) **/src/app/api/[[...vovk]]/route.ts**, where **[[...vovk]]** is an ["Optional Catch-all Segment"](https://nextjs.org/docs/app/api-reference/file-conventions/dynamic-routes#optional-catch-all-segments). The slug can be any valid name, such as **[[...mySlug]]**.
+Create the root [segment](https://vovk.dev/segment) **/src/app/api/[[...vovk]]/route.ts**. **[[...vovk]]** is an ["Optional Catch-all Segment"](https://nextjs.org/docs/app/api-reference/file-conventions/dynamic-routes#optional-catch-all-segments); the slug can be any valid name, such as **[[...mySlug]]**.
 
-In the code below, `HelloRPC` is the name of the generated RPC module, and `HelloController` is the controller created above.
+In the code below, `HelloRPC` is the name of the generated RPC module, and `HelloController` is the controller from the previous step.
 
 ```ts showLineNumbers copy filename="src/app/api/[[...vovk]]/route.ts"
 import { initSegment } from 'vovk';
@@ -569,7 +566,7 @@ import HelloController from '../../../modules/hello/hello-controller';
 
 const controllers = { HelloRPC: HelloController };
 
-// export types that are inferred by the client
+// the client infers its types from this
 export type Controllers = typeof controllers;
 
 // export Next.js route handlers
@@ -582,17 +579,17 @@ export const { GET, POST, PATCH, PUT, HEAD, OPTIONS, DELETE } = initSegment({ co
 
 ## Run the dev server
 
-Run `npm run dev` to start Vovk.ts and Next.js concurrently.
+Run `npm run dev` to start Vovk.ts and Next.js together.
 
 ```sh npm2yarn copy
 npm run dev
 ```
 
-Navigate to [http://localhost:3000/api/greetings/greeting](http://localhost:3000/api/greetings/greeting) to see the result.
+Open [http://localhost:3000/api/greetings/greeting](http://localhost:3000/api/greetings/greeting) to see the result.
 
 ## Create a React component
 
-Once the client is generated to `src/client`, you can import it as **@/client** (or with a relative path if your project doesn't define the `@/*` alias).
+Once the client is generated to `src/client`, import it as **@/client**, or with a relative path if your project has no `@/*` alias.
 
 ```ts showLineNumbers copy filename="src/app/page.tsx"
 'use client';
@@ -621,10 +618,10 @@ export default function MyComponent() {
 
 Open [http://localhost:3000](http://localhost:3000) to see the result.
 
-  If you're using VSCode, you may need to
+  In VS Code, you may need to
   restart the TS server
-  when you add a new controller class. This is the only time a manual restart is typically required; other changes—like
-  adding methods or updating validation—are picked up automatically.
+  after you add a new controller class. Other changes, such as new methods or new validation, are picked up without a
+  restart.
 
 **More info:**
 
@@ -638,88 +635,88 @@ Page: https://vovk.dev/claude
 
 # Claude Plugin
 
-The official **Claude Code plugin for Vovk.ts** ships topic-based skills that teach the coding agent how to use the framework when you describe what you want to build. Skills load only when relevant — typing "scaffold a new tenant" pulls in the multitenant skill, "stream chat tokens" pulls in JSON Lines, and so on.
+The official **Claude Code plugin for Vovk.ts** has topic skills that teach the coding agent the framework as you describe what to build. A skill loads only when needed: "scaffold a new tenant" loads the multitenant skill, "stream chat tokens" the JSON Lines one, and so on.
 
-The plugin lives in the same repo as Vovk.ts itself — skills at the repo root — and ships alongside the framework on every release.
+The plugin lives in the Vovk.ts repo, with the skills at the repo root, and ships with every framework release.
 
-## Why Vovk.ts is built for AI-assisted coding
+## What the agent gets from Vovk.ts
 
-Vovk.ts's structure *is* the prompt — the AI mind model is built into the framework:
+Vovk.ts sets where code goes, so the agent can predict it:
 
-- **Logic groups under `src/modules//`** — Controller + Service per feature, not scattered across `lib/`.
-- **Controller / Service split** — Controllers define procedures (decorated). Services hold business logic (plain classes). Clean separation between *what the endpoint is* and *what it does*.
-- **Methods on a service class, not loose helpers** — fewer files, predictable layout. The assistant finds the right file on the first try.
-- **Single source of truth** — same `procedure().handle()` powers the HTTP endpoint, the [SSR call](https://vovk.dev/fn) (`.fn()`), and the [AI tool](https://vovk.dev/tools) (`deriveTools`). No duplication. Less for the model to reconcile.
-- **Plain REST under the hood** — `curl` works. `fetch` works. Types flow end-to-end without locking you into a custom protocol.
-- **[Multitenancy](https://vovk.dev/multitenant) baked in** — `multitenant()` proxy + segment-per-tenant; one Next.js app hosts many tenants on subdomains without re-architecting.
-- **[OpenAPI native](https://vovk.dev/openapi), AI tools native** — schema generated from procedures, Scalar docs auto-mounted, every procedure can become an LLM tool with one line.
+- **Code by feature in `src/modules//`**: a controller and a service per feature, not files spread across `lib/`.
+- **Controller and service apart**: controllers define the decorated procedures; services, plain classes, hold the business logic. *What the endpoint is* stays apart from *what it does*.
+- **Service methods, not loose helpers**: fewer files and a predictable layout. The agent finds the right file on the first try.
+- **One source of truth**: the same `procedure().handle()` serves the HTTP endpoint, the [SSR call](https://vovk.dev/fn) (`.fn()`) and the [AI tool](https://vovk.dev/tools) (`deriveTools`). Nothing is duplicated, so the model has less to reconcile.
+- **Plain REST**: `curl` and `fetch` work. Types go end to end without a custom protocol.
+- **[Multitenancy](https://vovk.dev/multitenant)**: the `multitenant()` proxy and a segment per tenant host many tenants on subdomains in one Next.js app.
+- **[OpenAPI](https://vovk.dev/openapi) and AI tools**: the schema comes from the procedures, Scalar shows the generated code samples, and one line makes a procedure an LLM tool.
 
-## Why use the plugin?
+## Why a plugin
 
-Without it, asking Claude to *"scaffold a Vovk procedure with Zod validation"* tends to go one of two ways: the model hallucinates (training data is months stale and Vovk's API has moved on), or it fetches `vovk.dev` mid-task — slow, hits rate limits, and the wrong page often loads first.
+Without it, asking Claude to *"scaffold a Vovk procedure with Zod validation"* goes one of two ways. The model makes up an API from months-old training data, though the Vovk.ts API has changed. Or it fetches `vovk.dev` mid-task, which is slow, hits rate limits and often loads the wrong page first.
 
-With the plugin, the framework's idioms are loaded as topic-scoped skills the agent already understands:
+With the plugin, the agent loads the framework's patterns as topic skills:
 
-- **Topic-scoped, not all-or-nothing.** Skills load only when relevant — *"stream chat tokens"* pulls in JSON Lines; *"scaffold a tenant"* pulls in multitenant. Claude doesn't drown in thousands of lines of docs to answer a focused question.
-- **Self-contained.** A directive at the top of every skill tells the agent *don't fetch vovk.dev mid-task* — the plugin is the source of truth. Works offline; predictable cost; no rate-limit surprises.
-- **Cross-skill handoffs.** Skills know to escalate. The mixins skill points at the tools skill for LLM exposure; the procedure skill points at jsonlines for streaming. The agent loads the right context, not adjacent context.
-- **Caveman-optimized prose** — skill markdown is token-tightened (~10% fewer tokens per load, no loss of substance).
+- **One topic at a time.** Only the needed skills load, so Claude doesn't read thousands of lines of docs for one question.
+- **Self-contained.** The base skill, loaded with every other skill, tells the agent *not to fetch vovk.dev mid-task*: the plugin is the source of truth. It works offline, with a predictable cost and no rate limits.
+- **Handoffs between skills.** A skill points to the one that owns a topic: mixins to tools for LLM tools, procedure to jsonlines for streaming. The agent loads the context it needs, not the context next to it.
+- **Compressed text.** Terse "caveman" prose: about 10% fewer tokens per load, with the same content.
 
 ## Install
 
-Pick your agent. One command. Done.
+Run the command for your agent:
 
 | Agent | Install |
 |-------|---------|
 | **Claude Code** (CLI) | `claude plugin marketplace add finom/vovk && claude plugin install vovk@vovk` |
-| **Claude Code** (interactive) | Inside the session, run `/plugin marketplace add finom/vovk` then `/plugin install vovk@vovk` |
+| **Claude Code** (interactive) | In the session, run `/plugin marketplace add finom/vovk`, then `/plugin install vovk@vovk` |
 | **Cursor** | `npx skills add finom/vovk -a cursor` |
 | **Windsurf** | `npx skills add finom/vovk -a windsurf` |
 | **Copilot** | `npx skills add finom/vovk -a github-copilot` |
 | **Cline** | `npx skills add finom/vovk -a cline` |
 | **Any other** | `npx skills add finom/vovk` |
 
-`finom/vovk` resolves to the GitHub repo's `.claude-plugin/marketplace.json`. The plugin name is `vovk`; the marketplace name is also `vovk` — `vovk@vovk` is `<plugin-name>@<marketplace-name>`, the symmetry is coincidence.
+`finom/vovk` points to `.claude-plugin/marketplace.json` in the GitHub repo. The plugin and the marketplace are both named `vovk`: `vovk@vovk` is `<plugin-name>@<marketplace-name>`.
 
-For a local checkout (development), substitute the path: `claude plugin marketplace add /path/to/vovk` (point at the repo root).
+For a local checkout (development), use its path: `claude plugin marketplace add /path/to/vovk` (the repo root).
 
 ### Verify
 
-In Claude Code, run `/plugin` — the **Installed** tab should list `vovk`. Skills are namespaced; typing `/vovk:` (with the trailing colon) lists all 15 skills available to the agent. In other agents, the skill files appear under that agent's skill directory (e.g. `.cursor/skills/`).
+In Claude Code, run `/plugin`: the **Installed** tab lists `vovk`. Skill names start with `vovk:`; typing `/vovk:` (with the colon) lists all 15 skills. In other agents, the skill files are in the agent's skill folder, such as `.cursor/skills/`.
 
 ## Skills
 
-The plugin ships fifteen topic-based skills covering every layer of Vovk.ts:
+The plugin has fifteen topic skills that cover every part of Vovk.ts:
 
-- **`vovk:init`** — initialize Vovk.ts in a Next.js App Router project, or scaffold a fresh Next.js app and run `vovk init` on top.
-- **`vovk:base`** — foundational rules loaded alongside any other vovk:* skill: commit policy for `.vovk-schema/`, runtime requirements, template names, `_schema_` endpoint, brief API + type-inference surface (`VovkBody`, `VovkOutput`, …).
-- **`vovk:config`** — `vovk.config.{mjs,cjs,js}` shape, every config key + default (`rootEntry`, `schemaOutDir`, `composedClient`, `segmentedClient`, `clientTemplateDefs`, `outputConfig`, `bundle`, …), and `tsconfig.json` setup.
+- **`vovk:init`** — set up Vovk.ts in a Next.js App Router project, or create a new Next.js app and run `vovk init` in it.
+- **`vovk:base`** — base rules loaded with every other vovk:* skill: commit policy for `.vovk-schema/`, runtime requirements, template names, the `_schema_` endpoint, a short API and inference-type summary (`VovkBody`, `VovkOutput`, …).
+- **`vovk:config`** — the `vovk.config.{mjs,cjs,js}` shape, every config key and default (`rootEntry`, `schemaOutDir`, `composedClient`, `segmentedClient`, `clientTemplateDefs`, `outputConfig`, `bundle`, …), and the `tsconfig.json` setup.
 - **`vovk:segment`** — segments (root, named, static), `initSegment`, segment priority, `generateStaticParams`.
-- **`vovk:multitenant`** — multi-tenant routing via subdomains: `multitenant()` proxy, `overrides` shape, per-tenant segments and frontend pages, wildcard DNS.
+- **`vovk:multitenant`** — routing tenants by subdomain: the `multitenant()` proxy, the `overrides` shape, per-tenant segments and front-end pages, wildcard DNS.
 - **`vovk:procedure`** — procedures, validation (Zod / Valibot / ArkType), controllers, HTTP decorators, `req.vovk`, error handling, content types, `.fn()` for SSR / server components / server actions.
 - **`vovk:decorators`** — built-in and custom decorators (`createDecorator`), authorization patterns, `req.vovk.meta()`, stacking order.
-- **`vovk:rpc`** — generated RPC client (`@/client`), composed vs segmented clients, call shape, `customFetcher`, error rethrow, type inference from client methods.
+- **`vovk:rpc`** — the generated RPC client (`@/client`), composed vs segmented clients, call shape, `createFetcher`, error rethrow, type inference from client methods.
 - **`vovk:jsonlines`** — JSON Lines streaming: generator handlers, `JSONLinesResponder`, `progressive()`, client async iteration, `using`, `asPromise`, abort.
 - **`vovk:openapi`** — OpenAPI 3.x generation: `@operation` metadata, `outputConfig.openAPIObject`, per-segment overrides, Scalar docs, `_schema_` endpoint.
-- **`vovk:mixins`** — import third-party OpenAPI 3.x schemas as typed client modules, call them identically to native RPC modules.
-- **`vovk:tools`** — expose procedures as LLM tools via `deriveTools()`, MCP-compatible output, `@operation`, controllers vs RPC modules, OpenAI / Anthropic / MCP wiring.
-- **`vovk:bundle`** — `vovk bundle` CLI for publishable TypeScript SDKs.
+- **`vovk:mixins`** — import third-party OpenAPI 3.x schemas as typed client modules, called like your own RPC modules.
+- **`vovk:tools`** — procedures as LLM tools with `deriveTools()`, MCP-compatible output, `@operation`, controllers vs RPC modules, OpenAI / Anthropic / MCP wiring.
+- **`vovk:bundle`** — the `vovk bundle` command for publishable TypeScript SDKs.
 - **`vovk:python`** — generate a typed Python client (`vovk-python`), `py` / `pySrc` templates, `TypedDict` shapes, JSON Lines via Python generators, PyPI publishing.
-- **`vovk:rust`** — generate a typed Rust crate (`vovk-rust`), `rs` / `rsSrc` templates, async `reqwest` call shape, `futures::Stream` consumption, crates.io publishing.
+- **`vovk:rust`** — generate a typed Rust crate (`vovk-rust`), `rs` / `rsSrc` templates, async `reqwest` call shape, reading a `futures::Stream`, crates.io publishing.
 
 ## First prompts to try
 
-The skills trigger automatically when you describe what you want to build. Pick the type of project you're starting:
+The skills load on their own when you describe what to build. Pick your kind of project:
 
 - **Greenfield** — *"Set up Vovk.ts in a new Next.js project. I want a `/api/tasks` CRUD endpoint with Zod validation, and a Next.js page that consumes it through the typed client."*
 - **Existing Next.js project** — *"Add Vovk.ts to my existing Next.js app and scaffold a UserController with `getUser` / `createUser`."*
 - **Stream-heavy work** — *"Add a `/api/chat` JSON Lines streaming endpoint that proxies OpenAI completions, plus a Python script that consumes the stream."*
 
-  Short prompts like *"create a backend for Next.js"* don't always trigger skill consultation — Claude treats them as too generic. Mention "Vovk" or "vovk-cli" once and the routing reliably catches.
+  Short prompts such as *"create a backend for Next.js"* don't always load a skill: Claude finds them too general. Mention "Vovk" or "vovk-cli" once, and the right skill loads.
 
 ## Reporting bugs
 
-If a skill produces wrong code or contradicts itself, that's a plugin bug — open an issue at github.com/finom/vovk/issues with the prompt you used and the skill that loaded.
+A skill that writes wrong code or contradicts itself is a plugin bug. Open an issue at github.com/finom/vovk/issues with your prompt and the skill that loaded.
 
 **More info:**
 
@@ -734,29 +731,31 @@ Page: https://vovk.dev/segment
 
 ## Overview
 
-Vovk.ts introduces an additional hierarchy level in backend architecture called **segments**, where controllers are initialized, implemented using [Next.js Optional Catch-All Segments](https://nextjs.org/docs/pages/building-your-application/routing/dynamic-routes#optional-catch-all-segments). Segments allow you to split your backend into smaller, focused serverless functions with different configurations (exported Next.js constants, such as `runtime` or `maxDuration`), improving maintainability and performance.
+A **segment** is the part of the back end where controllers are initialized. Segments are built on [Next.js Optional Catch-All Segments](https://nextjs.org/docs/pages/building-your-application/routing/dynamic-routes#optional-catch-all-segments). They split the back end into smaller serverless functions, each with its own configuration (the Next.js constants it exports, such as `runtime` or `maxDuration`).
 
 ![Segment](https://vovk.dev/draw/segment-concept.svg)
 
-Each segment owns a specific path, such as `/api/foo` or `/api/bar` as focused “mini backends,” similar to how frontend code is split into pages in Next.js. Segments are initialized by calling `initSegment` in the **route.ts** file located in **[[...slug]]** folders, that returns Next.js route handlers (`GET`, `POST`, etc.) for that segment. Vovk.ts uses `vovk` as the slug name, but any valid name works.
+Each segment owns a path, such as `/api/foo` or `/api/bar`, and is a small back end of its own. Segments split the back end as pages split the front end in Next.js. To initialize a segment, call `initSegment` in the **route.ts** file of a **[[...slug]]** folder. It returns the Next.js route handlers (`GET`, `POST` and so on) of the segment. Vovk.ts names the slug `vovk`, but any valid name works.
 
-When `NODE_ENV` is set to `"development"` (by using `next dev`), each segment exposes a `_schema_` endpoint that serves the segment schema. The [dev CLI](https://vovk.dev/dev) calls this endpoint to retrieve the schema and build JSON files in **.vovk-schema/**. This avoids importing Node.js modules in Next.js code, allows `export const runtime = 'edge'` in **route.ts**, but also simplifies schema retrieval tooling.
+When `NODE_ENV` is `"development"` (as with `next dev`), each segment serves its schema at a `_schema_` endpoint. The [dev CLI](https://vovk.dev/dev) reads it and writes the JSON files in **.vovk-schema/**. This way, Next.js code imports no Node.js modules, **route.ts** can use `export const runtime = 'edge'`, and the schema tooling stays simple.
 
-Optional Catch-All Segments are used insted of [Catch-All Segments](https://nextjs.org/docs/pages/building-your-application/routing/dynamic-routes#catch-all-segments) in order to be able to easily implement a root endpoint for that segment.
+Vovk.ts uses Optional Catch-All Segments instead of [Catch-All Segments](https://nextjs.org/docs/pages/building-your-application/routing/dynamic-routes#catch-all-segments), so a segment can have a root endpoint.
 
 ## Creating Segments
 
-Initialize a segment by calling `initSegment` in **route.ts** and export the returned route handlers: `GET`, `POST`, `PATCH`, `PUT`, `HEAD`, `OPTIONS` and `DELETE`. A method the file doesn't export never reaches Vovk.ts: Next.js answers `PATCH` with `405`, and a CORS preflight (`OPTIONS`) without CORS headers. The function accepts:
+Call `initSegment` in **route.ts** and export the route handlers it returns: `GET`, `POST`, `PATCH`, `PUT`, `HEAD`, `OPTIONS` and `DELETE`. A method the file doesn't export never reaches Vovk.ts: Next.js answers `PATCH` with `405`, and a CORS preflight (`OPTIONS`) without CORS headers. `initSegment` takes:
 
-- `controllers` — an object with controllers used by the segment. Object keys define generated RPC module names (use a random name if `emitSchema` is `false`); values are the controllers.
-- `segmentName` — the segment name. Defaults to an empty string for the root segment.
-- `emitSchema` — whether to emit the schema for the segment. Defaults to `true`.
+- `controllers` — the controllers of the segment. The object keys are the names of the generated RPC modules (any name works if `emitSchema` is `false`), and the values are the controllers.
+- `segmentName` — the segment name. Defaults to an empty string, the root segment.
+- `emitSchema` — whether to emit the segment schema. Defaults to `true`.
 - `exposeValidation` — whether to expose validation data. Defaults to `true`.
-- `onError` — a callback invoked on errors with:
-  - `error: HttpError` — the error instance.
-  - `request: NextRequest` — the incoming request (headers, URL, etc.).
+- `onError` — a function called on errors with:
+  - `error: Error` — the error.
+  - `request: VovkRequest` — the incoming request (headers, URL and so on).
+- `onBefore` — a function called with the request before the decorators and the handler run; an error it throws becomes the response.
+- `onSuccess` — a function called with the handler's result and the request once the handler returns; for a stream, that is when the stream starts, not when it ends.
 
-The segment file (**route.ts**) should also export `type Controllers = typeof controllers{:ts}` to enable type inference in the [RPC client](https://vovk.dev/typescript).
+**route.ts** also exports `type Controllers = typeof controllers{:ts}`, which the [RPC client](https://vovk.dev/typescript) infers its types from.
 
 ### The Root Segment
 
@@ -764,9 +763,9 @@ The segment file (**route.ts**) should also export `type Controllers = typeof co
 npm exec -- vovk new segment
 ```
 
-See [`vovk new` documentation](https://vovk.dev/new)
+See [`vovk new` documentation](https://vovk.dev/new).
 
-For simple single-page apps, a single root segment is sufficient. In this setup, the backend is bundled into one serverless function when deployed.
+A simple single-page app needs only the root segment. It deploys the back end as one serverless function.
 
 Example **route.ts** for a single-segment app:
 
@@ -782,7 +781,7 @@ const controllers = {
   PostRPC: PostController,
 };
 
-// export the controllers type to be used in the client code
+// the client code uses this type
 export type Controllers = typeof controllers;
 
 // export the Next.js route handlers
@@ -791,23 +790,23 @@ export const { GET, POST, PATCH, PUT, HEAD, OPTIONS, DELETE } = initSegment({
 });
 ```
 
-The [schema](https://vovk.dev/schema) for the root segment is stored at **.vovk-schema/root.json**.
+The [schema](https://vovk.dev/schema) of the root segment is in **.vovk-schema/root.json**.
 
-  The name **root** is used only for file naming. In configuration and elsewhere, the root segment name is an empty string.
+  The name **root** is only for the file name. In the config and elsewhere, the root segment's name is an empty string.
 
 ### Multiple Segments
 
-Create multiple segments to split your backend into separate serverless functions. Reasons include:
+Create more segments to split the back end into separate serverless functions. Reasons include:
 
-- Using different Next.js route handler options or `initSegment` configurations.
+- Using different Next.js route handler options or `initSegment` options.
 - Reducing bundle size by splitting code.
-- Separating app areas (e.g., root, `admin`, `customer`, `customer/public`).
-- Supporting multiple API versions (e.g., `v1`, `v2`).
-- Creating a [static segment](https://vovk.dev/static-segment) for OpenAPI specs, historical data, etc.
+- Separating areas of the app, such as root, `admin`, `customer` and `customer/public`.
+- Serving several API versions, such as `v1` and `v2`.
+- Creating a [static segment](https://vovk.dev/static-segment) for OpenAPI specs, historical data and so on.
 
-Each segment’s nested folder determines both the API path and the segment name. For example, **/src/app/api/`segment-name`/[[...slug]]/** is served at **/api/`segment-name`**. Nesting is unlimited.
+The folder of a segment sets both its API path and its name. For example, **/src/app/api/`segment-name`/[[...slug]]/** is served at **/api/`segment-name`**. Segments can nest to any depth.
 
-For non-root segments, provide `segmentName` to `initSegment`:
+For a segment other than the root, pass `segmentName` to `initSegment`:
 
 ```ts showLineNumbers copy filename="src/app/api/foo/[[...vovk]]/route.ts"
 // ...
@@ -818,25 +817,25 @@ export const { GET, POST, PATCH, PUT, HEAD, OPTIONS, DELETE } = initSegment({
 });
 ```
 
-The schema for `foo` is stored at **.vovk-schema/`foo`.json**.
+The schema of `foo` is in **.vovk-schema/`foo`.json**.
 
-For deeper nesting, e.g., **/src/app/api/`foo/bar/baz`/[[...slug]]/**, set `segmentName` to `"foo/bar/baz"`. The schema is stored at **.vovk-schema/`foo/bar/baz`.json**.
+For a deeper folder, such as **/src/app/api/`foo/bar/baz`/[[...slug]]/**, set `segmentName` to `"foo/bar/baz"`. Its schema is in **.vovk-schema/`foo/bar/baz`.json**.
 
 ## Segment Priority
 
-With multiple segments, the most specific (deepest) one takes priority. For example:
+With several segments, the most specific (deepest) one wins. For example:
 
 - **/src/app/api/[[...slug]]/** — the root segment
-- **/src/app/api/foo/[[...slug]]/** — `foo` segment
-- **/src/app/api/foo/bar/[[...slug]]/** — `foo/bar` segment
+- **/src/app/api/foo/[[...slug]]/** — the `foo` segment
+- **/src/app/api/foo/bar/[[...slug]]/** — the `foo/bar` segment
 
-A request to **/api/foo/bar** is handled by the `foo/bar` segment. If it doesn’t match, but the `foo` segment does, `foo` handles it. Otherwise, the root segment handles it.
+The `foo/bar` segment handles a request to **/api/foo/bar**. A request it doesn't match goes to `foo` if `foo` matches it, and to the root segment otherwise.
 
-  You can change the API folder name from `api` to anything else via the `rootEntry` [config](https://vovk.dev/config) option, including setting it to an empty to serve the API from the app root.
+  The `rootEntry` [config](https://vovk.dev/config) option changes the API folder name from `api` to any other name. An empty string serves the API from the app root.
 
 ## RPC Client
 
-Whether the API is [static](https://vovk.dev/static-segment) or dynamic, you can call it with the same RPC client, including client-side validation and type inference.
+The same RPC client, with client-side validation and type inference, calls a [static](https://vovk.dev/static-segment) or a dynamic API.
 
 ```ts showLineNumbers copy
 const resp = await StaticParamsRPC.getStaticParams({
@@ -856,10 +855,10 @@ Page: https://vovk.dev/static-segment
 # Static Segment
 
 ```sh npm2yarn copy
-npm exec -- vovk new segment openapi --static # creates a new static segment named "openapi" at src/app/api/openapi/[[...vovk]]/route.ts
+npm exec -- vovk new segment openapi --static # creates the static segment "openapi" at src/app/api/openapi/[[...vovk]]/route.ts
 ```
 
-Next.js can pre-render API endpoints at build time using [generateStaticParams](https://nextjs.org/docs/app/api-reference/functions/generate-static-params). Vovk.ts provides the `controllersToStaticParams` helper to take advantage of this and emit static API endpoints for minimal latency. Use it to serve OpenAPI definitions, historical datasets (refreshed periodically via CI/CD), or other infrequently changing data. It also works in [Static Export mode](https://nextjs.org/docs/pages/building-your-application/deploying/static-exports) with the `output: 'export'` Next.js option:
+Next.js can pre-render API endpoints at build time with [generateStaticParams](https://nextjs.org/docs/app/api-reference/functions/generate-static-params). The Vovk.ts `controllersToStaticParams` helper uses this to emit static API endpoints, for minimal latency. Use it for OpenAPI definitions, historical datasets (refreshed from time to time by CI/CD) or other data that rarely changes. It also works in [Static Export mode](https://nextjs.org/docs/pages/building-your-application/deploying/static-exports), with the `output: 'export'` Next.js option:
 
 ```ts showLineNumbers copy filename="next.config.js"
 /** @type {import('next').NextConfig} */
@@ -870,7 +869,7 @@ const nextConfig = {
 module.exports = nextConfig;
 ```
 
-Export `dynamic = 'force-static'` so Next.js pre-renders the route handler at build time, implement `generateStaticParams`, and return `controllersToStaticParams` with your controller list.
+Export `dynamic = 'force-static'` so Next.js pre-renders the route handler at build time, and make `generateStaticParams` return `controllersToStaticParams` with your controllers.
 
 ```ts showLineNumbers copy filename="src/app/api/[[...vovk]]/route.ts"
 // ...
@@ -885,7 +884,7 @@ export function generateStaticParams() {
 export const { GET } = initSegment({ controllers });
 ```
 
-When deploying to static hosting (e.g., GitHub Pages), include a `.json` extension in endpoint paths to ensure proper HTTP headers are served.
+On static hosting, such as GitHub Pages, end the endpoint paths with `.json`, so the host sends the right HTTP headers.
 
 ```ts showLineNumbers copy
 import { get, prefix } from 'vovk';
@@ -899,9 +898,9 @@ export default class HelloController {
 }
 ```
 
-This produces an endpoint like: [https://vovk.dev/api/hello/greeting.json](https://vovk.dev/api/hello/greeting.json) (hosted on GitHub Pages).
+This gives an endpoint such as [https://vovk.dev/api/hello/greeting.json](https://vovk.dev/api/hello/greeting.json), hosted on GitHub Pages.
 
-If you use a custom slug (e.g., `/src/app/api/[[...custom]]/route.ts`) instead of the default `vovk`, pass it as the second argument:
+With a slug other than the default `vovk`, such as `/src/app/api/[[...custom]]/route.ts`, pass it as the second argument:
 
 ```ts showLineNumbers copy
 export function generateStaticParams() {
@@ -911,7 +910,7 @@ export function generateStaticParams() {
 
 ## Static Endpoint Parameters
 
-The `@get` decorator accepts an options object. One of the options, `staticParams`, lets you enumerate static parameter combinations to simulate conditional routing. A param in the controller's prefix, such as `@prefix('users/{userId}')`, takes its value from the same objects. The example below shows a single handler that renders six variants for two parameters: section (`a | b`) and page (`1 | 2 | 3`).
+The `staticParams` option of `@get` lists the param combinations to render, so one handler serves several static paths. A param in the controller's prefix, such as `@prefix('users/{userId}')`, takes its value from the same objects. Below, one handler renders six variants of two params: section (`a | b`) and page (`1 | 2 | 3`).
 
 ```ts showLineNumbers copy
 import { z } from 'zod';
@@ -957,7 +956,7 @@ This builds six JSON files:
 
 ## Real-world example: static-klines
 
-[static-klines](https://github.com/finom/static-klines) is a Vovk.ts static segment that pre-renders historical Binance Spot candles into ~17,000 plain JSON files on GitHub Pages. The whole API ships as static assets with no runtime — no rate limits, no server compute, infinitely cacheable — and auto-generated TypeScript and Python clients are published from the same Zod schemas the server uses. It's a practical illustration of `controllersToStaticParams` scaled to a full dataset.
+[static-klines](https://github.com/finom/static-klines) is a Vovk.ts static segment. It pre-renders historical Binance Spot candles into ~17,000 plain JSON files on GitHub Pages. The whole API is static files with no server: no rate limits, no server compute, and no limit on caching. Its TypeScript and Python clients are generated from the same Zod schemas the server uses, and published. It shows `controllersToStaticParams` on a full dataset.
 
 ---
 
@@ -965,14 +964,14 @@ Page: https://vovk.dev/procedure
 
 # Controller & Procedure
 
-A **controller** in Vovk.ts is a class that groups endpoint logic as `static` members. The class is initialized (not instantiated) inside a [segment route](https://vovk.dev/segment) via [`initSegment`](https://vovk.dev/segment#creating-segments) — that's how its members become reachable HTTP endpoints.
+A **controller** is a class that groups endpoints as `static` members. [`initSegment`](https://vovk.dev/segment#creating-segments) initializes the class (it doesn't create an instance) in a [segment route](https://vovk.dev/segment), and that makes its members HTTP endpoints.
 
-A **procedure** is one such member: a single endpoint definition, typically decorated with an HTTP method like `@get()`, `@post()`, `@put()`, `@patch()`, or `@del()`. Vovk.ts supports two authoring styles, both of which compile to real Next.js Route Handlers:
+A **procedure** is one such member: one endpoint, usually decorated with an HTTP method such as `@get()`, `@post()`, `@put()`, `@patch()` or `@del()`. You can write it in two styles, and both compile to Next.js Route Handlers:
 
-- **Bare static method** — `(req: NextRequest, params)` signature, same as a plain Route Handler. Class-organized, with a codegen-typed [RPC client](https://vovk.dev/typescript) and [segments](https://vovk.dev/segment).
-- **[`procedure()`](#procedure) wrapper** — turns the static method into a typed, validated callable with `body` / `query` / `params` / `output` schemas. Unlocks [`.fn()`](https://vovk.dev/fn) local calls (SSR, server actions, AI tool execution), [OpenAPI](https://vovk.dev/openapi) generation, and [AI tool exposure](https://vovk.dev/tools).
+- **Bare static method**: takes `(req: NextRequest, params)`, as a plain Route Handler does. It still lives in a class, with a generated, typed [RPC client](https://vovk.dev/typescript) and [segments](https://vovk.dev/segment).
+- **[`procedure()`](#procedure) wrapper**: turns the static method into a typed function that validates with `body`, `query`, `params` and `output` schemas. It adds [`.fn()`](https://vovk.dev/fn) local calls (SSR, server actions, AI tool execution), [OpenAPI](https://vovk.dev/openapi) generation and [AI tool exposure](https://vovk.dev/tools).
 
-Pick the bare style for simple cases; reach for `procedure()` whenever you want validation or a transport-agnostic callable.
+Use the bare style for simple cases, and `procedure()` when you want validation or a function you can call without HTTP.
 
 ```ts showLineNumbers copy filename="src/modules/user/user-controller.ts"
 import { put, prefix, type VovkRequest } from 'vovk';
@@ -990,7 +989,7 @@ export default class UserController {
 }
 ```
 
-The class itself is initialized in a [segment route](https://vovk.dev/segment) by adding it to the `controllers` object accepted by `initSegment`:
+To initialize the class, add it to the `controllers` object of `initSegment` in a [segment route](https://vovk.dev/segment):
 
 ```ts showLineNumbers copy filename="src/app/api/[[...vovk]]/route.ts"
 import { initSegment } from 'vovk';
@@ -1005,12 +1004,12 @@ export type Controllers = typeof controllers;
 export const { GET, POST, PATCH, PUT, HEAD, OPTIONS, DELETE } = initSegment({ controllers });
 ```
 
-The key of this object defines the name of the resulting RPC module variable used by the client side:
+The object key is the name of the RPC module on the client:
 
 ```ts showLineNumbers copy
 import { UserRPC } from '@/client';
 
-// performs PUT /api/users/69?notify=push
+// sends PUT /api/users/69?notify=push
 const updatedUser = await UserRPC.updateUser({
   params: { id: '69' },
   query: { notify: 'push' },
@@ -1020,13 +1019,14 @@ const updatedUser = await UserRPC.updateUser({
 
 The RPC method takes `body` and `query` because the request is typed with [`VovkRequest`](#vovkrequest-type); with `NextRequest` it takes `params` only.
 
-For more information, see [TypeScript Client](https://vovk.dev/typescript).
+See [TypeScript Client](https://vovk.dev/typescript).
 
 > [!TIP]
 > 
-> In order to create a root endpoint for a [segment](https://vovk.dev/segment), use no prefix and an empty path (or an empty string) in the HTTP decorator.
+> For the root endpoint of a [segment](https://vovk.dev/segment), use no prefix and no path (or an empty string) in the HTTP decorator.
 > ```ts showLineNumbers copy filename="src/modules/user/user-controller.ts"
 > import { get } from 'vovk';
+> import type { NextRequest } from 'next/server';
 > 
 > export default class UserController {
 >   @get()
@@ -1038,7 +1038,7 @@ For more information, see [TypeScript Client](https://vovk.dev/typescript).
 
 ## Auto-Generated Endpoints
 
-All HTTP decorators provide an `.auto` method that generates the endpoint name from the method name, making the handler definition more RPC‑like.
+Every HTTP decorator has an `.auto` method that makes the endpoint path from the method name, so the handler reads more like RPC.
 
 ```ts showLineNumbers copy filename="src/modules/user/user-controller.ts"
 import { prefix, put } from 'vovk';
@@ -1053,12 +1053,15 @@ export default class UserController {
 }
 ```
 
+With a `params` schema, `.auto()` also adds each param to the path: `getUser` with `{ id }` becomes `get-user/{id}`.
+
 ## Request Headers
 
-A procedure can access any Next.js APIs, such as cookies, headers, and so on via `next` package imports. See Next.js [documentation](https://nextjs.org/docs/app/api-reference/functions/headers) for details.
+A procedure can use any Next.js API, such as cookies and headers, from the `next` package. See the Next.js [documentation](https://nextjs.org/docs/app/api-reference/functions/headers).
 
 ```ts showLineNumbers copy filename="src/modules/user/user-controller.ts"
 import { put, prefix } from 'vovk';
+import type { NextRequest } from 'next/server';
 import { cookies, headers } from 'next/headers';
 
 @prefix('users')
@@ -1074,11 +1077,11 @@ export default class UserController {
 }
 ```
 
-Alternatively, use `req.headers` from the [Web Request API](https://developer.mozilla.org/en-US/docs/Web/API/Request/headers): `req.headers.get('user-agent'){:ts}`.
+Or read `req.headers` from the [Web Request API](https://developer.mozilla.org/en-US/docs/Web/API/Request/headers): `req.headers.get('user-agent'){:ts}`.
 
 ## `VovkRequest` Type
 
-`VovkRequest` mirrors the `NextRequest` type by adding generics for request body (`json` method) and query (`searchParams` property) parameters. This allows you to define the expected types for these parts of the request, enabling type-safe access within procedure.
+`VovkRequest` mirrors the `NextRequest` type and adds type parameters for the request body (the `json` method) and the query (the `searchParams` property). With them, the procedure reads these parts of the request with types.
 
 ```ts showLineNumbers copy filename="src/modules/user/user-controller.ts"
 import { put, prefix, type VovkRequest } from 'vovk';
@@ -1086,7 +1089,7 @@ import type { User } from '../../types';
 
 @prefix('users')
 export default class UserController {
-  // Example request: PUT /api/users/69?role=moderator
+  // Example request: PUT /api/users/69?notify=push
   @put('{id}')
   static async updateUser(
     req: VovkRequest<Partial<User>, { notify: 'email' | 'push' | 'none' }>,
@@ -1100,17 +1103,17 @@ export default class UserController {
 }
 ```
 
-`VovkRequest` extends `Request` but doesn't extend `NextRequest` in order to keep the **vovk** package independent of **next** package. However, it replicates the documented `NextRequest` properties such as `cookies` (with `get`, `getAll`, `set`, `delete`, `has`, `clear` methods) and `nextUrl` (with `basePath`, `buildId`, `pathname`, `search`, and typed `searchParams`).
+`VovkRequest` extends `Request`, not `NextRequest`, so the **vovk** package doesn't depend on the **next** package. It copies the documented `NextRequest` properties: `cookies` (with the `get`, `getAll`, `set`, `delete`, `has` and `clear` methods) and `nextUrl` (with `basePath`, `buildId`, `pathname`, `search` and a typed `searchParams`).
 
-`searchParams` holds the raw URL, so its types follow what the URL carries: a required string field keeps its type, any other field is a string, and `get` may return `null` for an optional field, an array or an object (the client sends an array as `tags[0]=a`, under keys of its own). The parsed query comes from [`req.vovk.query()`](https://vovk.dev/req-vovk).
+`searchParams` reads the raw URL, so its types follow what the URL holds. A required string field keeps its type, and any other field is a string. `get` may return `null` for an optional field, an array or an object (the client sends an array as `tags[0]=a`, under keys of its own). The parsed query comes from [`req.vovk.query()`](https://vovk.dev/req-vovk).
 
 ## `procedure` Function
 
-The `procedure` function turns a static method into a **typed, validated callable**. It accepts validation schemas for body, query, params, and output — using any library that implements both [Standard Schema](https://standardschema.dev/schema) and [Standard JSON Schema](https://standardschema.dev/json-schema), such as [Zod](https://zod.dev/), [Valibot](https://valibot.com/), or [Arktype](https://arktype.io/). A schema that implements Standard Schema alone, as Zod before 4.2 does, still validates, but `procedure(){:ts}` warns and emits its JSON Schema as `{}`.
+The `procedure` function turns a static method into a **typed, validated function**. It takes schemas for the body, query, params and output from any library that implements both [Standard Schema](https://standardschema.dev/schema) and [Standard JSON Schema](https://standardschema.dev/json-schema), such as [Zod](https://zod.dev/), [Valibot](https://valibot.com/) or [Arktype](https://arktype.io/). A schema that implements only Standard Schema, as Zod before 4.2 does, still validates, but `procedure(){:ts}` warns and emits its JSON Schema as `{}`.
 
 With these three libraries, a type that JSON Schema can't describe, such as a `Date{:ts}` or a `bigint{:ts}`, is emitted as `{}` (any value). The server still validates it, but client-side validation and the [Python](https://vovk.dev/python) and [Rust](https://vovk.dev/rust) clients accept any value there.
 
-It returns an object with a `.handle()` method that accepts the actual async handler. The handler receives a type-enhanced request as `VovkRequest<TBody, TQuery, TParams>{:ts}` and the validated `params: TParams{:ts}` value as the second argument. Without a `params` schema, the second argument and `req.vovk.params()` hold the route params as strings, typed `Record<string, string>{:ts}`.
+`procedure()` returns an object with a `.handle()` method, which takes the handler. The handler gets the request typed as `VovkRequest<TBody, TQuery, TParams>{:ts}`, and the validated `params: TParams{:ts}` as its second argument. Without a `params` schema, the second argument and `req.vovk.params()` hold the route params as strings, typed `Record<string, string>{:ts}`.
 
 ```ts showLineNumbers copy filename="src/modules/user/user-controller.ts"
 import { procedure, prefix, put } from 'vovk';
@@ -1132,79 +1135,83 @@ export default class UserController {
 }
 ```
 
-If `.handle()` is not provided, the procedure throws Not Implemented (501) at runtime.
+Without `.handle()`, the procedure throws Not Implemented (501) when called.
 
-For separating business logic into its own layer, see [Services](https://vovk.dev/service).
+To keep business logic in its own layer, see [Services](https://vovk.dev/service).
 
 ### HTTP decorator is optional
 
-A procedure created with `procedure()` does not need an HTTP decorator to work. Without one, it remains a typed validated callable usable via [`.fn()`](https://vovk.dev/fn) — for SSR, server components, server actions, AI tool execution, and so on. The decorator is what additionally mounts the procedure as an HTTP endpoint and makes it appear in the generated RPC client. See [Calling Procedures Locally](https://vovk.dev/fn) for the full reference and patterns like binding standalone procedures into a controller later.
+A procedure made with `procedure()` works without an HTTP decorator. You call it with [`.fn()`](https://vovk.dev/fn) in SSR, server components, server actions, AI tool execution and so on. The decorator also serves the procedure as an HTTP endpoint and adds it to the generated RPC client. See [Calling Procedures Locally](https://vovk.dev/fn) for the full reference, including how to attach a standalone procedure to a controller later.
 
 ### `procedure` Options
 
 #### `body`, `query`, and `params`
 
-Use `body`, `query`, and `params` to provide input validation schemas. These validate incoming request data before it reaches the controller handler.
+`body`, `query` and `params` take the input schemas. They validate the request data before the handler runs.
 
-A request without a body is validated as `undefined{:ts}`, so an optional schema such as `z.object({ ... }).optional(){:ts}` lets the client leave the body out. So is an empty body with a JSON content type; an empty text or an empty file is a body.
+A request without a body is validated as `undefined{:ts}`, so an optional schema such as `z.object({ ... }).optional(){:ts}` lets the client leave the body out. So is an empty body with a JSON content type. An empty text or an empty file is a body.
 
-Data that fails validation gets a `400` response. Its message and its `cause.issues` hold the first 20 issues, and the message says how many more there are. An issue keeps its `message`, its `path` as a list of keys, and the library's other fields that hold text, a number or a boolean, such as Zod's `code`; fields that copy the value that failed are left out.
+Data that fails validation gets a `400` response. Its message and its `cause.issues` hold the first 20 issues, and the message says how many more there are. An issue keeps its `message`, its `path` as a list of keys, and the library's other fields that hold text, a number or a boolean, such as Zod's `code`. Fields that copy the failed value are left out.
 
 #### `output` and `iteration`
 
-Use `output` and `iteration` to provide output validation schemas. `output` is for regular JSON responses, while `iteration` is for [JSON Lines](https://vovk.dev/jsonlines). Both are optional. When given, the RPC method's result type follows `output`, and the type of its stream items follows `iteration`, instead of the handler's return type. They also enable key features like [OpenAPI](https://vovk.dev/openapi), [AI tools](https://vovk.dev/tools), and the [Python](https://vovk.dev/python), [Rust](https://vovk.dev/rust), and future clients. These schemas are not used for client-side validation. A procedure takes one or the other: `procedure(){:ts}` throws when it gets both.
+`output` and `iteration` take the output schemas: `output` for JSON responses, `iteration` for [JSON Lines](https://vovk.dev/jsonlines). Both are optional. When set, the RPC method's result type follows `output`, and the type of its stream items follows `iteration`, instead of the handler's return type. [OpenAPI](https://vovk.dev/openapi), [AI tools](https://vovk.dev/tools), and the [Python](https://vovk.dev/python), [Rust](https://vovk.dev/rust) and future clients use them too. Client-side validation doesn't. A procedure takes one or the other: `procedure(){:ts}` throws when it gets both.
 
-A response that fails `output` or `iteration` validation is a bug in the handler, not in the request. It is thrown as a plain `Error{:ts}`, without a status code: in production the client gets `500` "Internal server error", and the validation issues stay on the server, where the segment's [`onError`](https://vovk.dev/segment) receives the first 20 of them as the error's `cause`. In development the message names the failing fields.
+A response that fails `output` or `iteration` validation is a bug in the handler, not in the request. The error is a plain `Error{:ts}` without a status code. In production, the client gets `500` "Internal server error", and the validation issues stay on the server: the segment's [`onError`](https://vovk.dev/segment) gets the first 20 of them as the error's `cause`. In development, the message names the failing fields.
 
 #### `contentType`
 
-`contentType` specifies the expected `Content-Type` for the request body. It can be a string or an array of strings. It affects several areas of the procedure:
+`contentType` sets the `Content-Type` the request body must have, as a string or an array of strings. It affects:
 
-- **Client-side `body` typing** — The RPC method's `body` type is inferred based on the content type (e.g. `FormData{:ts}` for form data, `string{:ts}` for text types, `File | ArrayBuffer | Uint8Array | Blob{:ts}` for binary types).
-- **Server-side body parsing** — [`req.vovk.body()`](https://vovk.dev/req-vovk#body) automatically parses the request body into the appropriate shape (parsed JSON object, parsed `FormData{:ts}`, `string{:ts}`, or `File{:ts}`) based on the incoming `Content-Type` header.
-- **415 enforcement** — When `contentType` is set, requests that arrive without a matching `Content-Type` header receive a `415 Unsupported Media Type` error. The header must name one media type, compared case-insensitively: a comma-separated list is refused. A request without a body skips the check.
-- **Wildcard matching** — Supports wildcard patterns such as `'video/*'{:ts}`, `'image/*'{:ts}`, or `'*/*'{:ts}` to accept a range of media types.
+- **Client-side `body` type**: the RPC method's `body` type follows the content type, such as `FormData{:ts}` for form data, `string{:ts}` for text types and `File | ArrayBuffer | Uint8Array | Blob{:ts}` for binary types.
+- **Server-side body parsing**: [`req.vovk.body()`](https://vovk.dev/req-vovk#body) parses the body by the request's `Content-Type` header, into parsed JSON, a parsed `FormData{:ts}`, a `string{:ts}` or a `File{:ts}`.
+- **415 check**: when `contentType` is set, a request without a matching `Content-Type` header gets a `415 Unsupported Media Type` error. The header must name one media type, compared case-insensitively: a comma-separated list is refused. A request without a body skips the check.
+- **Wildcards**: patterns such as `'video/*'{:ts}`, `'image/*'{:ts}` or `'*/*'{:ts}` accept a range of media types.
 
-See [Content Type](https://vovk.dev/content-type) for a full breakdown of supported types, body parsing behaviour, and examples.
+See [Content Type](https://vovk.dev/content-type) for every supported type, how the body is parsed, and examples.
 
 #### `disableServerSideValidation`
 
-Disables server-side validation for the specified library. Provide a boolean to disable it entirely, or an array of validation types (`body`, `query`, `params`, `output`, `iteration`). This does not affect generated RPC typings or client-side validation.
+Turns off server-side validation: `true` for all of it, or an array of validation types (`body`, `query`, `params`, `output`, `iteration`). It doesn't change the RPC types or client-side validation.
 
 #### `skipSchemaEmission`
 
-Skips emitting JSON Schema for the handler. Provide a boolean to skip entirely, or an array of validation types (`body`, `query`, `params`, `output`, `iteration`). This does not change RPC typings but disables features that depend on emitted schemas, including client-side validation. The declared `contentType` is still emitted, since the clients encode the body by it.
+Leaves the handler's JSON Schema out of the emitted schema: `true` for all of it, or an array of validation types (`body`, `query`, `params`, `output`, `iteration`). It doesn't change the RPC types, but it turns off the features that read the emitted schema, client-side validation included. The declared `contentType` is still emitted, since the clients encode the body by it.
 
 #### `validateEachIteration`
 
-Applies only to `iteration`. Controls whether to validate each item in the streamed response. By default, only the first `iteration` item is validated.
+Applies to `iteration` only. Set it to validate every streamed item. By default, only the first item is validated.
 
 #### `operationObject`
 
-Optionally provide an `operationObject` to specify OAS details when the `@operation` decorator is not applicable—useful with [`fn`](https://vovk.dev/fn) on a regular function instead of a class method.
+Sets the OpenAPI operation details where the `@operation` decorator can't go, such as with [`fn`](https://vovk.dev/fn) on a regular function instead of a class method.
 
 #### `preferTransformed = true`
 
-By default, methods provided by [`req.vovk`](https://vovk.dev/req-vovk) transform (but not the built-in Next.js functions such as `req.json()` or `req.nextUrl.searchParams.get()`) incoming data into the validation result shape. If you need raw I/O without transformations, set `preferTransformed` to `false`. This causes all features that rely on validation models (`body`, `query`, `params`, `output`, `iteration`) to return the original data format instead of the transformed one. The JSON Schema emitted for `output` and `iteration` describes what the server sends: the transformed value, or with `preferTransformed: false` the original one.
+By default, the [`req.vovk`](https://vovk.dev/req-vovk) methods return the incoming data as the schemas transform it. The built-in Next.js functions, such as `req.json()` or `req.nextUrl.searchParams.get()`, don't. For the data without transforms, set `preferTransformed` to `false`. Then everything that uses the schemas (`body`, `query`, `params`, `output`, `iteration`) returns the original data instead. The JSON Schema emitted for `output` and `iteration` describes what the server sends: the transformed value, or with `preferTransformed: false` the original one.
+
+#### `target`
+
+The JSON Schema version the validation library emits for the procedure's schemas: `'draft-2020-12'` by default, or another version the library supports, such as `'draft-07'`.
 
 ### `procedure` Features
 
-Procedures created with `procedure()` gain extra capabilities beyond plain handlers.
+A procedure made with `procedure()` also has these properties.
 
 #### `fn`
 
-The `fn` property calls the procedure directly without making an HTTP request — for SSR/PPR, server actions, AI tool execution, etc. Same call shape as the generated RPC method:
+`fn` calls the procedure without an HTTP request, for SSR/PPR, server actions, AI tool execution and so on. It takes the same arguments as the generated RPC method:
 
 ```ts showLineNumbers copy
-const result = await UserController.updateUser.fn({
+const localResult = await UserController.updateUser.fn({
   body: { /* ... */ },
   query: { /* ... */ },
   params: { /* ... */ },
   disableClientValidation: false, // default
 });
 
-// same call shape as the RPC client
-const result = await UserRPC.updateUser({
+// the RPC method takes the same input
+const rpcResult = await UserRPC.updateUser({
   body: { /* ... */ },
   query: { /* ... */ },
   params: { /* ... */ },
@@ -1212,7 +1219,7 @@ const result = await UserRPC.updateUser({
 });
 ```
 
-See [Calling Procedures Locally](https://vovk.dev/fn) for details.
+See [Calling Procedures Locally](https://vovk.dev/fn).
 
 #### `schema`
 
@@ -1222,7 +1229,7 @@ const schema = UserController.updateUser.schema;
 // same as UserRPC.updateUser.schema
 ```
 
-The `schema` property exposes the method schema, mirroring the RPC method schema. It's typically used with `fn` to build [AI tools](https://vovk.dev/tools) that invoke handlers without HTTP.
+`schema` holds the method schema, the same as the RPC method's. It is often used with `fn` to build [AI tools](https://vovk.dev/tools) that call handlers without HTTP.
 
 #### `definition`
 
@@ -1230,7 +1237,7 @@ The `schema` property exposes the method schema, mirroring the RPC method schema
 const bodyModel = UserController.updateUser.definition.body;
 ```
 
-The `definition` property is available only on server-side methods, but not on the RPC methods. It lets you access the original procedure definition.
+`definition` holds the original procedure definition. It exists on server-side methods only, not on RPC methods.
 
 ---
 
@@ -1238,11 +1245,11 @@ Page: https://vovk.dev/service
 
 # Services
 
-A service is part of the Controller–Service–Repository pattern. It separates business logic from request handlers, keeping controllers focused on HTTP concerns while the service encapsulates the actual work and data manipulation.
+A service is part of the Controller–Service–Repository pattern. It keeps business logic out of the request handlers: the controller deals with HTTP, and the service does the work and changes the data.
 
-Like controllers, services are often written as static classes with static methods, but they do not require decorators or any special structure. The static-class style is simply a convention—you can instead use instantiated classes, standalone functions, or plain objects. This pattern also does **not** require dependency injection (DI): services can be plain modules you import and call directly.
+Like controllers, services are often classes with static methods, but they need no decorators and no special structure. The static class is only a convention: you can use class instances, standalone functions or plain objects instead. The pattern does **not** need dependency injection (DI) either: a service can be a plain module that you import and call.
 
-Let's say you have the following controller class:
+Take this controller:
 
 ```ts showLineNumbers copy filename="src/modules/user/user-controller.ts" {22}
 import { z } from 'zod';
@@ -1271,7 +1278,7 @@ export default class UserController {
 }
 ```
 
-The `handle` method returns the result of `UserService.updateUser`. That method, in turn, infers its types from the procedure, making the validation models (Zod schemas in this case) the single source of truth for input and output types, with no need to define separate types, thanks to the legendary [Anders Hejlsberg](https://github.com/ahejlsberg) for the fix in [#58616](https://github.com/microsoft/TypeScript/issues/58616)—without this TypeScript change, Vovk.ts would not be possible.
+The `handle` method returns the result of `UserService.updateUser`, and that method takes its types from the procedure. So the validation schemas (Zod here) are the single source of truth for the input and output types, and you define no separate types. Thanks to [Anders Hejlsberg](https://github.com/ahejlsberg) for the fix in [#58616](https://github.com/microsoft/TypeScript/issues/58616): without this TypeScript change, Vovk.ts would not be possible.
 
 ```ts showLineNumbers copy filename="src/modules/user/user-service.ts"
 import type { VovkBody, VovkOutput, VovkParams, VovkQuery } from 'vovk';
@@ -1283,14 +1290,14 @@ export default class UserService {
     query: VovkQuery<typeof UserController.updateUser>,
     params: VovkParams<typeof UserController.updateUser>
   ) {
-    // perform DB operations or other business logic here
+    // database calls or other business logic
     console.log(body, query, params);
     return { success: true, id: params.id } satisfies VovkOutput<typeof UserController.updateUser>;
   }
 }
 ```
 
-In other words, service methods can infer types from procedures, and procedures can call service methods without self-referencing type issues.
+Service methods infer their types from procedures, and procedures call service methods, without circular type errors.
 
 ---
 
@@ -1298,16 +1305,16 @@ Page: https://vovk.dev/req-vovk
 
 # `req.vovk` Interface
 
-While using built-in `NextRequest` functions like `req.json()` and `req.nextUrl.searchParams.get()` are sufficient for most use cases, Vovk.ts also patches the request object with `vovk` property that provides additional methods for more advanced input data handling. It covers the following scenarios:
+The built-in `NextRequest` functions, such as `req.json()` and `req.nextUrl.searchParams.get()`, cover most cases. Vovk.ts also adds a `vovk` property to the request, with methods for more advanced input handling. Use them to:
 
-- Receive data transformed by the validation library (`req.json()` and `req.nextUrl.searchParams.get()` return data as is), unless the procedure sets [`preferTransformed`](https://vovk.dev/procedure#prefertransformed--true) to `false`.
-- Implement nested query parameters parsing.
-- Read form data as a typed object, instead of `FormData`, provided by `req.formData()`.
-- Implement request metadata storage.
+- Get the data as the validation library transforms it (`req.json()` and `req.nextUrl.searchParams.get()` return it as sent), unless the procedure sets [`preferTransformed`](https://vovk.dev/procedure#prefertransformed--true) to `false`.
+- Parse nested query parameters.
+- Read form data as a typed object, instead of the `FormData` that `req.formData()` returns.
+- Store request metadata.
 
 ## `async req.vovk.body()`
 
-The `req.vovk.body` function returns the request body parsed as an object. In most cases, it behaves the same as `req.json()`, but can also return data based on non-JSON content type set at `procedure` function (see [Content Type](https://vovk.dev/content-type) for details).
+`req.vovk.body()` returns the parsed request body. Mostly it works as `req.json()` does, but it also parses the non-JSON content types that `procedure` declares (see [Content Type](https://vovk.dev/content-type)).
 
 ```ts showLineNumbers copy
 import { post, type VovkRequest } from 'vovk';
@@ -1320,11 +1327,11 @@ export default class UserController {
 }
 ```
 
-Once a body schema or `req.vovk.body()` has read the body, the body methods of `req`, `req.body` and `req.clone()` replay it. To forward the request, use `new Request(url, req)` or pass `body: req.body` to `fetch()`. `new Request(req)` and `fetch(req)` take the request's own body, which is read by then, and throw.
+Once a body schema or `req.vovk.body()` has read the body, the body methods of `req`, `req.body` and `req.clone()` replay it. To forward the request, use `new Request(url, req)`, or pass `body: req.body` to `fetch()`. `new Request(req)` and `fetch(req)` throw: they take the request's own body, which is read by then.
 
 ## `req.vovk.query()`
 
-The `req.vovk.query` function returns typed query parameters, allowing for nested data structures.
+`req.vovk.query()` returns the typed query parameters, nested data included.
 
 ```ts showLineNumbers copy
 import { get, type VovkRequest } from 'vovk';
@@ -1337,25 +1344,25 @@ export default class UserController {
 }
 ```
 
-Nested data is serialized as a query string with square brackets, commonly referred to as "PHP‑style" or "bracket notation".
+Nested data goes in the query string with square brackets, known as "PHP-style" or "bracket notation".
 
-- Square brackets `[ ]` denote keys for arrays or nested objects.
+- Square brackets `[ ]` hold the keys of arrays and nested objects.
 - Indices `[0]` to `[n-1]`, none missing, make an array of any length; `[]` appends an element after the highest index.
-- Any other keys make an object: named keys (e.g., `[f]`, `[u]`), and numeric keys with gaps, so `record[7]=on` gives `{ record: { 7: "on" } }`.
+- Any other keys make an object: named keys (such as `[f]` and `[u]`), and numeric keys with gaps, so `record[7]=on` gives `{ record: { 7: "on" } }`.
 - A key given more than once collects its values into an array, so `tag=a&tag=b` gives `{ tag: ["a", "b"] }`. A repeated index names the same element, so its last value wins.
 - With a `query` schema in a [procedure](https://vovk.dev/procedure), a key given once where the schema takes an array is a one-item array, so `tag=a` gives `{ tag: ["a"] }`, as OpenAPI's default style sends it.
 - `[]` followed by more brackets adds to the last element until that element already has the key: `items[][name]=a&items[][price]=1&items[][name]=b` gives `{ items: [{ name: "a", price: "1" }, { name: "b" }] }`.
-- The structure can be nested up to 32 levels deep. A key with more brackets gets a 400 response.
+- Nesting goes up to 32 levels. A key with more brackets gets a 400 response.
 
 The RPC client leaves out `null`, `undefined` and empty objects or arrays, and numbers the remaining array items without gaps, so `{ tags: ['a', null, 'b'] }{:ts}` arrives as `{ tags: ['a', 'b'] }{:ts}`. A value with a `toJSON` method is sent as its result, as `JSON.stringify` does: a `Date{:ts}` as an ISO string, a `URL{:ts}` as its `href`.
 
-The following query string:
+This query string:
 
 ```
 ?simple=value&array[0]=first&array[1]=second&object[key]=value&nested[obj][prop]=data&nested[arr][0]=item1&nested[arr][1]=item2&complex[items][0][name]=product&complex[items][0][price]=9.99&complex[items][0][tags][0]=new&complex[items][0][tags][1]=featured
 ```
 
-Is parsed as:
+is parsed as:
 
 ```ts showLineNumbers copy
 {
@@ -1384,7 +1391,7 @@ Is parsed as:
 
 ## `req.vovk.params()`
 
-The `req.vovk.params` function returns typed route parameters. To type it properly, use the third generic argument of `VovkRequest` (alternative to the second procedure argument).
+`req.vovk.params()` returns the typed route parameters, as the handler's second argument does. To type it, use the third type argument of `VovkRequest`.
 
 ```ts showLineNumbers copy
 import { get, type VovkRequest } from 'vovk';
@@ -1398,17 +1405,17 @@ export default class UserController {
 }
 ```
 
-A path segment can hold several params, e.g. `@get('range/{from}-{to}'){:ts}` or `@get('files/{name}.{ext}'){:ts}`. Each request gets its own params object. With a `params` schema, `req.vovk.params()` and the handler's second argument both return the validated value.
+A path segment can hold several params, such as `@get('range/{from}-{to}'){:ts}` or `@get('files/{name}.{ext}'){:ts}`. Each request gets its own params object. With a `params` schema, `req.vovk.params()` and the handler's second argument both return the validated value.
 
 ## `req.vovk.meta()`
 
-Custom metadata is accessible through the `vovk.meta` method in the procedure and in [custom decorators](https://vovk.dev/decorator).
+`req.vovk.meta()` reads and writes custom metadata, in the procedure and in [custom decorators](https://vovk.dev/decorator).
 
 ```ts showLineNumbers copy {4,13}
 import { createDecorator, get, type VovkRequest } from 'vovk';
 
 const myDecorator = createDecorator(async (req, next) => {
-  req.vovk.meta({ hello: 'world' }); // set request meta for the request
+  req.vovk.meta({ hello: 'world' }); // set the request metadata
   // ...
   return next();
 });
@@ -1423,7 +1430,7 @@ export default class MyController {
 }
 ```
 
-The metadata is a key‑value object that is merged when you call `vovk.meta` multiple times with different keys.
+The metadata is a key-value object. Calls with different keys merge into it, and every call returns it.
 
 ```ts showLineNumbers copy
 // ...
@@ -1432,35 +1439,29 @@ req.vovk.meta({ baz: 'qux' });
 console.log(req.vovk.meta<{ foo: string; baz: string }>()); // { foo: 'bar', baz: 'qux' }
 ```
 
-As you can see, a generic is required only when you want type‑safe access to metadata. If you don't provide a generic, the metadata is inferred from the argument.
+A type argument is needed only to read the metadata with types. Without one, the type comes from the argument.
 
-To reset metadata, call `req.vovk.meta(null)`, which clears the metadata object.
+To clear the metadata, call `req.vovk.meta(null)`:
 
 ```ts showLineNumbers copy
 req.vovk.meta(null);
 console.log(req.vovk.meta()); // {}
 ```
 
-To summarize:
-
-- To set metadata, use `req.vovk.meta({ key: value })`. It will return the metadata object typed as the passed object.
-- To access metadata, use `req.vovk.meta<{ key: Type }>()`, which will return the metadata object typed as the passed generic type.
-- To reset metadata, use `req.vovk.meta(null)`, which will clear the metadata object.
-
 #### Client-Side Meta with `xMetaHeader` Key
 
-[The TypeScript client](https://vovk.dev/typescript) can send custom metadata to the server in the `x-meta` header as a JSON string.
+[The TypeScript client](https://vovk.dev/typescript) can send metadata to the server as a JSON string in the `x-meta` header.
 
 ```ts showLineNumbers copy {5}
 import { UserRPC } from '@/client';
 
 const user = await UserRPC.getUser({
   params: { id: '123' },
-  meta: { hello: 'world' }, // pass metadata to the server via x-meta header
+  meta: { hello: 'world' }, // sent in the x-meta header
 });
 ```
 
-The `getUser` procedure, as well as [decorators](./decorator), can access this metadata via `req.vovk.meta` under the `xMetaHeader` key:
+The `getUser` procedure and [decorators](./decorator) read it with `req.vovk.meta()`, under the `xMetaHeader` key:
 
 ```ts showLineNumbers copy {6-7}
 import { get, type VovkRequest } from 'vovk';
@@ -1475,7 +1476,7 @@ export default class UserController {
 }
 ```
 
-This design prevents server‑side metadata from being overwritten by client input, as client values are only exposed under the `xMetaHeader` key.
+Client values stay under the `xMetaHeader` key, so client input can't overwrite server-side metadata.
 
 ---
 
@@ -1483,9 +1484,9 @@ Page: https://vovk.dev/fn
 
 # Local Procedure Call (LPC)
 
-Every procedure created with the [procedure](https://vovk.dev/procedure#procedure) function is callable as a regular function via its `fn` property. The call signature is `{ params, query, body }` — the same shape as the generated RPC client, which mirrors `fn` (not the other way around).
+Every procedure made with the [procedure](https://vovk.dev/procedure#procedure) function can be called as a regular function through its `fn` property. It takes `{ params, query, body }`, the same shape as the generated RPC client. The RPC client mirrors `fn`, not the other way around.
 
-Let's say you have the following controller class:
+Take this controller:
 
 ```ts showLineNumbers copy filename="src/modules/user/user-controller.ts"
 import { z } from 'zod';
@@ -1495,8 +1496,8 @@ import UserService from './user-service';
 @prefix('users')
 export default class UserController {
   @operation({
-    summary: 'Update user',
-    description: 'Update user by ID with Zod validation',
+    summary: 'Get user',
+    description: 'Get user by ID with Zod validation',
   })
   @get('{id}')
   static getUser = procedure({
@@ -1509,7 +1510,7 @@ export default class UserController {
 }
 ```
 
-When the controller is mounted in a [segment](https://vovk.dev/segment), the same procedure is also reachable over HTTP through the generated RPC client — same call shape:
+When the controller is in a [segment](https://vovk.dev/segment), the generated RPC client calls the same procedure over HTTP, with the same call shape:
 
 ```ts showLineNumbers copy
 import { UserRPC } from '@/client';
@@ -1523,7 +1524,7 @@ const user = await UserRPC.getUser({
 console.log('User:', user);
 ```
 
-Calling the procedure with `fn` runs it in the current evaluation context — no HTTP, no network, full validation:
+`fn` runs the procedure in the current context, with full validation and no HTTP or network:
 
 ```ts showLineNumbers copy
 import UserController from '@/modules/user/user-controller';
@@ -1537,11 +1538,9 @@ const user = await UserController.getUser.fn({
 console.log('User:', user);
 ```
 
-This will invoke `UserController.getUser` like a normal function, performing validation before executing the handler.
+Local procedures have these main uses:
 
-There are several core use cases for local procedures:
-
-**For SSR, SSG, PPR, and server actions**: You can use the method in a server component:
+**For SSR, SSG, PPR and server actions**: call the method in a server component:
 
 ```tsx showLineNumbers copy filename="src/app/user/page.tsx"
 import UserController from '@/modules/user/user-controller';
@@ -1557,7 +1556,7 @@ export default async function UserPage() {
 }
 ```
 
-**For Next.js server actions**: You can use `fn` inside a server action to call the procedure directly from a form submission. Make sure the procedure has `contentType` set to `'multipart/form-data'` to accept `FormData` as the body:
+**For Next.js server actions**: call `fn` in a server action to run the procedure from a form. Set the procedure's `contentType` to `'multipart/form-data'` so it takes `FormData` as the body:
 
 ```tsx showLineNumbers copy filename="src/app/user/create/page.tsx"
 import UserController from '@/modules/user/user-controller';
@@ -1577,7 +1576,7 @@ export default function CreateUserPage() {
 }
 ```
 
-**For [AI tool execution](https://vovk.dev/tools)**: controllers that define procedures with `procedure()` can be passed as a "module" to the `deriveTools` utility to call procedures in the current context without performing HTTP requests.
+**For [AI tool execution](https://vovk.dev/tools)**: pass a controller with `procedure()` procedures to `deriveTools` as a "module". Its tools call the procedures in the current context, without HTTP requests.
 
 ```ts showLineNumbers copy
 import { deriveTools } from 'vovk';
@@ -1591,9 +1590,9 @@ console.log(tools); // [{ name, description, inputSchema, execute, ... }, ...]
 
 ## Rules of Locally Called Procedures
 
-`fn` functions do not imitate the `Request` object but partially implement the `VovkRequest` interface by exposing only the [custom `vovk` property](https://vovk.dev/req-vovk) with `async vovk.body()`, `vovk.query()`, `vovk.params()`, and `vovk.meta()`. In other words, properties such as `req.url` or `req.headers` are not defined in the local procedure context. A suitable `req` signature looks like `Pick<VovkRequest<TBody, TQuery, TParams>, 'vovk'>{:ts}`. `vovk.body()` reads a `FormData{:ts}`, `URLSearchParams{:ts}`, `Blob{:ts}`, `ArrayBuffer{:ts}` or typed array body as the server reads a request that carries it, by the content type the RPC client would send; any other body is passed as it is.
+`fn` doesn't imitate the `Request` object. Its `req` has only the [custom `vovk` property](https://vovk.dev/req-vovk), with `async vovk.body()`, `vovk.query()`, `vovk.params()` and `vovk.meta()`, so properties such as `req.url` or `req.headers` are not defined in a local call. A fitting `req` type is `Pick<VovkRequest<TBody, TQuery, TParams>, 'vovk'>{:ts}`. `vovk.body()` reads a `FormData{:ts}`, `URLSearchParams{:ts}`, `Blob{:ts}`, `ArrayBuffer{:ts}` or typed array body as the server reads a request that carries it, by the content type the RPC client would send. Any other body is passed as it is.
 
-To ensure that the implemented HTTP handler can also be called with `fn`, you can use request object destructuring when defining the handler to use only the `vovk` property:
+So that an HTTP handler also works with `fn`, destructure the request and use only its `vovk` property:
 
 ```ts showLineNumbers copy {16}
 export default class UserController {
@@ -1621,7 +1620,7 @@ export default class UserController {
 }
 ```
 
-Local procedure is [decorated](./decorator) with the same decorators as the HTTP handler. If you create a decorator to wrap an HTTP handler for use with `fn`, avoid using `NextRequest`‑specific properties like `req.headers`, or `req.nextUrl`.
+A local call runs the same [decorators](./decorator) as the HTTP handler. In a decorator for a handler you call with `fn`, don't use `NextRequest` properties such as `req.headers` or `req.nextUrl`.
 
 ```ts showLineNumbers copy {4}
 import { createDecorator } from 'vovk';
@@ -1633,7 +1632,7 @@ const myDecorator = createDecorator(({ vovk }, next) => {
 });
 ```
 
-You can detect if the procedure is called locally by checking `req.url`, which is `undefined` when called via `fn`:
+To detect a local call, check `req.url`: it is `undefined` in a call through `fn`:
 
 ```ts showLineNumbers copy {4}
 import { createDecorator } from 'vovk';
@@ -1649,7 +1648,7 @@ const myDecorator = createDecorator((req, next) => {
 });
 ```
 
-Even though `req` is not a `Request`, you can still use Next.js features like `headers` or `cookies` from `next/headers` in the local procedure context:
+`req` is not a `Request`, but a local call can still use Next.js functions such as `headers` or `cookies` from `next/headers`:
 
 ```ts showLineNumbers copy {5}
 import { createDecorator } from 'vovk';
@@ -1664,7 +1663,7 @@ const myDecorator = createDecorator(async ({ vovk }, next) => {
 
 ---
 
-An HTTP decorator such as `@get`, `@post`, etc., is not required for a local procedure to work. The only requirement is to use the `procedure` function to create the procedure.
+A local procedure needs no HTTP decorator such as `@get` or `@post`. It only needs to be made with the `procedure` function.
 
 ```ts showLineNumbers copy filename="src/modules/user/user-procedures.ts"
 import { z } from 'zod';
@@ -1686,7 +1685,7 @@ UserProcedures.updateUser.fn({
 });
 ```
 
-When a static class is implemented this way, it behaves like a "validated service", which can be attached to the controller later or used as a standalone collection of validated functions.
+A class written this way works as a "validated service". Attach its procedures to a controller later, or use it on its own as a set of validated functions.
 
 ```ts showLineNumbers copy filename="src/modules/user/user-controller.ts" {7}
 import { prefix, post } from 'vovk';
@@ -1707,9 +1706,9 @@ Page: https://vovk.dev/response
 
 # Response and Errors
 
-[Procedures](./procedure), being a wrapper over Next.js route handlers, return `Response` objects. Alternatively, they can return JSON objects and throw exceptions, that internally get converted to `Response` objects.
+[Procedures](./procedure) wrap Next.js route handlers, so they can return `Response` objects. They can also return plain objects and throw exceptions, which Vovk.ts turns into `Response` objects.
 
-The following snippets are equivalent for type inference at [TypeScript client](https://vovk.dev/typescript).
+For type inference in the [TypeScript client](https://vovk.dev/typescript), these snippets are the same:
 
 ```ts showLineNumbers copy
 // ...
@@ -1748,7 +1747,7 @@ export default class HelloController {
 
 ### Static Response Headers
 
-All HTTP decorators support custom response headers via the second argument.
+Every HTTP decorator takes custom response headers in its second argument.
 
 ```ts showLineNumbers copy
 // ...
@@ -1772,7 +1771,7 @@ export default class UserController {
 }
 ```
 
-For auto‑generated endpoints, `cors` and `headers` are specified as the single argument.
+For `.auto()` endpoints, pass `cors` and `headers` as the only argument.
 
 ```ts showLineNumbers copy
 // ...
@@ -1786,7 +1785,7 @@ export default class UserController {
 
 ### Dynamic Response Headers
 
-Set dynamic response headers with the `NextResponse` or `Response` object.
+Set headers per response with a `NextResponse` or `Response` object.
 
 ```ts showLineNumbers copy
 import { NextResponse } from 'next/server';
@@ -1802,7 +1801,7 @@ export default class UserController {
 
 ## `redirect` and `notFound`
 
-To perform a redirect or render the not‑found page, use the built‑in Next.js functions from **next/navigation**.
+To redirect, or to render the not-found page, use the Next.js functions from **next/navigation**.
 
 ```ts showLineNumbers copy
 import { redirect, notFound } from 'next/navigation';
@@ -1822,15 +1821,15 @@ export default class UserController {
 }
 ```
 
-Both functions work by throwing an error, so you don’t need a `return` statement. TypeScript casts their return type as `never`. The same goes for `forbidden()` and `unauthorized()`: Vovk.ts rethrows these errors so Next.js answers them.
+Both functions throw an error, so you need no `return` statement; their return type is `never`. The same goes for `forbidden()` and `unauthorized()`. Vovk.ts rethrows these errors, so Next.js answers them.
 
-Thrown in a [JSON Lines](https://vovk.dev/jsonlines) stream, after the response has started, they end the stream with an error line instead: `notFound()`, `forbidden()` and `unauthorized()` send their status, 404, 403 or 401, and `redirect()` is sent as any other error, "Internal server error" in production.
+In a [JSON Lines](https://vovk.dev/jsonlines) stream, after the response has started, they end the stream with an error line instead. `notFound()`, `forbidden()` and `unauthorized()` send their status: 404, 403 or 401. `redirect()` is sent as any other error: "Internal server error" in production.
 
-See the [Next.js documentation](https://nextjs.org/docs/app/building-your-application/routing/redirecting) for more information.
+See the [Next.js documentation](https://nextjs.org/docs/app/building-your-application/routing/redirecting).
 
 ## File Downloads
 
-For attachments use `Response` from the Web API with appropriate headers.
+For a file attachment, return a Web API `Response` with the right headers.
 
 ```ts showLineNumbers copy
 // ...
@@ -1847,7 +1846,7 @@ export default class DownloadController {
 }
 ```
 
-In order to simplify file responses, Vovk provides a helper function `toDownloadResponse`, which accepts a `Blob | File | ArrayBuffer | Uint8Array | ReadableStream<Uint8Array> | string{:ts}` as the file content, along with optional `filename`, `type` and `headers` object.
+The `toDownloadResponse` helper builds this response for you. It takes the file content as a `Blob | File | ArrayBuffer | Uint8Array | ReadableStream<Uint8Array> | string{:ts}`, and an optional object with `filename`, `type` and `headers`.
 
 ```ts showLineNumbers copy
 
@@ -1867,7 +1866,7 @@ export default class DownloadController {
 
 ## Errors
 
-You can gracefully throw HTTP exceptions using syntax inspired by NestJS. The `HttpException` class accepts three arguments: an HTTP code from `HttpStatus`, a message, and an optional `cause` object.
+Throw HTTP errors with the `HttpException` class, in a syntax inspired by NestJS. It takes three arguments: an HTTP status from `HttpStatus`, a message and an optional `cause` object.
 
 ```ts showLineNumbers copy
 import { HttpException, HttpStatus } from 'vovk';
@@ -1879,7 +1878,7 @@ static async updateUser(/* ... */) {
 }
 ```
 
-Errors are rethrown on the [client side](https://vovk.dev/typescript) with the same interface.
+The [TypeScript client](https://vovk.dev/typescript) rethrows them with the same interface.
 
 ```ts showLineNumbers copy
 import { UserRPC } from '@/client';
@@ -1895,7 +1894,7 @@ try {
 }
 ```
 
-Regular errors such as `Error` are equivalent to `HttpException` with code `500`. In production, their message and cause stay on the server and the client gets "Internal server error". So does an `HttpException` with status `0`, which an RPC module throws when a call gets no response or fails client-side validation. To pass such a failure on, catch it and throw an `HttpException` with a status.
+Other errors, such as `Error`, count as an `HttpException` with status `500`. In production, their message and cause stay on the server, and the client gets "Internal server error". The same goes for an `HttpException` with status `0`, which an RPC module throws when a call gets no response or fails client-side validation. To pass such a failure on, catch it and throw an `HttpException` with a status.
 
 ```ts showLineNumbers copy
 import { HttpException, HttpStatus } from 'vovk';
@@ -1907,7 +1906,7 @@ static async updateUser(/* ... */) {
 }
 ```
 
-You can provide a `cause` as the third argument to `HttpException` to supply additional context.
+The third argument, `cause`, adds context:
 
 ```ts showLineNumbers copy
 throw new HttpException(HttpStatus.BAD_REQUEST, 'Something went wrong', { hello: 'World' });
@@ -1915,7 +1914,7 @@ throw new HttpException(HttpStatus.BAD_REQUEST, 'Something went wrong', { hello:
 
 ## HttpStatus Enum
 
-Here are the values of the `HttpStatus` enum for quick reference.
+The values of the `HttpStatus` enum:
 
 ```ts showLineNumbers copy
 export enum HttpStatus {
@@ -1975,7 +1974,7 @@ export enum HttpStatus {
 
 ### JSON Proxy
 
-You can create a proxy endpoint by fetching data from another server with `fetch`. It returns a `Response`, which Next.js handles automatically. To ensure correct client-side inference, force a different return type.
+A proxy endpoint gets data from another server with `fetch` and returns its `Response`, which Next.js sends as is. For the right type on the client, cast the return type:
 
 ```ts showLineNumbers copy
 import { get } from 'vovk';
@@ -1990,7 +1989,7 @@ export default class ProxyController {
 
 [View live example on examples.vovk.dev »](https://examples.vovk.dev/proxy)
 
-On the client, the return type is inferred as expected.
+The client then infers that type:
 
 ```ts showLineNumbers copy
 import { ProxyRPC } from '@/client';
@@ -1999,7 +1998,7 @@ import { ProxyRPC } from '@/client';
 const { greeting } = await ProxyRPC.getHello();
 ```
 
-Alternatively, you can define the response type at the client method and keep the server return type as `Response`.
+Or keep the server return type as `Response`, and set the type on the client method:
 
 ```ts showLineNumbers copy
 import { ProxyRPC } from '@/client';
@@ -2010,7 +2009,7 @@ const { greeting } = await ProxyRPC.getHello<{ greeting: string }>();
 
 ### Blob Proxy
 
-When you keep the original `Response` type, the client resolves the result as a `Response` object. This is useful for files or binary data.
+If you keep the `Response` type, the client resolves the call to a `Response` object. Use this for files or binary data.
 
 ```ts showLineNumbers copy
 import { get } from 'vovk';
@@ -2039,9 +2038,9 @@ Page: https://vovk.dev/content-type
 
 # Content Type
 
-The `contentType` option on a `procedure` controls how the request body is typed on the client, how it is parsed on the server, and which `Content-Type` headers are accepted. When `contentType` is set, the server returns a **415 Unsupported Media Type** error if the incoming request doesn't carry a matching `Content-Type` header.
+The `contentType` option of `procedure` sets how the client types the request body, how the server parses it, and which `Content-Type` headers the server accepts. When `contentType` is set, a request without a matching `Content-Type` header gets a **415 Unsupported Media Type** error.
 
-The following table summarises how each content type family maps to client-side `body` typing and server-side `req.vovk.body()` return type:
+How each content type family maps to the client's `body` type and to what `req.vovk.body()` returns:
 
 | Content Type | Client `body` type | `req.vovk.body()` return type |
 |---|---|---|
@@ -2053,13 +2052,13 @@ The following table summarises how each content type family maps to client-side 
 
 > [!NOTE]
 >
-> Standard `Request` methods like `req.json()`, `req.text()`, `req.blob()`, and `req.formData()` remain available and work as usual—`contentType` only affects the typed helper on `req.vovk.body()`.
+> The standard `Request` methods, such as `req.json()`, `req.text()`, `req.blob()` and `req.formData()`, work as usual. `contentType` only affects the typed `req.vovk.body()` helper.
 
-Wildcard patterns such as `'video/*'{:ts}`, `'image/*'{:ts}`, or `'*/*'{:ts}` are supported and match any subtype within that family.
+Wildcard patterns such as `'video/*'{:ts}`, `'image/*'{:ts}` or `'*/*'{:ts}` match any subtype of their family.
 
 ## JSON (default)
 
-When no `contentType` is specified, or when it is set to `'application/json'`, the body is typed as the schema-inferred type and parsed as JSON.
+Without `contentType`, or with `'application/json'`, the body has the type the schema infers and is parsed as JSON.
 
 ```ts showLineNumbers copy
 import { z } from 'zod';
@@ -2082,7 +2081,7 @@ export default class UserController {
 
 ## Form Data
 
-To accept form data requests, set `contentType` to `'multipart/form-data'`.
+To accept form data, set `contentType` to `'multipart/form-data'`.
 
 ```ts showLineNumbers copy {8}
 import { z } from 'zod';
@@ -2105,7 +2104,7 @@ export default class UserController {
 }
 ```
 
-The RPC method's `body` type is inferred as `TBody | FormData | Blob{:ts}`, where `TBody` is the type inferred from the validation schema. An object is validated as an object, then converted to `FormData` on the client side: `null` and `undefined` fields are left out, an array becomes one entry per item, a `Date{:ts}` is sent as an ISO string and another object as JSON. When the procedure also takes `application/json`, an object is sent as JSON, unless a field holds a file.
+The RPC method's `body` type is `TBody | FormData | Blob{:ts}`, where `TBody` comes from the validation schema. The client validates an object as an object, then converts it to `FormData`. It leaves out `null` and `undefined` fields, and sends an array as one entry per item, a `Date{:ts}` as an ISO string and any other object as JSON. When the procedure also takes `application/json`, an object is sent as JSON, unless a field holds a file.
 
 ```ts showLineNumbers copy
 import { UserRPC } from '@/client';
@@ -2119,9 +2118,9 @@ await UserRPC.createUser({
 });
 ```
 
-On the server-side `req.vovk.body()` automatically parses the form data into a plain object (see [`req.vovk` Interface](https://vovk.dev/req-vovk)). You can also access the raw `FormData{:ts}` instance via `req.formData()`.
+On the server, `req.vovk.body()` parses the form data into a plain object (see [`req.vovk` Interface](https://vovk.dev/req-vovk)).
 
-If the form data can contain one or more values for the same key, use a union of the value type and an array of the value type, because `FormData` doesn't distinguish between single and multiple values.
+If a key can have one or more values, use a union of the value type and an array of it: `FormData` doesn't tell one value from several.
 
 ```ts showLineNumbers copy {9}
 import { z } from 'zod';
@@ -2141,7 +2140,7 @@ export default class UserController {
 }
 ```
 
-The same recommendation applies to files:
+The same goes for files:
 
 ```ts showLineNumbers copy {9}
 import { z } from 'zod';
@@ -2161,11 +2160,11 @@ export default class UserController {
 }
 ```
 
-Note that client-side validation does not fully support the OpenAPI-compatible `format: "binary"`, and file size, type, etc., are not validated on the client side.
+Client-side validation doesn't fully support the OpenAPI `format: "binary"`, and it doesn't check file size, type and so on.
 
 ## URL-Encoded Form Data
 
-Set `contentType` to `'application/x-www-form-urlencoded'` to accept URL-encoded form submissions. The body is parsed the same way as `multipart/form-data`, but the client `body` type also accepts `URLSearchParams{:ts}`. When the procedure doesn't also accept `multipart/form-data`, an object body, or a `FormData{:ts}` without files, is sent as `URLSearchParams{:ts}`.
+Set `contentType` to `'application/x-www-form-urlencoded'` to accept URL-encoded forms. The server parses the body as it parses `multipart/form-data`, and the client `body` type also takes `URLSearchParams{:ts}`. When the procedure doesn't also take `multipart/form-data`, the client sends an object body, or a `FormData{:ts}` without files, as `URLSearchParams{:ts}`.
 
 ```ts showLineNumbers copy {7}
 import { z } from 'zod';
@@ -2188,7 +2187,7 @@ export default class UserController {
 
 ## Text
 
-For text-based content types (`text/*`, known text-like application types such as `application/xml` or `application/yaml`, and suffix patterns like `*+xml`, `*+text`, `*+yaml`, `*+json-seq`), the body is parsed as a `string`.
+Text content types are parsed as a `string`: `text/*`, known text-like application types such as `application/xml` or `application/yaml`, and the suffixes `*+xml`, `*+text`, `*+yaml` and `*+json-seq`.
 
 The client sends a string body as the text type the procedure declares. A string body to a procedure that takes JSON, such as one with `body: z.string(){:ts}`, is sent as a JSON value.
 
@@ -2208,9 +2207,9 @@ export default class UserController {
 
 ## Binary / File Uploads
 
-For any content type that doesn't fall into the above categories—such as `application/octet-stream`, `image/*`, `video/*`, `application/pdf`, etc.—the body is parsed into a `File{:ts}` on the server. On the client side, the `body` accepts `File | ArrayBuffer | Uint8Array | Blob{:ts}`.
+Any other content type, such as `application/octet-stream`, `image/*`, `video/*` or `application/pdf`, is parsed into a `File{:ts}` on the server. On the client, `body` takes `File | ArrayBuffer | Uint8Array | Blob{:ts}`.
 
-Bytes without a type, such as an `ArrayBuffer{:ts}`, a `Uint8Array{:ts}` or a `Blob{:ts}` with an empty `type`, are sent as the first declared type that isn't JSON, a form or a wildcard, such as `image/png`, else as a wildcard other than `*/*`, such as `image/*`. Without either, they are sent as `application/octet-stream` to a procedure that takes any type (`*/*`), and otherwise as the JSON or URL-encoded type it declares. A `File{:ts}` or a typed `Blob{:ts}` is sent as its own type, and the server refuses a type the procedure doesn't declare, unless it declares `application/octet-stream`, which takes any file.
+Bytes without a type, such as an `ArrayBuffer{:ts}`, a `Uint8Array{:ts}` or a `Blob{:ts}` with an empty `type`, are sent as the first declared type that isn't JSON, a form or a wildcard, such as `image/png`. If there is none, they are sent as a wildcard other than `*/*`, such as `image/*`. Without either, they are sent as `application/octet-stream` to a procedure that takes any type (`*/*`), and otherwise as the JSON or URL-encoded type it declares. A `File{:ts}` or a typed `Blob{:ts}` is sent as its own type, and the server refuses a type the procedure doesn't declare, unless it declares `application/octet-stream`, which takes any file.
 
 The server names the `File{:ts}` after the request's `Content-Disposition` header, reading `filename*` before `filename`, and calls it `file` without one. The TypeScript client sends that header for a `File{:ts}` body. The name is client input, as is the name of a file in form data: never use it as a path.
 
@@ -2241,7 +2240,7 @@ await UserRPC.uploadImage({
 
 ## Multiple Content Types
 
-`contentType` accepts an array of strings to allow multiple content types. The body type becomes a union of all corresponding types.
+`contentType` takes an array to allow several content types. The body type is then the union of their types.
 
 ```ts showLineNumbers copy {7}
 import { z } from 'zod';
@@ -2269,21 +2268,21 @@ Page: https://vovk.dev/jsonlines
 
 ## Overview
 
-Vovk.ts includes first‑class support for the [JSON Lines](https://jsonlines.org/) format, a convenient way to implement “one request—many responses.” JSON Lines is another output type that uses the `iteration` validation field and produces the `application/jsonl` content type if the client sends an `Accept: application/jsonl` header. If the `Accept` header doesn’t include `application/jsonl`, the output is returned as `text/plain` so it’s viewable when the endpoint URL is opened directly in a browser.
+Vovk.ts supports the [JSON Lines](https://jsonlines.org/) format, which answers one request with many responses. It is an output type with its own validation field, `iteration`. The response has the `application/jsonl` content type when the client sends an `Accept: application/jsonl` header. Otherwise it is `text/plain`, so a browser shows it when you open the endpoint URL.
 
-The use cases for JSON Lines include:
+Use JSON Lines for:
 
-- Type-safe alternative to Server-Sent Events (SSE) for streaming data to clients.
-- Long‑running operations that produce multiple results over time, such as LLM completions or database polling.
-- [Progressive](https://vovk.dev/progressive) data loading, where partial results are sent as they become available.
+- A type-safe alternative to Server-Sent Events (SSE) for streaming data to clients.
+- Long-running operations that produce results over time, such as LLM completions or database polling.
+- [Progressive](https://vovk.dev/progressive) data loading, which sends partial results as they become ready.
 
 > [!IMPORTANT]
 >
-> Because the response size is not known in advance, JSON Lines responses cannot be compressed with Gzip, Brotli, or other algorithms. Keep this in mind for large responses.
+> The response size isn't known in advance, so a JSON Lines response can't be compressed with Gzip, Brotli or other algorithms. Keep this in mind for large responses.
 
 ## Creating a JSON Lines Generator Procedure
 
-To create a JSON Lines procedure, define a procedure as a generator or async generator function. Each yielded object is serialized to JSON and sent as a separate line in the response.
+To stream JSON Lines, write the handler as a generator or an async generator. Each yielded value is serialized to JSON and sent as its own line.
 
 ```ts showLineNumbers copy
 import { z } from 'zod';
@@ -2314,7 +2313,7 @@ export default class StreamController {
 }
 ```
 
-When used with a service, the iterable can be delegated using the `yield*` syntax:
+To stream from a service, delegate to it with `yield*`:
 
 ```ts showLineNumbers copy filename="src/modules/stream/stream-controller.ts"
 import { z } from 'zod';
@@ -2357,7 +2356,7 @@ export default class StreamService {
 }
 ```
 
-On the client side, the JSON Lines output can be consumed using [disposable](https://github.com/tc39/proposal-explicit-resource-management) [async iterators](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/AsyncIterator), to process each line as it arrives:
+On the client, read each line as it arrives with [disposable](https://github.com/tc39/proposal-explicit-resource-management) [async iterators](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/AsyncIterator):
 
 ```ts showLineNumbers copy
 import { StreamRPC } from '@/client';
@@ -2369,17 +2368,17 @@ for await (const { message } of stream) {
 }
 ```
 
-The iterable (represented as `stream` above), besides `Symbol.asyncIterator`, `Symbol.dispose`, and `Symbol.asyncDispose`, also provides:
+Besides `Symbol.asyncIterator`, `Symbol.dispose` and `Symbol.asyncDispose`, the iterable (`stream` above) has:
 
-- `status`: The HTTP response status (e.g., 200 for OK, 404 for Not Found).
-- `asPromise`: A promise that resolves with an array of all emitted values when the stream completes. Every call gets the same items.
-- `onIterate`: Registers a callback for each iteration.
-- `abortController`: An `AbortController` instance to abort the stream. When the stream is closed with `abortController.abort()`, it throws an `AbortError` on the stream reader that can be caught on the client side via error `cause` property.
-- `abortSilently`: A method to abort the stream without throwing an error on the stream reader. This is useful when you want to stop processing the stream gracefully.
+- `status`: the HTTP response status, such as 200 for OK or 404 for Not Found.
+- `asPromise`: returns a promise that resolves with an array of all items when the stream ends. Every call gets the same items.
+- `onIterate`: registers a callback for each item.
+- `abortController`: an `AbortController` that aborts the stream. `abortController.abort()` makes the stream reader throw an `AbortError`, which the client finds in the error's `cause` property.
+- `abortSilently`: aborts the stream without an error on the stream reader, to stop reading it quietly.
 
-The `using` statement ensures the stream is aborted with `stream.abortSilently('Stream disposed')` when it goes out of scope.
+With `using`, the stream is aborted with `stream.abortSilently('Stream disposed')` when it goes out of scope.
 
-The client reads the response only as fast as the iteration takes items, so a slow consumer slows the stream down instead of buffering it. An item is kept until every running iteration has passed it: iterations that run at the same time each get all items, an iteration that starts later begins at the oldest kept item, and iterating a consumed stream again yields nothing. After a `break`, the items already read stay for a later iteration or `asPromise()`. A line that isn't JSON, such as a last line the connection cut short, ends the iteration with an error.
+The client reads the response only as fast as the iteration takes items, so a slow consumer slows the stream down instead of buffering it. An item is kept until every running iteration has passed it. Iterations that run at the same time each get all items. An iteration that starts later begins at the oldest kept item, and iterating a consumed stream again yields nothing. After a `break`, the items already read stay for a later iteration or `asPromise()`. A line that isn't JSON, such as a last line the connection cut short, ends the iteration with an error.
 
 ```ts showLineNumbers copy
 console.log('Response status:', stream.status);
@@ -2394,7 +2393,7 @@ console.log('All messages:', await stream.asPromise());
 
 ## OpenAI Chat Example
 
-Create a procedure that delegates iterable output from OpenAI's streaming chat completions:
+This procedure streams OpenAI's chat completions by delegating to them:
 
 ```ts showLineNumbers copy filename="src/modules/llm/llm-controller.ts"
 import { post, prefix, operation, type VovkRequest } from 'vovk';
@@ -2421,7 +2420,7 @@ export default class OpenAiController {
 }
 ```
 
-On the client side, consume the streamed completion as follows:
+On the client, read the streamed completion:
 
 ```ts showLineNumbers copy
 // ...
@@ -2438,7 +2437,7 @@ for await (const part of completion) {
 
 ## `JSONLinesResponder` Class
 
-`JSONLinesResponder` class is a lower-level API that works behind the scenes of the generator-based approach described above. It gives more control over the streaming logic, allowing to send messages manually. It constructs `ReadableStream` internally that's used as the response body.
+`JSONLinesResponder` is the lower-level API behind generator handlers. It gives you more control: you send the lines yourself. It creates the `ReadableStream` that is the response body.
 
 ```ts showLineNumbers copy
 const responder = new JSONLinesResponder<IterationType>(req);
@@ -2448,22 +2447,22 @@ const responder = new JSONLinesResponder<IterationType>(req);
 const responder = new JSONLinesResponder<IterationType>(req, ({ readableStream, headers }) => new Response(readableStream, { headers }));
 ```
 
-The constructor accepts two optional parameters:
+The constructor takes two optional parameters:
 
-- `request?: Request | null` – The incoming request object. If provided, it checks for `Accept: application/jsonl` header to create `headers` record for the response with `Content-Type: application/jsonl`. If not provided or the header is missing, it defaults to `text/plain`. The RPC client streams only a JSON Lines response and returns any other `Response` as is, so pass the request when the client reads the stream. In a procedure with `iteration`, the request also lets the responder validate a line sent before the handler returns it.
-- `getResponse?: (responder: JSONLinesResponder<T>) => Response` – A function that allows to construct a custom `Response` object. Allows to set custom headers or other response options. If not provided, `Response` is created internally with default headers.
+- `request?: Request | null`: the incoming request. When given, the responder checks its `Accept: application/jsonl` header and sets `Content-Type: application/jsonl` in the `headers` of the response. Without the request or the header, the content type is `text/plain`. The RPC client streams only a JSON Lines response and returns any other `Response` as is, so pass the request when the client reads the stream. In a procedure with `iteration`, the request also lets the responder validate a line sent before the handler returns it.
+- `getResponse?: (responder: JSONLinesResponder<T>) => Response`: builds a custom `Response`, for example with your own headers or other response options. Without it, the responder creates a `Response` with the default headers.
 
-The responder instance provides the following members:
+The responder has these members:
 
-- `send(item: T): Promise` – Sends a JSON line to the client. The item is validated (if `iteration` is present; by default only the first item is validated unless `validateEachIteration: true` is set), serialized to JSON and followed by a newline character. Lines go out in call order, also when `send()` is not awaited. A send that fails, on iteration validation or with an item JSON can't serialize, ends the stream as `throw()` does, and the segment's `onError` receives the error.
-- `close(): Promise` – Closes the response stream once the lines sent before it are out. A line sent after `close()` is dropped.
-- `throw(err: Error): Promise` – Sends an error line after the lines sent before it and closes the stream; a line sent after `throw()` is dropped. The error line is `{"isError":true,"reason":"…"}`, plus the `statusCode` of an `HttpException{:ts}`, which is 500 for a status outside 200-599 as on a JSON response; the client rethrows it as an `HttpException{:ts}` with that status. The error of `notFound(){:ts}`, `forbidden(){:ts}` or `unauthorized(){:ts}` from `next/navigation`, which Next.js can no longer answer once the stream started, sends its status: 404, 403 or 401. In production, an error that is not an `HttpException{:ts}`, or is one with status 0, which a client throws for a call that got no response, reads "Internal server error".
-- `isClosed: boolean` – Whether the stream is closed: by `close()` or `throw()`, from the moment either is called, by a failed send, or by the client going away. `send()` waits while the client reads slower than the handler writes, and a generator handler is stopped, with its `finally` run, when the client disconnects or an item fails.
-- `response: Response` – The underlying `Response` object that will be returned from the Next.js route handler.
-- `headers: Record<string, string>` – The `content-type` for the response.
-- `readableStream: ReadableStream<Uint8Array>` – The readable stream used as the response body.
+- `send(item: T): Promise`: sends a JSON line to the client. The item is validated (when the procedure has `iteration`, only the first item, unless `validateEachIteration: true` is set), serialized to JSON and followed by a newline. Lines go out in call order, also when `send()` is not awaited. A send that fails, on iteration validation or with an item JSON can't serialize, ends the stream as `throw()` does, and the segment's `onError` gets the error.
+- `close(): Promise`: closes the response stream once the lines sent before it are out. A line sent after `close()` is dropped.
+- `throw(err: Error): Promise`: sends an error line after the lines sent before it, and closes the stream; a line sent after `throw()` is dropped. The error line is `{"isError":true,"reason":"…"}`, plus the `statusCode` of an `HttpException{:ts}`, which is 500 for a status outside 200-599 as on a JSON response. The client rethrows it as an `HttpException{:ts}` with that status. The error of `notFound(){:ts}`, `forbidden(){:ts}` or `unauthorized(){:ts}` from `next/navigation`, which Next.js can no longer answer once the stream started, sends its status: 404, 403 or 401. In production, an error that is not an `HttpException{:ts}`, or is one with status 0, which a client throws for a call that got no response, reads "Internal server error".
+- `isClosed: boolean`: whether the stream is closed, by `close()` or `throw()` (from the moment either is called), by a failed send, or by the client going away. `send()` waits while the client reads slower than the handler writes, and a generator handler is stopped, with its `finally` run, when the client disconnects or an item fails.
+- `response: Response`: the `Response` that the Next.js route handler returns.
+- `headers: Record<string, string>`: the `content-type` of the response.
+- `readableStream: ReadableStream<Uint8Array>`: the stream used as the response body.
 
-With `JSONLinesResponder` a service method is implemented as a regular function (not a generator) that accepts a `JSONLinesResponder` instance as a pointer to send messages manually.
+With `JSONLinesResponder`, the service method is a regular function, not a generator. It takes the responder and sends the lines through it.
 
 ```ts showLineNumbers copy filename="src/modules/stream/stream-service.ts"
 import type { JSONLinesResponder, VovkIteration } from 'vovk';
@@ -2485,9 +2484,7 @@ export default class StreamService {
 }
 ```
 
-Tokens are sent with `JSONLinesResponder#send`, and when the stream completes, close it with `JSONLinesResponder#close`.
-
-The controller class returns an instance of `JSONLinesResponder`, and the streaming is performed in a floating Promise above the `return` statement.
+The handler returns the responder. The streaming runs in a promise that starts before `return` and isn't awaited.
 
 ```ts showLineNumbers copy
 import { z } from 'zod';
@@ -2511,10 +2508,10 @@ export default class StreamController {
 
 The `iteration` schema gives `Token` its type, in the service and in the RPC client.
 
-The `JSONLinesResponder` class also provides a `throw` method that safely closes the stream and causes the client to rethrow the received error.
+To end the stream with an error, call `throw`. The client rethrows the error:
 
 ```ts showLineNumbers copy
-await resp.throw(new Error('Stream error'));
+await responder.throw(new Error('Stream error'));
 ```
 
 ---
@@ -2525,13 +2522,13 @@ Page: https://vovk.dev/progressive
 
   [View Progressive example on examples.vovk.dev »](https://examples.vovk.dev/progressive)
 
-A common use of the [JSON Lines](https://vovk.dev/jsonlines) format is to sequentially send multiple data chunks in response to a single request. This is useful for long‑running operations, such as LLM completions, where you want to deliver partial results as they become available.
+[JSON Lines](https://vovk.dev/jsonlines) is often used to send several chunks of data, one after another, in answer to one request. Long-running operations, such as LLM completions, use it to deliver partial results as they become ready.
 
-But what if you don’t know which chunk will arrive first, second, and so on? In this case, you can use an experimental feature called “progressive response,” inspired by Dan Abramov’s proposal [Progressive JSON](https://overreacted.io/progressive-json/), from which the “progressive” name originates.
+When you don't know which chunk comes first, use the experimental “progressive response”. It is inspired by Dan Abramov's proposal [Progressive JSON](https://overreacted.io/progressive-json/), which gave it its name.
 
-Let's say you have two functions that return data after some random delay: `getUsers` and `getTasks`, implemented as static methods of a service class. In a real application, these could be API calls or queries to different databases.
+Take two functions that return data after a random delay: `getUsers` and `getTasks`, static methods of a service class. In a real app, these could be API calls or queries to different databases.
 
-With the help of the [JSONLinesResponder class](https://vovk.dev/jsonlines#jsonlinesresponder), we can create a simple service method that looks like this:
+With the [JSONLinesResponder class](https://vovk.dev/jsonlines#jsonlinesresponder), a service method sends each result when it is ready:
 
 ```ts showLineNumbers copy
 // ...
@@ -2544,11 +2541,11 @@ void Promise.all([
 // ...
 ```
 
-- Once `getUsers()` or `getTasks()` resolves, `resp.send` sends a JSON line to the client.
+- When `getUsers()` or `getTasks()` resolves, `resp.send` sends a JSON line to the client.
 - When all promises resolve, `resp.close` closes the response stream.
-- If any promise rejects, `resp.throw` sends an error response to the client.
+- If a promise rejects, `resp.throw` sends an error to the client.
 
-The full implementation of the service module looks like this:
+The full service module:
 
 ```ts showLineNumbers copy filename="src/modules/progressive/progressive-service.ts" source="examples/kitchen-sink"
 import type { JSONLinesResponder, VovkIteration } from 'vovk';
@@ -2591,7 +2588,7 @@ export default class ProgressiveService {
 ```
 *[The code above is fetched from GitHub repository.](https://github.com/finom/vovk/blob/main/examples/kitchen-sink/src/modules/progressive/progressive-service.ts)*
 
-On the controller side, instantiate `JSONLinesResponder`, pass it to the service method, and return it as the response.
+In the controller, create a `JSONLinesResponder`, pass it to the service method and return it as the response.
 
 ```ts showLineNumbers copy
 // ...
@@ -2601,7 +2598,7 @@ return responder;
 // ...
 ```
 
-The full controller implementation with typing and validation looks like this:
+The full controller, with types and validation:
 
 ```ts showLineNumbers copy filename="src/modules/progressive/progressive-controller.ts" source="examples/kitchen-sink"
 import { procedure, get, JSONLinesResponder, prefix, type VovkIteration } from 'vovk';
@@ -2645,13 +2642,13 @@ export default class ProgressiveController {
 ```
 *[The code above is fetched from GitHub repository.](https://github.com/finom/vovk/blob/main/examples/kitchen-sink/src/modules/progressive/progressive-controller.ts)*
 
-For the client-side, we will use the `progressive` function from the `vovk` package, which creates a promise for each property of the resulting object. It accepts the RPC method to call (e.g., `ProgressiveRPC.streamProgressiveResponse`) and optional input parameters. The function returns an object with promises per property, which can be awaited separately.
+On the client, use the `progressive` function from the `vovk` package. It takes the RPC method to call (such as `ProgressiveRPC.streamProgressiveResponse`) and optional input parameters. It returns an object with a promise for each property, and you await each one on its own.
 
 ```ts showLineNumbers copy
 const { users: usersPromise, tasks: tasksPromise } = progressive(ProgressiveRPC.streamProgressiveResponse);
 ```
 
-If the RPC method requires input parameters, you can pass them as the second argument:
+If the RPC method takes input parameters, pass them as the second argument:
 
 ```ts showLineNumbers copy
 const { users: usersPromise, tasks: tasksPromise } = progressive(ProgressiveRPC.streamProgressiveResponse, {
@@ -2660,7 +2657,7 @@ const { users: usersPromise, tasks: tasksPromise } = progressive(ProgressiveRPC.
 });
 ```
 
-After that, the promises can be awaited separately, and the data will be available as soon as the corresponding JSON line is received from the server:
+Each promise resolves as soon as its JSON line arrives from the server:
 
 ```ts showLineNumbers copy
 usersPromise.then(console.log).catch(console.error);
@@ -2669,12 +2666,12 @@ tasksPromise.then(console.log).catch(console.error);
 
 ---
 
-Behind the scenes, `progressive` returns a [Proxy](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Proxy) that implements a `get` trap to return a promise for each accessed property.
+`progressive` returns a [Proxy](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Proxy) whose `get` trap returns a promise for each property you read.
 
-- When a new JSON line arrives, the corresponding promise resolves with that data.
-- If a JSON line arrives for a property without an existing promise, the promise is created and resolved (so it can be retrieved later).
-- When the response closes, all unsettled promises are rejected with an error indicating that the connection closed before sending a value for that property.
-- If the response errors, all unsettled promises are rejected with that error.
+- When a JSON line arrives, the matching promise resolves with its data.
+- A JSON line for a property that has no promise yet creates the promise, already resolved, for you to read later.
+- When the response closes, every pending promise is rejected with an error saying that the connection closed before a value for that property came.
+- If the response fails, every pending promise is rejected with its error.
 
 ---
 
@@ -2682,7 +2679,7 @@ Page: https://vovk.dev/inference
 
 # Type Inference
 
-Input and output inference is provided by universal types that work for both RPC modules and controller procedures.
+These types infer the input and output of both RPC modules and controller procedures.
 
 Client-side inference:
 
@@ -2729,42 +2726,42 @@ type Yield = VovkYieldType<typeof StreamController.streamTokens>;
 
 ## Input Inference
 
-Source types for `body`, `query`, and `params` are defined via `VovkRequest<TBody, TQuery, ?TParams>{:ts}`, which specifies the type of the `req` argument in procedures. In other words, both raw and validated method definitions determine the input types.
+The types of `body`, `query` and `params` come from `VovkRequest<TBody, TQuery, ?TParams>{:ts}`, the type of the procedure's `req` argument. So both raw and validated methods set the input types.
 
-Raw method definition with `params` as a generic argument:
+A raw method with `params` as a type argument:
 
 ```ts showLineNumbers copy
-import type { VovkRequest } from 'vovk';
+import { put, type VovkRequest } from 'vovk';
 
 export default class UserController {
-  @get()
+  @put('{param}')
   static async updateUser(req: VovkRequest<{ email: string }, { id: string }, { param: string }>) {
     // ...
   }
 }
 ```
 
-Raw method definition with `params` as a separate argument:
+A raw method with `params` as a separate argument:
 
 ```ts showLineNumbers copy
-import type { VovkRequest } from 'vovk';
+import { put, type VovkRequest } from 'vovk';
 
 export default class UserController {
-  @get()
+  @put('{param}')
   static async updateUser(req: VovkRequest<{ email: string }, { id: string }>, params: { param: string }) {
     // ...
   }
 }
 ```
 
-Validated [procedures](https://vovk.dev/procedure) infer input types automatically:
+Validated [procedures](https://vovk.dev/procedure) infer the input types from their schemas:
 
 ```ts showLineNumbers copy
-import { procedure } from 'vovk';
+import { procedure, put } from 'vovk';
 import { z } from 'zod';
 
 export default class UserController {
-  @get()
+  @put('{param}')
   static updateUser = procedure({
     query: z.object({ id: z.string() }),
     params: z.object({ param: z.string() }),
@@ -2775,7 +2772,7 @@ export default class UserController {
 }
 ```
 
-All three cases result the same RPC method:
+All three give the same RPC method:
 
 ```ts showLineNumbers copy
 import { UserRPC } from '@/client';
@@ -2787,7 +2784,7 @@ await UserRPC.updateUser({
 });
 ```
 
-And they allow to infer input types identically:
+And the same inferred input types:
 
 ```ts showLineNumbers copy
 import type { VovkBody, VovkQuery, VovkParams } from 'vovk';
@@ -2811,7 +2808,7 @@ For a procedure, the RPC method and [`fn`](https://vovk.dev/fn) take what the sc
 
 ## Combined Input Type
 
-`VovkInput<T>` extracts all three input types (`params`, `query`, `body`) into a single object.
+`VovkInput<T>` puts all three input types (`params`, `query`, `body`) in one object.
 
 ```ts showLineNumbers copy
 import type { VovkInput } from 'vovk';
@@ -2821,7 +2818,7 @@ type Input = VovkInput<typeof UserController.updateUser>;
 // { params: { param: string }; query: { id: string }; body: { email: string } }
 ```
 
-It works the same way with RPC modules:
+It works the same with RPC modules:
 
 ```ts showLineNumbers copy
 import type { VovkInput } from 'vovk';
@@ -2833,12 +2830,12 @@ type Input = VovkInput<typeof UserRPC.updateUser>;
 
 ## Output/Iteration Inference
 
-Output and iteration types are set only when using [procedure](https://vovk.dev/procedure) function.
+Only the [procedure](https://vovk.dev/procedure) function sets output and iteration types.
 
 For output:
 
 ```ts showLineNumbers copy
-import { procedure } from 'vovk';
+import { procedure, get } from 'vovk';
 import { z } from 'zod';
 
 export default class UserController {
@@ -2854,7 +2851,7 @@ export default class UserController {
 For [JSON Lines](https://vovk.dev/jsonlines) responses:
 
 ```ts showLineNumbers copy
-import { procedure } from 'vovk';
+import { procedure, get } from 'vovk';
 import { z } from 'zod';
 
 export default class StreamController {
@@ -2870,7 +2867,7 @@ export default class StreamController {
 
 ```ts showLineNumbers copy
 import type { VovkOutput, VovkIteration } from 'vovk';
-import { UserRPC } from '@/client';
+import { UserRPC, StreamRPC } from '@/client';
 
 type Output = VovkOutput<typeof UserRPC.updateUser>; // { success: boolean }
 type Iteration = VovkIteration<typeof StreamRPC.streamItems>; // { item: boolean }
@@ -2887,7 +2884,7 @@ type Iteration = VovkIteration<typeof StreamController.streamItems>; // { item: 
 
 ## Return/Yield Inference
 
-`VovkReturnType<T>` and `VovkYieldType<T>` infer the actual return or yield type of methods when input is not validated. These types cannot be used for self-references in services, as they cause “implicit any” TypeScript errors.
+`VovkReturnType<T>` and `VovkYieldType<T>` infer what a method actually returns or yields, for methods without validation. They can't be used for self-references in services: they cause “implicit any” TypeScript errors.
 
 ```ts showLineNumbers copy
 export default class UserController {
@@ -2931,7 +2928,7 @@ Page: https://vovk.dev/openapi
 
 # OpenAPI Specification and `@operation` Decorator
 
-Vovk.ts generates an OpenAPI specification from the procedures that have an operation object, using validation models to populate it with `parameters`, `requestBody`, and `responses`. The `@operation` decorator gives a procedure its operation object and enriches it with metadata such as `summary`, `description`, `tags`, and more; `@operation.tool` and `@operation.error` give it one too. A procedure without any of them is left out of the specification, and [deriveTools](https://vovk.dev/tools) makes no tool of it either. The decorator accepts `OperationObject` type from [openapi3-ts/oas31](https://www.npmjs.com/package/openapi3-ts), enhanced with Vovk-specific `x-tool` property related to [deriveTools](https://vovk.dev/tools) function.
+Vovk.ts generates an OpenAPI specification from the procedures that have an operation object. It fills `parameters`, `requestBody` and `responses` from the validation models. The `@operation` decorator gives a procedure its operation object, with metadata such as `summary`, `description` and `tags`. `@operation.tool` and `@operation.error` give it one too. A procedure without any of them is left out of the specification, and [deriveTools](https://vovk.dev/tools) makes no tool of it either. The decorator takes the `OperationObject` type from [openapi3-ts/oas31](https://www.npmjs.com/package/openapi3-ts), plus the Vovk.ts `x-tool` property for the [deriveTools](https://vovk.dev/tools) function.
 
 ```ts showLineNumbers copy filename="src/modules/user/user-controller.ts"
 import { procedure, put, prefix, operation } from 'vovk';
@@ -2950,19 +2947,19 @@ export default class UserController {
 }
 ```
 
-The validation models, accepted by the [procedure](https://vovk.dev/procedure) are converted to OpenAPI operation objects according to the following mapping:
+The validation models of a [procedure](https://vovk.dev/procedure) map to the operation object like this:
 
-- `params` → `parameters` with `in: "path"`, each one required; a `{name}` of the path that no `params` model describes is a string parameter
-- `query` → `parameters` with `in: "query"`; an object parameter gets `style: "deepObject"`, as the server reads `filter[status]=sold`. An array parameter keeps the default style, `form` (`tags=a&tags=b`), and the server reads a lone `tags=a` as a one-item array. OpenAPI has no style for an array of objects: the server reads `items[0][a]=x`, the form vovk clients send
-- `body` → `requestBody` with the `application/json` (or custom `contentType`) content type
-- `output` → `responses` with status `200` and `application/json` content type
-- `iteration` → `responses` with status `200` and `application/jsonl` content type, with an example of three lines; the server sends `text/plain` unless the `Accept` header includes `application/jsonl`
+- `params` → `parameters` with `in: "path"`, each one required. A `{name}` in the path that no `params` model describes is a string parameter.
+- `query` → `parameters` with `in: "query"`. An object parameter gets `style: "deepObject"`, since the server reads `filter[status]=sold`. An array parameter keeps the default style, `form` (`tags=a&tags=b`), and the server reads a single `tags=a` as a one-item array. OpenAPI has no style for an array of objects; the server reads `items[0][a]=x`, the form that Vovk.ts clients send.
+- `body` → `requestBody` with the `application/json` (or custom `contentType`) content type.
+- `output` → `responses` with status `200` and the `application/json` content type.
+- `iteration` → `responses` with status `200` and the `application/jsonl` content type, with an example of three lines. The server sends `text/plain` unless the `Accept` header includes `application/jsonl`.
 
-A schema with an id, such as a Zod schema with `.meta({ id })`, goes to `components.schemas`. A name OpenAPI doesn't allow has its other characters replaced with `_` (`User Profile` becomes `User_Profile`), and a schema whose name another schema took, one of `openAPIObject.components` included, gets the RPC module, procedure and slot names in front: `UserRPCCreateUserBodyUser`.
+A schema with an id, such as a Zod schema with `.meta({ id })`, goes to `components.schemas`. In a name, each character OpenAPI doesn't allow becomes `_`: `User Profile` becomes `User_Profile`. When another schema already has the name, including one in `openAPIObject.components`, the RPC module, procedure and slot names go in front of it: `UserRPCCreateUserBodyUser`.
 
 ## Configuring the OpenAPI Specification
 
-The OpenAPI specification can be configured in the [vovk.config](https://vovk.dev/config) file under the [`outputConfig.openAPIObject` option](https://vovk.dev/config#openapiobject). This object is merged with the generated specification, allowing you to set global properties such as `info`, `servers`, and more.
+Configure the specification in the [vovk.config](https://vovk.dev/config) file, with the [`outputConfig.openAPIObject` option](https://vovk.dev/config#openapiobject). The object is merged into the generated specification, so you can set global properties such as `info` and `servers`.
 
 ```ts showLineNumbers copy filename="vovk.config.js"
 // @ts-check
@@ -2997,7 +2994,7 @@ const config = {
 module.exports = config;
 ```
 
-The `openAPIObject` can also be configured individually for each [segment](https://vovk.dev/segment) using `outputConfig.segments.[segmentName].openAPIObject`.
+You can also set `openAPIObject` for each [segment](https://vovk.dev/segment), with `outputConfig.segments.[segmentName].openAPIObject`.
 
 ```ts showLineNumbers copy filename="vovk.config.js"
 // @ts-check
@@ -3019,9 +3016,9 @@ const config = {
 };
 ```
 
-## Utilizing the OpenAPI Specification
+## Using the OpenAPI Specification
 
-The generated RPC client exports an `openapi` object from `openapi` module that contains the full back-end specification for the [composed client](https://vovk.dev/composed). When using the [segmented client](https://vovk.dev/segmented), each [segment](https://vovk.dev/segment) also exports its own specification.
+The generated RPC client exports an `openapi` object from its `openapi` module. For the [composed client](https://vovk.dev/composed), it holds the specification of the whole back end. With the [segmented client](https://vovk.dev/segmented), each [segment](https://vovk.dev/segment) also exports its own specification.
 
 ```ts showLineNumbers copy
 import { openapi } from '@/client/openapi'; // composed client
@@ -3031,10 +3028,10 @@ import { openapi } from '@/client/openapi'; // composed client
 import { openapi } from '@/client/admin/openapi'; // segmented client
 ```
 
-You can use the specification directly as a variable or expose it via a static segment with a simple controller that serves it as a JSON endpoint.
+Use the specification as a variable, or serve it as JSON from a controller in a static segment:
 
 ```ts showLineNumbers copy filename="src/modules/static/openapi/openapi-controller.ts"
-import { get, operation } from 'vovk';
+import { get } from 'vovk';
 import { openapi } from '@/client/openapi';
 
 export default class OpenApiController {
@@ -3043,7 +3040,7 @@ export default class OpenApiController {
 }
 ```
 
-If you prefer to skip Vovk entirely for the spec endpoint, a plain Next.js route handler works just as well. This avoids registering a controller and keeps the docs route outside the generated schema:
+A plain Next.js route handler can serve the spec too. Then you register no controller, and the route stays out of the generated schema:
 
 ```ts showLineNumbers copy filename="src/app/openapi.json/route.ts"
 import { openapi } from '@/client/openapi';
@@ -3051,13 +3048,13 @@ import { openapi } from '@/client/openapi';
 export const GET = () => Response.json(openapi);
 ```
 
-You can also emit `openapi.json` as a standalone file with the [openapiJson](https://vovk.dev/templates#openapijson) template, without generating a client. Useful for serving the spec as a static asset or handing it to another tool:
+The [openapiJson](https://vovk.dev/templates#openapijson) template writes `openapi.json` as a file of its own, without a client. Use it to serve the spec as a static file or to pass it to another tool:
 
 ```sh npm2yarn copy
 npm exec -- vovk generate --from openapiJson --out ./public
 ```
 
-On the client side, you can use any OpenAPI documentation generator. [Scalar](https://www.npmjs.com/package/@scalar/api-reference-react) is a recommended choice as Vovk.ts generates code snippets for the generated RPC modules.
+On the client side, any OpenAPI documentation generator works. [Scalar](https://www.npmjs.com/package/@scalar/api-reference-react) is recommended, because Vovk.ts adds code samples for the generated RPC modules to the spec.
 
 ```ts showLineNumbers copy
 import { ApiReferenceReact } from "@scalar/api-reference-react";
@@ -3079,11 +3076,11 @@ export default App;
 ![](https://vovk.dev/screenshots/scalar-screenshot-light.png)
 ![](https://vovk.dev/screenshots/scalar-screenshot-dark.png)
 
-For a live demonstration, see the ["Hello World" application spec](https://hello-world.vovk.dev/openapi). Check ["Hello World"](https://vovk.dev/hello-world) page for details.
+For a live demo, see the ["Hello World" application spec](https://hello-world.vovk.dev/openapi). The ["Hello World"](https://vovk.dev/hello-world) page has the details.
 
 ---
 
-The `@operation` decorator also provides `tool` property that defines tool-specific attributes for [deriveTools](https://vovk.dev/tools) function. It's set under `x-tool` key in the OpenAPI operation object.
+`@operation.tool` sets attributes for the [deriveTools](https://vovk.dev/tools) function. They go under the `x-tool` key of the operation object.
 
 ```ts showLineNumbers copy filename="src/modules/user/user-controller.ts"
 import { procedure, put, operation } from 'vovk';
@@ -3104,7 +3101,7 @@ export default class UserController {
 }
 ```
 
-For more details, see the [deriveTools](https://vovk.dev/tools) documentation.
+For details, see the [deriveTools](https://vovk.dev/tools) documentation.
 
 ---
 
@@ -3112,11 +3109,11 @@ Page: https://vovk.dev/tools
 
 # Deriving AI Tools from Controllers and RPC Modules
 
-Controllers as well as generated RPC/API modules can be converted into AI tools for LLM function calling, using `deriveTools` utility. This makes your back-end functionality accessible to AI models (including MCP clients) with minimum code. The function accepts `modules` record with 
+`deriveTools` turns controllers and generated RPC or API modules into AI tools for LLM function calling. AI models, MCP clients included, can then call your back end. The function takes a `modules` record with:
 
-- Controllers for same-context execution to be used on back-end.
-- RPC modules generated from controllers for HTTP calls or be used on front-end or other environments that support `fetch`.
-- Third-party OpenAPI-based modules (called [OpenAPI mixins](https://vovk.dev/mixins) in this documentation), enabling to combine back-end functionality with external APIs in a single agent.
+- Controllers, which run in the current context, on the back end.
+- RPC modules generated from controllers, which make HTTP calls, on the front end or anywhere else with `fetch`.
+- Third-party modules generated from OpenAPI ([OpenAPI mixins](https://vovk.dev/mixins) in these docs), so one agent can use both your back end and external APIs.
 
 A tool comes from a [procedure](https://vovk.dev/procedure) or an RPC method that has an operation object, given by [`@operation`](https://vovk.dev/openapi), `@operation.tool` or `@operation.error`. Every [OpenAPI mixin](https://vovk.dev/mixins) method has one. Other members of a module are left out.
 
@@ -3136,33 +3133,33 @@ const tools = deriveTools({
 console.log('Derived tools:', tools); // [{ name, description, inputSchema, execute, ... }, ...]
 ```
 
-The function returns an array of tools. Each tool satisfies the `StandardToolV0` interface from the [standard-tool](https://standard-tool.js.org/) convention:
+The function returns an array of tools. Each tool satisfies the `StandardToolV0` interface of the [standard-tool](https://standard-tool.js.org/) convention:
 
-- `name: string{:ts}` - the name of the tool, derived from the module and method names as `${moduleName}_${handlerName}` (can be overridden with `x-tool.name`, see below). As model APIs require, a character other than `A-Z`, `a-z`, `0-9`, `_` and `-` becomes `_`, and a name longer than 64 characters is cut to 64, ending with a hash of the whole name. Two tools with the same name make `deriveTools` throw.
-- `title?: string{:ts}` - optional title for the tool. Used mainly for MCPs, derived from OpenAPI `summary` or `x-tool.title` if available.
-- `description: string{:ts}` - the description of the tool, derived concatenating `summary` and `description` from OpenAPI operation (can be overridden with `x-tool.description`, see below).
-- `inputSchema?: StandardSchemaV1 & StandardJSONSchemaV1{:ts}` - a single merged Standard Schema of the procedure's `body`, `query`, and `params`, when available.
-- `outputSchema?: StandardSchemaV1 & StandardJSONSchemaV1{:ts}` - equals to the procedure's `output` schema, when available.
-- `meta?: Record<string, unknown>{:ts}` - static data about the tool, copied as is from `x-tool.meta` (see below). It's read by the code that consumes the tools and never sent to the LLM.
-- `execute: (input: { body?, query?, params? }) => Promise{:ts}` - the function to execute the tool logic. For RPC modules, it performs an HTTP request; for controllers, it calls the `fn` method to execute in the current context without HTTP. A [JSON Lines](https://vovk.dev/jsonlines) result, from a generator or a `JSONLinesResponder`, reaches the model as the array of its items.
+- `name: string{:ts}` - the tool name, made from the module and method names as `${moduleName}_${handlerName}`. `x-tool.name` overrides it (see below). As model APIs require, each character other than `A-Z`, `a-z`, `0-9`, `_` and `-` becomes `_`. A name longer than 64 characters is cut to 64 and ends with a hash of the whole name. Two tools with the same name make `deriveTools` throw.
+- `title?: string{:ts}` - an optional title, used mainly by MCP. It comes from `x-tool.title` or the OpenAPI `summary`, if there is one.
+- `description: string{:ts}` - the tool description: the `summary` and `description` of the OpenAPI operation, joined. `x-tool.description` overrides it (see below).
+- `inputSchema?: StandardSchemaV1 & StandardJSONSchemaV1{:ts}` - one Standard Schema that merges the procedure's `body`, `query` and `params`, when there are any.
+- `outputSchema?: StandardSchemaV1 & StandardJSONSchemaV1{:ts}` - the procedure's `output` schema, when there is one.
+- `meta?: Record<string, unknown>{:ts}` - static data about the tool, copied as is from `x-tool.meta` (see below). The code that uses the tools reads it; the LLM never gets it.
+- `execute: (input: { body?, query?, params? }) => Promise{:ts}` - runs the tool. For RPC modules, it sends an HTTP request. For controllers, it calls the `fn` method, which runs in the current context without HTTP. A [JSON Lines](https://vovk.dev/jsonlines) result, from a generator or a `JSONLinesResponder`, reaches the model as the array of its items.
 
-> `inputSchema` validates the `{ body, query, params }` envelope itself and delegates slot values to your original library schemas (Zod, Valibot, ArkType). For RPC modules and OpenAPI mixins it's reconstructed from the generated JSON Schemas, so only the envelope is checked and the values are validated during execution.
+> `inputSchema` validates the `{ body, query, params }` envelope itself, and leaves each slot's value to your original library schema (Zod, Valibot, ArkType). For RPC modules and OpenAPI mixins, it's rebuilt from the generated JSON Schemas, so it checks only the envelope, and the values are validated when the tool runs.
 
 ## `deriveTools` Options
 
-The `deriveTools` function accepts an options object with the following properties:
+`deriveTools` takes an options object with these properties:
 
-- `modules: Record<string, object>{:ts}` - a record of modules (RPC/API modules or controllers) to derive tools from.
-- `onExecute?: (result: unknown, tool: StandardToolV0) => void{:ts}` - optional callback invoked when a tool's `execute` function completes successfully.
-- `onError?: (error: Error, tool: StandardToolV0) => void{:ts}` - optional callback invoked when a tool's `execute` function throws an error, or when a controller returns a `Response` with an error status. The error for a `Response` is an `HttpException` with its status and the message from the body: the `message`, `detail` or `title` of a JSON body, else its text. `ToModelOutput.DEFAULT` gives the model `{ error: message }{:ts}` for both.
-- `toModelOutput?: ToModelOutputFn<TInput, TOutput, TFormattedOutput>{:ts}` - optional function to format the output returned to the LLM. Can be set to a custom function or one of the built-in formatters, defined in `ToModelOutput` object, exported from `vovk`, such as 
+- `modules: Record<string, object>{:ts}` - the modules (RPC or API modules, or controllers) to derive tools from.
+- `onExecute?: (result: unknown, tool: StandardToolV0, req: Pick<VovkRequest, 'vovk'> | null) => void{:ts}` - an optional callback that runs when a tool's `execute` function succeeds. For a controller, `req` is the call's request object, with `req.vovk`; for an RPC method, it's `null`.
+- `onError?: (error: Error, tool: StandardToolV0, req: Pick<VovkRequest, 'vovk'> | null) => void{:ts}` - an optional callback that runs when a tool's `execute` function throws, or when a controller returns a `Response` with an error status. For a `Response`, the error is an `HttpException` with its status and the message from the body: the `message`, `detail` or `title` of a JSON body, else its text. `ToModelOutput.DEFAULT` gives the model `{ error: message }{:ts}` in both cases. `req` is as in `onExecute`, or `null` for a thrown error.
+- `toModelOutput?: ToModelOutputFn<TInput, TOutput, TFormattedOutput>{:ts}` - an optional function that formats the output for the LLM. Set it to your own function or to a built-in formatter from the `ToModelOutput` object, exported from `vovk`:
   - `ToModelOutput.MCP` for MCP formatting.
-  - `ToModelOutput.DEFAULT` that's used by default when `toModelOutput` is not provided.
-- `meta?: Record<string, unknown>{:ts}` - optional metadata passed to each controller/RPC method. The meta can be read on the back end using [req.vovk.meta](https://vovk.dev/req-vovk#meta). When passed to a controller procedure, it's merged with procedure-level meta normally. When passed to an RPC method, it's available as `xMetaHeader` key. [OpenAPI mixins](https://vovk.dev/mixins) don't get it, as their hosts are third parties.
+  - `ToModelOutput.DEFAULT`, the default when `toModelOutput` isn't set.
+- `meta?: Record<string, unknown>{:ts}` - optional metadata for each controller or RPC method. The back end reads it with [req.vovk.meta](https://vovk.dev/req-vovk#meta). A controller procedure merges it with its own meta as usual. An RPC method gets it under the `xMetaHeader` key. [OpenAPI mixins](https://vovk.dev/mixins) don't get it, since their hosts are third parties.
 
 ## Custom Operation Attributes with `x-tool` or `@operation.tool` Decorator
 
-By default, tool description is derived from OpenAPI `summary` and `description` fields and the tool name is generated in the form of `${moduleName}_${handlerName}`. You can override these values and add tool-specific attributes using `x-tool` custom attributes in the `@operation` decorator.
+To override the default tool name and description, or to add other tool attributes, use the custom `x-tool` attribute in the `@operation` decorator.
 
 ```ts showLineNumbers copy filename="src/modules/user/user-controller.ts"
 import { z } from 'zod';
@@ -3174,7 +3171,7 @@ export default class UserController {
     summary: 'Get user by ID',
     description: 'Retrieves a user by their unique ID.',
     'x-tool': {
-      // tool-specific attributes
+      // tool attributes
     }
   })
   @get('{id}')
@@ -3186,7 +3183,7 @@ export default class UserController {
 }
 ```
 
-`@operation` also provides `tool` property that defines tool-specific attributes for `deriveTools` function. It's set under `x-tool` key in the OpenAPI operation object and created for cleaner syntax.
+`@operation.tool` sets the same attributes with shorter syntax. They go under the `x-tool` key of the OpenAPI operation object.
 
 ```ts showLineNumbers copy filename="src/modules/user/user-controller.ts"
 import { z } from 'zod';
@@ -3212,19 +3209,19 @@ export default class UserController {
 }
 ```
 
-The tool attributes available under `x-tool` are:
+The attributes under `x-tool` are:
 
-- `hidden?: boolean` - if set to `true`, the tool is excluded from the derived tools.
+- `hidden?: boolean` - `true` leaves the tool out of the derived tools.
 - `name?: string` - overrides the generated tool name.
-- `title?: string` - optional title for the tool. Used mainly for MCPs.
+- `title?: string` - an optional title for the tool, used mainly by MCP.
 - `description?: string` - overrides the generated tool description.
-- `meta?: Record<string, unknown>` - static data that lands on the derived tool as its `meta` field. Don't confuse it with the `meta` option of `deriveTools`, which is runtime metadata passed to the procedure instead.
+- `meta?: Record<string, unknown>` - static data that becomes the derived tool's `meta` field. It's not the `meta` option of `deriveTools`, which is runtime metadata for the procedure.
 
 ## Tips 
 
 ### Selecting Specific Procedures
 
-To include only certain procedures from a module (besides using `hidden` attribute), use the `pick`/`omit` pattern from `lodash` or a similar utility.
+To include only some procedures of a module, besides the `hidden` attribute, use `pick` or `omit` from `lodash` or a similar utility.
 
 ```ts showLineNumbers copy
 import { deriveTools } from 'vovk';
@@ -3240,11 +3237,11 @@ const tools = deriveTools({
 });
 ```
 
-The resulting `tools` include `createPost` and `getPost` from `PostRPC`, and all methods from `UserController` except `deleteUser`.
+The resulting `tools` include `createPost` and `getPost` from `PostRPC`, and all methods of `UserController` except `deleteUser`.
 
 ### Authorizing API Calls
 
-Third-party API calls may require authorization headers that can be passed by using `withDefaults` function, available for all [generated RPC/API modules](https://vovk.dev/typescript). Having `GithubIssuesAPI` module, described in [OpenAPI mixins](https://vovk.dev/mixins), you can create authorized tools for Github Issues API:
+Third-party APIs may need authorization headers. Pass them with the `withDefaults` function, which all [generated RPC/API modules](https://vovk.dev/typescript) have. With the `GithubIssuesAPI` module from [OpenAPI mixins](https://vovk.dev/mixins), you can create authorized tools for the GitHub Issues API:
 
 ```ts showLineNumbers copy
 
@@ -3267,7 +3264,7 @@ const tools = deriveTools({
 
 ## Standalone Tools
 
-The `createTool` utility was removed in v4. Since derived tools follow the standard-tool convention, standalone tools that don't map to back-end functionality can be created with the [standard-tool](https://www.npmjs.com/package/standard-tool) package (or written as plain objects of the same shape) and mixed freely with derived tools:
+The `createTool` utility was removed in v4. Derived tools follow the standard-tool convention. So you can create standalone tools, which don't map to your back end, with the [standard-tool](https://www.npmjs.com/package/standard-tool) package, or write them as plain objects of the same shape. Mix them with derived tools as you like:
 
 ```ts showLineNumbers copy
 import { standardTool } from 'standard-tool';
@@ -3289,15 +3286,15 @@ const allTools = [...tools, sumNumbers];
 
 ## Vercel AI SDK Example
 
-That's an example of Vercel AI SDK chat that uses `UserController` to derive tools. [View live example on examples.vovk.dev »](https://examples.vovk.dev/ai-sdk)
+This example is a Vercel AI SDK chat that derives its tools from `UserController`. The Realtime Kanban app runs a fuller version of it: [source on GitHub »](https://github.com/finom/vovk/blob/main/examples/realtime-kanban/src/modules/ai/ai-sdk-controller.ts)
 
-First, create an empty controller. The command will also update the root `route.ts` file.
+First, create an empty controller. The command also updates the root `route.ts` file.
 
 ```sh npm2yarn copy
 npm exec -- vovk new controller aiSdk --empty
 ```
 
-Paste the following into the newly created `src/modules/ai-sdk/ai-sdk-controller.ts`, adjusting imports as needed:
+Paste this into the new `src/modules/ai-sdk/ai-sdk-controller.ts`, and fix the imports if needed:
 
 ```ts showLineNumbers copy filename="src/modules/ai-sdk/ai-sdk-controller.ts" {24-26, 28-37}
 import {
@@ -3352,9 +3349,9 @@ export default class AiSdkController {
 }
 ```
 
-Here, the tool's `inputSchema` is passed to Vercel AI SDK as is: the SDK supports Standard Schema and Standard JSON Schema natively, using it for both argument validation and JSON Schema conversion. A procedure without input has no `inputSchema`, and the SDK requires one, so the example passes an empty object schema instead. For other libraries, you can map the tools differently.
+The tool's `inputSchema` goes to the Vercel AI SDK as is. The SDK supports Standard Schema and Standard JSON Schema, and uses the schema both to validate arguments and to convert to JSON Schema. A procedure without input has no `inputSchema`, and the SDK requires one, so the example passes an empty object schema instead. Other libraries may need the tools mapped another way.
 
-On the client-side, create a component using the [useChat](https://ai-sdk.dev/docs/reference/ai-sdk-ui/use-chat) hook:
+On the client side, create a component with the [useChat](https://ai-sdk.dev/docs/reference/ai-sdk-ui/use-chat) hook:
 
 ```tsx showLineNumbers copy filename="src/app/page.tsx"
 'use client';
@@ -3401,11 +3398,11 @@ export default function Page() {
 
 ---
 
-See [Realtime Kanban / Text AI Chat](https://vovk.dev/realtime-ui/text-ai) for more info.
+See [Realtime Kanban / Text AI Chat](https://vovk.dev/realtime-ui/text-ai) for more.
 
 ## Roadmap
 
-- ✨ Add a `router` option to `deriveTools` to support hundreds of functions without hitting LLM tools limits. Routing can be implemented using vector search or other approaches.
+- ✨ Add a `router` option to `deriveTools`, so it can serve hundreds of functions within the LLM tool limits. Routing could use vector search or other methods.
 
 ---
 
@@ -3413,7 +3410,7 @@ Page: https://vovk.dev/tools-mcp
 
 # MCP (Model Context Protocol) Output Formatting
 
-[Derived tools](https://vovk.dev/tools) can be used as MCP tools with `ToModelOutput.MCP` formatter. It formats the tool output to meet [MCP tool specification](https://modelcontextprotocol.io/specification/2025-11-25/server/tools), supporting the following types of outputs: `text`, `image`, `audio`, alongside with meta information, described with `annotations` object.
+With the `ToModelOutput.MCP` formatter, [derived tools](https://vovk.dev/tools) work as MCP tools. It formats the tool output to the [MCP tool specification](https://modelcontextprotocol.io/specification/2025-11-25/server/tools), with `text`, `image` and `audio` output, and meta information in an `annotations` object.
 
 ```ts
 const tools = deriveTools({
@@ -3424,7 +3421,7 @@ const tools = deriveTools({
 
 ## JSON Content
 
-JSON responses (including ones created with `Response` or `NextResponse`, and `+json` types such as `application/problem+json`) will be formatted as text content with `structuredContent` field. A `Response` with an error status is reported with `isError: true` and no `structuredContent`. A thrown error is reported the same way; in production only an `HttpException{:ts}` keeps its message, and any other error reads "Internal server error".
+A JSON response becomes text content with a `structuredContent` field. This includes responses made with `Response` or `NextResponse`, and `+json` types such as `application/problem+json`. MCP structured content is an object, so an array goes under `structuredContent.items`. A `Response` with an error status gives `isError: true` and no `structuredContent`. A thrown error is reported the same way. In production, only an `HttpException{:ts}` keeps its message, and any other error reads "Internal server error".
 
 ```ts showLineNumbers copy
 export default class UserController {
@@ -3436,7 +3433,7 @@ export default class UserController {
 }
 ```
 
-When the tool is executed with `ToModelOutput.MCP` formatter, the output will be:
+With the `ToModelOutput.MCP` formatter, the tool's output is:
 
 ```json
 {
@@ -3452,7 +3449,7 @@ When the tool is executed with `ToModelOutput.MCP` formatter, the output will be
 
 ## Audio and Image Content
 
-If procedure returns a `Response` with `Content-Type` header set to `audio/*` or `image/*`, the output will be formatted accordingly. Its `data` field holds the body in base64.
+When a procedure returns a `Response` with the `Content-Type` header set to `audio/*` or `image/*`, the output is audio or image content. Its `data` field holds the body in base64.
 
 ```ts showLineNumbers copy
 export default class MediaController {
@@ -3466,7 +3463,7 @@ export default class MediaController {
 }
 ```
 
-When the tool is executed with `ToModelOutput.MCP` formatter, the output will be:
+With the `ToModelOutput.MCP` formatter, the tool's output is:
 
 ```json
 {
@@ -3480,7 +3477,7 @@ When the tool is executed with `ToModelOutput.MCP` formatter, the output will be
 }
 ```
 
-The response can be created with [`toDownloadResponse`](https://vovk.dev/response#downloads) utility, or using `fetch` to get media from an external source.
+You can create the response with the [`toDownloadResponse`](https://vovk.dev/response#downloads) utility, or get the media from another source with `fetch`.
 
 ```ts showLineNumbers copy
 import { toDownloadResponse } from 'vovk';
@@ -3506,7 +3503,7 @@ export default class MediaController {
 
 ## Text Content
 
-If procedure returns a `Response` with `Content-Type` header set to `text/*` or other text-based types, such as XML, the output will be formatted as text content.
+When a procedure returns a `Response` with the `Content-Type` header set to `text/*` or another text type, such as XML, the output is text content.
 
 ```ts showLineNumbers copy
 export default class TextController {
@@ -3520,7 +3517,7 @@ export default class TextController {
 }
 ```
 
-When the tool is executed with `ToModelOutput.MCP` formatter, the output will be:
+With the `ToModelOutput.MCP` formatter, the tool's output is:
 
 ```json
 {
@@ -3533,9 +3530,11 @@ When the tool is executed with `ToModelOutput.MCP` formatter, the output will be
 }
 ```
 
+A `Response` of any other content type, such as `application/pdf`, gives `isError: true` and the text `Unsupported response content type application/pdf`.
+
 ## `annotations`
 
-Annotations can be added to the output by setting a special metadata key `mcpOutput` using [req.vovk.meta](https://vovk.dev/req-vovk#meta) function. This approach makes sure that if the procedure used as an endpoint, the response will not be affected. MCP takes a `priority` from 0 (least important) to 1 (most important).
+To add annotations to the output, set the `mcpOutput` metadata key with the [req.vovk.meta](https://vovk.dev/req-vovk#meta) function. When the procedure serves as an endpoint, its response stays the same. MCP takes a `priority` from 0 (least important) to 1 (most important).
 
 ```ts showLineNumbers copy
 export default class AnnotatedController {
@@ -3550,7 +3549,7 @@ export default class AnnotatedController {
 }
 ```
 
-When the tool is executed with `ToModelOutput.MCP` formatter, each content item will include the `annotations` object, as MCP annotates content items:
+With the `ToModelOutput.MCP` formatter, each content item gets the `annotations` object, as MCP annotates content items:
 
 ```json
 {
@@ -3568,13 +3567,13 @@ When the tool is executed with `ToModelOutput.MCP` formatter, each content item 
 }
 ```
 
-Note that `mcpOutput` metadata key can also override other MCP output properties, including `content` and `structuredContent`; its `annotations` go on each content item. This might be useful if you want to customize the MCP output without changing the actual procedure response.
+The `mcpOutput` key can also override other MCP output properties, including `content` and `structuredContent`; its `annotations` go on each content item. This way you can change the MCP output without changing the procedure's response.
 
 ## MCP Handler Example
 
-With [mcp-handler](https://www.npmjs.com/package/mcp-handler) package, you can create an MCP-compatible API route that is going to control the back-end functionality exposed to MCP clients.
+With the [mcp-handler](https://www.npmjs.com/package/mcp-handler) package, you can create an MCP API route that controls what your back end exposes to MCP clients.
 
-By writing this documentation, **mcp-handler** supports Zod schemas only. The tool's merged `inputSchema` is a single Standard Schema, so we convert its JSON Schema back to a Zod object with [`z.fromJSONSchema()`](https://zod.dev/json-schema?id=zfromjsonschema) and pass its `.shape` — the `body`/`query`/`params` slots — to `registerTool`.
+At the time of writing, **mcp-handler** supports only Zod schemas. The tool's merged `inputSchema` is a single Standard Schema. So the example converts its JSON Schema back to a Zod object with [`z.fromJSONSchema()`](https://zod.dev/json-schema?id=zfromjsonschema), and passes its `.shape` (the `body`, `query` and `params` slots) to `registerTool`.
 
 ```ts showLineNumbers copy filename="src/app/api/mcp/route.ts"
 import { createMcpHandler } from "mcp-handler";
@@ -3605,7 +3604,7 @@ export { handler as GET, handler as POST };
 
 ## Standalone Tools with `withFormattedOutput`
 
-`ToModelOutput.MCP` is compatible with the `withFormattedOutput` helper from the [standard-tool](https://www.npmjs.com/package/standard-tool) package: both operate on a result-or-`Error` value. Wrap a [standalone tool](https://vovk.dev/tools#standalone-tools) with it, passing `null` as the request argument, and its `execute` produces the same MCP output shape as derived tools, so it can be registered on the same MCP server:
+`ToModelOutput.MCP` works with the `withFormattedOutput` helper from the [standard-tool](https://www.npmjs.com/package/standard-tool) package: both take a result or an `Error`. Wrap a [standalone tool](https://vovk.dev/tools#standalone-tools) with it, and pass `null` as the request argument. Its `execute` then gives the same MCP output as derived tools, so you can register it on the same MCP server:
 
 ```ts showLineNumbers copy
 import { standardTool, withFormattedOutput } from 'standard-tool';
@@ -3629,7 +3628,7 @@ const sumNumbersMCP = withFormattedOutput(sumNumbers, (result) =>
 
 ---
 
-See [Realtime Kanban / MCP](https://vovk.dev/realtime-ui/mcp) for more info.
+See [Realtime Kanban / MCP](https://vovk.dev/realtime-ui/mcp) for more.
 
 ---
 
@@ -3637,11 +3636,11 @@ Page: https://vovk.dev/decorator-overview
 
 # Decorators Overview
 
-Vovk.ts uses decorators to attach metadata and behavior to controllers and their procedures. This page lists the built-in decorators and shows how to write your own.
+Vovk.ts uses decorators to add metadata and behavior to controllers and their procedures.
 
 ## HTTP Method Decorators
 
-HTTP method decorators define the HTTP method and path for a procedure. They are the only **required** decorator for a procedure to be reachable via HTTP.
+An HTTP method decorator sets the HTTP method and path of a procedure. It is the only decorator a procedure **requires** to be reachable over HTTP.
 
 | Decorator | HTTP Method |
 |-----------|-------------|
@@ -3653,15 +3652,15 @@ HTTP method decorators define the HTTP method and path for a procedure. They are
 | `@head()` | HEAD |
 | `@options()` | OPTIONS |
 
-Each accepts an optional path and options object:
+Each takes an optional path and an optional options object:
 
 ```ts showLineNumbers copy
-import { get, prefix } from 'vovk';
+import { get, prefix, type VovkRequest } from 'vovk';
 
 @prefix('users')
 export default class UserController {
   @get('{id}', { cors: true, headers: { 'x-custom': 'value' } })
-  static getUser(req, { id }: { id: string }) {
+  static getUser(req: VovkRequest, { id }: { id: string }) {
     return { id };
   }
 }
@@ -3669,13 +3668,14 @@ export default class UserController {
 
 **Options:**
 
-- `cors?: boolean` — adds CORS headers and handles OPTIONS automatically, for the methods of that path that set it.
+- `cors?: boolean` — adds CORS headers and answers OPTIONS, for the methods of that path that set it.
 - `headers?: Record<string, string>` — custom response headers. See [Response Headers](https://vovk.dev/response#headers) for dynamic headers.
-- `staticParams?: Record<string, string>[]` — (`@get` only) static params for `generateStaticParams()`. See [Static Segment](https://vovk.dev/static-segment) for details.
+- `staticParams?: Record<string, string>[]` — `@get` only: static params for `generateStaticParams()`. See [Static Segment](https://vovk.dev/static-segment).
+- `before?: (req: VovkRequest) => unknown` — runs on an HTTP request before the segment's [`onBefore`](https://vovk.dev/segment#creating-segments), the custom decorators and the handler, with the controller as `this`; an error it throws becomes the response.
 
 ### Auto-Generated Paths
 
-Every HTTP decorator provides an `.auto()` method that derives the path from the method name in kebab-case:
+Every HTTP decorator has an `.auto()` method that makes the path from the method name, in kebab-case:
 
 ```ts showLineNumbers copy
 export default class UserController {
@@ -3687,25 +3687,11 @@ export default class UserController {
 }
 ```
 
-## Class Decorators
+With a `params` schema, `.auto()` also adds each param to the path: `getUser` with `{ id }` becomes `get-user/{id}`.
 
-### `@prefix`
+## `@operation`
 
-Prepends a sub-path to all endpoints in a controller:
-
-```ts showLineNumbers copy
-import { prefix, get } from 'vovk';
-
-@prefix('users')
-export default class UserController {
-  @get('{id}') // => GET /api/users/{id}
-  static getUser() { /* ... */ }
-}
-```
-
-### `@operation`
-
-Attaches [OpenAPI](https://vovk.dev/openapi) metadata to a procedure:
+Adds [OpenAPI](https://vovk.dev/openapi) metadata to a procedure:
 
 ```ts showLineNumbers copy
 import { operation, get } from 'vovk';
@@ -3717,11 +3703,27 @@ export default class UserController {
 }
 ```
 
-Also provides `@operation.error()` for documenting error responses and `@operation.tool()` for [AI tool](https://vovk.dev/tools) metadata.
+`@operation.error()` documents error responses, and `@operation.tool()` sets [AI tool](https://vovk.dev/tools) metadata.
+
+## Class Decorators
+
+### `@prefix`
+
+Adds a path in front of every endpoint of a controller:
+
+```ts showLineNumbers copy
+import { prefix, get } from 'vovk';
+
+@prefix('users')
+export default class UserController {
+  @get('{id}') // => GET /api/users/{id}
+  static getUser() { /* ... */ }
+}
+```
 
 ### `@cloneControllerMetadata`
 
-Copies all metadata from a parent controller to a child class, useful for reusing a controller in multiple [segments](https://vovk.dev/segment):
+Copies all metadata from a parent controller to a child class. Use it to reuse a controller in several [segments](https://vovk.dev/segment):
 
 ```ts showLineNumbers copy
 import { prefix, cloneControllerMetadata } from 'vovk';
@@ -3734,7 +3736,7 @@ export default class UserControllerV2 extends UserController {}
 
 ## Custom Decorators
 
-Use `createDecorator` to build custom middleware-style decorators for cross-cutting concerns like authentication, logging, or caching. See the [Custom Decorators](https://vovk.dev/decorator) page for full API documentation and the [Decorator Examples](https://vovk.dev/decorator-examples) page for practical patterns.
+`createDecorator` builds your own middleware-style decorators for concerns that many procedures share, such as authentication, logging or caching. See the [Custom Decorators](https://vovk.dev/decorator) page for the API and the [Decorator Examples](https://vovk.dev/decorator-examples) page for common patterns.
 
 ```ts showLineNumbers copy
 import { createDecorator, get, HttpException, HttpStatus, type VovkRequest } from 'vovk';
@@ -3760,20 +3762,20 @@ export default class UserController {
 
 Page: https://vovk.dev/decorator
 
-# Decorators
+# Custom Decorators
 
-Decorators extend the functionality of procedures. Use them to implement cross‑cutting concerns such as logging, caching, validation, and authorization. They can also attach custom metadata to the handler for purposes like identifying authorized users.
+A decorator adds behavior to a procedure. Use decorators for concerns that many procedures share, such as logging, caching, validation and authorization. They can also attach custom metadata, for example to identify the authorized user.
 
-`createDecorator` is a higher‑order function that produces a decorator factory (a function that returns a decorator) for controller class methods. It accepts a middleware function with the following parameters:
+`createDecorator` makes a decorator factory: a function that returns a decorator for controller methods. It takes a middleware function with these parameters:
 
-- `request`, which extends `VovkRequest`. It provides [req.vovk.meta](https://vovk.dev/req-vovk#meta) to get and set metadata for sharing data between decorators and the route handler.
-- `next`, a function you call (and return) to invoke subsequent decorators or the route handler.
-- Additional arguments passed through the decorator factory.
+- `request`, which extends `VovkRequest`. Its [req.vovk.meta](https://vovk.dev/req-vovk#meta) gets and sets metadata, to share data between decorators and the route handler.
+- `next`, a function that calls the next decorator or the route handler. Call it and return its result.
+- The arguments passed to the decorator factory.
 
-The second argument to `createDecorator` is an optional init handler. It runs each time the decorator is initialized and can populate **.vovk-schema/\*.json** with validation or custom data. It may return an object with optional keys `"validation"`, `"operationObject"`, and `"misc"` (for custom metadata) to merge into the handler schema, or a function returning that object and receiving the existing handler schema for proper merging.
+The optional second argument is an init handler. It runs each time the decorator is applied, and it can add validation or custom data to **.vovk-schema/\*.json**. It returns an object with the optional keys `"validation"`, `"operationObject"` and `"misc"` (custom metadata) to merge into the handler schema. Or it returns a function that gets the current handler schema and returns that object, so you merge them yourself.
 
 ```ts showLineNumbers copy
-import { createDecorator, get, HttpException, HttpStatus } from 'vovk';
+import { createDecorator, get, HttpException, HttpStatus, type VovkRequest } from 'vovk';
 
 export interface ReqMeta {
   foo: string;
@@ -3785,19 +3787,19 @@ const myDecorator = createDecorator(
   (req, next, a: string, b: number) => {
     console.log(a, b); // Outputs: "baz", 1
 
-    req.vovk.meta<ReqMeta>({ foo: 'bar', a, b }); // Add metadata to the request object
+    req.vovk.meta<ReqMeta>({ foo: 'bar', a, b }); // add metadata to the request
 
     if (isSomething) {
-      // override route method behavior and return { hello: 'world' } from the endpoint
+      // skip the handler and respond with { hello: 'world' }
       return { hello: 'world' };
     }
 
     if (isSomethingElse) {
-      // throw HTTP error if needed
+      // or throw an HTTP error
       throw new HttpException(HttpStatus.BAD_REQUEST, 'Something went wrong');
     }
 
-    // Continue to the next decorator or the route handler
+    // call the next decorator or the route handler
     return next();
   },
   (a: string, b: number) => {
@@ -3814,7 +3816,7 @@ const myDecorator = createDecorator(
 export default class MyController {
   @get.auto()
   @myDecorator('baz', 1) // Passes 'baz' as 'a' and 1 as 'b'
-  static doSomething(req) {
+  static doSomething(req: VovkRequest) {
     const meta = req.vovk.meta<ReqMeta>();
     console.log(meta); // { foo: 'bar', a: 'baz', b: 1 }
     // ...
@@ -3830,7 +3832,7 @@ Page: https://vovk.dev/decorator-examples
 
 ## `console.log` Decorator
 
-A simple logging decorator that logs the request method and URL before proceeding to the next decorator or route handler.
+This decorator logs the request method and URL, then calls the next decorator or the route handler.
 
 ```ts showLineNumbers copy filename="src/decorators/log.ts"
 import { createDecorator } from 'vovk';
@@ -3843,11 +3845,11 @@ const log = createDecorator((req, next, message?: string) => {
 export default log;
 ```
 
-Import the `log` decorator and apply it to a procedure after the `@get`, `@post`, etc., decorators.
+Import `log` and apply it to a procedure below the HTTP decorator (`@get`, `@post` and so on).
 
 ```ts showLineNumbers copy filename="src/modules/user/user-controller.ts"
 import { get, prefix } from 'vovk';
-import log from '../decorators/log';
+import log from '../../decorators/log';
 
 @prefix('users')
 export default class UserController {
@@ -3861,7 +3863,7 @@ export default class UserController {
 
 ## Basic Authorization Decorator
 
-Basic authentication is a simple HTTP protocol for user authentication where credentials (username and password) are sent in the Authorization header of a request after being encoded in Base64. While not the most secure method, it can be useful for legacy cross-service communication.
+With Basic authentication, the client sends the username and password in the `Authorization` header, encoded in Base64. It is not the most secure method, but it can be useful between older services.
 
 ```ts showLineNumbers copy filename="src/decorators/basic-auth-guard.ts"
 import { HttpException, HttpStatus, createDecorator } from 'vovk';
@@ -3896,11 +3898,11 @@ const basicAuthGuard = createDecorator((req, next) => {
 export default basicAuthGuard;
 ```
 
-Import the `basicAuthGuard` decorator and apply it to procedures after the `@get`, `@post`, etc., decorators.
+Apply `basicAuthGuard` to procedures below the HTTP decorator.
 
 ```ts showLineNumbers copy filename="src/modules/secure/secure-controller.ts"
 import { get, prefix } from 'vovk';
-import basicAuthGuard from '../decorators/basic-auth-guard';
+import basicAuthGuard from '../../decorators/basic-auth-guard';
 
 @prefix('secure')
 export default class SecureController {
@@ -3914,15 +3916,15 @@ export default class SecureController {
 
 ## RBAC Decorator
 
-> Role-based access control (RBAC) is a method of restricting system access for users based on their role within an organization, rather than assigning permissions individually.
+> Role-based access control (RBAC) limits what users can do by their role in an organization, instead of by permissions given to each user.
 
 The `authGuard` decorator below:
 
-- Verifies the user is authorized; otherwise returns an `Unauthorized` status.
-- Adds `currentUser` to request metadata, represented by the `AuthMeta` TypeScript interface.
-- Implements role-based access control with the `Permission` enum.
+- Checks that the user is authorized, and otherwise responds with the `Unauthorized` status.
+- Adds `currentUser` to the request metadata, typed by the `AuthMeta` interface.
+- Checks the role with the `Permission` enum.
 
-The `identifyUserAndCheckPermissions` function is a placeholder for your logic to identify the user from the request (e.g., from a JWT token or session) and check whether they have the required permission.
+`identifyUserAndCheckPermissions` stands for your code that finds the user from the request (for example, from a JWT or a session) and checks that they have the permission.
 
 ```ts showLineNumbers copy filename="src/decorators/auth-guard.ts"
 import { createDecorator, HttpException, HttpStatus, type VovkRequest } from 'vovk';
@@ -3933,12 +3935,12 @@ export enum Permission {
   CAN_DO_THAT = 'CAN_DO_THAT',
 }
 
-// Metadata interface allows access to currentUser in the controller
+// lets the controller read currentUser from the metadata
 export interface AuthMeta {
   currentUser: User;
 }
 
-// Identify the user, check permissions, and update request metadata
+// identify the user, check the permission and set the request metadata
 const checkAuth = async (req: VovkRequest, permission: Permission) => {
   const currentUser = identifyUserAndCheckPermissions(req, permission);
 
@@ -3959,18 +3961,18 @@ const authGuard = createDecorator(async (req, next, permission: Permission) => {
   if (!isAuthorized) {
     throw new HttpException(HttpStatus.UNAUTHORIZED, 'Unauthorized');
   }
-  // The user is authorized and metadata is set; proceed to the next decorator or controller handler
+  // authorized, with the metadata set: call the next decorator or the handler
   return next();
 });
 
 export default authGuard;
 ```
 
-Import the `authGuard` decorator and related members, then apply it to procedures after the `@get`, `@post`, etc., decorators.
+Import `authGuard` with `Permission` and `AuthMeta`, then apply it to procedures below the HTTP decorator.
 
 ```ts showLineNumbers copy filename="src/modules/user/user-controller.ts"
-import { get, prefix } from 'vovk';
-import authGuard, { Permission, type AuthMeta } from '../decorators/auth-guard';
+import { get, prefix, type VovkRequest } from 'vovk';
+import authGuard, { Permission, type AuthMeta } from '../../decorators/auth-guard';
 
 @prefix('users')
 export default class UserController {
@@ -3988,7 +3990,7 @@ export default class UserController {
 
 ## Vercel Cron Jobs Authorization Decorator
 
-[Vercel Cron Jobs](https://vercel.com/docs/cron-jobs) require simple authorization via an environment variable. You can implement this by creating a decorator that checks the `Authorization` header against a secret.
+[Vercel Cron Jobs](https://vercel.com/docs/cron-jobs) authorize with a secret in an environment variable. A decorator can check the `Authorization` header against it.
 
 ```ts showLineNumbers copy filename="src/decorators/cron-guard.ts"
 import { HttpException, HttpStatus, createDecorator } from 'vovk';
@@ -4004,11 +4006,11 @@ const cronGuard = createDecorator(async (req, next) => {
 export default cronGuard;
 ```
 
-Apply the `cronGuard` decorator to the procedure that should be protected by the cron job authorization.
+Apply `cronGuard` to the procedure the cron job calls.
 
 ```ts showLineNumbers copy filename="src/modules/cron/cron-controller.ts"
 import { get, prefix } from 'vovk';
-import cronGuard from '../decorators/cron-guard';
+import cronGuard from '../../decorators/cron-guard';
 
 @prefix('cron')
 export default class CronController {
@@ -4020,7 +4022,7 @@ export default class CronController {
 }
 ```
 
-Add a cron job to `vercel.json`. The `schedule` field uses standard cron syntax (this example runs daily at midnight).
+Add the cron job to `vercel.json`. The `schedule` field uses standard cron syntax; this one runs every day at midnight.
 
 ```json filename="/vercel.json"
 {
@@ -4039,7 +4041,7 @@ Page: https://vovk.dev/typescript
 
 # TypeScript RPC Client
 
-Controllers and its procedures implemented as static methods compile to so-called RPC modules that share the same structure but have different argument signatures. For example, given the controller below:
+A controller, with its procedures as static methods, compiles to an RPC module. The module has the same structure, but its methods take different arguments. For example, take this controller:
 
 ```ts showLineNumbers copy filename="src/modules/user/user-controller.ts"
 import { z } from 'zod';
@@ -4084,19 +4086,19 @@ export default class UserController {
 }
 ```
 
-It compiles to the following RPC module with `updateUser` method, which accepts `body`, `params`, and `query` as a three-part input.
+It compiles to an RPC module with an `updateUser` method. The method takes `body`, `params` and `query` in one object:
 
 ```ts showLineNumbers copy
 import { UserRPC } from '@/client';
 
 const updatedUser = await UserRPC.updateUser({
   body: { name: 'John Doe', age: 30, email: 'john@example.com' },
-  params: { id: '69' },
+  params: { id: '123e4567-e89b-12d3-a456-426614174000' },
   query: { notify: 'push' },
 });
 ```
 
-`updateUser` performs client-side validation, serializes `query` and `params` into the URL, and issues a standard `fetch` request. The server handles it in `UserController.updateUser`. The RPC method returns a promise that resolves to the return type used in the procedure.
+`updateUser` validates the input on the client, puts `query` and `params` into the URL, and sends a standard `fetch` request, which `UserController.updateUser` handles on the server. The RPC method returns a promise of the procedure's return type. In plain `fetch`, the call looks like this:
 
 ```ts showLineNumbers copy
 const resp = await fetch(`/api/users/${id}?notify=push`, {
@@ -4109,7 +4111,7 @@ const resp = await fetch(`/api/users/${id}?notify=push`, {
 const updatedUser = await resp.json();
 ```
 
-Behind the scenes the RPC module is created by an internal function `createRPC` and uses default imports or imports defined in the [vovk.config](https://vovk.dev/config) file. See [imports customization](https://vovk.dev/imports) for details.
+An internal function, `createRPC`, creates the RPC module. It uses the default imports, or the imports set in the [vovk.config](https://vovk.dev/config) file. See [imports customization](https://vovk.dev/imports) for details.
 
 ```ts showLineNumbers copy
 import type { VovkFetcher } from "vovk/fetcher";
@@ -4118,7 +4120,7 @@ import { schema } from "./schema";
 
 import type { Controllers as Controllers0 } from "../../app/api/[[...vovk]]/route.ts";
 
-// The arguments are: schema, segmentName, controllerName, fetcher and options
+// The arguments are: schema, segmentName, rpcModuleName, fetcher and options
 export const UserRPC = createRPC<
   Controllers0["UserRPC"],
   typeof import("vovk/fetcher").fetcher extends VovkFetcher<infer U> ? U : never
@@ -4127,19 +4129,19 @@ export const UserRPC = createRPC<
 });
 ```
 
-The generated client imports `vovk` subpaths, such as `vovk/fetcher`, and JSON files with import attributes. It compiles on TypeScript 5.3+ with `"moduleResolution"` set to `"bundler"`, the Next.js default, `"node16"` or `"nodenext"`; under `"node"`, TypeScript can't find `vovk/fetcher`.
+The generated client imports `vovk` subpaths, such as `vovk/fetcher`, and JSON files with import attributes. It compiles on TypeScript 5.3+ with `"moduleResolution"` set to `"bundler"` (the Next.js default), `"node16"` or `"nodenext"`. With `"node"`, TypeScript can't find `vovk/fetcher`.
 
 ## RPC Method Options
 
-In addition to `body`, `params`, and `query`, every RPC method accepts a set of options. This list can be [extended via a custom `fetcher`](https://vovk.dev/imports#fetcher).
+Besides `body`, `params` and `query`, every RPC method accepts the options below. You can [extend the list with a custom `fetcher`](https://vovk.dev/imports#fetcher).
 
 ### `apiRoot`
 
-Overrides the default API root path. The default is `/api` and can also be [configured](https://vovk.dev/config) via `rootEntry` and/or `origin`.
+Overrides the API root. The default is `/api`. You can also [configure](https://vovk.dev/config) it with `rootEntry`, `origin` or both.
 
 ### `init`
 
-Lets you pass `RequestInit` options (the `fetch` options) such as `headers` and `credentials`, as well as [Next.js-specific options](https://nextjs.org/docs/app/api-reference/functions/fetch) like `next: { revalidate: number }{:ts}`.
+Passes `RequestInit` options (the `fetch` options), such as `headers` and `credentials`, and [Next.js-specific options](https://nextjs.org/docs/app/api-reference/functions/fetch) such as `next: { revalidate: number }{:ts}`.
 
 ```ts showLineNumbers copy
 const user = await UserRPC.updateUser({
@@ -4164,7 +4166,7 @@ const user = await UserRPC.updateUser({
 
 ### `transform`
 
-Allows you to post-process the result. Provide a function that receives the parsed response data and the original `Response` and returns a transformed value.
+Post-processes the result. The function receives the parsed response data and the original `Response`, and returns a new value.
 
 ```ts showLineNumbers copy
 const user = await UserRPC.updateUser({
@@ -4184,7 +4186,7 @@ const user = await UserRPC.updateUser({
 });
 ```
 
-You can also return the `Response` alongside the data:
+It can also return the `Response` together with the data:
 
 ```ts showLineNumbers copy
 const [user, response] = await UserRPC.updateUser({
@@ -4205,7 +4207,7 @@ response satisfies Response;
 
 ### `disableClientValidation`
 
-Turns off client-side validation for this call. Useful when debugging to surface server-side validation errors instead.
+Turns off client-side validation for this call. Use it when debugging, to see the server's validation errors instead.
 
 ```ts showLineNumbers copy
 await UserRPC.updateUser({
@@ -4216,7 +4218,7 @@ await UserRPC.updateUser({
 
 ### `interpretAs`
 
-Overrides how the response content type is interpreted. Useful, for example, when the server returns JSON Lines but does not set `content-type` to `application/jsonl`.
+Sets the content type that the client uses to read the response. For example, use it when the server returns JSON Lines without setting `content-type` to `application/jsonl`.
 
 ```ts showLineNumbers copy
 const user = await UserRPC.updateUser({
@@ -4243,7 +4245,7 @@ Overrides the [fetcher](https://vovk.dev/imports#fetcher) for this call, for exa
 
 ## `withDefaults`
 
-An RPC module can be wrapped with default options using the `withDefaults` method. It returns a new RPC module with the specified deeply-merged defaults applied to every method call. Headers merge by name, case-insensitively, whether a layer gives them as an object, a `Headers{:ts}` instance or entries, and a per-call header replaces a default one.
+The `withDefaults` method returns a new RPC module with default options for every call. The defaults are deep-merged with each call's options. Headers merge by name, ignoring case, whether a layer gives them as an object, a `Headers{:ts}` instance or entries. A header given in the call replaces a default one.
 
 ```ts showLineNumbers copy
 import { UserRPC } from '@/client';
@@ -4264,7 +4266,7 @@ const user = await WithDefaultsUserRPC.updateUser({
 
 ## Customization
 
-You can customize the client's fetch function and its types to match your app’s needs. See the [`fetcher` customization docs](https://vovk.dev/imports#fetcher) for details.
+You can change the client's fetch function and its option types. See the [`fetcher` customization docs](https://vovk.dev/imports#fetcher).
 
 ```ts showLineNumbers copy
 await UserRPC.updateUser({
@@ -4276,7 +4278,7 @@ await UserRPC.updateUser({
 
 ## Type Override
 
-If type inference cannot determine the return type, you can specify it explicitly—no need to cast to `unknown` first.
+If type inference can't find the return type, pass it as a type argument. You don't need to cast to `unknown` first.
 
 ```ts showLineNumbers copy
 import { UserRPC } from '@/client';
@@ -4300,7 +4302,7 @@ export default class UserController {
 }
 ```
 
-If the handler returns an async iterable, the client casts the method to a [disposable](https://github.com/tc39/proposal-explicit-resource-management) [async iterator](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/AsyncIterator) to enable [JSON Lines](https://vovk.dev/jsonlines) streaming.
+If the handler returns an async iterable, the RPC method resolves to a [disposable](https://github.com/tc39/proposal-explicit-resource-management) [async iterator](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/AsyncIterator) that reads the [JSON Lines](https://vovk.dev/jsonlines) stream.
 
 ```ts showLineNumbers copy
 import { StreamRPC } from '@/client';
@@ -4314,24 +4316,26 @@ for await (const { message } of stream) {
 
 ## Access to Schema
 
-Every RPC method exposes the emitted JSON schema through the following properties:
+Every RPC method has the emitted schema in these properties:
 
-- `schema` - the schema for this method of type `VovkHandlerSchema`;
-- `controllerSchema` - the schema object of the method's controller of type `VovkControllerSchema`;
-- `segmentSchema` - the schema object of the segment of type `VovkSegmentSchema`;
-- `fullSchema` - the full schema object of type `VovkSchema` that includes all available segments as well as emitted config (by default, `"libs"` and `"rootEntry"` options only; see [config documentation](https://vovk.dev/config)).
+- `schema` - the method's schema;
+- `controllerSchema` - the schema of the method's controller;
+- `segmentSchema` - the schema of the segment;
+- `fullSchema` - the full schema, of type `VovkSchema`, with all segments and the emitted config (by default, only the `libs` and `rootEntry` options; see [config documentation](https://vovk.dev/config)).
+
+For the type of one of them, use `typeof`, such as `typeof UserRPC.updateUser.segmentSchema`.
 
 ```ts showLineNumbers copy
-console.log(UserRPC.updateUser.schema.validation.body); // get body validation JSON schema
-console.log(UserRPC.updateUser.schema.operationObject); // get OpenAPI operationObject spec for this method
-console.log(UserRPC.updateUser.fullSchema.meta.config.libs.ajv); // get config option
+console.log(UserRPC.updateUser.schema.validation?.body); // the JSON schema of the body
+console.log(UserRPC.updateUser.schema.operationObject); // the OpenAPI operation object of this method
+console.log(UserRPC.updateUser.fullSchema.meta?.config.libs?.ajv); // a config option
 ```
 
-This design also allows you to create [LLM tools](https://vovk.dev/tools) that can use the schema to define the tool parameters.
+[LLM tools](https://vovk.dev/tools) can use this schema to define their parameters.
 
 ## `getURL` method
 
-Every RPC method exposes a type-safe `getURL` utility that returns the URL for the method, including serialized `params` and `query`.
+Every RPC method has a type-safe `getURL` function. It returns the method's URL, with `params` and `query` in it.
 
 ```ts showLineNumbers copy
 import { UserRPC } from '@/client';
@@ -4344,7 +4348,7 @@ const url = UserRPC.updateUser.getURL({
 console.log(url); // "https://api.example.com/v1/users/69?notify=push"
 ```
 
-It can be used to call `fetch` directly if needed.
+Use it to call `fetch` directly:
 
 ```ts showLineNumbers copy
 const response = await fetch(
@@ -4352,7 +4356,7 @@ const response = await fetch(
     /* ... */
   }),
   {
-    method: 'PUT',
+    method: 'POST',
     // ... other fetch options
   }
 );
@@ -4360,9 +4364,9 @@ const response = await fetch(
 
 ## React Query
 
-Every RPC method exposes a `queryKey` utility that returns a globally unique key for use with [@tanstack/react-query](https://www.npmjs.com/package/@tanstack/react-query). It is an array: `[segmentName, controllerPrefix, rpcModuleName, decoratorPath, httpMethod, ...key]{:ts}`, where `...key` is an optional array of extra values you provide to differentiate similar queries.
+Every RPC method has a `queryKey` function. It returns a globally unique key for [@tanstack/react-query](https://www.npmjs.com/package/@tanstack/react-query). The key is an array: `[segmentName, controllerPrefix, rpcModuleName, decoratorPath, httpMethod, ...key]{:ts}`. `...key` holds optional extra values that tell similar queries apart.
 
-```ts showLineNumbers copy
+```tsx showLineNumbers copy
 import { useQuery } from '@tanstack/react-query';
 import { UserRPC } from '@/client';
 
@@ -4381,7 +4385,7 @@ const MyComponent = () => {
 
 [View live example on examples.vovk.dev »](https://examples.vovk.dev/react-query)
 
-You can use the key for cache invalidation, refetching, and other React Query features.
+Use the key to invalidate the cache, to refetch, and with other React Query features.
 
 ```ts showLineNumbers copy
 queryClient.invalidateQueries({
@@ -4389,9 +4393,9 @@ queryClient.invalidateQueries({
 });
 ```
 
-Streamed responses can utilize [`streamedQuery`](https://tanstack.com/query/latest/docs/reference/streamedQuery), which lets you consume [JSON Lines](https://vovk.dev/jsonlines) as an array.
+For streamed responses, [`streamedQuery`](https://tanstack.com/query/latest/docs/reference/streamedQuery) reads [JSON Lines](https://vovk.dev/jsonlines) as an array.
 
-```ts showLineNumbers copy
+```tsx showLineNumbers copy
 import { useQuery, experimental_streamedQuery as streamedQuery } from '@tanstack/react-query';
 import { JSONLinesRPC } from '@/client';
 
@@ -4411,9 +4415,9 @@ const JSONLinesComponent = () => {
 };
 ```
 
-Mutations work with RPC module methods as expected.
+RPC methods also work as mutation functions.
 
-```ts showLineNumbers copy
+```tsx showLineNumbers copy
 import { useMutation } from '@tanstack/react-query';
 import { UserRPC } from '@/client';
 
@@ -4427,14 +4431,15 @@ const MyComponent = () => {
       <button
         onClick={() =>
           mutation.mutate({
-            body: { name: 'John Doe', age: 30 },
-            params: { id: '123' },
+            body: { name: 'John Doe', age: 30, email: 'john@example.com' },
+            params: { id: '123e4567-e89b-12d3-a456-426614174000' },
+            query: { notify: 'push' },
           })
         }
       >
         Update User
       </button>
-      {mutation.isLoading ? 'Loading...' : JSON.stringify(mutation.data)}
+      {mutation.isPending ? 'Loading...' : JSON.stringify(mutation.data)}
     </div>
   );
 };
@@ -4442,36 +4447,35 @@ const MyComponent = () => {
 
 ## `openapi` and `schema`
 
-The generated client also exposes `openapi` and `schema` exports in corresponding modules for accessing the OpenAPI spec and the Vovk Schema, respectively.
+The generated client also exports the OpenAPI spec as `openapi` and the Vovk Schema as `schema`, each from a module of the same name.
 
 ```ts showLineNumbers copy
 import { openapi } from '@/client/openapi';
 import { schema } from '@/client/schema';
 ```
 
-The `schema` object can also be exported from the main module.
+The main module exports `schema` too.
 
 ```ts showLineNumbers copy
 import { schema } from '@/client';
 ```
 
-This also works with the [segmented client](https://vovk.dev/segmented); in that case, both `openapi` and `schema` include data only for the selected segment:
+The [segmented client](https://vovk.dev/segmented) has the same exports, but `openapi` and `schema` hold only the data of their segment:
 
 ```ts showLineNumbers copy
 import { openapi } from '@/client/admin/openapi';
-import { schema } from '@/client/admin/schema';
-import { schema } from '@/client/admin';
+import { schema } from '@/client/admin'; // or from '@/client/admin/schema'
 ```
 
 ## Used Templates
 
-The TypeScript RPC client is generated from the following templates:
+The TypeScript RPC client is generated from these templates:
 
-- [ts](https://vovk.dev/templates#ts) - uncompiled TypeScript module with type definitions; used by default in both the [composed client](https://vovk.dev/composed) and the [segmented client](https://vovk.dev/segmented);
-- [mixins](https://vovk.dev/templates#mixins) - `.d.ts` types and `.json` files generated when [OpenAPI mixins](https://vovk.dev/mixins) are used;
-- [readme](https://vovk.dev/templates#readme), [packageJson](https://vovk.dev/templates#packagejson) - `README.md` with RPC documentation and `package.json` suitable for publishing the generated library as an NPM package.
+- [ts](https://vovk.dev/templates#ts) - the uncompiled TypeScript module with its types; the default for both the [composed client](https://vovk.dev/composed) and the [segmented client](https://vovk.dev/segmented);
+- [mixins](https://vovk.dev/templates#mixins) - the `.d.ts` types and `.json` files for [OpenAPI mixins](https://vovk.dev/mixins);
+- [readme](https://vovk.dev/templates#readme), [packageJson](https://vovk.dev/templates#packagejson) - a `README.md` that documents the RPC modules, and a `package.json` for publishing the client as an npm package.
 
-For more information, see the [client templates documentation](https://vovk.dev/templates).
+For more, see the [client templates documentation](https://vovk.dev/templates).
 
 ---
 
@@ -4479,9 +4483,9 @@ Page: https://vovk.dev/imports
 
 # TypeScript Client Customization
 
-You can customize the generated TypeScript client by replacing imports of lower-level libraries. Do this via the `outputConfig.imports` object in the [config](https://vovk.dev/config) file, which can specify a [fetcher](#fetcher) and [validateOnClient](#validateonclient).
+You can replace the lower-level modules that the generated TypeScript client imports: the [fetcher](#fetcher) and [validateOnClient](#validateonclient). Set them in the `outputConfig.imports` object of the [config](https://vovk.dev/config) file. The object also takes `createRPC`: the module the client imports `createRPC` from, `vovk/create-rpc` by default (see [config](https://vovk.dev/config)).
 
-By default, when **vovk-ajv** (described below) is used for client-side validation, the `index.ts` file generating the `UserRPC` module might look like:
+With **vovk-ajv** (described below) for client-side validation, the generated `index.ts` that creates the `UserRPC` module looks roughly like this:
 
 ```ts showLineNumbers copy filename="./src/client/index.ts"
 import { createRPC } from 'vovk/create-rpc';
@@ -4493,7 +4497,7 @@ export const UserRPC = createRPC(schema, '', 'UserRPC', import('vovk/fetcher'), 
 });
 ```
 
-When `outputConfig.imports` is modified:
+With custom `outputConfig.imports`:
 
 ```ts showLineNumbers copy filename="vovk.config.mjs"
 /** @type {import('vovk').VovkConfig} */
@@ -4508,10 +4512,11 @@ const config = {
 export default config;
 ```
 
-The generated `index.ts` uses these imports and resolves relative paths:
+The generated `index.ts` imports them, with relative paths adjusted to its folder:
 
 ```ts showLineNumbers copy filename="./src/client/index.ts"
 import { createRPC } from 'vovk/create-rpc';
+import { schema } from './schema';
 
 export const UserRPC = createRPC(schema, '', 'UserRPC', import('../lib/fetcher'), {
   validateOnClient: import('../lib/validate-on-client'),
@@ -4519,21 +4524,21 @@ export const UserRPC = createRPC(schema, '', 'UserRPC', import('../lib/fetcher')
 });
 ```
 
-`fetcher` and `validateOnClient` can also be set per [segment](https://vovk.dev/segment). This enables different options or auth mechanisms per segment (including [OpenAPI mixins](https://vovk.dev/mixins)) and different validation libraries where needed.
+You can also set `fetcher` and `validateOnClient` per [segment](https://vovk.dev/segment), [OpenAPI mixins](https://vovk.dev/mixins) included. This way each segment can have its own options, auth and validation library.
 
 ```ts showLineNumbers copy
 /** @type {import('vovk').VovkConfig} */
 const config = {
   outputConfig: {
     imports: {
-      // applied to all segments
+      // for all segments
       fetcher: './src/lib/fetcher',
       validateOnClient: './src/lib/validate-on-client',
     },
     segments: {
       admin: {
         imports: {
-          // applied only to "admin" segment
+          // for the "admin" segment only
           fetcher: './src/lib/admin-fetcher',
           validateOnClient: './src/lib/admin-validate-on-client',
         },
@@ -4546,15 +4551,15 @@ export default config;
 
 ## `fetcher`
 
-The `fetcher` prepares handlers, performs client-side validation, issues HTTP requests, differentiates content types (JSON, [JSON Lines](https://vovk.dev/jsonlines), or other `Response` types), and returns data in the appropriate format.
+The `fetcher` validates the input on the client, sends the HTTP request, and returns the data by content type:
 
-- For `application/json` and any `+json` type, such as `application/problem+json`, it returns the parsed JSON, or `null` for a response without a body, such as a `204` or the answer to a `HEAD` request. An error status throws an `HttpException{:ts}` with the body's `message`, or with the `detail` or `title` of a problem details document.
-- For `application/jsonl`, `application/jsonlines` or `application/x-ndjson`, it returns a disposable async iterable.
-- For other content types, it returns the `Response` object as-is, letting you access text or binary data. A status of 400 or above throws an `HttpException{:ts}` with the response text as its message instead.
+- For `application/json` and any `+json` type, such as `application/problem+json`, it returns the parsed JSON. A response without a body, such as a `204` or the answer to a `HEAD` request, gives `null`. An error status throws an `HttpException{:ts}` with the body's `message`, or with the `detail` or `title` of a problem details document.
+- For [JSON Lines](https://vovk.dev/jsonlines) (`application/jsonl`, `application/jsonlines` or `application/x-ndjson`), it returns a disposable async iterable.
+- For other content types, it returns the `Response` object as is, so you can read text or binary data. A status of 400 or above throws an `HttpException{:ts}` instead, with the response text as its message.
 
-The content type is compared without its parameters and in any case, so `Application/JSON; charset=utf-8` is JSON.
+The comparison ignores the content type's parameters and letter case, so `Application/JSON; charset=utf-8` is JSON.
 
-It can also process custom per-call options passed to RPC methods.
+The fetcher can also take custom options, passed to an RPC method on each call.
 
 ```ts showLineNumbers copy
 import { UserRPC } from '@/client';
@@ -4568,15 +4573,15 @@ const user = await UserRPC.updateUser({
 
 ### `createFetcher`
 
-The file at `imports.fetcher` must export a `fetcher` variable. To simplify creating a custom fetcher, use `createFetcher` from `vovk`.
+The module at `imports.fetcher` must export a `fetcher` variable. `createFetcher` from `vovk/fetcher` makes one.
 
 ```ts showLineNumbers copy filename="./src/lib/fetcher.ts"
-import { createFetcher } from 'vovk';
+import { createFetcher } from 'vovk/fetcher';
 
 export const fetcher = createFetcher<{
   successMessage?: string; // "Successfully created a new user"
-  useAuth?: boolean; // if true, Authorization header will be set
-  someOtherCustomFlag?: boolean; // any custom flag that you want to pass to the RPC method
+  useAuth?: boolean; // true sets the Authorization header
+  someOtherCustomFlag?: boolean; // any other option for the RPC method
 }>({
   prepareRequestInit: async (init, { useAuth, someOtherCustomFlag }) => {
     // ...
@@ -4603,7 +4608,7 @@ export const fetcher = createFetcher<{
 });
 ```
 
-With this setup, all RPC module methods accept the desired options:
+Every RPC method then accepts these options:
 
 ```ts showLineNumbers copy
 import { UserRPC } from '@/client';
@@ -4618,27 +4623,27 @@ await UserRPC.updateUser({
 });
 ```
 
-`createFetcher` accepts an object with:
+`createFetcher` takes an object with:
 
 #### `prepareRequestInit(init: RequestInit, options: T){:ts}`
 
-Prepares `RequestInit` before making the request. Use it to set auth headers or Next.js-specific `next` options. Receives the prepared `init` and custom call `options`, and must return a `RequestInit` object (usually based on `init`). Useful for logging or other pre-request logic.
+Runs before the request. It receives the prepared `init` and the call's custom `options`, and must return a `RequestInit` object, usually based on `init`. Use it for auth headers, the Next.js `next` options, logging, or other work before the request.
 
-#### `transformResponse(data: unknown, options: T, info: { response: Response, init: RequestInit, schema: VovkHandlerSchema }){:ts}`
+#### `transformResponse(data: unknown, options: T, info: { response: Response, init: RequestInit, schema }){:ts}`
 
-Transforms the response before returning it to the caller. The `data` type depends on the content type: JSON, a [disposable](https://github.com/tc39/proposal-explicit-resource-management) [async iterator](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/AsyncIterator), or a `Response`. Return the transformed value. The `info` argument provides the original `Response`, the `RequestInit` used, and the `VovkHandlerSchema` (e.g., `schema.operationObject`).
+Changes the response data before the caller gets it. `data` is JSON, a [disposable](https://github.com/tc39/proposal-explicit-resource-management) [async iterator](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/AsyncIterator), or a `Response`, depending on the content type. Return the new value. The `info` argument holds the original `Response`, the `RequestInit` used, and the method's schema: the same object as `UserRPC.updateUser.schema`, with fields such as `schema.operationObject`.
 
 #### `onError(error: HttpException, options: T){:ts}`
 
-Called when a request fails. Use it for error messages, logging, or custom handling.
+Runs when a request fails. Use it for error messages, logging, or custom handling. Its third argument, `info`, holds the `response`, `init`, `respData` and `schema`; the first three are `null` when the call failed before it had them.
 
 #### `onSuccess(data: unknown, options: T){:ts}`
 
-Called on success. Use it for success messages, logging, or post-processing.
+Runs when a request succeeds. Use it for success messages, logging, or post-processing. Its third argument, `info`, is the same as in `transformResponse`.
 
 ### Event-style callbacks
 
-`onSuccess` and `onError` can also be registered after the fetcher is created. This is useful when callbacks depend on context that isn't available at creation time (e.g. a React context value or a Zustand store reference). Both methods return an unsubscribe function. Multiple callbacks can be registered — they run in order.
+You can also add `onSuccess` and `onError` callbacks after you create the fetcher. Use this when a callback needs something that doesn't exist at creation time, such as a React context value or a Zustand store. Both methods return a function that removes the callback. Several callbacks run in the order you add them.
 
 ```ts showLineNumbers copy
 const unsubSuccess = fetcher.onSuccess((data, { successMessage }) => {
@@ -4656,11 +4661,11 @@ unsubError();
 
 ## `validateOnClient`
 
-`validateOnClient` defines how client-side validation is performed for RPC/API method input (`params`, `query`, `body`). Create it via `createValidateOnClient` from `vovk`. It accepts a `validate` function that receives the input data, the JSON schema, and metadata, and returns validated data or throws on failure. Validation runs only when both input and schema are provided.
+`validateOnClient` validates the input of an RPC or API method (`params`, `query`, `body`) on the client. Create it with `createValidateOnClient` from `vovk/create-validate-on-client`. It takes a `validate` function, which receives the input data, its JSON schema and metadata, and returns the validated data or throws. Validation runs only when both the input and its schema exist.
 
 ```ts showLineNumbers copy filename="./src/lib/validate-on-client.ts"
 import { validateData } from 'some-json-validation-library';
-import { createValidateOnClient, HttpException, HttpStatus } from 'vovk';
+import { createValidateOnClient, HttpException, HttpStatus } from 'vovk/create-validate-on-client';
 
 export const validateOnClient = createValidateOnClient({
   validate: async (input, schema, meta) => {
@@ -4678,9 +4683,13 @@ export const validateOnClient = createValidateOnClient({
 
 ### vovk-ajv
 
-[vovk-ajv](https://www.npmjs.com/package/vovk-ajv) is the primary library for client-side validation, built on top of [Ajv](https://www.npmjs.com/package/ajv). It’s installed and configured automatically when you run `npx vovk-cli init`. **vovk-ajv** supports additional configuration under `config.libs.ajv` in [vovk.config](https://vovk.dev/config), including Ajv options and the target JSON Schema draft.
+[vovk-ajv](https://www.npmjs.com/package/vovk-ajv) is the main client-side validation library, built on [Ajv](https://www.npmjs.com/package/ajv). `npx vovk-cli init` installs and configures it. You can set Ajv options and the target JSON Schema draft under `config.libs.ajv` in [vovk.config](https://vovk.dev/config).
 
-Ajv runs with `strict: false` unless the options say otherwise, so keywords JSON Schema doesn't define, such as Zod's `example` or OpenAPI's `discriminator` and `x-*`, are ignored. A `pattern` is read with the `u` flag, which `\p{…}` needs, as in `z.emoji()`, or without it when the `u` flag refuses the pattern, as it refuses escapes such as `\-` that Zod's regexes allow. OpenAPI 3.0's boolean `exclusiveMinimum` and `exclusiveMaximum` are read as the bounds they mark. A `FormData` or `URLSearchParams` body holds strings, as do `params` and `query`, which the URL carries, so they are validated with `coerceTypes: true`: `"5"` passes as a number. The `params` and `query` are checked as a copy and sent as given. When Ajv can't compile a schema, the client skips validation for it and logs a warning; the server still validates the request.
+- Ajv runs with `strict: false` unless your options say otherwise, so it ignores keywords JSON Schema doesn't define, such as Zod's `example` or OpenAPI's `discriminator` and `x-*`.
+- A `pattern` is read with the `u` flag, which `\p{…}` needs, as in `z.emoji()`. A pattern the `u` flag refuses, such as one with a `\-` escape that Zod's regexes allow, is read without it.
+- OpenAPI 3.0's boolean `exclusiveMinimum` and `exclusiveMaximum` are read as the bounds they mark.
+- A `FormData` or `URLSearchParams` body holds strings, and so do `params` and `query`, which the URL carries. So they are validated with `coerceTypes: true`: `"5"` passes as a number. Ajv never edits the `params` and `query` it checks, so they are sent as given.
+- When Ajv can't compile a schema, the client skips validation for it and logs a warning. The server still validates the request.
 
 ```bash npm2yarn copy
 npm install vovk-ajv
@@ -4701,7 +4710,7 @@ const config = {
         // Ajv options
         strict: false,
       },
-      target: 'draft-2020-12', // auto-detected from $schema but can be configured
+      target: 'draft-2020-12', // detected from $schema unless you set it
     },
   },
 };
@@ -4821,7 +4830,7 @@ import { UserRPC } from '@/client/customer'; // import tree will contain custome
 await UserRPC.getUser({ params: { id: '123' } });
 ```
 
-The segmented client also applicable to [Rust](https://vovk.dev/rust) and [Python](https://vovk.dev/python) templates, though use cases are less common. Each segment folder then holds a whole package, `Cargo.toml` or `pyproject.toml` included, named after the project's package and the segment: for a project named `app`, the `foo` segment's package is `app_foo` and the root segment's is `app_root`. A `package.name` set for the segment in [outputConfig.segments](https://vovk.dev/config#segments) is used as is.
+The segmented client also applicable to [Rust](https://vovk.dev/rust) and [Python](https://vovk.dev/python) templates, though use cases are less common. Each segment folder then holds a whole package, `Cargo.toml` or `pyproject.toml` included, named after the project's package and the segment: for a project named `app`, the `foo` segment's package is `app_foo` and the root segment's is `app_root`, and `py_name` or `rs_name` get the same suffix. A `package.name`, `py_name` or `rs_name` set for the segment in [outputConfig.segments](https://vovk.dev/config#segments) is used as is. Both templates put a `README.md` into each segment folder, so segmented Python and Rust clients need separate output folders, set by `outDir` in a template definition's [segmentedClient](https://vovk.dev/templates#segmentedClient) options: `vovk generate` refuses two templates that write the same file.
 
 To enable the segmented client, set `segmentedClient.enabled` to `true` in `vovk.config.mjs`, and optionally disable the composed client by setting `composedClient.enabled` to `false`.
 
@@ -4862,7 +4871,7 @@ Page: https://vovk.dev/schema
 
 # Schema
 
-The `npm run dev` script runs [vovk dev](https://vovk.dev/dev) alongside `next dev` via [concurrently](https://www.npmjs.com/package/concurrently). The Vovk process watches the `modules` folder for controller and validation changes. On the first run or after changes, it calls the Next.js dev server’s `_schema_` endpoint for the relevant segment (available only when `process.env.NODE_ENV` is `development`). That endpoint returns the schema for the target segment, enabling isolated JSON emission per segment.
+The `npm run dev` script runs [vovk dev](https://vovk.dev/dev) alongside `next dev` via [concurrently](https://www.npmjs.com/package/concurrently). The Vovk process watches the `modules` folder and the segment route files. On the first run or after a change, it calls the Next.js dev server’s `_schema_` endpoint (available only when `process.env.NODE_ENV` is `development`) of the segment whose controller changed, or of every segment when the changed file holds no known controller, such as a service or a validation module. That endpoint returns the schema for the target segment, enabling isolated JSON emission per segment.
 
 Each segment emits its backend schema to an individual JSON file, which is then used to generate client-side RPC modules. If your application has multiple areas (e.g., root, admin, customer), each area has its own schema file.
 
@@ -5054,13 +5063,13 @@ Page: https://vovk.dev/mixins
 
 # Code Generation via OpenAPI Mixins
 
-Vovk.ts can combine the existing Vovk.ts client with modules generated from one or more OpenAPI specifications. This lets you integrate third-party APIs into a Next.js/Vovk.ts application, or use it as a standalone codegen tool—Next.js is not required. This page covers [configuration](https://vovk.dev/config) options related to code generation; note that the [generate](https://vovk.dev/generate) command does not require a config file.
+Vovk.ts can add modules generated from one or more OpenAPI specifications to its client. Use it to call third-party APIs from a Next.js/Vovk.ts app, or as a standalone code generator that doesn't need Next.js. This page covers the [configuration](https://vovk.dev/config) options for code generation. The [generate](https://vovk.dev/generate) command doesn't need a config file.
 
 ## Features
 
-### Comprehensible Syntax
+### Call Signature
 
-Vovk.ts preserves a consistent call signature for every method using a single argument object, making it easy to learn and remember:
+Every method has the same call signature, a single argument object:
 
 ```ts showLineNumbers copy
 import { PetstoreAPI } from '@/client';
@@ -5078,7 +5087,7 @@ await PetstoreAPI.updatePet({
 });
 ```
 
-For defaults, you can use `withDefaults` to create a pre-configured version of an API module.
+`withDefaults` creates a copy of an API module with default options:
 
 ```ts showLineNumbers copy
 import { PetstoreAPI } from '@/client';
@@ -5099,44 +5108,44 @@ await PetstoreAPIWithAuth.updatePet({
 
 ### Query and Form Styles
 
-A method sends its query the way the OpenAPI document declares each parameter's `style` and `explode`: `form` (repeated keys, or comma-separated with `explode: false`), `spaceDelimited`, `pipeDelimited` and `deepObject` (`filter[status]=sold`). A parameter that declares neither is sent as OpenAPI's default, `form` exploded: `tags=a&tags=b` for an array, and the keys of an object as parameters of their own.
+A method sends each query parameter in the `style` and `explode` that the OpenAPI document declares for it: `form` (repeated keys, or comma-separated with `explode: false`), `spaceDelimited`, `pipeDelimited` or `deepObject` (`filter[status]=sold`). A parameter that declares neither is sent in OpenAPI's default, `form` exploded: `tags=a&tags=b` for an array, and the keys of an object as parameters of their own.
 
 ```ts showLineNumbers copy
 // tags declared with explode: true, ids with explode: false
 await PetstoreAPI.listPets({ query: { tags: ['a', 'b'], ids: [1, 2] } }); // GET /pets?tags=a&tags=b&ids=1,2
 ```
 
-In an `application/x-www-form-urlencoded` body, a property whose `encoding` declares a style is sent in it, as Stripe's `metadata` with `deepObject`: `metadata[order_id]=6735`. Other properties are sent as any form body: an array as repeated keys, an object as JSON.
+In an `application/x-www-form-urlencoded` body, a property whose `encoding` declares a style is sent in that style, as Stripe's `metadata` with `deepObject`: `metadata[order_id]=6735`. Other properties are sent as in any form body: an array as repeated keys, an object as JSON.
 
 ### Client-Side Validation and Schema Availability
 
-API modules generated by Vovk.ts include built-in, optional client-side validation using [Ajv](https://ajv.js.org/). You can validate input data before sending a request to ensure it conforms to the expected schema. Disable validation by passing `disableClientValidation: true`.
+Generated API modules can validate the input with [Ajv](https://ajv.js.org/) on the client, before they send the request. To turn validation off, pass `disableClientValidation: true`.
 
 ```ts showLineNumbers copy
 import { UserAPI } from '@/client';
 
 await UserAPI.updateUser({
-  // ...will throw a validation error if input data is invalid
+  // ...throws a validation error if the input is invalid
 });
 ```
 
-In addition to runtime validation, the generated code also exports the Vovk.ts schema for broader use cases. The [composed client](https://vovk.dev/composed) and each chunk of the [segmented client](https://vovk.dev/segmented) export a `schema` object that contains an organized, easy-to-navigate Vovk.ts schema.
+The generated code also exports the Vovk.ts schema. The [composed client](https://vovk.dev/composed) and each chunk of the [segmented client](https://vovk.dev/segmented) export it as a `schema` object.
 
 ```ts showLineNumbers copy
 import { schema } from '@/client';
 // import { schema } from '@/client/schema';
 ```
 
-The schema is also accessible on every generated method.
+Every generated method has its schema too:
 
 ```ts showLineNumbers copy
 import { UserAPI } from '@/client';
-UserAPI.updateUser.schema.validation.body; // JSON Schema for request body
+UserAPI.updateUser.schema.validation?.body; // JSON Schema for request body
 ```
 
 ### Deriving AI Tools
 
-Every API module generated by Vovk.ts can be mapped to [AI tools](https://vovk.dev/tools), making them accessible through function calling APIs.
+Every generated API module can be turned into [AI tools](https://vovk.dev/tools) for function calling APIs.
 
 ```ts showLineNumbers copy
 import { deriveTools } from 'vovk';
@@ -5154,15 +5163,15 @@ console.log(tools);
 
 ### Python and Rust Clients (Experimental)
 
-Vovk.ts templates also support generating Python and Rust clients with client-side validation and the same consistent options. See the [Python](https://vovk.dev/python) and [Rust](https://vovk.dev/rust) pages for details.
+Vovk.ts templates can also generate Python and Rust clients, with client-side validation and the same options. See the [Python](https://vovk.dev/python) and [Rust](https://vovk.dev/rust) pages.
 
 ### Type Inference for Unnamed Schemas
 
-A good practice in OpenAPI/mixins design is to use `components/schemas` to define input and output data. This enables properly named types for generated client functions. However, not every OpenAPI specification follows this pattern, and extracting every input/output into `components/schemas` can be impractical.
+In good OpenAPI design, `components/schemas` defines the input and output data, so the generated client functions get named types. Not every specification does this, and moving every input and output into `components/schemas` can be impractical.
 
-Without `components/schemas`, many code generators produce awkward type names (e.g., `ApiUsersIdPostRequest`, `ApiUsersIdPost200Response`). This often drives developers to use `Parameters<T>[index]` generic or avoid code generation and fall back to `fetch` or `axios` with manual casting.
+Without `components/schemas`, many code generators produce awkward type names, such as `ApiUsersIdPostRequest` or `ApiUsersIdPost200Response`. Developers then often use the `Parameters<T>[index]` generic, or skip code generation and use `fetch` or `axios` with manual casts.
 
-Vovk.ts supports type inference for unnamed schemas. Even if the OpenAPI spec doesn't define `components/schemas`, Vovk.ts can infer input and output types using simple utilities.
+Vovk.ts infers types for unnamed schemas. When a specification doesn't define `components/schemas`, these type utilities give you the input and output types:
 
 ```ts showLineNumbers copy
 import { PetstoreAPI } from '@/client';
@@ -5174,40 +5183,37 @@ type Params = VovkParams<typeof PetstoreAPI.updatePet>;
 type Output = VovkOutput<typeof PetstoreAPI.updatePet>;
 ```
 
-In the [Python](https://vovk.dev/python) client, types are exposed as TypedDicts.
+In the [Python](https://vovk.dev/python) client, the types are `TypedDict`s:
 
 ```py
 from vovk_client import PetstoreAPI
 
-body: PetstoreAPI.UpdatePetBody = {}
-query: PetstoreAPI.UpdatePetQuery = {}
-params: PetstoreAPI.UpdatePetParams = {}
-output: PetstoreAPI.UpdatePetOutput = {}
+body: PetstoreAPI.UpdatePetBody = {"id": 1, "name": "Doggo", "photoUrls": []}
+output: PetstoreAPI.UpdatePetOutput = {"id": 1, "name": "Doggo", "photoUrls": [], "status": "sold"}
 ```
 
-For the [Rust](https://vovk.dev/rust) client, types are generated as nested modules that contain structs and enums, following the same structure as the OpenAPI spec schemas via `_::` separator.
+In the [Rust](https://vovk.dev/rust) client, the types are nested modules with structs and enums. They follow the structure of the specification's schemas, with the `_::` separator:
 
 ```rs
 use vovk_client::petstore_api::update_pet_::{
     body as Body,
-    body_::foo as Foo, // for nested data
-    query as Query,
-    params as Params,
     output as Output,
+    Pet,
+    Pet_::status as Status, // for nested data
 };
 ```
 
 ### Bundle
 
-The [TypeScript](https://vovk.dev/typescript) artifacts can be bundled into an npm package using the `bundle` command after configuring `bundle.build` function (see [bundle page](https://vovk.dev/bundle)). It also creates `package.json` and `README.md` files, where the README outlines each method with self-documenting code samples. See the ["Hello World" example](https://vovk.dev/hello-world#bundle) for details.
+Once you configure the `bundle.build` function (see [bundle page](https://vovk.dev/bundle)), the `bundle` command builds the [TypeScript](https://vovk.dev/typescript) client into an npm package. It also writes `package.json` and `README.md`, and the README shows each method with a code sample. See the ["Hello World" example](https://vovk.dev/hello-world#bundle) for details.
 
-To create a bundle, ensure `package.json` and `tsconfig.json` are present at the project root.
+A bundle needs `package.json` and `tsconfig.json` at the project root.
 
 ## Getting Started
 
 ### Using Standalone Codegen
 
-If you’re using codegen as a standalone CLI (even without `package.json`), install **vovk-cli** globally or as a dev dependency. You can skip this section if you use Vovk.ts within a Next.js project.
+To use the code generator as a standalone CLI, even without `package.json`, install **vovk-cli** globally or as a dev dependency. Skip this section if you use Vovk.ts in a Next.js project.
 
 ```sh npm2yarn copy
 npm install -g vovk-cli
@@ -5223,11 +5229,11 @@ npm install -D vovk-cli
 npm install vovk vovk-ajv
 ```
 
-The [composed client](https://vovk.dev/composed) (where all generated API clients are combined into a single client) is generated into `src/client` (or a custom `composedClient.outDir`) and imported directly from your code, e.g. as `@/client`.
+The [composed client](https://vovk.dev/composed), which combines all generated API clients into one, goes to `src/client` (or `composedClient.outDir`). Your code imports it directly, for example as `@/client`.
 
 ### Create Config File
 
-Create a config file as described on the [config](https://vovk.dev/config) page to customize code generation results. Alternatively, use the `vovk-cli init` command:
+To customize the generated code, create a config file as the [config](https://vovk.dev/config) page describes, or run `vovk-cli init`:
 
 ```sh npm2yarn copy
 npx vovk-cli init
@@ -5249,14 +5255,14 @@ export default config;
 
 ### Define OpenAPI mixins
 
-Define a mixin as a pseudo-[segment](https://vovk.dev/segment) in `outputConfig.segments` by setting the `openAPIMixin` property. The key is the mixin name: generation fails for `root`, or for a name a segment or another mixin has, compared ignoring case, as the [segmented client](https://vovk.dev/segmented) writes each one to a folder of that name. Two mixins also can't give the same `Mixins` namespace, like `my-api` and `myApi`, and two segments of the [composed client](https://vovk.dev/composed) can't export a module of the same name. The property accepts:
+A mixin is a pseudo-[segment](https://vovk.dev/segment) in `outputConfig.segments` with an `openAPIMixin` property. The key is the mixin name. Generation fails for `root`, or for a name that a segment or another mixin has, ignoring case, because the [segmented client](https://vovk.dev/segmented) writes each one to a folder of that name. Two mixins also can't give the same `Mixins` namespace, like `my-api` and `myApi`, and two segments of the [composed client](https://vovk.dev/composed) can't export modules of the same name. The property accepts:
 
-- `source`: an object with either `url` (remote specs), `file` (local specs), or `object` (inline specs). The `url` variant may include a `fallback` file path used if the remote URL is unreachable.
-- `getModuleName`: a string or function to name generated API modules. The string can be any custom string for hard-coded module names, as long as it is a valid identifier.
-- `getMethodName`: a string or function to generate method names. Supported strings: `camel-case-operation-id` (converts `operationId` like `get_users` to `getUsers`; one that starts with a digit gets a leading underscore, `2fa_verify` becomes `_2FaVerify`), or `auto` (generates from `operationId` or from HTTP method + path if `operationId` is unsuitable or missing). From the path, `auto` names `GET /users` `listUsers`, `GET /users/{id}` `getUsersById` and `PATCH /users/{userId}/profile` `patchUsersProfileByUserId`. When two operations get the same name, the later one in the document gets a `_2` suffix, and the CLI warns.
-- `apiRoot` (optional): the API root URL, overridable per call via the `apiRoot` option. Required if the OAS document has no `servers` property.
+- `source`: an object with `url` (a remote spec), `file` (a local spec) or `object` (an inline spec). With `url`, you can add a `fallback` file path. The CLI reads it when the fetch fails, and updates it after each successful fetch.
+- `getModuleName`: a string or a function that names the generated API modules. A string is a fixed module name and must be a valid identifier. The default is `'api'`.
+- `getMethodName`: a string or a function that names the methods. The strings are `camel-case-operation-id` and `auto` (the default). `camel-case-operation-id` converts an `operationId` such as `get_users` to `getUsers`, with a leading underscore when it starts with a digit (`2fa_verify` becomes `_2FaVerify`). With it, generation fails for an operation without an `operationId`. `auto` uses the `operationId`, or the HTTP method and path when the `operationId` is unsuitable or missing. From the path, `auto` names `GET /users` `listUsers`, `GET /users/{id}` `getUsersById` and `PATCH /users/{userId}/profile` `patchUsersProfileByUserId`. When two operations get the same name, the later one in the document gets a `_2` suffix, and the CLI warns.
+- `apiRoot` (optional): the API root URL. The `apiRoot` call option overrides it. Required if the OAS document has no `servers` property.
 - `filterOperations` (optional): a predicate that keeps only the operations it returns `true` for. See [Filter Operations and Prune Components](#filter-operations-and-prune-components).
-- `pruneComponents` (optional, default `false`): removes components the kept operations don't reference from the generated schema. See [Filter Operations and Prune Components](#filter-operations-and-prune-components).
+- `pruneComponents` (optional, default `false`): removes the components that the kept operations don't reference from the generated schema. See [Filter Operations and Prune Components](#filter-operations-and-prune-components).
 
 Petstore example with a remote URL and a local fallback:
 
@@ -5285,7 +5291,7 @@ const config = {
 export default config;
 ```
 
-This generates a single `PetstoreAPI` module with methods for each operation defined in the OpenAPI spec.
+This generates one `PetstoreAPI` module, with a method for each operation in the spec.
 
 ```ts showLineNumbers copy
 import { PetstoreAPI } from '@/client';
@@ -5293,14 +5299,14 @@ import { PetstoreAPI } from '@/client';
 await PetstoreAPI.findPetsByStatus({ query: { status: 'available' } });
 ```
 
-When `getModuleName` or `getMethodName` are functions, they receive:
+When `getModuleName` or `getMethodName` is a function, it receives:
 
 - `operationObject`: the Operation Object for the operation.
 - `method`: the HTTP method (uppercase string).
 - `path`: the operation path.
 - `openAPIObject`: the entire OpenAPI document.
 
-For a more advanced example, consider the [GitHub REST API](https://docs.github.com/en/rest). The `operationId` in the [GitHub OpenAPI spec](https://raw.githubusercontent.com/github/rest-api-description/main/descriptions/api.github.com/api.github.com.json) has the form `scope/operation` (e.g., `repos/remove-status-check-contexts`, `codespaces/list-for-authenticated-user`). We can use the first part to generate module names and the second part to generate method names via lodash.
+A larger example is the [GitHub REST API](https://docs.github.com/en/rest). Each `operationId` in the [GitHub OpenAPI spec](https://raw.githubusercontent.com/github/rest-api-description/main/descriptions/api.github.com/api.github.com.json) has the form `scope/operation`, such as `repos/remove-status-check-contexts` or `codespaces/list-for-authenticated-user`. The config below makes module names from the first part and method names from the second, with lodash.
 
 For example, `issues/list-for-org` becomes the `GithubIssuesAPI` module with a `listForOrg` method.
 
@@ -5339,7 +5345,7 @@ const config = {
 export default config;
 ```
 
-Results in multiple modules with well-structured method names:
+The result is several modules:
 
 ```ts showLineNumbers copy
 import { 
@@ -5361,14 +5367,14 @@ await GithubReposAPI.getLatestRelease({ params: { owner: 'octocat', repo: 'Hello
 await GithubUsersAPI.getAuthenticated();
 ```
 
-Third-party OAS documents can contain keywords JSON Schema doesn't define, such as `example`, `discriminator` or `x-*`. [vovk-ajv](https://vovk.dev/imports#vovk-ajv) ignores them, and a schema Ajv can't compile is left to the server to validate.
+Third-party OAS documents can contain keywords that JSON Schema doesn't define, such as `example`, `discriminator` or `x-*`. [vovk-ajv](https://vovk.dev/imports#vovk-ajv) ignores them, and leaves a schema that Ajv can't compile for the server to validate.
 
 ### Filter Operations and Prune Components
 
-Large specs produce large clients: every operation becomes a method, and the entire `components` dictionary is carried in the generated schema. Stripe's spec yields 534 methods and 1693 components — megabytes of generated JSON for an app that may call a handful of endpoints. Two options cut it down:
+A large spec makes a large client: every operation becomes a method, and the generated schema carries the whole `components` dictionary. Stripe's spec gives 534 methods and 1693 components, megabytes of generated JSON for an app that may call a few endpoints. Two options cut this down:
 
-- `filterOperations`: only operations the predicate returns `true` for are generated. It receives the same object as the naming functions (`operationObject`, `method`, `path`, `openAPIObject`) and runs before them, so a filtered-out operation produces no method, types, or validation schemas. Omit it to keep all operations.
-- `pruneComponents` (default `false`): removes every component the kept operations don't reference, directly or transitively, from the segment schema. Don't enable it if you import `Mixins.<Segment>.<Component>` types for components no kept operation uses — they are removed along with their schemas.
+- `filterOperations`: only the operations the predicate returns `true` for are generated. It receives the same object as the naming functions (`operationObject`, `method`, `path`, `openAPIObject`) and runs before them, so a filtered-out operation produces no method, types or validation schemas. Omit it to keep all operations.
+- `pruneComponents` (default `false`): removes from the segment schema every component that the kept operations don't reference, directly or through other components. Don't turn it on if you import `Mixins.<Segment>.<Component>` types for components that no kept operation uses: they are removed with their schemas.
 
 ```ts showLineNumbers copy filename="vovk.config.js"
 // @ts-check
@@ -5397,11 +5403,11 @@ const config = {
 export default config;
 ```
 
-For this Stripe subset, the segment schema drops from ~8.4 MB (534 operations, 1693 components) to ~1.2 MB (8 operations, 863 components — Stripe's core objects reference each other heavily, so that's the transitive floor).
+For this Stripe subset, the segment schema drops from ~8.4 MB (534 operations, 1693 components) to ~1.2 MB (8 operations, 863 components). Stripe's core objects reference each other a lot, so the 8 operations still reach 863 components.
 
 ### Customize Fetcher
 
-You can customize the fetch function per mixin or use a single fetcher for all mixins. The [fetcher](https://vovk.dev/imports#fetcher) prepares authorization headers, performs client-side validation, and makes/handles HTTP requests.
+Each mixin can have its own fetch function, or all mixins can share one. The [fetcher](https://vovk.dev/imports#fetcher) sets authorization headers, runs client-side validation, and sends and handles the HTTP requests.
 
 ```ts showLineNumbers copy filename="vovk.config.js"
 /** @type {import('vovk').VovkConfig} */
@@ -5423,7 +5429,7 @@ export default config;
 
 ### Composed Client
 
-By default, the [composed client](https://vovk.dev/composed) uses the [ts](https://vovk.dev/templates#ts) template to generate a TypeScript client. It is emitted to `src/client` and importable as `@/client`.
+By default, the [composed client](https://vovk.dev/composed) uses the [ts](https://vovk.dev/templates#ts) template to generate a TypeScript client.
 
 ```ts showLineNumbers copy
 import { PetstoreAPI, GithubIssuesAPI } from '@/client';
@@ -5432,7 +5438,7 @@ await PetstoreAPI.findPetsByStatus({ query: { status: 'available' } });
 await GithubIssuesAPI.listForOrg({ params: { org: 'finom' } });
 ```
 
-The `Mixins` namespace contains types generated from `components/schemas` across all mixed OpenAPI specifications, providing an alternative to the inference. Each mixin gets a namespace, and each component a type, both named in PascalCase: the `petstore` mixin's `Pet` component is `Mixins.Petstore.Pet`. Letters of any script are kept, a name that would start with a digit gets a leading underscore (`2FAConfig` becomes `_2FaConfig`), and when two components get the same name, the later one in the document takes a number: `user-profile` and `UserProfile` become `UserProfile` and `UserProfile2`.
+The `Mixins` namespace holds the types generated from `components/schemas` of all mixed-in OpenAPI specifications, as an alternative to inference. Each mixin gets a namespace, and each component a type, both named in PascalCase: the `petstore` mixin's `Pet` component is `Mixins.Petstore.Pet`. Letters of any script are kept. A name that would start with a digit gets a leading underscore: `2FAConfig` becomes `_2FaConfig`. When two components get the same name, the later one in the document takes a number: `user-profile` and `UserProfile` become `UserProfile` and `UserProfile2`.
 
 ```ts showLineNumbers copy
 import type { VovkOutput } from 'vovk';
@@ -5443,13 +5449,13 @@ const pet: Mixins.Petstore.Pet = { id: 1, name: 'Doggo', photoUrls: [] };
 const pet2: VovkOutput<typeof PetstoreAPI.getPetById> = { id: 1, name: 'Doggo', photoUrls: [] };
 ```
 
-The output directory can be changed via `composedClient.outDir`:
+`composedClient.outDir` changes the output folder:
 
 ```ts showLineNumbers copy filename="vovk.config.js"
 /** @type {import('vovk').VovkConfig} */
 const config = {
   composedClient: {
-    outDir: './src/lib/client', // emit to a custom directory
+    outDir: './src/lib/client', // a custom folder
   },
 };
 export default config;
@@ -5462,15 +5468,15 @@ import { PetstoreAPI, GithubIssuesAPI } from '@/lib/client';
 
 ### Segmented Client
 
-The [segmented client](https://vovk.dev/segmented) splits code into multiple chunks, placing each mixin in a folder named after its segment (`petstore`, `github`, etc., from `outputConfig.segments`).
+The [segmented client](https://vovk.dev/segmented) splits the code into chunks. Each mixin goes to a folder named after its segment (`petstore`, `github` and so on, from `outputConfig.segments`).
 
-By default, output goes to `src/client`. You can change the folder via `segmentedClient.outDir`.
+By default, the output goes to `src/client`. `segmentedClient.outDir` changes the folder.
 
 ```ts showLineNumbers copy filename="vovk.config.js"
 /** @type {import('vovk').VovkConfig} */
 const config = {
   segmentedClient: {
-    outDir: './src/lib/client', // emit to your codebase
+    outDir: './src/lib/client', // a folder in your code
     prettifyClient: true, // prettify the output
   },
 };
@@ -5491,9 +5497,9 @@ Page: https://vovk.dev/python
 
 > [!WARNING]
 >
-> The Python client library is experimental and may contain bugs. Use with caution.
+> The Python client is experimental and may have bugs. Use it with caution.
 
-The Python client can be generated with `vovk generate` using the [py](https://vovk.dev/templates#py) or [pySrc](https://vovk.dev/templates#pysrc) template.
+`vovk generate` creates the Python client from the [py](https://vovk.dev/templates#py) or [pySrc](https://vovk.dev/templates#pysrc) template.
 
 Install the generator package:
 
@@ -5501,7 +5507,7 @@ Install the generator package:
 npm install vovk-python --save-dev
 ```
 
-Create a Python package with the [CLI](https://vovk.dev/generate) command:
+Create a Python package with the [CLI](https://vovk.dev/generate):
 
 ```sh npm2yarn copy
 npm exec -- vovk generate --from py --out ./python_package
@@ -5527,7 +5533,7 @@ Publish to [PyPI](https://pypi.org/) with:
 python3 -m build ./python_package --wheel --sdist && python3 -m twine upload ./python_package/dist/*
 ```
 
-If you prefer generating source files to embed in another Python project, use the `pySrc` template:
+To generate source files for another Python project instead, use the `pySrc` template:
 
 ```sh npm2yarn copy
 npm exec -- vovk generate --from pySrc --out ./python_src
@@ -5545,7 +5551,7 @@ python_src/
 
 ## Configuring the Python Client
 
-You can [configure](https://vovk.dev/config) generation so the client is produced automatically by the default [generate](https://vovk.dev/generate) command (no flags) and during [vovk dev](https://vovk.dev/dev), which performs “hot generation” on schema changes. Add the `py` template to the [composed client](https://vovk.dev/composed) config:
+You can [configure](https://vovk.dev/config) the default [generate](https://vovk.dev/generate) command (without flags) to create the client. [vovk dev](https://vovk.dev/dev) creates it too, and creates it again on every schema change. Add the `py` template to the [composed client](https://vovk.dev/composed) config:
 
 ```ts showLineNumbers copy filename="vovk.config.mjs"
 /** @type {import('vovk').VovkConfig} */
@@ -5565,9 +5571,9 @@ const config = {
 export default config;
 ```
 
-The Python client sends its calls to an absolute URL, so it needs [`outputConfig.origin`](https://vovk.dev/config#outputconfig). Set on the `py` template, it leaves the TypeScript client's relative URLs as they are. Without an origin, `vovk generate` warns, and every call needs its own `api_root`.
+The Python client calls an absolute URL, so it needs [`outputConfig.origin`](https://vovk.dev/config#outputconfig). Set it on the `py` template, and the TypeScript client keeps its relative URLs. Without an origin, `vovk generate` warns, and every call needs its own `api_root`.
 
-The [py](https://vovk.dev/templates#py) template (and others) has a default `outDir` (`./dist_python`) for composed clients. Override it via [template definitions](https://vovk.dev/templates#defs):
+Like other templates, the [py](https://vovk.dev/templates#py) template has a default `outDir` for composed clients: `./dist_python`. Change it in the [template definitions](https://vovk.dev/templates#defs):
 
 ```ts showLineNumbers copy filename="vovk.config.mjs"
 /** @type {import('vovk').VovkConfig} */
@@ -5589,7 +5595,7 @@ export default config;
 
 ### JSON Endpoints
 
-The snippets below are adapted from a real example described on the [Hello World](https://vovk.dev/hello-world) page.
+The samples below are based on the example from the [Hello World](https://vovk.dev/hello-world) page.
 
 A controller like this:
 
@@ -5715,7 +5721,7 @@ export const { GET, POST, PATCH, PUT, HEAD, OPTIONS, DELETE } = initSegment({
 ```
 *[The code above is fetched from GitHub repository.](https://github.com/finom/vovk/blob/main/examples/hello-world/src/app/api/[[...vovk]]/route.ts)*
 
-...emits a [Vovk.ts schema](https://vovk.dev/schema), which is then used to generate the Python client, following Python conventions, adding comments from `description`, and selecting appropriate number types. For example, `age` is generated as `int`, matching the controller definition.
+...emits a [Vovk.ts schema](https://vovk.dev/schema). The Python client is generated from it. It follows Python conventions, adds comments from `description`, and picks matching number types: `age` becomes an `int`, as in the controller.
 
 ```py filename="./dist_python/src/package_name/__init__.py"
 from __future__ import annotations
@@ -5794,15 +5800,14 @@ class UserRPC:
         )
 ```
 
-All RPC modules are generated in `__init__.py`, which contains the RPC functions and the associated types. Types for nested structures are emitted as `TypedDict`s. A key the schema doesn't require is `NotRequired`, imported from `typing_extensions` before Python 3.11. A type that isn't a `TypedDict`, such as a `str` output, is a `TypeAlias`, imported the same way.
+All RPC modules are in `__init__.py`, with the RPC functions and their types. Nested structures get `TypedDict` types. A key the schema doesn't require is `NotRequired`, imported from `typing_extensions` before Python 3.11. A type that isn't a `TypedDict`, such as a `str` output, is a `TypeAlias`, imported the same way.
 
-Types for `body`, `query`, and `params` follow the pattern `[PascalCaseMethodName][InputType]`. For a method `updateUser`, you get `UpdateUserBody`, `UpdateUserQuery`, and `UpdateUserParams`.
+Types for `body`, `query` and `params` are named `[PascalCaseMethodName][InputType]`. For `updateUser`, they are `UpdateUserBody`, `UpdateUserQuery` and `UpdateUserParams`.
 
-Method names are in snake_case: `UserRPC.updateUser` is `UserRPC.update_user`. They are per RPC class, in schema order: a name already taken gets the first free suffix, `_2`, `_3`, so `getUserByID` and `getUserById` give `get_user_by_id` and `get_user_by_id_2`.
+Method names are in snake_case: `UserRPC.updateUser` is `UserRPC.update_user`. Each RPC class names its methods in schema order. A name that is already taken gets the first free suffix, `_2`, `_3`, so `getUserByID` and `getUserById` give `get_user_by_id` and `get_user_by_id_2`.
 
 ```py
-from dist_python.src.vovk_hello_world import UserRPC
-import vovk_hello_world
+from vovk_hello_world import UserRPC
 
 def main() -> None:
     body: UserRPC.UpdateUserBody = {
@@ -5822,19 +5827,19 @@ def main() -> None:
     print('UserRPC.update_user:', update_user_response)
 
 if __name__ == "__main__":
-  try:
-      main()
-  except Exception as e:
-      print(f"Error: {e}")
+    try:
+        main()
+    except Exception as e:
+        print(f"Error: {e}")
 ```
 
-Under the hood, it uses [requests](https://pypi.org/project/requests/) for HTTP, [jsonschema](https://pypi.org/project/jsonschema/) for client-side validation, and other common libraries. A `pattern` that Python's `re` can't compile, such as `\p{L}`, is left to the server.
+The client uses [requests](https://pypi.org/project/requests/) for HTTP, [jsonschema](https://pypi.org/project/jsonschema/) for client-side validation, and other common libraries. A `pattern` that Python's `re` can't compile, such as `\p{L}`, is left to the server.
 
-A call returns the parsed JSON, or `None` for an empty JSON body. A response of a `text/*` type, or of any type with a charset, comes back as `str`, decoded as UTF-8 unless the charset names another encoding. Any other response, such as a file, comes back as `bytes`.
+A call returns the parsed JSON, or `None` for an empty JSON body. A `text/*` response, or a response of any type with a charset, comes back as a `str`, decoded as UTF-8 unless the charset names another encoding. Any other response, such as a file, comes back as `bytes`.
 
 ### JSON Lines Endpoints
 
-For continuous streaming with [JSON Lines](https://vovk.dev/jsonlines) endpoints, the Python client returns a `Generator` you can iterate over.
+For [JSON Lines](https://vovk.dev/jsonlines) endpoints, the Python client returns a `Generator` that you iterate over.
 
 A controller like this:
 
@@ -5943,8 +5948,7 @@ class StreamRPC:
 Usage:
 
 ```py
-from dist_python.src.vovk_hello_world import StreamRPC
-import vovk_hello_world
+from vovk_hello_world import StreamRPC
 
 def main() -> None:
     stream_response = StreamRPC.stream_tokens()
@@ -5961,7 +5965,7 @@ if __name__ == "__main__":
 
 ### Timeout and Session
 
-All calls share one `requests.Session`, so connections stay open between them. The client waits 10 seconds to connect and 300 seconds for each read, and an upload fails when the server takes no data for 10 seconds. Both are attributes of the module-level `client`:
+All calls share one `requests.Session`, so connections stay open between them. The client waits 10 seconds to connect and 300 seconds for each read. An upload fails when the server takes no data for 10 seconds. The timeout and the session are attributes of the module-level `client`:
 
 ```py
 from package_name import client
@@ -5970,7 +5974,7 @@ client.timeout = 30  # seconds, or a (connect, read) tuple; None waits forever
 client.session.headers["Authorization"] = "Bearer ..."
 ```
 
-The session keeps no cookie a response sets, since one client serves every call and thread. A cookie set by hand, as `client.session.cookies.set("session", "...")`, goes with every call. To keep the cookies responses set, call `client.session.cookies.set_policy(http.cookiejar.DefaultCookiePolicy())`.
+The session doesn't keep cookies that responses set, because one client serves every call and thread. A cookie you set by hand, such as `client.session.cookies.set("session", "...")`, goes with every call. To keep the cookies that responses set, call `client.session.cookies.set_policy(http.cookiejar.DefaultCookiePolicy())`.
 
 ## Roadmap/bugs
 
@@ -5984,9 +5988,9 @@ Page: https://vovk.dev/rust
 
 > [!WARNING]
 >
-> The Rust client library is experimental and may contain bugs. Use with caution.
+> The Rust client is experimental and may have bugs. Use it with caution.
 
-The Rust client can be generated with `vovk generate` using the [rs](https://vovk.dev/templates#rs) or [rsSrc](https://vovk.dev/templates#rssrc) template.
+`vovk generate` creates the Rust client from the [rs](https://vovk.dev/templates#rs) or [rsSrc](https://vovk.dev/templates#rssrc) template.
 
 Install the generator package:
 
@@ -6000,7 +6004,7 @@ Generate a Rust package with the [CLI](https://vovk.dev/generate):
 npm exec -- vovk generate --from rs --out ./rust_package
 ```
 
-This produces the following structure:
+This produces:
 
 ```
 rust_package/
@@ -6019,7 +6023,7 @@ Publish to [crates.io](https://crates.io/) with:
 cargo publish --manifest-path rust_package/Cargo.toml
 ```
 
-If you prefer generating source files to embed in another Rust project, use the [rsSrc](https://vovk.dev/templates#rssrc) template:
+To generate source files for another Rust project instead, use the [rsSrc](https://vovk.dev/templates#rssrc) template:
 
 ```sh npm2yarn copy
 npm exec -- vovk generate --from rsSrc --out ./rust_src
@@ -6037,7 +6041,7 @@ rust_src/
 
 ## Configuring the Rust Client
 
-You can [configure](https://vovk.dev/config) generation so the client is produced automatically by the default [generate](https://vovk.dev/generate) command (no flags) and during [vovk dev](https://vovk.dev/dev), which performs “hot generation” whenever the schema changes. Add the `rs` template to the [composed client](https://vovk.dev/composed) config:
+You can [configure](https://vovk.dev/config) the default [generate](https://vovk.dev/generate) command (without flags) to create the client. [vovk dev](https://vovk.dev/dev) creates it too, and creates it again on every schema change. Add the `rs` template to the [composed client](https://vovk.dev/composed) config:
 
 ```ts showLineNumbers copy filename="vovk.config.mjs"
 /** @type {import('vovk').VovkConfig} */
@@ -6057,9 +6061,9 @@ const config = {
 export default config;
 ```
 
-The Rust client sends its calls to an absolute URL, so it needs [`outputConfig.origin`](https://vovk.dev/config#outputconfig). Set on the `rs` template, it leaves the TypeScript client's relative URLs as they are. Without an origin, `vovk generate` warns, and every call needs its own `api_root`.
+The Rust client calls an absolute URL, so it needs [`outputConfig.origin`](https://vovk.dev/config#outputconfig). Set it on the `rs` template, and the TypeScript client keeps its relative URLs. Without an origin, `vovk generate` warns, and every call needs its own `api_root`.
 
-The [rs](https://vovk.dev/templates#rs) template (and others) has a default `outDir` (`./dist_rust`) for composed clients. Override it via [template definitions](https://vovk.dev/templates#defs):
+Like other templates, the [rs](https://vovk.dev/templates#rs) template has a default `outDir` for composed clients: `./dist_rust`. Change it in the [template definitions](https://vovk.dev/templates#defs):
 
 ```ts showLineNumbers copy filename="vovk.config.mjs"
 /** @type {import('vovk').VovkConfig} */
@@ -6081,7 +6085,7 @@ export default config;
 
 ### JSON Endpoints
 
-The snippets below are adapted from a real example described on the [Hello World](https://vovk.dev/hello-world) page.
+The samples below are based on the example from the [Hello World](https://vovk.dev/hello-world) page.
 
 A controller like this:
 
@@ -6207,7 +6211,7 @@ export const { GET, POST, PATCH, PUT, HEAD, OPTIONS, DELETE } = initSegment({
 ```
 *[The code above is fetched from GitHub repository.](https://github.com/finom/vovk/blob/main/examples/hello-world/src/app/api/[[...vovk]]/route.ts)*
 
-...emits a [Vovk.ts schema](https://vovk.dev/schema), which is then used to generate the Rust client, adding comments from the schema `description`, and choosing suitable types. For example, `age` is generated as `u8` due to `min`/`max` constraints.
+...emits a [Vovk.ts schema](https://vovk.dev/schema). The Rust client is generated from it. It adds comments from the schema `description` and picks fitting types: `age` becomes a `u8` because of its `min` and `max`.
 
 ```rs filename="./dist_rust/src/lib.rs"
 mod http_request;
@@ -6355,13 +6359,13 @@ pub mod user_rpc {
 }
 ```
 
-All RPC modules are generated in `lib.rs`, which contains RPC functions and the associated types. Nested structures are emitted as nested modules with corresponding `struct` definitions or types.
+All RPC modules are in `lib.rs`, with the RPC functions and their types. Nested structures become nested modules with their `struct` definitions or types.
 
-An RPC module is a `mod` and each of its procedures an `async fn`, both named in snake_case: `UserRPC.updateUser` is `user_rpc::update_user`, and its types are in the module `update_user_`. Function names are per module, in schema order: a name already taken gets the first free suffix, `_2`, `_3`, so `getUserByID` and `getUserById` give `get_user_by_id` and `get_user_by_id_2`. The module imports `http_request` and `http_request_stream`, so these names count as taken.
+An RPC module is a `mod`, and each of its procedures is an `async fn`. Both are named in snake_case: `UserRPC.updateUser` is `user_rpc::update_user`, and its types are in the module `update_user_`. Each module names its functions in schema order. A name that is already taken gets the first free suffix, `_2`, `_3`, so `getUserByID` and `getUserById` give `get_user_by_id` and `get_user_by_id_2`. The module imports `http_request` and `http_request_stream`, so these names count as taken.
 
-Access nested structures via `_::`. For example, `body.profile` is `update_user_::body_::profile`. This syntax avoids name collisions and maps 1:1 to the schema structure.
+Reach nested structures with `_::`: `body.profile` is `update_user_::body_::profile`. This avoids name collisions and follows the schema's structure one to one.
 
-Use `use` to import and rename structs to follow PascalCase. The functions are `async`; this sample runs them on [tokio](https://tokio.rs/) (`cargo add tokio --features macros,rt-multi-thread`):
+With `use`, you can import the structs under PascalCase names. The functions are `async`; this sample runs them on [tokio](https://tokio.rs/) (`cargo add tokio --features macros,rt-multi-thread`):
 
 ```rs
 use vovk_hello_world::user_rpc;
@@ -6400,19 +6404,19 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 }
 ```
 
-Under the hood, it uses [reqwest](https://docs.rs/reqwest/latest/reqwest/) for HTTP, [jsonschema](https://docs.rs/jsonschema/latest/jsonschema/) for client-side validation, and other common crates. Client-side validation reads a schema as JSON Schema 2020-12, or draft 7 when the schema declares it, and checks formats such as `email` and `uuid`.
+The client uses [reqwest](https://docs.rs/reqwest/latest/reqwest/) for HTTP, [jsonschema](https://docs.rs/jsonschema/latest/jsonschema/) for client-side validation, and other common crates. Client-side validation reads a schema as JSON Schema 2020-12, or as draft 7 when the schema declares it. It checks formats such as `email` and `uuid`.
 
-The crate builds on Rust 1.86: its `Cargo.toml` sets `rust-version = "1.85"` and resolver 3, so Cargo locks dependency versions that support Rust 1.85. A project that depends on the crate resolves dependencies with its own resolver. With edition 2024, or `resolver = "3"` (Cargo 1.84+), it builds on Rust 1.86; an edition 2021 project without it gets the newest versions, which need Rust 1.88.
+The crate builds on Rust 1.86. Its `Cargo.toml` sets `rust-version = "1.85"` and resolver 3, so Cargo locks dependency versions that support Rust 1.85. A project that depends on the crate resolves dependencies with its own resolver. With edition 2024, or with `resolver = "3"` (Cargo 1.84+), it builds on Rust 1.86. An edition 2021 project without that resolver gets the newest versions, which need Rust 1.88.
 
-A procedure that takes `multipart/form-data` gets a [`reqwest::multipart::Form`](https://docs.rs/reqwest/latest/reqwest/multipart/struct.Form.html) as its body. Field names go out as written, in quotes, as browsers send them. Give files names without `"`, `\`, or line breaks: reqwest escapes these with a backslash, which the server keeps in the name, and a `"` makes the form unreadable.
+For a procedure that takes `multipart/form-data`, the body is a [`reqwest::multipart::Form`](https://docs.rs/reqwest/latest/reqwest/multipart/struct.Form.html). Field names go out as written, in quotes, as browsers send them. Give files names without `"`, `\` or line breaks. reqwest escapes these with a backslash, which the server keeps in the name, and a `"` makes the form unreadable.
 
-A function without an output schema returns a `serde_json::Value`: the parsed JSON, or `null` for an empty body. A response of a `text/*` type, or of any type with a charset, is a string, decoded as UTF-8 unless the charset names another encoding. Any other response, such as a file, is a string that holds its bytes in base64.
+A function without an output schema returns a `serde_json::Value`: the parsed JSON, or `null` for an empty body. A `text/*` response, or a response of any type with a charset, is a string, decoded as UTF-8 unless the charset names another encoding. Any other response, such as a file, is a string that holds its bytes in base64.
 
-A failed call returns an `HttpException`. Its `status_code()` is the response status, or 0 when the call failed before a response came, for example on client-side validation; `message()` and `cause()` hold the error the server sent. When no response came or it broke off, `source()` is the `reqwest::Error`, without the URL.
+A failed call returns an `HttpException`. Its `status_code()` is the response status, or 0 when the call failed before a response came, for example in client-side validation. `message()` and `cause()` hold the error the server sent. When no response came, or the response broke off, `source()` is the `reqwest::Error`, without the URL.
 
 ### JSON Lines Endpoints
 
-For continuous streaming with [JSON Lines](https://vovk.dev/jsonlines) endpoints, the async function resolves to a [`futures::Stream`](https://docs.rs/futures/latest/futures/stream/trait.Stream.html) of `Result<T, HttpException>` items. Read it with `StreamExt::next` from the [futures](https://docs.rs/futures) crate.
+For [JSON Lines](https://vovk.dev/jsonlines) endpoints, the async function resolves to a [`futures::Stream`](https://docs.rs/futures/latest/futures/stream/trait.Stream.html) of `Result<T, HttpException>` items. Read it with `StreamExt::next` from the [futures](https://docs.rs/futures) crate.
 
 A JSON Lines endpoint without an `iteration` schema gets a regular function instead: it reads the whole response and returns the items as a JSON array.
 
@@ -6956,7 +6960,7 @@ Base origin used to generate client URLs. Defaults to `''` (relative URLs). To u
 
 Used to generate `package.json` (for the [TypeScript client](https://vovk.dev/typescript)), `Cargo.toml` (for the [Rust client](https://vovk.dev/rust)), or `pyproject.toml` (for the [Python client](https://vovk.dev/python)). It also influences `README.md` generation (name, version, description, etc.) and updates code samples to use the proper package name.
 
-By default, Python and Rust package names are derived from `package.name` by converting `kebab-case` to `snake_case`. You can override them using the `py_name` and `rs_name` fields, respectively.
+By default, Python and Rust package names are derived from `package.name` the way [`[package_name]`](/templates#py) is: `@acme/web-app` becomes `acme_web_app`. You can override them using the `py_name` and `rs_name` fields, respectively; they name the package, its folder and the imports in the README samples.
 
 #### `readme: { banner?: string, installCommand?: string, description?: string }`
 
@@ -7006,9 +7010,9 @@ When the [segmented](https://vovk.dev/segmented) client is used, top-level `outp
 import { type MyType, MyClass, myFunction, RenamedComponent, MyDefault } from '@/client/root';
 ```
 
-#### `imports: { fetcher: VovkFetcher, validateOnClient: VovkValidateOnClient }`
+#### `imports: { fetcher?: string, validateOnClient?: string | null, createRPC?: string }`
 
-Customizes the imports for `fetcher` and `validateOnClient`. See [Imports](https://vovk.dev/imports) for details.
+Module paths the client imports `fetcher`, `validateOnClient` and `createRPC` from; the defaults are `vovk/fetcher`, no client-side validation, and `vovk/create-rpc`. A segment sets `fetcher` and `validateOnClient` only. See [Imports](https://vovk.dev/imports) for details.
 
 #### `segments`
 
@@ -7053,14 +7057,14 @@ Options:
 
 ---
 
-The `vovk dev` command runs a watcher that monitors controllers and updates the [schema](https://vovk.dev/schema) and [client](https://vovk.dev/typescript) as needed. It does this by issuing HTTP GET requests to `/api/<segment-name>/_schema_`, where `<segment-name>` is the relevant segment. If the schema has changed, the watcher updates the JSON files and regenerates the client modules.
+The `vovk dev` command runs a watcher that monitors the modules folder and the segment route files and updates the [schema](https://vovk.dev/schema) and [client](https://vovk.dev/typescript) as needed. It does this by issuing HTTP GET requests to `/api/<segment-name>/_schema_`, where `<segment-name>` is the relevant segment. If the schema has changed, the watcher updates the JSON files and regenerates the client modules.
 
 ## How It Works
 
 1. `vovk dev` and `next dev` run together via [concurrently](https://www.npmjs.com/package/concurrently).
 2. `vovk dev` watches the **/src/modules** directory (configurable with [`modulesDir`](https://vovk.dev/config#modulesdir)).
-3. On change, the script checks whether the file contains a controller and belongs to a [segment](https://vovk.dev/segment) using simple RegExp checks.
-4. If it is a controller within a segment, the script requests `/api/<segment-name>/_schema_` to retrieve the updated schema.
+3. On change, simple RegExp checks tell whether the file holds a controller of a known [segment](https://vovk.dev/segment).
+4. The script requests `/api/<segment-name>/_schema_` of that segment to retrieve the updated schema, or of every segment when the file holds no known controller, such as a renamed controller, a service or a validation module.
 5. If the schema differs:
    - If the controller list has changed (added, removed, renamed) or method definitions (including validation) were updated, the script writes the schema to the [.vovk-schema](https://vovk.dev/config#schemaoutdir) directory as `<segment-name>.json`.
    - If the controller list changed, the client is also regenerated. The client imports schema JSON files to initialize the exported library. By default, the [composed client](https://vovk.dev/composed) is generated in `./src/client` (or `./client` without a `src` folder). When the [segmented client](https://vovk.dev/segmented) is enabled, per-segment folders are generated in the same directory.
@@ -7107,7 +7111,7 @@ Use the `--exit` flag to terminate the processes started by `vovk dev` after the
 npx vovk dev --next-dev --exit
 ```
 
-The command exits with code 1 when a segment's schema can't be fetched after 5 retries or the client fails to generate.
+The command exits with code 1 when a segment's schema can't be fetched after 5 retries or can't be used, when the client fails to generate, or when the `next dev` started by `--next-dev` stops first.
 
 For convenience, add a dedicated script in `package.json`:
 
@@ -7517,7 +7521,7 @@ The `vovk generate` command creates [TypeScript](https://vovk.dev/typescript), [
 
 See the [config](https://vovk.dev/config) page for details.
 
-In a Next.js project, a segment whose route file is gone while its schema file remains is left out of the client, with a warning; delete the schema file once the segment is removed.
+In a Next.js project, a segment whose route file is gone while its schema file remains is left out of the client, with a warning; delete the schema file once the segment is removed. A schema folder given with `--schema-path`, such as one of another project, is used as it is, unless it is the `schemaOutDir` folder.
 
 ## Available Flags
 
@@ -7581,7 +7585,8 @@ Options:
   --use-pnpm                      use pnpm as package manager
   --use-bun                       use bun as package manager
   --skip-install                  skip installing dependencies
-  --update-ts-config              update tsconfig.json
+  --update-ts-config              add "experimentalDecorators" to tsconfig.json
+  --no-update-ts-config           leave tsconfig.json as it is
   --update-scripts <mode>         update package.json scripts ("implicit" or "explicit")
   --bundle                        set up "tsdown" bundler
   --lang <languages...>           generate client for other programming languages by default ("py" for Python and "rs" for Rust are
@@ -7626,7 +7631,11 @@ Skips installing dependencies but still updates `package.json`.
 
 ### `--update-ts-config`
 
-Updates `tsconfig.json` with settings needed for Vovk.ts, such as `experimentalDecorators`.
+Adds `experimentalDecorators` to `tsconfig.json` without asking. Webpack builds need it; see [Enable decorators](https://vovk.dev/manual-install#enable-decorators). With `--yes`, this is the default.
+
+### `--no-update-ts-config`
+
+Leaves `tsconfig.json` as it is, also with `--yes`.
 
 ### `--update-scripts `
 
@@ -7848,7 +7857,7 @@ Available variables are passed to the EJS template via the `t` object:
 - `t.config: VovkConfig` — the Vovk.ts config.
 - `t.segmentName: string` — the segment name (empty string for the root segment).
 - `t.withService: boolean` — whether a service module is being created alongside the controller.
-- `t.nodeNextResolutionExt: { ts: string; js: string; mjs: string; cjs: string }` — file extension based on the `moduleResolution` in `tsconfig.json`. The object will contain extension values corresponding to the keys, such as `.ts`/`.js`/`.mjs`/`.cjs` for `'node16'` and `'nodenext'` and empty strings for other cases.
+- `t.nodeNextResolutionExt: { ts: string; js: string; mjs: string; cjs: string }` — file extension based on the `moduleResolution` in `tsconfig.json`, or on `module` when `moduleResolution` isn't set. The object will contain extension values corresponding to the keys, such as `.ts`/`.js`/`.mjs`/`.cjs` for `'node16'` and `'nodenext'` and empty strings for other cases. `ts` is `.ts` only with `allowImportingTsExtensions` or `rewriteRelativeImportExtensions`; otherwise it's `.js`, the name TypeScript resolves to the `.ts` file.
 - `t.TheThing`, `t.TheThings` — module name and pluralized module name in PascalCase (e.g., `UserCart`, `UserCarts`).
 - `t.theThing`, `t.theThings` — module name and pluralized module name in camelCase (e.g., `userCart`, `userCarts`).
 - `t['the-thing']`, `t['the-things']` — module name and pluralized module name in kebab-case (e.g., `user-cart`, `user-carts`).
@@ -8122,28 +8131,28 @@ Page: https://vovk.dev/hello-world
 
 # "Hello World" Example
 
-> **About this example:** Although it is called “Hello World,” this sample is intentionally comprehensive. It brings together validation, streaming, multi‑language client generation, and OpenAPI output in a single, focused project. If you need the absolute minimal starting point, see the [Quick Start](https://vovk.dev/quick-install) guide first.
+> **About this example:** Despite the name, this example covers many features: validation, streaming, clients in several languages, and OpenAPI output. For the minimal setup, see the [Quick Start](https://vovk.dev/quick-install) guide first.
 
-If you want a more advanced, agent-operated reference app (Realtime UI + MCP + voice/chat surfaces), see the [Realtime UI overview](https://vovk.dev/realtime-ui/overview).
+For a larger reference app that AI agents operate (Realtime UI, MCP, voice and chat), see the [Realtime UI overview](https://vovk.dev/realtime-ui/overview).
 
-The "Hello World" app at [hello-world.vovk.dev](https://hello-world.vovk.dev/) is a Next.js / Vovk.ts example showcasing core features by implementing:
+The "Hello World" app at [hello-world.vovk.dev](https://hello-world.vovk.dev/) is a Next.js app built with Vovk.ts. It shows the core features with:
 
 - Back-end:
-  - `UserController` with an `updateUser` method (POST `/api/users/{id}`).
-  - `StreamController` with a JSONLines `streamTokens` handler (GET `/api/streams/tokens`).
-  - `OpenApiController` with `getSpec` (GET `/api/static/openapi.json`), serving the generated OpenAPI spec. Documentation is viewable at the [`/openapi` page](https://hello-world.vovk.dev/openapi).
+  - `UserController` with an `updateUser` procedure (POST `/api/users/{id}`).
+  - `StreamController` with a JSON Lines procedure, `streamTokens` (GET `/api/streams/tokens`).
+  - `OpenApiController` with `getSpec` (GET `/api/static/openapi.json`), which serves the generated OpenAPI spec. The [`/openapi` page](https://hello-world.vovk.dev/openapi) shows it as documentation.
 - Front-end:
-  - A form plus a JSONLines streaming demo above it.
+  - A form, with a JSON Lines streaming demo above it.
 - Configuration:
-  - Client‑side validation; segmented & composed TypeScript clients; generation of Rust/Python clients; npm bundle output; and OpenAPI metadata (info + servers).
+  - Client-side validation, the segmented and composed TypeScript clients, Rust and Python clients, an npm bundle, and OpenAPI metadata (`info` and `servers`).
 
-Explore the source in the [GitHub repository](https://github.com/finom/vovk/tree/main/examples/hello-world). Generated artifacts are committed under [dist](https://github.com/finom/vovk/tree/main/examples/hello-world/dist), [tmp_prebundle](https://github.com/finom/vovk/tree/main/examples/hello-world/tmp_prebundle), [dist_rust](https://github.com/finom/vovk/tree/main/examples/hello-world/dist_rust), and [dist_python](https://github.com/finom/vovk/tree/main/examples/hello-world/dist_python) for inspection (in real projects they should go in `.gitignore`).
+The source is in the [GitHub repository](https://github.com/finom/vovk/tree/main/examples/hello-world). The generated files are committed under [dist](https://github.com/finom/vovk/tree/main/examples/hello-world/dist), [tmp_prebundle](https://github.com/finom/vovk/tree/main/examples/hello-world/tmp_prebundle), [dist_rust](https://github.com/finom/vovk/tree/main/examples/hello-world/dist_rust) and [dist_python](https://github.com/finom/vovk/tree/main/examples/hello-world/dist_python), so you can read them. In a real project, list them in `.gitignore`.
 
-All snippets on this page are pulled directly from GitHub; live example pages are embedded via iframes.
+The code on this page comes from the repository on GitHub. The live pages are embedded as iframes.
 
 ## Running the Example Locally
 
-Create a copy of the example; this also installs the dependencies:
+Copy the example. This also installs its dependencies:
 
 ```sh copy
 npx create-next-app@latest --example https://github.com/finom/vovk/tree/main/examples/hello-world vovk-hello-world
@@ -8160,29 +8169,29 @@ Then open [http://localhost:3000](http://localhost:3000).
 
 ## Topics and Concepts Covered
 
-- Zod validation via [procedure function](https://vovk.dev/procedure) for `body`, `query`, and `params` input, plus `output` and `iteration` output schemas with `description` and `examples` via Zod [meta](https://zod.dev/metadata#meta).
-- Client-side validation for RPC inputs, described in the [customization](https://vovk.dev/imports) article.
+- Zod validation with the [procedure function](https://vovk.dev/procedure): `body`, `query` and `params` for input, `output` and `iteration` for output, with `description` and `examples` from Zod [meta](https://zod.dev/metadata#meta).
+- Client-side validation of RPC input, described in the [customization](https://vovk.dev/imports) article.
 - [Composed](https://vovk.dev/composed) and [segmented](https://vovk.dev/segmented) [TypeScript](https://vovk.dev/typescript) clients.
-- [JSONLines](https://vovk.dev/jsonlines) streaming.
-- [Type inference](https://vovk.dev/inference) between service and controller layers.
-- `useQuery` / `useMutation` usage with [`queryKey`](https://vovk.dev/typescript#react-query).
-- TypeScript client [bundle](https://vovk.dev/bundle) published on [npm](https://npmjs.com/package/vovk-hello-world) (see [bundlephobia](https://bundlephobia.com/package/vovk-hello-world)).
-- Experimental [Rust](https://vovk.dev/rust) and [Python](https://vovk.dev/python) clients published on [crates.io](https://crates.io/crates/vovk_hello_world) / [PyPI](https://pypi.org/project/vovk-hello-world/).
-- [OpenAPI spec](https://vovk.dev/openapi) served from a [static segment](https://vovk.dev/static-segment) and rendered via [Scalar](https://scalar.com/).
+- [JSON Lines](https://vovk.dev/jsonlines) streaming.
+- [Type inference](https://vovk.dev/inference) between the service and the controller.
+- `useQuery` and `useMutation` with [`queryKey`](https://vovk.dev/typescript#react-query).
+- A TypeScript client [bundle](https://vovk.dev/bundle), published on [npm](https://npmjs.com/package/vovk-hello-world) (see [bundlephobia](https://bundlephobia.com/package/vovk-hello-world)).
+- Experimental [Rust](https://vovk.dev/rust) and [Python](https://vovk.dev/python) clients, published on [crates.io](https://crates.io/crates/vovk_hello_world) and [PyPI](https://pypi.org/project/vovk-hello-world/).
+- An [OpenAPI spec](https://vovk.dev/openapi), served from a [static segment](https://vovk.dev/static-segment) and rendered with [Scalar](https://scalar.com/).
 
 ## Live Demo
 
-The demo provides a simple form (no native validation attributes) and a “Disable client-side input validation” checkbox toggling the [disableClientValidation](https://vovk.dev/typescript#disableclientvalidation) option. “Notification type” is intentionally mis-set to show both client and server validation behavior.
+The demo has a form without native validation attributes, and a “Disable client-side input validation” checkbox that toggles the [disableClientValidation](https://vovk.dev/typescript#disableclientvalidation) option. “Notification type” has an invalid value on purpose, so you can see both the client and the server validation fail.
 
 Link: https://hello-world.vovk.dev
 
 ## `UserController` and `UserService`
 
-`/api/users/{id}` is implemented by `UserController` / `UserService` through `updateUser`.
+`UserController` and `UserService` implement `/api/users/{id}` with `updateUser`.
 
-The controller method uses `@post` to map POST and `procedure()` for Zod validation of `body`, `params`, `query` and `output`. Each schema applies `meta` for richer OpenAPI (`description`, `examples`). For illustration, `body` nests `email` and a `profile` object (`name`, `age`).
+The procedure maps POST with `@post`, and `procedure()` validates `body`, `params`, `query` and `output` with Zod. Each schema calls `meta` to add `description` and `examples` to the OpenAPI output. To show nesting, `body` holds `email` and a `profile` object (`name`, `age`).
 
-The service method infers parameter types from the procedure, returning the service method result directly and avoiding implicit `any` self-reference issues.
+The service method takes its parameter types from the procedure. The handler returns the service result directly, which avoids implicit `any` errors from self-reference.
 
 ```ts showLineNumbers copy filename="src/modules/user/user-controller.ts" source="examples/hello-world"
 import { operation, post, prefix, procedure } from 'vovk';
@@ -8308,7 +8317,7 @@ export const { GET, POST, PATCH, PUT, HEAD, OPTIONS, DELETE } = initSegment({
 
 ## `StreamController` and `StreamService`
 
-`/api/streams/tokens` streams tokens using a controller generator method that delegates with `yield*` to the service. Each streamed item is validated via the `iteration` schema. Delays are simulated with `setTimeout`.
+`/api/streams/tokens` streams tokens. Its procedure is a generator that delegates to the service with `yield*`. The `iteration` schema validates each streamed item. `setTimeout` adds a delay between tokens.
 
 ```ts showLineNumbers copy filename="src/modules/stream/stream-controller.ts" source="examples/hello-world"
 import { get, operation, prefix, procedure } from 'vovk';
@@ -8582,16 +8591,16 @@ export default StreamDemo;
 
 The app is [configured](https://vovk.dev/config) to:
 
-- Validate on client-side via Ajv, the primary client-side validation library, described in the [customization](https://vovk.dev/imports) article (disabled for the bundle to keep it lightweight).
-- Generate [Rust](https://vovk.dev/rust) and [Python](https://vovk.dev/python) code when running [vovk dev](https://vovk.dev/dev) or [vovk generate](https://vovk.dev/generate).
-- Demonstrate the [segmented client](https://vovk.dev/segmented), generating RPC modules per [segment](https://vovk.dev/segment).
-- Generate clients and [bundle](https://vovk.dev/bundle) with `package` field and an explicit `origin`:
-  - Python and Rust clients: use `https://hello-world.vovk.dev`.
-  - TypeScript Bundle: use `https://hello-world.vovk.dev`.
+- Validate on the client with Ajv, the main client-side validation library, described in the [customization](https://vovk.dev/imports) article. The bundle has no validation, to stay small.
+- Generate [Rust](https://vovk.dev/rust) and [Python](https://vovk.dev/python) code when you run [vovk dev](https://vovk.dev/dev) or [vovk generate](https://vovk.dev/generate).
+- Show the [segmented client](https://vovk.dev/segmented), which has RPC modules per [segment](https://vovk.dev/segment).
+- Generate the clients and the [bundle](https://vovk.dev/bundle) with a `package` field and an explicit `origin`:
+  - Python and Rust clients: `https://hello-world.vovk.dev`.
+  - TypeScript bundle: `https://hello-world.vovk.dev`.
   - Composed TypeScript client:
-    - In development: use `http://localhost:PORT` (so Node.js via the generated **@/client** can call locally).
-    - In production: use an empty origin (requests are relative to the current origin).
-  - Segmented client: use an empty origin (requests are relative to the current origin).
+    - In development: `http://localhost:PORT`, so Node.js code can call the local server through the generated **@/client**.
+    - In production: an empty origin, so requests go to the current origin.
+  - Segmented client: an empty origin, so requests go to the current origin.
 
 ```ts showLineNumbers copy filename="vovk.config.js" source="examples/hello-world"
 // @ts-check
@@ -8706,7 +8715,7 @@ module.exports = config;
 ```
 *[The code above is fetched from GitHub repository.](https://github.com/finom/vovk/blob/main/examples/hello-world/vovk.config.js)*
 
-The original package.json is used to populate metadata (`repository`, `homepage`, `bugs` etc) in the package files listed below.
+The package files listed below take their metadata (`repository`, `homepage`, `bugs` and more) from this `package.json`.
 ```json showLineNumbers copy  source="examples/hello-world" filename="package.json"
 {
   "name": "vovk-hello-world",
@@ -8746,17 +8755,17 @@ The original package.json is used to populate metadata (`repository`, `homepage`
     "api"
   ],
   "dependencies": {
-    "@scalar/api-reference-react": "^0.9.60",
+    "@scalar/api-reference-react": "^0.9.74",
     "@standard-schema/spec": "^1.1.0",
-    "@tanstack/react-query": "^5.101.4",
+    "@tanstack/react-query": "^5.104.0",
     "ajv": "^8.20.0",
     "ajv-errors": "^3.0.0",
     "next": "^16.3.6",
-    "react": "^19.2.8",
-    "react-dom": "^19.2.8",
+    "react": "^19.3.0",
+    "react-dom": "^19.3.0",
     "vovk": "^4.0.0-beta.0",
     "vovk-ajv": "^0.1.0",
-    "zod": "^4.4.3"
+    "zod": "^4.6.5"
   },
   "devDependencies": {
     "@biomejs/biome": "^2.5.14",
@@ -8765,11 +8774,11 @@ The original package.json is used to populate metadata (`repository`, `homepage`
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "postcss": "^8",
-    "prettier": "^3.9.6",
+    "prettier": "^3.9.9",
     "tailwindcss": "^4.3.3",
     "tsdown": "^0.22.14",
-    "tsx": "^4.23.7",
-    "typescript": "^5",
+    "tsx": "^4.23.15",
+    "typescript": "^7",
     "vovk-cli": "^0.3.0-beta.0",
     "vovk-hello-world-published": "npm:vovk-hello-world@^0.0.88",
     "vovk-python": "^0.0.3",
@@ -8781,7 +8790,7 @@ The original package.json is used to populate metadata (`repository`, `homepage`
 
 ## OpenAPI Specification
 
-The [OpenAPI specification](https://hello-world.vovk.dev/api/static/openapi.json) is served by a `GET` endpoint returning the generated spec (`openapi` from `@/client/openapi`).
+A `GET` endpoint serves the [OpenAPI specification](https://hello-world.vovk.dev/api/static/openapi.json). It returns the generated spec, `openapi` from `@/client/openapi`.
 
 ```ts showLineNumbers copy filename="src/modules/static/openapi/openapi-controller.ts" source="examples/hello-world"
 import { get, operation } from 'vovk';
@@ -8821,15 +8830,15 @@ export const { GET } = initSegment({
 ```
 *[The code above is fetched from GitHub repository.](https://github.com/finom/vovk/blob/main/examples/hello-world/src/app/api/static/[[...vovk]]/route.ts)*
 
-The spec includes Scalar‑compatible samples you can reuse immediately.
+The spec includes code samples that Scalar shows, ready to copy.
 
 Link: https://hello-world.vovk.dev/openapi
 
 ## Building and Packaging
 
-This example also demonstrates how to quickly produce distributable packages published on [npm](https://www.npmjs.com/package/vovk-hello-world), [PyPI](https://pypi.org/project/vovk-hello-world/), and [crates.io](https://crates.io/crates/vovk_hello_world). The provided [templates](https://vovk.dev/templates) compile ready-to-use packages with language-specific files such as [package.json](https://github.com/finom/vovk/blob/main/examples/hello-world/dist/package.json), [Cargo.toml](https://github.com/finom/vovk/blob/main/examples/hello-world/dist_rust/Cargo.toml), and [pyproject.toml](https://github.com/finom/vovk/blob/main/examples/hello-world/dist_python/pyproject.toml), as well as README files that use code samples served as API/client documentation.
+The example also builds the packages it publishes on [npm](https://www.npmjs.com/package/vovk-hello-world), [PyPI](https://pypi.org/project/vovk-hello-world/) and [crates.io](https://crates.io/crates/vovk_hello_world). The [templates](https://vovk.dev/templates) write each package with the files its language needs, such as [package.json](https://github.com/finom/vovk/blob/main/examples/hello-world/dist/package.json), [Cargo.toml](https://github.com/finom/vovk/blob/main/examples/hello-world/dist_rust/Cargo.toml) and [pyproject.toml](https://github.com/finom/vovk/blob/main/examples/hello-world/dist_python/pyproject.toml), and a README whose code samples document the API and the client.
 
-`vovk generate` writes the Python and Rust packages to **dist_python** and **dist_rust**, as `composedClient.fromTemplates` lists `py` and `rs`, and `vovk bundle` builds the npm package into **dist**. Each package is published with its own script:
+`vovk generate` writes the Python and Rust packages to **dist_python** and **dist_rust**, because `composedClient.fromTemplates` lists `py` and `rs`. `vovk bundle` builds the npm package into **dist**. Each package has its own publish script:
 
 ```json
 "scripts": {
@@ -8840,13 +8849,7 @@ This example also demonstrates how to quickly produce distributable packages pub
 }
 ```
 
-The `README.md` files are updated with the latest examples and descriptions. IFrames below are rendered from the READMEs by Github Pages.
-
-    Link: https://finom.github.io/vovk-hello-world/dist/
-
-    Link: https://finom.github.io/vovk-hello-world/dist_rust/
-
-    Link: https://finom.github.io/vovk-hello-world/dist_python/
+`vovk generate` and `vovk bundle` rewrite the READMEs on each run: [TypeScript](https://github.com/finom/vovk/blob/main/examples/hello-world/dist/README.md), [Rust](https://github.com/finom/vovk/blob/main/examples/hello-world/dist_rust/README.md) and [Python](https://github.com/finom/vovk/blob/main/examples/hello-world/dist_python/README.md).
 
 The generated package files:
 
@@ -8980,21 +8983,13 @@ warn_unused_configs = true
 
 ## Tests
 
-The project also includes tests located in the [test/node](https://github.com/finom/vovk/tree/main/examples/hello-world/test/node), [test/rust](https://github.com/finom/vovk/tree/main/examples/hello-world/test/rust), and [test/python](https://github.com/finom/vovk/tree/main/examples/hello-world/test/python) directories, covering both local and published clients.
+Tests in [test/node](https://github.com/finom/vovk/tree/main/examples/hello-world/test/node), [test/rust](https://github.com/finom/vovk/tree/main/examples/hello-world/test/rust) and [test/python](https://github.com/finom/vovk/tree/main/examples/hello-world/test/python) cover both the local and the published clients.
 
 ```sh npm2yarn copy
 npm run test
 ```
 
-When run, the command builds the Next.js app, starts the server, and executes the tests.
-
-## Conclusion
-
-Even with only three endpoints (`updateUser`, `streamTokens`, `getSpec`), Vovk.ts delivers:
-
-- Turnkey multi-language client generation (TypeScript bundle + Rust + Python) with publish-ready metadata and READMEs.
-- Rich, documented OpenAPI output rendered via Scalar.
-- Text streaming and unified client-side validation flows.
+The command builds the Next.js app, starts the server and runs the tests.
 
 ---
 
@@ -9002,11 +8997,11 @@ Page: https://vovk.dev/multitenant
 
 # Multitenancy
 
-This article explains how to host multiple tenants or sites—each served from a different subdomain—within a single Next.js application. The backend and frontend run as separate serverless functions in one project, which keeps maintenance and deployment simple and reduces infrastructure complexity.
+This tutorial hosts several tenants, or sites, in one Next.js app, each on its own subdomain. The back end and the front end run as separate serverless functions in one project, so you maintain and deploy one project.
 
 ![Multitenancy](https://vovk.dev/draw/multitenancy.svg)
 
-This guide walks you through implementing multitenancy in Next.js with a small assist from Vovk.ts. It shows how to serve different areas of your application under distinct subdomains, illustrating several use cases:
+It uses Next.js and a small helper from Vovk.ts to serve different areas of the app under different subdomains:
 
 - [example.com](https://multitenant.vovk.dev/) for the root tenant,
 - [admin.example.com](https://admin.multitenant.vovk.dev/) for the admin tenant,
@@ -9014,41 +9009,37 @@ This guide walks you through implementing multitenancy in Next.js with a small a
 - [\*.customer.example.com](https://acme.customer.multitenant.vovk.dev/) for a specific customer tenant (for example, `acme.customer.example.com`),
 - [pro.\*.customer.example.com](https://pro.acme.customer.multitenant.vovk.dev/) for a professional version of a customer tenant (for example, `pro.acme.customer.example.com`).
 
-The live example is available at [multitenant.vovk.dev](https://multitenant.vovk.dev/), and the source code is in the [vovk-multitenant-example](https://github.com/finom/vovk/tree/main/examples/multitenant).
+The live example runs at [multitenant.vovk.dev](https://multitenant.vovk.dev/), and its source code is in [vovk-multitenant-example](https://github.com/finom/vovk/tree/main/examples/multitenant).
 
-Each tenant has its own root API endpoint under that domain’s `/api` path. For example, the customer tenant’s API lives at `customer.example.com/api`, and the admin tenant’s API at `admin.example.com/api`. These root endpoints are implemented as [segments](https://vovk.dev/segment) and rewritten at [Next.js proxy](https://nextjs.org/docs/app/getting-started/proxy) to the appropriate path based on the tenant subdomain.
+Each tenant has its own API root at the `/api` path of its domain. For example, the customer tenant's API is at `customer.example.com/api`, and the admin tenant's API at `admin.example.com/api`. These API roots are [segments](https://vovk.dev/segment), and the [Next.js proxy](https://nextjs.org/docs/app/getting-started/proxy) rewrites a request to the right path by its tenant subdomain, with the Vovk.ts `multitenant` function.
 
-On the frontend, use Next.js [dynamic routes](https://nextjs.org/docs/app/api-reference/file-conventions/dynamic-routes) for tenant‑specific paths. For example, a customer’s dedicated tenant page lives at `src/customer/[customer_name]/page.tsx`, and the admin tenant uses `src/admin/page.tsx`.
-
-Vovk.ts provides a small routing utility, `multitenant`, that accepts request information and returns the action the proxy should take—redirecting to a subdomain or rewriting to a path. You’ll use it in Next.js proxy to route requests based on the tenant subdomain.
-
-This example uses Vercel for deployment, but you can adapt it to any platform that supports Node.js.
+This example deploys to Vercel, but you can adapt it to any platform that runs Node.js.
 
 ## Configure DNS
 
-DNS records are configured as follows:
+The DNS records:
 
 | Type         | Host           | Value                 |
 | ------------ | -------------- | --------------------- |
 | CNAME Record | \*.multitenant | cname.vercel-dns.com. |
 
-On Vercel, the project domains are configured like this:
+The project domains on Vercel:
 
 ![Domain configuration](https://vovk.dev/screenshots/vercel-multitenant-domains.png)
 
-See the [Vercel documentation](https://vercel.com/docs/domains/working-with-domains/add-a-domain) for details on configuring domains, or consult your provider’s documentation for wildcard subdomains.
+See the [Vercel documentation](https://vercel.com/docs/domains/working-with-domains/add-a-domain) on domains, or your provider's documentation on wildcard subdomains.
 
-As it was mentioned above, the project uses the following domains:
+The project uses these domains:
 
 - `multitenant.vovk.dev` for the root tenant,
 - `admin.multitenant.vovk.dev` for the admin tenant,
 - `customer.multitenant.vovk.dev` for the customer tenant,
 - `*.customer.multitenant.vovk.dev` for a specific customer tenant (for example, `acme.customer.multitenant.vovk.dev`), which shares the customer tenant API,
-- `pro.acme.customer.multitenant.vovk.dev` to illustrate multiple subdomains. Vercel has limited wildcard support, so `acme` is used as a placeholder.
+- `pro.acme.customer.multitenant.vovk.dev` to show several levels of subdomains. Vercel's wildcard support is limited, so `acme` stands in for any customer.
 
 ## Organize Frontend Routes
 
-Use Next.js [dynamic routes](https://nextjs.org/docs/app/api-reference/file-conventions/dynamic-routes) to handle tenant‑specific paths.
+Use Next.js [dynamic routes](https://nextjs.org/docs/app/api-reference/file-conventions/dynamic-routes) for the tenant paths:
 
 ```
 src/app/
@@ -9065,9 +9056,9 @@ src/app/
 
 ## Create Backend API Segments and Controllers
 
-After [setting up a Vovk.ts](https://vovk.dev/quick-install) app, the simplest approach is to use the Vovk.ts CLI to create segments and controllers. The CLI generates the necessary files so you can focus on business logic.
+After [setting up a Vovk.ts](https://vovk.dev/quick-install) app, create the segments and controllers with the Vovk.ts CLI, which writes the files for you.
 
-First, create the API segments for each tenant. Each segment handles requests to its root API endpoint.
+First, create an API segment for each tenant. Each segment handles the requests to its API root.
 
 ```sh npm2yarn copy
 npm exec -- vovk new segment # create the root segment at src/app/api/[[...vovk]]/route.ts
@@ -9076,15 +9067,15 @@ npm exec -- vovk new segment customer # create "customer" segment at src/app/api
 npm exec -- vovk new segment customer/pro # create "customer/pro" segment at src/app/api/customer/pro/[[...vovk]]/route.ts
 ```
 
-Read more about Vovk.ts [segments](https://vovk.dev/segment).
+More about [segments](https://vovk.dev/segment).
 
-Next, create controllers for each segment. For example, to create `ProductService` and `ProductController` for the root segment in `src/modules/product/`:
+Next, create the controllers of each segment. For example, `ProductService` and `ProductController` for the root segment, in `src/modules/product/`:
 
 ```sh npm2yarn copy
 npm exec -- vovk new controller service product
 ```
 
-Create `UserService` and `UserController` for the admin segment in `src/modules/admin/user/`:
+`UserService` and `UserController` for the admin segment, in `src/modules/admin/user/`:
 
 ```sh npm2yarn copy
 npm exec -- vovk new controller service admin/user
@@ -9092,15 +9083,15 @@ npm exec -- vovk new controller service admin/user
 
 ## Enable Segmented Client
 
-By default, Vovk.ts emits a “composed client” to `src/client`, imported as `@/client`. Those modules import all [schemas](https://vovk.dev/schema) from `.vovk-schema`, making the entire app schema visible in every frontend module that imports the client.
+By default, Vovk.ts emits a “composed client” to `src/client`, imported as `@/client`. Its modules import all [schemas](https://vovk.dev/schema) from `.vovk-schema`, so every front-end module that imports the client sees the schema of the whole app.
 
-A [segmented client](https://vovk.dev/segmented) solves this by generating a separate client per segment, importing only the schemas relevant to that segment. Each segment gets its own directory in the project, and the client imports only what it needs.
+A [segmented client](https://vovk.dev/segmented) generates a separate client for each segment, which imports only that segment's schema. Each segment gets its own folder.
 
-This also lets higher‑order segments (such as “admin”) import lower‑order segments (such as “customer”), enabling RPC sharing across segments while keeping backend details hidden from pages that don’t use those RPC modules.
+A higher-level segment (such as “admin”) can also import a lower-level one (such as “customer”). Segments share RPC modules this way, and pages that don't use those RPC modules don't see their back-end details.
 
 ![Segmented client](https://vovk.dev/draw/segmented-client.svg)
 
-Disable the composed client and enable the segmented client in your [config file](https://vovk.dev/config):
+Turn off the composed client and turn on the segmented client in the [config file](https://vovk.dev/config):
 
 ```ts showLineNumbers copy filename="vovk.config.mjs"
 // @ts-check
@@ -9116,9 +9107,9 @@ const config = {
 export default config;
 ```
 
-By default, the segmented client is generated in `./src/client`. You can change the output directory via the `outDir` option.
+By default, the segmented client goes to `./src/client`. The `outDir` option changes the folder.
 
-Once enabled, import the client in your frontend code:
+Then import the client in the front-end code:
 
 ```ts showLineNumbers copy
 import { ProductRPC } from '@/client/product';
@@ -9126,7 +9117,7 @@ import { ProductRPC } from '@/client/product';
 await ProductRPC.getProducts();
 ```
 
-The generated client’s file structure looks like this (truncated for brevity—see [segmented client docs](https://vovk.dev/segmented) for details):
+The generated client's files, shortened (see [segmented client docs](https://vovk.dev/segmented)):
 
 ```
 src/client/
@@ -9142,7 +9133,7 @@ src/client/
 
 ## Update Segment Configuration
 
-Specify `segmentNameOverride` for every non‑root segment in the [config file](https://vovk.dev/config). This overrides the default segment name used in the URL path (for example, `"customer/pro"` becomes `""`).
+Set `segmentNameOverride` for every segment other than the root in the [config file](https://vovk.dev/config). It replaces the segment name in the URL path: for example, `"customer/pro"` becomes `""`.
 
 ```ts showLineNumbers copy filename="vovk.config.mjs"
 // @ts-check
@@ -9173,16 +9164,16 @@ export default config;
 
 ## Create Next.js Proxy
 
-The `"vovk"` package provides a `multitenant` utility that acts as the router for your multitenant app. It accepts request information and returns the action the proxy should take—redirect to a subdomain or rewrite to a path.
+`multitenant` from the `"vovk"` package is the router of the multitenant app. It takes the request details and returns what the proxy should do: redirect to a subdomain or rewrite to a path.
 
 Parameters:
 
-- `requestUrl`: the full request URL (e.g., from `request.url`).
-- `requestHost`: the request host (e.g., from `request.headers.get("host")`).
-- `targetHost`: the canonical host for redirects/rewrites (your production domain or `localhost:3000` in development).
-- `overrides`: a map from tenant subdomain names to routing rules. Each rule is an array of objects with `from` (path prefix) and `to` (target path).
+- `requestUrl`: the full request URL, such as `request.url`.
+- `requestHost`: the request host, such as `request.headers.get("host")`.
+- `targetHost`: the main host for redirects and rewrites (your production domain, or `localhost:3000` in development).
+- `overrides`: maps tenant subdomain names to routing rules. Each rule is an array of objects with `from` (a path prefix) and `to` (the target path).
 
-For wildcard subdomains, use square‑bracket patterns (such as `[customer_name]`) to define the [Dynamic Segment](https://nextjs.org/docs/app/api-reference/file-conventions/dynamic-routes). The value is passed via `params`. A placeholder matches one DNS label (letters, digits and hyphens), and the host is matched case-insensitively, so a host such as `%2e%2e.customer.example.com` gets no rewrite.
+For wildcard subdomains, use square-bracket patterns, such as `[customer_name]`, for the [Dynamic Segment](https://nextjs.org/docs/app/api-reference/file-conventions/dynamic-routes). The page gets the value in `params`. A placeholder matches one DNS label (letters, digits and hyphens), and the host is matched case-insensitively, so a host such as `%2e%2e.customer.example.com` gets no rewrite.
 
 A rule rewrites a path prefix, so a host also reaches what is nested under its target: `acme.customer.example.com/api/pro` reaches the `customer/pro` segment, and `acme.customer.example.com/pro` the pro page.
 
@@ -9258,17 +9249,13 @@ export const config = {
 
 The proxy passes the captured `subdomains` to the API in an `x-subdomains` request header and drops one the client sent, so a client can't choose its tenant. The customer controllers read it with `headers()` from `next/headers`.
 
-## Update Hosts for Local Development
+## Open the Tenants Locally
 
-Add a wildcard mapping to `/etc/hosts` to support subdomains locally:
-
-```
-127.0.0.1       *.localhost
-```
+Browsers resolve `localhost` and every name under it to the loopback address, so `admin.localhost:3000` and `acme.customer.localhost:3000` reach the dev server with no change to `/etc/hosts`. A hosts file takes no wildcards: a `*.localhost` line in it does nothing.
 
 ## Roadmap
 
-- 📝 Cover multi-domain topic.
+- 📝 Cover multiple domains.
 
 ---
 
@@ -9276,17 +9263,17 @@ Page: https://vovk.dev/testing
 
 # Testing
 
-Vovk.ts procedures expose an [`.fn` method](https://vovk.dev/fn) that calls the handler directly, skipping the HTTP round-trip. The same method powers SSR, server actions, and testing. This makes unit testing straightforward — no server required.
+A procedure's [`.fn` method](https://vovk.dev/fn) calls the handler without the HTTP round trip. SSR, server actions and tests use the same method, so unit tests need no server.
 
 ## Setup
 
-Any test runner works (Vitest, Jest, Node.js test runner, etc.). Examples below use Vitest.
+Any test runner works: Vitest, Jest, the Node.js test runner and others. The examples use Vitest.
 
 The `vovk` package is ES modules only. Jest set up with `next/jest` can't load it as is, so add `transpilePackages: ['vovk']` to the Next.js config.
 
 ## Testing with `.fn`
 
-Given a controller:
+Given this controller:
 
 ```ts showLineNumbers copy filename="src/modules/user/user-controller.ts"
 import { z } from 'zod';
@@ -9339,13 +9326,13 @@ describe('UserController', () => {
 });
 ```
 
-The `.fn` method runs the full procedure pipeline including validation and [decorators](https://vovk.dev/decorator-overview), but without HTTP overhead. This makes it a perfect fit for tests built around mocked or stubbed data — there is no server to start, no network latency, and no cold-start penalty, so test suites complete remarkably fast.
+`.fn` runs the whole procedure, with validation and [decorators](https://vovk.dev/decorator-overview), but without HTTP. That fits tests with mocked or stubbed data: there is no server to start, no network latency and no cold start, so the tests run fast.
 
-The trade-off is that `.fn()` bypasses `proxy.js` (previously `middleware.js` in earlier Next.js versions). Any logic that lives there — authentication checks, rate limiting, header injection — will not run during `.fn()` calls. If your tests need to exercise that layer, use [integration tests with RPC modules](#integration-testing-with-rpc-modules) against a running dev server instead.
+The trade-off: `.fn()` skips `proxy.js` (`middleware.js` in earlier Next.js versions). Logic that lives there, such as authentication checks, rate limiting or added headers, doesn't run in `.fn()` calls. To test that layer, use [integration tests with RPC modules](#integration-testing-with-rpc-modules) against a running dev server instead.
 
 ## Testing Validation
 
-Since procedures validate input, you can test that invalid data is rejected:
+Procedures validate their input, so you can test that invalid data is rejected:
 
 ```ts showLineNumbers copy filename="src/modules/user/user-controller.test.ts"
 import { describe, it, expect } from 'vitest';
@@ -9356,7 +9343,8 @@ describe('UserController validation', () => {
   it('rejects invalid body', async () => {
     await expect(
       UserController.createUser.fn({
-        body: { name: 123 }, // invalid
+        // @ts-expect-error name must be a string
+        body: { name: 123 },
       })
     ).rejects.toThrow(HttpException);
   });
@@ -9365,7 +9353,7 @@ describe('UserController validation', () => {
 
 ## Integration Testing with RPC Modules
 
-For end-to-end tests that go through the HTTP layer, use the generated [RPC modules](https://vovk.dev/typescript) against a running dev server:
+For end-to-end tests through HTTP, call the generated [RPC modules](https://vovk.dev/typescript) against a running dev server:
 
 ```ts showLineNumbers copy filename="src/modules/user/user-controller.e2e.test.ts"
 import { describe, it, expect } from 'vitest';
@@ -9386,12 +9374,12 @@ Page: https://vovk.dev/performance
 
 # Next.js API Route Performance Overhead
 
-## TL;DR
+## Summary
 
-- Goal: measure Vovk.ts overhead over native Next.js route handlers (not HTTP stack).
+- Goal: measure Vovk.ts overhead over native Next.js route handlers (not the HTTP stack).
 - Routing: O(1) across 1–10,000 controllers (20,000 endpoints). Median latency ~1.25–1.33 µs even at 10,000 controllers. Throughput ~745k–800k ops/s/core.
-- Cold start: O(n). ~5.7 ms at 1,000 controllers; ~83 ms at 10,000. About 8–10× the cost of no‑op decorators.
-- Notes: Tinybench on Apple M4 Pro. Next.js runtime cost is out of scope. Compiled from real benchmark output with AI assistance and minor edits. The scripts live in the [`perf`](https://github.com/finom/vovk/tree/main/perf) folder of the Vovk.ts repository.
+- Cold start: O(n). ~5.7 ms at 1,000 controllers, ~83 ms at 10,000. About 8–10× the cost of no-op decorators.
+- Notes: Tinybench on Apple M4 Pro. Next.js runtime cost is not measured. Written from real benchmark output with AI help and small edits. The scripts are in the [`perf`](https://github.com/finom/vovk/tree/main/perf) folder of the Vovk.ts repository.
 
 ## Reproducing the Tests
 
@@ -9411,25 +9399,23 @@ cd perf
 npm run perf-test
 ```
 
-Perf suite also runs in CI: [GitHub Actions](https://github.com/finom/vovk/actions/workflows/perf.yml). CI runs on
-GitHub-hosted runners, so numbers are slower than local M4 Pro runs—request-overhead medians are typically
-~7.0–8.7× slower (e.g. ~9–11.5 µs vs ~1.3 µs), and cold-start medians ~3.7–4.9× slower (e.g. ~22 µs vs ~5 µs
-for 1 controller). The scaling trend (O(1) request overhead, O(n) cold start) still holds.
+The suite also runs in CI: [GitHub Actions](https://github.com/finom/vovk/actions/workflows/perf.yml). CI uses
+GitHub-hosted runners, which are slower than a local M4 Pro: request-overhead medians are typically
+~7.0–8.7× slower (~9–11.5 µs vs ~1.3 µs), and cold-start medians ~3.7–4.9× slower (~22 µs vs ~5 µs
+for 1 controller). The scaling (O(1) request overhead, O(n) cold start) stays the same.
 
 ## Overview
 
-Vovk.ts sits on top of Next.js API routes and generates handlers via decorators applied to procedures:
+Vovk.ts runs on top of Next.js API routes and builds the handlers from decorated procedures:
 
 ```ts showLineNumbers copy filename="src/app/api/[[...vovk]]/route.ts"
 export const { GET, POST } = initSegment({ controllers });
 ```
 
-We measure framework overhead in two dimensions:
+The tests measure the overhead in two ways:
 
-- Request Overhead: per-request routing/handler overhead.
-- Cold Start Overhead: initialization time for controllers/metadata.
-
-Source: test scripts in the [`perf`](https://github.com/finom/vovk/tree/main/perf) folder.
+- Request overhead: routing and handler time per request.
+- Cold start overhead: time to initialize controllers and metadata.
 
 ## Request Overhead
 
@@ -9465,11 +9451,11 @@ export default class AController {
 
 ### Methodology (short)
 
-- Autogenerate N controllers (N ∈ \{1, 10, 100, 1,000, 10,000\}), each exposing:
+- Generate N controllers (N ∈ \{1, 10, 100, 1,000, 10,000\}), each with:
   - GET without params.
   - POST with path param "\{id\}" (pattern match).
-- Minimal handler logic; measure full routing + handler path.
-- Tinybench: 100 ms min per test, nanosecond timing; report median latency/throughput.
+- Minimal handlers; the full routing and handler path is measured.
+- Tinybench: at least 100 ms per test, nanosecond timing; median latency and throughput.
 
 ### Results
 
@@ -9484,11 +9470,11 @@ export default class AController {
 Key takeaways:
 
 - O(1) routing: flat latency from 1 to 10,000 controllers.
-- ≈1.3 µs overhead at typical scales; GET≈POST indicates efficient param extraction.
+- ≈1.3 µs overhead at typical sizes; GET ≈ POST, so reading the path param costs little.
 
 ## Cold Start Overhead
 
-Example cold-start benchmark (N = 1) contrasting Vovk.ts vs. no-op decorators:
+Example cold-start benchmark (N = 1), Vovk.ts against no-op decorators:
 
 ```ts showLineNumbers copy filename="bench/generated_coldStartPerfTest.ts"
 bench.add("Cold start for 1 controllers", async () => {
@@ -9530,8 +9516,8 @@ bench.add("No-op decorators for 1 classes", async () => {
 
 For N ∈ \{1, 10, 100, 1,000, 10,000\} measure:
 
-- App creation, decorator processing, metadata build, and initSegment().
-- Compare to equivalent classes using no‑op decorators to isolate framework work.
+- App creation, decorator processing, metadata build and `initSegment()`.
+- Compare with equivalent classes using no-op decorators, to isolate the framework's work.
 
 Example no‑op decorators:
 
@@ -9558,29 +9544,31 @@ function noopClassDecorator() {
 
 Key takeaways:
 
-- O(n) init: linear growth with a near-constant per-controller cost through 10,000 controllers.
-- Absolute times are small for long-lived services; still acceptable for serverless at typical sizes.
+- O(n) init: linear growth, with a near-constant cost per controller up to 10,000 controllers.
+- Absolute times are small for long-running services, and acceptable for serverless at typical sizes.
 
 ## Practical guidance
 
-- For high-performance workloads: split the app into multiple [segments](https://vovk.dev/segment) (e.g., serverless functions built with Next.js route.ts files), each with a manageable number of procedures (up to 1,000).
-- In theory, with careful segment management and adequate hardware, a single Next.js/Vovk.ts app can host up to ~100,000 procedures. Validate this in your environment; practical limits will be memory, bundle size, cold start budgets, and platform quotas.
+- For high-performance workloads, split the app into several [segments](https://vovk.dev/segment) (serverless functions built from Next.js route.ts files), each with up to 1,000 procedures.
+- In theory, with well-planned segments and enough hardware, one Next.js/Vovk.ts app can host up to ~100,000 procedures. Test this in your environment: the real limits are memory, bundle size, cold start budgets and platform quotas.
 
 ---
 
-Benchmarks: Tinybench on Node.js; hardware Apple M4 Pro. Numbers can vary by runtime, hardware, and build settings. Scripts: https://github.com/finom/vovk/tree/main/perf
+Benchmarks: Tinybench on Node.js, on an Apple M4 Pro. Numbers can vary with the runtime, hardware and build settings. Scripts: https://github.com/finom/vovk/tree/main/perf
 
 ---
 
 Page: https://vovk.dev/packages
 
-# Packages and Repos
+# Packages
 
-## Packages of the [Main Monorepo](https://github.com/finom/vovk)
+The [Vovk.ts repository](https://github.com/finom/vovk) holds the npm packages, the examples, the performance tests and this documentation.
+
+## npm Packages
 
 ### [vovk](https://www.npmjs.com/package/vovk)
 
-The core/runtime library providing decorators, utilities, types, and other features used by both server-side and client-side code. It peer-depends only on type-focused [openapi3-ts](https://www.npmjs.com/package/openapi3-ts) and is reported as 100% self-composed on [Bundlephobia](https://bundlephobia.com/package/vovk).
+The runtime library: decorators, utilities, types and other code used on the server and on the client. Its only peer dependency is [openapi3-ts](https://www.npmjs.com/package/openapi3-ts), for types, and [Bundlephobia](https://bundlephobia.com/package/vovk) reports it as 100% self-composed.
 
 ```sh npm2yarn copy
 npm install vovk
@@ -9588,7 +9576,7 @@ npm install vovk
 
 ### [vovk-cli](https://www.npmjs.com/package/vovk-cli)
 
-The CLI package. Install globally or as a dev dependency. Provides the `vovk` binary.
+The CLI. Install it globally or as a dev dependency. It provides the `vovk` binary.
 
 ```sh npm2yarn copy
 npm install vovk-cli --save-dev
@@ -9606,7 +9594,7 @@ npm exec -- vovk <command>
 
 ### [vovk-ajv](https://www.npmjs.com/package/vovk-ajv)
 
-Exposes `validateOnClient` to validate input data on the client using the emitted JSON Schema.
+Exports `validateOnClient`, which validates input on the client with the emitted JSON Schema.
 
 ```sh npm2yarn copy
 npm install vovk-ajv
@@ -9614,7 +9602,7 @@ npm install vovk-ajv
 
 ### [vovk-python](https://www.npmjs.com/package/vovk-python)
 
-Provides Python client templates and utilities to generate the [Python client library](https://vovk.dev/python).
+Templates and utilities that generate the [Python client library](https://vovk.dev/python).
 
 ```sh npm2yarn copy
 npm install vovk-python --save-dev
@@ -9622,39 +9610,39 @@ npm install vovk-python --save-dev
 
 ### [vovk-rust](https://www.npmjs.com/package/vovk-rust)
 
-Provides Rust client templates and utilities to generate the [Rust client library](https://vovk.dev/rust).
+Templates and utilities that generate the [Rust client library](https://vovk.dev/rust).
 
 ```sh npm2yarn copy
 npm install vovk-rust --save-dev
 ```
 
-## Other Repos and Packages
+## Examples and Other Folders
 
-### [vovk-examples](https://examples.vovk.dev/)
+### [examples/kitchen-sink](https://github.com/finom/vovk/tree/main/examples/kitchen-sink)
 
-A collection of examples and proofs of concept. The client library is published on [NPM](https://www.npmjs.com/package/vovk-examples) and used on this site.
+Examples and proofs of concept, served at [examples.vovk.dev](https://examples.vovk.dev/). Its client library is published to npm as [vovk-examples](https://www.npmjs.com/package/vovk-examples), and this site uses it.
 
-### [vovk-hello-world](https://github.com/finom/vovk/tree/main/examples/hello-world)
+### [examples/hello-world](https://github.com/finom/vovk/tree/main/examples/hello-world)
 
 ![PyPI version](https://badge.fury.io/py/vovk-hello-world.svg)
 
-A minimal example of using Vovk.ts. See the ["Hello World"](https://vovk.dev/hello-world) page for details. The client library is published on [NPM](https://www.npmjs.com/package/vovk-hello-world), [Crate](https://crates.io/crates/vovk-hello-world), and [PyPI](https://pypi.org/project/vovk-hello-world/).
+A minimal Vovk.ts example, served at [hello-world.vovk.dev](https://hello-world.vovk.dev/). See the ["Hello World"](https://vovk.dev/hello-world) page. Its client library is published as `vovk-hello-world` on [npm](https://www.npmjs.com/package/vovk-hello-world), [crates.io](https://crates.io/crates/vovk-hello-world) and [PyPI](https://pypi.org/project/vovk-hello-world/).
 
-### [vovk-multitenant-example](https://github.com/finom/vovk/tree/main/examples/multitenant)
+### [examples/multitenant](https://github.com/finom/vovk/tree/main/examples/multitenant)
 
-Demonstrates [multitenancy](https://vovk.dev/multitenant) with Vovk.ts.
+Shows [multitenancy](https://vovk.dev/multitenant) with Vovk.ts, served at [multitenant.vovk.dev](https://multitenant.vovk.dev/).
 
-### [realtime-kanban](https://github.com/finom/vovk/tree/main/examples/realtime-kanban)
+### [examples/realtime-kanban](https://github.com/finom/vovk/tree/main/examples/realtime-kanban)
 
-A realtime Kanban board application built with Vovk.ts, described in the [Realtime Kanban](https://vovk.dev/realtime-ui) series of articles.
+A realtime Kanban board built with Vovk.ts, described in the [Realtime Kanban](https://vovk.dev/realtime-ui) series of articles.
 
-### [vovk-perf-test](https://github.com/finom/vovk/tree/main/perf)
+### [perf](https://github.com/finom/vovk/tree/main/perf)
 
 [Overhead performance](https://vovk.dev/performance) tests for Vovk.ts.
 
-### [vovk.dev](https://github.com/finom/vovk/tree/main/docs)
+### [docs](https://github.com/finom/vovk/tree/main/docs)
 
-This documentation.
+This documentation, served at [vovk.dev](https://vovk.dev).
 
 ---
 
@@ -9856,14 +9844,14 @@ See the [decorator docs](https://vovk.dev/decorator) for more details.
 
 ### `fetcher`
 
-Function that creates a data-fetching layer for the RPC client. It is used by default when the fetcher is not [customized](https://vovk.dev/imports#fetcher). A new fetcher can be created using the [createFetcher](#createfetcher) function.
+Function that creates a data-fetching layer for the RPC client. It is used by default when the fetcher is not [customized](https://vovk.dev/imports#fetcher). A new fetcher can be created using the [createFetcher](#createfetcher) function. Exported from `vovk/fetcher`.
 
 ### `createFetcher`
 
 Function that creates a custom fetcher for the RPC client. It accepts a generic type parameter that defines additional options for the resulting RPC methods. The function returns a `fetcher` function that will be used to build the client.
 
 ```ts showLineNumbers copy filename="./src/lib/fetcher.ts"
-import { createFetcher } from 'vovk';
+import { createFetcher } from 'vovk/fetcher';
 
 export const fetcher = createFetcher<{
   successMessage?: string; // "Successfully created a new user"
@@ -9967,7 +9955,7 @@ Utility that turns RPC modules or controllers into AI tools that satisfy the [st
 
 The function accepts the following options:
 
-- `modules: Record<string, object>{:ts}` – key-value object where keys are module names and values are objects with methods. Each method should have a `schema: VovkHandlerSchema` property and either `isRPC: true` (for RPC modules) or the [fn](https://vovk.dev/fn) function (for controllers).
+- `modules: Record<string, object>{:ts}` – key-value object where keys are module names and values are objects with methods. Each method should have the `schema` property that RPC methods and procedures have, and either `isRPC: true` (for RPC modules) or the [fn](https://vovk.dev/fn) function (for controllers).
 - `onExecute?: (result: unknown, tool: StandardToolV0) => void | Promise{:ts}` – called after each tool execution.
 - `onError?: (e: Error, tool: StandardToolV0) => void | Promise{:ts}` – called when an error is thrown during tool execution.
 - `toModelOutput` – function that formats the tool result into a model-friendly output.
@@ -10007,7 +9995,7 @@ Creates the `validateOnClient` function, which controls how client-side validati
 
 ```ts showLineNumbers copy filename="./src/lib/validate-on-client.ts"
 import { validateData } from 'validation-library';
-import { createValidateOnClient, HttpException, HttpStatus } from 'vovk';
+import { createValidateOnClient, HttpException, HttpStatus } from 'vovk/create-validate-on-client';
 
 export const validateOnClient = createValidateOnClient({
   validate: async (input, schema, meta) => {
@@ -10223,32 +10211,9 @@ export enum HttpStatus {
 }
 ```
 
-#### `HttpMethod` enum
-
-Represents the HTTP methods:
-
-```ts showLineNumbers copy
-export enum HttpMethod {
-  GET = 'GET',
-  POST = 'POST',
-  PUT = 'PUT',
-  PATCH = 'PATCH',
-  DELETE = 'DELETE',
-  HEAD = 'HEAD',
-  OPTIONS = 'OPTIONS',
-}
-```
-
 ### `VovkSchema`
 
-The full schema of the composed client or of a single segment in a segmented client. Shape:
-
-```ts showLineNumbers copy
-{
-  segments: { [key: string]: VovkSegmentSchema };
-  meta?: VovkMetaSchema
-}
-```
+The full schema of the composed client or of a single segment in a segmented client. It has `segments`, the schema of each segment by its name, and an optional `meta` with the emitted config. A segment's schema is typed as `typeof UserRPC.updateUser.segmentSchema`.
 
 See the [schema docs](https://vovk.dev/schema) for more details.
 
@@ -10258,7 +10223,7 @@ The shape of the [config](https://vovk.dev/config) file.
 
 ### `StandardToolV0`
 
-The shape of an LLM tool returned by the [deriveTools](#derivetools) function, defined by the [standard-tool](https://standard-tool.js.org/) convention. Exported from `vovk/internal`.
+The shape of an LLM tool returned by the [deriveTools](#derivetools) function, defined by the [standard-tool](https://standard-tool.js.org/) convention.
 
 See the [Deriving AI Tools](https://vovk.dev/tools) documentation for more information.
 
@@ -10268,7 +10233,7 @@ Basic JSON Schema object with `type`, `properties`, and other standard JSON Sche
 
 ### `VovkFetcher`
 
-Object that represents a [fetcher](#fetcher) function used to make API requests.
+Object that represents a [fetcher](#fetcher) function used to make API requests. Exported from `vovk/fetcher`.
 
 See the [fetcher docs](https://vovk.dev/imports#fetcher) for more information.
 
@@ -10278,6 +10243,6 @@ The stream a client method returns for a [JSON Lines](https://vovk.dev/jsonlines
 
 ### `VovkValidateOnClient`
 
-Function type that represents the client-side validation function created by [createValidateOnClient](#createvalidateonclient).
+Function type that represents the client-side validation function created by [createValidateOnClient](#createvalidateonclient). Exported from `vovk/create-validate-on-client`.
 
 See the [client-side validation docs](https://vovk.dev/imports#validateonclient) for more details.

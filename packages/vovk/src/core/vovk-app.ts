@@ -48,9 +48,9 @@ type SegmentHooks = {
 };
 
 // the catch-all is the one array param, a dynamic parent folder such as [lang] adds string params
-export type RouteParams = Record<string, string | string[] | undefined>;
+export type VovkRouteParams = Record<string, string | string[] | undefined>;
 
-export const getCatchAllPath = (params: RouteParams) =>
+export const getCatchAllPath = (params: VovkRouteParams) =>
   Object.values(params).find((value): value is string[] => Array.isArray(value)) ?? [];
 
 // redirect(), notFound(), forbidden() and unauthorized() from next/navigation throw these for Next.js to answer
@@ -123,26 +123,26 @@ class VovkApp {
     OPTIONS: new Map(),
   };
 
-  GET = async (req: Request, data: { params: Promise<RouteParams> }, segmentName: string) =>
+  GET = async (req: Request, data: { params: Promise<VovkRouteParams> }, segmentName: string) =>
     this.#callMethod({ httpMethod: HttpMethod.GET, req, params: await data.params, segmentName });
 
-  POST = async (req: Request, data: { params: Promise<RouteParams> }, segmentName: string) =>
+  POST = async (req: Request, data: { params: Promise<VovkRouteParams> }, segmentName: string) =>
     this.#callMethod({ httpMethod: HttpMethod.POST, req, params: await data.params, segmentName });
-  PUT = async (req: Request, data: { params: Promise<RouteParams> }, segmentName: string) =>
+  PUT = async (req: Request, data: { params: Promise<VovkRouteParams> }, segmentName: string) =>
     this.#callMethod({ httpMethod: HttpMethod.PUT, req, params: await data.params, segmentName });
 
-  PATCH = async (req: Request, data: { params: Promise<RouteParams> }, segmentName: string) =>
+  PATCH = async (req: Request, data: { params: Promise<VovkRouteParams> }, segmentName: string) =>
     this.#callMethod({ httpMethod: HttpMethod.PATCH, req, params: await data.params, segmentName });
 
-  DELETE = async (req: Request, data: { params: Promise<RouteParams> }, segmentName: string) =>
+  DELETE = async (req: Request, data: { params: Promise<VovkRouteParams> }, segmentName: string) =>
     this.#callMethod({ httpMethod: HttpMethod.DELETE, req, params: await data.params, segmentName });
 
-  HEAD = async (req: Request, data: { params: Promise<RouteParams> }, segmentName: string) =>
+  HEAD = async (req: Request, data: { params: Promise<VovkRouteParams> }, segmentName: string) =>
     VovkApp.withoutBody(
       await this.#callMethod({ httpMethod: HttpMethod.HEAD, req, params: await data.params, segmentName })
     );
 
-  OPTIONS = async (req: Request, data: { params: Promise<RouteParams> }, segmentName: string) =>
+  OPTIONS = async (req: Request, data: { params: Promise<VovkRouteParams> }, segmentName: string) =>
     this.#callMethod({ httpMethod: HttpMethod.OPTIONS, req, params: await data.params, segmentName });
 
   // synchronous, so a body JSON can't serialize throws where the handler's errors are caught
@@ -467,7 +467,7 @@ class VovkApp {
   }: {
     httpMethod: HttpMethod;
     req: Request;
-    params: RouteParams;
+    params: VovkRouteParams;
     segmentName: string;
   }) => {
     const req = request as VovkRequest;
