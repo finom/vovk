@@ -1054,5 +1054,20 @@ describe('Client sweep, pure functions', () => {
 
       deepStrictEqual(getDeclarationDiagnostics(source), []);
     });
+
+    it('Name the types of the route handlers a segment exports in declarations', () => {
+      // a route file, as tsc on TypeScript 7 emits it when tsdown bundles a client
+      const source = [
+        "import { initSegment, procedure } from 'vovk';",
+        'class UserController {',
+        '  static getUser = procedure().handle(async () => ({ ok: true }));',
+        '}',
+        'const controllers = { UserRPC: UserController };',
+        'export type Controllers = typeof controllers;',
+        'export const { GET, POST, PATCH, PUT, HEAD, OPTIONS, DELETE } = initSegment({ controllers });',
+      ].join('\n');
+
+      deepStrictEqual(getDeclarationDiagnostics(source), []);
+    });
   });
 });
