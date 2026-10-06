@@ -24,63 +24,63 @@ Options:
 
 ---
 
-The `vovk dev` command runs a watcher that monitors the modules folder and the segment route files and updates the [schema](/schema) and [client](/typescript) as needed. It does this by issuing HTTP GET requests to `/api/<segment-name>/_schema_`, where `<segment-name>` is the relevant segment. If the schema has changed, the watcher updates the JSON files and regenerates the client modules.
+`vovk dev` runs a watcher that keeps the [schema](/schema) and the [client](/typescript) up to date. It reads the schema of a segment with an HTTP GET request to `/api/<segment-name>/_schema_`.
 
 ## How It Works
 
-1. `vovk dev` and `next dev` run together via [concurrently](https://www.npmjs.com/package/concurrently).
-2. `vovk dev` watches the **/src/modules** directory (configurable with [`modulesDir`](/config#modulesdir)).
-3. On change, simple RegExp checks tell whether the file holds a controller of a known [segment](/segment).
-4. The script requests `/api/<segment-name>/_schema_` of that segment to retrieve the updated schema, or of every segment when the file holds no known controller, such as a renamed controller, a service or a validation module.
-5. If the schema differs:
-   - If the controller list has changed (added, removed, renamed) or method definitions (including validation) were updated, the script writes the schema to the [.vovk-schema](/config#schemaoutdir) directory as `<segment-name>.json`.
-   - If the controller list changed, the client is also regenerated. The client imports schema JSON files to initialize the exported library. By default, the [composed client](/composed) is generated in `./src/client` (or `./client` without a `src` folder). When the [segmented client](/segmented) is enabled, per-segment folders are generated in the same directory.
+1. `vovk dev` and `next dev` run together with [concurrently](https://www.npmjs.com/package/concurrently).
+2. `vovk dev` watches the **/src/modules** folder (set by [`modulesDir`](/config#modulesdir)) and the segment route files.
+3. When a file changes, a regular expression check tells whether it holds a controller of a known [segment](/segment).
+4. The watcher requests `/api/<segment-name>/_schema_` of that segment for the new schema. When the file holds no known controller, as with a renamed controller, a service or a validation module, it requests the schema of every segment.
+5. If the schema changed:
+   - If controllers were added, removed or renamed, or methods changed (validation included), the watcher writes the schema to the [.vovk-schema](/config#schemaoutdir) folder as `<segment-name>.json`.
+   - If the controller list changed, the watcher also generates the client again. The client imports the schema JSON files to set up the library it exports. By default, the [composed client](/composed) goes to `./src/client` (or `./client` without a `src` folder). With the [segmented client](/segmented), the per-segment folders go to the same folder.
 
 <Image src={devSvg} alt="vovk dev" className="dark:invert" />
 
-Because `vovk dev` is typically used alongside the Next.js dev server, there are two ways to run it, both using [concurrently](https://www.npmjs.com/package/concurrently):
+`vovk dev` runs next to the Next.js dev server. There are two ways to run both, each with [concurrently](https://www.npmjs.com/package/concurrently):
 
-1. **Explicit way**: Preferable if you want minimal abstraction. The downside is that you must set `PORT` explicitly:
+1. **Explicit way**: you see the whole command, but you set `PORT` yourself:
 
 ```sh
 PORT=3000 npx concurrently 'vovk dev' 'next dev' --kill-others
 ```
 
-You can pass Next.js flags as usual:
+Pass Next.js flags as usual:
 
 ```sh
 PORT=3000 npx concurrently 'vovk dev --https' 'next dev --experimental-https --turbo' --kill-others
 ```
 
-2. **Implicit way**: Ports are assigned automatically. The script checks whether port 3000 (by default) is in use and selects the next available port:
+2. **Implicit way**: the port is chosen for you. By default, the command takes port 3000, or the next free port if 3000 is in use:
 
 ```sh
 npx vovk dev --next-dev
 ```
 
-To pass flags to `next dev`, append them after `--`:
+Pass `next dev` flags after `--`:
 
 ```sh
 npx vovk dev --https --next-dev -- --experimental-https --turbo
 ```
 
-A port passed this way (`-p 4000` or `--port 4000`) is used instead of the automatic one, for Next.js and for the schema requests.
+A port passed this way (`-p 4000` or `--port 4000`) replaces the automatic one, for Next.js and for the schema requests.
 
-Internally, the implicit mode uses the concurrently API, making both approaches nearly identical.
+The implicit way uses the concurrently API, so both ways work almost the same.
 
-Read more about [HTTPS in development](/config#devhttps).
+See [HTTPS in development](/config#devhttps).
 
 ## Run and Exit
 
-Use the `--exit` flag to terminate the processes started by `vovk dev` after the schema and client are generated. This is useful for one-off runs without keeping the watcher active.
+`--exit` stops the processes that `vovk dev` started once the schema and the client are generated. Use it for a one-off run, without a watcher.
 
 ```sh
 npx vovk dev --next-dev --exit
 ```
 
-The command exits with code 1 when a segment's schema can't be fetched after 5 retries or can't be used, when the client fails to generate, or when the `next dev` started by `--next-dev` stops first.
+The command exits with code 1 when a segment's schema can't be fetched after 5 attempts or can't be used, when the client fails to generate, or when the `next dev` that `--next-dev` started stops first.
 
-For convenience, add a dedicated script in `package.json`:
+Add a script for it to `package.json`:
 
 ```json
 {
