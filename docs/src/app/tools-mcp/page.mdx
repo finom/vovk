@@ -12,7 +12,7 @@ const tools = deriveTools({
 
 ## JSON Content
 
-A JSON response becomes text content with a `structuredContent` field. This includes responses made with `Response` or `NextResponse`, and `+json` types such as `application/problem+json`. A `Response` with an error status gives `isError: true` and no `structuredContent`. A thrown error is reported the same way. In production, only an `HttpException{:ts}` keeps its message, and any other error reads "Internal server error".
+A JSON response becomes text content with a `structuredContent` field. This includes responses made with `Response` or `NextResponse`, and `+json` types such as `application/problem+json`. MCP structured content is an object, so an array goes under `structuredContent.items`. A `Response` with an error status gives `isError: true` and no `structuredContent`. A thrown error is reported the same way. In production, only an `HttpException{:ts}` keeps its message, and any other error reads "Internal server error".
 
 ```ts showLineNumbers copy
 export default class UserController {
@@ -120,6 +120,8 @@ With the `ToModelOutput.MCP` formatter, the tool's output is:
   ]
 }
 ```
+
+A `Response` of any other content type, such as `application/pdf`, gives `isError: true` and the text `Unsupported response content type application/pdf`.
 
 ## `annotations`
 

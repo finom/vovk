@@ -1,6 +1,6 @@
 # TypeScript Client Customization
 
-You can replace the lower-level modules that the generated TypeScript client imports: the [fetcher](#fetcher) and [validateOnClient](#validateonclient). Set them in the `outputConfig.imports` object of the [config](/config) file.
+You can replace the lower-level modules that the generated TypeScript client imports: the [fetcher](#fetcher) and [validateOnClient](#validateonclient). Set them in the `outputConfig.imports` object of the [config](/config) file. The object also takes `createRPC`: the module the client imports `createRPC` from, `vovk/create-rpc` by default (see [config](/config)).
 
 With **vovk-ajv** (described below) for client-side validation, the generated `index.ts` that creates the `UserRPC` module looks roughly like this:
 
@@ -151,11 +151,11 @@ Changes the response data before the caller gets it. `data` is JSON, a [disposab
 
 #### `onError(error: HttpException, options: T){:ts}`
 
-Runs when a request fails. Use it for error messages, logging, or custom handling.
+Runs when a request fails. Use it for error messages, logging, or custom handling. Its third argument, `info`, holds the `response`, `init`, `respData` and `schema`; the first three are `null` when the call failed before it had them.
 
 #### `onSuccess(data: unknown, options: T){:ts}`
 
-Runs when a request succeeds. Use it for success messages, logging, or post-processing.
+Runs when a request succeeds. Use it for success messages, logging, or post-processing. Its third argument, `info`, is the same as in `transformResponse`.
 
 ### Event-style callbacks
 

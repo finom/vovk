@@ -754,19 +754,7 @@ The example also builds the packages it publishes on [npm](https://www.npmjs.com
 }
 ```
 
-Each generation updates the `README.md` files with the current examples and descriptions. GitHub Pages renders the READMEs in the iframes below.
-
-<Tabs items={['TypeScript', 'Rust', 'Python']}>
-  <Tabs.Tab>
-    <IFrame src="https://finom.github.io/vovk-hello-world/dist/" width="100%" height="1200px"></IFrame>
-  </Tabs.Tab>
-  <Tabs.Tab>
-    <IFrame src="https://finom.github.io/vovk-hello-world/dist_rust/" width="100%" height="1200px"></IFrame>
-  </Tabs.Tab>
-  <Tabs.Tab>
-    <IFrame src="https://finom.github.io/vovk-hello-world/dist_python/" width="100%" height="1200px"></IFrame>
-  </Tabs.Tab>
-</Tabs>
+`vovk generate` and `vovk bundle` rewrite the READMEs on each run: [TypeScript](https://github.com/finom/vovk/blob/main/examples/hello-world/dist/README.md), [Rust](https://github.com/finom/vovk/blob/main/examples/hello-world/dist_rust/README.md) and [Python](https://github.com/finom/vovk/blob/main/examples/hello-world/dist_python/README.md).
 
 The generated package files:
 

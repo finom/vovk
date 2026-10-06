@@ -41,8 +41,8 @@ The function returns an array of tools. Each tool satisfies the `StandardToolV0`
 `deriveTools` takes an options object with these properties:
 
 - `modules: Record<string, object>{:ts}` - the modules (RPC or API modules, or controllers) to derive tools from.
-- `onExecute?: (result: unknown, tool: StandardToolV0) => void{:ts}` - an optional callback that runs when a tool's `execute` function succeeds.
-- `onError?: (error: Error, tool: StandardToolV0) => void{:ts}` - an optional callback that runs when a tool's `execute` function throws, or when a controller returns a `Response` with an error status. For a `Response`, the error is an `HttpException` with its status and the message from the body: the `message`, `detail` or `title` of a JSON body, else its text. `ToModelOutput.DEFAULT` gives the model `{ error: message }{:ts}` in both cases.
+- `onExecute?: (result: unknown, tool: StandardToolV0, req: Pick<VovkRequest, 'vovk'> | null) => void{:ts}` - an optional callback that runs when a tool's `execute` function succeeds. For a controller, `req` is the call's request object, with `req.vovk`; for an RPC method, it's `null`.
+- `onError?: (error: Error, tool: StandardToolV0, req: Pick<VovkRequest, 'vovk'> | null) => void{:ts}` - an optional callback that runs when a tool's `execute` function throws, or when a controller returns a `Response` with an error status. For a `Response`, the error is an `HttpException` with its status and the message from the body: the `message`, `detail` or `title` of a JSON body, else its text. `ToModelOutput.DEFAULT` gives the model `{ error: message }{:ts}` in both cases. `req` is as in `onExecute`, or `null` for a thrown error.
 - `toModelOutput?: ToModelOutputFn<TInput, TOutput, TFormattedOutput>{:ts}` - an optional function that formats the output for the LLM. Set it to your own function or to a built-in formatter from the `ToModelOutput` object, exported from `vovk`:
   - `ToModelOutput.MCP` for MCP formatting.
   - `ToModelOutput.DEFAULT`, the default when `toModelOutput` isn't set.
@@ -178,7 +178,7 @@ const allTools = [...tools, sumNumbers];
 
 ## Vercel AI SDK Example
 
-This example is a Vercel AI SDK chat that derives its tools from `UserController`. [View live example on examples.vovk.dev »](https://examples.vovk.dev/ai-sdk)
+This example is a Vercel AI SDK chat that derives its tools from `UserController`. The Realtime Kanban app runs a fuller version of it: [source on GitHub »](https://github.com/finom/vovk/blob/main/examples/realtime-kanban/src/modules/ai/ai-sdk-controller.ts)
 
 First, create an empty controller. The command also updates the root `route.ts` file.
 
