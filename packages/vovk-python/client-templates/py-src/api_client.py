@@ -191,24 +191,30 @@ class ApiClient:
         Args:
             url: The URL to make the request to
             http_method: HTTP method (GET, POST, PUT, DELETE, etc.)
-            body: Optional dictionary to send as JSON in the request body
+            body: The body. A JSON value goes out as JSON. A dict goes out as a form when the procedure takes a form,
+                unless it also takes JSON and no files come with it. A str with body_content_type goes out as that
+                text, and bytes go out as they are.
             query: Optional dictionary to convert to query parameters
             params: Optional dictionary to replace URL parameters
             headers: Optional dictionary of custom headers
+            files: Files of a multipart body, as requests takes them: a dict of field name to file, or a list of
+                (field name, file) pairs
             validation: Optional dictionary with JSON schemas to validate body, query, and params
             body_content_type: Optional content type for the body (e.g. 'text/plain', 'application/octet-stream')
-            disable_client_validation: Whether to disable validation entirely
-            
+            disable_client_validation: Whether to skip client-side validation
+
         Returns:
-            If the response is JSON, returns the parsed JSON.
+            If the response is JSON, returns the parsed JSON, or None for an empty body.
             If the response is JSONL, returns a generator yielding each parsed line.
             If the response is text/* or names a charset, returns the text as str, UTF-8 unless the charset says otherwise.
             Otherwise, as for a file, returns the bytes.
-            
+
         Raises:
-            ValueError: If validation fails or required parameters are missing
+            jsonschema.exceptions.ValidationError: If client-side validation fails
+            ValueError: If the body, query or params the schema asks for is missing, or a path parameter is "", "."
+                or ".."
             HttpException: If the response status is 400 or higher
-            requests.RequestException: If the request fails
+            requests.RequestException: If the request fails, as on a timeout or a refused connection
         """
         if not url:
             raise ValueError("URL is required for making an API request")
