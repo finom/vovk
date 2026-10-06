@@ -58,10 +58,9 @@ export function getOutputConfigs(
   ];
 }
 
-// the templates warned about a client without an origin, once per run, as vovk dev generates again and again
+// a template is warned about once per process, as vovk dev generates again and again
 const templatesWithoutOrigin = new Set<string>();
 
-// a Python or Rust package goes by py_name or rs_name when the config sets it
 const getUnderscoredPackageName = (packageJson: VovkPackageJson, packageNameKey?: 'py_name' | 'rs_name') =>
   (packageNameKey && packageJson[packageNameKey]) || toUnderscoredPackageName(packageJson.name);
 
@@ -107,7 +106,6 @@ export async function renderOneClientFile({
   fullSchema,
   prettifyClient,
   segmentName,
-  // imports,
   templateContent,
   matterResult: { data, content },
   openAPIObject,
@@ -137,7 +135,6 @@ export async function renderOneClientFile({
   fullSchema: VovkSchema;
   prettifyClient: boolean;
   segmentName: string | null; // null for composed client
-  // imports: ClientImports;
   templateContent: string;
   matterResult: {
     data: {
@@ -205,7 +202,7 @@ export async function renderOneClientFile({
 
   // Data for the EJS templates:
   const t = {
-    _, // lodash
+    _,
     hasMixins,
     isVovkProject,
     package: packageJson,
@@ -271,7 +268,6 @@ export async function renderOneClientFile({
           : null;
         const segmentConfig = {
           ...config.outputConfig.segments?.[sName],
-          // ...templateDef.outputConfig?.segments?.[sName],
         };
         const { origin: segmentConfigOrigin, rootEntry: segmentConfigRootEntry, segmentNameOverride } = segmentConfig;
 
@@ -317,7 +313,6 @@ export async function renderOneClientFile({
     }
   }
 
-  // Render the template
   let rendered = templateFilePath.endsWith('.ejs')
     ? await ejs.render(
         content,
@@ -329,7 +324,6 @@ export async function renderOneClientFile({
       )
     : templateContent;
 
-  // Optionally prettify
   if (prettifyClient) {
     await warnIfPrettierMissing(log);
     rendered = await prettify(rendered, outPath);

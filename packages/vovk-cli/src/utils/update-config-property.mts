@@ -39,7 +39,6 @@ function findPropertyAssignment(objectNode: ObjectLiteralExpression, key: string
   for (const prop of properties) {
     if (Node.isPropertyAssignment(prop)) {
       const name = prop.getName();
-      // Handle both quoted and unquoted property names
       const unquotedName = name.replace(/^['"]|['"]$/g, '');
       if (unquotedName === key || name === key) {
         return prop;
@@ -69,20 +68,17 @@ function mutateConfig(sourceFile: import('ts-morph').SourceFile, pathToProperty:
     const property = findPropertyAssignment(currentNode, key);
 
     if (!property) {
-      // Property does not exist
       if (newValue === undefined) {
         // Nothing to remove
         return sourceFile.getFullText();
       }
 
       if (isLastKey) {
-        // Last key - add the final value
         currentNode.addPropertyAssignment({
           name: key,
           initializer: (writer) => writeInitializer(writer, newValue),
         });
       } else {
-        // Need to create nested object
         const newObjectAssignment = currentNode.addPropertyAssignment({
           name: key,
           initializer: '{}',
@@ -90,18 +86,15 @@ function mutateConfig(sourceFile: import('ts-morph').SourceFile, pathToProperty:
         currentNode = newObjectAssignment.getInitializerIfKindOrThrow(SyntaxKind.ObjectLiteralExpression);
       }
     } else {
-      // Property exists
       const propInitializer = property.getInitializer();
 
       if (isLastKey) {
-        // Last key - update or remove the value
         if (newValue === undefined) {
           property.remove();
         } else {
           property.setInitializer((writer) => writeInitializer(writer, newValue));
         }
       } else {
-        // Need to go deeper into existing object
         if (propInitializer && Node.isObjectLiteralExpression(propInitializer)) {
           currentNode = propInitializer;
         } else {

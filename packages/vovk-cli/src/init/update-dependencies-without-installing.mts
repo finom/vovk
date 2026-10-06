@@ -6,10 +6,10 @@ import type { InitOptions } from '../types.mjs';
 import type { getLogger } from '../utils/get-logger.mjs';
 import { getNPMPackageMetadata } from '../utils/get-npm-package-metadata.mjs';
 
-/** Root of the monorepo packages directory (…/packages) resolved from the compiled CLI location (dist/init/). */
+// the monorepo's packages/ folder, seen from the compiled file in dist/init/
 const packagesRoot = path.resolve(import.meta.dirname, '../../..');
 
-/** Vovk package names that have a matching local directory under packages/. */
+// vovk's own packages and their folders in packages/
 const localPackageDirs: Record<string, string> = {
   vovk: 'vovk',
   'vovk-cli': 'vovk-cli',
@@ -73,7 +73,6 @@ async function getWantedRange({
   log: ReturnType<typeof getLogger>;
   dir: string;
 }) {
-  // In test mode, use file: paths for local vovk packages
   if (process.env.NODE_ENV === 'test' && name in localPackageDirs) {
     const rel = path.relative(dir, path.join(packagesRoot, localPackageDirs[name]));
     return { range: `file:${rel}`, reason: 'the packages of this repository' };

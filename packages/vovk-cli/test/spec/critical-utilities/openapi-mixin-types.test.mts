@@ -118,9 +118,8 @@ await describe('OpenAPI mixin names', async () => {
   });
 });
 
-// SEC-02: openAPIToVovkSchema strips `x-tsType` from a third-party spec, but compileJSONSchemaToTypeScriptType
-// also honors a plain `tsType` key and emits it verbatim as the type. A spec can supply `tsType` to inject
-// arbitrary TypeScript into the generated mixins.d.ts (declare global, module augmentation, a weakened type).
+// openAPIToVovkSchema strips `x-tsType` from a third-party spec; a plain `tsType` must not reach the types either,
+// or a spec could put any TypeScript into mixins.d.ts
 await describe('OpenAPI mixin with an untrusted tsType', async () => {
   // a balanced payload: it stays valid TS so the client still generates, and declares a type the host controls
   const payload = 'string;\n      export type InjectedBySpecHost = { pwned: true };\n      export type _Tail = 0';

@@ -278,8 +278,8 @@ export class VovkDev {
       .on('change', () => void handle())
       .on('unlink', () => void handle())
       .on('ready', () => {
+        // this watcher fires ready twice
         if (isReady) return;
-        // for some reason this watcher triggers ready event twice
         log.debug('Config files watcher is ready');
         isReady = true;
       })
@@ -344,7 +344,7 @@ export class VovkDev {
       `Starting segments and modules watcher. Detected initial segments: ${JSON.stringify(this.#segments.map((s) => s.segmentName))}.`
     );
 
-    // automatically watches segments and modules
+    // also watches segments and modules
     this.#watchConfig(callback);
   }
 
@@ -630,7 +630,6 @@ export class VovkDev {
     const MAX_ATTEMPTS = 5;
     const DELAY = 5000;
 
-    // Request schema every segment in 5 seconds in order to update schema on start
     setTimeout(() => {
       for (const { segmentName } of this.#segments) {
         let attempts = 0;

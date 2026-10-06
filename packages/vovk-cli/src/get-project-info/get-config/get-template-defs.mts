@@ -2,19 +2,15 @@ import type { VovkStrictConfig } from 'vovk/internal';
 
 // const object instead of enum, node 26 runs ts with erasable syntax only
 export const BuiltInTemplateName = {
-  // ts
   tsBase: 'tsBase',
   ts: 'ts',
 
-  // schema
   schemaTs: 'schemaTs',
   schemaJson: 'schemaJson',
 
-  // openapi
   openapiTs: 'openapiTs',
   openapiJson: 'openapiJson',
 
-  // misc
   readme: 'readme',
   packageJson: 'packageJson',
   mixins: 'mixins',
@@ -49,7 +45,7 @@ export function getTemplateDefs(
       templatePath: 'vovk-cli/client-templates/ts-base/',
       requires: {
         [BuiltInTemplateName.schemaTs]: './',
-        [BuiltInTemplateName.mixins]: './', // used conditionally if OpenAPI mixins are used
+        [BuiltInTemplateName.mixins]: './', // rendered only when there are OpenAPI mixins
       },
     },
     [BuiltInTemplateName.ts]: {
@@ -144,7 +140,7 @@ export function getTemplateDefs(
             ...builtIn.outputConfig,
             ...templateDef.outputConfig,
           },
-          // 'requires' and other props will be overridden
+          // the other keys, such as requires, are replaced, not merged
         };
       }
     } else {

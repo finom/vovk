@@ -9,7 +9,6 @@ let cachedPromise: Promise<PackageJson> | undefined;
 export function getPackageJson(cwd: string, log: ProjectInfo['log']): Promise<PackageJson> {
   const pkgPath = path.join(cwd, 'package.json');
 
-  // If we have a cached promise, return it
   if (cachedPromise) {
     return cachedPromise;
   }

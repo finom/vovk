@@ -22,7 +22,7 @@ export function capitalize(str: string): string {
 }
 
 interface GenerateFnNameOptions {
-  /** Segments to strip out (e.g. ['api','v1']) */
+  // path segments to leave out, such as 'api' or 'v1'
   ignoreSegments?: string[];
 }
 
@@ -33,9 +33,8 @@ const DEFAULT_OPTIONS: GenerateFnNameOptions = {
 // letters and digits only, so the name is an identifier in TypeScript, Python and Rust
 const toWords = (text: string) => text.split(/[^\p{L}\p{Nd}]+/u).filter(Boolean);
 
-// HTTP method + OpenAPI path to a camelCased fn name, e.g. GET /users -> "listUsers",
-// GET /users/{id} -> "getUsersById", PATCH /users/{userId}/profile -> "patchUsersProfileByUserId",
-// DELETE /v1/api/orders/{orderId} -> "deleteV1OrdersByOrderId", GET /files/{name}.json -> "getFilesJsonByName"
+// GET /users -> listUsers, GET /users/{id} -> getUsersById, PATCH /users/{userId}/profile -> patchUsersProfileByUserId,
+// DELETE /v1/api/orders/{orderId} -> deleteV1OrdersByOrderId, GET /files/{name}.json -> getFilesJsonByName
 export function generateFnName(method: HttpMethod, rawPath: string, opts: GenerateFnNameOptions = {}): string {
   const { ignoreSegments } = {
     ...DEFAULT_OPTIONS,

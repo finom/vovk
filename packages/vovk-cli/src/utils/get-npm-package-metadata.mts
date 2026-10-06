@@ -1,6 +1,3 @@
-/**
- * Interface representing the structure of NPM package metadata.
- */
 export interface NpmPackageMetadata {
   'dist-tags': {
     [tag: string]: string;

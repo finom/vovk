@@ -112,7 +112,6 @@ export async function bundle({
       });
     }
   } finally {
-    // clean up the prebundle dir even when generation or build fails
     if (!keepPrebundleDir) {
       await fs.rm(prebundleOutDirAbsolute, { recursive: true, force: true });
       log.debug(

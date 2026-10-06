@@ -11,9 +11,8 @@ type PruneContext = {
   skipped: string[];
 };
 
-// removes all dirs in folderPath that aren't in allowedDirs, supports nested paths like 'foo/bar/baz'
-// generatedRelPaths guards user files: a dir holding anything the generator wouldn't write is kept,
-// returns the dirs that were kept for that reason
+// allowedDirs may be nested, like 'foo/bar/baz'. With generatedRelPaths, a dir holding anything
+// the generator wouldn't write is kept, and the result lists those dirs
 export async function removeUnlistedDirectories(
   folderPath: string,
   allowedDirs: string[],
@@ -30,14 +29,12 @@ export async function removeUnlistedDirectories(
 ): Promise<string[]> {
   const context: PruneContext = {
     basePath: folderPath,
-    // Normalize all allowed paths to use the system-specific separator
     allowedDirs: allowedDirs.map((dir) => dir.split('/').join(path.sep)),
     generated: generatedRelPaths && { relPaths: generatedRelPaths, unstampedRelPaths },
     excludedDirs: excludedDirs.map((dir) => path.resolve(dir)),
     skipped: [],
   };
 
-  // Process the directory tree recursively
   await processDirectory(context, '');
 
   return context.skipped;
@@ -200,47 +197,34 @@ async function findAllowedAlias({ basePath, allowedDirs }: PruneContext, relativ
   return null;
 }
 
-// recursively decides which dirs to keep or remove
 async function processDirectory(context: PruneContext, relativePath: string): Promise<void> {
   const { basePath, allowedDirs, generated, excludedDirs, skipped } = context;
   const currentDirPath = path.join(basePath, relativePath);
 
-  // check if the current path is a directory
   const type = await getFileSystemEntryType(currentDirPath);
   if (type !== FileSystemEntryType.DIRECTORY) {
-    // If it's not a directory, return early
     return;
   }
 
   if (relativePath && !allowedDirs.includes(relativePath)) await removeOwnGeneratedFiles(context, relativePath);
 
-  // Read all entries in the current directory
   const entries = await fs.readdir(currentDirPath, { withFileTypes: true }).catch(() => []);
 
-  // Process only directories
   const dirEntries = entries.filter((entry) => entry.isDirectory());
 
-  // Check if this directory or any of its subdirectories should be kept
   const isAllowed = (dir: string) =>
     allowedDirs.some((allowedDir) => {
-      // Direct match
       if (allowedDir === dir) return true;
-
-      // Check if it's a parent path of an allowed directory
-      // e.g. "foo" is a parent of "foo/bar/baz"
       return allowedDir.startsWith(dir + path.sep);
     });
 
-  // Check each directory
   for (const dir of dirEntries) {
-    // Calculate the new relative path
     let newRelativePath = relativePath ? path.join(relativePath, dir.name) : dir.name;
 
     if (!isAllowed(newRelativePath))
       newRelativePath = (await findAllowedAlias(context, newRelativePath)) ?? newRelativePath;
 
     if (isAllowed(newRelativePath)) {
-      // Recursively process this directory's contents
       await processDirectory(context, newRelativePath);
     } else {
       const fullPath = path.join(basePath, newRelativePath);
@@ -255,13 +239,12 @@ async function processDirectory(context: PruneContext, relativePath: string): Pr
 
         const origin = await getDirectoryOrigin(fullPath, generated.relPaths, generated.unstampedRelPaths);
         // an empty directory is left alone silently, one holding anything else is reported,
-        // unless it sits in a segment folder, as what a build leaves there does
+        // unless it sits in a segment folder, where a build may leave output
         const isInSegment = allowedDirs.some((allowedDir) => newRelativePath.startsWith(allowedDir + path.sep));
         if (origin === 'foreign' && !isInSegment) skipped.push(fullPath);
         if (origin !== 'generated') continue;
       }
 
-      // Remove this directory since it's not in the allowed list
       await fs.rm(fullPath, { recursive: true, force: true });
     }
   }

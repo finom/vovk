@@ -3,7 +3,7 @@ import path from 'node:path';
 import { getRelativeSrcRoot } from '../get-project-info/get-config/get-relative-src-root.mjs';
 import { toPosixPath } from '../utils/to-import-path.mjs';
 
-/** Adds the default composed client outDir to .gitignore. Returns the added entry or null if already present. */
+// adds the default composed client folder and returns the entry, or null when .gitignore has it
 export async function updateGitignore(root: string) {
   const srcRoot = await getRelativeSrcRoot({ cwd: root });
   // git reads "\" in .gitignore as an escape, so the entry keeps forward slashes on Windows

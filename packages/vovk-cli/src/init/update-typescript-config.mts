@@ -9,7 +9,6 @@ export async function updateTypeScriptConfig(root: string, compilerOptions: { ex
 
   let updatedContent = tsconfigContent;
 
-  // Apply each compiler option
   for (const [key, value] of Object.entries(compilerOptions)) {
     const edits = jsonc.modify(updatedContent, ['compilerOptions', key], value, {
       formattingOptions: {},
@@ -17,7 +16,6 @@ export async function updateTypeScriptConfig(root: string, compilerOptions: { ex
     updatedContent = jsonc.applyEdits(updatedContent, edits);
   }
 
-  // Prettify the final content
   updatedContent = await prettify(updatedContent, tsconfigPath);
 
   await fs.writeFile(tsconfigPath, updatedContent, 'utf8');

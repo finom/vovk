@@ -6,7 +6,7 @@ import type { VovkRequest, VovkStreamAsyncIterable } from 'vovk';
 
 <% const { applyComponentsSchemas, toTypeName, toTypeNames } = t.imports['vovk/internal'];
 const mixins = Object.values(t.schema.segments).filter((segment) => segment.emitSchema && segment.segmentType === 'mixin');
-// the type names vovk gives the x-tsType of a component ref, and one namespace per handler
+// one namespace per handler, named the way vovk names a component's x-tsType
 const handlerNamespaces = new Map(
   mixins.flatMap((segment) =>
     Object.values(segment.controllers).map((controllerSchema) => [controllerSchema, toTypeNames(Object.keys(controllerSchema.handlers))])

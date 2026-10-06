@@ -14,7 +14,7 @@ export function getDevScriptMode(pkgJson: NPMCliPackageJson, updateScriptsMode: 
 export function getDevScript(pkgJson: NPMCliPackageJson, updateScriptsMode: UpdateScriptsMode) {
   const dev = pkgJson.content.scripts?.dev ?? 'next dev';
   if (dev.includes('vovk dev')) {
-    return dev; // Already has vovk dev
+    return dev;
   }
   const nextDevFlags = dev.replace('next dev', '').trim();
   // vovk dev requests the schema on PORT, next dev listens on -p when it's given
