@@ -41,7 +41,8 @@ const segmentSchema = (segmentName: string, rpcModuleName: string) => ({
   controllers: { [rpcModuleName]: { ...userSegmentSchema.controllers.UserRPC, rpcModuleName } },
 });
 
-const tscPath = createRequire(import.meta.url).resolve('typescript/bin/tsc');
+// TypeScript 7 exports no `bin/tsc`, so the path goes through its package.json
+const tscPath = path.join(path.dirname(createRequire(import.meta.url).resolve('typescript/package.json')), 'bin/tsc');
 // the errors tsc reports for the project's own tsconfig.json, empty when it type-checks
 const typecheckProject = (cwd: string) =>
   promisify(execFile)(process.execPath, [tscPath, '--noEmit', '-p', 'tsconfig.json'], { cwd }).then(
