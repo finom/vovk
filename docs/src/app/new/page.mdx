@@ -172,13 +172,16 @@ The metadata fields:
 The EJS template gets these variables in the `t` object:
 
 - `t.defaultOutDir: string` — the default output folder of the module.
+- `t.relativePathToSourceRoot: string` — the path from `t.defaultOutDir` to the source root (the `src` folder, or the project root without one), such as `../..`.
 - `t.config: VovkConfig` — the Vovk.ts config.
 - `t.segmentName: string` — the segment name (an empty string for the root segment).
 - `t.withService: boolean` — whether a service is created together with the controller.
 - `t.nodeNextResolutionExt: { ts: string; js: string; mjs: string; cjs: string }` — the import file extensions for the `moduleResolution` of `tsconfig.json`, or for `module` when `moduleResolution` isn't set. For `'node16'`, `'node18'`, `'node20'` and `'nodenext'`, the keys hold `.ts`/`.js`/`.mjs`/`.cjs`; in other cases, empty strings. `ts` is `.ts` only with `allowImportingTsExtensions` or `rewriteRelativeImportExtensions`; otherwise it's `.js`, the name TypeScript resolves to the `.ts` file.
+- `t.moduleName: string` — the module name as given, without the segment, such as `userCart`.
 - `t.TheThing`, `t.TheThings` — the module name and its plural in PascalCase, such as `UserCart` and `UserCarts`.
 - `t.theThing`, `t.theThings` — the module name and its plural in camelCase, such as `userCart` and `userCarts`.
 - `t['the-thing']`, `t['the-things']` — the module name and its plural in kebab-case, such as `user-cart` and `user-carts`.
+- `t.the_thing`, `t.the_things` — the module name and its plural in snake_case, such as `user_cart` and `user_carts`.
 - `t.THE_THING`, `t.THE_THINGS` — the module name and its plural in SCREAMING_SNAKE_CASE, such as `USER_CART` and `USER_CARTS`.
 - `t._` — the Lodash library.
 - `t.pluralize` — the `pluralize` function of the `pluralize` package.
