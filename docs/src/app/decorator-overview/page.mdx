@@ -1,10 +1,10 @@
 # Decorators Overview
 
-Vovk.ts uses decorators to attach metadata and behavior to controllers and their procedures. This page lists the built-in decorators and shows how to write your own.
+Vovk.ts uses decorators to add metadata and behavior to controllers and their procedures.
 
 ## HTTP Method Decorators
 
-HTTP method decorators define the HTTP method and path for a procedure. They are the only **required** decorator for a procedure to be reachable via HTTP.
+An HTTP method decorator sets the HTTP method and path of a procedure. It is the only decorator a procedure **requires** to be reachable over HTTP.
 
 | Decorator | HTTP Method |
 |-----------|-------------|
@@ -16,7 +16,7 @@ HTTP method decorators define the HTTP method and path for a procedure. They are
 | `@head()` | HEAD |
 | `@options()` | OPTIONS |
 
-Each accepts an optional path and options object:
+Each takes an optional path and an optional options object:
 
 ```ts showLineNumbers copy
 import { get, prefix } from 'vovk';
@@ -32,13 +32,13 @@ export default class UserController {
 
 **Options:**
 
-- `cors?: boolean` — adds CORS headers and handles OPTIONS automatically, for the methods of that path that set it.
+- `cors?: boolean` — adds CORS headers and answers OPTIONS, for the methods of that path that set it.
 - `headers?: Record<string, string>` — custom response headers. See [Response Headers](/response#headers) for dynamic headers.
-- `staticParams?: Record<string, string>[]` — (`@get` only) static params for `generateStaticParams()`. See [Static Segment](/static-segment) for details.
+- `staticParams?: Record<string, string>[]` — `@get` only: static params for `generateStaticParams()`. See [Static Segment](/static-segment).
 
 ### Auto-Generated Paths
 
-Every HTTP decorator provides an `.auto()` method that derives the path from the method name in kebab-case:
+Every HTTP decorator has an `.auto()` method that makes the path from the method name, in kebab-case:
 
 ```ts showLineNumbers copy
 export default class UserController {
@@ -50,25 +50,9 @@ export default class UserController {
 }
 ```
 
-## Class Decorators
+## `@operation`
 
-### `@prefix`
-
-Prepends a sub-path to all endpoints in a controller:
-
-```ts showLineNumbers copy
-import { prefix, get } from 'vovk';
-
-@prefix('users')
-export default class UserController {
-  @get('{id}') // => GET /api/users/{id}
-  static getUser() { /* ... */ }
-}
-```
-
-### `@operation`
-
-Attaches [OpenAPI](/openapi) metadata to a procedure:
+Adds [OpenAPI](/openapi) metadata to a procedure:
 
 ```ts showLineNumbers copy
 import { operation, get } from 'vovk';
@@ -80,11 +64,27 @@ export default class UserController {
 }
 ```
 
-Also provides `@operation.error()` for documenting error responses and `@operation.tool()` for [AI tool](/tools) metadata.
+`@operation.error()` documents error responses, and `@operation.tool()` sets [AI tool](/tools) metadata.
+
+## Class Decorators
+
+### `@prefix`
+
+Adds a path in front of every endpoint of a controller:
+
+```ts showLineNumbers copy
+import { prefix, get } from 'vovk';
+
+@prefix('users')
+export default class UserController {
+  @get('{id}') // => GET /api/users/{id}
+  static getUser() { /* ... */ }
+}
+```
 
 ### `@cloneControllerMetadata`
 
-Copies all metadata from a parent controller to a child class, useful for reusing a controller in multiple [segments](/segment):
+Copies all metadata from a parent controller to a child class. Use it to reuse a controller in several [segments](/segment):
 
 ```ts showLineNumbers copy
 import { prefix, cloneControllerMetadata } from 'vovk';
@@ -97,7 +97,7 @@ export default class UserControllerV2 extends UserController {}
 
 ## Custom Decorators
 
-Use `createDecorator` to build custom middleware-style decorators for cross-cutting concerns like authentication, logging, or caching. See the [Custom Decorators](/decorator) page for full API documentation and the [Decorator Examples](/decorator-examples) page for practical patterns.
+`createDecorator` builds your own middleware-style decorators for concerns that many procedures share, such as authentication, logging or caching. See the [Custom Decorators](/decorator) page for the API and the [Decorator Examples](/decorator-examples) page for common patterns.
 
 ```ts showLineNumbers copy
 import { createDecorator, get, HttpException, HttpStatus, type VovkRequest } from 'vovk';

@@ -1,9 +1,9 @@
 
 # Content Type
 
-The `contentType` option on a `procedure` controls how the request body is typed on the client, how it is parsed on the server, and which `Content-Type` headers are accepted. When `contentType` is set, the server returns a **415 Unsupported Media Type** error if the incoming request doesn't carry a matching `Content-Type` header.
+The `contentType` option of `procedure` sets how the client types the request body, how the server parses it, and which `Content-Type` headers the server accepts. When `contentType` is set, a request without a matching `Content-Type` header gets a **415 Unsupported Media Type** error.
 
-The following table summarises how each content type family maps to client-side `body` typing and server-side `req.vovk.body()` return type:
+How each content type family maps to the client's `body` type and to what `req.vovk.body()` returns:
 
 | Content Type | Client `body` type | `req.vovk.body()` return type |
 |---|---|---|
@@ -15,13 +15,13 @@ The following table summarises how each content type family maps to client-side 
 
 > [!NOTE]
 >
-> Standard `Request` methods like `req.json()`, `req.text()`, `req.blob()`, and `req.formData()` remain available and work as usual—`contentType` only affects the typed helper on `req.vovk.body()`.
+> The standard `Request` methods, such as `req.json()`, `req.text()`, `req.blob()` and `req.formData()`, work as usual. `contentType` only affects the typed `req.vovk.body()` helper.
 
-Wildcard patterns such as `'video/*'{:ts}`, `'image/*'{:ts}`, or `'*/*'{:ts}` are supported and match any subtype within that family.
+Wildcard patterns such as `'video/*'{:ts}`, `'image/*'{:ts}` or `'*/*'{:ts}` match any subtype of their family.
 
 ## JSON (default)
 
-When no `contentType` is specified, or when it is set to `'application/json'`, the body is typed as the schema-inferred type and parsed as JSON.
+Without `contentType`, or with `'application/json'`, the body has the type the schema infers and is parsed as JSON.
 
 ```ts showLineNumbers copy
 import { z } from 'zod';
@@ -44,7 +44,7 @@ export default class UserController {
 
 ## Form Data
 
-To accept form data requests, set `contentType` to `'multipart/form-data'`.
+To accept form data, set `contentType` to `'multipart/form-data'`.
 
 ```ts showLineNumbers copy {8}
 import { z } from 'zod';
@@ -67,7 +67,7 @@ export default class UserController {
 }
 ```
 
-The RPC method's `body` type is inferred as `TBody | FormData | Blob{:ts}`, where `TBody` is the type inferred from the validation schema. An object is validated as an object, then converted to `FormData` on the client side: `null` and `undefined` fields are left out, an array becomes one entry per item, a `Date{:ts}` is sent as an ISO string and another object as JSON. When the procedure also takes `application/json`, an object is sent as JSON, unless a field holds a file.
+The RPC method's `body` type is `TBody | FormData | Blob{:ts}`, where `TBody` comes from the validation schema. The client validates an object as an object, then converts it to `FormData`. It leaves out `null` and `undefined` fields, and sends an array as one entry per item, a `Date{:ts}` as an ISO string and any other object as JSON. When the procedure also takes `application/json`, an object is sent as JSON, unless a field holds a file.
 
 ```ts showLineNumbers copy
 import { UserRPC } from '@/client';
@@ -81,9 +81,9 @@ await UserRPC.createUser({
 });
 ```
 
-On the server-side `req.vovk.body()` automatically parses the form data into a plain object (see [`req.vovk` Interface](/req-vovk)). You can also access the raw `FormData{:ts}` instance via `req.formData()`.
+On the server, `req.vovk.body()` parses the form data into a plain object (see [`req.vovk` Interface](/req-vovk)).
 
-If the form data can contain one or more values for the same key, use a union of the value type and an array of the value type, because `FormData` doesn't distinguish between single and multiple values.
+If a key can have one or more values, use a union of the value type and an array of it: `FormData` doesn't tell one value from several.
 
 ```ts showLineNumbers copy {9}
 import { z } from 'zod';
@@ -103,7 +103,7 @@ export default class UserController {
 }
 ```
 
-The same recommendation applies to files:
+The same goes for files:
 
 ```ts showLineNumbers copy {9}
 import { z } from 'zod';
@@ -123,11 +123,11 @@ export default class UserController {
 }
 ```
 
-Note that client-side validation does not fully support the OpenAPI-compatible `format: "binary"`, and file size, type, etc., are not validated on the client side.
+Client-side validation doesn't fully support the OpenAPI `format: "binary"`, and it doesn't check file size, type and so on.
 
 ## URL-Encoded Form Data
 
-Set `contentType` to `'application/x-www-form-urlencoded'` to accept URL-encoded form submissions. The body is parsed the same way as `multipart/form-data`, but the client `body` type also accepts `URLSearchParams{:ts}`. When the procedure doesn't also accept `multipart/form-data`, an object body, or a `FormData{:ts}` without files, is sent as `URLSearchParams{:ts}`.
+Set `contentType` to `'application/x-www-form-urlencoded'` to accept URL-encoded forms. The server parses the body as it parses `multipart/form-data`, and the client `body` type also takes `URLSearchParams{:ts}`. When the procedure doesn't also take `multipart/form-data`, the client sends an object body, or a `FormData{:ts}` without files, as `URLSearchParams{:ts}`.
 
 ```ts showLineNumbers copy {7}
 import { z } from 'zod';
@@ -150,7 +150,7 @@ export default class UserController {
 
 ## Text
 
-For text-based content types (`text/*`, known text-like application types such as `application/xml` or `application/yaml`, and suffix patterns like `*+xml`, `*+text`, `*+yaml`, `*+json-seq`), the body is parsed as a `string`.
+Text content types are parsed as a `string`: `text/*`, known text-like application types such as `application/xml` or `application/yaml`, and the suffixes `*+xml`, `*+text`, `*+yaml` and `*+json-seq`.
 
 The client sends a string body as the text type the procedure declares. A string body to a procedure that takes JSON, such as one with `body: z.string(){:ts}`, is sent as a JSON value.
 
@@ -170,9 +170,9 @@ export default class UserController {
 
 ## Binary / File Uploads
 
-For any content type that doesn't fall into the above categories—such as `application/octet-stream`, `image/*`, `video/*`, `application/pdf`, etc.—the body is parsed into a `File{:ts}` on the server. On the client side, the `body` accepts `File | ArrayBuffer | Uint8Array | Blob{:ts}`.
+Any other content type, such as `application/octet-stream`, `image/*`, `video/*` or `application/pdf`, is parsed into a `File{:ts}` on the server. On the client, `body` takes `File | ArrayBuffer | Uint8Array | Blob{:ts}`.
 
-Bytes without a type, such as an `ArrayBuffer{:ts}`, a `Uint8Array{:ts}` or a `Blob{:ts}` with an empty `type`, are sent as the first declared type that isn't JSON, a form or a wildcard, such as `image/png`, else as a wildcard other than `*/*`, such as `image/*`. Without either, they are sent as `application/octet-stream` to a procedure that takes any type (`*/*`), and otherwise as the JSON or URL-encoded type it declares. A `File{:ts}` or a typed `Blob{:ts}` is sent as its own type, and the server refuses a type the procedure doesn't declare, unless it declares `application/octet-stream`, which takes any file.
+Bytes without a type, such as an `ArrayBuffer{:ts}`, a `Uint8Array{:ts}` or a `Blob{:ts}` with an empty `type`, are sent as the first declared type that isn't JSON, a form or a wildcard, such as `image/png`. If there is none, they are sent as a wildcard other than `*/*`, such as `image/*`. Without either, they are sent as `application/octet-stream` to a procedure that takes any type (`*/*`), and otherwise as the JSON or URL-encoded type it declares. A `File{:ts}` or a typed `Blob{:ts}` is sent as its own type, and the server refuses a type the procedure doesn't declare, unless it declares `application/octet-stream`, which takes any file.
 
 The server names the `File{:ts}` after the request's `Content-Disposition` header, reading `filename*` before `filename`, and calls it `file` without one. The TypeScript client sends that header for a `File{:ts}` body. The name is client input, as is the name of a file in form data: never use it as a path.
 
@@ -203,7 +203,7 @@ await UserRPC.uploadImage({
 
 ## Multiple Content Types
 
-`contentType` accepts an array of strings to allow multiple content types. The body type becomes a union of all corresponding types.
+`contentType` takes an array to allow several content types. The body type is then the union of their types.
 
 ```ts showLineNumbers copy {7}
 import { z } from 'zod';

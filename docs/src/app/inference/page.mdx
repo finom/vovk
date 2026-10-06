@@ -1,6 +1,6 @@
 # Type Inference
 
-Input and output inference is provided by universal types that work for both RPC modules and controller procedures.
+These types infer the input and output of both RPC modules and controller procedures.
 
 Client-side inference:
 
@@ -47,9 +47,9 @@ type Yield = VovkYieldType<typeof StreamController.streamTokens>;
 
 ## Input Inference
 
-Source types for `body`, `query`, and `params` are defined via `VovkRequest<TBody, TQuery, ?TParams>{:ts}`, which specifies the type of the `req` argument in procedures. In other words, both raw and validated method definitions determine the input types.
+The types of `body`, `query` and `params` come from `VovkRequest<TBody, TQuery, ?TParams>{:ts}`, the type of the procedure's `req` argument. So both raw and validated methods set the input types.
 
-Raw method definition with `params` as a generic argument:
+A raw method with `params` as a type argument:
 
 ```ts showLineNumbers copy
 import type { VovkRequest } from 'vovk';
@@ -62,7 +62,7 @@ export default class UserController {
 }
 ```
 
-Raw method definition with `params` as a separate argument:
+A raw method with `params` as a separate argument:
 
 ```ts showLineNumbers copy
 import type { VovkRequest } from 'vovk';
@@ -75,7 +75,7 @@ export default class UserController {
 }
 ```
 
-Validated [procedures](/procedure) infer input types automatically:
+Validated [procedures](/procedure) infer the input types from their schemas:
 
 ```ts showLineNumbers copy
 import { procedure } from 'vovk';
@@ -93,7 +93,7 @@ export default class UserController {
 }
 ```
 
-All three cases result the same RPC method:
+All three give the same RPC method:
 
 ```ts showLineNumbers copy
 import { UserRPC } from '@/client';
@@ -105,7 +105,7 @@ await UserRPC.updateUser({
 });
 ```
 
-And they allow to infer input types identically:
+And the same inferred input types:
 
 ```ts showLineNumbers copy
 import type { VovkBody, VovkQuery, VovkParams } from 'vovk';
@@ -129,7 +129,7 @@ For a procedure, the RPC method and [`fn`](/fn) take what the schemas accept (th
 
 ## Combined Input Type
 
-`VovkInput<T>` extracts all three input types (`params`, `query`, `body`) into a single object.
+`VovkInput<T>` puts all three input types (`params`, `query`, `body`) in one object.
 
 ```ts showLineNumbers copy
 import type { VovkInput } from 'vovk';
@@ -139,7 +139,7 @@ type Input = VovkInput<typeof UserController.updateUser>;
 // { params: { param: string }; query: { id: string }; body: { email: string } }
 ```
 
-It works the same way with RPC modules:
+It works the same with RPC modules:
 
 ```ts showLineNumbers copy
 import type { VovkInput } from 'vovk';
@@ -151,7 +151,7 @@ type Input = VovkInput<typeof UserRPC.updateUser>;
 
 ## Output/Iteration Inference
 
-Output and iteration types are set only when using [procedure](/procedure) function.
+Only the [procedure](/procedure) function sets output and iteration types.
 
 For output:
 
@@ -205,7 +205,7 @@ type Iteration = VovkIteration<typeof StreamController.streamItems>; // { item: 
 
 ## Return/Yield Inference
 
-`VovkReturnType<T>` and `VovkYieldType<T>` infer the actual return or yield type of methods when input is not validated. These types cannot be used for self-references in services, as they cause “implicit any” TypeScript errors.
+`VovkReturnType<T>` and `VovkYieldType<T>` infer what a method actually returns or yields, for methods without validation. They can't be used for self-references in services: they cause “implicit any” TypeScript errors.
 
 ```ts showLineNumbers copy
 export default class UserController {
