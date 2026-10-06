@@ -59,7 +59,7 @@ export default class UserController {
 ```
 
 ```ts
-const user = await UserController.getUser.fn({ params: { id: '123' } });
+const user = await UserController.getUser.fn({ params: { id: '123e4567-e89b-12d3-a456-426614174000' } });
 ```
 
 Services hold the business logic. Plain classes, no decorators; their types come from the procedure:
@@ -91,7 +91,7 @@ export default class UserController {
 ```ts
 import { UserRPC, PetstoreAPI } from '@/client';
 
-const user = await UserRPC.getUser({ params: { id: '123' } });
+const user = await UserRPC.getUser({ params: { id: '123e4567-e89b-12d3-a456-426614174000' } });
 const pet = await PetstoreAPI.getPetById({ params: { petId: 1 } });
 ```
 
