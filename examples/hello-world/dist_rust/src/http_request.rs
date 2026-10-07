@@ -102,17 +102,30 @@ type ValidatorKey = (&'static str, &'static str, &'static str, &'static str);
 // each schema is compiled on its first use
 static VALIDATORS: Lazy<Mutex<HashMap<ValidatorKey, Arc<Validator>>>> = Lazy::new(|| Mutex::new(HashMap::new()));
 
+type ClientFactory = Arc<dyn Fn() -> Client + Send + Sync>;
+
+static CLIENT_FACTORY: Lazy<Mutex<(u64, Option<ClientFactory>)>> = Lazy::new(|| Mutex::new((0, None)));
+
+/// Sets how the calls build their `reqwest::Client`, for example with a timeout, a proxy or default headers:
+/// `set_client_factory(|| reqwest::Client::builder().timeout(Duration::from_secs(30)).build().unwrap())`.
+/// It is called again for each thread and tokio runtime the calls run on, and for the calls made after it is set.
+pub fn set_client_factory(factory: impl Fn() -> Client + Send + Sync + 'static) {
+    let mut slot = CLIENT_FACTORY.lock().unwrap_or_else(|e| e.into_inner());
+    *slot = (slot.0 + 1, Some(Arc::new(factory)));
+}
+
 thread_local! {
     // a pooled connection works only while the runtime that opened it runs, and a current-thread runtime runs only in
     // block_on: the thread keeps a client for the runtime it calls from and builds a new one when the runtime changes
-    static CLIENT: RefCell<Option<(tokio::runtime::Id, Client)>> = const { RefCell::new(None) };
+    static CLIENT: RefCell<Option<(tokio::runtime::Id, u64, Client)>> = const { RefCell::new(None) };
 }
 
 fn client() -> Client {
     let runtime = tokio::runtime::Handle::current().id();
+    let (version, factory) = CLIENT_FACTORY.lock().unwrap_or_else(|e| e.into_inner()).clone();
     CLIENT.with_borrow_mut(|slot| match slot {
-        Some((id, client)) if *id == runtime => client.clone(),
-        _ => slot.insert((runtime, Client::new())).1.clone(),
+        Some((id, built_with, client)) if *id == runtime && *built_with == version => client.clone(),
+        _ => slot.insert((runtime, version, factory.map_or_else(Client::new, |factory| factory()))).2.clone(),
     })
 }
 
@@ -177,11 +190,18 @@ fn is_unsafe_segment(value: &str) -> bool {
     rest.is_empty()
 }
 
-// a form field is text: null is left out, an array repeats its key and an object is sent as JSON
-fn to_form_fields(value: &Value) -> Result<Vec<(String, String)>, String> {
+// a form field is text: null is left out, an array repeats its key and an object is sent as JSON; a property with an
+// OpenAPI style goes in that style
+fn to_form_fields(value: &Value, styles: Option<&Value>) -> Result<Vec<(String, String)>, String> {
     let map = value.as_object().ok_or("A form body must be an object")?;
     let mut fields = Vec::new();
     for (key, value) in map {
+        if let Some(style) = styles.and_then(|styles| styles.get(key)) {
+            for field in styled_fields(key, value, Some(style)) {
+                fields.push((field.key, field.parts.join(field.delimiter)));
+            }
+            continue;
+        }
         let items = match value {
             Value::Array(items) => items.iter().collect(),
             other => vec![other],
@@ -199,6 +219,85 @@ fn to_form_fields(value: &Value) -> Result<Vec<(String, String)>, String> {
     Ok(fields)
 }
 
+// a field of an OpenAPI style: the key, its parts and what joins them
+struct StyledField {
+    key: String,
+    parts: Vec<String>,
+    delimiter: &'static str,
+}
+
+// null is left out, an array or an object is JSON
+fn style_part(value: &Value) -> Option<String> {
+    match value {
+        Value::Null => None,
+        Value::String(text) => Some(text.clone()),
+        Value::Number(number) => Some(number_to_string(number)),
+        other => Some(other.to_string()),
+    }
+}
+
+// deepObject: a bracket for every nested key, an array item by its index
+fn deep_fields(key: &str, value: &Value, fields: &mut Vec<StyledField>) {
+    match value {
+        Value::Object(map) => map.iter().for_each(|(k, v)| deep_fields(&format!("{}[{}]", key, k), v, fields)),
+        Value::Array(items) => items.iter().enumerate().for_each(|(i, v)| deep_fields(&format!("{}[{}]", key, i), v, fields)),
+        _ => fields.extend(style_part(value).map(|part| StyledField { key: key.to_string(), parts: vec![part], delimiter: "" })),
+    }
+}
+
+// a query parameter or a form property in the style and explode an OpenAPI document declares, as the TypeScript client
+// sends it; without either, form and exploded
+fn styled_fields(name: &str, value: &Value, style: Option<&Value>) -> Vec<StyledField> {
+    let style_name = style.and_then(|s| s.get("style")).and_then(Value::as_str).unwrap_or("form");
+    let explode = style.and_then(|s| s.get("explode")).and_then(Value::as_bool).unwrap_or(style_name == "form");
+    let mut fields = Vec::new();
+    if style_name == "deepObject" && (value.is_object() || value.is_array()) {
+        deep_fields(name, value, &mut fields);
+        return fields;
+    }
+    let delimiter = match style_name {
+        "spaceDelimited" => " ",
+        "pipeDelimited" => "|",
+        _ => ",",
+    };
+    let entries: Vec<(String, String)> = match value {
+        Value::Array(items) => items.iter().filter_map(|item| Some((name.to_string(), style_part(item)?))).collect(),
+        Value::Object(map) => map.iter().filter_map(|(key, item)| Some((key.clone(), style_part(item)?))).collect(),
+        _ => {
+            fields.extend(style_part(value).map(|part| StyledField { key: name.to_string(), parts: vec![part], delimiter }));
+            return fields;
+        }
+    };
+    if entries.is_empty() {
+        return fields;
+    }
+    if explode {
+        fields.extend(entries.into_iter().map(|(key, part)| StyledField { key, parts: vec![part], delimiter }));
+    } else {
+        let parts = if value.is_array() {
+            entries.into_iter().map(|(_, part)| part).collect()
+        } else {
+            entries.into_iter().flat_map(|(key, part)| [key, part]).collect()
+        };
+        fields.push(StyledField { key: name.to_string(), parts, delimiter });
+    }
+    fields
+}
+
+// a space joins as %20, other delimiters stay as they are, so an encoded one inside a value isn't read as one
+fn build_styled_query_string(query: &Value, styles: Option<&Value>) -> String {
+    let Value::Object(map) = query else { return String::new() };
+    map.iter()
+        .flat_map(|(name, value)| styled_fields(name, value, styles.and_then(|styles| styles.get(name))))
+        .map(|field| {
+            let parts: Vec<String> = field.parts.iter().map(|part| urlencoding::encode(part).into_owned()).collect();
+            let delimiter = if field.delimiter == " " { "%20" } else { field.delimiter };
+            format!("{}={}", urlencoding::encode(&field.key), parts.join(delimiter))
+        })
+        .collect::<Vec<_>>()
+        .join("&")
+}
+
 fn prepare_request<B, Q, P>(
     endpoint: &Endpoint,
     body: RequestBody<'_, B>,
@@ -207,7 +306,7 @@ fn prepare_request<B, Q, P>(
     headers: Option<&HashMap<String, String>>,
     api_root: Option<&str>,
     disable_client_validation: bool,
-) -> Result<(reqwest::RequestBuilder, String), Box<dyn Error + Send + Sync>>
+) -> Result<(reqwest::RequestBuilder, Option<String>), Box<dyn Error + Send + Sync>>
 where
     B: Serialize + ?Sized,
     Q: Serialize + ?Sized,
@@ -242,6 +341,17 @@ where
         .ok_or("HTTP method not found")?
         .as_str()
         .ok_or("HTTP method is not a string")?;
+    // a mixin's errorMessageKey: where its error bodies hold the message
+    let error_message_key = handler
+        .get("operationObject")
+        .and_then(|operation| operation.get("x-errorMessageKey"))
+        .and_then(Value::as_str)
+        .map(str::to_string);
+    // an OpenAPI mixin sends its query and an urlencoded body in the styles its document declares
+    let misc = handler.get("misc");
+    let is_mixin = misc.and_then(|misc| misc.get("isOpenAPIMixin")) == Some(&Value::Bool(true));
+    let query_styles = misc.and_then(|misc| misc.get("queryStyles"));
+    let form_styles = misc.and_then(|misc| misc.get("formStyles"));
     let default_validation = Value::Object(serde_json::Map::new());
     let validation = handler
         .get("validation")
@@ -329,7 +439,11 @@ where
     }
 
     if let Some(ref query_val) = query_value {
-        let query_string = build_query_string(query_val, "");
+        let query_string = if is_mixin {
+            build_styled_query_string(query_val, query_styles)
+        } else {
+            build_query_string(query_val, "")
+        };
         if !query_string.is_empty() {
             if url.contains('?') {
                 url += "&";
@@ -384,14 +498,14 @@ where
     let request = match body {
         RequestBody::None => request,
         RequestBody::Json(_) => request.json(&body_value),
-        RequestBody::UrlEncoded(_) => request.form(&to_form_fields(body_value.as_ref().unwrap_or(&Value::Null))?),
+        RequestBody::UrlEncoded(_) => request.form(&to_form_fields(body_value.as_ref().unwrap_or(&Value::Null), form_styles)?),
         // names go out raw in quotes, as browsers write them: the server reads no name*=utf-8''... form
         RequestBody::Multipart(form) => request.multipart(form.percent_encode_noop()),
         RequestBody::Text(text, _) => request.body(text),
         RequestBody::Binary(bytes, _) => request.body(bytes),
     };
 
-    Ok((request, http_method.to_string()))
+    Ok((request, error_message_key))
 }
 
 fn location(response: &reqwest::Response) -> Option<String> {
@@ -431,9 +545,16 @@ fn is_text(response: &reqwest::Response, media_type: &str) -> bool {
             .is_some_and(|v| v.split(';').skip(1).any(|p| p.trim().to_ascii_lowercase().starts_with("charset=")))
 }
 
-// as the TypeScript client reads an error: the JSON message, else the detail or title of a problem document, else the
-// text a proxy sent; the cause is the body's cause, or the whole JSON body
-fn error_from_body(body: &[u8], media_type: &str, status: reqwest::StatusCode, location: Option<&str>) -> HttpException {
+// as the TypeScript client reads an error: the JSON message, or the value at the errorMessageKey path such as
+// "error.message", else the detail or title of a problem document, else the text a proxy sent; the cause is the body's
+// cause, or the whole JSON body
+fn error_from_body(
+    body: &[u8],
+    media_type: &str,
+    status: reqwest::StatusCode,
+    location: Option<&str>,
+    error_message_key: Option<&str>,
+) -> HttpException {
     let status_code = status.as_u16() as i32;
     if let (true, Some(location)) = (status.is_redirection(), location) {
         let reason = status.canonical_reason().unwrap_or("Redirect");
@@ -443,7 +564,11 @@ fn error_from_body(body: &[u8], media_type: &str, status: reqwest::StatusCode, l
     let json = if is_json(media_type) { serde_json::from_slice::<Value>(body).ok() } else { None };
     let message = json
         .as_ref()
-        .and_then(|value| ["message", "detail", "title"].iter().find_map(|key| value.get(*key)?.as_str()))
+        .and_then(|value| {
+            [error_message_key.unwrap_or("message"), "detail", "title"]
+                .iter()
+                .find_map(|path| path.split('.').try_fold(value, |value, key| value.get(key))?.as_str())
+        })
         .map(str::to_string)
         .unwrap_or(if text.is_empty() {
             status.canonical_reason().unwrap_or("Unknown error").to_string()
@@ -504,7 +629,7 @@ where
     Q: Serialize + ?Sized,
     P: Serialize + ?Sized,
 {
-    let (request, _) = prepare_request(
+    let (request, error_message_key) = prepare_request(
         endpoint,
         body,
         query,
@@ -532,7 +657,7 @@ where
     // a 2xx body may hold any keys; a redirect reqwest didn't follow, as for a multipart body it can't send again,
     // is an error like any other status
     if !status.is_success() {
-        return Err(error_from_body(&bytes, &media_type, status, location.as_deref()));
+        return Err(error_from_body(&bytes, &media_type, status, location.as_deref(), error_message_key.as_deref()));
     }
 
     if is_json_lines(&media_type) {
@@ -577,7 +702,7 @@ where
     Q: Serialize + ?Sized,
     P: Serialize + ?Sized,
 {
-    let (request, _) = prepare_request(
+    let (request, error_message_key) = prepare_request(
         endpoint,
         body,
         query,
@@ -596,7 +721,7 @@ where
         let media_type = media_type(&response);
         let location = location(&response);
         let bytes = response.bytes().await.unwrap_or_default();
-        return Err(error_from_body(&bytes, &media_type, status, location.as_deref()));
+        return Err(error_from_body(&bytes, &media_type, status, location.as_deref(), error_message_key.as_deref()));
     }
 
     let byte_stream = response
