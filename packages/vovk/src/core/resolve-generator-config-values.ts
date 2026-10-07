@@ -32,7 +32,9 @@ export function resolveGeneratorConfigValues({
   imports: VovkOutputConfig['imports'];
   reExports: VovkOutputConfig['reExports'];
 } {
+  // merged into a copy: the project's package.json object is shared by every segment and template
   const packageJson: PackageJson = deepExtend(
+    {},
     Object.fromEntries(
       Object.entries(projectPackageJson ?? {}).filter(([key]) =>
         [
