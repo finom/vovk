@@ -350,6 +350,34 @@ describe('Runtime sweep', () => {
         });
       }
     });
+
+    it('Sends 404 on the error line for the notFound() of Next.js 15.0, thrown mid stream', async () => {
+      // Next.js 15.0 had no access fallbacks yet: its notFound() throws this, and a handler that throws it without a
+      // stream already reaches Next.js
+      const notFound15 = () => {
+        throw Object.assign(new Error('NEXT_NOT_FOUND'), { digest: 'NEXT_NOT_FOUND' });
+      };
+      class OldNavigationController {
+        static async *streamMissing() {
+          yield { n: 1 };
+          notFound15();
+        }
+      }
+      get('stream-missing')(OldNavigationController, 'streamMissing');
+      const oldHandlers = initSegment({ segmentName: 'navigation-15', controllers: { OldNavigationController } });
+
+      for (const nodeEnv of ['production', 'development']) {
+        await withNodeEnv(nodeEnv, async () => {
+          const lines = (await (await call(oldHandlers, 'GET', 'stream-missing')).text())
+            .split('\n')
+            .filter(Boolean)
+            .map((line) => JSON.parse(line));
+
+          deepStrictEqual(lines[0], { n: 1 });
+          strictEqual(lines[1]?.statusCode, 404, `${nodeEnv}: ${JSON.stringify(lines[1])}`);
+        });
+      }
+    });
   });
 
   describe('Routing', () => {
@@ -1344,6 +1372,39 @@ describe('Runtime sweep', () => {
       });
     });
 
+    it('Clones a validated request that Next.js hands over as a proxy', async () => {
+      class CloneController {
+        static create = procedure({ body: z.object({ title: z.string() }) }).handle(async (req) => ({
+          body: await req.vovk.body(),
+          cloned: await req.clone().text(),
+        }));
+      }
+      post('create')(CloneController, 'create');
+      const { POST } = initSegment({ segmentName: 'clone-proxy', controllers: { CloneController } });
+      const text = JSON.stringify({ title: 'Hello' });
+      const target = new Request('http://localhost/api/clone-proxy/create', {
+        method: 'POST',
+        body: text,
+        headers: { 'content-type': 'application/json' },
+      });
+      Object.defineProperty(target, 'nextUrl', { value: new URL(target.url) });
+      // the default branch of proxyNextRequest in next/dist/server/route-modules/app-route/module.js, which wraps the
+      // request of every route handler without a dynamic export: methods are bound to the target, clone() too
+      const handlers: ProxyHandler<Request> = {
+        get(proxyTarget, prop) {
+          if (prop === 'clone') return () => new Proxy(proxyTarget.clone(), handlers);
+          const value = Reflect.get(proxyTarget, prop, proxyTarget);
+          return typeof value === 'function' ? value.bind(proxyTarget) : value;
+        },
+      };
+      const req = new Proxy(target, handlers);
+
+      const response = await POST(req, { params: Promise.resolve({ vovk: ['create'] }) });
+
+      strictEqual(response.status, 200);
+      deepStrictEqual(await response.json(), { body: { title: 'Hello' }, cloned: text });
+    });
+
     it('Validates a missing body as undefined, so an optional body can be left out', async () => {
       class DraftController {
         static optional = procedure({ body: z.object({ title: z.string() }).optional() }).handle(async (req) => ({
@@ -1829,6 +1890,24 @@ describe('Runtime sweep', () => {
         [['_schema_'], ['users', '1', 'posts'], ['users', '2', 'posts'], ['users', '1', 'posts', 'a/b']]
       );
     });
+
+    it('Lists no _schema_ path for a production build, where it would prerender a 404 body', async () => {
+      class HelloController {
+        static greeting() {
+          return { greeting: 'Hello' };
+        }
+      }
+      get('greeting.json')(HelloController, 'greeting');
+
+      await withNodeEnv('production', async () => {
+        // next build runs generateStaticParams in production, where GET serves no schema: output: 'export' writes
+        // out/api/_schema_ with the 404 error, which a static host then serves with status 200
+        deepStrictEqual(
+          controllersToStaticParams({ HelloController }).map(({ vovk }) => vovk),
+          [['greeting.json']]
+        );
+      });
+    });
   });
 
   describe('multitenant', () => {
@@ -2023,6 +2102,45 @@ describe('Runtime sweep', () => {
         deepStrictEqual(await response.json(), { type: 'object', size: 5 });
       } finally {
         globalThis.File = NativeFile;
+      }
+    });
+
+    it('Gives a file schema the upload from another realm as a File', async () => {
+      // the content-type page's upload schema; on the Next.js 15.0 edge runtime it answered 400 "expected file, received
+      // File", since the form's files are Blobs but not instances of the global File
+      class ForeignFile extends Blob {
+        name = 'hello.txt';
+        lastModified = 0;
+      }
+      class UploadController {
+        static upload = procedure({
+          contentType: 'multipart/form-data',
+          body: z.object({ file: z.file() }),
+        }).handle(async (req) => {
+          const { file } = await req.vovk.body();
+          return { name: file.name, text: await file.text() };
+        });
+      }
+      post('upload')(UploadController, 'upload');
+      const handlers = initSegment({ segmentName: 'realm-file-schema', controllers: { UploadController } });
+      const form = new FormData();
+      form.append('file', new Blob(['hello']), 'hello.txt');
+      const { formData } = Response.prototype;
+      Response.prototype.formData = async function (this: Response) {
+        const parsed = await formData.call(this);
+        const entries = [...parsed.entries()].map(([key, value]) =>
+          typeof value === 'string' ? [key, value] : [key, new ForeignFile([value], { type: value.type })]
+        );
+        return { entries: () => entries[Symbol.iterator]() } as unknown as FormData;
+      };
+
+      try {
+        const response = await call(handlers, 'POST', 'upload', { body: form });
+
+        strictEqual(response.status, 200);
+        deepStrictEqual(await response.json(), { name: 'hello.txt', text: 'hello' });
+      } finally {
+        Response.prototype.formData = formData;
       }
     });
   });

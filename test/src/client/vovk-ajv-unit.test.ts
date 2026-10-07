@@ -1,4 +1,5 @@
 import { deepStrictEqual, rejects, strictEqual } from 'node:assert';
+import { spawnSync } from 'node:child_process';
 import { createRequire } from 'node:module';
 import { describe, it } from 'node:test';
 import { procedure, type VovkJSONSchemaBase } from 'vovk';
@@ -201,5 +202,25 @@ describe('vovk-ajv', () => {
     }
 
     strictEqual(compiles, 1);
+  });
+
+  it('Skips client-side validation where code generation from strings is disallowed', () => {
+    // as in the Edge runtime of next start, or a browser whose CSP has no 'unsafe-eval'; a fresh process, since
+    // vovk-ajv makes its Ajv once
+    const vovkAjv = new URL('../../../packages/vovk-ajv/index.js', import.meta.url).href;
+    const script = `
+      const { validateOnClient } = await import(${JSON.stringify(vovkAjv)});
+      console.warn = () => {};
+      console.error = () => {};
+      const schema = { $schema: '${$schema}', type: 'object', properties: { a: { type: 'string' } } };
+      await validateOnClient({ body: { a: 'x' } }, { body: schema }, { fullSchema: { $schema: '', segments: {} }, endpoint: '/x' });
+    `;
+    const { status, stderr } = spawnSync(
+      process.execPath,
+      ['--disallow-code-generation-from-strings', '--input-type=module', '-e', script],
+      { encoding: 'utf8' }
+    );
+
+    strictEqual(status, 0, stderr);
   });
 });
