@@ -70,7 +70,6 @@ program
             env: {
               PORT,
               __VOVK_START_WATCHER_IN_STANDALONE_MODE__: 'true' as const,
-              // TODO: Pass these as flags
               __VOVK_SCHEMA_OUT_FLAG__: schemaOut ?? '',
               __VOVK_DEV_HTTPS_FLAG__: devHttps ? 'true' : '',
               __VOVK_EXIT__: exit ? 'true' : 'false',

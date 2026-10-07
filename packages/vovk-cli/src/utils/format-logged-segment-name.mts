@@ -7,7 +7,7 @@ export function formatLoggedSegmentName(
     withChalk = true,
     upperFirst = false,
     isStatic = false,
-    segmentType = 'segment', // TODO: Apply to all formatLoggedSegmentName invocations
+    segmentType = 'segment',
   }: { withChalk?: boolean; upperFirst?: boolean; isStatic?: boolean; segmentType?: 'segment' | 'mixin' } = {}
 ) {
   let text = segmentName ? `${isStatic ? 'static ' : ''}${segmentType} "${segmentName}"` : 'the root segment';

@@ -185,7 +185,7 @@ export class VovkGenerate {
         awaitWriteFinish: AWAIT_WRITE_FINISH,
       })
       .on('all', (event, path) => {
-        if (event === 'change' || event === 'add' || event === 'ready' || event === 'unlink') {
+        if (event === 'change' || event === 'add' || event === 'unlink') {
           log.debug(`OpenAPI spec file changed: ${path}`);
 
           const now = Date.now();
