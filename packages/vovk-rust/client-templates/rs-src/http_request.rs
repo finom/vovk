@@ -177,11 +177,18 @@ fn is_unsafe_segment(value: &str) -> bool {
     rest.is_empty()
 }
 
-// a form field is text: null is left out, an array repeats its key and an object is sent as JSON
-fn to_form_fields(value: &Value) -> Result<Vec<(String, String)>, String> {
+// a form field is text: null is left out, an array repeats its key and an object is sent as JSON; a property with an
+// OpenAPI style goes in that style
+fn to_form_fields(value: &Value, styles: Option<&Value>) -> Result<Vec<(String, String)>, String> {
     let map = value.as_object().ok_or("A form body must be an object")?;
     let mut fields = Vec::new();
     for (key, value) in map {
+        if let Some(style) = styles.and_then(|styles| styles.get(key)) {
+            for field in styled_fields(key, value, Some(style)) {
+                fields.push((field.key, field.parts.join(field.delimiter)));
+            }
+            continue;
+        }
         let items = match value {
             Value::Array(items) => items.iter().collect(),
             other => vec![other],
@@ -197,6 +204,85 @@ fn to_form_fields(value: &Value) -> Result<Vec<(String, String)>, String> {
         }
     }
     Ok(fields)
+}
+
+// a field of an OpenAPI style: the key, its parts and what joins them
+struct StyledField {
+    key: String,
+    parts: Vec<String>,
+    delimiter: &'static str,
+}
+
+// null is left out, an array or an object is JSON
+fn style_part(value: &Value) -> Option<String> {
+    match value {
+        Value::Null => None,
+        Value::String(text) => Some(text.clone()),
+        Value::Number(number) => Some(number_to_string(number)),
+        other => Some(other.to_string()),
+    }
+}
+
+// deepObject: a bracket for every nested key, an array item by its index
+fn deep_fields(key: &str, value: &Value, fields: &mut Vec<StyledField>) {
+    match value {
+        Value::Object(map) => map.iter().for_each(|(k, v)| deep_fields(&format!("{}[{}]", key, k), v, fields)),
+        Value::Array(items) => items.iter().enumerate().for_each(|(i, v)| deep_fields(&format!("{}[{}]", key, i), v, fields)),
+        _ => fields.extend(style_part(value).map(|part| StyledField { key: key.to_string(), parts: vec![part], delimiter: "" })),
+    }
+}
+
+// a query parameter or a form property in the style and explode an OpenAPI document declares, as the TypeScript client
+// sends it; without either, form and exploded
+fn styled_fields(name: &str, value: &Value, style: Option<&Value>) -> Vec<StyledField> {
+    let style_name = style.and_then(|s| s.get("style")).and_then(Value::as_str).unwrap_or("form");
+    let explode = style.and_then(|s| s.get("explode")).and_then(Value::as_bool).unwrap_or(style_name == "form");
+    let mut fields = Vec::new();
+    if style_name == "deepObject" && (value.is_object() || value.is_array()) {
+        deep_fields(name, value, &mut fields);
+        return fields;
+    }
+    let delimiter = match style_name {
+        "spaceDelimited" => " ",
+        "pipeDelimited" => "|",
+        _ => ",",
+    };
+    let entries: Vec<(String, String)> = match value {
+        Value::Array(items) => items.iter().filter_map(|item| Some((name.to_string(), style_part(item)?))).collect(),
+        Value::Object(map) => map.iter().filter_map(|(key, item)| Some((key.clone(), style_part(item)?))).collect(),
+        _ => {
+            fields.extend(style_part(value).map(|part| StyledField { key: name.to_string(), parts: vec![part], delimiter }));
+            return fields;
+        }
+    };
+    if entries.is_empty() {
+        return fields;
+    }
+    if explode {
+        fields.extend(entries.into_iter().map(|(key, part)| StyledField { key, parts: vec![part], delimiter }));
+    } else {
+        let parts = if value.is_array() {
+            entries.into_iter().map(|(_, part)| part).collect()
+        } else {
+            entries.into_iter().flat_map(|(key, part)| [key, part]).collect()
+        };
+        fields.push(StyledField { key: name.to_string(), parts, delimiter });
+    }
+    fields
+}
+
+// a space joins as %20, other delimiters stay as they are, so an encoded one inside a value isn't read as one
+fn build_styled_query_string(query: &Value, styles: Option<&Value>) -> String {
+    let Value::Object(map) = query else { return String::new() };
+    map.iter()
+        .flat_map(|(name, value)| styled_fields(name, value, styles.and_then(|styles| styles.get(name))))
+        .map(|field| {
+            let parts: Vec<String> = field.parts.iter().map(|part| urlencoding::encode(part).into_owned()).collect();
+            let delimiter = if field.delimiter == " " { "%20" } else { field.delimiter };
+            format!("{}={}", urlencoding::encode(&field.key), parts.join(delimiter))
+        })
+        .collect::<Vec<_>>()
+        .join("&")
 }
 
 fn prepare_request<B, Q, P>(
@@ -248,6 +334,11 @@ where
         .and_then(|operation| operation.get("x-errorMessageKey"))
         .and_then(Value::as_str)
         .map(str::to_string);
+    // an OpenAPI mixin sends its query and an urlencoded body in the styles its document declares
+    let misc = handler.get("misc");
+    let is_mixin = misc.and_then(|misc| misc.get("isOpenAPIMixin")) == Some(&Value::Bool(true));
+    let query_styles = misc.and_then(|misc| misc.get("queryStyles"));
+    let form_styles = misc.and_then(|misc| misc.get("formStyles"));
     let default_validation = Value::Object(serde_json::Map::new());
     let validation = handler
         .get("validation")
@@ -335,7 +426,11 @@ where
     }
 
     if let Some(ref query_val) = query_value {
-        let query_string = build_query_string(query_val, "");
+        let query_string = if is_mixin {
+            build_styled_query_string(query_val, query_styles)
+        } else {
+            build_query_string(query_val, "")
+        };
         if !query_string.is_empty() {
             if url.contains('?') {
                 url += "&";
@@ -390,7 +485,7 @@ where
     let request = match body {
         RequestBody::None => request,
         RequestBody::Json(_) => request.json(&body_value),
-        RequestBody::UrlEncoded(_) => request.form(&to_form_fields(body_value.as_ref().unwrap_or(&Value::Null))?),
+        RequestBody::UrlEncoded(_) => request.form(&to_form_fields(body_value.as_ref().unwrap_or(&Value::Null), form_styles)?),
         // names go out raw in quotes, as browsers write them: the server reads no name*=utf-8''... form
         RequestBody::Multipart(form) => request.multipart(form.percent_encode_noop()),
         RequestBody::Text(text, _) => request.body(text),

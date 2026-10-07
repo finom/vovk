@@ -400,6 +400,78 @@ pub mod test_requests {
         }
     }
 
+    // a server that answers each request with its target and body, {"target": "/api/...?...", "body": "..."}
+    async fn echo() -> String {
+        use tokio::io::{AsyncReadExt, AsyncWriteExt};
+
+        let listener = tokio::net::TcpListener::bind("127.0.0.1:0").await.unwrap();
+        let api_root = format!("http://{}/api", listener.local_addr().unwrap());
+        tokio::spawn(async move {
+            while let Ok((mut socket, _)) = listener.accept().await {
+                tokio::spawn(async move {
+                    let mut request = Vec::new();
+                    let mut buffer = [0; 4096];
+                    let (head, body) = loop {
+                        let Ok(read @ 1..) = socket.read(&mut buffer).await else { return };
+                        request.extend_from_slice(&buffer[..read]);
+                        let Some(end) = request.windows(4).position(|window| window == b"\r\n\r\n") else { continue };
+                        let head = String::from_utf8_lossy(&request[..end]).to_string();
+                        let length = head
+                            .to_ascii_lowercase()
+                            .lines()
+                            .find_map(|line| line.strip_prefix("content-length:").map(|value| value.trim().to_string()))
+                            .map_or(0, |value| value.parse().unwrap_or(0));
+                        if request.len() >= end + 4 + length {
+                            break (head, String::from_utf8_lossy(&request[end + 4..]).to_string());
+                        }
+                    };
+                    let target = head.split(' ').nth(1).unwrap_or("").to_string();
+                    let answer = json!({ "target": target, "body": body }).to_string();
+                    let response = format!(
+                        "HTTP/1.1 200 OK\r\ncontent-type: application/json\r\ncontent-length: {}\r\nconnection: close\r\n\r\n{}",
+                        answer.len(),
+                        answer
+                    );
+                    let _ = socket.write_all(response.as_bytes()).await;
+                    let _ = socket.shutdown().await;
+                });
+            }
+        });
+
+        api_root
+    }
+
+    // as the TypeScript client sends them
+    #[tokio::test]
+    async fn test_mixin_query_and_form_styles() {
+        use mixin_rpc::get_styled_::{query as Query, query_::{filter as Filter, obj as Obj}};
+
+        let api_root = echo().await;
+        let strings = |items: &[&str]| Some(items.iter().map(|item| item.to_string()).collect());
+        let query = Query {
+            tags: strings(&["a", "b c"]),
+            ids: Some(vec![1, 2]),
+            filter: Some(Filter { status: Some("sold".to_string()), tag: Some("x,y".to_string()) }),
+            pipe: strings(&["a", "b"]),
+            space: strings(&["a", "b"]),
+            obj: Some(Obj { k: Some("v".to_string()) }),
+        };
+        let data = mixin_rpc::get_styled((), query, (), None, Some(&api_root), false).await.unwrap();
+        // serde_json keeps object keys sorted
+        assert_eq!(
+            data["target"],
+            "/api/styled?filter%5Bstatus%5D=sold&filter%5Btag%5D=x%2Cy&ids=1,2&k=v&pipe=a|b&space=a%20b&tags=a&tags=b%20c"
+        );
+
+        let body = mixin_rpc::post_styled_::body {
+            name: Some("Rex".to_string()),
+            metadata: Some(json!({"order_id": "6735", "nested": {"a": 1}})),
+            tags: strings(&["a", "b"]),
+        };
+        let data = mixin_rpc::post_styled(body, (), (), None, Some(&api_root), false).await.unwrap();
+        assert_eq!(data["body"], "metadata%5Bnested%5D%5Ba%5D=1&metadata%5Border_id%5D=6735&name=Rex&tags=a&tags=b");
+    }
+
     // the mixin's errorMessageKey is error.reason
     #[tokio::test]
     async fn test_error_message_key_of_a_mixin() {
