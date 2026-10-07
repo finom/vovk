@@ -9,7 +9,7 @@ const config = {
   outputConfig: {
     imports: {
       validateOnClient: 'vovk-ajv',
-      fetcher: './src/lib/fetcher',
+      fetcher: './src/lib/fetcher.ts',
     },
     segments: {
       /* github: {
