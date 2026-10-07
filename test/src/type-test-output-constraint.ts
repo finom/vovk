@@ -283,10 +283,23 @@ export async function untransformedResults() {
   for await (const item of await rpc.items()) item.n satisfies number;
 }
 
+// ====== output and iteration are mutually exclusive ======
+
+// Test 16: procedure() throws when both are set, so the types refuse them together
+function outputAndIteration() {
+  // @ts-expect-error output and iteration together
+  procedure({ output: z.object({ a: z.string() }), iteration: z.object({ b: z.string() }) });
+  procedure({ output: z.object({ a: z.string() }) }).handle(async () => ({ a: 'x' }));
+  procedure({ iteration: z.object({ b: z.string() }) }).handle(async function* () {
+    yield { b: 'x' };
+  });
+}
+
 export {
   FnResultController,
   noOptions,
   noParamsSchema,
+  outputAndIteration,
   PlainSearchParams,
   rawRequestTypes,
   returnsSchemaInput,

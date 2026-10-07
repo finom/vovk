@@ -19,6 +19,14 @@ import type { DefaultModelOutput } from './to-model-output-default.js';
 
 type DerivedToolInput = { body?: unknown; query?: unknown; params?: unknown };
 
+// a standard tool whose execute always returns a promise
+type DerivedTool<TOutput, TFormattedOutput> = Omit<
+  StandardToolV0<DerivedToolInput, TOutput, TFormattedOutput>,
+  'execute'
+> & {
+  execute(input: DerivedToolInput, context?: unknown): Promise<TFormattedOutput>;
+};
+
 type Handler = ((...args: unknown[]) => unknown) & {
   fn?: (input: unknown) => [unknown, Pick<VovkRequest, 'vovk'> | null];
   isRPC?: boolean;
@@ -168,7 +176,7 @@ const makeTool = <TOutput, TFormattedOutput>({
     tool: StandardToolV0<DerivedToolInput, TOutput, TFormattedOutput>,
     req: Pick<VovkRequest, 'vovk'> | null
   ) => void;
-}): StandardToolV0<DerivedToolInput, TOutput, TFormattedOutput> => {
+}): DerivedTool<TOutput, TFormattedOutput> => {
   if (!module) {
     throw new Error(`Module "${moduleName}" not found.`);
   }
@@ -227,7 +235,7 @@ const makeTool = <TOutput, TFormattedOutput>({
 
     return result;
   };
-  const tool: StandardToolV0<DerivedToolInput, TOutput, TFormattedOutput> = {
+  const tool: DerivedTool<TOutput, TFormattedOutput> = {
     execute,
     name,
     inputSchema: inputSchema as StandardToolV0<DerivedToolInput, TOutput, TFormattedOutput>['inputSchema'],
@@ -285,13 +293,13 @@ export function deriveTools<TOutput = unknown, TFormattedOutput = DefaultModelOu
   options: DeriveToolsBaseOptions & {
     toModelOutput?: never;
   }
-): StandardToolV0<DerivedToolInput, TOutput, TFormattedOutput>[];
+): DerivedTool<TOutput, TFormattedOutput>[];
 
 export function deriveTools<TOutput = unknown, TFormattedOutput = unknown>(
   options: DeriveToolsBaseOptions & {
     toModelOutput: ToModelOutputFn<unknown, TOutput, TFormattedOutput>;
   }
-): StandardToolV0<DerivedToolInput, TOutput, TFormattedOutput>[];
+): DerivedTool<TOutput, TFormattedOutput>[];
 
 export function deriveTools<TOutput = unknown, TFormattedOutput = unknown>(options: {
   modules: Record<string, object>;
@@ -307,7 +315,7 @@ export function deriveTools<TOutput = unknown, TFormattedOutput = unknown>(optio
     tool: StandardToolV0<DerivedToolInput, TOutput, TFormattedOutput>,
     req: Pick<VovkRequest, 'vovk'> | null
   ) => void;
-}): StandardToolV0<DerivedToolInput, TOutput, TFormattedOutput>[] {
+}): DerivedTool<TOutput, TFormattedOutput>[] {
   const {
     modules,
     meta,

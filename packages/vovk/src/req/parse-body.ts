@@ -42,9 +42,8 @@ function getFileName(disposition: string): string | undefined {
   return quoted?.replace(/\\(.)/g, '$1') ?? token;
 }
 
-export async function parseBody(
-  req: Request
-): Promise<Record<string, unknown> | FormData | URLSearchParams | string | File> {
+// JSON gives any JSON value, a form a record of its fields, text a string, any other type a File
+export async function parseBody(req: Request): Promise<unknown> {
   const contentType = req.headers?.get('content-type');
   const mediaType = contentType ? getMediaType(contentType) : null;
 
@@ -56,7 +55,7 @@ export async function parseBody(
   await bufferBody(req);
 
   if (!mediaType || mediaType === 'application/json' || mediaType.endsWith('+json')) {
-    let body: Record<string, unknown>;
+    let body: unknown;
     try {
       body = await req.json();
     } catch (e) {

@@ -687,3 +687,127 @@ describe('openAPIToVovkSchema — OpenAPI 3.0 keywords', () => {
     ok(!admitsNull(properties.thing, $defs));
   });
 });
+
+describe('openAPIToVovkSchema — Swagger 2.0', () => {
+  // Swagger 2.0 types a parameter on the parameter itself, sends a body as a body or formData parameter,
+  // and keeps its components in definitions, parameters and responses
+  const swaggerSpec = {
+    swagger: '2.0',
+    info: { title: 'Petstore', version: '1.0.0' },
+    host: 'petstore.example.com',
+    basePath: '/v2',
+    schemes: ['http', 'https'],
+    consumes: ['application/json'],
+    produces: ['application/json'],
+    parameters: { petId: { name: 'petId', in: 'path', required: true, type: 'integer', format: 'int64' } },
+    responses: { Pet: { description: 'A pet', schema: { $ref: '#/definitions/Pet' } } },
+    paths: {
+      '/pets': {
+        get: {
+          operationId: 'listPets',
+          parameters: [
+            { name: 'limit', in: 'query', required: true, type: 'integer', minimum: 0, exclusiveMinimum: true },
+            { name: 'tags', in: 'query', type: 'array', items: { type: 'string' }, collectionFormat: 'multi' },
+            { name: 'ids', in: 'query', type: 'array', items: { type: 'integer' } },
+          ],
+          responses: { '200': { description: 'ok', schema: { type: 'array', items: { $ref: '#/definitions/Pet' } } } },
+        },
+        post: {
+          operationId: 'createPet',
+          parameters: [{ name: 'body', in: 'body', required: true, schema: { $ref: '#/definitions/Pet' } }],
+          responses: { '201': { $ref: '#/responses/Pet' } },
+        },
+      },
+      '/pets/{petId}': {
+        parameters: [{ $ref: '#/parameters/petId' }],
+        get: { operationId: 'getPet', responses: { '200': { $ref: '#/responses/Pet' } } },
+      },
+      '/pets/{petId}/image': {
+        post: {
+          operationId: 'uploadImage',
+          consumes: ['multipart/form-data'],
+          parameters: [
+            { $ref: '#/parameters/petId' },
+            { name: 'note', in: 'formData', type: 'string' },
+            { name: 'file', in: 'formData', required: true, type: 'file' },
+          ],
+          responses: { '200': { description: 'ok' } },
+        },
+      },
+      '/pets/events': {
+        get: {
+          operationId: 'streamEvents',
+          produces: ['application/x-ndjson'],
+          responses: { '200': { description: 'ok', schema: { $ref: '#/definitions/Pet' } } },
+        },
+      },
+    },
+    definitions: {
+      Pet: {
+        type: 'object',
+        required: ['name'],
+        properties: {
+          id: { type: 'integer', readOnly: true },
+          name: { type: 'string' },
+          tag: { type: 'string', 'x-nullable': true },
+        },
+      },
+    },
+  };
+
+  const segment = openAPIToVovkSchema({
+    source: { object: swaggerSpec },
+    getModuleName: () => 'Pets',
+    getMethodName: ({ operationObject }: { operationObject: { operationId?: string } }) =>
+      operationObject.operationId ?? 'op',
+    segmentName: 'api',
+  } as unknown as Parameters<typeof openAPIToVovkSchema>[0]).segments.api as Seg;
+  const handlers = segment.controllers.Pets.handlers as Obj;
+
+  it('takes the API root from host, basePath and schemes', () => {
+    strictEqual(segment.forceApiRoot, 'https://petstore.example.com/v2');
+  });
+
+  it('types query and path parameters from the parameter fields', () => {
+    const { query } = handlers.listPets.validation;
+    deepStrictEqual(query.properties, {
+      limit: { type: 'integer', exclusiveMinimum: 0 },
+      tags: { type: 'array', items: { type: 'string' } },
+      ids: { type: 'array', items: { type: 'integer' } },
+    });
+    deepStrictEqual(query.required, ['limit']);
+    deepStrictEqual(handlers.listPets.misc.queryStyles, {
+      tags: { style: 'form', explode: true },
+      ids: { style: 'form', explode: false },
+    });
+    const { params } = handlers.getPet.validation;
+    deepStrictEqual(params.properties, { petId: { type: 'integer', format: 'int64' } });
+    deepStrictEqual(params.required, ['petId']);
+  });
+
+  it('types a body parameter as the JSON body and a response schema as the output', () => {
+    const { body, output } = handlers.createPet.validation;
+    strictEqual(body.$ref, '#/$defs/Pet');
+    strictEqual(body['x-tsType'], 'Mixins.Api.Pet');
+    deepStrictEqual(body['x-contentType'], ['application/json']);
+    deepStrictEqual(body.$defs.Pet.required, ['name']);
+    strictEqual(output['x-tsType'], 'Mixins.Api.Pet');
+    strictEqual(handlers.getPet.validation.output['x-tsType'], 'Mixins.Api.Pet');
+    strictEqual(handlers.listPets.validation.output.items['x-tsType'], 'Mixins.Api.Pet');
+    ok(segment.meta.openAPIObject.components.schemas.Pet);
+  });
+
+  it('types formData parameters as a form body with a file field', () => {
+    const { body, params } = handlers.uploadImage.validation;
+    deepStrictEqual(body['x-contentType'], ['multipart/form-data']);
+    deepStrictEqual(body.properties, { note: { type: 'string' }, file: { type: 'string', format: 'binary' } });
+    deepStrictEqual(body.required, ['file']);
+    ok(body['x-tsType'].includes('FormData'), body['x-tsType']);
+    deepStrictEqual(params.required, ['petId']);
+  });
+
+  it('reads the produced media types for a stream and x-nullable as null', () => {
+    strictEqual(handlers.streamEvents.validation.iteration['x-tsType'], 'Mixins.Api.Pet');
+    deepStrictEqual(segment.meta.openAPIObject.components.schemas.Pet.properties.tag, { type: ['string', 'null'] });
+  });
+});

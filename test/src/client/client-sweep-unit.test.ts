@@ -1054,6 +1054,79 @@ describe('Client sweep, pure functions', () => {
       deepStrictEqual(getDeclarationDiagnostics(source), []);
     });
 
+    it('Name the types of procedures with an output schema, preferTransformed: false or no handler in declarations', () => {
+      const source = [
+        "import { procedure } from 'vovk';",
+        "import { z } from 'zod';",
+        'export class ItemController {',
+        '  static getItem = procedure({',
+        '    params: z.object({ id: z.string() }),',
+        '    output: z.object({ id: z.string() }),',
+        '  }).handle(async (req, { id }) => ({ id }));',
+        '  static listItems = procedure({',
+        '    query: z.object({ page: z.coerce.number().default(1) }),',
+        '    iteration: z.object({ id: z.string() }),',
+        '    preferTransformed: false,',
+        '  }).handle(async function* () {',
+        "    yield { id: 'a' };",
+        '  });',
+        "  static deleteItem = procedure({ contentType: 'text/plain' });",
+        '}',
+      ].join('\n');
+
+      deepStrictEqual(getDeclarationDiagnostics(source), []);
+    });
+
+    it('Name the type of derived tools in declarations', () => {
+      const source = [
+        "import { deriveTools, operation, procedure, ToModelOutput } from 'vovk';",
+        'class ItemController {',
+        "  @operation({ summary: 'Get an item' })",
+        '  static getItem = procedure().handle(async () => ({ ok: true }));',
+        '}',
+        'export const tools = deriveTools({ modules: { ItemController } });',
+        'export const mcpTools = deriveTools({ modules: { ItemController }, toModelOutput: ToModelOutput.MCP });',
+        'export const typedTools = deriveTools<{ ok: boolean }>({ modules: { ItemController } });',
+      ].join('\n');
+
+      deepStrictEqual(getDeclarationDiagnostics(source), []);
+    });
+
+    it('Name a procedure by its type in the declarations of its controller', () => {
+      const fileName = fileURLToPath(new URL('./declaration-size-consumer.mts', import.meta.url));
+      const source = [
+        "import { procedure } from 'vovk';",
+        "import { z } from 'zod';",
+        'export class ItemController {',
+        '  static createItem = procedure({ body: z.object({ name: z.string() }) }).handle(async () => ({ ok: true }));',
+        '}',
+      ].join('\n');
+      const options: ts.CompilerOptions = {
+        strict: true,
+        declaration: true,
+        emitDeclarationOnly: true,
+        skipLibCheck: true,
+        target: ts.ScriptTarget.ES2022,
+        lib: ['lib.es2022.d.ts', 'lib.dom.d.ts'],
+        module: ts.ModuleKind.ESNext,
+        moduleResolution: ts.ModuleResolutionKind.Bundler,
+      };
+      const host = ts.createCompilerHost(options);
+      const { fileExists, readFile, getSourceFile } = host;
+      host.fileExists = (name) => name === fileName || fileExists(name);
+      host.readFile = (name) => (name === fileName ? source : readFile(name));
+      host.getSourceFile = (name, ...rest) =>
+        name === fileName ? ts.createSourceFile(name, source, ts.ScriptTarget.ES2022) : getSourceFile(name, ...rest);
+      let declaration = '';
+      host.writeFile = (name, text) => {
+        if (name.endsWith('.d.mts')) declaration = text;
+      };
+      ts.createProgram([fileName], options, host).emit();
+
+      ok(declaration.includes('import("vovk").VovkProcedure<'), declaration);
+      ok(!declaration.includes('__handleFn'), declaration);
+    });
+
     it('Name the type of a custom fetcher in declarations', () => {
       // a library that exports its fetcher imports nothing else from vovk
       const source = [
