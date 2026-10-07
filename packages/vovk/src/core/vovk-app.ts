@@ -477,12 +477,15 @@ class VovkApp {
   }) => {
     const req = request as VovkRequest;
     const path = getCatchAllPath(params);
-    let headerList: typeof request.headers | null;
-    try {
-      headerList = request.headers;
-    } catch {
-      // static rendering has no headers
-      headerList = null;
+    let headerList: typeof request.headers | null = null;
+    // next build prerenders with no client, and reading the headers there makes the route dynamic: Cache Components
+    // and output: 'export' then refuse a static segment
+    if (process.env.NEXT_PHASE !== 'phase-production-build') {
+      try {
+        headerList = request.headers;
+      } catch {
+        // static rendering with dynamic = 'error' has no headers
+      }
     }
     const xMeta = headerList?.get('x-meta');
     let xMetaHeader: Record<string, unknown> | null = null;

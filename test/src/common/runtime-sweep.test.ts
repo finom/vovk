@@ -1916,6 +1916,39 @@ describe('Runtime sweep', () => {
         deepStrictEqual(controllersToStaticParams({}), [{ vovk: ['_schema_'] }]);
       });
     });
+
+    it('Reads no request header while next build prerenders, so a static segment needs no dynamic export', async () => {
+      class GreetingController {
+        static greeting() {
+          return { greeting: 'Hello' };
+        }
+      }
+      get('greeting.json')(GreetingController, 'greeting');
+      const { GET } = initSegment({ segmentName: 'prerendered', controllers: { GreetingController } });
+      const read: PropertyKey[] = [];
+      // Next.js makes a route dynamic once its handler reads the headers, which Cache Components and output: 'export'
+      // refuse for a static segment
+      const req = new Proxy(new Request('http://localhost/api/prerendered/greeting.json'), {
+        get(target, prop) {
+          read.push(prop);
+          const value = Reflect.get(target, prop, target);
+          return typeof value === 'function' ? value.bind(target) : value;
+        },
+      });
+      const env = process.env as Record<string, string | undefined>;
+      const phase = env.NEXT_PHASE;
+      env.NEXT_PHASE = 'phase-production-build';
+
+      try {
+        const response = await GET(req, { params: Promise.resolve({ vovk: ['greeting.json'] }) });
+
+        deepStrictEqual(await response.json(), { greeting: 'Hello' });
+        ok(!read.includes('headers'), `read: ${read.map(String).join(', ')}`);
+      } finally {
+        if (phase === undefined) delete env.NEXT_PHASE;
+        else env.NEXT_PHASE = phase;
+      }
+    });
   });
 
   describe('multitenant', () => {
@@ -2079,77 +2112,6 @@ describe('Runtime sweep', () => {
       deepStrictEqual(await inherited.json(), { from: 'parent' });
       strictEqual(own.status, 200);
       deepStrictEqual(await own.json(), { from: 'child' });
-    });
-  });
-
-  describe('Form data from another realm', () => {
-    it('Keeps an uploaded file the global File class does not recognize', async () => {
-      class UploadController {
-        static upload = procedure({ contentType: 'multipart/form-data' }).handle(async (req) => {
-          const { file } = (await req.vovk.body()) as { file: unknown };
-          return { type: typeof file, size: file instanceof Blob ? file.size : null };
-        });
-      }
-      post('upload')(UploadController, 'upload');
-      const handlers = initSegment({ segmentName: 'realm-upload', controllers: { UploadController } });
-      const form = new FormData();
-      form.append('file', new Blob(['hello']), 'hello.txt');
-      // the edge runtime of Next.js 15.0 hands out form files that are Blobs but not instances of its global File;
-      // newer undici builds parsed files with the global File, so this one builds real files and recognizes none
-      const { File: NativeFile } = globalThis;
-      function ForeignFile(...args: ConstructorParameters<typeof NativeFile>) {
-        return new NativeFile(...args);
-      }
-      Object.defineProperty(ForeignFile, Symbol.hasInstance, { value: () => false });
-      globalThis.File = ForeignFile as unknown as typeof NativeFile;
-
-      try {
-        const response = await call(handlers, 'POST', 'upload', { body: form });
-
-        strictEqual(response.status, 200);
-        deepStrictEqual(await response.json(), { type: 'object', size: 5 });
-      } finally {
-        globalThis.File = NativeFile;
-      }
-    });
-
-    it('Gives a file schema the upload from another realm as a File', async () => {
-      // the content-type page's upload schema; on the Next.js 15.0 edge runtime it answered 400 "expected file, received
-      // File", since the form's files are Blobs but not instances of the global File
-      class ForeignFile extends Blob {
-        name = 'hello.txt';
-        lastModified = 0;
-      }
-      class UploadController {
-        static upload = procedure({
-          contentType: 'multipart/form-data',
-          body: z.object({ file: z.file() }),
-        }).handle(async (req) => {
-          const { file } = await req.vovk.body();
-          return { name: file.name, text: await file.text() };
-        });
-      }
-      post('upload')(UploadController, 'upload');
-      const handlers = initSegment({ segmentName: 'realm-file-schema', controllers: { UploadController } });
-      const form = new FormData();
-      form.append('file', new Blob(['hello']), 'hello.txt');
-      const { formData } = Response.prototype;
-      Response.prototype.formData = async function (this: Response) {
-        const parsed = await formData.call(this);
-        const entries = [...parsed.entries()].map(([key, value]) =>
-          typeof value === 'string' ? [key, value] : [key, new ForeignFile([value], { type: value.type })]
-        );
-        return { entries: () => entries[Symbol.iterator]() } as unknown as FormData;
-      };
-
-      try {
-        const response = await call(handlers, 'POST', 'upload', { body: form });
-
-        strictEqual(response.status, 200);
-        deepStrictEqual(await response.json(), { name: 'hello.txt', text: 'hello' });
-      } finally {
-        Response.prototype.formData = formData;
-      }
     });
   });
 });

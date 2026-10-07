@@ -61,8 +61,8 @@ const createAjv = (options: Options, target: Target, coercesStrings: boolean) =>
 
 type AjvInstance = ReturnType<typeof createAjv>;
 
-// where Ajv can't generate code, as under a CSP without 'unsafe-eval' or in the Edge runtime, the whole page or runtime
-// gets no Ajv and the server validates alone; any other error, such as an option ajv-errors refuses, still throws
+// where Ajv can't generate code, as under a CSP without 'unsafe-eval', the whole page or process gets no Ajv and the
+// server validates alone; any other error, such as an option ajv-errors refuses, still throws
 let generatesCode = true;
 
 const tryCreateAjv = (options: Options, target: Target, coercesStrings: boolean) => {
