@@ -1,5 +1,7 @@
 import { deepStrictEqual, strictEqual } from 'node:assert';
 import { describe, it } from 'node:test';
+import { setFlagsFromString } from 'node:v8';
+import { runInNewContext } from 'node:vm';
 import {
   cloneControllerMetadata,
   controllersToStaticParams,
@@ -579,6 +581,33 @@ describe('Shared state', () => {
         { http: await response.json(), fn: await PaymentController.charge.fn({ body: { amount: 5 } }) },
         { http: { chargedCents: 500 }, fn: { chargedCents: 500 } }
       );
+    });
+  });
+
+  describe('A segment initialized again', () => {
+    it('Lets the controllers it replaced be collected', async () => {
+      // as a dev reload does: the module runs again and defines its controllers anew
+      const defineSegment = () => {
+        class ReloadController {
+          static create = procedure({ params: z.object({ id: z.string() }) }).handle(() => null);
+        }
+        // @operation({ summary: 'Create' }) @post('{id}')
+        post('{id}')(ReloadController, 'create');
+        operation({ summary: 'Create' })(ReloadController, 'create');
+        prefix('reload')(ReloadController);
+        initSegment({ segmentName: 'reload', emitSchema: true, controllers: { ReloadController } });
+        return new WeakRef(ReloadController);
+      };
+      const replaced = defineSegment();
+      defineSegment();
+
+      setFlagsFromString('--expose-gc');
+      const gc = runInNewContext('gc') as () => void;
+      // a WeakRef keeps its target until the current job ends
+      await new Promise((resolve) => setImmediate(resolve));
+      gc();
+
+      strictEqual(replaced.deref(), undefined);
     });
   });
 });

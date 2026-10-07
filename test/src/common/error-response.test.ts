@@ -38,8 +38,6 @@ const billingApiRoot = 'https://billing.example/bot123456:SECRET-TOKEN';
 
 // drives the dispatcher directly so NODE_ENV can be toggled per case
 class ErrorResponseController {
-  static _segmentName = 'error-response-test';
-
   static internal = () => {
     throw new Error('connect ECONNREFUSED 10.0.3.14:5432', { cause: { host: 'internal-db.local' } });
   };
@@ -72,12 +70,15 @@ class ErrorResponseController {
 }
 
 const onErrorCalls: string[] = [];
-// biome-ignore lint/suspicious/noExplicitAny: matches the controller onError hook signature
-(ErrorResponseController as any)._onError = (e: Error) => {
-  onErrorCalls.push(e.message);
-};
 
 type ControllerKey = Parameters<(typeof vovkApp.routes.GET)['set']>[0];
+
+vovkApp.setSegment('error-response-test', {
+  controllers: new Set([ErrorResponseController as unknown as ControllerKey]),
+  onError: (e: Error) => {
+    onErrorCalls.push(e.message);
+  },
+});
 
 vovkApp.routes.GET.set(ErrorResponseController as unknown as ControllerKey, {
   internal: ErrorResponseController.internal,
