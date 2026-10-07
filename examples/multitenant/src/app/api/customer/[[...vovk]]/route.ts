@@ -1,8 +1,6 @@
 import { initSegment } from 'vovk';
 import CustomerController from '../../../../modules/customer/customer/customer-controller';
 
-export const runtime = 'edge';
-
 const controllers = {
   CustomerRPC: CustomerController,
 };

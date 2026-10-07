@@ -121,7 +121,7 @@ Never hand-set `Content-Type` — fetcher derives it (multipart boundary include
 
 `apiRoot` **baked in at generation time**: defaults to `/${rootEntry}` (`rootEntry` defaults to `'api'`, so default baked-in value = `/api`). When `outputConfig.origin` is set, bake produces full URL like `http://localhost:3000/api`. Per-call `apiRoot` fully replaces baked-in value for that call — config-level changes still require `vovk generate`.
 
-In browser, relative `/api` resolves against page origin, so same call works from `/dashboard` and `/settings`. On server (Node, edge, integration tests) relative URLs don't resolve — pass full URL per call, bake one in via `outputConfig.origin`, or use `withDefaults({ apiRoot })`.
+In browser, relative `/api` resolves against page origin, so same call works from `/dashboard` and `/settings`. On server (Node, integration tests) relative URLs don't resolve — pass full URL per call, bake one in via `outputConfig.origin`, or use `withDefaults({ apiRoot })`.
 
 ### `init`
 
@@ -488,7 +488,7 @@ useEffect(() => { UserRPC.list().then(setUsers); }, []);
 - **Import name mismatch**: `UserRPC` (the `controllers` key), not `UserControllerRPC`. Most common "I can't import my RPC module" cause.
 - **Stale client**: `vovk generate` regenerates from `.vovk-schema/`, only refreshed by running dev server. If user edited controller and ran `vovk generate` directly, output stale. Fix: `npm run dev` to re-emit schemas, then regenerate.
 - **No HTTP decorator = no RPC**. Procedure without `@get`/`@post`/etc. is call-via-`.fn()` only; won't appear on client.
-- **Baked-in `apiRoot` defaults to `/api`** (`rootEntry: 'api'` with no `origin`). Works in browser (resolves against page origin), fails outside (Node, edge, integration tests). Pass full URL per call, bake one in via `outputConfig.origin`, or use `withDefaults({ apiRoot })`.
+- **Baked-in `apiRoot` defaults to `/api`** (`rootEntry: 'api'` with no `origin`). Works in browser (resolves against page origin), fails outside (Node, integration tests). Pass full URL per call, bake one in via `outputConfig.origin`, or use `withDefaults({ apiRoot })`.
 - **Fetcher path changes need regeneration**. Editing fetcher file fine; changing its path in `outputConfig.imports.fetcher` requires `vovk generate` (or dev-watcher restart).
 - **`disableClientValidation` only skips *client* validation pass**. Server-side validation still runs (unless procedure disables it, which should be rare).
 - **Client `meta` ≠ server `req.vovk.meta()`**. `meta` option serialized as `x-meta` header and lands on server under `xMetaHeader` key — isolated from server-set trusted state (what `authGuard` writes via `req.vovk.meta<AuthMeta>({ user })` is untouched by client). Treat client `meta` as advisory only; never use for auth or authorization decisions.

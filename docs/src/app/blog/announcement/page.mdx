@@ -30,7 +30,7 @@ I've been writing code for over 20 years, and clean, intuitive APIs still bring 
 
 **[Full OpenAPI support](/openapi).** Procedures automatically emit an OpenAPI 3.1 specification with [Scalar](https://scalar.com/)-compatible code samples.
 
-**[Back-end segmentation](/segment).** Each `route.ts` compiles into a separate serverless function. You can assign each segment its own runtime (Node.js or Edge) and `maxDuration`, and since each `route.ts` compiles independently, only the code it imports ends up in that function's bundle. The codegen can produce a single composed client or independent per-segment clients, so you control exactly what code ships where.
+**[Back-end segmentation](/segment).** Each `route.ts` compiles into a separate serverless function. You can give each segment its own `maxDuration` and other route options, and since each `route.ts` compiles independently, only the code it imports ends up in that function's bundle. The codegen can produce a single composed client or independent per-segment clients, so you control exactly what code ships where.
 
 **[Local procedure execution](/fn).** Every procedure exposes a `.fn()` method that runs in the current context — no HTTP round-trip. This unlocks SSR, PPR, server actions, background jobs, and AI agent execution, all using the same handler logic.
 

@@ -1,8 +1,6 @@
 import { initSegment } from 'vovk';
 import RootController from '../../../modules/root/root-controller';
 
-export const runtime = 'edge';
-
 const controllers = {
   RootRPC: RootController,
 };
