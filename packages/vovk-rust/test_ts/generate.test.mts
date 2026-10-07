@@ -138,6 +138,12 @@ describe('the generated crate', () => {
     ]);
   });
 
+  test("a segment's rootEntry of '' serves it from the root of the origin", () => {
+    const file = generate(listUsers, { origin: 'https://example.com', segments: { '': { rootEntry: '' } } });
+
+    assert.match(file('src/lib.rs'), /api_root: "https:\/\/example\.com",/);
+  });
+
   test('the README starts with readme.banner', () => {
     const readme = generate(listUsers, { readme: { banner: 'Banner line' } })('README.md');
     const bannerAt = readme.indexOf('Banner line');

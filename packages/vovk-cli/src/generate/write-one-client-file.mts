@@ -271,14 +271,16 @@ export async function renderOneClientFile({
           ...config.outputConfig.segments?.[sName],
         };
         const { origin: segmentConfigOrigin, rootEntry: segmentConfigRootEntry, segmentNameOverride } = segmentConfig;
+        // a rootEntry of '' serves the segment from the root of the origin
+        const segmentRoot = `${segmentConfigOrigin ?? origin}/${segmentConfigRootEntry ?? config.rootEntry}`;
 
         return [
           sName,
           {
             forceApiRoot:
               forceApiRoot ??
-              (segmentConfigOrigin || segmentConfigRootEntry
-                ? `${segmentConfigOrigin ?? origin}/${segmentConfigRootEntry ?? config.rootEntry}`
+              (segmentConfigOrigin || typeof segmentConfigRootEntry === 'string'
+                ? segmentRoot.replace(/(?<=.)\/$/, '')
                 : null),
             routeFilePath,
             segmentImportPath,

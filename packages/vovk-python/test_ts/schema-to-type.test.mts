@@ -113,6 +113,28 @@ test('convertJSONSchemaToPythonDataType - array types', async (t) => {
 
     assert.equal(result, 'MyTuple: TypeAlias = Tuple[str, int, bool]');
   });
+
+  await t.test('converts a 2020-12 tuple, as zod writes it', () => {
+    const result = convertJSONSchemaToPythonDataType({
+      schema: { type: 'array', prefixItems: [{ type: 'string' }, { type: 'number' }] },
+      namespace: 'MyNamespace',
+      className: 'MyTuple',
+      pad: 0,
+    });
+
+    assert.equal(result, 'MyTuple: TypeAlias = Tuple[str, float]');
+  });
+
+  await t.test('converts a tuple with more items after its own to a list', () => {
+    const result = convertJSONSchemaToPythonDataType({
+      schema: { type: 'array', prefixItems: [{ type: 'string' }], items: { type: 'number' } },
+      namespace: 'MyNamespace',
+      className: 'MyTuple',
+      pad: 0,
+    });
+
+    assert.equal(result, 'MyTuple: TypeAlias = List[Union[str, float]]');
+  });
 });
 
 test('convertJSONSchemaToPythonDataType - enum types', async (t) => {
@@ -931,6 +953,27 @@ test('allOf and $ref bodies', async (t) => {
   });
 });
 
+test('a mixin body of one schema as JSON or as a form is that schema, not a union', () => {
+  const result = convertJSONSchemaToPythonDataType({
+    schema: {
+      anyOf: [
+        { $ref: '#/$defs/Pet', 'x-contentType': ['application/json'], 'x-tsType': 'Mixins.Pet' },
+        { $ref: '#/$defs/Pet', 'x-contentType': ['application/x-www-form-urlencoded'], 'x-tsType': 'Mixins.Pet' },
+      ],
+      'x-contentType': ['application/json', 'application/x-www-form-urlencoded'],
+      $defs: { Pet: { type: 'object', properties: { name: { type: 'string' } }, required: ['name'] } },
+    },
+    namespace: 'PetstoreAPI',
+    className: 'UpdatePetBody',
+    pad: 0,
+  });
+
+  assert.equal(
+    result,
+    'class _UpdatePetBody_Pet(TypedDict):\n    name: str\nUpdatePetBody: TypeAlias = _UpdatePetBody_Pet'
+  );
+});
+
 test('files in a union branch, behind a $ref or in a list', async (t) => {
   const file = { type: 'string', format: 'binary' } as const;
   // as z.union([z.object({ n: z.number() }), z.object({ file: z.file() })]) emits it
@@ -960,6 +1003,25 @@ test('files in a union branch, behind a $ref or in a list', async (t) => {
       hasFiles({ anyOf: [{ type: 'object', properties: { n: { type: 'number' } } }, { type: 'string' }] }),
       false
     );
+  });
+
+  await t.test('a field is a file by the rule the Rust client uses', () => {
+    // the same table is in the other client's tests: both read a field as a file by one rule
+    const fileFields: [VovkJSONSchemaBase, boolean][] = [
+      [{ type: 'string', format: 'binary' }, true],
+      [{ type: 'string', contentEncoding: 'binary' }, true],
+      [{ type: 'array', items: { type: 'string', format: 'binary' } }, true],
+      [{ type: 'array', prefixItems: [{ type: 'string' }, { type: 'string', format: 'binary' }] }, true],
+      // @ts-expect-error a draft 7 tuple
+      [{ type: 'array', items: [{ type: 'string' }, { type: 'string', format: 'binary' }] }, true],
+      [{ oneOf: [{ type: 'string', format: 'binary' }, { type: 'null' }] }, true],
+      [{ allOf: [{ type: 'string' }, { format: 'binary' }] }, true],
+      [{ type: 'array', items: { type: 'string' } }, false],
+      [{ type: 'string', format: 'date-time' }, false],
+    ];
+    for (const [field, isFile] of fileFields) {
+      assert.equal(hasFiles({ type: 'object', properties: { field } }), isFile, JSON.stringify(field));
+    }
   });
 
   await t.test('may be left out when a branch holds none', () => {

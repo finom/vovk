@@ -232,7 +232,7 @@ features = ["codec"]
 - **`tokio-util` (`codec`)** — line-delimited framing for JSON Lines decoding.
 - **`serde` (`derive`) + `serde_json`** — (de)serialization.
 - **`futures-util`** — streaming combinators (`StreamExt::next` etc).
-- **`jsonschema 0.57`** — client-side validation against `schema.json`: JSON Schema 2020-12 (draft 7 when a schema declares it), formats checked. Crate builds on Rust 1.86 (`rust-version = "1.85"`, resolver 3); a consumer on edition 2021 without `resolver = "3"` gets newer deps that need Rust 1.88.
+- **`jsonschema 0.57`** — client-side validation against `schema.json`: JSON Schema 2020-12 (draft 7 when a schema declares it), formats checked. Crate needs Rust 1.85+ (`rust-version = "1.85"`, resolver 3); a consumer on edition 2021 without `resolver = "3"` gets newer deps that need Rust 1.88.
 - **`urlencoding`** + **`once_cell`** — internal utilities.
 
 ## Auth + base URL
