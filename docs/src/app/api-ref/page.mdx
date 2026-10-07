@@ -259,8 +259,6 @@ Lists the routes as static params, so the API is built at build time instead of 
 // ...
 export type Controllers = typeof controllers;
 
-export const dynamic = 'force-static';
-
 export function generateStaticParams() {
   return controllersToStaticParams(controllers);
 }
@@ -268,7 +266,7 @@ export function generateStaticParams() {
 export const { GET } = initSegment({ controllers });
 ```
 
-With `cacheComponents` on, which `create-next-app` 16.4+ sets, Next.js refuses `dynamic = 'force-static'`: set `cacheComponents: false` in **next.config**.
+The segment needs no `dynamic` export: Next.js pre-renders the listed paths with `cacheComponents` on or off.
 
 For another slug folder, such as `src/app/api/[[...custom]]/route.ts`, pass its name as the second argument:
 

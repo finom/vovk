@@ -97,7 +97,7 @@ When adding new named segment, any existing root-handled paths under that prefix
 |---|---|---|
 | **Root** | Default. Most projects have exactly one. | `src/app/api/[[...vovk]]/route.ts` |
 | **Named** | Isolate slice with different route options (`maxDuration`), or for multi-tenancy. | `src/app/api/<name>/[[...vovk]]/route.ts` |
-| **Static** | API that can be pre-rendered at build time — OpenAPI specs, enumerated datasets, infrequently changing reference data. Works with Next `output: 'export'`. Needs `cacheComponents` off. | `src/app/api/<name>/[[...vovk]]/route.ts` + `generateStaticParams` |
+| **Static** | API that can be pre-rendered at build time — OpenAPI specs, enumerated datasets, infrequently changing reference data. Works with Next `output: 'export'`, which needs `cacheComponents` off. | `src/app/api/<name>/[[...vovk]]/route.ts` + `generateStaticParams` |
 
 **When user says...**
 
@@ -161,8 +161,6 @@ import HelloController from '../../../../modules/hello/hello-controller';
 const controllers = { HelloRPC: HelloController };
 export type Controllers = typeof controllers;
 
-export const dynamic = 'force-static'; // without it, next build renders the route per request
-
 export function generateStaticParams() {
   return controllersToStaticParams(controllers);
 }
@@ -175,7 +173,7 @@ export const { GET } = initSegment({
 
 If you've customized slug (not `vovk`), pass it: `controllersToStaticParams(controllers, 'custom')`.
 
-With `cacheComponents` on (create-next-app 16.4+ sets it), Next.js refuses `dynamic = 'force-static'` and `output: 'export'` → set `cacheComponents: false` in next.config.
+No `dynamic` export: the segment pre-renders with `cacheComponents` on or off, and with it on (create-next-app 16.4+ sets it) Next.js refuses `dynamic = 'force-static'`. `output: 'export'` needs `cacheComponents: false` in next.config.
 
 ### 2. Endpoints must be enumerable
 

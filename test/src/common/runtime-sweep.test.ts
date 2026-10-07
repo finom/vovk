@@ -1916,6 +1916,39 @@ describe('Runtime sweep', () => {
         deepStrictEqual(controllersToStaticParams({}), [{ vovk: ['_schema_'] }]);
       });
     });
+
+    it('Reads no request header while next build prerenders, so a static segment needs no dynamic export', async () => {
+      class GreetingController {
+        static greeting() {
+          return { greeting: 'Hello' };
+        }
+      }
+      get('greeting.json')(GreetingController, 'greeting');
+      const { GET } = initSegment({ segmentName: 'prerendered', controllers: { GreetingController } });
+      const read: PropertyKey[] = [];
+      // Next.js makes a route dynamic once its handler reads the headers, which Cache Components and output: 'export'
+      // refuse for a static segment
+      const req = new Proxy(new Request('http://localhost/api/prerendered/greeting.json'), {
+        get(target, prop) {
+          read.push(prop);
+          const value = Reflect.get(target, prop, target);
+          return typeof value === 'function' ? value.bind(target) : value;
+        },
+      });
+      const env = process.env as Record<string, string | undefined>;
+      const phase = env.NEXT_PHASE;
+      env.NEXT_PHASE = 'phase-production-build';
+
+      try {
+        const response = await GET(req, { params: Promise.resolve({ vovk: ['greeting.json'] }) });
+
+        deepStrictEqual(await response.json(), { greeting: 'Hello' });
+        ok(!read.includes('headers'), `read: ${read.map(String).join(', ')}`);
+      } finally {
+        if (phase === undefined) delete env.NEXT_PHASE;
+        else env.NEXT_PHASE = phase;
+      }
+    });
   });
 
   describe('multitenant', () => {

@@ -123,6 +123,10 @@ A procedure attached to several controller members runs each member's own decora
 - `notFound()`, `forbidden()` and `unauthorized()` thrown mid-stream send 404, 403 and 401 in the error line. Error lines carry `statusCode`.
 - The client reads only as fast as you take items, so a consumed stream iterated again yields nothing. Read it once, or call `asPromise()`.
 
+## Static segments
+
+A [static segment](/static-segment) pre-renders with no `dynamic` export, also with `cacheComponents` on, which `create-next-app` 16.4+ sets. Next.js refuses `dynamic = 'force-static'` there, so `vovk new segment --static` no longer writes it. A static export still needs `cacheComponents` off.
+
 ## Client-side validation
 
 - `vovk-ajv` turns Ajv's strict mode off, so `example`, `x-*` and other annotations no longer block a request.

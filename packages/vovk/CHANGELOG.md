@@ -114,6 +114,7 @@ A cleanup major: removals and renames; the only new exports are types.
 - `fn()` always returns a promise: a sync decorator that throws rejects it, one that answers without `next()` resolves it, and with an `iteration` schema it gives an async generator also with `disableClientValidation` ([#51](https://github.com/finom/vovk/pull/51))
 - A segment's or template's `package` option with a nested field, such as `author` or `repository`, stays in its own package; it was merged into the project's package.json object, so every other package got it ([#51](https://github.com/finom/vovk/pull/51))
 - `controllersToStaticParams()` lists `_schema_` only in development, or for a segment with no other path, as `output: 'export'` needs one: a build wrote its 404 body, and a static export put it in `out`, where a static host serves it with 200 ([#51](https://github.com/finom/vovk/pull/51))
+- A static segment pre-renders with no `dynamic` export, also with `cacheComponents` on: `next build` reads no request header, where reading `x-meta` made every route dynamic; a malformed `x-meta` still answers 400 ([#51](https://github.com/finom/vovk/pull/51))
 
 ### Security
 
