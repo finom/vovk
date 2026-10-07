@@ -24,7 +24,7 @@
 
 Source code for random examples and proofs of concepts located at [examples.vovk.dev](https://examples.vovk.dev/).
 
-The [vovk-examples NPM package](https://www.npmjs.com/package/vovk-examples) is build and published with `npx vovk bundle && npm publish ./dist`.
+The [vovk-examples NPM package](https://www.npmjs.com/package/vovk-examples) is built and published with `npm run patch` (or `minor`, `BREAKING-major`): it checks for a clean working tree, runs the lint, bumps the version, builds the package with `vovk bundle`, publishes `./dist`, then commits, tags `vovk-examples-v<version>` and pushes.
 
 ```sh
 npm install vovk-examples
