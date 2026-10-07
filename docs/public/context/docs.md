@@ -4,8 +4,8 @@ description: "Full documentation for the Vovk.ts framework, excluding the Realti
 see_also:
   label: "Realtime Kanban Context"
   url: https://vovk.dev/context/realtime-ui.md
-chars: 388295
-est_tokens: 97074
+chars: 394474
+est_tokens: 98619
 ---
 
 Page: https://vovk.dev
@@ -24,7 +24,7 @@ To start, run the `init` command in an existing Next.js project.
 npx vovk-cli@latest init
 ```
 
-> Requires Node.js 22+, Next.js 15+ and TypeScript 5.3+. &nbsp; [Quick Start](https://vovk.dev/quick-install) · [Manual Install](https://vovk.dev/manual-install) · [Claude Plugin](https://vovk.dev/claude) · [GitHub](https://github.com/finom/vovk)
+> Requires Node.js 22+, Next.js 15+ and TypeScript 5.5+. &nbsp; [Quick Start](https://vovk.dev/quick-install) · [Manual Install](https://vovk.dev/manual-install) · [Claude Plugin](https://vovk.dev/claude) · [GitHub](https://github.com/finom/vovk)
 
 ---
 
@@ -52,7 +52,9 @@ Services hold the business logic. Plain classes, no decorators:
 ```ts
 export default class UserService {
   static async getUser(id: VovkParams<typeof UserController.getUser>['id']) {
-    return prisma.user.findUnique({ where: { id } });
+    const user = await prisma.user.findUnique({ where: { id } });
+    if (!user) throw new HttpException(HttpStatus.NOT_FOUND, 'User not found');
+    return user;
   }
 }
 ```
@@ -591,7 +593,7 @@ Open [http://localhost:3000/api/greetings/greeting](http://localhost:3000/api/gr
 
 Once the client is generated to `src/client`, import it as **@/client**, or with a relative path if your project has no `@/*` alias.
 
-```ts showLineNumbers copy filename="src/app/page.tsx"
+```tsx showLineNumbers copy filename="src/app/page.tsx"
 'use client';
 import { useState } from 'react';
 import { HelloRPC } from '@/client';
@@ -737,7 +739,7 @@ A **segment** is the part of the back end where controllers are initialized. Seg
 
 Each segment owns a path, such as `/api/foo` or `/api/bar`, and is a small back end of its own. Segments split the back end as pages split the front end in Next.js. To initialize a segment, call `initSegment` in the **route.ts** file of a **[[...slug]]** folder. It returns the Next.js route handlers (`GET`, `POST` and so on) of the segment. Vovk.ts names the slug `vovk`, but any valid name works.
 
-When `NODE_ENV` is `"development"` (as with `next dev`), each segment serves its schema at a `_schema_` endpoint. The [dev CLI](https://vovk.dev/dev) reads it and writes the JSON files in **.vovk-schema/**. This way, Next.js code imports no Node.js modules, **route.ts** can use `export const runtime = 'edge'`, and the schema tooling stays simple.
+When `NODE_ENV` is `"development"` (as with `next dev`), each segment serves its schema at a `_schema_` endpoint. The [dev CLI](https://vovk.dev/dev) reads it and writes the JSON files in **.vovk-schema/**. This way, Next.js code imports no Node.js modules, **route.ts** can use `export const runtime = 'edge'`, and the schema tooling stays simple. Next.js 16 deprecates the Edge runtime and prints a warning for it. With `cacheComponents` on, which `create-next-app` 16.4+ sets, Next.js refuses `runtime = 'edge'`: set `cacheComponents: false` in **next.config** to use it.
 
 Vovk.ts uses Optional Catch-All Segments instead of [Catch-All Segments](https://nextjs.org/docs/pages/building-your-application/routing/dynamic-routes#catch-all-segments), so a segment can have a root endpoint.
 
@@ -771,8 +773,8 @@ Example **route.ts** for a single-segment app:
 
 ```ts showLineNumbers copy filename="src/app/api/[[...vovk]]/route.ts"
 import { initSegment } from 'vovk';
-import UserController from '../../modules/user/user-controller';
-import PostController from '../../modules/post/post-controller';
+import UserController from '../../../modules/user/user-controller';
+import PostController from '../../../modules/post/post-controller';
 
 export const maxDuration = 300; // Next.js route handler option
 
@@ -831,7 +833,7 @@ With several segments, the most specific (deepest) one wins. For example:
 
 The `foo/bar` segment handles a request to **/api/foo/bar**. A request it doesn't match goes to `foo` if `foo` matches it, and to the root segment otherwise.
 
-  The `rootEntry` [config](https://vovk.dev/config) option changes the API folder name from `api` to any other name. An empty string serves the API from the app root.
+  The `rootEntry` [config](https://vovk.dev/config) option changes the API folder name from `api` to any other name. An empty string serves the API from the app root. The root segment then takes `/`, so it can't sit next to a root **page.tsx**: Next.js refuses the two routes.
 
 ## RPC Client
 
@@ -870,6 +872,8 @@ module.exports = nextConfig;
 ```
 
 Export `dynamic = 'force-static'` so Next.js pre-renders the route handler at build time, and make `generateStaticParams` return `controllersToStaticParams` with your controllers.
+
+With `cacheComponents` on, which `create-next-app` 16.4+ sets, Next.js refuses both `dynamic = 'force-static'` and `output: 'export'`. For a static segment or a static export, set `cacheComponents: false` in **next.config**.
 
 ```ts showLineNumbers copy filename="src/app/api/[[...vovk]]/route.ts"
 // ...
@@ -1128,12 +1132,14 @@ export default class UserController {
     query: z.object({ notify: z.enum(['email', 'push', 'none']) }),
     output: z.object({ success: z.boolean() }),
   }).handle(async (req, { id }) => {
-    const { email } = await req.json();
-    const notify = req.nextUrl.searchParams.get('notify');
+    const { email } = await req.vovk.body();
+    const { notify } = req.vovk.query();
     // ...
   });
 }
 ```
+
+`req.json()` and `req.nextUrl.searchParams` work over HTTP only. A [`.fn()`](https://vovk.dev/fn) call and a [derived AI tool](https://vovk.dev/tools) give the handler only `req.vovk`, so a procedure that is called both ways reads its body and query with `req.vovk.body()` and `req.vovk.query()`.
 
 Without `.handle()`, the procedure throws Not Implemented (501) when called.
 
@@ -1311,6 +1317,7 @@ The built-in `NextRequest` functions, such as `req.json()` and `req.nextUrl.sear
 - Parse nested query parameters.
 - Read form data as a typed object, instead of the `FormData` that `req.formData()` returns.
 - Store request metadata.
+- Write a handler that also runs in [`.fn()`](https://vovk.dev/fn) calls and [derived AI tools](https://vovk.dev/tools). Their request has only `req.vovk`, so `req.json()` and `req.nextUrl` aren't there.
 
 ## `async req.vovk.body()`
 
@@ -1327,7 +1334,7 @@ export default class UserController {
 }
 ```
 
-Once a body schema or `req.vovk.body()` has read the body, the body methods of `req`, `req.body` and `req.clone()` replay it. To forward the request, use `new Request(url, req)`, or pass `body: req.body` to `fetch()`. `new Request(req)` and `fetch(req)` throw: they take the request's own body, which is read by then.
+Once a body schema or `req.vovk.body()` has read the body, the body methods of `req`, `req.body` and `req.clone()` replay it. To forward the request, use `new Request(url, req)`, or pass `body: req.body` to `fetch()`. Don't pass `req` or `req.clone()` as the first argument of `new Request()` or `fetch()`. In a route that doesn't export `dynamic = 'force-dynamic'`, Next.js gives the handler a Proxy of the request and of each clone, which they refuse. In any route, `new Request(req)` and `fetch(req)` take the request's own body, which is read by then.
 
 ## `req.vovk.query()`
 
@@ -1353,6 +1360,7 @@ Nested data goes in the query string with square brackets, known as "PHP-style" 
 - With a `query` schema in a [procedure](https://vovk.dev/procedure), a key given once where the schema takes an array is a one-item array, so `tag=a` gives `{ tag: ["a"] }`, as OpenAPI's default style sends it.
 - `[]` followed by more brackets adds to the last element until that element already has the key: `items[][name]=a&items[][price]=1&items[][name]=b` gives `{ items: [{ name: "a", price: "1" }, { name: "b" }] }`.
 - Nesting goes up to 32 levels. A key with more brackets gets a 400 response.
+- A `+` is a space, as in `URLSearchParams{:ts}`. Send a literal `+` as `%2B`, as the RPC clients do.
 
 The RPC client leaves out `null`, `undefined` and empty objects or arrays, and numbers the remaining array items without gaps, so `{ tags: ['a', null, 'b'] }{:ts}` arrives as `{ tags: ['a', 'b'] }{:ts}`. A value with a `toJSON` method is sent as its result, as `JSON.stringify` does: a `Date{:ts}` as an ISO string, a `URL{:ts}` as its `href`.
 
@@ -1648,7 +1656,7 @@ const myDecorator = createDecorator((req, next) => {
 });
 ```
 
-`req` is not a `Request`, but a local call can still use Next.js functions such as `headers` or `cookies` from `next/headers`:
+`req` is not a `Request`, but a local call made during a Next.js request, as in a server component or a server action, can still use Next.js functions such as `headers` or `cookies` from `next/headers`. Outside a request, as in a unit test, they throw, so mock `next/headers` there.
 
 ```ts showLineNumbers copy {5}
 import { createDecorator } from 'vovk';
@@ -1804,6 +1812,7 @@ export default class UserController {
 To redirect, or to render the not-found page, use the Next.js functions from **next/navigation**.
 
 ```ts showLineNumbers copy
+import { get } from 'vovk';
 import { redirect, notFound } from 'next/navigation';
 
 export default class UserController {
@@ -1821,7 +1830,7 @@ export default class UserController {
 }
 ```
 
-Both functions throw an error, so you need no `return` statement; their return type is `never`. The same goes for `forbidden()` and `unauthorized()`. Vovk.ts rethrows these errors, so Next.js answers them.
+Both functions throw an error, so you need no `return` statement; their return type is `never`. The same goes for `forbidden()` and `unauthorized()`, which Next.js allows only with `experimental.authInterrupts` in **next.config**; without it they throw a plain error, which answers 500. Vovk.ts rethrows these errors, so Next.js answers them.
 
 In a [JSON Lines](https://vovk.dev/jsonlines) stream, after the response has started, they end the stream with an error line instead. `notFound()`, `forbidden()` and `unauthorized()` send their status: 404, 403 or 401. `redirect()` is sent as any other error: "Internal server error" in production.
 
@@ -2189,9 +2198,9 @@ export default class UserController {
 
 Text content types are parsed as a `string`: `text/*`, known text-like application types such as `application/xml` or `application/yaml`, and the suffixes `*+xml`, `*+text`, `*+yaml` and `*+json-seq`.
 
-The client sends a string body as the text type the procedure declares. A string body to a procedure that takes JSON, such as one with `body: z.string(){:ts}`, is sent as a JSON value.
+The client sends a string body as the text type the procedure declares. A string body to a procedure that takes JSON, such as one with `body: z.string(){:ts}`, or to a handler that declares no content type, is sent as a JSON value.
 
-```ts showLineNumbers copy {7}
+```ts showLineNumbers copy {6}
 import { procedure, post } from 'vovk';
 
 export default class UserController {
@@ -2209,11 +2218,11 @@ export default class UserController {
 
 Any other content type, such as `application/octet-stream`, `image/*`, `video/*` or `application/pdf`, is parsed into a `File{:ts}` on the server. On the client, `body` takes `File | ArrayBuffer | Uint8Array | Blob{:ts}`.
 
-Bytes without a type, such as an `ArrayBuffer{:ts}`, a `Uint8Array{:ts}` or a `Blob{:ts}` with an empty `type`, are sent as the first declared type that isn't JSON, a form or a wildcard, such as `image/png`. If there is none, they are sent as a wildcard other than `*/*`, such as `image/*`. Without either, they are sent as `application/octet-stream` to a procedure that takes any type (`*/*`), and otherwise as the JSON or URL-encoded type it declares. A `File{:ts}` or a typed `Blob{:ts}` is sent as its own type, and the server refuses a type the procedure doesn't declare, unless it declares `application/octet-stream`, which takes any file.
+Bytes without a type, such as an `ArrayBuffer{:ts}`, a `Uint8Array{:ts}` or a `Blob{:ts}` with an empty `type`, are sent as the first declared type that isn't JSON, a form or a wildcard, such as `image/png`. If there is none, they are sent as a wildcard other than `*/*`, such as `image/*`. Without either, they are sent as `application/octet-stream` to a procedure that takes any type (`*/*`), and otherwise as the JSON or URL-encoded type it declares. A `File{:ts}` or a typed `Blob{:ts}` is sent as its own type. If the procedure declares `application/octet-stream` but not that type, the TypeScript client sends it as `application/octet-stream`. The server refuses any type the procedure doesn't declare; a wildcard such as `image/*` or `*/*` takes a family or any type.
 
 The server names the `File{:ts}` after the request's `Content-Disposition` header, reading `filename*` before `filename`, and calls it `file` without one. The TypeScript client sends that header for a `File{:ts}` body. The name is client input, as is the name of a file in form data: never use it as a path.
 
-```ts showLineNumbers copy {7}
+```ts showLineNumbers copy {6}
 import { procedure, post } from 'vovk';
 
 export default class UserController {
@@ -2231,7 +2240,7 @@ export default class UserController {
 ```ts showLineNumbers copy
 import { UserRPC } from '@/client';
 
-const file = document.querySelector('input[type="file"]').files[0];
+const file = document.querySelector<HTMLInputElement>('input[type="file"]')!.files![0];
 
 await UserRPC.uploadImage({
   body: file,
@@ -2603,7 +2612,7 @@ The full controller, with types and validation:
 ```ts showLineNumbers copy filename="src/modules/progressive/progressive-controller.ts" source="examples/kitchen-sink"
 import { procedure, get, JSONLinesResponder, prefix, type VovkIteration } from 'vovk';
 import { z } from 'zod';
-import ProgressiveService from './progressive-service.ts';
+import ProgressiveService from './progressive-service.js';
 
 @prefix('progressive')
 export default class ProgressiveController {
@@ -3056,7 +3065,7 @@ npm exec -- vovk generate --from openapiJson --out ./public
 
 On the client side, any OpenAPI documentation generator works. [Scalar](https://www.npmjs.com/package/@scalar/api-reference-react) is recommended, because Vovk.ts adds code samples for the generated RPC modules to the spec.
 
-```ts showLineNumbers copy
+```tsx showLineNumbers copy
 import { ApiReferenceReact } from "@scalar/api-reference-react";
 import "@scalar/api-reference-react/style.css";
 
@@ -3117,7 +3126,7 @@ Page: https://vovk.dev/tools
 
 A tool comes from a [procedure](https://vovk.dev/procedure) or an RPC method that has an operation object, given by [`@operation`](https://vovk.dev/openapi), `@operation.tool` or `@operation.error`. Every [OpenAPI mixin](https://vovk.dev/mixins) method has one. Other members of a module are left out.
 
-```ts showLineNumbers copy filename="src/modules/user/user-controller.ts"
+```ts showLineNumbers copy filename="src/lib/tools.ts"
 import { deriveTools } from 'vovk';
 import { TaskRPC, PetstoreAPI } from '@/client';
 import UserController from '@/modules/user/user-controller';
@@ -3267,8 +3276,10 @@ const tools = deriveTools({
 The `createTool` utility was removed in v4. Derived tools follow the standard-tool convention. So you can create standalone tools, which don't map to your back end, with the [standard-tool](https://www.npmjs.com/package/standard-tool) package, or write them as plain objects of the same shape. Mix them with derived tools as you like:
 
 ```ts showLineNumbers copy
+import { deriveTools } from 'vovk';
 import { standardTool } from 'standard-tool';
 import { z } from 'zod';
+import UserController from '@/modules/user/user-controller';
 
 const sumNumbers = standardTool({
   name: 'sum_numbers',
@@ -3328,7 +3339,7 @@ export default class AiSdkController {
       llmTools.map(({ name, execute, description, inputSchema }) => [
         name,
         tool({
-          execute: (input) => execute(input),
+          execute,
           description,
           inputSchema: inputSchema ?? z.object({}),
         }),
@@ -3353,13 +3364,13 @@ The tool's `inputSchema` goes to the Vercel AI SDK as is. The SDK supports Stand
 
 On the client side, create a component with the [useChat](https://ai-sdk.dev/docs/reference/ai-sdk-ui/use-chat) hook:
 
-```tsx showLineNumbers copy filename="src/app/page.tsx"
+```tsx showLineNumbers copy filename="src/components/chat.tsx"
 'use client';
 import { useChat } from '@ai-sdk/react';
 import { DefaultChatTransport } from 'ai';
 import { useState } from 'react';
 
-export default function Page() {
+export default function Chat() {
   const [input, setInput] = useState('');
 
   const { messages, sendMessage, error, status } = useChat({
@@ -3392,6 +3403,21 @@ export default function Page() {
         <button>Send</button>
       </div>
     </form>
+  );
+}
+```
+
+`useChat` reads a random value when it renders. With `cacheComponents` on, which `create-next-app` 16.4+ sets, `next build` refuses a random value outside `<Suspense>`, so render the component inside `<Suspense>` from a server page:
+
+```tsx showLineNumbers copy filename="src/app/page.tsx"
+import { Suspense } from 'react';
+import Chat from '@/components/chat';
+
+export default function Page() {
+  return (
+    <Suspense>
+      <Chat />
+    </Suspense>
   );
 }
 ```
@@ -3480,7 +3506,7 @@ With the `ToModelOutput.MCP` formatter, the tool's output is:
 You can create the response with the [`toDownloadResponse`](https://vovk.dev/response#downloads) utility, or get the media from another source with `fetch`.
 
 ```ts showLineNumbers copy
-import { toDownloadResponse } from 'vovk';
+import { get, operation, procedure, toDownloadResponse } from 'vovk';
 
 export default class MediaController {
   @operation({ summary: 'Get audio' })
@@ -4118,7 +4144,7 @@ import type { VovkFetcher } from "vovk/fetcher";
 import { createRPC } from "vovk/create-rpc";
 import { schema } from "./schema";
 
-import type { Controllers as Controllers0 } from "../../app/api/[[...vovk]]/route.ts";
+import type { Controllers as Controllers0 } from "../app/api/[[...vovk]]/route.ts";
 
 // The arguments are: schema, segmentName, rpcModuleName, fetcher and options
 export const UserRPC = createRPC<
@@ -4129,7 +4155,9 @@ export const UserRPC = createRPC<
 });
 ```
 
-The generated client imports `vovk` subpaths, such as `vovk/fetcher`, and JSON files with import attributes. It compiles on TypeScript 5.3+ with `"moduleResolution"` set to `"bundler"` (the Next.js default), `"node16"` or `"nodenext"`. With `"node"`, TypeScript can't find `vovk/fetcher`.
+The generated client imports `vovk` subpaths, such as `vovk/fetcher`, and JSON files with import attributes. It compiles with `"moduleResolution"` set to `"bundler"` (the Next.js default), `"node16"` or `"nodenext"`. With `"node"`, TypeScript can't find `vovk/fetcher`. The client alone compiles on TypeScript 5.3+, but a service or a handler that takes its types from its own procedure, as in these docs and the files `vovk new` writes, needs TypeScript 5.5+.
+
+Under `"node16"` or `"nodenext"`, the client imports its own files by their `.js` names, such as `./schema.js` (by their `.ts` names when `allowImportingTsExtensions` is on). Turbopack resolves a `.js` name to the `.ts` file, but `next build --webpack` doesn't, unless **next.config** sets `experimental: { extensionAlias: { '.js': ['.ts', '.tsx', '.js'] } }`.
 
 ## RPC Method Options
 
@@ -4723,7 +4751,7 @@ Page: https://vovk.dev/composed
 
 # Composed Client Mode
 
-By default, Vovk.ts generates one RPC client with the RPC modules of every segment: the **Composed Client**. It fits single-page apps, where one import gives you all RPC modules. The files go to the **src/client** folder (or **client** if the project has no `src` folder; you can [change it](https://vovk.dev/config)), and you import them as `@/client` with the default Next.js path alias.
+By default, Vovk.ts generates one RPC client with the RPC modules of every segment: the **Composed Client**. It fits single-page apps, where one import gives you all RPC modules. The files go to the **src/client** folder when the app is in `src/app` (otherwise **client**; you can [change it](https://vovk.dev/config)), and you import them as `@/client` with the default Next.js path alias.
 
 The default [ts](https://vovk.dev/templates#ts) template generates this **src/client** folder:
 
@@ -4743,6 +4771,8 @@ This [CLI](https://vovk.dev/generate) command does the same as the default gener
 npm exec -- vovk generate --from ts --out src/client
 ```
 
+The composed client exports each RPC module by its name, so two segments can't both have a `UserRPC`: generation fails with a message that names both segments. Rename the module in one segment's `controllers` object, or leave that segment out with [`excludeSegments`](#excludesegments) and import it from the [segmented client](https://vovk.dev/segmented).
+
 ## Composed Client Config
 
 The options of the composed client:
@@ -4753,7 +4783,7 @@ const config = {
   composedClient: {
     enabled: true, // default
     fromTemplates: ['ts'], // default
-    outDir: './src/client', // default; './client' if there is no src folder
+    outDir: './src/client', // default; './client' when there is no src/app folder
     includeSegments: ['foo'], // or excludeSegments: ['bar'], not both
   },
 };
@@ -4770,7 +4800,7 @@ The templates that generate the composed client. The default, `["ts"]`, produces
 
 ### `outDir`
 
-Where the composed client is generated. Defaults to `./src/client` when the project has a `src` folder, or `./client` otherwise. The path is relative to the current working directory (CWD). If the folder already has files with the generated names, such as a hand-written `index.ts`, generation stops and names them; see [`--force`](https://vovk.dev/generate#other-flags).
+Where the composed client is generated. Defaults to `./src/client` when the project has a `src/app` folder (and no root `app` folder), or `./client` otherwise. The path is relative to the current working directory (CWD). If the folder already has files with the generated names, such as a hand-written `index.ts`, generation stops and names them; see [`--force`](https://vovk.dev/generate#other-flags).
 
 ### `includeSegments`
 
@@ -4796,7 +4826,7 @@ Page: https://vovk.dev/segmented
 
 The [Composed Client Mode](https://vovk.dev/composed) fits single-page apps. In a larger app, you may not want one client to expose the whole schema. The **Segmented Client** is a separate RPC client for each segment: smaller TypeScript modules that you import one by one, so a page doesn't load the RPC modules and schemas of unrelated segments. For example, “customer” pages don't import the “admin” RPC modules, and admin details stay out of customer code.
 
-By default, the segmented client is generated in the `./src/client` folder (or `./client` if you don't use a `src` folder) from the [ts](https://vovk.dev/templates#ts) template. For an app with several segments, it can look like this:
+By default, the segmented client is generated in the `./src/client` folder (or `./client` when the app isn't in `src/app`) from the [ts](https://vovk.dev/templates#ts) template. For an app with several segments, it can look like this:
 
 ```
 src/client/
@@ -4951,7 +4981,7 @@ import { schema } from '@/client/root/schema';
 
 A segment schema file:
 
-```js filename=".vovk-schema/foo.json"
+```jsonc filename=".vovk-schema/foo.json"
 {
   // Segment schema version
   "$schema": "https://vovk.dev/api/schema/v3/segment.json",
@@ -5227,7 +5257,7 @@ npm install -D vovk-cli
 npm install vovk vovk-ajv
 ```
 
-The [composed client](https://vovk.dev/composed), which combines all generated API clients into one, goes to `src/client` (or `composedClient.outDir`). Your code imports it directly, for example as `@/client`.
+The [composed client](https://vovk.dev/composed), which combines all generated API clients into one, goes to `client/` in standalone codegen, or to `src/client` in a Next.js app whose app folder is `src/app` (`composedClient.outDir` changes it). Your code imports it directly, for example as `@/client`.
 
 ### Create Config File
 
@@ -5468,12 +5498,13 @@ import { PetstoreAPI, GithubIssuesAPI } from '@/lib/client';
 
 The [segmented client](https://vovk.dev/segmented) splits the code into chunks. Each mixin goes to a folder named after its segment (`petstore`, `github` and so on, from `outputConfig.segments`).
 
-By default, the output goes to `src/client`. `segmentedClient.outDir` changes the folder.
+By default, the output goes to the composed client's folder: `src/client` with a `src/app` folder, `client/` otherwise. `segmentedClient.outDir` changes the folder.
 
 ```ts showLineNumbers copy filename="vovk.config.js"
 /** @type {import('vovk').VovkConfig} */
 const config = {
   segmentedClient: {
+    enabled: true,
     outDir: './src/lib/client', // a folder in your code
     prettifyClient: true, // prettify the output
   },
@@ -6855,7 +6886,7 @@ Options of the [bundle](https://vovk.dev/bundle), such as `excludeSegments` and 
 
 ### `modulesDir = 'src/modules'`
 
-The folder of the module files; `modules` if the project has no `src` folder. [vovk new](https://vovk.dev/new) creates modules in it, and [vovk dev](https://vovk.dev/dev) watches it for changes.
+The folder of the module files; `modules` when the app isn't in `src/app`. [vovk new](https://vovk.dev/new) creates modules in it, and [vovk dev](https://vovk.dev/dev) watches it for changes.
 
 ### `schemaOutDir = '.vovk-schema'`
 
@@ -6863,7 +6894,7 @@ The folder the schema is written to.
 
 ### `rootEntry = 'api'`
 
-The root path of the API. With the default `api`, routes are served under `/api`, and the segment `route.ts` files live in `./src/app/api` (the `src/` folder is optional). An empty string `''` serves the API from the domain root, with the segments in `./src/app`.
+The root path of the API. With the default `api`, routes are served under `/api`, and the segment `route.ts` files live in `./src/app/api` (the `src/` folder is optional). An empty string `''` serves the API from the domain root, with the segments in `./src/app`. The root segment then takes `/`, so it can't sit next to a root **page.tsx**: Next.js refuses the two routes.
 
 ### `rootSegmentModulesDirName = ''`
 
@@ -7070,7 +7101,7 @@ Options:
 4. The watcher requests `/api/<segment-name>/_schema_` of that segment for the new schema. When the file holds no known controller, as with a renamed controller, a service or a validation module, it requests the schema of every segment.
 5. If the schema changed:
    - If controllers were added, removed or renamed, or methods changed (validation included), the watcher writes the schema to the [.vovk-schema](https://vovk.dev/config#schemaoutdir) folder as `<segment-name>.json`.
-   - If the controller list changed, the watcher also generates the client again. The client imports the schema JSON files to set up the library it exports. By default, the [composed client](https://vovk.dev/composed) goes to `./src/client` (or `./client` without a `src` folder). With the [segmented client](https://vovk.dev/segmented), the per-segment folders go to the same folder.
+   - If the controller list changed, the watcher also generates the client again. The client imports the schema JSON files to set up the library it exports. By default, the [composed client](https://vovk.dev/composed) goes to `./src/client` (or `./client` without a `src/app` folder). With the [segmented client](https://vovk.dev/segmented), the per-segment folders go to the same folder.
 
 ![vovk dev](devSvg)
 
@@ -7554,7 +7585,7 @@ Mixins add the APIs of one or more OpenAPI specs to the client. See [OpenAPI mix
 - `--openapi-root-url <urls...>` — root URLs, matched by index to `--openapi`. Mirrors `outputConfig.segments.mixinName.openAPIMixin.apiRoot`.
 - `--openapi-mixin-name <names...>` — mixin names, matched by index to `--openapi`; `mixin`, `mixin2`, … by default. In the config, the name is the key in `outputConfig.segments` and the pseudo-segment name of the mixin.
 - `--openapi-fallback <paths...>` — saves the OpenAPI specs to these paths and uses them when the URL is unavailable. The paths match `--openapi` by index.
-- `--watch ` — generates the client on start, then again on each change of the schema or the OpenAPI spec. Takes a throttle interval in seconds. A remote spec is requested every `s` seconds; a changed local file counts once it has kept the same size for 300 ms.
+- `--watch [s]` — generates the client on start, then again on each change of the schema or the OpenAPI spec. Takes a throttle interval in seconds. A remote spec is requested every `s` seconds; a changed local file counts once it has kept the same size for 300 ms.
 
 ### Other Flags
 
@@ -7667,7 +7698,6 @@ Sets the channel: the npm tag the Vovk.ts packages are installed from. The chann
 
 - `latest` (default) for stable releases.
 - `beta` for beta releases (tested, but they can break things without notice).
-- `draft` for draft releases.
 
 Run the CLI from the same channel:
 
@@ -7858,7 +7888,7 @@ The metadata fields:
 The EJS template gets these variables in the `t` object:
 
 - `t.defaultOutDir: string` — the default output folder of the module.
-- `t.relativePathToSourceRoot: string` — the path from `t.defaultOutDir` to the source root (the `src` folder, or the project root without one), such as `../..`.
+- `t.relativePathToSourceRoot: string` — the path from `t.defaultOutDir` to the source root (`src` when the app is in `src/app`, otherwise the project root), such as `../..`.
 - `t.config: VovkConfig` — the Vovk.ts config.
 - `t.segmentName: string` — the segment name (an empty string for the root segment).
 - `t.withService: boolean` — whether a service is created together with the controller.
@@ -7876,7 +7906,7 @@ The EJS template gets these variables in the `t` object:
 
 A module template for an ArkType controller and service. For readability, the template keeps its own variables in a `vars` object.
 
-```ejs filename="packages/vovk-cli/module-templates/arktype/controller.ts.ejs" source=".">
+```ejs filename="packages/vovk-cli/module-templates/arktype/controller.ts.ejs" source="."
 <% const vars = { 
   ModuleName: t.TheThing + 'Controller',
   ServiceName: t.TheThing + 'Service',
@@ -7970,7 +8000,7 @@ export default class <%= vars.ModuleName %> {
 ```
 *[The code above is fetched from GitHub repository.](https://github.com/finom/vovk/blob/main/packages/vovk-cli/module-templates/arktype/controller.ts.ejs)*
 
-```ejs filename="packages/vovk-cli/module-templates/type/service.ts.ejs" source=".">
+```ejs filename="packages/vovk-cli/module-templates/type/service.ts.ejs" source="."
 <% const vars = {
   ControllerName: t.TheThing + 'Controller',
   ServiceName: t.TheThing + 'Service',
@@ -8400,7 +8430,7 @@ export const { GET, POST, PATCH, PUT, HEAD, OPTIONS, DELETE } = initSegment({
 
 The demo uses [@tanstack/react-query](https://www.npmjs.com/package/@tanstack/react-query) for both standard requests and streaming.
 
-```ts showLineNumbers copy filename="src/components/demo/index.tsx" source="examples/hello-world"
+```tsx showLineNumbers copy filename="src/components/demo/index.tsx" source="examples/hello-world"
 'use client';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import StreamDemo from './stream-demo';
@@ -8837,6 +8867,8 @@ export const { GET } = initSegment({
 ```
 *[The code above is fetched from GitHub repository.](https://github.com/finom/vovk/blob/main/examples/hello-world/src/app/api/static/[[...vovk]]/route.ts)*
 
+The `static` segment exports `dynamic = 'force-static'`, and the root segment `runtime = 'edge'`. Next.js refuses both when `cacheComponents` is on, as `create-next-app` 16.4+ sets it. The example's **next.config** leaves it off; in your app, set `cacheComponents: false` to use them.
+
 The spec includes code samples that Scalar shows, ready to copy.
 
 Link: https://hello-world.vovk.dev/openapi
@@ -8929,7 +8961,7 @@ once_cell = "1.17"
   features = [ "json", "multipart", "stream" ]
 
   [dependencies.tokio]
-  version = "1"
+  version = "1.49"
   features = [ "macros", "rt-multi-thread", "io-util" ]
 
   [dependencies.tokio-util]
@@ -9119,7 +9151,7 @@ By default, the segmented client goes to `./src/client`. The `outDir` option cha
 Then import the client in the front-end code:
 
 ```ts showLineNumbers copy
-import { ProductRPC } from '@/client/product';
+import { ProductRPC } from '@/client/root';
 
 await ProductRPC.getProducts();
 ```
@@ -9183,6 +9215,8 @@ Parameters:
 For wildcard subdomains, use square-bracket patterns, such as `[customer_name]`, for the [Dynamic Segment](https://nextjs.org/docs/app/api-reference/file-conventions/dynamic-routes). The page gets the value in `params`. A placeholder matches one DNS label (letters, digits and hyphens), and the host is matched case-insensitively, so a host such as `%2e%2e.customer.example.com` gets no rewrite.
 
 A rule rewrites a path prefix, so a host also reaches what is nested under its target: `acme.customer.example.com/api/pro` reaches the `customer/pro` segment, and `acme.customer.example.com/pro` the pro page.
+
+The proxy goes in **src/proxy.ts**. On Next.js 15, name the file **src/middleware.ts**.
 
 ```ts showLineNumbers copy filename="src/proxy.ts" source="examples/multitenant"
 import { type NextRequest, NextResponse } from 'next/server';
@@ -9278,6 +9312,20 @@ Any test runner works: Vitest, Jest, the Node.js test runner and others. The exa
 
 The `vovk` package is ES modules only. Jest set up with `next/jest` can't load it as is, so add `transpilePackages: ['vovk']` to the Next.js config.
 
+Vitest doesn't read the `paths` of **tsconfig.json**, so it can't resolve `@/client` on its own. With Vite 8, which a new Vitest install uses, turn on `resolve.tsconfigPaths`. With an older Vite, use the `vite-tsconfig-paths` plugin or `resolve.alias`.
+
+```ts showLineNumbers copy filename="vitest.config.ts"
+import { defineConfig } from 'vitest/config';
+
+export default defineConfig({
+  resolve: { tsconfigPaths: true },
+});
+```
+
+With Vite 8, Vitest also drops the decorators on static fields, such as procedures, when `useDefineForClassFields` is off: `.fn()` then runs without them, auth guards included. It is off by default for a `target` below ES2022, such as the ES2017 that `create-next-app` writes. Set `"useDefineForClassFields": true` in **tsconfig.json**, or `"target": "ES2022"`.
+
+Node.js strips TypeScript types but doesn't compile decorators, so the Node.js test runner needs a loader that does, such as [tsx](https://tsx.is): `node --import tsx --test`. tsx also reads the `paths` of **tsconfig.json**, so `@/client` resolves. Without a loader, Node.js runs only the generated client (it strips types by default since 22.18): set `"module": "nodenext"` and `"allowImportingTsExtensions": true` (it needs `"noEmit": true`) in **tsconfig.json**, and import the client by a relative path. To use the client from another project, [bundle](https://vovk.dev/bundle) it.
+
 ## Testing with `.fn`
 
 Given this controller:
@@ -9333,7 +9381,7 @@ describe('UserController', () => {
 });
 ```
 
-`.fn` runs the whole procedure, with validation and [decorators](https://vovk.dev/decorator-overview), but without HTTP. That fits tests with mocked or stubbed data: there is no server to start, no network latency and no cold start, so the tests run fast.
+`.fn` runs the whole procedure, with validation and [decorators](https://vovk.dev/decorator-overview), but without HTTP. That fits tests with mocked or stubbed data: there is no server to start, no network latency and no cold start, so the tests run fast. A test runs outside a Next.js request, so `headers()` and `cookies()` from `next/headers` throw there: mock `next/headers` for a decorator that reads them.
 
 The trade-off: `.fn()` skips `proxy.js` (`middleware.js` in earlier Next.js versions). Logic that lives there, such as authentication checks, rate limiting or added headers, doesn't run in `.fn()` calls. To test that layer, use [integration tests with RPC modules](#integration-testing-with-rpc-modules) against a running dev server instead.
 
@@ -9360,15 +9408,17 @@ describe('UserController validation', () => {
 
 ## Integration Testing with RPC Modules
 
-For end-to-end tests through HTTP, call the generated [RPC modules](https://vovk.dev/typescript) against a running dev server:
+For end-to-end tests through HTTP, call the generated [RPC modules](https://vovk.dev/typescript) against a running dev server. The client calls `/api` by default, and `fetch` in Node.js takes no relative URL, so give it the server's address with `apiRoot`, or set [`outputConfig.origin`](https://vovk.dev/config#outputconfig).
 
 ```ts showLineNumbers copy filename="src/modules/user/user-controller.e2e.test.ts"
 import { describe, it, expect } from 'vitest';
 import { UserRPC } from '@/client';
 
+const LocalUserRPC = UserRPC.withDefaults({ apiRoot: 'http://localhost:3000/api' });
+
 describe('UserController E2E', () => {
   it('gets a user via HTTP', async () => {
-    const user = await UserRPC.getUser({ params: { id: '42' } });
+    const user = await LocalUserRPC.getUser({ params: { id: '42' } });
 
     expect(user).toEqual({ id: '42', name: 'John' });
   });
@@ -9790,7 +9840,7 @@ export default class HelloController {
 `@operation.tool()` adds AI tool data under the `x-tool` key of the operation object (see [Deriving AI Tools](https://vovk.dev/tools)), and `@operation.error(status, message)` documents an error response.
 
 ```ts showLineNumbers copy
-import { operation } from 'vovk';
+import { get, operation } from 'vovk';
 
 export default class HelloController {
   @operation.tool({
@@ -9925,6 +9975,8 @@ export function generateStaticParams() {
 export const { GET } = initSegment({ controllers });
 ```
 
+With `cacheComponents` on, which `create-next-app` 16.4+ sets, Next.js refuses `dynamic = 'force-static'`: set `cacheComponents: false` in **next.config**.
+
 For another slug folder, such as `src/app/api/[[...custom]]/route.ts`, pass its name as the second argument:
 
 ```ts showLineNumbers copy
@@ -10028,6 +10080,7 @@ For client-side validation, see the [customization](https://vovk.dev/imports) pa
 Defines a procedure: a controller handler with validation and schema emission. `procedure(options)` returns `.handle()`, which takes the handler, `(req, params) => …`.
 
 ```ts showLineNumbers copy
+import { z } from 'zod';
 import { procedure } from 'vovk';
 
 export default class UserController {
