@@ -4,8 +4,8 @@ description: "Full documentation for the Vovk.ts framework, excluding the Realti
 see_also:
   label: "Realtime Kanban Context"
   url: https://vovk.dev/context/realtime-ui.md
-chars: 388295
-est_tokens: 97074
+chars: 388233
+est_tokens: 97059
 ---
 
 Page: https://vovk.dev
@@ -7842,7 +7842,7 @@ npx vovk new controller service user
 
 ### Custom Module Templates
 
-A module template is a `.ts.ejs` file. It uses [EJS](https://ejs.co/) to generate the code and [gray-matter](https://www.npmjs.com/package/gray-matter) front matter, in YAML, for its metadata.
+A module template is a `.ts.ejs` file. It uses [EJS](https://ejs.co/) to generate the code and YAML front matter for its metadata.
 
 #### Module Template Metadata
 
