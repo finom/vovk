@@ -1,5 +1,4 @@
 import type {
-  ComponentsObject,
   ContentObject,
   OpenAPIObject,
   OperationObject,
@@ -20,6 +19,7 @@ import { applyComponentsSchemas } from './apply-components-schemas.js';
 import { inlineRefs } from './inline-refs.js';
 import { mapSubschemas, SUBSCHEMA_MAP_KEYWORDS } from './map-subschemas.js';
 import { normalizeOpenAPI30 } from './normalize-openapi-30.js';
+import { normalizeSwagger2 } from './normalize-swagger-2.js';
 import { pruneComponentsSchemas } from './prune-components-schemas.js';
 
 // the Path Item fields that hold an operation; fetch refuses TRACE, so it has no client method
@@ -167,13 +167,11 @@ export function openAPIToVovkSchema({
 }: VovkOpenAPIMixinNormalized & { segmentName?: string }): VovkSchema {
   segmentName = segmentName ?? '';
   openAPIObject = stripXTsType(openAPIObject);
+  if (String((openAPIObject as { swagger?: unknown }).swagger).startsWith('2.')) {
+    openAPIObject = normalizeSwagger2(openAPIObject);
+  }
   if (String(openAPIObject.openapi).startsWith('3.0')) openAPIObject = normalizeOpenAPI30(openAPIObject);
-  const forceApiRoot =
-    apiRoot ||
-    (resolveServerURL(openAPIObject.servers?.[0]) ??
-      ('host' in openAPIObject
-        ? `https://${openAPIObject.host}${'basePath' in openAPIObject ? openAPIObject.basePath : ''}`
-        : null));
+  const forceApiRoot = apiRoot || resolveServerURL(openAPIObject.servers?.[0]);
 
   if (!forceApiRoot) {
     throw new Error('API root URL is required in OpenAPI configuration');
@@ -197,9 +195,7 @@ export function openAPIToVovkSchema({
     },
   };
   const segment = schema.segments[segmentName];
-  const componentsSchemas =
-    openAPIObject.components?.schemas ??
-    ('definitions' in openAPIObject ? (openAPIObject.definitions as ComponentsObject['schemas']) : {});
+  const componentsSchemas = openAPIObject.components?.schemas ?? {};
   const operations: {
     handler: VovkHandlerSchema;
     slots: Record<'query' | 'params' | 'body' | 'output' | 'iteration', VovkJSONSchemaBase | null>;
