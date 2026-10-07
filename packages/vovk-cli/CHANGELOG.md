@@ -10,6 +10,7 @@ A cleanup release. `vovk-cli` is pre-1.0, so this minor carries breaking changes
 
 ### Removed
 
+- The `draft` channel of `vovk init --channel` ([#PR](https://github.com/finom/vovk/pull/PR))
 - The library entry: `main`, `types` and the `VovkEnv` type export. Importing `vovk-cli` ran the CLI; the `vovk` bin is unchanged ([#44](https://github.com/finom/vovk/pull/44))
 - The `vovk-client` package: the composed client generates into your source tree (`src/client`, or `client/` without a `src` folder) and is imported as `@/client`, so it survives `npm ci` and works under pnpm and Yarn PnP ([#29](https://github.com/finom/vovk/pull/29))
 - The `js` template family (`js`, `jsBase`, `schemaJs`, `openapiJs`): use `ts` ([#29](https://github.com/finom/vovk/pull/29))
