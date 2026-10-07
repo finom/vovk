@@ -99,6 +99,19 @@ const withLoneValuesAsArrays = (query: unknown, plan: ArrayPlan | null): unknown
   return result;
 };
 
+// a sync generator, a Set and other iterables the server streams, but no array or responder
+const isSyncIterable = (value: unknown): value is Iterable<unknown> =>
+  typeof value === 'object' &&
+  value !== null &&
+  !Array.isArray(value) &&
+  !(value instanceof JSONLinesResponder) &&
+  typeof (value as Iterable<unknown>)[Symbol.iterator] === 'function' &&
+  typeof (value as AsyncIterable<unknown>)[Symbol.asyncIterator] !== 'function';
+
+async function* toAsyncGenerator(iterable: Iterable<unknown>) {
+  yield* iterable;
+}
+
 // a buffered body read as JSON that has no bytes, as fetch() sends a JSON content type for a call without a body
 const isEmptyJSONBody = async (req: VovkRequestAny) => {
   const contentType = req.headers.get('content-type');
@@ -375,10 +388,15 @@ export function withValidationLibrary<
       fakeReq.vovk.meta<Meta>({ __disableClientValidation: input?.disableClientValidation, ...input?.meta });
       if (input?.body === undefined) callsWithoutBody.add(fakeReq);
 
-      const result = run(fakeReq as VovkRequestAny, (input?.params ?? {}) as Parameters<THandle>[1]);
+      // a promise also when a sync decorator throws or answers without calling next()
+      const result = (async () => {
+        const data = await run(fakeReq as VovkRequestAny, (input?.params ?? {}) as Parameters<THandle>[1]);
+        // with an iteration schema, an async generator also where the items go unchecked
+        return iteration && isSyncIterable(data) ? toAsyncGenerator(data) : data;
+      })();
 
       if (input && 'transform' in input && typeof input.transform === 'function') {
-        return Promise.resolve(result).then((resolvedResult) =>
+        return result.then((resolvedResult) =>
           input.transform(resolvedResult as Awaited<ReturnType<THandle>>, fakeReq)
         ) as Promise<TTransformed>;
       }

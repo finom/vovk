@@ -302,4 +302,32 @@ describe('procedure features', async () => {
     });
     await assert.rejects(result as Promise<unknown>, { statusCode: HttpStatus.UNAUTHORIZED });
   });
+
+  it('Should return a promise from fn() when a sync decorator answers without calling next()', async () => {
+    // as the decorator page shows: skip the handler and respond with an object
+    const cached = createDecorator(() => ({ from: 'cache' }));
+    class CachedController {
+      static report = procedure().handle(async () => ({ from: 'handler' }));
+    }
+    cached()(CachedController, 'report');
+    get('report')(CachedController, 'report');
+
+    const result = CachedController.report.fn();
+
+    assert.ok(result instanceof Promise);
+    assert.deepEqual(await result, { from: 'cache' });
+  });
+
+  it('Should give an async generator from fn() with an iteration schema, also without validation', async () => {
+    const handler = procedure({ iteration: z.object({ n: z.number() }) }).handle(function* () {
+      yield { n: 1 };
+    });
+
+    const items = await handler.fn({ disableClientValidation: true });
+
+    assert.equal(typeof items[Symbol.asyncIterator], 'function');
+    const collected: unknown[] = [];
+    for await (const item of items) collected.push(item);
+    assert.deepEqual(collected, [{ n: 1 }]);
+  });
 });
