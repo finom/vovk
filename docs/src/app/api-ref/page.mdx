@@ -253,7 +253,7 @@ Lists the routes as static params, so the API is built at build time instead of 
 
 **Returns:**
 
-- `Array<Record<string, string[]>>{:ts}` — params objects for `generateStaticParams()`: `{ vovk: ['_schema_'] }` for the schema endpoint, then one per path, such as `{ vovk: ['hello', 'greeting.json'] }`.
+- `Array<Record<string, string[]>>{:ts}` — params objects for `generateStaticParams()`: one per path, such as `{ vovk: ['hello', 'greeting.json'] }`. The list starts with `{ vovk: ['_schema_'] }` for the schema endpoint when `NODE_ENV` is `development`, or when there is no other path, as `output: 'export'` needs one.
 
 ```ts showLineNumbers copy filename="src/app/api/[[...vovk]]/route.ts"
 // ...
