@@ -14,7 +14,6 @@ A cleanup major: removals and renames; the only new exports are types.
 - The static `prefix` class property: use `@prefix()` on the class. A `static prefix` left in a class is ignored without an error, so its routes lose the prefix ([#44](https://github.com/finom/vovk/pull/44))
 - `fetcher`, `createFetcher` and `VovkFetcher` from `vovk`: import them from `vovk/fetcher` ([#44](https://github.com/finom/vovk/pull/44))
 - `createValidateOnClient` and `VovkValidateOnClient` from `vovk`: import them from `vovk/create-validate-on-client` ([#44](https://github.com/finom/vovk/pull/44))
-- `HttpMethod`: use the method name as a string, such as `'GET'` ([#44](https://github.com/finom/vovk/pull/44))
 - `DEFAULT_ERROR_MESSAGE`, `CreateFetcherOnSuccess` and `CreateFetcherOnError` from `vovk/fetcher` ([#44](https://github.com/finom/vovk/pull/44))
 - The exports of `vovk/internal` that no vovk package uses, such as `vovkApp` and `withValidationLibrary`; `VovkHandlerSchema` comes from `vovk/create-rpc`, and `vovk/internal` is not public API ([#44](https://github.com/finom/vovk/pull/44))
 - `toolsByName`: `deriveTools` returns the tools array only ([#28](https://github.com/finom/vovk/pull/28))
@@ -139,8 +138,7 @@ A cleanup major: removals and renames; the only new exports are types.
 10. `req.nextUrl.searchParams.get()` is typed as the string it returns; use `req.vovk.query()` for validated values.
 11. Rewrite a `decorate(get(), ..., procedure(...)).handle(fn)` member as `@get() ... static name = procedure(...).handle(fn)`, and a `static prefix = 'users'` as `@prefix('users')` on the class: a `static prefix` is now ignored without an error.
 12. Import `fetcher`, `createFetcher` and `VovkFetcher` from `vovk/fetcher`, and `createValidateOnClient` and `VovkValidateOnClient` from `vovk/create-validate-on-client`.
-13. Replace `HttpMethod.GET` and the other members with the strings `'GET'` and so on.
-14. In a custom fetcher, a call without a body has `body: undefined`, not `null`.
+13. In a custom fetcher, a call without a body has `body: undefined`, not `null`.
 
 ## 3.7.0 - 2026-06-11
 

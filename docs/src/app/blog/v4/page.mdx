@@ -14,7 +14,7 @@ Breaking changes:
 
 - `vovk-client` is gone. The client is generated into `src/client` and imported from `@/client`. The `js` templates are removed.
 - [deriveTools](/tools) returns an array of `StandardToolV0`. `createTool`, `VovkTool` and `toolsByName` are removed.
-- `fetcher` and `createFetcher` come from `vovk/fetcher`, `createValidateOnClient` from `vovk/create-validate-on-client`. The camelCase subpaths and `HttpMethod` are removed.
+- `fetcher` and `createFetcher` come from `vovk/fetcher`, `createValidateOnClient` from `vovk/create-validate-on-client`. The camelCase subpaths are removed.
 - `decorate()` and `static prefix` are removed: decorators and `@prefix()` only.
 - Only an `HttpException` sets the status. In production, any other error answers 500 with no detail.
 - Repeated query keys become arrays, and a handler's second argument is the validated params.
@@ -78,7 +78,6 @@ Each entry exports what your code writes against.
 | `fetcher`, `createFetcher`, `VovkFetcher` from `vovk` | from `vovk/fetcher` |
 | `createValidateOnClient`, `VovkValidateOnClient` from `vovk` | from `vovk/create-validate-on-client` |
 | `vovk/createRPC`, `vovk/createValidateOnClient` | `vovk/create-rpc`, `vovk/create-validate-on-client` |
-| `HttpMethod.GET` | `'GET'` |
 | `validateOnClient.configure()` in `vovk-ajv` | `libs.ajv` in `vovk.config` |
 
 `vovk/internal` is not public API. `vovk-cli` has no library entry: importing it ran the CLI. The `vovk` command is unchanged.
