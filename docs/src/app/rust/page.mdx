@@ -438,6 +438,16 @@ A function without an output schema returns a `serde_json::Value`: the parsed JS
 
 A failed call returns an `HttpException`. Its `status_code()` is the response status, or 0 when the call failed before a response came, for example in client-side validation. `message()` and `cause()` hold the error the server sent. When no response came, or the response broke off, `source()` is the `reqwest::Error`, without the URL.
 
+The calls send their requests with a default `reqwest::Client`, which has no timeout. To set a timeout, a proxy or default headers, give `set_client_factory` a function that builds the client. The crate calls it again for each thread and tokio runtime it sends calls from, since a pooled connection works only on the runtime that opened it.
+
+```rs
+use std::time::Duration;
+
+vovk_hello_world::set_client_factory(|| {
+    reqwest::Client::builder().timeout(Duration::from_secs(30)).build().expect("a client")
+});
+```
+
 ### JSON Lines Endpoints
 
 For [JSON Lines](/jsonlines) endpoints, the async function resolves to a [`futures::Stream`](https://docs.rs/futures/latest/futures/stream/trait.Stream.html) of `Result<T, HttpException>` items. Read it with `StreamExt::next` from the [futures](https://docs.rs/futures) crate.

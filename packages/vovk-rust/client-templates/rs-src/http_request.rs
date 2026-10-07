@@ -102,17 +102,30 @@ type ValidatorKey = (&'static str, &'static str, &'static str, &'static str);
 // each schema is compiled on its first use
 static VALIDATORS: Lazy<Mutex<HashMap<ValidatorKey, Arc<Validator>>>> = Lazy::new(|| Mutex::new(HashMap::new()));
 
+type ClientFactory = Arc<dyn Fn() -> Client + Send + Sync>;
+
+static CLIENT_FACTORY: Lazy<Mutex<(u64, Option<ClientFactory>)>> = Lazy::new(|| Mutex::new((0, None)));
+
+/// Sets how the calls build their `reqwest::Client`, for example with a timeout, a proxy or default headers:
+/// `set_client_factory(|| reqwest::Client::builder().timeout(Duration::from_secs(30)).build().unwrap())`.
+/// It is called again for each thread and tokio runtime the calls run on, and for the calls made after it is set.
+pub fn set_client_factory(factory: impl Fn() -> Client + Send + Sync + 'static) {
+    let mut slot = CLIENT_FACTORY.lock().unwrap_or_else(|e| e.into_inner());
+    *slot = (slot.0 + 1, Some(Arc::new(factory)));
+}
+
 thread_local! {
     // a pooled connection works only while the runtime that opened it runs, and a current-thread runtime runs only in
     // block_on: the thread keeps a client for the runtime it calls from and builds a new one when the runtime changes
-    static CLIENT: RefCell<Option<(tokio::runtime::Id, Client)>> = const { RefCell::new(None) };
+    static CLIENT: RefCell<Option<(tokio::runtime::Id, u64, Client)>> = const { RefCell::new(None) };
 }
 
 fn client() -> Client {
     let runtime = tokio::runtime::Handle::current().id();
+    let (version, factory) = CLIENT_FACTORY.lock().unwrap_or_else(|e| e.into_inner()).clone();
     CLIENT.with_borrow_mut(|slot| match slot {
-        Some((id, client)) if *id == runtime => client.clone(),
-        _ => slot.insert((runtime, Client::new())).1.clone(),
+        Some((id, built_with, client)) if *id == runtime && *built_with == version => client.clone(),
+        _ => slot.insert((runtime, version, factory.map_or_else(Client::new, |factory| factory()))).2.clone(),
     })
 }
 

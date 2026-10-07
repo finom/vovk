@@ -17,7 +17,7 @@ imports: ['vovk-rust']
 mod http_request;
 mod read_full_schema;
 
-pub use crate::http_request::HttpException;
+pub use crate::http_request::{set_client_factory, HttpException};
 <% Object.entries(t.schema.segments).forEach(([segmentName, segment]) => {
     const segmentMeta = t.segmentMeta?.[segmentName] ?? {};
     // a configured origin or root entry gives the segment its own root, a mixin's root already includes its path
