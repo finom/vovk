@@ -125,27 +125,6 @@ export function multitenant(config: Config) {
     }
   }
 
-  if (pathSegments.length > 0 && reservedPaths.includes(pathSegments[0])) {
-    const reservedPath = pathSegments[0];
-    const restPath = pathSegments.slice(1).join('/');
-
-    const destinationHost = `${reservedPath}.${targetHost}`;
-    const destinationUrl = new URL(`${urlObj.protocol}//${destinationHost}`);
-
-    if (restPath) {
-      destinationUrl.pathname = `/${restPath}`;
-    }
-
-    destinationUrl.search = urlObj.search;
-
-    return {
-      action: 'redirect' as const,
-      destination: destinationUrl.toString(),
-      message: `Redirecting to ${reservedPath} subdomain`,
-      subdomains: null,
-    };
-  }
-
   return {
     action: null,
     destination: null,
