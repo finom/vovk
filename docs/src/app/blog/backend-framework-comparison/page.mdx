@@ -1354,39 +1354,37 @@ Similar shape to next-safe-action: RSC RPC (not REST), Zod-only validation, Reac
 
 ### mcp-handler
 
-**Version**: `mcp-handler@1.1.0`. Source: [github.com/vercel/mcp-adapter](https://github.com/vercel/mcp-adapter).
+**Version**: `mcp-handler@2.3.0`. Source: [github.com/vercel-labs/mcp-handler](https://github.com/vercel-labs/mcp-handler).
 
-This is **not a framework** — it's Vercel's MCP HTTP Streamable transport adapter for Next.js. You manually register tools against an `McpServer` instance from `@modelcontextprotocol/sdk`:
+This is **not a framework** — it's Vercel's MCP HTTP adapter. It turns an MCP server definition into a Web-standard `(Request) => Promise<Response>` handler that serves Streamable HTTP, mounted in a Next.js Route Handler or any other Fetch-compatible framework. You manually register tools against an `McpServer` instance from the MCP SDK v2 (`@modelcontextprotocol/server`):
 
-```ts filename="app/api/[transport]/route.ts"
+```ts filename="app/api/mcp/route.ts"
 import { createMcpHandler } from "mcp-handler";
 import { z } from "zod";
 
-const handler = createMcpHandler(
-  (server) => {
-    server.registerTool(
-      "roll_dice",
-      {
-        title: "Roll Dice",
-        description: "Roll a dice with a specified number of sides.",
-        inputSchema: { sides: z.number().int().min(2) },
-      },
-      async ({ sides }) => {
-        const value = 1 + Math.floor(Math.random() * sides);
-        return {
-          content: [{ type: "text", text: `🎲 You rolled a ${value}!` }],
-        };
-      },
-    );
-  },
-  {},
-  { basePath: "/api", maxDuration: 60, verboseLogs: true },
-);
+const handler = createMcpHandler((server) => {
+  server.registerTool(
+    "roll_dice",
+    {
+      title: "Roll Dice",
+      description: "Roll a dice with a specified number of sides.",
+      inputSchema: z.object({
+        sides: z.number().int().min(2),
+      }),
+    },
+    async ({ sides }) => {
+      const value = 1 + Math.floor(Math.random() * sides);
+      return {
+        content: [{ type: "text", text: `🎲 You rolled a ${value}!` }],
+      };
+    },
+  );
+});
 
 export { handler as GET, handler as POST };
 ```
 
-*Source: [github.com/vercel/mcp-adapter](https://github.com/vercel/mcp-adapter)*
+*Source: [github.com/vercel-labs/mcp-handler](https://github.com/vercel-labs/mcp-handler)*
 
 **Manual tool registration only.** Does NOT auto-derive from existing route handlers, server actions, or any other endpoint surface. This is the transport layer Vovk's `deriveTools()` output plugs into (and oRPC users would also wire into).
 
@@ -1557,7 +1555,7 @@ Versions verified at snapshot:
 - 'next-safe-action': 8.5.2 (current: 8.5.3)
 - 'fastify': 5.8.5
 - 'zsa': 0.6.0
-- 'mcp-handler': 1.1.0
+- 'mcp-handler': 1.1.0 (current: 2.3.0; the section shows the 2.x API since 2026-10-08)
 
 WebMCP / official MCP-team adapters (added 2026-05-25):
 - '@mcp-b/webmcp-polyfill': 2.3.2
