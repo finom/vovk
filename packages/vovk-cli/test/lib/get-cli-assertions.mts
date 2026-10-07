@@ -298,25 +298,15 @@ export default function getCLIAssertions({ cwd, dir }: { cwd: string; dir: strin
 
     assert.ok(content, `File ${p} is empty`);
 
-    if (exp) {
-      if (typeof exp === 'string') {
-        const val = content.replace(/\s+/g, '').includes(exp.replace(/\s+/g, ''));
-        assert.ok(opposite ? !val : val, `File ${p} does not match the string "${exp}". Content: ${content}`);
-      } else if (exp instanceof RegExp) {
-        assert.ok(exp.test(content), `File ${p} does not match the regex "${exp}". Content: ${content}`);
-      } else if (Array.isArray(exp)) {
-        for (const e of exp) {
-          if (typeof e === 'string') {
-            const val = content.replace(/\s+/g, '').includes(e.replace(/\s+/g, ''));
-            assert.ok(opposite ? !val : val, `File ${p} does not match the string "${e}". Content: ${content}`);
-          } else if (e instanceof RegExp) {
-            assert.ok(
-              opposite ? e.test(content) : !e.test(content),
-              `File ${p} does not match the regex "${e}". Content: ${content}`
-            );
-          }
-        }
-      }
+    // every string or regex has to match, or with opposite none may
+    for (const e of [exp ?? []].flat()) {
+      const kind = typeof e === 'string' ? 'string' : 'regex';
+      const matches =
+        typeof e === 'string' ? content.replace(/\s+/g, '').includes(e.replace(/\s+/g, '')) : e.test(content);
+      assert.ok(
+        opposite ? !matches : matches,
+        `File ${p} ${opposite ? 'matches' : 'does not match'} the ${kind} "${e}". Content: ${content}`
+      );
     }
   }
 
