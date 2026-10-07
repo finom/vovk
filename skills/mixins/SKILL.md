@@ -309,4 +309,4 @@ After configuring mixins, `vovk bundle` treats them like any other generated mod
 - **CORS from browser.** Third-party APIs rarely allow direct calls from browser origin. Route through server component, route handler, server action — or add proxy segment + point mixin at it.
 - **Auth secrets stay server-side.** Use `withDefaults` in server file (Route Handler, Server Action, server component), not in client code shipping to browsers.
 - **Operation IDs drive everything.** Spec with missing or duplicate `operationId`s produces synthesized method names. Complain to upstream owner, or write function `getMethodName` falling back to `METHOD + path`.
-- **Standalone codegen works without Next.js.** Install `vovk-cli` globally (`npm i -g vovk-cli`) plus `vovk` + `vovk-ajv` as deps, run `npx vovk generate`. No Next.js, no segments directory required — just config file with mixins.
+- **Standalone codegen works without Next.js.** Install `vovk-cli` globally (`npm i -g vovk-cli`) plus `vovk` + `openapi3-ts` + `vovk-ajv` as deps, run `npx vovk generate`. No Next.js, no segments directory required — just config file with mixins.

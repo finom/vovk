@@ -46,7 +46,11 @@ await describe('vovk init in a project without Next.js', async () => {
       'package.json': { name: 'app', version: '1.0.0', scripts: { dev: 'prisma generate && next dev' } },
       'tsconfig.json': { compilerOptions: {} },
     });
-    const registry = await startRegistry({ concurrently: { latest: '9.2.1' }, 'cross-env': { latest: '10.1.0' } });
+    const registry = await startRegistry({
+      concurrently: { latest: '9.2.1' },
+      'cross-env': { latest: '10.1.0' },
+      'openapi3-ts': { latest: '4.6.1' },
+    });
 
     try {
       await runCLI(['init', '--yes', '--skip-install', '--validation-library=none'], {
@@ -57,13 +61,14 @@ await describe('vovk init in a project without Next.js', async () => {
       await registry.close();
     }
 
-    const { scripts, devDependencies } = JSON.parse(await read('package.json'));
+    const { scripts, dependencies, devDependencies } = JSON.parse(await read('package.json'));
     assert.strictEqual(
       scripts.dev,
       'cross-env PORT=3000 concurrently "prisma generate && next dev" "vovk dev" --kill-others'
     );
     assert.strictEqual(devDependencies.concurrently, '^9.2.1');
     assert.strictEqual(devDependencies['cross-env'], '^10.1.0');
+    assert.strictEqual(dependencies['openapi3-ts'], '^4.6.1');
   });
 
   await it('Fails with the install command when the registry is out of reach', async () => {
@@ -81,7 +86,7 @@ await describe('vovk init in a project without Next.js', async () => {
       }),
       ({ code, stdout, stderr }: { code: number; stdout: string; stderr: string }) => {
         assert.strictEqual(code, 1);
-        assert.match(stdout + stderr, /install them manually with .*vovk vovk-ajv zod/);
+        assert.match(stdout + stderr, /install them manually with .*vovk openapi3-ts vovk-ajv zod/);
         assert.doesNotMatch(stdout + stderr, /Added dependencies/);
         return true;
       }

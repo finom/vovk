@@ -159,6 +159,36 @@ await describe('vovk dev in a project without Next.js', async () => {
     }
   });
 
+  await it('Picks up an edit of package.json', async () => {
+    await createProject(projectDir, {
+      'package.json': { name: 'app', version: '1.0.0', type: 'module' },
+      'vovk.config.mjs': configFile({
+        composedClient: { prettifyClient: false, fromTemplates: ['packageJson'], outDir: 'client-package' },
+        outputConfig: { segments: petstoreMixin },
+      }),
+      'petstore.json': petstoreSpec,
+      'src/app/layout.tsx': '',
+    });
+    const clientVersion = async () =>
+      (JSON.parse((await readFile('client-package/package.json')) || '{}') as { version?: string }).version;
+
+    // the mixin makes vovk dev write the client when it starts, with no segment to wait for
+    const dev = startCLI(['dev'], { cwd: projectDir, env: { PORT: await getFreePort() } });
+    try {
+      await dev.waitForOutput(/Ready in/);
+      assert.ok(await waitUntil(async () => (await clientVersion()) === '1.0.0'), dev.getOutput());
+      // give the file watcher a moment before the edit it has to catch
+      await sleep(500);
+      await fs.writeFile(
+        path.join(projectDir, 'package.json'),
+        JSON.stringify({ name: 'app', version: '1.1.0', type: 'module' })
+      );
+      assert.ok(await waitUntil(async () => (await clientVersion()) === '1.1.0'), dev.getOutput());
+    } finally {
+      await dev.stop();
+    }
+  });
+
   await it('Resolves an absolute modulesDir and --schema-out', async () => {
     const modulesDir = path.join(projectDir, 'absolute-modules');
     const schemaOut = path.join(projectDir, 'absolute-schema');

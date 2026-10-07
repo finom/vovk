@@ -25,7 +25,7 @@
   },
   "main": "./index.js",
   "peerDependencies": {
-    "vovk": ">=3.7.0 || ^4.0.0-0"
+    "vovk": "^4.0.0-0"
   },
   "peerDependenciesMeta": {
     "vovk": {

@@ -186,4 +186,4 @@ jobs:
             rest) specs="test/spec/generate/*.mts test/spec/new/*.mts test/spec/critical-utilities/*.mts" ;;
             *) specs="test/spec/${{ matrix.shard }}/*.mts" ;;
           esac
-          node --experimental-strip-types --experimental-vm-modules --test --test-concurrency=1 $specs
+          node --experimental-strip-types --test --test-concurrency=1 $specs

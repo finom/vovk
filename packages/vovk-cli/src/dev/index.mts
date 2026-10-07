@@ -268,7 +268,8 @@ export class VovkDev {
     }, 1000);
 
     chokidar
-      .watch(CONFIG_FILE_PATHS, {
+      // package.json gives the generated packages their name, version and other fields
+      .watch([...CONFIG_FILE_PATHS, 'package.json'], {
         persistent: true,
         cwd,
         ignoreInitial: false,

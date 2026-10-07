@@ -263,6 +263,33 @@ await describe('vovk generate in a project without Next.js', async () => {
     assert.deepStrictEqual(schema.meta.config.libs, libs);
   });
 
+  await it('Leaves out of the client a key of _meta.json that vovk.config no longer exposes', async () => {
+    await createProject(projectDir, {
+      'package.json': { name: 'app', version: '1.0.0', type: 'module' },
+      'tsconfig.json': { compilerOptions: { module: 'esnext', moduleResolution: 'bundler', noEmit: true } },
+      'vovk.config.mjs': configFile({
+        composedClient: { outDir: 'client', prettifyClient: false },
+        exposeConfigKeys: [],
+      }),
+      'src/app/api/[[...vovk]]/route.ts': '',
+      // what vovk dev wrote while the config still exposed libs
+      '.vovk-schema/_meta.json': {
+        $schema: 'https://vovk.dev/api/schema/v3/meta.json',
+        config: {
+          libs: { ajv: { options: { coerceTypes: 'array' } } },
+          rootEntry: 'api',
+          $schema: 'https://vovk.dev/api/schema/v3/config.json',
+        },
+      },
+      '.vovk-schema/root.json': userSegmentSchema,
+    });
+
+    await runCLI(['generate'], { cwd: projectDir });
+
+    const { schema } = await import(`${pathToFileURL(path.join(projectDir, 'client/schema.ts')).href}?t=${Date.now()}`);
+    assert.deepStrictEqual(Object.keys(schema.meta.config).sort(), ['$schema', 'rootEntry']);
+  });
+
   await it('Builds the client URLs from the rootEntry of vovk.config when _meta.json was written before it changed', async () => {
     await createProject(projectDir, {
       'package.json': { name: 'app', version: '1.0.0', type: 'module' },
@@ -1064,6 +1091,43 @@ imports:
 
       const isRegenerated = await waitUntil(async () => (await read('src/client/mixins.json')).includes('getOwners'));
       assert.ok(isRegenerated, await read('src/client/mixins.json'));
+    } finally {
+      await cli.stop();
+    }
+  });
+
+  await it('Regenerates with --watch after an edit of the config or package.json', async () => {
+    await createProject(projectDir, {
+      'package.json': { name: 'app', version: '1.0.0', type: 'module' },
+      'vovk.config.mjs': configFile({
+        composedClient: { prettifyClient: false, fromTemplates: ['ts', 'packageJson'] },
+      }),
+      'src/app/api/[[...vovk]]/route.ts': '',
+      '.vovk-schema/root.json': userSegmentSchema,
+    });
+    const clientPackage = async () => JSON.parse((await read('src/client/package.json')) || '{}');
+
+    const cli = startCLI(['generate', '--watch', '0.5'], { cwd: projectDir });
+    try {
+      await cli.waitForOutput(/Composed client is generated/, 10_000);
+      await sleep(1000);
+      await fs.writeFile(
+        path.join(projectDir, 'vovk.config.mjs'),
+        configFile({
+          composedClient: { prettifyClient: false, fromTemplates: ['ts', 'packageJson'] },
+          outputConfig: { package: { description: 'from the config' } },
+        })
+      );
+      const hasConfigEdit = await waitUntil(async () => (await clientPackage()).description === 'from the config');
+      assert.ok(hasConfigEdit, cli.getOutput());
+
+      await sleep(1000);
+      await fs.writeFile(
+        path.join(projectDir, 'package.json'),
+        JSON.stringify({ name: 'app', version: '1.1.0', type: 'module' })
+      );
+      const hasPackageEdit = await waitUntil(async () => (await clientPackage()).version === '1.1.0');
+      assert.ok(hasPackageEdit, cli.getOutput());
     } finally {
       await cli.stop();
     }

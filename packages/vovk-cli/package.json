@@ -17,8 +17,8 @@
     "build": "rm -rf dist tsconfig.build.tsbuildinfo && tsc -P tsconfig.build.json",
     "postbuild": "chmod +x ./dist/index.mjs",
     "pre-test": "npm run build && npm run clear-test-cache",
-    "test-only": "npm run pre-test && NODE_ENV=test node --experimental-strip-types --experimental-vm-modules --test --test-only test/spec/**/*.mts",
-    "test": "npm run pre-test && NODE_ENV=test node --experimental-strip-types --experimental-vm-modules --test --test-concurrency=1 test/spec/**/*.mts",
+    "test-only": "npm run pre-test && NODE_ENV=test node --experimental-strip-types --test --test-only test/spec/**/*.mts",
+    "test": "npm run pre-test && NODE_ENV=test node --experimental-strip-types --test --test-concurrency=1 test/spec/**/*.mts",
     "tsc": "tsc --noEmit",
     "ncu": "npm-check-updates -u -x tsdown",
     "prepublishOnly": "node -e \"if (!process.env.GITHUB_ACTIONS) { console.error('Publish from CI: PACKAGE=<name> npm run <type> tags a release, and the tag publishes it'); process.exit(1) }\"",
@@ -45,7 +45,7 @@
     "node": ">=24.0.0"
   },
   "peerDependencies": {
-    "vovk": ">=3.7.0 || ^4.0.0-0"
+    "vovk": "^4.0.0-0"
   },
   "dependencies": {
     "@iarna/toml": "^2.2.5",
