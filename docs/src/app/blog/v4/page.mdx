@@ -14,7 +14,7 @@ Breaking changes:
 
 - `vovk-client` is gone. The client is generated into `src/client` and imported from `@/client`. The `js` templates are removed.
 - [deriveTools](/tools) returns an array of `StandardToolV0`. `createTool`, `VovkTool` and `toolsByName` are removed.
-- `fetcher` and `createFetcher` come from `vovk/fetcher`, `createValidateOnClient` from `vovk/create-validate-on-client`. The camelCase subpaths and `HttpMethod` are removed, and `HttpStatus.TOO_MANY_TRequestS` is `TOO_MANY_REQUESTS`.
+- `fetcher` and `createFetcher` come from `vovk/fetcher`, `createValidateOnClient` from `vovk/create-validate-on-client`. The camelCase subpaths and `HttpMethod` are removed.
 - `decorate()` and `static prefix` are removed: decorators and `@prefix()` only.
 - Only an `HttpException` sets the status. In production, any other error answers 500 with no detail.
 - Repeated query keys become arrays, and a handler's second argument is the validated params.
@@ -79,7 +79,6 @@ Each entry exports what your code writes against.
 | `createValidateOnClient`, `VovkValidateOnClient` from `vovk` | from `vovk/create-validate-on-client` |
 | `vovk/createRPC`, `vovk/createValidateOnClient` | `vovk/create-rpc`, `vovk/create-validate-on-client` |
 | `HttpMethod.GET` | `'GET'` |
-| `HttpStatus.TOO_MANY_TRequestS` | `HttpStatus.TOO_MANY_REQUESTS` |
 | `validateOnClient.configure()` in `vovk-ajv` | `libs.ajv` in `vovk.config` |
 
 `vovk/internal` is not public API. `vovk-cli` has no library entry: importing it ran the CLI. The `vovk` command is unchanged.
@@ -105,6 +104,7 @@ Each entry exports what your code writes against.
 - Malformed JSON, form and query input answers 400. An optional body can be left out; a missing required body answers 400.
 - Repeated query keys collect into an array: `tag=a&tag=b` gives `['a', 'b']`. A key whose schema takes an array is a one-item array when sent once, as OpenAPI clients send it.
 - 204, 205 and 304 responses have no body. A status outside 200–599 becomes 500.
+- `HttpStatus.TOO_MANY_REQUESTS` is spelled right; it was `TOO_MANY_TRequestS`.
 - The route match cache is kept per method and segment, so a match for one method no longer reroutes another ([#33](https://github.com/finom/vovk/issues/33)).
 
 ## Errors

@@ -27,7 +27,6 @@ A cleanup major: removals and renames; the only new exports are types.
 - `.fn()` is typed as it runs: it requires the body, query and params the server requires, and returns a promise of the handler's result, or of an async generator of the checked items with an `iteration` schema ([#44](https://github.com/finom/vovk/pull/44))
 - `procedure()` type parameters: `TContentType` and a new `TPreferTransformed` come before `TReq`; a plain method typed `VovkRequest<string>` requires its body in the client ([#40](https://github.com/finom/vovk/pull/40), [#44](https://github.com/finom/vovk/pull/44))
 - A call without a body gives the fetcher and `validateOnClient` `body: undefined`, not `null`; a `null` body goes out as JSON when the body schema accepts null, and is no body otherwise ([#44](https://github.com/finom/vovk/pull/44))
-- `HttpStatus.TOO_MANY_TRequestS` renamed to `TOO_MANY_REQUESTS` ([900c3ed](https://github.com/finom/vovk/commit/900c3ed6))
 - Production error responses carry no internal detail; `onError` still receives the full error ([6dbb795](https://github.com/finom/vovk/commit/6dbb795f), [e069b6c](https://github.com/finom/vovk/commit/e069b6ca))
 - A declared `contentType` is enforced even without a body schema; disabling body validation opts out ([17156a3](https://github.com/finom/vovk/commit/17156a3d), [9b9460d](https://github.com/finom/vovk/commit/9b9460d4)); a request without a body skips the check ([#35](https://github.com/finom/vovk/pull/35))
 - Failed `output` or `iteration` validation is an internal error: 500 in production, the issues stay on the server ([#35](https://github.com/finom/vovk/pull/35))
@@ -59,6 +58,7 @@ A cleanup major: removals and renames; the only new exports are types.
 
 ### Fixed
 
+- `HttpStatus.TOO_MANY_REQUESTS` was misspelled `TOO_MANY_TRequestS` ([900c3ed](https://github.com/finom/vovk/commit/900c3ed6))
 - Stacked decorators all run: HTTP routes dispatch through the outermost wrapper ([572f7f0](https://github.com/finom/vovk/commit/572f7f0a))
 - Prototype members such as `constructor` no longer resolve as route handlers ([24d727c](https://github.com/finom/vovk/commit/24d727cd))
 - The route match cache is scoped to its handlers map, fixing cross-method poisoning ([bae0fde](https://github.com/finom/vovk/commit/bae0fde5))
@@ -127,21 +127,20 @@ A cleanup major: removals and renames; the only new exports are types.
 
 ### Upgrading from 3.x
 
-1. Replace `HttpStatus.TOO_MANY_TRequestS` with `HttpStatus.TOO_MANY_REQUESTS`.
-2. Replace imports from `vovk/createRPC` and `vovk/createValidateOnClient` with `vovk/create-rpc` and `vovk/create-validate-on-client`.
-3. If you destructured `toolsByName` from `deriveTools`, build the map yourself from the returned array.
-4. If you used `createTool` / `VovkTool` / `inputSchemas`, move to the `StandardToolV0` shape.
-5. If you relied on error responses carrying internal messages in production, read them from `onError` instead.
-6. The composed client no longer comes from the `vovk-client` package; see the `vovk-cli` changelog.
-7. A handler that read raw strings from its second argument now gets the validated params, coerced types included.
-8. Throw `HttpException` for an expected error: another error with a `statusCode` now answers 500.
-9. A repeated query key now gives an array, so a plain string query field answers 400 for `tag=a&tag=b`.
-10. Read a JSON Lines stream once, or call `asPromise()`: a consumed stream iterated again yields nothing.
-11. `req.nextUrl.searchParams.get()` is typed as the string it returns; use `req.vovk.query()` for validated values.
-12. Rewrite a `decorate(get(), ..., procedure(...)).handle(fn)` member as `@get() ... static name = procedure(...).handle(fn)`, and a `static prefix = 'users'` as `@prefix('users')` on the class: a `static prefix` is now ignored without an error.
-13. Import `fetcher`, `createFetcher` and `VovkFetcher` from `vovk/fetcher`, and `createValidateOnClient` and `VovkValidateOnClient` from `vovk/create-validate-on-client`.
-14. Replace `HttpMethod.GET` and the other members with the strings `'GET'` and so on.
-15. In a custom fetcher, a call without a body has `body: undefined`, not `null`.
+1. Replace imports from `vovk/createRPC` and `vovk/createValidateOnClient` with `vovk/create-rpc` and `vovk/create-validate-on-client`.
+2. If you destructured `toolsByName` from `deriveTools`, build the map yourself from the returned array.
+3. If you used `createTool` / `VovkTool` / `inputSchemas`, move to the `StandardToolV0` shape.
+4. If you relied on error responses carrying internal messages in production, read them from `onError` instead.
+5. The composed client no longer comes from the `vovk-client` package; see the `vovk-cli` changelog.
+6. A handler that read raw strings from its second argument now gets the validated params, coerced types included.
+7. Throw `HttpException` for an expected error: another error with a `statusCode` now answers 500.
+8. A repeated query key now gives an array, so a plain string query field answers 400 for `tag=a&tag=b`.
+9. Read a JSON Lines stream once, or call `asPromise()`: a consumed stream iterated again yields nothing.
+10. `req.nextUrl.searchParams.get()` is typed as the string it returns; use `req.vovk.query()` for validated values.
+11. Rewrite a `decorate(get(), ..., procedure(...)).handle(fn)` member as `@get() ... static name = procedure(...).handle(fn)`, and a `static prefix = 'users'` as `@prefix('users')` on the class: a `static prefix` is now ignored without an error.
+12. Import `fetcher`, `createFetcher` and `VovkFetcher` from `vovk/fetcher`, and `createValidateOnClient` and `VovkValidateOnClient` from `vovk/create-validate-on-client`.
+13. Replace `HttpMethod.GET` and the other members with the strings `'GET'` and so on.
+14. In a custom fetcher, a call without a body has `body: undefined`, not `null`.
 
 ## 3.7.0 - 2026-06-11
 
