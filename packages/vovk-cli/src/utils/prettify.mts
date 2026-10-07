@@ -9,7 +9,7 @@ type Prettier = {
 };
 
 let prettierPromise: Promise<Prettier | null> | undefined;
-let warned = false;
+let warningPromise: Promise<void> | undefined;
 
 // prettier isn't a CLI dependency, it comes from the project when installed
 function getPrettier() {
@@ -48,11 +48,14 @@ export async function prettify(code: string, absoluteFilePath: string) {
   }
 }
 
-// warns once per process
-export async function warnIfPrettierMissing(log: ReturnType<typeof getLogger>) {
-  if (warned || (await getPrettier())) return;
-  warned = true;
-  log.warn(
-    'prettifyClient is enabled but prettier is not installed. Either install it or set prettifyClient to false to suppress this warning.'
-  );
+// warns once per process, also when files render in parallel
+export function warnIfPrettierMissing(log: ReturnType<typeof getLogger>) {
+  warningPromise ??= getPrettier().then((prettier) => {
+    if (prettier) return;
+    log.warn(
+      'prettifyClient is enabled but prettier is not installed. Either install it or set prettifyClient to false to suppress this warning.'
+    );
+  });
+
+  return warningPromise;
 }
