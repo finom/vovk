@@ -173,8 +173,9 @@ export function getBinaryContentType(schema: VovkJSONSchemaBase | undefined): st
 }
 
 // the variants of a union body that hold a file: they go out as bytes, the others as JSON
-export function getBinaryBodyVariants(schema: VovkJSONSchemaBase | undefined): string[] {
-  if (!schema || getBodyKind(schema) !== 'json') return [];
+export function getBinaryBodyVariants(givenSchema: VovkJSONSchemaBase | undefined): string[] {
+  if (!givenSchema || getBodyKind(givenSchema) !== 'json') return [];
+  const schema = withoutContentTypeAlternatives(givenSchema);
   const ctx: Context = { root: schema, defNames: new Map(), defSchemas: new Map(), pad: 0, enclosing: null, refs: [] };
   const target = effectiveSchema(schema, ctx);
   if (nominalKind(target, ctx) !== 'union') return [];
@@ -835,6 +836,20 @@ function emitNamed(schema: Schema, name: string, mod: Module, ctx: Context): voi
   mod.code += `${indent(mod.level, ctx.pad)}pub type ${name} = ${type};\n\n`;
 }
 
+// a mixin body that takes JSON or a form with one schema is an anyOf of that schema once per content type: it is the
+// schema itself
+function withoutContentTypeAlternatives(schema: VovkJSONSchemaBase): VovkJSONSchemaBase {
+  const branches = schema.anyOf;
+  if (!branches || branches.length < 2) return schema;
+  const [first, ...rest] = branches.map((branch) => {
+    const { 'x-contentType': _contentType, 'x-tsType': _tsType, ...shape } = branch as Record<string, unknown>;
+    return JSON.stringify(shape);
+  });
+  if (rest.some((shape) => shape !== first)) return schema;
+  const { anyOf: _, ...body } = schema;
+  return { ...body, ...JSON.parse(first) };
+}
+
 export function convertJSONSchemasToRustTypes({
   schemas,
   pad = 0,
@@ -844,7 +859,9 @@ export function convertJSONSchemasToRustTypes({
   pad?: number;
   rootName: string;
 }): string {
-  const slots = Object.entries(schemas).filter((entry): entry is [string, Schema] => !!entry[1]);
+  const slots = Object.entries(schemas)
+    .filter((entry): entry is [string, Schema] => !!entry[1])
+    .map(([slotName, schema]) => [slotName, withoutContentTypeAlternatives(schema)] as const);
   if (!slots.length) return '';
 
   const handlerMod = newModule(1, 0);

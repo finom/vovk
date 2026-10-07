@@ -161,15 +161,30 @@ export function getTextContentType(schema: VovkJSONSchemaBase | undefined): stri
   return (schema?.['x-contentType'] as string[] | undefined)?.find(isTextLike) ?? 'text/plain';
 }
 
+// a mixin body that takes JSON or a form with one schema is an anyOf of that schema once per content type: it is the
+// schema itself
+function withoutContentTypeAlternatives(schema: VovkJSONSchemaBase): VovkJSONSchemaBase {
+  const branches = schema.anyOf;
+  if (!branches || branches.length < 2) return schema;
+  const [first, ...rest] = branches.map((branch) => {
+    const { 'x-contentType': _contentType, 'x-tsType': _tsType, ...shape } = branch as Record<string, unknown>;
+    return JSON.stringify(shape);
+  });
+  if (rest.some((shape) => shape !== first)) return schema;
+  const { anyOf: _, ...body } = schema;
+  return { ...body, ...JSON.parse(first) };
+}
+
 /**
  * Convert a JSON schema to Python type definitions (TypedDict and others).
  * Returns a string containing Python code with all needed classes and the top-level type.
  * This version EXCLUDES file upload properties (format: binary).
  */
 export function convertJSONSchemaToPythonDataType(options: ConvertOptions): string {
-  const { schema, namespace, className, pad } = options;
+  const { namespace, className, pad } = options;
 
-  if (!schema) return '';
+  if (!options.schema) return '';
+  const schema = withoutContentTypeAlternatives(options.schema);
 
   const classDefinitions: string[] = [];
 

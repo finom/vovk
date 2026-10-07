@@ -953,6 +953,27 @@ test('allOf and $ref bodies', async (t) => {
   });
 });
 
+test('a mixin body of one schema as JSON or as a form is that schema, not a union', () => {
+  const result = convertJSONSchemaToPythonDataType({
+    schema: {
+      anyOf: [
+        { $ref: '#/$defs/Pet', 'x-contentType': ['application/json'], 'x-tsType': 'Mixins.Pet' },
+        { $ref: '#/$defs/Pet', 'x-contentType': ['application/x-www-form-urlencoded'], 'x-tsType': 'Mixins.Pet' },
+      ],
+      'x-contentType': ['application/json', 'application/x-www-form-urlencoded'],
+      $defs: { Pet: { type: 'object', properties: { name: { type: 'string' } }, required: ['name'] } },
+    },
+    namespace: 'PetstoreAPI',
+    className: 'UpdatePetBody',
+    pad: 0,
+  });
+
+  assert.equal(
+    result,
+    'class _UpdatePetBody_Pet(TypedDict):\n    name: str\nUpdatePetBody: TypeAlias = _UpdatePetBody_Pet'
+  );
+});
+
 test('files in a union branch, behind a $ref or in a list', async (t) => {
   const file = { type: 'string', format: 'binary' } as const;
   // as z.union([z.object({ n: z.number() }), z.object({ file: z.file() })]) emits it
