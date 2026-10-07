@@ -16,6 +16,10 @@
     "publish:node": "npm publish ./dist",
     "publish:rust": "cargo publish --manifest-path dist_rust/Cargo.toml --allow-dirty",
     "publish:python": "python3 -m build ./dist_python --wheel --sdist && python3 -m twine upload ./dist_python/dist/*",
+    "git-tag": "git add . && git commit -m \"chore: release v$(node -p \"require('./package.json').version\")\" && git tag vovk-hello-world-v$(node -p \"require('./package.json').version\")",
+    "check-uncommitted": "git diff --quiet && git diff --cached --quiet || (echo '❌ Uncommitted changes!' && exit 1)",
+    "postversion": "vovk generate && vovk bundle && npm run publish:node && npm run publish:rust && npm run publish:python && npm run git-tag",
+    "patch": "npm run check-uncommitted && npm version patch --no-git-tag-version --no-workspaces-update",
     "ncu": "npm-check-updates -u"
   },
   "license": "MIT",
