@@ -4,7 +4,7 @@ All notable changes to `vovk-cli` are documented here. This file is the canonica
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## 0.3.0-beta.0 - unreleased
+## 0.3.0 - unreleased
 
 A cleanup release. `vovk-cli` is pre-1.0, so this minor carries breaking changes: `^0.2.0` does not match `0.3.0`.
 
@@ -36,8 +36,9 @@ A cleanup release. `vovk-cli` is pre-1.0, so this minor carries breaking changes
 - `vovk new` writes all files of a module or none, unless `--overwrite` is given ([#40](https://github.com/finom/vovk/pull/40))
 - A config that is ESM or contains `import(` loads through Node, so its imports resolve from the config file; remote OpenAPI mixins are fetched only to generate a client ([#40](https://github.com/finom/vovk/pull/40))
 - Generation fails for a mixin named `root` or like a segment, and for one module name in two segments of the composed client; unnamed CLI mixins get `api`, `api2` and so on ([#40](https://github.com/finom/vovk/pull/40))
-- The bin runs with plain `node`, so it works on Alpine; `engines.node` is `^22.22.2 || ^24.15.0 || >=26.0.0`, and before Node.js 22 every command names the version it needs instead of crashing ([#40](https://github.com/finom/vovk/pull/40), [#44](https://github.com/finom/vovk/pull/44))
-- The `vovk` peer range is `>=3.7.0 || ^4.0.0-0`: 3.0-3.6 lack `vovk/create-rpc` ([#40](https://github.com/finom/vovk/pull/40))
+- The bin runs with plain `node`, so it works on Alpine; `engines.node` is `>=24.0.0`, and before Node.js 24 every command names the version it needs instead of crashing ([#40](https://github.com/finom/vovk/pull/40), [#44](https://github.com/finom/vovk/pull/44), [#PR](https://github.com/finom/vovk/pull/PR))
+- The `vovk` peer range is `^4.0.0-0`, so a vovk 3 project gets a peer dependency error ([#40](https://github.com/finom/vovk/pull/40), [#PR](https://github.com/finom/vovk/pull/PR))
+- `vovk init` adds `openapi3-ts`, the peer dependency that the types of `vovk` import, since not every package manager installs one ([#PR](https://github.com/finom/vovk/pull/PR))
 - A Python or Rust client generated without `outputConfig.origin` warns that its calls can't be sent; set it, or pass `api_root` to every call ([#44](https://github.com/finom/vovk/pull/44))
 
 ### Added
@@ -81,8 +82,11 @@ A cleanup release. `vovk-cli` is pre-1.0, so this minor carries breaking changes
 - Mixin types: an array of `allOf` items is `(A & B)[]`, a binary string is a `Blob`, a request type leaves out read-only properties and a response type write-only ones, `VovkOutput` and `VovkIteration` work on mixin methods, properties next to `additionalProperties` compile, a `true` schema is `unknown`, not `any`, and a `true` or `false` schema or a description that isn't a string no longer stops generation ([#44](https://github.com/finom/vovk/pull/44))
 - The controllers `vovk new` writes for zod, valibot and arktype read the body with `req.vovk.body()`, so `.fn()` and derived tools can call their create and update procedures; `req.json()` threw there ([#51](https://github.com/finom/vovk/pull/51))
 - `vovk dev --next-dev` runs the project's own Next.js, also under Yarn PnP, where `npx next dev` installed and ran the latest; without a `next` it fails instead of installing one ([#51](https://github.com/finom/vovk/pull/51))
-- In the project's own schema folder, `vovk generate` and `vovk bundle` take the meta (`libs`, `rootEntry`) from the current vovk.config, where an older `_meta.json` from the last `vovk dev` won; the TypeScript client holds the meta instead of importing `_meta.json` ([#51](https://github.com/finom/vovk/pull/51))
+- In the project's own schema folder, `vovk generate` and `vovk bundle` take the meta (`libs`, `rootEntry`) from the current vovk.config, without the keys it no longer exposes, where an older `_meta.json` from the last `vovk dev` won; the TypeScript client holds the meta instead of importing `_meta.json` ([#51](https://github.com/finom/vovk/pull/51), [#PR](https://github.com/finom/vovk/pull/PR))
 - A relative `outputConfig.imports` path to a `.ts` file, as the v3 client needed, is written the way the project's tsconfig resolves it: without the extension under bundler resolution, by its `.js` name under `node16` or `nodenext`, `.mts` and `.cts` as `.mjs` and `.cjs`; the client failed the build with TS5097 ([#51](https://github.com/finom/vovk/pull/51))
+- `--help`, `--version` and `vovk init` run without `vovk` installed; the other commands ask to install it instead of failing with a stack trace ([#PR](https://github.com/finom/vovk/pull/PR))
+- `vovk dev` picks up an edit of `package.json`, and `vovk generate --watch` an edit of the config or `package.json`, without a restart ([#PR](https://github.com/finom/vovk/pull/PR))
+- A segment's `rootEntry: ''` in `outputConfig.segments` serves the segment from the root of its origin in the generated clients; it was ignored ([#PR](https://github.com/finom/vovk/pull/PR))
 
 ### Security
 
@@ -95,7 +99,7 @@ A cleanup release. `vovk-cli` is pre-1.0, so this minor carries breaking changes
 3. Install `prettier` yourself if you want the client formatted, or set `prettifyClient: false`.
 4. Add the composed client output directory to `.gitignore`; `vovk init` does this for new projects.
 5. A stale `node_modules/.vovk-client` is inert and can be deleted.
-6. Use Node 22.22.2+, 24.15+ or 26+.
+6. Use Node.js 24+.
 7. Use TypeScript 5.5+; the generated client alone compiles on 5.3+.
 8. Under Yarn 2+, move `vovk generate` from `prebuild` into the `build` script: Yarn 2+ runs no `pre` scripts.
 9. Run `vovk dev` once after upgrading, and `vovk bundle` if you keep the prebundle folder: `vovk generate` and the build read the schema files it writes.

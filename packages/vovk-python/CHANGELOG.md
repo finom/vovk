@@ -23,7 +23,7 @@ This package is experimental and its generated output may still shift between re
 - One `requests` session per client, with a default timeout; an upload fails only when the server takes no data for 10 s, and the session keeps no cookie a response sets ([#40](https://github.com/finom/vovk/pull/40), [#44](https://github.com/finom/vovk/pull/44))
 - Optional keys are `NotRequired`, and nested classes get names `get_type_hints` resolves ([#40](https://github.com/finom/vovk/pull/40))
 - The generated package no longer pins `urllib3==1.26.15`, which has known CVEs, or requires the GPL `rfc3987`; it needs Python 3.9+ ([#40](https://github.com/finom/vovk/pull/40))
-- `vovk` is an optional peer dependency, since the package's types import from it ([#40](https://github.com/finom/vovk/pull/40))
+- `vovk` is an optional peer dependency, `^4.0.0-0`, since the package's types import from it ([#40](https://github.com/finom/vovk/pull/40), [#PR](https://github.com/finom/vovk/pull/PR))
 - A procedure without a params schema takes the params its path names, as `Dict[str, str]` ([#44](https://github.com/finom/vovk/pull/44))
 - Bodies: an object goes out as JSON when the procedure also takes JSON and no file is sent, or also takes a text type; a string goes out as the text type the procedure declares; a file in any branch of a union body goes in `files`, and the file branch of a file-or-JSON body can be sent as `bytes` ([#44](https://github.com/finom/vovk/pull/44))
 - Handler names alike in snake_case get a method each, `get_user_by_id` and then `get_user_by_id_2` in schema order, and the README headings name the methods the package has ([#44](https://github.com/finom/vovk/pull/44))
@@ -32,6 +32,12 @@ This package is experimental and its generated output may still shift between re
 - An error without a `message` takes its `detail` or `title` and keeps the JSON body as `cause`, and `HttpException` can be pickled and copied ([#44](https://github.com/finom/vovk/pull/44))
 - A type that isn't a `TypedDict` is declared a `TypeAlias`, so the package passes mypy, and the mypy config no longer pins `python_version` ([#44](https://github.com/finom/vovk/pull/44))
 - The README starts with `readme.banner`, and a title or description that isn't a string is written as text ([#44](https://github.com/finom/vovk/pull/44))
+- A mixin's query and urlencoded body follow the OpenAPI document's `style` and `explode`, as the TypeScript client sends them; without them an array repeats its key (`tags=a&tags=b`), where it went out as `tags[0]=a` ([#PR](https://github.com/finom/vovk/pull/PR))
+- A 2020-12 tuple (`prefixItems`) is typed `Tuple[...]`, and a tuple that takes more items after its own is a `List` ([#PR](https://github.com/finom/vovk/pull/PR))
+- A `date`, `time` or `datetime` goes out as ISO 8601 text and a tuple as a list, in the body, the query and the params, client-side validation included ([#PR](https://github.com/finom/vovk/pull/PR))
+- The error message is read where a mixin's `errorMessageKey` points, as the TypeScript client reads it ([#PR](https://github.com/finom/vovk/pull/PR))
+- File fields are found in tuples and `allOf` too, by the same rule as vovk-rust ([#PR](https://github.com/finom/vovk/pull/PR))
+- A mixin body that takes one schema as JSON or as a form is typed as that schema, not a union of two copies ([#PR](https://github.com/finom/vovk/pull/PR))
 
 ## 0.0.3 - 2026-08-05
 

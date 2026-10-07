@@ -4,7 +4,7 @@ All notable changes to `vovk-ajv` are documented here. This file is the canonica
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## Unreleased
+## 0.2.0 - unreleased
 
 ### Removed
 
@@ -14,7 +14,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 - Strict mode is off by default, so `example`, `x-*` and other annotations no longer block the request; options still override it ([#40](https://github.com/finom/vovk/pull/40))
 - A schema Ajv can't compile skips client-side validation with a warning; the server still validates ([#40](https://github.com/finom/vovk/pull/40))
-- The `vovk` peer range is `>=3.7.0 || ^4.0.0-0` ([#40](https://github.com/finom/vovk/pull/40))
+- The `vovk` peer range is `^4.0.0-0` ([#40](https://github.com/finom/vovk/pull/40), [#PR](https://github.com/finom/vovk/pull/PR))
 
 ### Fixed
 

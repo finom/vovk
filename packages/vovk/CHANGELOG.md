@@ -4,7 +4,7 @@ All notable changes to `vovk` are documented here. This file is the canonical re
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## 4.0.0-beta.0 - unreleased
+## 4.0.0 - unreleased
 
 A cleanup major: removals and renames; the only new exports are types.
 
@@ -45,7 +45,7 @@ A cleanup major: removals and renames; the only new exports are types.
 - Mixin requests follow the OpenAPI document's `style`, `explode` and `encoding`; without one, arrays repeat their key (`tags=a&tags=b`) ([#40](https://github.com/finom/vovk/pull/40))
 - The optional `next` peer dependency is gone, and the types no longer import `next` ([#40](https://github.com/finom/vovk/pull/40))
 - Output and iteration JSON Schemas describe what the server sends, after defaults and transforms, unless `preferTransformed: false`; OpenAPI, the Python and Rust types and tool output schemas follow ([#44](https://github.com/finom/vovk/pull/44))
-- `procedure()` with both `output` and `iteration` throws where it is defined; it answered 500 after the handler ran ([#44](https://github.com/finom/vovk/pull/44))
+- `procedure()` with both `output` and `iteration` is a type error and throws where it is defined; it answered 500 after the handler ran ([#44](https://github.com/finom/vovk/pull/44), [#PR](https://github.com/finom/vovk/pull/PR))
 - `procedure()` warns for each schema that has no Standard JSON Schema; its JSON Schema is emitted as `{}`, any value ([#44](https://github.com/finom/vovk/pull/44))
 - MCP output puts the `annotations` of `mcpOutput` on each content item, where MCP clients read them ([#44](https://github.com/finom/vovk/pull/44))
 - The `vovk-cli-npx` bin, which `pnpm dlx vovk` and `yarn dlx vovk` run, starts the project's vovk-cli and falls back to `npx vovk-cli@latest` only without one ([#44](https://github.com/finom/vovk/pull/44))
@@ -53,11 +53,12 @@ A cleanup major: removals and renames; the only new exports are types.
 - `.fn()` of a bare procedure, and the tools derived from a module of bare procedures, run no controller's decorators; they ran those of the controller member decorated last ([#51](https://github.com/finom/vovk/pull/51))
 - A function attached to several members, such as a procedure of a validated service, is copied for each member, so `A.x !== B.x` and each copy has its own `.schema` and `.fn()`; the one function showed the schema of the member decorated last ([#51](https://github.com/finom/vovk/pull/51))
 - A controller serves the routes of the class it extends, and lists them in its schema and static params, only when that class is in the same segment or the controller has `@cloneControllerMetadata()`; the schema listed them always, and whether they answered depended on which segment loaded first ([#51](https://github.com/finom/vovk/pull/51))
+- The declarations of `vovk` are about half the size of 3.7.0's, and so are those of a controller or a bundled client that holds procedures: they name the procedure types `VovkProcedure` and `VovkProcedureBuilder` ([#PR](https://github.com/finom/vovk/pull/PR))
 
 ### Added
 
 - `StandardToolV0`, the type of the tools `deriveTools` returns; it was in `vovk/internal` ([#44](https://github.com/finom/vovk/pull/44))
-- Types for declaration emit: `VovkRouteParams`, `VovkNoSchema`, `VovkProcedureInput` and `VovkNoInference` from `vovk`, and the types `createFetcher()` returns from `vovk/fetcher`; a route file, a procedure, a fetcher or a bundled client failed to emit its declarations with TS2883 ([#44](https://github.com/finom/vovk/pull/44))
+- Types for declaration emit: `VovkRouteParams`, `VovkNoSchema`, `VovkProcedureInput`, `VovkNoInference`, `VovkProcedure`, `VovkProcedureBuilder`, `VovkMCPModelOutput` and `VovkDefaultModelOutput` from `vovk`, and the types `createFetcher()` returns from `vovk/fetcher`; a route file, a procedure, a fetcher, a bundled client or an exported tool made with `ToModelOutput.MCP` or a typed output failed to emit its declarations with TS2883 ([#44](https://github.com/finom/vovk/pull/44), [#PR](https://github.com/finom/vovk/pull/PR))
 
 ### Fixed
 
@@ -86,7 +87,7 @@ A cleanup major: removals and renames; the only new exports are types.
 - Derived tool input schemas resolve their `$defs`; MCP output is valid for empty results and `+json` responses ([#35](https://github.com/finom/vovk/pull/35))
 - The package ships the MIT license instead of a copy of package.json, and no stale modules from older builds ([#35](https://github.com/finom/vovk/pull/35))
 - Query arrays of any length parse as arrays, and a record with numeric keys (`record[7]=on`) stays an object ([#38](https://github.com/finom/vovk/pull/38))
-- Responses: a result that can't be serialized answers a JSON 500 through `onError`; 204, 205 and 304 have no body; a status outside 200-599 becomes 500 ([#40](https://github.com/finom/vovk/pull/40))
+- Responses: a result that can't be serialized answers a JSON 500 through `onError`; 204, 205 and 304 have no body; a status that isn't an integer from 200 to 599, such as `'400'`, becomes 500 ([#40](https://github.com/finom/vovk/pull/40), [#PR](https://github.com/finom/vovk/pull/PR))
 - JSON Lines: `throw()` keeps its order and ends the stream, sends after `close()` are dropped, failed sends reach `onError`, `yield undefined` writes `null`, a sync generator works with an `iteration` schema, the generator is returned when `onSuccess` throws ([#40](https://github.com/finom/vovk/pull/40))
 - Routing: `.auto()` with `skipSchemaEmission: ['params']` keeps its params, param names such as `{user-id}`, long paths stay out of the match cache ([#40](https://github.com/finom/vovk/pull/40))
 - A guard or `onBefore` can read the body before validation, a chunked body counts as a body, and `filename*` names an uploaded file ([#40](https://github.com/finom/vovk/pull/40))
@@ -100,7 +101,7 @@ A cleanup major: removals and renames; the only new exports are types.
 - Decorators: in a Turbopack build without `experimentalDecorators`, `@prefix()` and `cloneControllerMetadata()` work, where the prefix was dropped without an error; `@operation()` reaches the method's schema whatever its order with the HTTP decorator, so `deriveTools` keeps the tool ([#44](https://github.com/finom/vovk/pull/44))
 - Requests: `req.clone()` works after body validation, also in a default Next.js route, and hidden validation (`exposeValidation: false`, `skipSchemaEmission`) keeps the declared content types, so form, text and file calls no longer get 415 ([#44](https://github.com/finom/vovk/pull/44), [#51](https://github.com/finom/vovk/pull/51))
 - Procedures: an `output` schema that accepts `undefined` lets the handler return nothing, `validateEachIteration` with iteration validation turned off no longer answers 500, and `fn()` reads `Blob`, `ArrayBuffer`, typed array and `URLSearchParams` bodies as HTTP does ([#44](https://github.com/finom/vovk/pull/44))
-- JSON Lines: `notFound()` (Next.js 15.0's too), `forbidden()` and `unauthorized()` thrown mid-stream send 404, 403 and 401 in the error line, and a status outside 200-599 there becomes 500 ([#44](https://github.com/finom/vovk/pull/44), [#51](https://github.com/finom/vovk/pull/51))
+- JSON Lines: `notFound()` (Next.js 15.0's too), `forbidden()` and `unauthorized()` thrown mid-stream send 404, 403 and 401 in the error line, and a status that isn't an integer from 200 to 599 there becomes 500 ([#44](https://github.com/finom/vovk/pull/44), [#51](https://github.com/finom/vovk/pull/51), [#PR](https://github.com/finom/vovk/pull/PR))
 - A segment under a dynamic parent folder, such as `app/[lang]/api/[[...vovk]]`, passes `next build` on Next.js 15.5+ ([#44](https://github.com/finom/vovk/pull/44))
 - Client: `rootEntry: ''` calls the root of the origin, a `Date` path param goes out as its ISO string, an `application/x-ndjson` response streams as JSON Lines, and client-side validation checks a falsy body such as `0` or `''` ([#44](https://github.com/finom/vovk/pull/44))
 - `progressive()` works where `Promise.withResolvers` is missing (Safari before 17.4, Chrome before 119), and takes a key such as `constructor` or `__proto__` as any other ([#44](https://github.com/finom/vovk/pull/44))
@@ -109,7 +110,7 @@ A cleanup major: removals and renames; the only new exports are types.
 - Tools: the input is checked and transformed once under the AI SDK, where a transform ran twice and `z.stringbool()` failed; any iterable result, such as a sync generator or a `Set`, reaches the model as its items; a member that is neither a procedure nor an RPC method is left out instead of a tool that always fails ([#44](https://github.com/finom/vovk/pull/44))
 - Mixins: a body with several content types keeps its file, a response given as a `$ref` gets its type, OpenAPI 3.0 `nullable` and boolean `exclusiveMinimum` and `exclusiveMaximum` validate as JSON Schema does, a read-only property isn't required in a request, `application/x-ndjson` reads as JSON Lines, a property named `x-tsType` is kept, a binary form field is typed `Blob`, and `pruneComponents` keeps every schema a kept operation reaches ([#44](https://github.com/finom/vovk/pull/44))
 - OpenAPI: the document and the generated packages get version `0.0.0` when package.json has none, and the JSON Lines example of an item with `$defs` is no longer `null` ([#44](https://github.com/finom/vovk/pull/44))
-- Code samples in generated READMEs and OpenAPI: Python and Rust samples call the names the clients have and run as written (`True`, `None`), text from a schema stays inside strings and comments, a method name that isn't an identifier is called with brackets, and a description that isn't a string is left out ([#44](https://github.com/finom/vovk/pull/44))
+- Code samples in generated READMEs and OpenAPI: Python and Rust samples call the names the clients have and run as written (`True`, `None`), text from a schema stays inside strings and comments, a method name that isn't an identifier is called with brackets, and a description that isn't a string is left out, and an object key that holds a quote, such as a header name, keeps its quotes ([#44](https://github.com/finom/vovk/pull/44), [#PR](https://github.com/finom/vovk/pull/PR))
 - A procedure that several controller members hold runs, in `.fn()` and in its tool, the decorators of the member it is called through; it ran those of the member decorated last ([#51](https://github.com/finom/vovk/pull/51))
 - Route options (`before`, `headers`, `cors`) stay with their route when one procedure serves several routes; the options of one route applied to all of them ([#51](https://github.com/finom/vovk/pull/51))
 - A decorated member that another controller reuses keeps its schema, its `@operation` data and its tool, and the other controller's schema and tools carry what those decorators added, with its own decorators on top; the other controller's HTTP decorator replaced them ([#51](https://github.com/finom/vovk/pull/51))
@@ -118,6 +119,9 @@ A cleanup major: removals and renames; the only new exports are types.
 - A segment's or template's `package` option with a nested field, such as `author` or `repository`, stays in its own package; it was merged into the project's package.json object, so every other package got it ([#51](https://github.com/finom/vovk/pull/51))
 - `controllersToStaticParams()` lists `_schema_` only in development, or for a segment with no other path, as `output: 'export'` needs one: a build wrote its 404 body, and a static export put it in `out`, where a static host serves it with 200 ([#51](https://github.com/finom/vovk/pull/51))
 - A static segment pre-renders with no `dynamic` export, also with `cacheComponents` on: `next build` reads no request header, where reading `x-meta` made every route dynamic; a malformed `x-meta` still answers 400 ([#51](https://github.com/finom/vovk/pull/51))
+- `multitenant()`: a percent-encoded name such as `/%61dmin` redirects as `/admin` does, an override's `from` matches the decoded path, a `targetHost` without a port matches the request host on any port and a redirect keeps that port, and every character of a pattern other than a `[name]` placeholder is literal ([#PR](https://github.com/finom/vovk/pull/PR))
+- A tool from `deriveTools` has `execute` typed as the promise it always returns ([#PR](https://github.com/finom/vovk/pull/PR))
+- Mixins: a Swagger 2.0 spec is read as OpenAPI 3.0, so its query and path parameters, `body` and `formData` parameters, responses by `produces` and `definitions` are typed; they were untyped or missing ([#PR](https://github.com/finom/vovk/pull/PR))
 
 ### Security
 
@@ -128,7 +132,7 @@ A cleanup major: removals and renames; the only new exports are types.
 - A `Content-Type` list such as `text/plain; x=1,application/json` is refused, so a cross-origin request can't reach a JSON handler without a preflight ([#35](https://github.com/finom/vovk/pull/35))
 - Route params are copied per request, and a literal `{param}` URL no longer runs a handler with empty params ([#35](https://github.com/finom/vovk/pull/35))
 - The client refuses empty, `.` and `..` path params, also percent-encoded ([#35](https://github.com/finom/vovk/pull/35))
-- A 400 is no longer many times the size of its input: it lists at most 20 issues, each with its `message`, a `path` of keys and the library's text, number and boolean fields; a 1 MB body could produce a 91 MB response, and with Valibot, whose issues held copies of the input, a 2 MB body a 120 MB one ([#40](https://github.com/finom/vovk/pull/40), [#44](https://github.com/finom/vovk/pull/44))
+- A 400 is no longer many times the size of its input: it lists at most 20 issues, each with its `message`, a `path` of keys and the library's text, number and boolean fields; a 1 MB body could produce a 91 MB response, and with Valibot, whose issues held copies of the input, a 2 MB body a 120 MB one. `onError` and a `.fn()` caller still get the library's own issues in `cause.issues` ([#40](https://github.com/finom/vovk/pull/40), [#44](https://github.com/finom/vovk/pull/44), [#PR](https://github.com/finom/vovk/pull/PR))
 - A query nested deeper than 32 levels answers 400 instead of overflowing the stack ([#40](https://github.com/finom/vovk/pull/40))
 - multitenant: hosts match case-insensitively, only a DNS label is a wildcard value (a `%2e%2e` label could leave the tenant folder), only a `_schema_` path segment skips the rewrite ([#40](https://github.com/finom/vovk/pull/40))
 - Derived tools send no `x-meta` to mixins, whose host is a third party ([#40](https://github.com/finom/vovk/pull/40))

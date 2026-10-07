@@ -23,13 +23,18 @@ This package is experimental and its generated output may still shift between re
 - Validation follows JSON Schema 2020-12 (jsonschema 0.57, so Rust 1.85+) ([#40](https://github.com/finom/vovk/pull/40))
 - A success that isn't JSON comes back as a string: text decoded by its charset, UTF-8 by default, and any other type, such as a file, as base64; JSON Lines without an `iteration` schema and `isError` in success data are read correctly ([#40](https://github.com/finom/vovk/pull/40), [#44](https://github.com/finom/vovk/pull/44))
 - `HttpException` has `message()`, `status_code()` and `cause()`; one HTTP client per thread and runtime (tokio 1.49+), and validators are cached ([#40](https://github.com/finom/vovk/pull/40), [#51](https://github.com/finom/vovk/pull/51))
-- `vovk` is an optional peer dependency, since the package's types import from it ([#40](https://github.com/finom/vovk/pull/40))
+- `vovk` is an optional peer dependency, `^4.0.0-0`, since the package's types import from it ([#40](https://github.com/finom/vovk/pull/40), [#PR](https://github.com/finom/vovk/pull/PR))
 - A procedure without a params schema takes the params its path names, as `HashMap<String, String>`, and the file variant of a file-or-JSON union body goes out as bytes ([#44](https://github.com/finom/vovk/pull/44))
 - Requests: a header value goes out trimmed, and a header that is still invalid fails the call instead of being dropped; form field names with spaces or non-ASCII letters reach the server; a whole number goes into the query without `.0` ([#44](https://github.com/finom/vovk/pull/44))
 - Responses: a status outside 2xx is an error, a redirect reqwest didn't follow included, whose message names the `Location`; an error without `message` takes its `detail` or `title` and keeps the JSON body as `cause()`; a failed call keeps reqwest's error as `source()`, without the URL; `application/jsonlines` is read as JSON Lines ([#44](https://github.com/finom/vovk/pull/44))
 - Handler names alike in snake_case get a function each (`get_user_by_id`, `get_user_by_id_2`), `httpRequest` no longer clashes with the crate's own `http_request`, and the README headings name the functions the crate has ([#44](https://github.com/finom/vovk/pull/44))
 - `Cargo.toml` declares `rust-version = "1.85"` and resolver 3, so Cargo picks dependencies that build on it; a project on edition 2021 without resolver 3 picks newer ones, which need Rust 1.88 ([#44](https://github.com/finom/vovk/pull/44))
 - The crate builds without warnings, the README adds it with `cargo add` and starts with `readme.banner`, and a title or description that isn't a string is written as text ([#44](https://github.com/finom/vovk/pull/44))
+- `set_client_factory` sets how the calls build their `reqwest::Client`, as with a timeout, a proxy or default headers ([#PR](https://github.com/finom/vovk/pull/PR))
+- A mixin's query and urlencoded body follow the OpenAPI document's `style` and `explode`, as the TypeScript client sends them; without them an array repeats its key (`tags=a&tags=b`) ([#PR](https://github.com/finom/vovk/pull/PR))
+- The error message is read where a mixin's `errorMessageKey` points, as the TypeScript client reads it ([#PR](https://github.com/finom/vovk/pull/PR))
+- File fields are found in tuples and `allOf` too, by the same rule as vovk-python ([#PR](https://github.com/finom/vovk/pull/PR))
+- A mixin body that takes one schema as JSON or as a form is that schema's type, not `Variant0`/`Variant1` ([#PR](https://github.com/finom/vovk/pull/PR))
 
 ## 0.0.4 - 2026-08-05
 
