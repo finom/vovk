@@ -128,18 +128,19 @@ If your project matches one of these descriptions, that's the framework to start
 
 ### Vovk.ts
 
-**Version**: `vovk@3.2.2`. Requires Next.js 15+, Node 22+. Source: [vovk.dev](https://vovk.dev).
+**Version**: `vovk@4`. Requires Next.js 15+, Node 22+. Source: [vovk.dev](https://vovk.dev).
 
 #### REST semantics
 
 Procedures decorated with `@get('{id}')`, `@post()`, `@put()`, `@patch()`, `@del()` mount as RESTful endpoints with path-param syntax.
 
 ```ts filename="src/modules/user/user-controller.ts"
-import { procedure, prefix, get } from 'vovk';
+import { procedure, prefix, get, operation } from 'vovk';
 import { z } from 'zod';
 
 @prefix('users')
 export default class UserController {
+  @operation({ summary: 'Get user by ID' })
   @get('{id}')
   static getUser = procedure({
     params: z.object({ id: z.uuid() }),
@@ -193,7 +194,7 @@ const user = await UserRPC.getUser({
 
 #### LLM tool derivation
 
-Native, first-party. `deriveTools()` converts any controller or RPC module into `{ name, description, inputSchema, execute }` tool objects compatible with Vercel AI SDK out of the box. The `ToModelOutput.MCP` formatter shapes execute-output for MCP transports.
+Native, first-party. `deriveTools()` converts every procedure that has an operation decorator (`@operation`, `@operation.tool`), in a controller or an RPC module, into `{ name, description, inputSchema, execute }` tool objects compatible with Vercel AI SDK out of the box. The `ToModelOutput.MCP` formatter shapes execute-output for MCP transports.
 
 ```ts
 import { deriveTools } from 'vovk';
@@ -228,7 +229,7 @@ In a Next.js App Router app, validated bypass matters in three concrete places: 
 Beyond the six-axis rubric, Vovk ships a few capabilities that other Tier S frameworks don't match. All verifiable on [vovk.dev](https://vovk.dev):
 
 - **Per-segment serverless function config.** Each [segment](/segment) compiles to its own Next.js catch-all route, which becomes its own serverless function — with its own `maxDuration`, `runtime` (e.g., `'edge'`), and bundle. Most competitors mount as a single handler.
-- **Multi-language client codegen.** First-party [`vovk-python`](https://github.com/finom/vovk-python) and [`vovk-rust`](https://github.com/finom/vovk-rust) emit typed clients in Python and Rust from the same `.vovk-schema`. 🧪 experimental. ([Encore.ts](#encorets) also emits non-TS clients first-party — Go — via `encore gen client`; Vovk is the one on this list emitting Python and Rust.)
+- **Multi-language client codegen.** First-party [`vovk-python`](/python) and [`vovk-rust`](/rust) emit typed clients in Python and Rust from the same `.vovk-schema`. 🧪 experimental. ([Encore.ts](#encorets) also emits non-TS clients first-party — Go — via `encore gen client`; Vovk is the one on this list emitting Python and Rust.)
 - **Schema artifacts on disk.** `.vovk-schema/*.json` is a build artifact, not just an inferred type. CI tools, codegen pipelines, and AI agents can read the API surface without running the dev server.
 - **[Static segments](/static-segment).** Compile-time-generated JSON for content that doesn't change at runtime (OpenAPI specs, historical data). Served as a static file.
 

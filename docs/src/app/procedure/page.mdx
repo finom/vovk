@@ -168,12 +168,14 @@ export default class UserController {
     query: z.object({ notify: z.enum(['email', 'push', 'none']) }),
     output: z.object({ success: z.boolean() }),
   }).handle(async (req, { id }) => {
-    const { email } = await req.json();
-    const notify = req.nextUrl.searchParams.get('notify');
+    const { email } = await req.vovk.body();
+    const { notify } = req.vovk.query();
     // ...
   });
 }
 ```
+
+`req.json()` and `req.nextUrl.searchParams` work over HTTP only. A [`.fn()`](/fn) call and a [derived AI tool](/tools) give the handler only `req.vovk`, so a procedure that is called both ways reads its body and query with `req.vovk.body()` and `req.vovk.query()`.
 
 Without `.handle()`, the procedure throws Not Implemented (501) when called.
 

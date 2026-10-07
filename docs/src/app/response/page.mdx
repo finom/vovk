@@ -100,6 +100,7 @@ export default class UserController {
 To redirect, or to render the not-found page, use the Next.js functions from **next/navigation**.
 
 ```ts showLineNumbers copy
+import { get } from 'vovk';
 import { redirect, notFound } from 'next/navigation';
 
 export default class UserController {
@@ -117,7 +118,7 @@ export default class UserController {
 }
 ```
 
-Both functions throw an error, so you need no `return` statement; their return type is `never`. The same goes for `forbidden()` and `unauthorized()`. Vovk.ts rethrows these errors, so Next.js answers them.
+Both functions throw an error, so you need no `return` statement; their return type is `never`. The same goes for `forbidden()` and `unauthorized()`, which Next.js allows only with `experimental.authInterrupts` in **next.config**; without it they throw a plain error, which answers 500. Vovk.ts rethrows these errors, so Next.js answers them.
 
 In a [JSON Lines](/jsonlines) stream, after the response has started, they end the stream with an error line instead. `notFound()`, `forbidden()` and `unauthorized()` send their status: 404, 403 or 401. `redirect()` is sent as any other error: "Internal server error" in production.
 

@@ -33,7 +33,7 @@ Covers:
 - `source` variants: remote URL (with fallback), local file, inline object.
 - `getModuleName` / `getMethodName` — preset strategies + function form.
 - `apiRoot` + authorization via `withDefaults`.
-- Per-mixin fetcher + AJV strict-mode loosening for messy specs.
+- Per-mixin fetcher + AJV options.
 - `Mixins` namespace for `components/schemas` types.
 - Composed vs segmented output (pointer to **`rpc`** skill).
 - LLM tool exposure: `deriveTools` direct, for function-calling and MCP alike (pointer to **`tools`** skill).
@@ -80,10 +80,10 @@ Run `npx vovk generate` (or keep `vovk dev` running) → mixin emitted alongside
 ```ts
 import { PetstoreAPI } from '@/client';
 
-const pets = await PetstoreAPI.getPets({ query: { limit: 10 } });
+const pets = await PetstoreAPI.findPetsByStatus({ query: { status: 'available' } });
 ```
 
-> **Import path depends on client layout.** Code samples here import from `'@/client'`: the composed client generated into `src/client` (or `client/` without a `src` folder). Custom `composedClient.outDir` changes the path. With **segmented client**, each mixin lives in own folder named after pseudo-segment key, e.g. `@/client/petstore`. Call shape + types identical in both. See **`rpc`** skill for full comparison.
+> **Import path depends on client layout.** Code samples here import from `'@/client'`: the composed client generated into `src/client` (or `client/` when the app isn't in `src/app`). Custom `composedClient.outDir` changes the path. With **segmented client**, each mixin lives in own folder named after pseudo-segment key, e.g. `@/client/petstore`. Call shape + types identical in both. See **`rpc`** skill for full comparison.
 
 ## Source variants
 
@@ -167,7 +167,7 @@ const PetstoreAPIWithAuth = PetstoreAPI.withDefaults({
   apiRoot: 'https://api.example.com', // optional override
 });
 
-await PetstoreAPIWithAuth.updatePet({ body: { name: 'Doggo' } });
+await PetstoreAPIWithAuth.updatePet({ body: { id: 1, name: 'Doggo', photoUrls: [] } });
 ```
 
 Also the preferred pattern for LLM exposure — wrap the module with `withDefaults` first, then hand the authorized module to `deriveTools`, so LLM-triggered calls go out authenticated and the token never reaches the model.
@@ -199,14 +199,7 @@ outputConfig: {
 },
 ```
 
-Third-party specs often include non-standard keywords that trip AJV's strict mode. Loosen globally:
-
-```ts filename="vovk.config.mjs"
-libs: {
-  /** @type {import('vovk-ajv').VovkAjvConfig} */
-  ajv: { options: { strict: false } },
-},
-```
+vovk-ajv runs Ajv with `strict: false` by default, so non-standard keywords in third-party specs (`discriminator`, `x-*`) don't trip it. Use `libs.ajv.options` only for other Ajv options.
 
 Client-side validation opt-out per call:
 
@@ -229,12 +222,12 @@ type Body = VovkBody<typeof PetstoreAPI.updatePet>;
 type Output = VovkOutput<typeof PetstoreAPI.getPetById>;
 ```
 
-Named types from `components/schemas` across **all** mixins exposed under `Mixins` namespace export. Prefer this when third-party spec properly names its components:
+Named types from `components/schemas` are exposed under the `Mixins` namespace export: one namespace per mixin, in PascalCase (`petstore` → `Mixins.Petstore`). Prefer this when third-party spec properly names its components:
 
 ```ts
 import { PetstoreAPI, type Mixins } from '@/client';
 
-const pet: Mixins.Pet = { id: 1, name: 'Doggo' };
+const pet: Mixins.Petstore.Pet = { id: 1, name: 'Doggo', photoUrls: [] };
 ```
 
 For specs that don't populate `components/schemas`, fall back to `VovkOutput<typeof Module.method>` — Vovk infers shape from inline response schema instead of synthesized names like `ApiUsersIdPost200Response`.
@@ -273,7 +266,7 @@ Mixins emit into same client layouts as native RPC. Two TypeScript import paths:
 
 | Layout | Import path | Notes |
 |---|---|---|
-| Composed *(default)* | `import { PetstoreAPI } from '@/client'` | One client for all segments, generated into `composedClient.outDir` (default `./src/client`, or `./client` without a `src` folder). Best for most apps. |
+| Composed *(default)* | `import { PetstoreAPI } from '@/client'` | One client for all segments, generated into `composedClient.outDir` (default `./src/client`, or `./client` when the app isn't in `src/app`). Best for most apps. |
 | Segmented | `import { PetstoreAPI } from '@/client/petstore'` | Folder-per-segment under `segmentedClient.outDir` (default `./src/client`, shared with composed). Pseudo-segment key from `outputConfig.segments.<name>` becomes folder name: `petstore`, `github`, etc. |
 
 Both share identical call shape + identical types; pick by emission preference. Full comparison in **`rpc`** skill.
@@ -298,7 +291,7 @@ Python and Rust templates (see **`python`** / **`rust`** skills) also support mi
 
 ### "My mixin spec has non-standard keywords that break AJV"
 
-Set `libs.ajv.options.strict = false`. If specific operations still misbehave, pass `disableClientValidation: true` at call site.
+vovk-ajv already runs Ajv with `strict: false`, so unknown keywords don't stop it. If specific operations still misbehave, pass `disableClientValidation: true` at call site.
 
 ### "Module names look awful from auto-generated operation IDs"
 
@@ -315,6 +308,5 @@ After configuring mixins, `vovk bundle` treats them like any other generated mod
 - **Module name is `getModuleName`, not segment key.** Segment key determines segmented-client folder only. `outputConfig.segments.petstore.openAPIMixin.getModuleName = 'PetstoreAPI'` → import `PetstoreAPI`, not `petstore`.
 - **CORS from browser.** Third-party APIs rarely allow direct calls from browser origin. Route through server component, route handler, server action — or add proxy segment + point mixin at it.
 - **Auth secrets stay server-side.** Use `withDefaults` in server file (Route Handler, Server Action, server component), not in client code shipping to browsers.
-- **AJV strict mode trips on real-world specs.** If generation errors with `strict mode:` messages, loosen via `libs.ajv.options.strict = false`.
 - **Operation IDs drive everything.** Spec with missing or duplicate `operationId`s produces synthesized method names. Complain to upstream owner, or write function `getMethodName` falling back to `METHOD + path`.
 - **Standalone codegen works without Next.js.** Install `vovk-cli` globally (`npm i -g vovk-cli`) plus `vovk` + `vovk-ajv` as deps, run `npx vovk generate`. No Next.js, no segments directory required — just config file with mixins.

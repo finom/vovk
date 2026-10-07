@@ -82,7 +82,7 @@ static doSomething = procedure().handle(/* ... */);
 ```
 
 - `headers` — merged into response.
-- `cors: true` — auto permissive CORS (responds to `OPTIONS`, sets `Access-Control-*`). Needs `OPTIONS` in segment's `initSegment()` exports (`export const { GET, POST, ..., OPTIONS } = initSegment();`) — else preflight 405s. For finer control, custom decorator or Next.js middleware.
+- `cors: true` — auto permissive CORS (responds to `OPTIONS`, sets `Access-Control-*`). Needs `OPTIONS` in segment's `initSegment()` exports (`export const { GET, POST, ..., OPTIONS } = initSegment();`) — else Next.js answers the preflight itself (204 with `Allow`, no `Access-Control-*` headers), and the browser blocks the cross-origin call. For finer control, custom decorator or Next.js middleware.
 
 ## Custom decorators — `createDecorator`
 
@@ -132,7 +132,7 @@ export const authGuard = createDecorator(async (req, next) => {
 });
 ```
 
-Reading token via `next/headers` (not `req.headers`) → guard works identically over HTTP or `.fn()` (SSR, server actions, tests). See **Local vs HTTP context** below.
+Reading token via `next/headers` (not `req.headers`) → guard works identically over HTTP and under `.fn()` called inside a Next.js request (server components, server actions, route handlers). Outside one — a unit test, a script — `headers()` throws "`headers` was called outside a request scope": mock it in tests, e.g. `vi.mock('next/headers', () => ({ headers: async () => new Headers({ authorization: 'Bearer test' }) }))`. See **Local vs HTTP context** below.
 
 Consume in handler — same `AuthMeta`:
 
@@ -238,9 +238,10 @@ const myDecorator = createDecorator((req, next) => {
 });
 ```
 
-For headers/cookies, prefer imported `headers()` / `cookies()` from `next/headers` over `req.headers` / `req.cookies`. `next/headers` works in both HTTP + `.fn()` — no branch, no reliance on caller synthesizing `req`:
+For headers/cookies, prefer imported `headers()` / `cookies()` from `next/headers` over `req.headers` / `req.cookies`. `next/headers` works over HTTP and under `.fn()` inside a Next.js request — no branch, no reliance on caller synthesizing `req`. Outside a request (unit test, script) it throws; mock it there:
 
 ```ts
+import { createDecorator } from 'vovk';
 import { headers } from 'next/headers';
 
 const authGuard = createDecorator(async (req, next) => {
@@ -250,7 +251,7 @@ const authGuard = createDecorator(async (req, next) => {
 });
 ```
 
-`req.headers` / `req.cookies` still work in HTTP mode but populated only from real request — under `.fn()`, caller must supply. `next/headers` sidesteps that.
+A `req.headers` / `req.cookies` read works in HTTP mode only — under `.fn()` both are `undefined` (`.fn()` builds only `req.vovk`, and its options take no headers). `next/headers` sidesteps that.
 
 ## Flows
 
@@ -277,9 +278,9 @@ Define shared type (`type SharedMeta = { user: User }`). Decorator 1: `req.vovk.
 
 Branch on `typeof req.url === 'undefined'` inside decorator body, or don't stack the decorator on procedures called via `.fn()`.
 
-**Safety caveat — only skip auth/authorization when caller already did equivalent check.** Server Component with authenticated session calling `.fn()` purely to fetch already-authorized data is legitimate skip. `.fn()` against unauthenticated context (cron jobs, background work, untrusted callers) still needs to authenticate — keep guard + ensure it can read headers (via `next/headers`, works locally on server), or do equivalent explicit check before calling `.fn()`.
+**Safety caveat — only skip auth/authorization when caller already did equivalent check.** Server Component with authenticated session calling `.fn()` purely to fetch already-authorized data is legitimate skip. `.fn()` against unauthenticated context (cron jobs, background work, untrusted callers) still needs to authenticate — keep guard + ensure it can read headers (via `next/headers`, which needs a Next.js request: a cron route handler has one, a standalone script doesn't), or do equivalent explicit check before calling `.fn()`.
 
-If you skip guard for one callsite, audit every other `.fn()` callsite for same procedure. Easy to add second call later that assumes "this procedure is protected" + quietly isn't. When in doubt, keep guard, run in both contexts — `next/headers` makes it no-op for well-written guard.
+If you skip guard for one callsite, audit every other `.fn()` callsite for same procedure. Easy to add second call later that assumes "this procedure is protected" + quietly isn't. When in doubt, keep the guard: inside a Next.js request it reads the same headers over HTTP and under `.fn()`.
 
 ## Gotchas
 
@@ -287,7 +288,8 @@ If you skip guard for one callsite, audit every other `.fn()` callsite for same 
 - **`meta()` merges, doesn't replace.** Pass `null` to clear. Multiple decorators setting different keys all land in final object.
 - **Client `x-meta` sandboxed.** Under `xMetaHeader` in `meta()` — server-trusted state stays safe. Don't collapse together.
 - **Throw to short-circuit.** `throw new HttpException(...)` is standard control-flow for auth failures. Returning response works but unusual + easy to misread.
-- **Local context has no `req.url`.** If decorator dereferences HTTP-specific fields, guard. `next/headers` works in both contexts for header/cookie access.
+- **Local context has no `req.url`.** If decorator dereferences HTTP-specific fields, guard. `next/headers` works in both, inside a Next.js request; in a unit test, mock it.
 - **Decorators on `.fn()` still run.** If you don't want auth in SSR, either don't stack decorator on that procedure or branch inside body. Controller-only procedures (no HTTP decorator) can still have custom decorators — run on every `.fn()` call.
-- **CORS via `cors: true`** is coarse + needs segment's `route.ts` to export `OPTIONS` from `initSegment()` (`export const { GET, POST, ..., OPTIONS } = initSegment();`) — else preflight 405s. For per-origin allowlists, skip option + use custom decorator or Next.js middleware.
+- **Vitest on Vite 8 drops decorators on static fields** when `useDefineForClassFields` is off — the default for `target` below ES2022, e.g. create-next-app's ES2017. `.fn()` then runs without guards, and a test expecting success passes silently. Set `"useDefineForClassFields": true` (or `"target": "ES2022"`) in tsconfig.json.
+- **CORS via `cors: true`** is coarse + needs segment's `route.ts` to export `OPTIONS` from `initSegment()` (`export const { GET, POST, ..., OPTIONS } = initSegment();`) — else Next.js answers the preflight itself (204 with `Allow`, no `Access-Control-*` headers), and the browser blocks the cross-origin call. For per-origin allowlists, skip option + use custom decorator or Next.js middleware.
 - **`.auto()` names flow from method names.** Renaming method renames route — breaking change for consumers. Prefer explicit paths on public APIs.

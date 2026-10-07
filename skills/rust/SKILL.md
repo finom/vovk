@@ -297,7 +297,7 @@ Crate name / version flow from root `package.json` (generator copies fields into
 ### "Ship a Rust SDK to crates.io"
 
 1. `npx vovk generate --from rs --out ./rust_package`.
-2. Set `info.title` + `info.version` in `vovk.config.mjs` first.
+2. Set `version` (and `name`) in the root `package.json` first; to override them for the crate only, use `clientTemplateDefs.rs.outputConfig.package`.
 3. `cargo publish --manifest-path rust_package/Cargo.toml`.
 
 ### "Consume a streaming endpoint from Rust"

@@ -45,7 +45,9 @@ class UserController {
 Expose over HTTP — add HTTP decorator:
 
 ```ts
+import { z } from 'zod';
 import { get, prefix, procedure } from 'vovk';
+import UserService from './user-service';
 
 @prefix('users')
 export default class UserController {
@@ -132,8 +134,8 @@ procedure({
   skipSchemaEmission:          true | ['body', 'query', 'params', 'output', 'iteration'],
   validateEachIteration:       true, // validate every yielded item, not just the first
 
-  // Metadata (also settable via @operation — see openapi skill):
-  operation: { summary: string, description?: string, tags?: string[], ... },
+  // OpenAPI operation details where @operation can't go (see openapi skill):
+  operationObject: { summary: string, description?: string, tags?: string[], ... },
 
   // Return the parsed/transformed result (default: true):
   preferTransformed: true,
@@ -146,7 +148,7 @@ Works with any library emitting **Standard JSON Schema** — Zod v4+ and ArkType
 
 First arg to `.handle((req, params) => …)` = **`VovkRequest`** — `NextRequest` patched with typed `vovk` property. All usual Next.js request APIs work (`req.json()`, `req.formData()`, `req.headers`, `req.nextUrl`, …). Two conventions matter:
 
-**Prefer `next/headers` over `req.headers` / `req.cookies`.** Works identically in procedures, server components, server actions, middleware; `req.headers` only works in HTTP path.
+**Prefer `next/headers` over `req.headers` / `req.cookies`.** Works identically in procedures, server components, server actions, middleware; `req.headers` only works in HTTP path. It needs a Next.js request scope: a unit test that calls `.fn()` must mock `next/headers`.
 
 **Prefer `req.vovk` over `req.json()` / `req.nextUrl.searchParams`** for body/query/params. `req.json()` and `req.nextUrl.searchParams` typed (`VovkRequest` infers from schemas), but `undefined` under `.fn()` — handlers using them can't be called locally. `req.vovk` works both contexts.
 
@@ -243,11 +245,11 @@ These URLs = plain HTTP — `curl`, `httpx`, `fetch`, any client works. Typed RP
 Every procedure exposes `.fn()` → invokes handler without HTTP.
 
 ```tsx
-// Server component — no 'use client'
+// Server component — no 'use client'. Next.js 15+ passes `params` as a Promise: await it.
 import UserController from '@/modules/user/user-controller';
 
-export default async function UserPage({ params }: { params: { id: string } }) {
-  const user = await UserController.getUser.fn({ params });
+export default async function UserPage({ params }: { params: Promise<{ id: string }> }) {
+  const user = await UserController.getUser.fn({ params: await params });
   return <p>{user.email}</p>;
 }
 ```
@@ -302,11 +304,11 @@ Things to know:
    await UserController.getUser.fn({ params: { id: '…' }, meta: { userId: 'abc' } });
    ```
 
-5. **`.fn()` returns handler's return value directly** — no JSON serialization, no network hop.
+5. **`.fn()` returns a promise of handler's return value** — no JSON serialization, no network hop.
 
 ## Testing
 
-Unit-test procedures with `.fn()` — same call shape as SSR/server-action examples above (`UserController.getUser.fn({ params, body, query, meta })`), no HTTP server needed. Validation runs by default; pass `disableClientValidation: true` to bypass when isolating handler logic. For HTTP-level coverage (routing, decorators, status codes, content negotiation, generated client itself), call procedures through the generated client (`@/client`) against running dev server with `apiRoot: 'http://localhost:<port>/api'` → **`rpc`** skill for call shape. Mocking I/O / databases = project-specific — match repo conventions.
+Unit-test procedures with `.fn()` — same call shape as SSR/server-action examples above (`UserController.getUser.fn({ params, body, query, meta })`), no HTTP server needed. Vitest on Vite 8 drops decorators on static fields when `useDefineForClassFields` is off (default for `target` below ES2022, e.g. create-next-app's ES2017) → `.fn()` runs without guards; set `"useDefineForClassFields": true` (or `"target": "ES2022"`) in tsconfig.json. Validation runs by default; pass `disableClientValidation: true` to bypass when isolating handler logic. For HTTP-level coverage (routing, decorators, status codes, content negotiation, generated client itself), call procedures through the generated client (`@/client`) against running dev server with `apiRoot: 'http://localhost:<port>/api'` → **`rpc`** skill for call shape. Mocking I/O / databases = project-specific — match repo conventions.
 
 ## Validation — Standard Schema
 

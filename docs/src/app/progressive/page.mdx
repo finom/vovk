@@ -88,7 +88,7 @@ The full controller, with types and validation:
 ```ts showLineNumbers copy filename="src/modules/progressive/progressive-controller.ts" source="examples/kitchen-sink"
 import { procedure, get, JSONLinesResponder, prefix, type VovkIteration } from 'vovk';
 import { z } from 'zod';
-import ProgressiveService from './progressive-service.ts';
+import ProgressiveService from './progressive-service.js';
 
 @prefix('progressive')
 export default class ProgressiveController {

@@ -133,7 +133,7 @@ export default class HelloController {
 `@operation.tool()` adds AI tool data under the `x-tool` key of the operation object (see [Deriving AI Tools](/tools)), and `@operation.error(status, message)` documents an error response.
 
 ```ts showLineNumbers copy
-import { operation } from 'vovk';
+import { get, operation } from 'vovk';
 
 export default class HelloController {
   @operation.tool({
@@ -268,6 +268,8 @@ export function generateStaticParams() {
 export const { GET } = initSegment({ controllers });
 ```
 
+With `cacheComponents` on, which `create-next-app` 16.4+ sets, Next.js refuses `dynamic = 'force-static'`: set `cacheComponents: false` in **next.config**.
+
 For another slug folder, such as `src/app/api/[[...custom]]/route.ts`, pass its name as the second argument:
 
 ```ts showLineNumbers copy
@@ -371,6 +373,7 @@ For client-side validation, see the [customization](/imports) page.
 Defines a procedure: a controller handler with validation and schema emission. `procedure(options)` returns `.handle()`, which takes the handler, `(req, params) => …`.
 
 ```ts showLineNumbers copy
+import { z } from 'zod';
 import { procedure } from 'vovk';
 
 export default class UserController {

@@ -6,6 +6,7 @@ The built-in `NextRequest` functions, such as `req.json()` and `req.nextUrl.sear
 - Parse nested query parameters.
 - Read form data as a typed object, instead of the `FormData` that `req.formData()` returns.
 - Store request metadata.
+- Write a handler that also runs in [`.fn()`](/fn) calls and [derived AI tools](/tools). Their request has only `req.vovk`, so `req.json()` and `req.nextUrl` aren't there.
 
 <a name="body"></a>
 ## `async req.vovk.body()`
@@ -50,6 +51,7 @@ Nested data goes in the query string with square brackets, known as "PHP-style" 
 - With a `query` schema in a [procedure](/procedure), a key given once where the schema takes an array is a one-item array, so `tag=a` gives `{ tag: ["a"] }`, as OpenAPI's default style sends it.
 - `[]` followed by more brackets adds to the last element until that element already has the key: `items[][name]=a&items[][price]=1&items[][name]=b` gives `{ items: [{ name: "a", price: "1" }, { name: "b" }] }`.
 - Nesting goes up to 32 levels. A key with more brackets gets a 400 response.
+- A `+` is a space, as in `URLSearchParams{:ts}`. Send a literal `+` as `%2B`, as the RPC clients do.
 
 The RPC client leaves out `null`, `undefined` and empty objects or arrays, and numbers the remaining array items without gaps, so `{ tags: ['a', null, 'b'] }{:ts}` arrives as `{ tags: ['a', 'b'] }{:ts}`. A value with a `toJSON` method is sent as its result, as `JSON.stringify` does: a `Date{:ts}` as an ISO string, a `URL{:ts}` as its `href`.
 

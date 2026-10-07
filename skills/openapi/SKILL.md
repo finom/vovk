@@ -70,7 +70,7 @@ static updateUser = procedure({
 }).handle(async (req) => { /* ... */ });
 ```
 
-Without `@operation`, procedure still appears in spec — minus summary/description. LLM tool callers and doc readers both benefit, so add it on every user-facing procedure.
+Without an operation decorator (`@operation`, `@operation.tool` or `@operation.error`), a procedure is left out of the spec, and `deriveTools` makes no tool of it. Add `@operation` to every procedure the spec or the tools should list.
 
 ### `@operation.error(status, message)`
 
@@ -112,7 +112,7 @@ Brief shape; **`tools` skill** covers derivation. Sets `x-tool` on operation:
 static getUser = /* ... */;
 ```
 
-Mentioned here only because part of `operation.*` namespace. Procedures without `summary` or `description` (from `@operation`) are excluded from derived tools by default — `@operation.tool` block overrides that.
+Mentioned here only because part of `operation.*` namespace. Any operation decorator makes a procedure a derived tool, with or without `summary`/`description`: the tool description is `x-tool.description`, else `summary` and `description`, else the method name. `@operation.tool({ hidden: true })` excludes it.
 
 ## Global OpenAPI object
 
@@ -177,7 +177,7 @@ import { openapi } from '@/client/openapi';
 // Full OpenAPI 3.x object merged from all segments
 ```
 
-This is what `vovk init` scaffolds. Composed client generates into `composedClient.outDir` (default `src/client`, or `client/` without a `src` folder); `@/client` is the standard Next.js alias for that dir. Custom `outDir` shifts the path; projects without the alias use a relative import.
+This is what `vovk init` scaffolds. Composed client generates into `composedClient.outDir` (default `src/client`, or `client/` when the app isn't in `src/app`); `@/client` is the standard Next.js alias for that dir. Custom `outDir` shifts the path; projects without the alias use a relative import.
 
 ### Segmented (one spec per segment)
 
@@ -266,7 +266,7 @@ Each segment emits one JSON file to `.vovk-schema/`:
   _meta.json
 ```
 
-`npx vovk generate` produces these; client, OpenAPI, and AI tool pipelines all read from them. **Commit `.vovk-schema/`** so builds are reproducible.
+`vovk dev` writes these (it reads each segment's `_schema_` endpoint); `vovk generate` and `vovk bundle` read them, as do the client, OpenAPI and AI tool pipelines. **Commit `.vovk-schema/`** so builds are reproducible.
 
 ## Flows
 
@@ -285,7 +285,7 @@ Run `npx vovk generate`. Done.
 
 ### "Describe every endpoint for Scalar"
 
-Add `@operation({ summary, description, tags })` on every procedure. Regenerate. Scalar picks it up.
+Add `@operation({ summary, description, tags })` on every procedure. Run `vovk dev` so `.vovk-schema/` and the client pick it up. Scalar picks it up.
 
 ### "Expose API docs at /api/openapi"
 
@@ -333,9 +333,9 @@ static createUser = procedure({ body: /* ... */ }).handle(async (req) => {
 
 ## Gotchas
 
-- **`@operation` is advisory**: omitting it doesn't break spec, but descriptions/tags go missing. LLM tool callers and doc readers both suffer.
+- **A procedure without an operation decorator is left out**: no spec entry and no derived tool. `@operation({})` is enough to include it.
 - **`@operation.error` message strings are identity-linked to `HttpException`**: decorator pins response's `message` to `enum` of declared values. If runtime throws different message string, docs will be accurate about status code but wrong about message. Keep them in sync, or parameterize via shared constant.
-- **Regeneration required**: after adding `@operation*` or changing `vovk.config.mjs`, run `vovk generate` (or `vovk dev`).
+- **Regeneration required**: after changing `@operation*` decorators, run `vovk dev` (it rewrites `.vovk-schema/` and the client); `vovk generate` alone reads the committed `.vovk-schema/` and doesn't see decorator changes. A `vovk.config.mjs` change such as `outputConfig.openAPIObject` needs only `vovk generate`.
 - **`x-tool` doesn't affect OpenAPI semantics** — consumed only by `deriveTools`. Safe to include; `x-` fields are standard OpenAPI extension mechanism, though some strict linters still warn.
 - **Segment key vs. path**: `outputConfig.segments.admin` matches `segmentName: 'admin'` — not folder path and not class name.
 - **Content type is respected**: procedures with `contentType: 'multipart/form-data'` appear in spec with correct request-body encoding. Don't hand-patch generated spec.

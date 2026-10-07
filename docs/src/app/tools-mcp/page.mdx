@@ -71,7 +71,7 @@ With the `ToModelOutput.MCP` formatter, the tool's output is:
 You can create the response with the [`toDownloadResponse`](/response#downloads) utility, or get the media from another source with `fetch`.
 
 ```ts showLineNumbers copy
-import { toDownloadResponse } from 'vovk';
+import { get, operation, procedure, toDownloadResponse } from 'vovk';
 
 export default class MediaController {
   @operation({ summary: 'Get audio' })

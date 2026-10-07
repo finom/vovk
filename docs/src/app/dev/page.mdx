@@ -34,7 +34,7 @@ Options:
 4. The watcher requests `/api/<segment-name>/_schema_` of that segment for the new schema. When the file holds no known controller, as with a renamed controller, a service or a validation module, it requests the schema of every segment.
 5. If the schema changed:
    - If controllers were added, removed or renamed, or methods changed (validation included), the watcher writes the schema to the [.vovk-schema](/config#schemaoutdir) folder as `<segment-name>.json`.
-   - If the controller list changed, the watcher also generates the client again. The client imports the schema JSON files to set up the library it exports. By default, the [composed client](/composed) goes to `./src/client` (or `./client` without a `src` folder). With the [segmented client](/segmented), the per-segment folders go to the same folder.
+   - If the controller list changed, the watcher also generates the client again. The client imports the schema JSON files to set up the library it exports. By default, the [composed client](/composed) goes to `./src/client` (or `./client` without a `src/app` folder). With the [segmented client](/segmented), the per-segment folders go to the same folder.
 
 <Image src={devSvg} alt="vovk dev" className="dark:invert" />
 

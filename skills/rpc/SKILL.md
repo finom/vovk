@@ -7,7 +7,7 @@ description: Vovk.ts RPC client — how `vovk generate` turns controllers into t
 
 Every controller procedure with HTTP decorator automatically gets typed client counterpart. `vovk generate` produces these client modules from segment schemas, emitting TypeScript into the project:
 
-- **Composed client** (default): one client for all segments at `composedClient.outDir` (default `./src/client`, or `./client` without a `src` folder). Import from `'@/client'` (standard Next.js alias; alias-less projects use a relative path).
+- **Composed client** (default): one client for all segments at `composedClient.outDir` (default `./src/client`, or `./client` when the app isn't in `src/app`). Import from `'@/client'` (standard Next.js alias; alias-less projects use a relative path).
 - **Segmented client**: per-segment subdirs of `segmentedClient.outDir` (same default dir). Import from `'@/client/<segment>'`.
 
 **Key identity**: client module name = **key** used in `initSegment`'s `controllers` map, regardless of import path.
@@ -56,7 +56,7 @@ What it does:
 
 - Reads `.vovk-schema/**/*.json` for every segment (nested segments live in subdirectories, e.g. `.vovk-schema/customer/static.json`).
 - Emits generated code into configured `outDir` using selected `fromTemplates` preset (default `['ts']`).
-- Composed client (default): emits `index.ts`, `schema.ts`, `openapi.ts`, `openapi.json` at `outDir` root (default `./src/client`, or `./client` without a `src` folder). Project's own tsc handles the files; import from `'@/client'`.
+- Composed client (default): emits `index.ts`, `schema.ts`, `openapi.ts`, `openapi.json` at `outDir` root (default `./src/client`, or `./client` when the app isn't in `src/app`). Project's own tsc handles the files; import from `'@/client'`.
 - Segmented client: same four files per segment under `<outDir>/<segment>/`; import from `'@/client/<segment>'`.
 - Generated dir is gitignored by `vovk init` and rebuilt by the `prebuild` script (`vovk generate`); no need to commit it.
 
@@ -85,7 +85,7 @@ await ModuleRPC.methodName({
 
   // transport
   apiRoot?: string,                 // override the generation-time default
-  init?: RequestInit,               // headers, credentials, next.revalidate, etc. — see "init.signal is silently overwritten" below
+  init?: RequestInit,               // headers, credentials, signal, next.revalidate, etc. — see "init" below
 
   // validation
   disableClientValidation?: boolean,
@@ -127,7 +127,7 @@ In browser, relative `/api` resolves against page origin, so same call works fro
 
 `RequestInit` forwarded to `fetch` — `headers`, `credentials`, `mode`, `cache`, Next.js-specific `next: { revalidate: number }` all pass through.
 
-**`init.signal` is silently overwritten.** Internal fetcher creates own `AbortController` per call and overrides any `signal` you pass via `init` — `packages/vovk/src/client/fetcher.ts:134-136`. So passing `init.signal` does **NOT** abort request. For streaming endpoints, returned async iterable exposes `.abortController` — call `.abort()` on it. For non-streaming JSON responses, no public abort path exists today.
+**`init.signal` aborts the call.** The fetcher ties it to its own per-call `AbortController` (`packages/vovk/src/client/fetcher.ts:212-215`; without `AbortSignal.any`, as in React Native and Safari before 17.4, the signal aborts that controller). A pending JSON call rejects with the signal's reason as is (an `AbortError` when `abort()` gets no reason); a stream stops with an error whose `cause` is the reason. A streaming call's async iterable also exposes `.abortController` (and `abortSilently()`) to stop that one stream.
 
 ### `transform`
 
@@ -151,7 +151,7 @@ Two top-level config keys — `composedClient` and `segmentedClient` — = **ind
 
 | Key               | Default `enabled` | Default `fromTemplates` | Default `outDir`                           | Default import            |
 |-------------------|-------------------|--------------------------|---------------------------------------------|---------------------------|
-| `composedClient`  | `true`            | `['ts']`                 | `./src/client` (or `./client` if no `src`)  | `'@/client'`              |
+| `composedClient`  | `true`            | `['ts']`                 | `./src/client` (or `./client` without `src/app`) | `'@/client'`              |
 | `segmentedClient` | `false`           | `['ts']`                 | same dir, per-segment subdirs               | `'@/client/<segment>'`    |
 
 Both emit into the project source tree. When both are enabled they share `outDir`: composed files at the root, segments in subdirs.
@@ -194,7 +194,7 @@ import { AdminRPC } from '@/client/admin';
 
 | Client | Location | Import from |
 |--------|----------|-------------|
-| Composed (default) | `outDir` root (default `./src/client`, or `./client` without a `src` folder) | `'@/client'` |
+| Composed (default) | `outDir` root (default `./src/client`, or `./client` when the app isn't in `src/app`) | `'@/client'` |
 | Segmented | `<outDir>/<segment>` subdirs | `'@/client/<segment>'` |
 
 `@/client` is the standard Next.js `@/*` alias. Custom `outDir` shifts the path; projects without the alias use a relative import. Both layouts work with any package manager, pnpm included.

@@ -77,7 +77,7 @@ import type { VovkFetcher } from "vovk/fetcher";
 import { createRPC } from "vovk/create-rpc";
 import { schema } from "./schema";
 
-import type { Controllers as Controllers0 } from "../../app/api/[[...vovk]]/route.ts";
+import type { Controllers as Controllers0 } from "../app/api/[[...vovk]]/route.ts";
 
 // The arguments are: schema, segmentName, rpcModuleName, fetcher and options
 export const UserRPC = createRPC<
@@ -88,7 +88,9 @@ export const UserRPC = createRPC<
 });
 ```
 
-The generated client imports `vovk` subpaths, such as `vovk/fetcher`, and JSON files with import attributes. It compiles on TypeScript 5.3+ with `"moduleResolution"` set to `"bundler"` (the Next.js default), `"node16"` or `"nodenext"`. With `"node"`, TypeScript can't find `vovk/fetcher`.
+The generated client imports `vovk` subpaths, such as `vovk/fetcher`, and JSON files with import attributes. It compiles with `"moduleResolution"` set to `"bundler"` (the Next.js default), `"node16"` or `"nodenext"`. With `"node"`, TypeScript can't find `vovk/fetcher`. The client alone compiles on TypeScript 5.3+, but a service or a handler that takes its types from its own procedure, as in these docs and the files `vovk new` writes, needs TypeScript 5.5+.
+
+Under `"node16"` or `"nodenext"`, the client imports its own files by their `.js` names, such as `./schema.js` (by their `.ts` names when `allowImportingTsExtensions` is on). Turbopack resolves a `.js` name to the `.ts` file, but `next build --webpack` doesn't, unless **next.config** sets `experimental: { extensionAlias: { '.js': ['.ts', '.tsx', '.js'] } }`.
 
 ## RPC Method Options
 
