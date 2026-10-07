@@ -4,8 +4,8 @@ description: "Full documentation for the Vovk.ts framework, excluding the Realti
 see_also:
   label: "Realtime Kanban Context"
   url: https://vovk.dev/context/realtime-ui.md
-chars: 395643
-est_tokens: 98911
+chars: 397526
+est_tokens: 99382
 ---
 
 Page: https://vovk.dev
@@ -426,10 +426,11 @@ cd my-app
 ## Install vovk and vovk-cli
 
 - `vovk` is the runtime library.
+- `openapi3-ts` gives the OpenAPI types that the types of `vovk` import. It's a peer dependency of `vovk`, and not every package manager installs one.
 - `vovk-cli` is the Vovk.ts command-line tool, a development dependency.
 
 ```sh npm2yarn copy
-npm i vovk
+npm i vovk openapi3-ts
 ```
 
 ```sh npm2yarn copy
@@ -1155,13 +1156,13 @@ A procedure made with `procedure()` works without an HTTP decorator. You call it
 
 A request without a body is validated as `undefined{:ts}`, so an optional schema such as `z.object({ ... }).optional(){:ts}` lets the client leave the body out. So is an empty body with a JSON content type. An empty text or an empty file is a body.
 
-Data that fails validation gets a `400` response. Its message and its `cause.issues` hold the first 20 issues, and the message says how many more there are. An issue keeps its `message`, its `path` as a list of keys, and the library's other fields that hold text, a number or a boolean, such as Zod's `code`. Fields that copy the failed value are left out.
+Data that fails validation gets a `400` response. Its message and its `cause.issues` hold the first 20 issues, and the message says how many more there are. An issue in the response keeps its `message`, its `path` as a list of keys, and the library's other fields that hold text, a number or a boolean, such as Zod's `code`. Fields that copy the failed value are left out. The error that the segment's [`onError`](https://vovk.dev/segment) gets is the server's: its `cause.issues` holds every issue as the library made it, the failed values included.
 
 #### `output` and `iteration`
 
-`output` and `iteration` take the output schemas: `output` for JSON responses, `iteration` for [JSON Lines](https://vovk.dev/jsonlines). Both are optional. When set, the RPC method's result type follows `output`, and the type of its stream items follows `iteration`, instead of the handler's return type. [OpenAPI](https://vovk.dev/openapi), [AI tools](https://vovk.dev/tools), and the [Python](https://vovk.dev/python), [Rust](https://vovk.dev/rust) and future clients use them too. Client-side validation doesn't. A procedure takes one or the other: `procedure(){:ts}` throws when it gets both.
+`output` and `iteration` take the output schemas: `output` for JSON responses, `iteration` for [JSON Lines](https://vovk.dev/jsonlines). Both are optional. When set, the RPC method's result type follows `output`, and the type of its stream items follows `iteration`, instead of the handler's return type. [OpenAPI](https://vovk.dev/openapi), [AI tools](https://vovk.dev/tools), and the [Python](https://vovk.dev/python), [Rust](https://vovk.dev/rust) and future clients use them too. Client-side validation doesn't. A procedure takes one or the other: both together don't compile, and `procedure(){:ts}` throws when it gets them.
 
-A response that fails `output` or `iteration` validation is a bug in the handler, not in the request. The error is a plain `Error{:ts}` without a status code. In production, the client gets `500` "Internal server error", and the validation issues stay on the server: the segment's [`onError`](https://vovk.dev/segment) gets the first 20 of them as the error's `cause`. In development, the message names the failing fields.
+A response that fails `output` or `iteration` validation is a bug in the handler, not in the request. The error is a plain `Error{:ts}` without a status code. In production, the client gets `500` "Internal server error", and the validation issues stay on the server: the segment's [`onError`](https://vovk.dev/segment) gets them as the library made them, in the error's `cause.issues`. In development, the message names the failing fields.
 
 #### `contentType`
 
@@ -1919,6 +1920,8 @@ The third argument, `cause`, adds context:
 throw new HttpException(HttpStatus.BAD_REQUEST, 'Something went wrong', { hello: 'World' });
 ```
 
+An error from a vovk client that a handler calls, such as an [OpenAPI mixin](https://vovk.dev/mixins) or another segment, is an `HttpException` with the upstream status. It reaches the handler's caller with the upstream status, message and body, in production too. Catch it if the caller shouldn't see that.
+
 ## HttpStatus Enum
 
 The values of the `HttpStatus` enum:
@@ -2289,7 +2292,7 @@ Use JSON Lines for:
 
 ## Creating a JSON Lines Generator Procedure
 
-To stream JSON Lines, write the handler as a generator or an async generator. Each yielded value is serialized to JSON and sent as its own line.
+To stream JSON Lines, write the handler as a generator or an async generator. Each yielded value is serialized to JSON and sent as its own line, so the client gets each item after JSON: a `Date` arrives as a string. [`.fn()`](https://vovk.dev/fn) yields the values as they are.
 
 ```ts showLineNumbers copy
 import { z } from 'zod';
@@ -2463,7 +2466,7 @@ The responder has these members:
 
 - `send(item: T): Promise`: sends a JSON line to the client. The item is validated (when the procedure has `iteration`, only the first item, unless `validateEachIteration: true` is set), serialized to JSON and followed by a newline. Lines go out in call order, also when `send()` is not awaited. A send that fails, on iteration validation or with an item JSON can't serialize, ends the stream as `throw()` does, and the segment's `onError` gets the error.
 - `close(): Promise`: closes the response stream once the lines sent before it are out. A line sent after `close()` is dropped.
-- `throw(err: Error): Promise`: sends an error line after the lines sent before it, and closes the stream; a line sent after `throw()` is dropped. The error line is `{"isError":true,"reason":"…"}`, plus the `statusCode` of an `HttpException{:ts}`, which is 500 for a status outside 200-599 as on a JSON response. The client rethrows it as an `HttpException{:ts}` with that status. The error of `notFound(){:ts}`, `forbidden(){:ts}` or `unauthorized(){:ts}` from `next/navigation`, which Next.js can no longer answer once the stream started, sends its status: 404, 403 or 401. In production, an error that is not an `HttpException{:ts}`, or is one with status 0, which a client throws for a call that got no response, reads "Internal server error".
+- `throw(err: Error): Promise`: sends an error line after the lines sent before it, and closes the stream; a line sent after `throw()` is dropped. The error line is `{"isError":true,"reason":"…"}`, plus the `statusCode` of an `HttpException{:ts}`, which is 500 for a status that is not a number from 200 to 599, as on a JSON response. The client rethrows it as an `HttpException{:ts}` with that status. The error of `notFound(){:ts}`, `forbidden(){:ts}` or `unauthorized(){:ts}` from `next/navigation`, which Next.js can no longer answer once the stream started, sends its status: 404, 403 or 401. In production, an error that is not an `HttpException{:ts}`, or is one with status 0, which a client throws for a call that got no response, reads "Internal server error".
 - `isClosed: boolean`: whether the stream is closed, by `close()` or `throw()` (from the moment either is called), by a failed send, or by the client going away. `send()` waits while the client reads slower than the handler writes, and a generator handler is stopped, with its `finally` run, when the client disconnects or an item fails.
 - `response: Response`: the `Response` that the Next.js route handler returns.
 - `headers: Record<string, string>`: the `content-type` of the response.
@@ -4098,8 +4101,8 @@ export default class UserController {
       })
       .meta({ description: 'Response object' }),
   }).handle(async (req, { id }) => {
-    const { name, age } = await req.json();
-    const notify = req.nextUrl.searchParams.get('notify');
+    const { name, age } = await req.vovk.body();
+    const { notify } = req.vovk.query();
 
     // do something with the data
     console.log(`Updating user ${id}:`, { name, age, notify });
@@ -4122,7 +4125,7 @@ const updatedUser = await UserRPC.updateUser({
 });
 ```
 
-`updateUser` validates the input on the client, puts `query` and `params` into the URL, and sends a standard `fetch` request, which `UserController.updateUser` handles on the server. The RPC method returns a promise of the procedure's return type. In plain `fetch`, the call looks like this:
+`updateUser` validates the input on the client, puts `query` and `params` into the URL, and sends a standard `fetch` request, which `UserController.updateUser` handles on the server. The RPC method returns a promise of the procedure's return type. The result is the handler's value after JSON, so a handler returns JSON data: a `Date` arrives as a string. [`.fn()`](https://vovk.dev/fn) returns the value as is. In plain `fetch`, the call looks like this:
 
 ```ts showLineNumbers copy
 const resp = await fetch(`/api/users/${id}?notify=push`, {
@@ -4931,7 +4934,7 @@ The files follow the segment tree: a `foo/bar/baz` segment emits `.vovk-schema/f
 
 `_meta.json` holds more metadata, such as the selected fields of [vovk.config](https://vovk.dev/config) under the `config` key.
 
-The CLI reads these files into one object with `segments` and `meta`. `segments` is flat, keyed by segment name; `meta` holds the content of `_meta.json`. In the project's own schema folder, each value the config exposes comes from the current vovk.config, so `vovk generate` doesn't wait for `vovk dev` to update the file. The client and the OpenAPI output are generated from this object.
+The CLI reads these files into one object with `segments` and `meta`. `segments` is flat, keyed by segment name; `meta` holds the content of `_meta.json`. In the project's own schema folder, `config` comes from the current vovk.config, with only the keys it exposes now, so `vovk generate` doesn't wait for `vovk dev` to update the file. The client and the OpenAPI output are generated from this object.
 
 ```ts showLineNumbers copy
 {
@@ -5245,14 +5248,14 @@ To use the code generator as a standalone CLI, even without `package.json`, inst
 npm install -g vovk-cli
 ```
 
-Or install **vovk-cli** as a dev dependency and `vovk` and **vovk-ajv** as regular dependencies:
+Or install **vovk-cli** as a dev dependency and `vovk`, **openapi3-ts** and **vovk-ajv** as regular dependencies:
 
 ```sh npm2yarn copy
 npm install -D vovk-cli
 ```
 
 ```sh npm2yarn copy
-npm install vovk vovk-ajv
+npm install vovk openapi3-ts vovk-ajv
 ```
 
 The [composed client](https://vovk.dev/composed), which combines all generated API clients into one, goes to `client/` in standalone codegen, or to `src/client` in a Next.js app whose app folder is `src/app` (`composedClient.outDir` changes it). Your code imports it directly, for example as `@/client`.
@@ -6427,13 +6430,23 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
 The client uses [reqwest](https://docs.rs/reqwest/latest/reqwest/) for HTTP, [jsonschema](https://docs.rs/jsonschema/latest/jsonschema/) for client-side validation, and other common crates. Client-side validation reads a schema as JSON Schema 2020-12, or as draft 7 when the schema declares it. It checks formats such as `email` and `uuid`.
 
-The crate builds on Rust 1.86. Its `Cargo.toml` sets `rust-version = "1.85"` and resolver 3, so Cargo locks dependency versions that support Rust 1.85. A project that depends on the crate resolves dependencies with its own resolver. With edition 2024, or with `resolver = "3"` (Cargo 1.84+), it builds on Rust 1.86. An edition 2021 project without that resolver gets the newest versions, which need Rust 1.88.
+The crate needs Rust 1.85 or later. Its `Cargo.toml` sets `rust-version = "1.85"` and resolver 3, so Cargo locks dependency versions that support Rust 1.85. A project that depends on the crate resolves dependencies with its own resolver. With edition 2024, or with `resolver = "3"` (Cargo 1.84+), it builds on Rust 1.85. An edition 2021 project without that resolver gets the newest versions, which need Rust 1.88.
 
 For a procedure that takes `multipart/form-data`, the body is a [`reqwest::multipart::Form`](https://docs.rs/reqwest/latest/reqwest/multipart/struct.Form.html). Field names go out as written, in quotes, as browsers send them. Give files names without `"`, `\` or line breaks. reqwest escapes these with a backslash, which the server keeps in the name, and a `"` makes the form unreadable.
 
 A function without an output schema returns a `serde_json::Value`: the parsed JSON, or `null` for an empty body. A `text/*` response, or a response of any type with a charset, is a string, decoded as UTF-8 unless the charset names another encoding. Any other response, such as a file, is a string that holds its bytes in base64.
 
 A failed call returns an `HttpException`. Its `status_code()` is the response status, or 0 when the call failed before a response came, for example in client-side validation. `message()` and `cause()` hold the error the server sent. When no response came, or the response broke off, `source()` is the `reqwest::Error`, without the URL.
+
+The calls send their requests with a default `reqwest::Client`, which has no timeout. To set a timeout, a proxy or default headers, give `set_client_factory` a function that builds the client. The crate calls it again for each thread and tokio runtime it sends calls from, since a pooled connection works only on the runtime that opened it.
+
+```rs
+use std::time::Duration;
+
+vovk_hello_world::set_client_factory(|| {
+    reqwest::Client::builder().timeout(Duration::from_secs(30)).build().expect("a client")
+});
+```
 
 ### JSON Lines Endpoints
 
@@ -6763,7 +6776,7 @@ Renders `README.md`, the documentation of the generated [TypeScript](https://vov
 
 ### `packageJson`
 
-Renders `package.json`, so the generated client can be published to NPM. It takes `name`, `version`, `description` and `repository` from the root `package.json`. The `bundle`, `composedClient` or `segmentedClient` options of the [config](https://vovk.dev/config) can override these and other `package` fields, at the root or in a template definition.
+Renders `package.json`, so the generated client can be published to NPM. It takes `name`, `version`, `description`, `license`, `author`, `contributors`, `repository`, `homepage`, `bugs` and `keywords` from the root `package.json`, and sets `version` to `0.0.0` when there is none. The `bundle`, `composedClient` or `segmentedClient` options of the [config](https://vovk.dev/config) can override these and other `package` fields, at the root or in a template definition.
 
 - `templatePath` is `vovk-cli/client-templates/package-json/`.
 
@@ -7044,7 +7057,7 @@ Options for each segment. It takes the same properties as `outputConfig` (`origi
 
 ##### `rootEntry: string`
 
-Overrides the root entry of the segment in the generated clients and the OpenAPI document, for example to change `api` to another path for [multitenancy](https://vovk.dev/multitenant).
+Overrides the root entry of the segment in the generated clients and the OpenAPI document, for example to change `api` to another path for [multitenancy](https://vovk.dev/multitenant). An empty string `''` serves the segment from the root of its origin.
 
 ##### `segmentNameOverride: string`
 
@@ -7575,7 +7588,7 @@ Mixins add the APIs of one or more OpenAPI specs to the client. See [OpenAPI mix
 - `--openapi-root-url <urls...>` — root URLs, matched by index to `--openapi`. Mirrors `outputConfig.segments.mixinName.openAPIMixin.apiRoot`.
 - `--openapi-mixin-name <names...>` — mixin names, matched by index to `--openapi`; `mixin`, `mixin2`, … by default. In the config, the name is the key in `outputConfig.segments` and the pseudo-segment name of the mixin.
 - `--openapi-fallback <paths...>` — saves the OpenAPI specs to these paths and uses them when the URL is unavailable. The paths match `--openapi` by index.
-- `--watch [s]` — generates the client on start, then again on each change of the schema or the OpenAPI spec. Takes a throttle interval in seconds. A remote spec is requested every `s` seconds; a changed local file counts once it has kept the same size for 300 ms.
+- `--watch [s]` — generates the client on start, then again on each change of the schema, the OpenAPI spec, the config or **package.json**. Takes a throttle interval in seconds. A remote spec is requested every `s` seconds; a changed local file counts once it has kept the same size for 300 ms.
 
 ### Other Flags
 
@@ -9205,7 +9218,7 @@ Parameters:
 
 - `requestUrl`: the full request URL, such as `request.url`.
 - `requestHost`: the request host, such as `request.headers.get("host")`.
-- `targetHost`: the main host for redirects and rewrites (your production domain, or `localhost:3000` in development).
+- `targetHost`: the main host for redirects and rewrites (your production domain, or `localhost:3000` in development). A target host without a port matches the request host on any port.
 - `overrides`: maps tenant subdomain names to routing rules. Each rule is an array of objects with `from` (a path prefix) and `to` (the target path).
 
 For wildcard subdomains, use square-bracket patterns, such as `[customer_name]`, for the [Dynamic Segment](https://nextjs.org/docs/app/api-reference/file-conventions/dynamic-routes). The page gets the value in `params`. A placeholder matches one DNS label (letters, digits and hyphens), and the host is matched case-insensitively, so a host such as `%2e%2e.customer.example.com` gets no rewrite.
@@ -9624,7 +9637,7 @@ The [Vovk.ts repository](https://github.com/finom/vovk) holds the npm packages, 
 The runtime library: decorators, utilities, types and other code used on the server and on the client. Its only peer dependency is [openapi3-ts](https://www.npmjs.com/package/openapi3-ts), for types, and [Bundlephobia](https://bundlephobia.com/package/vovk) reports it as 100% self-composed.
 
 ```sh npm2yarn copy
-npm install vovk
+npm install vovk openapi3-ts
 ```
 
 ### [vovk-cli](https://www.npmjs.com/package/vovk-cli)
