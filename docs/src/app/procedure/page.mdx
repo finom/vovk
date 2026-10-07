@@ -193,13 +193,13 @@ A procedure made with `procedure()` works without an HTTP decorator. You call it
 
 A request without a body is validated as `undefined{:ts}`, so an optional schema such as `z.object({ ... }).optional(){:ts}` lets the client leave the body out. So is an empty body with a JSON content type. An empty text or an empty file is a body.
 
-Data that fails validation gets a `400` response. Its message and its `cause.issues` hold the first 20 issues, and the message says how many more there are. An issue keeps its `message`, its `path` as a list of keys, and the library's other fields that hold text, a number or a boolean, such as Zod's `code`. Fields that copy the failed value are left out.
+Data that fails validation gets a `400` response. Its message and its `cause.issues` hold the first 20 issues, and the message says how many more there are. An issue in the response keeps its `message`, its `path` as a list of keys, and the library's other fields that hold text, a number or a boolean, such as Zod's `code`. Fields that copy the failed value are left out. The error that the segment's [`onError`](/segment) gets is the server's: its `cause.issues` holds every issue as the library made it, the failed values included.
 
 #### `output` and `iteration`
 
 `output` and `iteration` take the output schemas: `output` for JSON responses, `iteration` for [JSON Lines](/jsonlines). Both are optional. When set, the RPC method's result type follows `output`, and the type of its stream items follows `iteration`, instead of the handler's return type. [OpenAPI](/openapi), [AI tools](/tools), and the [Python](/python), [Rust](/rust) and future clients use them too. Client-side validation doesn't. A procedure takes one or the other: `procedure(){:ts}` throws when it gets both.
 
-A response that fails `output` or `iteration` validation is a bug in the handler, not in the request. The error is a plain `Error{:ts}` without a status code. In production, the client gets `500` "Internal server error", and the validation issues stay on the server: the segment's [`onError`](/segment) gets the first 20 of them as the error's `cause`. In development, the message names the failing fields.
+A response that fails `output` or `iteration` validation is a bug in the handler, not in the request. The error is a plain `Error{:ts}` without a status code. In production, the client gets `500` "Internal server error", and the validation issues stay on the server: the segment's [`onError`](/segment) gets them as the library made them, in the error's `cause.issues`. In development, the message names the failing fields.
 
 #### `contentType`
 

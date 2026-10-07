@@ -1309,6 +1309,69 @@ describe('Runtime sweep', () => {
       deepStrictEqual(JSON.parse(text).cause.issues[0].path, ['tags', 0]);
     });
 
+    it("Gives onError the library's own issues and the 400 the trimmed ones", async () => {
+      const errors: Error[] = [];
+      class ValibotNameController {
+        static save = procedure({ body: toStandardJsonSchema(v.object({ name: v.string() })) }).handle(async () => ({
+          ok: true,
+        }));
+      }
+      post('save')(ValibotNameController, 'save');
+      const handlers = initSegment({
+        segmentName: 'valibot-name',
+        controllers: { ValibotNameController },
+        onError: (error) => {
+          errors.push(error);
+        },
+      });
+
+      const response = await call(handlers, 'POST', 'save', {
+        body: JSON.stringify({ name: 1 }),
+        headers: { 'content-type': 'application/json' },
+      });
+      const [issue] = (errors[0].cause as { issues: v.BaseIssue<unknown>[] }).issues;
+
+      strictEqual(response.status, 400);
+      deepStrictEqual((await response.json()).cause.issues, [
+        {
+          kind: 'schema',
+          type: 'string',
+          expected: 'string',
+          message: 'Invalid type: Expected string but received 1',
+          path: ['name'],
+        },
+      ]);
+      strictEqual(issue.input, 1);
+      strictEqual(issue.received, '1');
+      deepStrictEqual(issue.path?.[0].input, { name: 1 });
+    });
+
+    it("Gives onError the library's own issues of an output and the response the trimmed ones", async () => {
+      const errors: Error[] = [];
+      class ValibotOutputController {
+        static out = procedure({ output: toStandardJsonSchema(v.object({ name: v.string() })) }).handle(
+          async () => ({ name: 1 }) as unknown as { name: string }
+        );
+      }
+      get('out')(ValibotOutputController, 'out');
+      const handlers = initSegment({
+        segmentName: 'valibot-output',
+        controllers: { ValibotOutputController },
+        onError: (error) => {
+          errors.push(error);
+        },
+      });
+
+      await withNodeEnv('development', async () => {
+        const response = await call(handlers, 'GET', 'out');
+        const [issue] = (errors[0].cause as { issues: v.BaseIssue<unknown>[] }).issues;
+
+        strictEqual(response.status, 500);
+        deepStrictEqual((await response.json()).cause.issues[0].path, ['name']);
+        strictEqual(issue.input, 1);
+      });
+    });
+
     it('Answers 400 for an issue that holds a BigInt', async () => {
       class LimitController {
         static limit = procedure({ query: z.object({ n: z.coerce.bigint().max(BigInt(10)) }) }).handle(async () => ({
