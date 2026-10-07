@@ -206,7 +206,7 @@ export const validateOnClient = createValidateOnClient({
 - A `pattern` is read with the `u` flag, which `\p{…}` needs, as in `z.emoji()`. A pattern the `u` flag refuses, such as one with a `\-` escape that Zod's regexes allow, is read without it.
 - OpenAPI 3.0's boolean `exclusiveMinimum` and `exclusiveMaximum` are read as the bounds they mark.
 - A `FormData` or `URLSearchParams` body holds strings, and so do `params` and `query`, which the URL carries. So they are validated with `coerceTypes: true`: `"5"` passes as a number. Ajv never edits the `params` and `query` it checks, so they are sent as given.
-- When Ajv can't compile a schema, the client skips validation for it and logs a warning. The server still validates the request.
+- When Ajv can't compile a schema, the client skips validation for it and logs a warning. Where Ajv can't generate code at all, as on a page whose Content Security Policy has no `'unsafe-eval'` or in the Edge runtime, the client skips every check and warns once. The server still validates the request.
 
 ```bash npm2yarn copy
 npm install vovk-ajv

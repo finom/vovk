@@ -223,4 +223,43 @@ describe('vovk-ajv', () => {
 
     strictEqual(status, 0, stderr);
   });
+
+  it('Warns once where code generation from strings is disallowed, and leaves every input to the server', () => {
+    const vovkAjv = new URL('../../../packages/vovk-ajv/index.js', import.meta.url).href;
+    // an invalid body, then a form, which another Ajv instance would check
+    const script = `
+      const { validateOnClient } = await import(${JSON.stringify(vovkAjv)});
+      let warnings = 0;
+      console.warn = () => warnings++;
+      console.error = () => {};
+      const schema = { $schema: '${$schema}', type: 'object', properties: { a: { type: 'string' } }, required: ['a'] };
+      const options = { fullSchema: { $schema: '', segments: {} }, endpoint: '/x' };
+      await validateOnClient({ body: { a: 1 } }, { body: schema }, options);
+      await validateOnClient({ body: new FormData() }, { body: schema }, options);
+      console.log(warnings);
+    `;
+    const { status, stdout, stderr } = spawnSync(
+      process.execPath,
+      ['--disallow-code-generation-from-strings', '--input-type=module', '-e', script],
+      { encoding: 'utf8' }
+    );
+
+    strictEqual(status, 0, stderr);
+    strictEqual(stdout.trim(), '1');
+  });
+
+  it('Throws for an Ajv option that ajv-errors refuses', async () => {
+    // only a failure to generate code skips validation
+    const options = { allErrors: false };
+    const withOptions = { ...fullSchema, meta: { $schema: '', config: { $schema: '', libs: { ajv: { options } } } } };
+
+    await rejects(
+      validateOnClient(
+        { body: {} },
+        { body: { $schema, type: 'object' } },
+        { fullSchema: withOptions, endpoint: '/x' }
+      ),
+      /ajv-errors: Ajv option allErrors must be true/
+    );
+  });
 });

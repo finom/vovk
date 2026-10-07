@@ -61,11 +61,27 @@ const createAjv = (options: Options, target: Target, coercesStrings: boolean) =>
 
 type AjvInstance = ReturnType<typeof createAjv>;
 
+// where Ajv can't generate code, as under a CSP without 'unsafe-eval' or in the Edge runtime, the whole page or runtime
+// gets no Ajv and the server validates alone; any other error, such as an option ajv-errors refuses, still throws
+let generatesCode = true;
+
+const tryCreateAjv = (options: Options, target: Target, coercesStrings: boolean) => {
+  if (!generatesCode) return null;
+  try {
+    return createAjv(options, target, coercesStrings);
+  } catch (error) {
+    if ((error as Error | null)?.name !== 'EvalError') throw error;
+    generatesCode = false;
+    console.warn("🐺 Client-side validation is skipped, Ajv can't generate code here:", error);
+    return null;
+  }
+};
+
 // null for a schema Ajv can't compile, which is left to the server
 type Validator = ValidateFunction | null;
 
 // Ajv keeps every function it compiles, so a schema compiles once per text, also when each call brings a new object
-type CachedAjv = { ajv: AjvInstance; validators: WeakMap<object, Validator>; byText: Map<string, Validator> };
+type CachedAjv = { ajv: AjvInstance | null; validators: WeakMap<object, Validator>; byText: Map<string, Validator> };
 
 // one Ajv per options object, draft, and whether it coerces strings
 const cache = new WeakMap<Options, Partial<Record<`${Target}${'' | ' coerced'}`, CachedAjv>>>();
@@ -128,11 +144,12 @@ const getValidator = (
   cache.set(options, instances);
   const key = coercesStrings ? (`${target} coerced` as const) : target;
   const cached = instances[key] ?? {
-    ajv: createAjv(options, target, coercesStrings),
+    ajv: tryCreateAjv(options, target, coercesStrings),
     validators: new WeakMap(),
     byText: new Map(),
   };
   instances[key] = cached;
+  if (!cached.ajv) return { ajv: null, validator: null };
 
   let validator = cached.validators.get(schema);
   if (validator === undefined) {
@@ -226,7 +243,7 @@ const validate = ({
   }
   const { ajv, validator } = getValidator(schema, options, target ?? schemaTarget, isForm || isURLPart, description);
   // the server validates the input anyway
-  if (!validator) return;
+  if (!ajv || !validator) return;
   const data = isForm ? formToObject(input) : isURLPart ? copyContainers(input) : withBinaryPlaceholders(input);
 
   if (!validator(data)) {
