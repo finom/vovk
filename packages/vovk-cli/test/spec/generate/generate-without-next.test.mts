@@ -1096,6 +1096,43 @@ imports:
     }
   });
 
+  await it('Regenerates with --watch after an edit of the config or package.json', async () => {
+    await createProject(projectDir, {
+      'package.json': { name: 'app', version: '1.0.0', type: 'module' },
+      'vovk.config.mjs': configFile({
+        composedClient: { prettifyClient: false, fromTemplates: ['ts', 'packageJson'] },
+      }),
+      'src/app/api/[[...vovk]]/route.ts': '',
+      '.vovk-schema/root.json': userSegmentSchema,
+    });
+    const clientPackage = async () => JSON.parse((await read('src/client/package.json')) || '{}');
+
+    const cli = startCLI(['generate', '--watch', '0.5'], { cwd: projectDir });
+    try {
+      await cli.waitForOutput(/Composed client is generated/, 10_000);
+      await sleep(1000);
+      await fs.writeFile(
+        path.join(projectDir, 'vovk.config.mjs'),
+        configFile({
+          composedClient: { prettifyClient: false, fromTemplates: ['ts', 'packageJson'] },
+          outputConfig: { package: { description: 'from the config' } },
+        })
+      );
+      const hasConfigEdit = await waitUntil(async () => (await clientPackage()).description === 'from the config');
+      assert.ok(hasConfigEdit, cli.getOutput());
+
+      await sleep(1000);
+      await fs.writeFile(
+        path.join(projectDir, 'package.json'),
+        JSON.stringify({ name: 'app', version: '1.1.0', type: 'module' })
+      );
+      const hasPackageEdit = await waitUntil(async () => (await clientPackage()).version === '1.1.0');
+      assert.ok(hasPackageEdit, cli.getOutput());
+    } finally {
+      await cli.stop();
+    }
+  });
+
   await it('Writes the newest client when --watch generations overlap', async () => {
     await createProject(projectDir, {
       'package.json': { name: 'app', version: '1.0.0', type: 'module' },
