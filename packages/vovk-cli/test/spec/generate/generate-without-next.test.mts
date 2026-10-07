@@ -93,6 +93,27 @@ await describe('vovk generate in a project without Next.js', async () => {
     }
   });
 
+  await it('Warns once that prettier is missing, also for the segments of a segmented client', async () => {
+    // outside the repo, so the repo's own prettier isn't found
+    const dir = await fs.mkdtemp(path.join(os.tmpdir(), 'vovk-no-prettier-'));
+    try {
+      await createProject(dir, {
+        'package.json': { name: 'app', version: '1.0.0', type: 'module' },
+        'vovk.config.mjs': configFile({ composedClient: { enabled: false }, segmentedClient: { enabled: true } }),
+        'src/app/api/a/[[...vovk]]/route.ts': '',
+        'src/app/api/b/[[...vovk]]/route.ts': '',
+        '.vovk-schema/a.json': segmentSchema('a', 'UserRPC'),
+        '.vovk-schema/b.json': segmentSchema('b', 'UserRPC'),
+      });
+
+      const { stdout, stderr } = await runCLI(['generate'], { cwd: dir });
+
+      assert.strictEqual(`${stdout}${stderr}`.match(/prettier is not installed/g)?.length, 1, `${stdout}${stderr}`);
+    } finally {
+      await fs.rm(dir, { recursive: true, force: true });
+    }
+  });
+
   await it('Imports the schema with an extension when tsconfig.json sets module to nodenext', async () => {
     await createProject(projectDir, {
       'package.json': { name: 'app', version: '1.0.0', type: 'module' },

@@ -357,6 +357,45 @@ describe('resolveGeneratorConfigValues', () => {
       });
     });
 
+    it('should keep the nested package fields of a segment out of the other segments and the project package.json', () => {
+      // vovk-cli reads package.json once and passes the same object for every segment and template
+      const projectPackageJson: PackageJson = {
+        name: 'acme',
+        version: '1.0.0',
+        author: { name: 'Acme', email: 'dev@acme.dev' },
+        repository: { type: 'git', url: 'https://github.com/acme/app.git' },
+      };
+      const config = {
+        outputConfig: {
+          segments: {
+            admin: {
+              package: {
+                author: { name: 'Admin team', email: 'admin@acme.dev' },
+                repository: { type: 'git', url: 'https://github.com/acme/admin.git' },
+              },
+            },
+          },
+        },
+      };
+      const resolve = (segmentName: string) =>
+        resolveGeneratorConfigValues({ config, outputConfigs: [], segmentName, isBundle: false, projectPackageJson })
+          .package;
+
+      deepStrictEqual(resolve('admin'), {
+        name: 'acme',
+        version: '1.0.0',
+        author: { name: 'Admin team', email: 'admin@acme.dev' },
+        repository: { type: 'git', url: 'https://github.com/acme/admin.git' },
+      });
+      deepStrictEqual(resolve('public'), {
+        name: 'acme',
+        version: '1.0.0',
+        author: { name: 'Acme', email: 'dev@acme.dev' },
+        repository: { type: 'git', url: 'https://github.com/acme/app.git' },
+      });
+      deepStrictEqual(projectPackageJson.author, { name: 'Acme', email: 'dev@acme.dev' });
+    });
+
     it('should ignore non-existent segment name', () => {
       const result = resolveGeneratorConfigValues({
         config: {

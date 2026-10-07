@@ -4,7 +4,7 @@ import { toStandardJsonSchema } from '@valibot/to-json-schema';
 import { type } from 'arktype';
 import * as v from 'valibot';
 import type { VovkRequest } from 'vovk';
-import { procedure } from 'vovk';
+import { createDecorator, get, HttpException, HttpStatus, procedure } from 'vovk';
 import { z } from 'zod';
 
 describe('procedure features', async () => {
@@ -282,5 +282,24 @@ describe('procedure features', async () => {
     assert.deepEqual(await collect(await untransformedHandler.fn()), [{ count: '1' }]);
     assert.deepEqual(untransformedHandler.schema.validation?.iteration?.properties?.count, { type: 'string' });
     assert.deepEqual(handler.schema.validation?.iteration?.properties?.count, { type: 'number' });
+  });
+
+  it('Should reject the promise of fn() when a sync decorator throws', async () => {
+    // a sync guard, as the decorator examples write them
+    const guard = createDecorator((req: VovkRequest, next) => {
+      if (!req.vovk.meta<{ user?: string }>().user) throw new HttpException(HttpStatus.UNAUTHORIZED, 'No user');
+      return next();
+    });
+    class GuardedController {
+      static me = procedure().handle(async () => ({ me: true }));
+    }
+    guard()(GuardedController, 'me');
+    get('me')(GuardedController, 'me');
+
+    let result: unknown;
+    assert.doesNotThrow(() => {
+      result = GuardedController.me.fn();
+    });
+    await assert.rejects(result as Promise<unknown>, { statusCode: HttpStatus.UNAUTHORIZED });
   });
 });
