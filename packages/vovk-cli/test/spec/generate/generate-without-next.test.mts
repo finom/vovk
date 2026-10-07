@@ -5,6 +5,7 @@ import { createRequire } from 'node:module';
 import os from 'node:os';
 import path from 'node:path';
 import { after, describe, it } from 'node:test';
+import { pathToFileURL } from 'node:url';
 import { promisify } from 'node:util';
 import { createProject, runCLI, startCLI, userSegmentSchema } from '../../lib/minimal-project.mts';
 
@@ -173,6 +174,28 @@ await describe('vovk generate in a project without Next.js', async () => {
     await runCLI(['generate'], { cwd: projectDir });
 
     assert.strictEqual(await typecheckProject(projectDir), '');
+  });
+
+  await it('Gives the TypeScript client the libs of vovk.config when _meta.json was written before them', async () => {
+    const libs = { ajv: { options: { coerceTypes: 'array' } } };
+    await createProject(projectDir, {
+      'package.json': { name: 'app', version: '1.0.0', type: 'module' },
+      'tsconfig.json': { compilerOptions: { module: 'esnext', moduleResolution: 'bundler', noEmit: true } },
+      'vovk.config.mjs': configFile({ composedClient: { outDir: 'client', prettifyClient: false }, libs }),
+      // an app folder makes it a Vovk.ts project, whose client imports _meta.json
+      'src/app/api/[[...vovk]]/route.ts': '',
+      // what vovk dev wrote before the libs were added to the config, as after moving configure() of vovk-ajv
+      '.vovk-schema/_meta.json': {
+        $schema: 'https://vovk.dev/api/schema/v3/meta.json',
+        config: { libs: {}, rootEntry: 'api', $schema: 'https://vovk.dev/api/schema/v3/config.json' },
+      },
+      '.vovk-schema/root.json': userSegmentSchema,
+    });
+
+    await runCLI(['generate'], { cwd: projectDir });
+
+    const { schema } = await import(`${pathToFileURL(path.join(projectDir, 'client/schema.ts')).href}?t=${Date.now()}`);
+    assert.deepStrictEqual(schema.meta.config.libs, libs);
   });
 
   await it('Writes a client that type-checks under module node16', async () => {

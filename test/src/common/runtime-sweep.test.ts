@@ -1199,6 +1199,45 @@ describe('Runtime sweep', () => {
       strictEqual(cause.issues.length, 20);
     });
 
+    it('Answers 400 for issues that come as an Array subclass with its own toJSON, as ArkType 2.1.28 to 2.2.1 return them', async () => {
+      type ArkLikeIssue = { message: string; path: string[]; toJSON: () => object };
+      // ArkErrors of @ark/schema 0.56.0: slice() and map() keep the subclass, and its toJSON calls each issue's toJSON
+      class ArkLikeErrors extends Array<ArkLikeIssue> {
+        toJSON() {
+          return this.map((issue) => issue.toJSON());
+        }
+      }
+      const issues = new ArkLikeErrors();
+      issues.push({
+        message: 'age must be less than 120 (was 300)',
+        path: ['age'],
+        toJSON: () => ({ code: 'max', message: 'age must be less than 120 (was 300)' }),
+      });
+      const body = {
+        '~standard': {
+          version: 1 as const,
+          vendor: 'arklike',
+          validate: () => ({ issues }),
+          jsonSchema: { input: () => ({ type: 'object' }), output: () => ({ type: 'object' }) },
+        },
+      };
+      class AgeController {
+        static age = procedure({ body }).handle(async () => ({ ok: true }));
+      }
+      post('age')(AgeController, 'age');
+      const handlers = initSegment({ segmentName: 'ark-like', controllers: { AgeController } });
+
+      const response = await call(handlers, 'POST', 'age', {
+        body: JSON.stringify({ age: 300 }),
+        headers: { 'content-type': 'application/json' },
+      });
+
+      strictEqual(response.status, 400);
+      deepStrictEqual((await response.json()).cause.issues, [
+        { code: 'max', message: 'age must be less than 120 (was 300)', path: ['age'] },
+      ]);
+    });
+
     it('Keeps the 400 of a Valibot schema small for a large invalid body', async () => {
       class ValibotTagController {
         static tags = procedure({ body: toStandardJsonSchema(v.object({ tags: v.array(v.string()) })) }).handle(
