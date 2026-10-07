@@ -62,6 +62,11 @@ def _to_json_value(value: Any) -> Any:
         return [_to_json_value(item) for item in value]
     return value
 
+def _at_path(value: Any, path: str) -> Any:
+    for key in path.split('.'):
+        value = value.get(key) if isinstance(value, dict) else None
+    return value
+
 def _to_text(value: Any) -> str:
     # a scalar as JavaScript writes it: true and false, and a whole number without .0
     if isinstance(value, bool):
@@ -175,6 +180,7 @@ class ApiClient:
             files=files,
             body_content_type=body_content_type,
             disable_client_validation=disable_client_validation,
+            error_message_key=(handler.get('operationObject') or {}).get('x-errorMessageKey'),
         )
         
     def make_api_request(
@@ -189,6 +195,7 @@ class ApiClient:
         validation: Optional[Dict[str, Any]] = None,
         body_content_type: Optional[str] = None,
         disable_client_validation: bool = False,
+        error_message_key: Optional[str] = None,
     ) -> Any:
         """
         Make an API request with optional validation and parameter handling.
@@ -208,6 +215,7 @@ class ApiClient:
             validation: Optional dictionary with JSON schemas to validate body, query, and params
             body_content_type: Optional content type for the body (e.g. 'text/plain', 'application/octet-stream')
             disable_client_validation: Whether to skip client-side validation
+            error_message_key: Where an error body holds the message, as a dotted path such as 'error.message'
 
         Returns:
             If the response is JSON, returns the parsed JSON, or None for an empty body.
@@ -315,7 +323,7 @@ class ApiClient:
         content_type = response.headers.get('Content-Type', '')
 
         if response.status_code >= 400:
-            raise self._to_http_exception(response, content_type)
+            raise self._to_http_exception(response, content_type, error_message_key)
 
         media_type = content_type.split(';')[0].strip().lower()
         if media_type in _JSON_LINES_MEDIA_TYPES:
@@ -335,7 +343,7 @@ class ApiClient:
             return response.content.decode('utf-8', errors='replace')
 
     @staticmethod
-    def _to_http_exception(response: Response, content_type: str) -> HttpException:
+    def _to_http_exception(response: Response, content_type: str, error_message_key: Optional[str] = None) -> HttpException:
         # a proxy's error page or a plain text error has no JSON envelope, its text is the message
         text = response.text
         body: Any = None
@@ -345,8 +353,10 @@ class ApiClient:
             except ValueError:
                 pass
         envelope: Dict[str, Any] = body if isinstance(body, dict) else {}
-        # as the TypeScript client reads it: the message, else the detail or title of a problem document, else the text
-        message = next((envelope[key] for key in ('message', 'detail', 'title') if isinstance(envelope.get(key), str)), None)
+        # as the TypeScript client reads it: the message, or the mixin's errorMessageKey, else the detail or title of a
+        # problem document, else the text
+        paths = (error_message_key or 'message', 'detail', 'title')
+        message = next((value for value in (_at_path(envelope, path) for path in paths) if isinstance(value, str)), None)
         cause = envelope.get('cause')
         return HttpException({
             'message': message if message is not None else text or response.reason or 'Unknown error',

@@ -113,7 +113,13 @@ const vovkConfig = {
       // test_py fakes this origin
       client2: { origin: 'http://segment-origin.test', rootEntry: 'v2', segmentNameOverride: '' },
       petstore: {
-        openAPIMixin: { source: { object: petstore }, getModuleName: 'PetstoreAPI', getMethodName: 'auto' },
+        openAPIMixin: {
+          source: { object: petstore },
+          getModuleName: 'PetstoreAPI',
+          getMethodName: 'auto',
+          // where its error bodies hold the message
+          errorMessageKey: 'error.reason',
+        },
       },
     },
   },

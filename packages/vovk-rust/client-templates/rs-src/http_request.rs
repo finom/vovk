@@ -207,7 +207,7 @@ fn prepare_request<B, Q, P>(
     headers: Option<&HashMap<String, String>>,
     api_root: Option<&str>,
     disable_client_validation: bool,
-) -> Result<(reqwest::RequestBuilder, String), Box<dyn Error + Send + Sync>>
+) -> Result<(reqwest::RequestBuilder, Option<String>), Box<dyn Error + Send + Sync>>
 where
     B: Serialize + ?Sized,
     Q: Serialize + ?Sized,
@@ -242,6 +242,12 @@ where
         .ok_or("HTTP method not found")?
         .as_str()
         .ok_or("HTTP method is not a string")?;
+    // a mixin's errorMessageKey: where its error bodies hold the message
+    let error_message_key = handler
+        .get("operationObject")
+        .and_then(|operation| operation.get("x-errorMessageKey"))
+        .and_then(Value::as_str)
+        .map(str::to_string);
     let default_validation = Value::Object(serde_json::Map::new());
     let validation = handler
         .get("validation")
@@ -391,7 +397,7 @@ where
         RequestBody::Binary(bytes, _) => request.body(bytes),
     };
 
-    Ok((request, http_method.to_string()))
+    Ok((request, error_message_key))
 }
 
 fn location(response: &reqwest::Response) -> Option<String> {
@@ -431,9 +437,16 @@ fn is_text(response: &reqwest::Response, media_type: &str) -> bool {
             .is_some_and(|v| v.split(';').skip(1).any(|p| p.trim().to_ascii_lowercase().starts_with("charset=")))
 }
 
-// as the TypeScript client reads an error: the JSON message, else the detail or title of a problem document, else the
-// text a proxy sent; the cause is the body's cause, or the whole JSON body
-fn error_from_body(body: &[u8], media_type: &str, status: reqwest::StatusCode, location: Option<&str>) -> HttpException {
+// as the TypeScript client reads an error: the JSON message, or the value at the errorMessageKey path such as
+// "error.message", else the detail or title of a problem document, else the text a proxy sent; the cause is the body's
+// cause, or the whole JSON body
+fn error_from_body(
+    body: &[u8],
+    media_type: &str,
+    status: reqwest::StatusCode,
+    location: Option<&str>,
+    error_message_key: Option<&str>,
+) -> HttpException {
     let status_code = status.as_u16() as i32;
     if let (true, Some(location)) = (status.is_redirection(), location) {
         let reason = status.canonical_reason().unwrap_or("Redirect");
@@ -443,7 +456,11 @@ fn error_from_body(body: &[u8], media_type: &str, status: reqwest::StatusCode, l
     let json = if is_json(media_type) { serde_json::from_slice::<Value>(body).ok() } else { None };
     let message = json
         .as_ref()
-        .and_then(|value| ["message", "detail", "title"].iter().find_map(|key| value.get(*key)?.as_str()))
+        .and_then(|value| {
+            [error_message_key.unwrap_or("message"), "detail", "title"]
+                .iter()
+                .find_map(|path| path.split('.').try_fold(value, |value, key| value.get(key))?.as_str())
+        })
         .map(str::to_string)
         .unwrap_or(if text.is_empty() {
             status.canonical_reason().unwrap_or("Unknown error").to_string()
@@ -504,7 +521,7 @@ where
     Q: Serialize + ?Sized,
     P: Serialize + ?Sized,
 {
-    let (request, _) = prepare_request(
+    let (request, error_message_key) = prepare_request(
         endpoint,
         body,
         query,
@@ -532,7 +549,7 @@ where
     // a 2xx body may hold any keys; a redirect reqwest didn't follow, as for a multipart body it can't send again,
     // is an error like any other status
     if !status.is_success() {
-        return Err(error_from_body(&bytes, &media_type, status, location.as_deref()));
+        return Err(error_from_body(&bytes, &media_type, status, location.as_deref(), error_message_key.as_deref()));
     }
 
     if is_json_lines(&media_type) {
@@ -577,7 +594,7 @@ where
     Q: Serialize + ?Sized,
     P: Serialize + ?Sized,
 {
-    let (request, _) = prepare_request(
+    let (request, error_message_key) = prepare_request(
         endpoint,
         body,
         query,
@@ -596,7 +613,7 @@ where
         let media_type = media_type(&response);
         let location = location(&response);
         let bytes = response.bytes().await.unwrap_or_default();
-        return Err(error_from_body(&bytes, &media_type, status, location.as_deref()));
+        return Err(error_from_body(&bytes, &media_type, status, location.as_deref(), error_message_key.as_deref()));
     }
 
     let byte_stream = response

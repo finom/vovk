@@ -58,6 +58,17 @@ class TestClient(unittest.TestCase):
                 error = context.exception
                 self.assertEqual((error.status_code, error.message, error.cause), (404, message, body))
 
+    def test_error_message_key_of_a_mixin(self) -> None:
+        errors: List[Any] = [
+            ({'error': {'reason': 'No such pet'}, 'message': 'not this one'}, 'No such pet'),
+            ({'message': 'not this one', 'detail': 'Pet 42 does not exist'}, 'Pet 42 does not exist'),
+        ]
+        for body, message in errors:
+            with self.subTest(body=body):
+                with fake_transport(json_response(body, status=404)), self.assertRaises(HttpException) as context:
+                    PetstoreAPI.get_pet(params={'petId': '42'})
+                self.assertEqual(context.exception.message, message)
+
     def test_text_error(self) -> None:
         with self.assertRaises(HttpException) as context:
             ClientSweepRPC.get_text_error()

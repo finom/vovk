@@ -80,6 +80,8 @@ const vovkConfig = {
           apiRoot: `${origin}/api/foo/client`,
           getModuleName: 'MixinRPC',
           getMethodName: 'camel-case-operation-id',
+          // where its error bodies hold the message
+          errorMessageKey: 'error.reason',
         },
       },
     },

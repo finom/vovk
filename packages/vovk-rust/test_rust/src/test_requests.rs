@@ -400,6 +400,22 @@ pub mod test_requests {
         }
     }
 
+    // the mixin's errorMessageKey is error.reason
+    #[tokio::test]
+    async fn test_error_message_key_of_a_mixin() {
+        let errors = [
+            (r#"{"error":{"reason":"No such thing"},"message":"not this one"}"#, "No such thing"),
+            (r#"{"message":"not this one","detail":"Thing 42 does not exist"}"#, "Thing 42 does not exist"),
+        ];
+        for (body, message) in errors {
+            let api_root = serve("404 Not Found", &[("content-type", "application/json")], body).await;
+            let query = mixin_rpc::handle_query_::query { search: "value".to_string() };
+            let error = mixin_rpc::handle_query((), query, (), None, Some(&api_root), false).await.unwrap_err();
+
+            assert_eq!((error.status_code(), error.message()), (404, message));
+        }
+    }
+
     // reqwest's default writes such names as name*=utf-8''..., which the server can't read
     #[tokio::test]
     async fn test_multipart_field_names() {
