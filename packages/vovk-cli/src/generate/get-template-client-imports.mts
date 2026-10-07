@@ -10,6 +10,13 @@ export type ClientImports = {
   createRPC: string;
 };
 
+// a TypeScript file named by its own extension, as the v3 client in node_modules needed, goes by the name TypeScript
+// resolves: none under bundler resolution, the .js one under node16+; .mts and .cts always by .mjs and .cjs
+function toImportExtension(importPath: string, isNodeNextResolution: boolean, tsExtension: string) {
+  if (tsExtension === '.ts') return importPath;
+  return importPath.replace(/\.([mc])ts$/, '.$1js').replace(/\.tsx?$/, isNodeNextResolution ? '.js' : '');
+}
+
 export function getTemplateClientImports({
   config,
   fullSchema,
@@ -18,6 +25,8 @@ export function getTemplateClientImports({
   segmentName,
   isBundle,
   outputConfigs,
+  isNodeNextResolution,
+  tsExtension,
 }: {
   config: VovkStrictConfig;
   fullSchema: VovkSchema;
@@ -27,6 +36,9 @@ export function getTemplateClientImports({
   segmentName: string | null;
   isBundle: boolean;
   outputConfigs: VovkStrictConfig['outputConfig'][];
+  isNodeNextResolution: boolean;
+  // .ts when TypeScript may import .ts files
+  tsExtension: string;
 }) {
   const { imports: configImports } = resolveGeneratorConfigValues({
     config,
@@ -43,7 +55,13 @@ export function getTemplateClientImports({
   };
 
   const getImportPath = (p: string, s = '') =>
-    p.startsWith('.') ? toImportPath(path.relative(path.join(outCwdRelativeDir, s, relativeDir), p)) : p;
+    p.startsWith('.')
+      ? toImportExtension(
+          toImportPath(path.relative(path.join(outCwdRelativeDir, s, relativeDir), p)),
+          isNodeNextResolution,
+          tsExtension
+        )
+      : p;
 
   const clientImports: {
     composedClient: ClientImports;

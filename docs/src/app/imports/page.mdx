@@ -29,7 +29,7 @@ const config = {
 export default config;
 ```
 
-The generated `index.ts` imports them, with relative paths adjusted to its folder:
+The generated `index.ts` imports them, with relative paths adjusted to its folder. A path to a `.ts` file is written the way `tsconfig.json` resolves it: without the extension under bundler resolution, by its `.js` name under `node16` or `nodenext`.
 
 ```ts showLineNumbers copy filename="./src/client/index.ts"
 import { createRPC } from 'vovk/create-rpc';
