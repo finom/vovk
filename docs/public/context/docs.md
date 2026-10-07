@@ -4,8 +4,8 @@ description: "Full documentation for the Vovk.ts framework, excluding the Realti
 see_also:
   label: "Realtime Kanban Context"
   url: https://vovk.dev/context/realtime-ui.md
-chars: 394474
-est_tokens: 98619
+chars: 394888
+est_tokens: 98722
 ---
 
 Page: https://vovk.dev
@@ -4717,7 +4717,7 @@ export const validateOnClient = createValidateOnClient({
 - A `pattern` is read with the `u` flag, which `\p{…}` needs, as in `z.emoji()`. A pattern the `u` flag refuses, such as one with a `\-` escape that Zod's regexes allow, is read without it.
 - OpenAPI 3.0's boolean `exclusiveMinimum` and `exclusiveMaximum` are read as the bounds they mark.
 - A `FormData` or `URLSearchParams` body holds strings, and so do `params` and `query`, which the URL carries. So they are validated with `coerceTypes: true`: `"5"` passes as a number. Ajv never edits the `params` and `query` it checks, so they are sent as given.
-- When Ajv can't compile a schema, the client skips validation for it and logs a warning. The server still validates the request.
+- When Ajv can't compile a schema, the client skips validation for it and logs a warning. Where Ajv can't generate code at all, as on a page whose Content Security Policy has no `'unsafe-eval'` or in the Edge runtime, the client skips every check and warns once. The server still validates the request.
 
 ```bash npm2yarn copy
 npm install vovk-ajv
@@ -4933,7 +4933,7 @@ The files follow the segment tree: a `foo/bar/baz` segment emits `.vovk-schema/f
 
 `_meta.json` holds more metadata, such as the selected fields of [vovk.config](https://vovk.dev/config) under the `config` key.
 
-The CLI reads these files into one object with `segments` and `meta`. `segments` is flat, keyed by segment name; `meta` holds the content of `_meta.json`. The client and the OpenAPI output are generated from this object.
+The CLI reads these files into one object with `segments` and `meta`. `segments` is flat, keyed by segment name; `meta` holds the content of `_meta.json`. In the project's own schema folder, each value the config exposes comes from the current vovk.config, so `vovk generate` doesn't wait for `vovk dev` to update the file. The client and the OpenAPI output are generated from this object.
 
 ```ts showLineNumbers copy
 {
@@ -7872,7 +7872,7 @@ npx vovk new controller service user
 
 ### Custom Module Templates
 
-A module template is a `.ts.ejs` file. It uses [EJS](https://ejs.co/) to generate the code and [gray-matter](https://www.npmjs.com/package/gray-matter) front matter, in YAML, for its metadata.
+A module template is a `.ts.ejs` file. It uses [EJS](https://ejs.co/) to generate the code and YAML front matter for its metadata.
 
 #### Module Template Metadata
 
@@ -7960,7 +7960,7 @@ export default class <%= vars.ModuleName %> {
         body: type({ todo: type('true') }),
         params: type({ id: type('string') }),
     }).handle(async (req, { id }) => {
-        const body = await req.json();
+        const body = await req.vovk.body();
         <% if(t.withService) { %>
         return <%= vars.ServiceName %>.update<%= t.TheThing %>(id, body);
         <% } else { %>
@@ -7975,7 +7975,7 @@ export default class <%= vars.ModuleName %> {
     static create<%= t.TheThing %> = procedure({
         body: type({ todo: type('true') }),
     }).handle(async (req) => {
-        const body = await req.json();
+        const body = await req.vovk.body();
         <% if(t.withService) { %>
         return <%= vars.ServiceName %>.create<%= t.TheThing %>(body);
         <% } else { %>
@@ -8086,7 +8086,7 @@ export default class UserCartController {
     body: type({ todo: type('true') }),
     params: type({ id: type('string') }),
   }).handle(async (req, { id }) => {
-    const body = await req.json();
+    const body = await req.vovk.body();
     return UserCartService.updateUserCart(id, body);
   });
   @operation({
@@ -8096,7 +8096,7 @@ export default class UserCartController {
   static createUserCart = procedure({
     body: type({ todo: type('true') }),
   }).handle(async (req) => {
-    const body = await req.json();
+    const body = await req.vovk.body();
     return UserCartService.createUserCart(body);
   });
   @operation({
@@ -9960,7 +9960,7 @@ Lists the routes as static params, so the API is built at build time instead of 
 
 **Returns:**
 
-- `Array<Record<string, string[]>>{:ts}` — params objects for `generateStaticParams()`: `{ vovk: ['_schema_'] }` for the schema endpoint, then one per path, such as `{ vovk: ['hello', 'greeting.json'] }`.
+- `Array<Record<string, string[]>>{:ts}` — params objects for `generateStaticParams()`: one per path, such as `{ vovk: ['hello', 'greeting.json'] }`. The list starts with `{ vovk: ['_schema_'] }` for the schema endpoint when `NODE_ENV` is `development`, or when there is no other path, as `output: 'export'` needs one.
 
 ```ts showLineNumbers copy filename="src/app/api/[[...vovk]]/route.ts"
 // ...
