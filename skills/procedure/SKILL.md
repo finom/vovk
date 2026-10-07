@@ -122,7 +122,7 @@ procedure({
 
   // Output validation (optional):
   output:    ZodSchema, // Single JSON response
-  iteration: ZodSchema, // Per-item schema for JSON Lines streams (see jsonlines skill)
+  iteration: ZodSchema, // Per-item schema for JSON Lines streams, not with output (see jsonlines skill)
 
   // Content-type control:
   contentType: 'application/json' | 'multipart/form-data' |

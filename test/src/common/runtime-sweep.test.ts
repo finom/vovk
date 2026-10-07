@@ -1519,6 +1519,7 @@ describe('Runtime sweep', () => {
     it('Refuses output and iteration together before any handler runs', () => {
       const item = z.object({ n: z.number() });
 
+      // @ts-expect-error the types refuse them together too
       throws(() => procedure({ output: item, iteration: item }), {
         message: "Output and iteration are mutually exclusive. You can't use them together.",
       });

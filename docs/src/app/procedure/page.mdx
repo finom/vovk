@@ -197,7 +197,7 @@ Data that fails validation gets a `400` response. Its message and its `cause.iss
 
 #### `output` and `iteration`
 
-`output` and `iteration` take the output schemas: `output` for JSON responses, `iteration` for [JSON Lines](/jsonlines). Both are optional. When set, the RPC method's result type follows `output`, and the type of its stream items follows `iteration`, instead of the handler's return type. [OpenAPI](/openapi), [AI tools](/tools), and the [Python](/python), [Rust](/rust) and future clients use them too. Client-side validation doesn't. A procedure takes one or the other: `procedure(){:ts}` throws when it gets both.
+`output` and `iteration` take the output schemas: `output` for JSON responses, `iteration` for [JSON Lines](/jsonlines). Both are optional. When set, the RPC method's result type follows `output`, and the type of its stream items follows `iteration`, instead of the handler's return type. [OpenAPI](/openapi), [AI tools](/tools), and the [Python](/python), [Rust](/rust) and future clients use them too. Client-side validation doesn't. A procedure takes one or the other: both together don't compile, and `procedure(){:ts}` throws when it gets them.
 
 A response that fails `output` or `iteration` validation is a bug in the handler, not in the request. The error is a plain `Error{:ts}` without a status code. In production, the client gets `500` "Internal server error", and the validation issues stay on the server: the segment's [`onError`](/segment) gets the first 20 of them as the error's `cause`. In development, the message names the failing fields.
 

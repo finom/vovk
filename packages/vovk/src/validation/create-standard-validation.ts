@@ -56,7 +56,8 @@ type ProcedureOptions<
   query?: TQuery;
   params?: TParams;
   output?: TOutput;
-  iteration?: TIteration;
+  // procedure() refuses an output and an iteration together
+  iteration?: VovkNoSchema extends TOutput ? TIteration : never;
   disableServerSideValidation?: boolean | VovkValidationType[];
   skipSchemaEmission?: boolean | VovkValidationType[];
   validateEachIteration?: boolean;
