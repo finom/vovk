@@ -25,7 +25,7 @@
     "ncu": "npm-check-updates -u"
   },
   "dependencies": {
-    "next": "^16.3.6",
+    "next": "^16.3.8",
     "prettier": "^3.9.9",
     "react": "19.3.0",
     "react-dom": "19.3.0",
@@ -34,7 +34,7 @@
     "zod": "^4.6.5"
   },
   "devDependencies": {
-    "@biomejs/biome": "^2.5.14",
+    "@biomejs/biome": "^2.5.15",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^26",
     "@types/react": "^19",
