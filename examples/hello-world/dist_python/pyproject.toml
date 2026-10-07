@@ -6,7 +6,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "vovk_hello_world"
-version = "0.0.88"
+version = "0.0.89"
 description = 'A "Hello World!" app built with Next.js, Vovk.ts and Zod. For details, visit https://vovk.dev/hello-world'
 requires-python = ">=3.9"
 keywords = [ "vovk", "openapi", "zod", "api" ]
