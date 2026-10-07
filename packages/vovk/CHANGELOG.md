@@ -61,6 +61,7 @@ A cleanup major: removals and renames; the only new exports are types.
 
 ### Fixed
 
+- A controller class defined again, as on a dev reload, no longer keeps the old class in memory ([#54](https://github.com/finom/vovk/pull/54))
 - `HttpStatus.TOO_MANY_REQUESTS` was misspelled `TOO_MANY_TRequestS` ([900c3ed](https://github.com/finom/vovk/commit/900c3ed6))
 - Stacked decorators all run: HTTP routes dispatch through the outermost wrapper ([572f7f0](https://github.com/finom/vovk/commit/572f7f0a))
 - Prototype members such as `constructor` no longer resolve as route handlers ([24d727c](https://github.com/finom/vovk/commit/24d727cd))
