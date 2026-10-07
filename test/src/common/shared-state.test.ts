@@ -2,6 +2,7 @@ import { deepStrictEqual, strictEqual } from 'node:assert';
 import { describe, it } from 'node:test';
 import {
   cloneControllerMetadata,
+  controllersToStaticParams,
   createDecorator,
   deriveTools,
   get,
@@ -350,6 +351,54 @@ describe('Shared state', () => {
       };
 
       deepStrictEqual(await getStatus(true), await getStatus(false));
+    });
+
+    it("Lists, serves and gives static params for its parent's routes only where the parent is in the segment", async () => {
+      class BaseController {
+        static health() {
+          return 'ok';
+        }
+      }
+      get('health')(BaseController, 'health');
+      class ItemController extends BaseController {
+        static list() {
+          return [];
+        }
+      }
+      get('list')(ItemController, 'list');
+      prefix('items')(ItemController);
+      const withParent = { BaseRPC: BaseController, ItemRPC: ItemController };
+      const alone = { ItemRPC: ItemController };
+      const withParentHandlers = initSegmentInDevelopment({
+        segmentName: 'inherited-with-parent',
+        controllers: withParent,
+      });
+      const aloneHandlers = initSegmentInDevelopment({ segmentName: 'inherited-alone', controllers: alone });
+      const getPaths = (controllers: Record<string, typeof BaseController>) =>
+        controllersToStaticParams(controllers).map(({ vovk }) => vovk.join('/'));
+
+      deepStrictEqual(
+        {
+          withParent: {
+            handlers: await getHandlerNames(withParentHandlers, 'ItemRPC'),
+            status: (await call(withParentHandlers, 'GET', 'items/health')).status,
+            staticParams: getPaths(withParent),
+          },
+          alone: {
+            handlers: await getHandlerNames(aloneHandlers, 'ItemRPC'),
+            status: (await call(aloneHandlers, 'GET', 'items/health')).status,
+            staticParams: getPaths(alone),
+          },
+        },
+        {
+          withParent: {
+            handlers: ['health', 'list'],
+            status: 200,
+            staticParams: ['_schema_', 'health', 'items/health', 'items/list'],
+          },
+          alone: { handlers: ['list'], status: 404, staticParams: ['_schema_', 'items/list'] },
+        }
+      );
     });
   });
 });

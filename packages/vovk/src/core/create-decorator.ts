@@ -2,6 +2,7 @@ import type { VovkController, VovkHandlerSchema } from '../types/core.js';
 import type { VovkRequest } from '../types/request.js';
 import type { KnownAny } from '../types/utils.js';
 import { applyDecoratorAdapter } from './apply-decorator-adapter.js';
+import { getOwn } from './get-served-handlers.js';
 
 type Next = () => Promise<unknown>;
 
@@ -69,7 +70,7 @@ export function createDecorator<TArgs extends unknown[], TRequest = VovkRequest>
 
         // before the HTTP decorator, the procedure's own schema is the one to add to
         const handlerSchema: VovkHandlerSchema | null =
-          controller._handlers?.[propertyKey] ?? originalMethod.schema ?? null;
+          getOwn(controller, '_handlers')?.[propertyKey] ?? originalMethod.schema ?? null;
         const initResultReturn = initHandler?.call(controller, ...args);
         const initResult =
           typeof initResultReturn === 'function'
@@ -88,8 +89,9 @@ export function createDecorator<TArgs extends unknown[], TRequest = VovkRequest>
         method.schema = methodSchema;
 
         controller._handlers = {
-          ...controller._handlers,
-          [propertyKey]: methodSchema,
+          ...getOwn(controller, '_handlers'),
+          // path and httpMethod come with the HTTP decorator
+          [propertyKey]: methodSchema as VovkHandlerSchema,
         };
       }
     };
