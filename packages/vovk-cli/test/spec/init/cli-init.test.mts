@@ -160,7 +160,7 @@ await describe('CLI init', async () => {
     await assertConfig(['vovk.config.mjs'], assertConfig.makeConfig('zod'));
 
     await assertDeps({
-      dependencies: ['vovk', 'vovk-ajv', 'zod'],
+      dependencies: ['vovk', 'openapi3-ts', 'vovk-ajv', 'zod'],
       devDependencies: ['vovk-cli'],
     });
 
@@ -188,7 +188,7 @@ await describe('CLI init', async () => {
     await assertConfig([], null);
 
     await assertDeps({
-      dependencies: ['vovk', 'vovk-ajv', 'zod'],
+      dependencies: ['vovk', 'openapi3-ts', 'vovk-ajv', 'zod'],
       devDependencies: ['vovk-cli'],
       opposite: true,
     });
@@ -279,7 +279,7 @@ await describe('CLI init', async () => {
     await assertConfig(['vovk.config.mjs'], assertConfig.makeConfig('zod'));
 
     await assertDeps({
-      dependencies: ['vovk', 'vovk-ajv', 'zod'],
+      dependencies: ['vovk', 'openapi3-ts', 'vovk-ajv', 'zod'],
       devDependencies: ['vovk-cli'],
     });
 
@@ -291,6 +291,8 @@ await describe('CLI init', async () => {
 
     await assertDirExists('./node_modules/vovk');
     await assertDirExists('./node_modules/vovk-cli');
+    // vovk's types import it, and a package manager may skip a peer dependency
+    await assertDirExists('./node_modules/openapi3-ts');
   });
 
   await it('Works with --yes and --validation-library=none', async () => {
@@ -299,7 +301,7 @@ await describe('CLI init', async () => {
     await assertConfig(['vovk.config.mjs'], assertConfig.makeConfig(null));
 
     await assertDeps({
-      dependencies: ['vovk'],
+      dependencies: ['vovk', 'openapi3-ts'],
       devDependencies: ['vovk-cli'],
     });
 
