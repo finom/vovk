@@ -4,8 +4,8 @@ description: "Walkthrough of the Realtime Kanban example app — a live-updating
 see_also:
   label: "Vovk.ts Docs Context"
   url: https://vovk.dev/context/docs.md
-chars: 109611
-est_tokens: 27403
+chars: 109614
+est_tokens: 27404
 ---
 
 Page: https://vovk.dev/realtime-ui
@@ -270,7 +270,7 @@ const config = {
   outputConfig: {
     imports: {
       // ...
-      fetcher: './src/lib/fetcher',
+      fetcher: './src/lib/fetcher.ts',
     },
   },
 };
