@@ -42,7 +42,7 @@
   },
   "homepage": "https://vovk.dev",
   "engines": {
-    "node": "^22.22.2 || ^24.15.0 || >=26.0.0"
+    "node": ">=24.0.0"
   },
   "peerDependencies": {
     "vovk": ">=3.7.0 || ^4.0.0-0"
@@ -50,7 +50,7 @@
   "dependencies": {
     "@iarna/toml": "^2.2.5",
     "@inquirer/prompts": "^8.7.2",
-    "@npmcli/package-json": "^8.0.0",
+    "@npmcli/package-json": "^7.0.5",
     "@types/json-schema": "^7.0.15",
     "@types/lodash": "^4.17.25",
     "chalk": "^6.0.1",

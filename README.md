@@ -24,7 +24,7 @@
 
 Vovk.ts adds an API layer on top of **Next.js App Router Route Handlers**. Its unit is the **procedure**: a typed function with its schema. From one procedure, Vovk.ts derives the **HTTP endpoint**, the local **`.fn()`** call, the **type-safe client**, the **OpenAPI** document and the **AI tool** with `execute`. You don't write a separate contract or glue code.
 
-> **Requirements:** Node.js 22+, Next.js 15+ and TypeScript 5.5+
+> **Requirements:** Node.js 24+, Next.js 15+ and TypeScript 5.5+
 
 ## Install to existing Next.js project
 

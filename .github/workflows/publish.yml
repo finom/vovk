@@ -4,8 +4,8 @@ name: Publish
 # not have yet, once main.yml has passed on the tagged commit. A manual run is a dry run unless dry_run is off.
 on:
   push:
-    # hello-world tags its own releases; it publishes from its own scripts
-    tags: ['*-v*', '!vovk-hello-world-v*']
+    # the examples tag their own releases; they publish from their own scripts
+    tags: ['*-v*', '!vovk-hello-world-v*', '!vovk-examples-v*']
   workflow_dispatch:
     inputs:
       package:

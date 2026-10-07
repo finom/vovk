@@ -55,7 +55,7 @@ jobs:
         run: |
           if [ "$FULL" = true ]; then
             echo 'os=["ubuntu-24.04","macos-latest"]' >> "$GITHUB_OUTPUT"
-            echo 'node=[22,24,26]' >> "$GITHUB_OUTPUT"
+            echo 'node=[24,26]' >> "$GITHUB_OUTPUT"
           else
             echo 'os=["ubuntu-24.04"]' >> "$GITHUB_OUTPUT"
             echo 'node=[24]' >> "$GITHUB_OUTPUT"

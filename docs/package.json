@@ -16,6 +16,7 @@
     "generate": "vovk generate",
     "postbuild": "pagefind --site .next/server/app --output-path out/_pagefind",
     "update-mdx-github-codeblocks": "tsx ./scripts/updateMDXFilesWithGithubContent.ts",
+    "upgrade": "npx npm-check-updates -u && npm install",
     "ncu": "npm-check-updates -u"
   },
   "dependencies": {

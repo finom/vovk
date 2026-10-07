@@ -4,8 +4,8 @@ description: "Full documentation for the Vovk.ts framework, excluding the Realti
 see_also:
   label: "Realtime Kanban Context"
   url: https://vovk.dev/context/realtime-ui.md
-chars: 394290
-est_tokens: 98573
+chars: 395643
+est_tokens: 98911
 ---
 
 Page: https://vovk.dev
@@ -24,7 +24,7 @@ To start, run the `init` command in an existing Next.js project.
 npx vovk-cli@latest init
 ```
 
-> Requires Node.js 22+, Next.js 15+ and TypeScript 5.5+. &nbsp; [Quick Start](https://vovk.dev/quick-install) · [Manual Install](https://vovk.dev/manual-install) · [Claude Plugin](https://vovk.dev/claude) · [GitHub](https://github.com/finom/vovk)
+> Requires Node.js 24+, Next.js 15+ and TypeScript 5.5+. &nbsp; [Quick Start](https://vovk.dev/quick-install) · [Manual Install](https://vovk.dev/manual-install) · [Claude Plugin](https://vovk.dev/claude) · [GitHub](https://github.com/finom/vovk)
 
 ---
 
@@ -8742,7 +8742,7 @@ The package files listed below take their metadata (`repository`, `homepage`, `b
 ```json showLineNumbers copy  source="examples/hello-world" filename="package.json"
 {
   "name": "vovk-hello-world",
-  "version": "0.0.88",
+  "version": "0.0.89",
   "description": "A \"Hello World!\" app built with Next.js, Vovk.ts and Zod. For details, visit https://vovk.dev/hello-world",
   "scripts": {
     "dev": "vovk dev --next-dev",
@@ -8758,6 +8758,10 @@ The package files listed below take their metadata (`repository`, `homepage`, `b
     "publish:node": "npm publish ./dist",
     "publish:rust": "cargo publish --manifest-path dist_rust/Cargo.toml --allow-dirty",
     "publish:python": "python3 -m build ./dist_python --wheel --sdist && python3 -m twine upload ./dist_python/dist/*",
+    "git-tag": "git add . && git commit -m \"chore: release v$(node -p \"require('./package.json').version\")\" && git tag vovk-hello-world-v$(node -p \"require('./package.json').version\")",
+    "check-uncommitted": "git diff --quiet && git diff --cached --quiet || (echo '❌ Uncommitted changes!' && exit 1)",
+    "postversion": "vovk generate && vovk bundle && npm run publish:node && npm run publish:rust && npm run publish:python && npm run git-tag",
+    "patch": "npm run check-uncommitted && npm version patch --no-git-tag-version --no-workspaces-update",
     "ncu": "npm-check-updates -u"
   },
   "license": "MIT",
@@ -8859,6 +8863,12 @@ Link: https://hello-world.vovk.dev/openapi
 
 The example also builds the packages it publishes on [npm](https://www.npmjs.com/package/vovk-hello-world), [PyPI](https://pypi.org/project/vovk-hello-world/) and [crates.io](https://crates.io/crates/vovk_hello_world). The [templates](https://vovk.dev/templates) write each package with the files its language needs, such as [package.json](https://github.com/finom/vovk/blob/main/examples/hello-world/dist/package.json), [Cargo.toml](https://github.com/finom/vovk/blob/main/examples/hello-world/dist_rust/Cargo.toml) and [pyproject.toml](https://github.com/finom/vovk/blob/main/examples/hello-world/dist_python/pyproject.toml), and a README whose code samples document the API and the client.
 
+`npm run patch`:
+
+1. Verifies a clean working tree.
+2. Bumps the patch version.
+3. Triggers `postversion` to regenerate clients, bundle TypeScript, create package files and README files, publish all packages, and create a commit + tag.
+
 `vovk generate` writes the Python and Rust packages to **dist_python** and **dist_rust**, because `composedClient.fromTemplates` lists `py` and `rs`. `vovk bundle` builds the npm package into **dist**. Each package has its own publish script:
 
 ```json
@@ -8866,7 +8876,11 @@ The example also builds the packages it publishes on [npm](https://www.npmjs.com
   // ...
   "publish:node": "npm publish ./dist",
   "publish:rust": "cargo publish --manifest-path dist_rust/Cargo.toml --allow-dirty",
-  "publish:python": "python3 -m build ./dist_python --wheel --sdist && python3 -m twine upload ./dist_python/dist/*"
+  "publish:python": "python3 -m build ./dist_python --wheel --sdist && python3 -m twine upload ./dist_python/dist/*",
+  "git-tag": "git add . && git commit -m \"chore: release v$(node -p \"require('./package.json').version\")\" && git tag vovk-hello-world-v$(node -p \"require('./package.json').version\")",
+  "check-uncommitted": "git diff --quiet && git diff --cached --quiet || (echo '❌ Uncommitted changes!' && exit 1)",
+  "postversion": "vovk generate && vovk bundle && npm run publish:node && npm run publish:rust && npm run publish:python && npm run git-tag",
+  "patch": "npm run check-uncommitted && npm version patch --no-git-tag-version --no-workspaces-update"
 }
 ```
 
@@ -8914,7 +8928,7 @@ The generated package files:
 
 [package]
 name = "vovk_hello_world"
-version = "0.0.88"
+version = "0.0.89"
 edition = "2021"
 rust-version = "1.85"
 resolver = "3"
@@ -8965,7 +8979,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "vovk_hello_world"
-version = "0.0.88"
+version = "0.0.89"
 description = 'A "Hello World!" app built with Next.js, Vovk.ts and Zod. For details, visit https://vovk.dev/hello-world'
 requires-python = ">=3.9"
 keywords = [ "vovk", "openapi", "zod", "api" ]

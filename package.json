@@ -35,7 +35,7 @@
     "link-cli": "npm rebuild vovk-cli --ignore-scripts"
   },
   "engines": {
-    "node": ">=23.0.0"
+    "node": ">=24.0.0"
   },
   "prettier": {
     "trailingComma": "es5",
