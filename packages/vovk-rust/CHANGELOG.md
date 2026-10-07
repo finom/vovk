@@ -22,7 +22,7 @@ This package is experimental and its generated output may still shift between re
 - `number` is `f64`, `any` is `serde_json::Value`, a mixed enum reads each value ([#40](https://github.com/finom/vovk/pull/40))
 - Validation follows JSON Schema 2020-12 (jsonschema 0.57, so Rust 1.85+) ([#40](https://github.com/finom/vovk/pull/40))
 - A success that isn't JSON comes back as a string: text decoded by its charset, UTF-8 by default, and any other type, such as a file, as base64; JSON Lines without an `iteration` schema and `isError` in success data are read correctly ([#40](https://github.com/finom/vovk/pull/40), [#44](https://github.com/finom/vovk/pull/44))
-- `HttpException` has `message()`, `status_code()` and `cause()`; one HTTP client per thread, and validators are cached ([#40](https://github.com/finom/vovk/pull/40))
+- `HttpException` has `message()`, `status_code()` and `cause()`; one HTTP client per thread and runtime (tokio 1.49+), and validators are cached ([#40](https://github.com/finom/vovk/pull/40), [#PR](https://github.com/finom/vovk/pull/PR))
 - `vovk` is an optional peer dependency, since the package's types import from it ([#40](https://github.com/finom/vovk/pull/40))
 - A procedure without a params schema takes the params its path names, as `HashMap<String, String>`, and the file variant of a file-or-JSON union body goes out as bytes ([#44](https://github.com/finom/vovk/pull/44))
 - Requests: a header value goes out trimmed, and a header that is still invalid fails the call instead of being dropped; form field names with spaces or non-ASCII letters reach the server; a whole number goes into the query without `.0` ([#44](https://github.com/finom/vovk/pull/44))
