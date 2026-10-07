@@ -25,7 +25,7 @@
 The Vovk.ts runtime library, with [no dependencies](https://bundlephobia.com/result?p=vovk): the wrapper for Next.js route handlers, client-side tooling, utilities and types.
 
 ```sh
-npm install vovk
+npm install vovk openapi3-ts
 ```
 
 ## Links
