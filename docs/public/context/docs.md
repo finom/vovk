@@ -4,8 +4,8 @@ description: "Full documentation for the Vovk.ts framework, excluding the Realti
 see_also:
   label: "Realtime Kanban Context"
   url: https://vovk.dev/context/realtime-ui.md
-chars: 397526
-est_tokens: 99382
+chars: 397461
+est_tokens: 99366
 ---
 
 Page: https://vovk.dev
@@ -7700,15 +7700,9 @@ Sets the validation library: "zod", "valibot", "arktype", or "none" to set up va
 Sets the channel: the npm tag the Vovk.ts packages are installed from. The channels:
 
 - `latest` (default) for stable releases.
-- `beta` for beta releases (tested, but they can break things without notice).
+- `beta` for beta releases, when there is one.
 
-Run the CLI from the same channel:
-
-```sh npm2yarn copy
-npx vovk-cli@beta init --channel beta
-```
-
-A Vovk.ts package with no release on the channel, such as **vovk-ajv** without a beta, is added at its `latest` version.
+Run the CLI from the same channel, as `vovk-cli@beta` for `beta`. A Vovk.ts package with no release on the channel, such as **vovk-ajv** without a beta, is added at its `latest` version.
 
 ### `--dry-run`
 
