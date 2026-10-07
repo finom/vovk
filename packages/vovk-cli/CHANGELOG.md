@@ -10,7 +10,7 @@ A cleanup release. `vovk-cli` is pre-1.0, so this minor carries breaking changes
 
 ### Removed
 
-- The `draft` channel of `vovk init --channel` ([#PR](https://github.com/finom/vovk/pull/PR))
+- The `draft` channel of `vovk init --channel` ([#51](https://github.com/finom/vovk/pull/51))
 - The library entry: `main`, `types` and the `VovkEnv` type export. Importing `vovk-cli` ran the CLI; the `vovk` bin is unchanged ([#44](https://github.com/finom/vovk/pull/44))
 - The `vovk-client` package: the composed client generates into your source tree (`src/client`, or `client/` when the app isn't in `src/app`) and is imported as `@/client`, so it survives `npm ci` and works under pnpm and Yarn PnP ([#29](https://github.com/finom/vovk/pull/29))
 - The `js` template family (`js`, `jsBase`, `schemaJs`, `openapiJs`): use `ts` ([#29](https://github.com/finom/vovk/pull/29))
@@ -80,9 +80,9 @@ A cleanup release. `vovk-cli` is pre-1.0, so this minor carries breaking changes
 - `py_name` and `rs_name` name the Python and Rust packages, not only the imports in the README samples, and a segmented client adds the segment to them ([#44](https://github.com/finom/vovk/pull/44))
 - Under `node16` or `nodenext`, the client and `vovk new` import a `.ts` file by its `.js` name unless `allowImportingTsExtensions` or `rewriteRelativeImportExtensions` is set, and the client's JSON imports carry `with { type: "json" }` only where TypeScript takes it ([#44](https://github.com/finom/vovk/pull/44))
 - Mixin types: an array of `allOf` items is `(A & B)[]`, a binary string is a `Blob`, a request type leaves out read-only properties and a response type write-only ones, `VovkOutput` and `VovkIteration` work on mixin methods, properties next to `additionalProperties` compile, a `true` schema is `unknown`, not `any`, and a `true` or `false` schema or a description that isn't a string no longer stops generation ([#44](https://github.com/finom/vovk/pull/44))
-- The controllers `vovk new` writes for zod, valibot and arktype read the body with `req.vovk.body()`, so `.fn()` and derived tools can call their create and update procedures; `req.json()` threw there ([#PR](https://github.com/finom/vovk/pull/PR))
-- `vovk dev --next-dev` runs the project's own Next.js, also under Yarn PnP, where `npx next dev` installed and ran the latest; without a `next` it fails instead of installing one ([#PR](https://github.com/finom/vovk/pull/PR))
-- In the project's own schema folder, `vovk generate` and `vovk bundle` take the meta (`libs`, `rootEntry`) from the current vovk.config, where an older `_meta.json` from the last `vovk dev` won; the TypeScript client holds the meta instead of importing `_meta.json` ([#PR](https://github.com/finom/vovk/pull/PR))
+- The controllers `vovk new` writes for zod, valibot and arktype read the body with `req.vovk.body()`, so `.fn()` and derived tools can call their create and update procedures; `req.json()` threw there ([#51](https://github.com/finom/vovk/pull/51))
+- `vovk dev --next-dev` runs the project's own Next.js, also under Yarn PnP, where `npx next dev` installed and ran the latest; without a `next` it fails instead of installing one ([#51](https://github.com/finom/vovk/pull/51))
+- In the project's own schema folder, `vovk generate` and `vovk bundle` take the meta (`libs`, `rootEntry`) from the current vovk.config, where an older `_meta.json` from the last `vovk dev` won; the TypeScript client holds the meta instead of importing `_meta.json` ([#51](https://github.com/finom/vovk/pull/51))
 
 ### Security
 
