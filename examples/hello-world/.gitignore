@@ -49,3 +49,7 @@ dist_python/dist
 # committed for inspection: the published client bundles and the prebundle sources
 !/dist
 !/tmp_prebundle
+
+# written by next dev
+/AGENTS.md
+/CLAUDE.md

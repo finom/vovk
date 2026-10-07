@@ -43,3 +43,7 @@ next-env.d.ts
 
 # generated vovk client
 /src/client
+
+# written by next dev
+/AGENTS.md
+/CLAUDE.md
