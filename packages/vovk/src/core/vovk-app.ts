@@ -114,14 +114,15 @@ class VovkApp {
     return new Response(null, { status: response.status, statusText: response.statusText, headers: response.headers });
   }
 
-  routes: Record<HttpMethod, Map<VovkController, Record<string, RouteHandler>>> = {
-    GET: new Map(),
-    POST: new Map(),
-    PUT: new Map(),
-    PATCH: new Map(),
-    DELETE: new Map(),
-    HEAD: new Map(),
-    OPTIONS: new Map(),
+  // weak: a class defined again, as on a dev reload, leaves the old one to be collected
+  routes: Record<HttpMethod, WeakMap<VovkController, Record<string, RouteHandler>>> = {
+    GET: new WeakMap(),
+    POST: new WeakMap(),
+    PUT: new WeakMap(),
+    PATCH: new WeakMap(),
+    DELETE: new WeakMap(),
+    HEAD: new WeakMap(),
+    OPTIONS: new WeakMap(),
   };
 
   GET = async (req: Request, data: { params: Promise<VovkRouteParams> }, segmentName: string) =>
@@ -366,10 +367,7 @@ class VovkApp {
 
   #collectHandlers = (httpMethod: HttpMethod, segmentName: string) => {
     const routes = this.routes[httpMethod];
-    // a segment set up without initSegment names its controllers by _segmentName
-    const controllers =
-      this.#segments.get(segmentName)?.controllers ??
-      new Set([...routes.keys()].filter((controller) => controller._segmentName === segmentName));
+    const controllers = this.#segments.get(segmentName)?.controllers ?? new Set<VovkController>();
 
     const handlers: Record<string, Route> = {};
 
