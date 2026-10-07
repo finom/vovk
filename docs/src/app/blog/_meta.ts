@@ -6,7 +6,7 @@ const meta = {
     },
   },
   v4: {
-    title: 'Vovk.ts v4: Standard Tools and an In-Project Client',
+    title: 'Vovk.ts v4',
     theme: {
       sidebar: false,
       breadcrumb: true,

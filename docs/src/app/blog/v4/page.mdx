@@ -1,29 +1,174 @@
 ---
-title: "Vovk.ts v4: Standard Tools and an In-Project Client"
-description: "v4 makes deriveTools return standard-tool objects and generates the composed RPC client into your project, retiring the vovk-client package."
-date: "July 30, 2026"
+title: "Vovk.ts v4"
+description: "What changed in v4: a client generated into your project, standard-tool tools, smaller entry points, one controller syntax and several hundred fixes."
+date: "October 7, 2026"
 ---
 
 # Vovk.ts v4
 
-Vovk.ts v4 is a breaking release with two themes: LLM tools now follow an open convention, and the composed RPC client is generated into your project.
+Vovk.ts v4 is a breaking release. It generates the RPC client into your project, returns tools in the [standard-tool](https://standard-tool.js.org/) shape, trims the entry points and fixes several hundred bugs.
 
-## Tools follow the standard-tool convention
+## TL;DR
 
-- [deriveTools](/tools) returns an array of tools implementing the `StandardToolV0` interface from [standard-tool](https://standard-tool.js.org/): `name`, `title`, `description`, `inputSchema`, `outputSchema`, `meta`, `execute`. Tools derived from RPC modules and [OpenAPI mixins](/mixins) also carry schemas, reconstructed from the generated JSON Schemas.
-- Removed: `createTool` (use the [standard-tool](https://www.npmjs.com/package/standard-tool) package or plain objects of the same shape), the `VovkTool` type, the `toolsByName` return value, and the legacy `parameters`, `type` and `inputSchemas` tool fields.
+Breaking changes:
+
+- `vovk-client` is gone. The client is generated into `src/client` and imported from `@/client`. The `js` templates are removed.
+- [deriveTools](/tools) returns an array of `StandardToolV0`. `createTool`, `VovkTool` and `toolsByName` are removed.
+- `fetcher` and `createFetcher` come from `vovk/fetcher`, `createValidateOnClient` from `vovk/create-validate-on-client`. The camelCase subpaths and `HttpMethod` are removed, and `HttpStatus.TOO_MANY_TRequestS` is `TOO_MANY_REQUESTS`.
+- `decorate()` and `static prefix` are removed: decorators and `@prefix()` only.
+- Only an `HttpException` sets the status. In production, any other error answers 500 with no detail.
+- Repeated query keys become arrays, and a handler's second argument is the validated params.
+- A wrong method on a known path answers 405, and a `Content-Type` list answers 415.
+- A JSON Lines stream can be read once.
+- `vovk-ajv`: `configure()` moved to `libs.ajv` in `vovk.config`.
+- Python returns `bytes` for files. Rust sends a typed JSON body where it sent a multipart form.
+- The CLI needs Node.js 22.22.2+, 24.15+ or 26+, and the generated client TypeScript 5.3+.
+
+Fixes: several hundred bugs in routing, validation, streaming, the clients, code generation and the CLI, and security hardening of query parsing, content types and generated code. Four audits of every package found them, and each code fix comes with a test that failed before it.
+
+The sections below cover each change and how to upgrade. Every package ships its own `CHANGELOG.md` with the full list; the links are at the [end](#full-changelogs).
+
+## Install
+
+A new project:
+
+```sh
+npx vovk-cli init
+```
+
+An existing project:
+
+```sh
+npm i vovk@latest vovk-ajv@latest
+npm i -D vovk-cli@latest
+```
+
+If you generate Python or Rust clients, update `vovk-python` and `vovk-rust` too.
+
+Requirements:
+
+- Node.js 22.22.2+, 24.15+ or 26+ for the CLI.
+- TypeScript 5.3+ for the generated client, 5.5+ for the files `vovk new` writes. TypeScript 7 works.
+- `"experimentalDecorators": true` in `tsconfig.json` if you build with webpack. Turbopack builds don't need it. `vovk init` asks whether to add it.
 
 ## The client is generated into your project
 
-- The [composed client](/composed) is emitted as TypeScript to `src/client` (or `client/` without a `src` folder) and imported as `@/client`. The **vovk-client** package and the `node_modules/.vovk-client` folder are retired, which also ends the pnpm hoisting issues.
-- The `js` template family (`js`, `jsBase`, `schemaJs`, `openapiJs`) is removed; [ts](/templates#ts) is the default for both client modes.
-- `prettifyClient` defaults to `true` and uses the Prettier installed in your project; the CLI no longer ships its own copy and prints a warning when it's missing.
-- `vovk init` adds the generated folder to `.gitignore`; the `prebuild: vovk generate` script regenerates it on every build.
+- The [composed client](/composed) is TypeScript in `src/client` (or `client/` without a `src` folder), imported as `@/client`. The `vovk-client` package and the `node_modules/.vovk-client` folder are retired, which also ends the pnpm hoisting issues.
+- The `js` templates (`js`, `jsBase`, `schemaJs`, `openapiJs`) are removed. [ts](/templates#ts) is the default for both client modes.
+- `prettifyClient` defaults to `true` and uses the Prettier installed in your project. The CLI no longer ships its own copy and warns once when it's missing.
+- `vovk init` adds the client folder to `.gitignore`, and the `prebuild: vovk generate` script regenerates it on every build.
+- `vovk generate` refuses to overwrite a file it didn't generate. `--force` overrides it.
 
-## Migrating
+## Tools follow the [standard-tool](https://standard-tool.js.org/) convention
 
-1. Remove `vovk-client` from your dependencies.
-2. Replace `from 'vovk-client'` with `from '@/client'` (and `vovk-client/openapi`, `vovk-client/schema` with `@/client/openapi`, `@/client/schema`).
-3. Add `/src/client` (or your custom `composedClient.outDir`) to `.gitignore` and keep the `prebuild: vovk generate` script.
-4. If your config sets `fromTemplates: ['js']`, switch to `['ts']`.
-5. Use the array returned by `deriveTools`; a name map is one line: `Object.fromEntries(tools.map((t) => [t.name, t]))`.
+[standard-tool](https://standard-tool.js.org/) is an open convention for LLM tools.
+
+- [deriveTools](/tools) returns an array of tools that implement its `StandardToolV0` interface: `name`, `title`, `description`, `inputSchema`, `outputSchema`, `meta` and `execute`. `StandardToolV0` is exported from `vovk`.
+- Tools derived from RPC modules and [OpenAPI mixins](/mixins) carry schemas too, rebuilt from the generated JSON Schemas.
+- `@operation.tool({ meta })` sets a tool's `meta`.
+- Removed: `createTool` (use the [standard-tool](https://www.npmjs.com/package/standard-tool) package or plain objects of the same shape), the `VovkTool` type, the `toolsByName` return value, and the `parameters`, `type` and `inputSchemas` tool fields.
+- Tool names are sanitized, capped at 64 characters and deduplicated. The input is checked once under the AI SDK, so a `.transform()` no longer runs twice.
+
+## Smaller entry points
+
+Each entry exports what your code writes against.
+
+| v3 | v4 |
+| --- | --- |
+| `fetcher`, `createFetcher`, `VovkFetcher` from `vovk` | from `vovk/fetcher` |
+| `createValidateOnClient`, `VovkValidateOnClient` from `vovk` | from `vovk/create-validate-on-client` |
+| `vovk/createRPC`, `vovk/createValidateOnClient` | `vovk/create-rpc`, `vovk/create-validate-on-client` |
+| `HttpMethod.GET` | `'GET'` |
+| `HttpStatus.TOO_MANY_TRequestS` | `HttpStatus.TOO_MANY_REQUESTS` |
+| `validateOnClient.configure()` in `vovk-ajv` | `libs.ajv` in `vovk.config` |
+
+`vovk/internal` is not public API. `vovk-cli` has no library entry: importing it ran the CLI. The `vovk` command is unchanged.
+
+## One controller syntax
+
+`decorate()` and the `static prefix` class property are removed; use decorators and `@prefix()`. A `static prefix` left in a class is ignored without an error, so its routes lose the prefix.
+
+## Types that match what runs
+
+- `.fn()` requires the body, query and params the server requires. It returns a promise of the handler's result, or an async generator of the checked items when the procedure has an `iteration` schema.
+- Client input types come from the schemas' input types, so `.default()` and `.transform()` work.
+- Output and iteration JSON Schemas describe what the server sends, after defaults and transforms. `preferTransformed: false` keeps the old behavior. OpenAPI, the Python and Rust types and the tools' output schemas follow.
+- The handler's second argument is the validated params, coerced types included.
+- `req.nextUrl.searchParams.get()` is typed as the string it returns. `req.vovk.query()` gives the validated values.
+- None of it needs `strictNullChecks`, and the types no longer import `next`.
+
+## HTTP behavior
+
+- A known path called with another method answers 405 with `Allow`, not 404.
+- HEAD requests fall back to the GET route.
+- `Content-Type` must name one media type. A list answers 415. A declared `contentType` is enforced even without a body schema.
+- Malformed JSON, form and query input answers 400. An optional body can be left out; a missing required body answers 400.
+- Repeated query keys collect into an array: `tag=a&tag=b` gives `['a', 'b']`. A key whose schema takes an array is a one-item array when sent once, as OpenAPI clients send it.
+- 204, 205 and 304 responses have no body. A status outside 200–599 becomes 500.
+- The route match cache is kept per method and segment, so a match for one method no longer reroutes another ([#33](https://github.com/finom/vovk/issues/33)).
+
+## Errors
+
+- In production, error responses carry no internal detail. `onError` still receives the full error.
+- Only an `HttpException` sets the status and keeps its message. Any other error answers 500, also in derived tools.
+- Failed `output` or `iteration` validation is a server error: 500, with the issues kept on the server.
+- A 400 lists at most 20 issues. A 1 MB body could produce a 91 MB response before.
+
+## JSON Lines
+
+- The server sends as fast as the client reads, and returns the generator when the client goes away.
+- `notFound()`, `forbidden()` and `unauthorized()` thrown mid-stream send 404, 403 and 401 in the error line. Error lines carry `statusCode`.
+- The client reads only as fast as you take items, so a consumed stream iterated again yields nothing. Read it once, or call `asPromise()`.
+
+## Python and Rust clients
+
+Both clients escape all schema text, so a spec can't inject code into the generated package. Path params and query keys are percent-encoded, and `..` is refused.
+
+Python:
+
+- **Breaking:** a response that is neither JSON nor text, such as a file, comes back as `bytes`, not `str`.
+- One `requests` session per client with a default timeout. An upload fails only when the server takes no data for the connect timeout.
+- Every 4xx and 5xx raises `HttpException`. Every JSON body kind gets a `body` parameter.
+- No `urllib3` pin and no GPL `rfc3987` dependency. Python 3.9+.
+
+Rust:
+
+- **Breaking:** a procedure that takes JSON or a form, with no file field, takes its typed body and sends JSON. It took a `reqwest::multipart::Form`, so typed fields reached the server as text.
+- The crate compiles for every tested schema shape, and the schema is compiled into the crate.
+- Validation follows JSON Schema 2020-12. Rust 1.85+.
+
+## Security
+
+- Query parsing drops prototype-polluting keys, caps nesting at 32 levels and can't be made to allocate a huge array.
+- A `Content-Type` list is refused, so a cross-origin request can't reach a JSON handler without a preflight.
+- `x-tsType` is stripped from third-party OpenAPI specs, and a plain `tsType` key is ignored. Either could put code into the generated client.
+- A form body that repeats one field name is parsed in linear time. A 500 KB body could stall the server for seconds.
+- Multitenant hosts match case-insensitively, and only a DNS label is a wildcard value.
+- A crafted OpenAPI spec no longer makes code samples grow exponentially in `vovk generate` and `vovk bundle`.
+
+## Performance
+
+Measured on Node.js 24.1 and an Apple M4 Pro: about 1.5 µs of routing overhead per request up to 1,000 controllers and 1.8 µs at 10,000; about 8 ms of cold start for 1,000 controllers. Details and how to run the suite: [Performance](/performance).
+
+## Upgrading from v3
+
+1. Remove `vovk-client` and import from `@/client`. Replace `fromTemplates: ['js']` with `['ts']`. Install `prettier`, or set `prettifyClient: false`. Add the client folder to `.gitignore`. A stale `node_modules/.vovk-client` can be deleted.
+2. Move the imports in the [table above](#smaller-entry-points).
+3. `deriveTools` returns an array. A name map is one line: `Object.fromEntries(tools.map((t) => [t.name, t]))`. Move `createTool`, `VovkTool` and `inputSchemas` to the `StandardToolV0` shape.
+4. Replace `decorate(...)` with decorators, and `static prefix = 'users'` with `@prefix('users')`.
+5. Throw `HttpException` for expected errors. Read internal messages in `onError`.
+6. A handler that read raw strings from its second argument now gets the validated params.
+7. A repeated query key gives an array, so a plain string query field answers 400 for `tag=a&tag=b`.
+8. Read a JSON Lines stream once, or call `asPromise()`.
+9. In a custom fetcher, a call without a body has `body: undefined`, not `null`.
+10. Use Node.js 22.22.2+, 24.15+ or 26+, and TypeScript 5.3+.
+11. Under Yarn 2+, move `vovk generate` from `prebuild` into the `build` script: Yarn 2+ runs no `pre` scripts.
+12. Python: a file response is `bytes`. Rust: a JSON or form procedure without files takes its typed body.
+
+## Full changelogs
+
+- [vovk](https://github.com/finom/vovk/blob/main/packages/vovk/CHANGELOG.md)
+- [vovk-cli](https://github.com/finom/vovk/blob/main/packages/vovk-cli/CHANGELOG.md)
+- [vovk-ajv](https://github.com/finom/vovk/blob/main/packages/vovk-ajv/CHANGELOG.md)
+- [vovk-python](https://github.com/finom/vovk/blob/main/packages/vovk-python/CHANGELOG.md)
+- [vovk-rust](https://github.com/finom/vovk/blob/main/packages/vovk-rust/CHANGELOG.md)
