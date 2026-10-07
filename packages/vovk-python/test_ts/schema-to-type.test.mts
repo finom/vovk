@@ -984,6 +984,25 @@ test('files in a union branch, behind a $ref or in a list', async (t) => {
     );
   });
 
+  await t.test('a field is a file by the rule the Rust client uses', () => {
+    // the same table is in the other client's tests: both read a field as a file by one rule
+    const fileFields: [VovkJSONSchemaBase, boolean][] = [
+      [{ type: 'string', format: 'binary' }, true],
+      [{ type: 'string', contentEncoding: 'binary' }, true],
+      [{ type: 'array', items: { type: 'string', format: 'binary' } }, true],
+      [{ type: 'array', prefixItems: [{ type: 'string' }, { type: 'string', format: 'binary' }] }, true],
+      // @ts-expect-error a draft 7 tuple
+      [{ type: 'array', items: [{ type: 'string' }, { type: 'string', format: 'binary' }] }, true],
+      [{ oneOf: [{ type: 'string', format: 'binary' }, { type: 'null' }] }, true],
+      [{ allOf: [{ type: 'string' }, { format: 'binary' }] }, true],
+      [{ type: 'array', items: { type: 'string' } }, false],
+      [{ type: 'string', format: 'date-time' }, false],
+    ];
+    for (const [field, isFile] of fileFields) {
+      assert.equal(hasFiles({ type: 'object', properties: { field } }), isFile, JSON.stringify(field));
+    }
+  });
+
   await t.test('may be left out when a branch holds none', () => {
     assert.equal(areFilesOptional(fileOrJSON), true);
     assert.equal(areFilesOptional(upload), false);

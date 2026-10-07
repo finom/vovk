@@ -72,26 +72,6 @@ function toPythonLiteral(value: unknown): string | null {
   return null;
 }
 
-function isFileUploadSchema(s: VovkJSONSchemaBase): boolean {
-  if (s.type === 'string' && s.format === 'binary') {
-    return true;
-  }
-
-  if (Array.isArray(s.type) && s.type.includes('string') && s.format === 'binary') {
-    return true;
-  }
-
-  if (s.type === 'array' && s.items && typeof s.items !== 'boolean') {
-    if (Array.isArray(s.items)) {
-      return s.items.some((item) => typeof item !== 'boolean' && isFileUploadSchema(item));
-    } else {
-      return isFileUploadSchema(s.items);
-    }
-  }
-
-  return false;
-}
-
 // a mixin body may be a bare $ref into its own $defs
 function resolveTopLevelRef(schema: VovkJSONSchemaBase): VovkJSONSchemaBase {
   const name = schema.$ref?.startsWith('#/') ? schema.$ref.split('/').pop() : undefined;
@@ -110,13 +90,15 @@ function resolveLocalRef(ref: string, root: VovkJSONSchemaBase): VovkJSONSchemaB
   return current && typeof current === 'object' ? (current as VovkJSONSchemaBase) : undefined;
 }
 
-// a field that goes in files: a file, or a list or a union that may be one
+const isBinary = (s: VovkJSONSchemaBase) => s.format === 'binary' || s.contentEncoding === 'binary';
+
+// a field that goes in files: a file, or a list, a tuple or a combination that may hold one; vovk-rust uses this rule too
 function isFileField(s: VovkJSONSchemaBase | undefined, root: VovkJSONSchemaBase, depth = 0): boolean {
   if (!s || typeof s !== 'object' || depth > MAX_FILE_SEARCH_DEPTH) return false;
   if (s.$ref) return isFileField(resolveLocalRef(s.$ref, root), root, depth + 1);
-  if (s.format === 'binary' || s.contentEncoding === 'binary') return true;
+  if (isBinary(s)) return true;
   const items = s.items && typeof s.items === 'object' ? [s.items].flat() : [];
-  return [...items, ...(s.anyOf ?? []), ...(s.oneOf ?? [])].some(
+  return [...items, ...(s.prefixItems ?? []), ...(s.anyOf ?? []), ...(s.oneOf ?? []), ...(s.allOf ?? [])].some(
     (branch) => typeof branch === 'object' && isFileField(branch, root, depth + 1)
   );
 }
@@ -236,7 +218,7 @@ export function convertJSONSchemaToPythonDataType(options: ConvertOptions): stri
   // the Python type expression of a schema
   function buildType(s: VovkJSONSchemaBase, propNameForParent: string, forcedClassName?: string): string {
     // a file property is left out of its object before it gets here; a file anywhere else is Any
-    if (isFileUploadSchema(s)) {
+    if (isBinary(s)) {
       return 'Any';
     }
 

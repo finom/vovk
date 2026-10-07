@@ -124,14 +124,19 @@ export function getBodyKind(schema: VovkJSONSchemaBase | undefined): BodyKind {
 
 const MAX_FILE_SEARCH_DEPTH = 16;
 
-// a file, or a list or a union that may be one
+// a file, or a list, a tuple or a combination that may hold one; vovk-python uses this rule too
 function isFileSchema(schema: Schema | undefined, root: Schema, depth = 0): boolean {
   if (!schema || typeof schema !== 'object' || depth > MAX_FILE_SEARCH_DEPTH) return false;
   if (schema.$ref) return isFileSchema(resolvePointer(schema.$ref, root), root, depth + 1);
   if (schema.format === 'binary' || schema.contentEncoding === 'binary') return true;
-  const items =
-    schema.items && typeof schema.items === 'object' && !Array.isArray(schema.items) ? schema.items : undefined;
-  return [items, ...(schema.anyOf ?? []), ...(schema.oneOf ?? [])].some((s) => isFileSchema(s, root, depth + 1));
+  const items = schema.items && typeof schema.items === 'object' ? [schema.items].flat() : [];
+  return [
+    ...(items as Schema[]),
+    ...(schema.prefixItems ?? []),
+    ...(schema.anyOf ?? []),
+    ...(schema.oneOf ?? []),
+    ...(schema.allOf ?? []),
+  ].some((s) => isFileSchema(s, root, depth + 1));
 }
 
 // a field of the body, or of any branch of it, holds a file

@@ -326,6 +326,30 @@ describe('convertJSONSchemasToRustTypes', () => {
     );
   });
 
+  test('a field is a file by the rule the Python client uses', () => {
+    // the same table is in the other client's tests: both read a field as a file by one rule
+    const fileFields: [VovkJSONSchemaBase, boolean][] = [
+      [{ type: 'string', format: 'binary' }, true],
+      [{ type: 'string', contentEncoding: 'binary' }, true],
+      [{ type: 'array', items: { type: 'string', format: 'binary' } }, true],
+      [{ type: 'array', prefixItems: [{ type: 'string' }, { type: 'string', format: 'binary' }] }, true],
+      // @ts-expect-error a draft 7 tuple
+      [{ type: 'array', items: [{ type: 'string' }, { type: 'string', format: 'binary' }] }, true],
+      [{ oneOf: [{ type: 'string', format: 'binary' }, { type: 'null' }] }, true],
+      [{ allOf: [{ type: 'string' }, { format: 'binary' }] }, true],
+      [{ type: 'array', items: { type: 'string' } }, false],
+      [{ type: 'string', format: 'date-time' }, false],
+    ];
+    for (const [field, isFile] of fileFields) {
+      const body: VovkJSONSchemaBase = {
+        type: 'object',
+        properties: { field },
+        'x-contentType': ['multipart/form-data', 'application/json'],
+      };
+      assert.strictEqual(getBodyKind(body), isFile ? 'form' : 'json', JSON.stringify(field));
+    }
+  });
+
   test('anyOf/oneOf variants', () => {
     const schemas: Record<string, VovkJSONSchemaBase> = {
       VariantContainer: {
