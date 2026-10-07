@@ -75,12 +75,28 @@
     "sharp@0.34.5": true
   },
   "overrides": {
+    "@ai-sdk/vue": {
+      "@ai-sdk/provider-utils": "^4.0.33"
+    },
+    "deepmerge-ts": "^8.0.2",
+    "katex": "^0.18.2",
+    "@modelcontextprotocol/client": "^2.2.0",
+    "mysql2": "^3.23.1",
     "nextra": {
       "zod": "4.3.6"
     },
     "nextra-theme-docs": {
       "zod": "4.3.6"
     },
+    "@scalar/agent-chat": {
+      "@ai-sdk/provider-utils": "^4.0.33"
+    },
+    "@scalar/json-magic": {
+      "undici": "^7.29.1"
+    },
+    "seroval": "~1.6.8",
+    "seroval-plugins": "~1.6.8",
+    "shell-quote": "^1.11.0",
     "@shikijs/twoslash": {
       "typescript": "6.0.3"
     },
