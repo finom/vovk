@@ -857,6 +857,18 @@ async fn main() {
 
       assert.strictEqual(result.rs, expected);
     });
+
+    test('TypeScript quotes a header name that holds a quote', () => {
+      const result = createCodeSamples({
+        handlerName: 'sendData',
+        handlerSchema,
+        controllerSchema,
+        package: { name: 'vovk-client' },
+        config: { headers: { 'X-Say"Hi': 'a "b": c' } },
+      });
+
+      assert.ok(result.ts.includes(`"X-Say\\"Hi": "a \\"b\\": c"`), result.ts);
+    });
   });
 
   describe('Edge cases', () => {
