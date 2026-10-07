@@ -24,7 +24,7 @@ To start, run the `init` command in an existing Next.js project.
 npx vovk-cli@latest init
 ```
 
-> Requires Node.js 22+, Next.js 15+ and TypeScript 5.5+. &nbsp; [Quick Start](https://vovk.dev/quick-install) · [Manual Install](https://vovk.dev/manual-install) · [Claude Plugin](https://vovk.dev/claude) · [GitHub](https://github.com/finom/vovk)
+> Requires Node.js 24+, Next.js 15+ and TypeScript 5.5+. &nbsp; [Quick Start](https://vovk.dev/quick-install) · [Manual Install](https://vovk.dev/manual-install) · [Claude Plugin](https://vovk.dev/claude) · [GitHub](https://github.com/finom/vovk)
 
 ---
 
