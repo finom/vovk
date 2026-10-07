@@ -2,7 +2,7 @@
 
 [package]
 name = "vovk_hello_world"
-version = "0.0.88"
+version = "0.0.89"
 edition = "2021"
 rust-version = "1.85"
 resolver = "3"
