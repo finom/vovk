@@ -8,6 +8,7 @@ import path from 'node:path';
 import { after, describe, it } from 'node:test';
 import {
   createProject,
+  fakeNextPackage,
   getFakeNextBin,
   getFreePort,
   makeSegmentSchema,
@@ -384,10 +385,9 @@ await describe('vovk dev in a project without Next.js', async () => {
     await createProject(projectDir, {
       'package.json': { name: 'app', version: '1.0.0', type: 'module' },
       'vovk.config.mjs': `export default ${JSON.stringify({ composedClient: { fromTemplates: ['tss'] } })};`,
-      'node_modules/.bin/next': getFakeNextBin({}),
+      ...fakeNextPackage(getFakeNextBin({})),
       'src/app/api/[[...vovk]]/route.ts': '',
     });
-    await fs.chmod(path.join(projectDir, 'node_modules/.bin/next'), 0o755);
 
     const dev = startCLI(['dev', '--next-dev'], { cwd: projectDir, env: { PORT: await getFreePort() } });
 
@@ -400,10 +400,9 @@ await describe('vovk dev in a project without Next.js', async () => {
     await createProject(projectDir, {
       'package.json': { name: 'app', version: '1.0.0', type: 'module' },
       'vovk.config.mjs': `export default ${JSON.stringify({ composedClient: { prettifyClient: false } })};`,
-      'node_modules/.bin/next': getFakeNextBin({ '': makeSegmentSchema('') }),
+      ...fakeNextPackage(getFakeNextBin({ '': makeSegmentSchema('') })),
       'src/app/api/[[...vovk]]/route.ts': '',
     });
-    await fs.chmod(path.join(projectDir, 'node_modules/.bin/next'), 0o755);
 
     // next dev prefers -p to PORT
     const dev = startCLI(['dev', '--next-dev', '--exit', '--', '-p', await getFreePort()], {
@@ -414,6 +413,21 @@ await describe('vovk dev in a project without Next.js', async () => {
     assert.strictEqual(await dev.exitCode, 0, dev.getOutput());
     const rootSchema = JSON.parse(await fs.readFile(path.join(projectDir, '.vovk-schema/root.json'), 'utf-8'));
     assert.deepStrictEqual(Object.keys(rootSchema.controllers), ['UserRPC'], dev.getOutput());
+  });
+
+  await it("Runs the project's own next where node_modules/.bin has none, as under Yarn PnP", async () => {
+    await createProject(projectDir, {
+      'package.json': { name: 'app', version: '1.0.0', type: 'module' },
+      'vovk.config.mjs': configFile({ composedClient: { prettifyClient: false } }),
+      // npx looks for node_modules/.bin/next, so it would run another next or none
+      ...fakeNextPackage(getFakeNextBin({ '': makeSegmentSchema('') })),
+      'src/app/api/[[...vovk]]/route.ts': '',
+    });
+
+    const dev = startCLI(['dev', '--next-dev', '--exit'], { cwd: projectDir, env: { PORT: await getFreePort() } });
+
+    assert.strictEqual(await dev.exitCode, 0, dev.getOutput());
+    assert.match(dev.getOutput(), /next dev listens on/);
   });
 
   await it('Starts offline with a remote OpenAPI mixin in the config', async () => {
@@ -729,10 +743,9 @@ await describe('vovk dev in a project without Next.js', async () => {
       await createProject(projectDir, {
         'package.json': { name: 'app', version: '1.0.0', type: 'module' },
         'vovk.config.mjs': configFile({ composedClient: { prettifyClient: false } }),
-        'node_modules/.bin/next': `#!/usr/bin/env node\n${nextDev}\n`,
+        ...fakeNextPackage(`#!/usr/bin/env node\n${nextDev}\n`),
         'src/app/api/[[...vovk]]/route.ts': '',
       });
-      await fs.chmod(path.join(projectDir, 'node_modules/.bin/next'), 0o755);
 
       const dev = startCLI(['dev', '--next-dev', '--exit'], { cwd: projectDir, env: { PORT: await getFreePort() } });
 

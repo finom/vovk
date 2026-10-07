@@ -4,6 +4,7 @@ import 'dotenv/config';
 import { Command } from 'commander';
 import concurrently from 'concurrently';
 import { bundle } from './bundle/index.mjs';
+import { getNextDevCommand } from './dev/get-next-dev-command.mjs';
 import { getNextDevPort } from './dev/get-next-dev-port.mjs';
 import { VovkDev } from './dev/index.mjs';
 import { getProjectFullSchema } from './generate/get-project-full-schema.mjs';
@@ -54,7 +55,7 @@ program
       const { result } = concurrently(
         [
           {
-            command: ['npx', 'next', 'dev', ...nextArgs].map((arg) => quoteShellArgument(arg)).join(' '),
+            command: getNextDevCommand(nextArgs),
             name: 'Next.js Development Server',
             env: { PORT } satisfies VovkEnv,
           },

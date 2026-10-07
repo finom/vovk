@@ -135,7 +135,13 @@ export async function getFreePort() {
   return String(port);
 }
 
-// node_modules/.bin/next for a project without Next.js: `next dev` answers the schema requests on -p, --port or PORT
+// the files of a next package in node_modules, with this bin
+export const fakeNextPackage = (bin: string) => ({
+  'node_modules/next/package.json': { name: 'next', version: '0.0.0', bin: { next: './dist/bin/next' } },
+  'node_modules/next/dist/bin/next': bin,
+});
+
+// the next bin for a project without Next.js: `next dev` answers the schema requests on -p, --port or PORT
 export function getFakeNextBin(schemas: Record<string, object>) {
   return `#!/usr/bin/env node
 import('node:http').then(({ default: http }) => {
