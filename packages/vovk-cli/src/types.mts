@@ -76,7 +76,7 @@ export interface InitOptions {
   validationLibrary?: 'zod' | 'valibot' | 'arktype' | null;
   dryRun?: boolean;
   lang?: string[];
-  channel?: 'latest' | 'beta' | 'draft';
+  channel?: 'latest' | 'beta';
   logLevel?: LogLevelNames;
 }
 
