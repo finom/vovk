@@ -546,8 +546,7 @@ class VovkApp {
 
       await staticMethod._options?.before?.call(controller, req);
       await onBefore?.(req);
-      // dispatch via the latest wrapper so decorators applied above the HTTP decorator still run
-      const result = await (staticMethod._sourceMethod?.wrapper ?? staticMethod).call(controller, req, methodParams);
+      const result = await staticMethod.call(controller, req, methodParams);
 
       if (result instanceof Response) {
         unsentBody = result.body;

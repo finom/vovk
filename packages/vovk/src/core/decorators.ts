@@ -1,9 +1,11 @@
 import type { DecoratorOptions, RouteHandler, VovkController, VovkHandlerSchema } from '../types/core.js';
 import { HttpMethod } from '../types/enums.js';
+import type { VovkRequest } from '../types/request.js';
 import type { KnownAny } from '../types/utils.js';
 import { toKebabCase } from '../utils/to-kebab-case.js';
 import { trimPath } from '../utils/trim-path.js';
 import { applyDecoratorAdapter } from './apply-decorator-adapter.js';
+import { getDecoratedMember } from './create-decorator.js';
 import { vovkApp } from './vovk-app.js';
 
 const isClass = (func: unknown) => typeof func === 'function' && /class/.test(func.toString());
@@ -53,24 +55,15 @@ const assignSchema = ({
 
   const originalMethod = controller[propertyKey] as ((...args: unknown[]) => unknown) & {
     _controller: VovkController;
-    fn?: (req: unknown, params: unknown) => unknown;
-    definition?: Record<string, unknown>;
     schema?: VovkHandlerSchema;
     _sourceMethod?: ((...args: unknown[]) => unknown) & {
       _getSchema?: (controller: VovkController) => VovkHandlerSchema;
-      wrapper?: (...args: unknown[]) => unknown;
-      fn?: (req: unknown, params: unknown) => unknown;
-      definition?: Record<string, unknown>;
-      schema?: VovkHandlerSchema;
     };
   };
 
   originalMethod._controller = controller;
   originalMethod._sourceMethod = originalMethod._sourceMethod ?? originalMethod;
   const schema = originalMethod._sourceMethod._getSchema?.(controller);
-  originalMethod.fn = originalMethod._sourceMethod?.fn;
-  originalMethod.definition = originalMethod._sourceMethod?.definition;
-  originalMethod._sourceMethod.wrapper = originalMethod;
   controller._handlers = {
     ...controller._handlers,
     [propertyKey]: {
@@ -83,8 +76,14 @@ const assignSchema = ({
   // the schema of the RPC method, with what the decorators applied before this one added
   originalMethod.schema = controller._handlers[propertyKey];
 
-  methods[path] = originalMethod as RouteHandler;
-  methods[path]._options = options;
+  // the route calls the outermost decorator of the member, also one placed above the HTTP decorator; the options stay
+  // on the route, as one procedure can serve several members, each with its own decorators and routes
+  const route = function (this: VovkController, req: VovkRequest, params: Record<string, string>) {
+    const member = getDecoratedMember(controller, propertyKey) ?? originalMethod;
+    return (member as RouteHandler).call(this, req, params);
+  } as RouteHandler;
+  route._options = options;
+  methods[path] = route;
 
   controller._handlersMetadata = {
     ...controller._handlersMetadata,

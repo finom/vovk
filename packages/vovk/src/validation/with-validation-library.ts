@@ -319,7 +319,6 @@ export function withValidationLibrary<
     return outputHandler(req, validatedParams);
   }) as THandle & {
     schema: Omit<VovkHandlerSchema, 'httpMethod' | 'path'> & Partial<VovkHandlerSchema>;
-    wrapper?: (req: VovkRequestAny, params: Parameters<THandle>[1]) => ReturnType<THandle>;
   };
 
   type FnBody = BodyTypeFromContentType<TContentType, THandle['__types']['body']>;
@@ -349,44 +348,46 @@ export function withValidationLibrary<
       : false
     : false;
 
-  function fn<TTransformed>(input: FnInputWithTransform<TTransformed>): Promise<TTransformed>;
-  function fn<TReturnType = ReturnType<THandle>>(input?: FnInput): TReturnType;
-  function fn<TReturnType = ReturnType<THandle>>(
-    input?: IsInputOptional extends true ? FnInput : never
-  ): IsInputOptional extends true ? TReturnType : never;
-  function fn<TReturnType = ReturnType<THandle>, TTransformed = never>(
-    input?: FnInput | FnInputWithTransform<TTransformed>
-  ): TReturnType | Promise<TTransformed> {
-    let parsedBody: Promise<unknown> | undefined;
+  // fn() of the procedure runs the procedure alone, the fn() of a decorated member runs its decorators too
+  const createFn = (run: (req: VovkRequestAny, params: Parameters<THandle>[1]) => unknown) => {
+    function fn<TTransformed>(input: FnInputWithTransform<TTransformed>): Promise<TTransformed>;
+    function fn<TReturnType = ReturnType<THandle>>(input?: FnInput): TReturnType;
+    function fn<TReturnType = ReturnType<THandle>>(
+      input?: IsInputOptional extends true ? FnInput : never
+    ): IsInputOptional extends true ? TReturnType : never;
+    function fn<TReturnType = ReturnType<THandle>, TTransformed = never>(
+      input?: FnInput | FnInputWithTransform<TTransformed>
+    ): TReturnType | Promise<TTransformed> {
+      let parsedBody: Promise<unknown> | undefined;
 
-    const fakeReq: Pick<
-      VovkRequest<THandle['__types']['body'], THandle['__types']['query'], THandle['__types']['params']>,
-      'vovk'
-    > = {
-      vovk: {
-        body: () => (parsedBody ??= parseFnBody(input?.body, contentType)),
-        query: () => input?.query ?? {},
-        params: () => input?.params ?? {},
-        meta: <T = KnownAny>(meta?: T | null) => reqMeta<T>(fakeReq, meta),
-      },
-    };
+      const fakeReq: Pick<
+        VovkRequest<THandle['__types']['body'], THandle['__types']['query'], THandle['__types']['params']>,
+        'vovk'
+      > = {
+        vovk: {
+          body: () => (parsedBody ??= parseFnBody(input?.body, contentType)),
+          query: () => input?.query ?? {},
+          params: () => input?.params ?? {},
+          meta: <T = KnownAny>(meta?: T | null) => reqMeta<T>(fakeReq, meta),
+        },
+      };
 
-    fakeReq.vovk.meta<Meta>({ __disableClientValidation: input?.disableClientValidation, ...input?.meta });
-    if (input?.body === undefined) callsWithoutBody.add(fakeReq);
+      fakeReq.vovk.meta<Meta>({ __disableClientValidation: input?.disableClientValidation, ...input?.meta });
+      if (input?.body === undefined) callsWithoutBody.add(fakeReq);
 
-    const result = (resultHandler.wrapper ?? resultHandler)(
-      fakeReq as VovkRequestAny,
-      (input?.params ?? {}) as Parameters<THandle>[1]
-    );
+      const result = run(fakeReq as VovkRequestAny, (input?.params ?? {}) as Parameters<THandle>[1]);
 
-    if (input && 'transform' in input && typeof input.transform === 'function') {
-      return Promise.resolve(result).then((resolvedResult) =>
-        input.transform(resolvedResult, fakeReq)
-      ) as Promise<TTransformed>;
+      if (input && 'transform' in input && typeof input.transform === 'function') {
+        return Promise.resolve(result).then((resolvedResult) =>
+          input.transform(resolvedResult as Awaited<ReturnType<THandle>>, fakeReq)
+        ) as Promise<TTransformed>;
+      }
+
+      return result as TReturnType;
     }
 
-    return result as TReturnType;
-  }
+    return fn;
+  };
 
   const definition = {
     contentType,
@@ -405,7 +406,11 @@ export function withValidationLibrary<
     operationObject,
   };
 
-  const resultHandlerEnhanced = Object.assign(resultHandler, { fn, definition });
+  const resultHandlerEnhanced = Object.assign(resultHandler, {
+    fn: createFn(resultHandler),
+    definition,
+    _createFn: createFn,
+  });
   const validation: VovkHandlerSchema['validation'] = {};
 
   if (toJSONSchema) {
