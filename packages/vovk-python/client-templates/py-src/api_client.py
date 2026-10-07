@@ -3,6 +3,7 @@ import os
 import re
 import json
 import codecs
+import datetime
 import functools
 import requests
 from http.cookiejar import DefaultCookiePolicy
@@ -50,6 +51,16 @@ def _binary_content_type(declared: List[str]) -> str:
     concrete = (t for t in declared if '*' not in t and t not in _FORM_MEDIA_TYPES and not _is_json_media_type(t))
     wildcard = (t for t in declared if t != '*/*' and t.endswith('/*'))
     return next(concrete, None) or next(wildcard, None) or 'application/octet-stream'
+
+def _to_json_value(value: Any) -> Any:
+    # as JSON.stringify sends a value: a date or a time as ISO 8601 text, a tuple as a list
+    if isinstance(value, (datetime.date, datetime.time)):
+        return value.isoformat()
+    if isinstance(value, dict):
+        return {key: _to_json_value(item) for key, item in value.items()}
+    if isinstance(value, (list, tuple)):
+        return [_to_json_value(item) for item in value]
+    return value
 
 def _to_text(value: Any) -> str:
     # a scalar as JavaScript writes it: true and false, and a whole number without .0
@@ -187,7 +198,8 @@ class ApiClient:
             http_method: HTTP method (GET, POST, PUT, DELETE, etc.)
             body: The body. A JSON value goes out as JSON. A dict goes out as a form when the procedure takes a form,
                 unless it also takes JSON and no files come with it. A str with body_content_type goes out as that
-                text, and bytes go out as they are.
+                text, and bytes go out as they are. In the body, the query and the params, a date, a time or a datetime goes
+                out as ISO 8601 text and a tuple as a list.
             query: Optional dictionary to convert to query parameters
             params: Optional dictionary to replace URL parameters
             headers: Optional dictionary of custom headers
@@ -214,6 +226,10 @@ class ApiClient:
             raise ValueError("URL is required for making an API request")
         if not http_method:
             raise ValueError("HTTP method is required for making an API request")
+        if not isinstance(body, (str, bytes, bytearray)):
+            body = _to_json_value(body)
+        query = _to_json_value(query)
+        params = _to_json_value(params)
         body_ct: List[str] = validation['body'].get('x-contentType', []) if validation and validation.get('body') else []
         if body_content_type is None and isinstance(body, (bytes, bytearray)):
             # bytes for a body that also takes JSON, such as a file or an object: the file goes out as is
