@@ -191,6 +191,30 @@ await describe('vovk generate in a project without Next.js', async () => {
     assert.strictEqual(await typecheckProject(projectDir), '');
   });
 
+  await it('Writes a client that type-checks in a Next.js app before vovk dev has written the schema folder', async () => {
+    // an app right after vovk init: its prebuild runs vovk generate, and no .vovk-schema folder exists yet
+    await createProject(projectDir, {
+      'package.json': { name: 'app', version: '1.0.0', type: 'module' },
+      'tsconfig.json': {
+        compilerOptions: {
+          module: 'esnext',
+          moduleResolution: 'bundler',
+          strict: true,
+          noEmit: true,
+          skipLibCheck: true,
+          resolveJsonModule: true,
+        },
+        include: ['src/client'],
+      },
+      'src/app/layout.tsx': 'export default function RootLayout() {}\n',
+      'vovk.config.mjs': configFile({ composedClient: { prettifyClient: false } }),
+    });
+
+    await runCLI(['generate'], { cwd: projectDir });
+
+    assert.strictEqual(await typecheckProject(projectDir), '');
+  });
+
   await it('Resets the root origin to relative URLs with a client origin of null or an empty string', async () => {
     await createProject(projectDir, {
       'package.json': { name: 'app', version: '1.0.0', type: 'module' },

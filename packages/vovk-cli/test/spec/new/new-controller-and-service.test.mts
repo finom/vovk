@@ -65,6 +65,20 @@ await describe('CLI new controller and service', async () => {
     ]);
   });
 
+  for (const validationLibrary of ['zod', 'valibot', 'arktype']) {
+    await it(`New ${validationLibrary} controller reads the body with req.vovk, so .fn() and deriveTools can call it`, async () => {
+      await createVovkApp({
+        vovkInitFlags: `--yes --validation-library=${validationLibrary}`,
+      });
+      await runAtProjectDir('../dist/index.mjs new segment');
+      await runAtProjectDir('../dist/index.mjs new controller service user');
+
+      // a local call gives the handler no Request, only req.vovk (read as req.vovk or destructured as { vovk })
+      await assertFile('src/modules/user/user-controller.ts', ['vovk.body()']);
+      await assertFile('src/modules/user/user-controller.ts', ['req.json()'], true);
+    });
+  }
+
   await it('New --empty controller and service', async () => {
     await createVovkApp({
       vovkInitFlags: '--yes --validation-library=none',
