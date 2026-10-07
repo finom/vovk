@@ -51,7 +51,7 @@ export default class <%= vars.ModuleName %> {
         body: type({ todo: type('true') }),
         params: type({ id: type('string') }),
     }).handle(async (req, { id }) => {
-        const body = await req.json();
+        const body = await req.vovk.body();
         <% if(t.withService) { %>
         return <%= vars.ServiceName %>.update<%= t.TheThing %>(id, body);
         <% } else { %>
@@ -66,7 +66,7 @@ export default class <%= vars.ModuleName %> {
     static create<%= t.TheThing %> = procedure({
         body: type({ todo: type('true') }),
     }).handle(async (req) => {
-        const body = await req.json();
+        const body = await req.vovk.body();
         <% if(t.withService) { %>
         return <%= vars.ServiceName %>.create<%= t.TheThing %>(body);
         <% } else { %>
