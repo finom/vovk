@@ -38,6 +38,7 @@
     "@types/supertest": "^7.2.1",
     "@typescript/typescript6": "^6.0.2",
     "autoprefixer": "^10",
+    "fast-check": "^4.10.2",
     "openapi3-ts": "^4.6.1",
     "postcss": "^8",
     "prettier": "^3.9.9",

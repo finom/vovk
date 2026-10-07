@@ -1,10 +1,10 @@
 import path from 'node:path';
 import ejs from 'ejs';
-import matter from 'gray-matter';
 import _ from 'lodash';
 import pluralize from 'pluralize';
 import type { VovkStrictConfig } from 'vovk/internal';
 import type { VovkModuleRenderResult } from '../types.mjs';
+import { parseFrontMatter } from '../utils/parse-front-matter.mjs';
 import { toPosixPath } from '../utils/to-import-path.mjs';
 import { addCommonTerms } from './add-common-terms.mjs';
 
@@ -86,8 +86,10 @@ export async function render(
     pluralize,
   };
 
-  const parsed = matter((await ejs.render(codeTemplate, { t }, { async: true, filename: templateFileName })).trim());
-  const { outDir, fileName, sourceName, compiledName } = parsed.data as VovkModuleRenderResult;
+  const parsed = parseFrontMatter<VovkModuleRenderResult>(
+    (await ejs.render(codeTemplate, { t }, { async: true, filename: templateFileName })).trim()
+  );
+  const { outDir, fileName, sourceName, compiledName } = parsed.data;
   const code = empty ? (sourceName ? `export default class ${sourceName} {}` : '') : parsed.content;
 
   return {

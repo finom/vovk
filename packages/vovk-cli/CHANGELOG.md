@@ -15,6 +15,7 @@ A cleanup release. `vovk-cli` is pre-1.0, so this minor carries breaking changes
 - The `vovk-client` package: the composed client generates into your source tree (`src/client`, or `client/` without a `src` folder) and is imported as `@/client`, so it survives `npm ci` and works under pnpm and Yarn PnP ([#29](https://github.com/finom/vovk/pull/29))
 - The `js` template family (`js`, `jsBase`, `schemaJs`, `openapiJs`): use `ts` ([#29](https://github.com/finom/vovk/pull/29))
 - The `prettier` dependency: prettifying resolves prettier from your project and warns once when it is missing ([#29](https://github.com/finom/vovk/pull/29))
+- The `gray-matter` dependency: template front matter is read with `yaml`. gray-matter pulled in js-yaml 3, argparse 1 and sprintf-js, which has an advisory with no fix ([#45](https://github.com/finom/vovk/pull/45))
 - Unused runtime deps `clone-deep`, `inflection` and `tar-stream` ([7fd1e49](https://github.com/finom/vovk/commit/7fd1e49e)), the pinned linux rolldown binding ([8086a13](https://github.com/finom/vovk/commit/8086a130)), and the pre-kebab collision guard in `vovk new` ([fd71067](https://github.com/finom/vovk/commit/fd710677))
 
 ### Changed
