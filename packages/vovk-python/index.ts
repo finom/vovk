@@ -320,18 +320,25 @@ export function convertJSONSchemaToPythonDataType(options: ConvertOptions): stri
           return 'float';
         case 'null':
           return 'None';
-        case 'array':
-          if (Array.isArray(s.items)) {
-            const tupleTypes = s.items
-              .filter((sub): sub is VovkJSONSchemaBase => typeof sub !== 'boolean')
-              .map((sub, i) => buildType(sub, `${propNameForParent}_items_${i}`));
-            return `Tuple[${tupleTypes.join(', ')}]`;
-          } else if (s.items && typeof s.items !== 'boolean') {
+        case 'array': {
+          // 2020-12 tuples use prefixItems, draft 7 tuples use an items array
+          const prefix: unknown = s.prefixItems ?? (Array.isArray(s.items) ? s.items : undefined);
+          if (Array.isArray(prefix) && prefix.length) {
+            const tupleTypes = prefix.map((sub, i) =>
+              typeof sub === 'object' ? buildType(sub, `${propNameForParent}_items_${i}`) : 'Any'
+            );
+            const rest: unknown = s.prefixItems ? s.items : (s as { additionalItems?: unknown }).additionalItems;
+            if (!rest || typeof rest !== 'object') return `Tuple[${tupleTypes.join(', ')}]`;
+            // items after the tuple's own: a list of any of the types
+            const itemTypes = new Set([...tupleTypes, buildType(rest, `${propNameForParent}_items`)]);
+            return `List[${itemTypes.size === 1 ? [...itemTypes][0] : `Union[${[...itemTypes].join(', ')}]`}]`;
+          }
+          if (s.items && typeof s.items === 'object' && !Array.isArray(s.items)) {
             const itemType = buildType(s.items, `${propNameForParent}_items`);
             return `List[${itemType}]`;
-          } else {
-            return `List[Any]`;
           }
+          return `List[Any]`;
+        }
 
         case 'object': {
           // a record: no listed keys, every value matches one schema

@@ -113,6 +113,28 @@ test('convertJSONSchemaToPythonDataType - array types', async (t) => {
 
     assert.equal(result, 'MyTuple: TypeAlias = Tuple[str, int, bool]');
   });
+
+  await t.test('converts a 2020-12 tuple, as zod writes it', () => {
+    const result = convertJSONSchemaToPythonDataType({
+      schema: { type: 'array', prefixItems: [{ type: 'string' }, { type: 'number' }] },
+      namespace: 'MyNamespace',
+      className: 'MyTuple',
+      pad: 0,
+    });
+
+    assert.equal(result, 'MyTuple: TypeAlias = Tuple[str, float]');
+  });
+
+  await t.test('converts a tuple with more items after its own to a list', () => {
+    const result = convertJSONSchemaToPythonDataType({
+      schema: { type: 'array', prefixItems: [{ type: 'string' }], items: { type: 'number' } },
+      namespace: 'MyNamespace',
+      className: 'MyTuple',
+      pad: 0,
+    });
+
+    assert.equal(result, 'MyTuple: TypeAlias = List[Union[str, float]]');
+  });
 });
 
 test('convertJSONSchemaToPythonDataType - enum types', async (t) => {
