@@ -55,14 +55,16 @@ const assignSchema = ({
   vovkApp.routes[httpMethod].set(controller, methods);
 
   const originalMethod = controller[propertyKey] as ((...args: unknown[]) => unknown) & {
-    _controller: VovkController;
+    _controller?: VovkController;
     schema?: VovkHandlerSchema;
     _sourceMethod?: ((...args: unknown[]) => unknown) & {
       _getSchema?: (controller: VovkController) => VovkHandlerSchema;
     };
   };
 
-  originalMethod._controller = controller;
+  // a decorated member another controller reuses keeps the schema of the controller that decorated it; this one's
+  // is in its own _handlers
+  const isOwnMember = !originalMethod._controller || originalMethod._controller === controller;
   originalMethod._sourceMethod = originalMethod._sourceMethod ?? originalMethod;
   const schema = originalMethod._sourceMethod._getSchema?.(controller);
   const handlers = getOwn(controller, '_handlers');
@@ -76,7 +78,7 @@ const assignSchema = ({
     },
   };
   // the schema of the RPC method, with what the decorators applied before this one added
-  originalMethod.schema = controller._handlers[propertyKey];
+  if (isOwnMember) originalMethod.schema = controller._handlers[propertyKey];
 
   // the route calls the outermost decorator of the member, also one placed above the HTTP decorator; the options stay
   // on the route, as one procedure can serve several members, each with its own decorators and routes

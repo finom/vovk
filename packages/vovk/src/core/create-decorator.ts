@@ -65,8 +65,6 @@ export function createDecorator<TArgs extends unknown[], TRequest = VovkRequest>
         // fn() of a decorated member runs its decorators, the procedure's own fn() runs none
         method.fn = sourceMethod._createFn?.(method);
         method.definition = originalMethod.definition;
-        // TODO define internal method type
-        (originalMethod as unknown as { _controller: VovkController })._controller = controller;
 
         // before the HTTP decorator, the procedure's own schema is the one to add to
         const handlerSchema: VovkHandlerSchema | null =
