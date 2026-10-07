@@ -1,3 +1,5 @@
+import { readFile } from 'node:fs/promises';
+import path from 'node:path';
 import type { ImageResponseOptions } from 'next/server.js';
 
 interface Props {
@@ -75,7 +77,7 @@ export const getOgFonts = async () => ({
   fonts: [
     {
       name: 'InterSemibold',
-      data: await (await fetch(new URL(`../../fonts/Inter-SemiBold-og-subset.ttf`, import.meta.url))).arrayBuffer(),
+      data: await readFile(path.join(process.cwd(), 'fonts/Inter-SemiBold-og-subset.ttf')),
       style: 'normal',
       weight: 400,
     },

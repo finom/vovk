@@ -1,8 +1,6 @@
 import { initSegment } from 'vovk';
 import CustomerProController from '../../../../../modules/customer/pro/customer-pro/customer-pro-controller';
 
-export const runtime = 'edge';
-
 const controllers = {
   CustomerProRPC: CustomerProController,
 };
