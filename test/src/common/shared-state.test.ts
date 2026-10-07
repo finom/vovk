@@ -9,6 +9,7 @@ import {
   HttpException,
   HttpStatus,
   initSegment,
+  operation,
   prefix,
   procedure,
   type VovkRequest,
@@ -233,6 +234,48 @@ describe('Shared state', () => {
       deepStrictEqual(
         { fn: await ReportProcedures.getReport.fn(), tool: await tool.execute({}) },
         { fn: { total: 1 }, tool: { total: 1 } }
+      );
+    });
+  });
+
+  describe('A member that another controller reuses', () => {
+    it('Keeps the schema and the tool of each controller', async () => {
+      class UserController {
+        static getUser = procedure().handle(() => ({ id: '1' }));
+      }
+      // @operation({ summary: 'Get a user' }) @get('{id}')
+      get('{id}')(UserController, 'getUser');
+      operation({ summary: 'Get a user' })(UserController, 'getUser');
+      // the decorated member itself, on a route of its own
+      class AdminUserController {
+        static getUser = UserController.getUser;
+      }
+      get('admin/{id}')(AdminUserController, 'getUser');
+      const handlers = initSegmentInDevelopment({
+        segmentName: 'reused-member',
+        controllers: { UserRPC: UserController, AdminUserRPC: AdminUserController },
+      });
+      const { schema } = await (await call(handlers, 'GET', '_schema_')).json();
+      const getEmitted = (rpcModuleName: string) => {
+        const { path, operationObject } = schema.controllers[rpcModuleName].handlers.getUser;
+        return { path, summary: operationObject?.summary };
+      };
+      const getToolTitles = (modules: Record<string, object>) => deriveTools({ modules }).map(({ title }) => title);
+
+      deepStrictEqual(
+        {
+          member: {
+            path: UserController.getUser.schema.path,
+            summary: UserController.getUser.schema.operationObject?.summary,
+          },
+          emitted: { user: getEmitted('UserRPC'), admin: getEmitted('AdminUserRPC') },
+          tools: { user: getToolTitles({ UserController }), admin: getToolTitles({ AdminUserController }) },
+        },
+        {
+          member: { path: '{id}', summary: 'Get a user' },
+          emitted: { user: { path: '{id}', summary: 'Get a user' }, admin: { path: 'admin/{id}', summary: undefined } },
+          tools: { user: ['Get a user'], admin: [] },
+        }
       );
     });
   });

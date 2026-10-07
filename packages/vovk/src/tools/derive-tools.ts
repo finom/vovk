@@ -1,7 +1,8 @@
 import { readableStreamToAsyncIterable } from '../client/default-stream-handler.js';
+import { getOwn } from '../core/get-served-handlers.js';
 import { HttpException } from '../core/http-exception.js';
 import { JSONLinesResponder } from '../core/json-lines-responder.js';
-import type { VovkHandlerSchema, VovkSegmentSchema } from '../types/core.js';
+import type { VovkController, VovkHandlerSchema, VovkSegmentSchema } from '../types/core.js';
 import type { VovkRequest } from '../types/request.js';
 import type { StandardToolV0 } from '../types/standard-tool.js';
 import type { ToModelOutputFn } from '../types/tools.js';
@@ -71,6 +72,10 @@ function isStreamable(value: unknown): value is Iterable<unknown> | AsyncIterabl
 
 // a member a tool can run: an RPC method, or a procedure, which has fn
 const isCallable = (handler: Handler | undefined) => !!handler?.isRPC || typeof handler?.fn === 'function';
+
+// a controller keeps the schema of each member in its own record, as another controller may hold the same function
+const getHandlerSchema = (module: object, handlerName: string, handler: Handler) =>
+  getOwn(module as VovkController, '_handlers')?.[handlerName] ?? handler.schema;
 
 async function caller<TOutput, TFormattedOutput>(
   { handler, handlerName, body, query, params, meta, toModelOutput }: CallerInput<TOutput, TFormattedOutput>,
@@ -172,7 +177,8 @@ const makeTool = <TOutput, TFormattedOutput>({
   if (!handler) {
     throw new Error(`Handler "${handlerName}" not found in module "${moduleName}".`);
   }
-  const { schema, definition } = handler;
+  const schema = getHandlerSchema(module, handlerName, handler);
+  const { definition } = handler;
 
   const name = toToolName(schema?.operationObject?.['x-tool']?.name ?? `${moduleName}_${handlerName}`);
 
@@ -317,10 +323,11 @@ export function deriveTools<TOutput = unknown, TFormattedOutput = unknown>(optio
     (modules as Record<string, Record<string, Handler & { schema?: VovkHandlerSchema }>>) ?? {}
   ).flatMap(([moduleName, module]) => {
     return Object.entries(module ?? {})
-      .filter(
-        ([, handler]) =>
-          isCallable(handler) && handler.schema?.operationObject && !handler.schema.operationObject['x-tool']?.hidden
-      )
+      .filter(([handlerName, handler]) => {
+        if (!isCallable(handler)) return false;
+        const operationObject = getHandlerSchema(module, handlerName, handler)?.operationObject;
+        return !!operationObject && !operationObject['x-tool']?.hidden;
+      })
       .map(([handlerName]) => {
         const tool = makeTool<TOutput, TFormattedOutput>({
           moduleName,

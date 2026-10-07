@@ -133,7 +133,11 @@ export function createStandardValidation({
       validate: async (data, model: KnownAny, { validationType, i }) => {
         const result = await model['~standard'].validate(data);
         if (result.issues?.length) {
-          const issues = (result.issues as Issue[]).slice(0, MAX_ISSUES).map(toIssue);
+          // a plain array: slice() and map() keep an Array subclass, such as ArkType's ArkErrors before 2.2.2, whose
+          // toJSON fails on the mapped issues
+          const { issues: allIssues } = result as { issues: Issue[] };
+          const count = Math.min(allIssues.length, MAX_ISSUES);
+          const issues = Array.from({ length: count }, (_, index) => toIssue(allIssues[index]));
           const moreIssues = result.issues.length - issues.length;
           const message = `Validation failed. Invalid ${validationType === 'iteration' ? `${validationType} #${i}` : validationType}: ${issues
             .map(({ message, path }) => `${message}${path?.length ? ` at ${path.map(String).join('.')}` : ''}`)
