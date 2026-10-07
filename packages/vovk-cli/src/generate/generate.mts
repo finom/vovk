@@ -1,6 +1,5 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
-import matter from 'gray-matter';
 import _ from 'lodash';
 import type { PackageJson } from 'type-fest';
 import type { VovkSchema } from 'vovk';
@@ -20,6 +19,7 @@ import { hasGeneratedBanner } from '../utils/generated-banner.mjs';
 import { getTsImportOptions } from '../utils/get-ts-import-options.mjs';
 import type { Segment } from '../utils/locate-segments.mjs';
 import { normalizeOpenAPIMixin } from '../utils/normalize-openapi-mixin.mjs';
+import { parseFrontMatter } from '../utils/parse-front-matter.mjs';
 import { pickSegmentFullSchema } from '../utils/pick-segment-full-schema.mjs';
 import { removeUnlistedDirectories } from '../utils/remove-unlisted-directories.mjs';
 import { type ClientTemplateFile, getClientTemplateFiles } from './get-client-template-files.mjs';
@@ -292,12 +292,7 @@ export async function generate({
         const templateContent = await fs.readFile(templateFilePath, 'utf-8');
 
         const matterResult = templateFilePath.endsWith('.ejs')
-          ? (matter(templateContent) as {
-              data: {
-                imports?: string[];
-              };
-              content: string;
-            })
+          ? parseFrontMatter<{ imports?: string[] }>(templateContent)
           : { data: { imports: [] }, content: templateContent };
 
         const {
@@ -411,12 +406,7 @@ export async function generate({
         const templateContent = await fs.readFile(templateFilePath, 'utf-8');
 
         const matterResult = templateFilePath.endsWith('.ejs')
-          ? (matter(templateContent) as {
-              data: {
-                imports?: string[];
-              };
-              content: string;
-            })
+          ? parseFrontMatter<{ imports?: string[] }>(templateContent)
           : { data: { imports: [] }, content: templateContent };
 
         const results = await Promise.all(
