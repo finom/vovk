@@ -1,6 +1,7 @@
 use serde::{Serialize, de::DeserializeOwned};
 use reqwest::{Client, Method};
 use reqwest::multipart;
+use std::cell::RefCell;
 use std::collections::HashMap;
 use std::error::Error;
 use std::fmt;
@@ -102,8 +103,17 @@ type ValidatorKey = (&'static str, &'static str, &'static str, &'static str);
 static VALIDATORS: Lazy<Mutex<HashMap<ValidatorKey, Arc<Validator>>>> = Lazy::new(|| Mutex::new(HashMap::new()));
 
 thread_local! {
-    // a pooled connection runs on the runtime that opened it, so each thread keeps its own client
-    static CLIENT: Client = Client::new();
+    // a pooled connection works only while the runtime that opened it runs, and a current-thread runtime runs only in
+    // block_on: the thread keeps a client for the runtime it calls from and builds a new one when the runtime changes
+    static CLIENT: RefCell<Option<(tokio::runtime::Id, Client)>> = const { RefCell::new(None) };
+}
+
+fn client() -> Client {
+    let runtime = tokio::runtime::Handle::current().id();
+    CLIENT.with_borrow_mut(|slot| match slot {
+        Some((id, client)) if *id == runtime => client.clone(),
+        _ => slot.insert((runtime, Client::new())).1.clone(),
+    })
 }
 
 // draft 7 only when the schema declares it, any other schema is read as 2020-12, as vovk-ajv does
@@ -369,8 +379,7 @@ where
         _ => return Err("Invalid HTTP method".into()),
     };
 
-    let client = CLIENT.with(Client::clone);
-    let request = client.request(method, &url).headers(headers_map);
+    let request = client().request(method, &url).headers(headers_map);
 
     let request = match body {
         RequestBody::None => request,

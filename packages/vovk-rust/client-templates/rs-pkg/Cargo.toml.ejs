@@ -15,7 +15,8 @@ const data = {
     // jsonschema asks for any 1.x but needs the Default impls 1.0.143 added
     serde_json: "1.0.143",
     reqwest: { version: "0.12", features: ["json", "multipart", "stream"] },
-    tokio: { version: "1", features: ["macros", "rt-multi-thread", "io-util"] },
+    // Handle::id, which keeps a client per runtime, came in 1.49
+    tokio: { version: "1.49", features: ["macros", "rt-multi-thread", "io-util"] },
     "futures-util": "0.3",
     "tokio-util": { version: "0.7", features: ["codec"] },
     // default features fetch remote schemas over HTTP, which the client never does

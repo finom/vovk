@@ -303,6 +303,25 @@ pub mod test_requests {
         assert_eq!(connections.load(Ordering::SeqCst), 1);
     }
 
+    // two current-thread runtimes used in turn on one thread: no call waits for the idle runtime
+    #[test]
+    fn test_runtimes_in_turn_on_one_thread() {
+        use std::time::Duration;
+
+        let first = tokio::runtime::Builder::new_current_thread().enable_all().build().unwrap();
+        let second = tokio::runtime::Builder::new_current_thread().enable_all().build().unwrap();
+
+        for (name, runtime) in [("first", &first), ("second", &second), ("first", &first)] {
+            let call = rust_sweep_rpc::get_is_error_data((), (), (), None, None, false);
+            // without the timeout, a call stuck on the other runtime's connection would never end
+            let data = runtime
+                .block_on(async { tokio::time::timeout(Duration::from_secs(5), call).await })
+                .unwrap_or_else(|_| panic!("no answer on the {} runtime in 5 s", name))
+                .unwrap();
+            assert_eq!(data, json!({"isError": false, "data": 1}));
+        }
+    }
+
     // a form sends every value as text, so typed fields keep their types only as JSON
     #[tokio::test]
     async fn test_form_or_json_body_without_a_file() {
