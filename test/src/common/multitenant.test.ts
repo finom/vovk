@@ -163,6 +163,22 @@ describe('Multitenant', async () => {
     assert.strictEqual(result.destination, 'https://admin.example.com/dash%20board');
   });
 
+  await it('should match a percent-encoded prefix and keep the rest of the path as sent', async () => {
+    const encoded = multitenant({
+      ...testConfig,
+      requestUrl: 'https://admin.example.com/%61pi/us%20ers/',
+      requestHost: 'admin.example.com',
+    });
+    const longer = multitenant({
+      ...testConfig,
+      requestUrl: 'https://admin.example.com/apix/users',
+      requestHost: 'admin.example.com',
+    });
+
+    assert.strictEqual(encoded.destination, 'https://admin.example.com/api/admin/us%20ers/');
+    assert.strictEqual(longer.destination, 'https://admin.example.com/admin/apix/users');
+  });
+
   await it('should match a host that carries a port when the target host has none', async () => {
     const result = multitenant({
       ...testConfig,

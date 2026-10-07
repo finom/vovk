@@ -107,6 +107,10 @@ export function multitenant(config: Config) {
     }
   }
 
+  // the path as sent, empty parts and a trailing slash included
+  const pathParts = pathname.split('/');
+  const decodedParts = pathParts.map(decodeSegment);
+
   for (const pattern in overrides) {
     const fullPattern = `${pattern}.${targetHost}`;
     const { regex, paramNames } = patternToRegex(fullPattern);
@@ -123,9 +127,10 @@ export function multitenant(config: Config) {
       }
 
       for (const rule of overrideRules) {
-        // from is a path prefix, so "" matches every path
-        if (rule.from === '' || pathname === rule.from || pathname.startsWith(`${rule.from}/`)) {
-          const restPath = pathname.slice(rule.from.length).replace(/^\//, '');
+        // from is a path prefix, so "" matches every path; it is compared with the decoded path, as Next.js routes it
+        const fromParts = rule.from.split('/');
+        if (rule.from === '' || fromParts.every((part, i) => decodedParts[i] === part)) {
+          const restPath = rule.from === '' ? pathname : pathParts.slice(fromParts.length).join('/');
           // the placeholders of the target path, a [name] in the request path stays as it is
           const to = Object.entries(params).reduce(
             (path, [key, value]) => path.replaceAll(`[${key}]`, encodeURIComponent(value)),
