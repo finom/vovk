@@ -9,6 +9,7 @@ import { oneAtATime } from '../utils/one-at-a-time.mjs';
 import { watchFolder } from '../utils/watch-folder.mjs';
 import { generate } from './generate.mjs';
 import { getProjectFullSchema } from './get-project-full-schema.mjs';
+import { isOwnSchemaFolder } from './is-own-schema-folder.mjs';
 import { omitRoutelessSegments } from './omit-routeless-segments.mjs';
 
 const THROTTLE_DELAY = 5000;
@@ -70,6 +71,7 @@ export class VovkGenerate {
 
     const fullSchema = await getProjectFullSchema({
       schemaOutAbsolutePath: path.resolve(cwd, schemaPath ?? config.schemaOutDir),
+      isOwnSchemaFolder: isOwnSchemaFolder(this.#projectInfo, schemaPath),
       isNextInstalled,
       log,
       config,

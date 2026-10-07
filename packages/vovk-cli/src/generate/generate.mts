@@ -205,7 +205,7 @@ export async function generate({
         .map((segment) => ({ ...segment }))
     ),
   };
-  const { config, cwd, log, srcRoot, vovkCliPackage, packageJson: projectPackageJson } = projectInfo;
+  const { config, cwd, log, vovkCliPackage, packageJson: projectPackageJson } = projectInfo;
 
   const configMixins = Object.entries(config.outputConfig.segments ?? {}).filter(
     ([, segmentConfig]) => segmentConfig.openAPIMixin
@@ -248,7 +248,6 @@ export async function generate({
   const mixinNames = Object.keys(projectInfo.openAPIMixins ?? {});
   // a mixin whose spec isn't loaded yet keeps its client, but gets no new one
   const isRendered = (segmentName: string) => Object.hasOwn(fullSchema.segments, segmentName);
-  const isVovkProject = !!srcRoot;
   const isComposedEnabled =
     cliGenerateOptions?.composedOnly ||
     !!cliGenerateOptions?.composedFrom ||
@@ -344,7 +343,6 @@ export async function generate({
           tsExtension,
           tsModule: module,
           hasMixins,
-          isVovkProject,
           vovkCliPackage,
           isBundle,
           origin,
@@ -467,7 +465,6 @@ export async function generate({
               tsExtension,
               tsModule: module,
               hasMixins,
-              isVovkProject,
               vovkCliPackage,
               isBundle,
               origin,

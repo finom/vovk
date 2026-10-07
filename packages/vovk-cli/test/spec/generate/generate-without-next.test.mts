@@ -182,7 +182,7 @@ await describe('vovk generate in a project without Next.js', async () => {
       'package.json': { name: 'app', version: '1.0.0', type: 'module' },
       'tsconfig.json': { compilerOptions: { module: 'esnext', moduleResolution: 'bundler', noEmit: true } },
       'vovk.config.mjs': configFile({ composedClient: { outDir: 'client', prettifyClient: false }, libs }),
-      // an app folder makes it a Vovk.ts project, whose client imports _meta.json
+      // an app folder makes it a Vovk.ts project, whose own _meta.json vovk dev writes from the config
       'src/app/api/[[...vovk]]/route.ts': '',
       // what vovk dev wrote before the libs were added to the config, as after moving configure() of vovk-ajv
       '.vovk-schema/_meta.json': {
@@ -196,6 +196,26 @@ await describe('vovk generate in a project without Next.js', async () => {
 
     const { schema } = await import(`${pathToFileURL(path.join(projectDir, 'client/schema.ts')).href}?t=${Date.now()}`);
     assert.deepStrictEqual(schema.meta.config.libs, libs);
+  });
+
+  await it('Builds the client URLs from the rootEntry of vovk.config when _meta.json was written before it changed', async () => {
+    await createProject(projectDir, {
+      'package.json': { name: 'app', version: '1.0.0', type: 'module' },
+      'tsconfig.json': { compilerOptions: { module: 'nodenext', allowImportingTsExtensions: true, noEmit: true } },
+      'vovk.config.mjs': configFile({ composedClient: { outDir: 'client', prettifyClient: false }, rootEntry: 'rpc' }),
+      'src/app/rpc/[[...vovk]]/route.ts': '',
+      // what vovk dev wrote while rootEntry was "api"
+      '.vovk-schema/_meta.json': {
+        $schema: 'https://vovk.dev/api/schema/v3/meta.json',
+        config: { libs: {}, rootEntry: 'api', $schema: 'https://vovk.dev/api/schema/v3/config.json' },
+      },
+      '.vovk-schema/root.json': userSegmentSchema,
+    });
+
+    await runCLI(['generate'], { cwd: projectDir });
+
+    const { UserRPC } = await import(`${pathToFileURL(path.join(projectDir, 'client/index.ts')).href}?t=${Date.now()}`);
+    assert.strictEqual(UserRPC.getUser.getURL({ params: { id: '1' } }), '/rpc/users/1');
   });
 
   await it('Writes a client that type-checks under module node16', async () => {

@@ -55,7 +55,7 @@ export default class <%= vars.ModuleName %> {
         }),
         params: z.object({ id: z.string() }),
     }).handle(async (req, { id }) => {
-        const body = await req.json();
+        const body = await req.vovk.body();
         <% if(t.withService) { %>
         return <%= vars.ServiceName %>.update<%= t.TheThing %>(id, body);
         <% } else { %>
@@ -72,7 +72,7 @@ export default class <%= vars.ModuleName %> {
             todo: z.literal(true),
         }),
     }).handle(async (req) => {
-        const body = await req.json();
+        const body = await req.vovk.body();
         <% if(t.withService) { %>
         return <%= vars.ServiceName %>.create<%= t.TheThing %>(body);
         <% } else { %>

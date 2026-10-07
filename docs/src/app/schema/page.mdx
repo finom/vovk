@@ -79,7 +79,7 @@ The files follow the segment tree: a `foo/bar/baz` segment emits `.vovk-schema/f
 
 `_meta.json` holds more metadata, such as the selected fields of [vovk.config](/config) under the `config` key.
 
-The CLI reads these files into one object with `segments` and `meta`. `segments` is flat, keyed by segment name; `meta` holds the content of `_meta.json`. The client and the OpenAPI output are generated from this object.
+The CLI reads these files into one object with `segments` and `meta`. `segments` is flat, keyed by segment name; `meta` holds the content of `_meta.json`. In the project's own schema folder, each value the config exposes comes from the current vovk.config, so `vovk generate` doesn't wait for `vovk dev` to update the file. The client and the OpenAPI output are generated from this object.
 
 ```ts showLineNumbers copy
 {
