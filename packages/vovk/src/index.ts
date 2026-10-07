@@ -14,6 +14,8 @@ export { operation } from './openapi/operation.js';
 
 export { deriveTools } from './tools/derive-tools.js';
 export { ToModelOutput } from './tools/to-model-output.js';
+export type { DefaultModelOutput as VovkDefaultModelOutput } from './tools/to-model-output-default.js';
+export type { MCPModelOutput as VovkMCPModelOutput } from './tools/to-model-output-mcp.js';
 
 export type { VovkStreamAsyncIterable } from './types/client.js';
 export type { VovkConfig } from './types/config.js';

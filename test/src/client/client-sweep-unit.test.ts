@@ -1077,6 +1077,21 @@ describe('Client sweep, pure functions', () => {
       deepStrictEqual(getDeclarationDiagnostics(source), []);
     });
 
+    it('Name the type of derived tools in declarations', () => {
+      const source = [
+        "import { deriveTools, operation, procedure, ToModelOutput } from 'vovk';",
+        'class ItemController {',
+        "  @operation({ summary: 'Get an item' })",
+        '  static getItem = procedure().handle(async () => ({ ok: true }));',
+        '}',
+        'export const tools = deriveTools({ modules: { ItemController } });',
+        'export const mcpTools = deriveTools({ modules: { ItemController }, toModelOutput: ToModelOutput.MCP });',
+        'export const typedTools = deriveTools<{ ok: boolean }>({ modules: { ItemController } });',
+      ].join('\n');
+
+      deepStrictEqual(getDeclarationDiagnostics(source), []);
+    });
+
     it('Name a procedure by its type in the declarations of its controller', () => {
       const fileName = fileURLToPath(new URL('./declaration-size-consumer.mts', import.meta.url));
       const source = [
