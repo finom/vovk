@@ -18,7 +18,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ### Fixed
 
-- Where Ajv can't generate code, as under a Content Security Policy without `'unsafe-eval'` or in Edge code, client-side validation is skipped with one warning and the server validates; every call with a schema failed with status 0 and sent no request. An Ajv option error still throws ([#51](https://github.com/finom/vovk/pull/51))
+- Where Ajv can't generate code, as under a Content Security Policy without `'unsafe-eval'`, client-side validation is skipped with one warning and the server validates; every call with a schema failed with status 0 and sent no request. An Ajv option error still throws ([#51](https://github.com/finom/vovk/pull/51))
 - Params and query values are checked as the strings a URL carries, so `z.coerce.number()` fields pass; the check runs on a copy, so what goes out stays as given, also with `useDefaults` ([#44](https://github.com/finom/vovk/pull/44))
 - A falsy body, such as `0`, `''`, `false` or `null`, is validated; only `undefined`, no body, is skipped ([#44](https://github.com/finom/vovk/pull/44))
 - Patterns are read with the `u` flag, so `\p{...}` patterns such as `z.emoji()` pass, and without it when the `u` flag refuses them, so escapes such as `\-` compile ([#40](https://github.com/finom/vovk/pull/40), [#44](https://github.com/finom/vovk/pull/44))

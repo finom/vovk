@@ -205,8 +205,7 @@ describe('vovk-ajv', () => {
   });
 
   it('Skips client-side validation where code generation from strings is disallowed', () => {
-    // as in the Edge runtime of next start, or a browser whose CSP has no 'unsafe-eval'; a fresh process, since
-    // vovk-ajv makes its Ajv once
+    // as in a browser whose CSP has no 'unsafe-eval'; a fresh process, since vovk-ajv makes its Ajv once
     const vovkAjv = new URL('../../../packages/vovk-ajv/index.js', import.meta.url).href;
     const script = `
       const { validateOnClient } = await import(${JSON.stringify(vovkAjv)});
