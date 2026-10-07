@@ -221,7 +221,9 @@ export function createFetcher<T>({
       } catch (e) {
         // an abort, an AbortError or the caller's own reason, is not a network failure
         if (requestInit.signal?.aborted) throw e;
-        throw new HttpException(HttpStatus.NULL, `${(e as Error)?.message ?? DEFAULT_ERROR_MESSAGE} ${endpoint}`, e);
+        const message = String((e as Error)?.message ?? DEFAULT_ERROR_MESSAGE);
+        // a URL the runtime can't parse, as one without an origin on the server, is in its message already
+        throw new HttpException(HttpStatus.NULL, message.includes(endpoint) ? message : `${message} ${endpoint}`, e);
       }
 
       const mediaType = getMediaType(interpretAs ?? response.headers.get('content-type'));

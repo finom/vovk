@@ -23,7 +23,7 @@ export default class UserController {
 }
 ```
 
-Once a body schema or `req.vovk.body()` has read the body, the body methods of `req`, `req.body` and `req.clone()` replay it. To forward the request, use `new Request(url, req)`, or pass `body: req.body` to `fetch()`. `new Request(req)` and `fetch(req)` throw: they take the request's own body, which is read by then.
+Once a body schema or `req.vovk.body()` has read the body, the body methods of `req`, `req.body` and `req.clone()` replay it. To forward the request, use `new Request(url, req)`, or pass `body: req.body` to `fetch()`. Don't pass `req` or `req.clone()` as the first argument of `new Request()` or `fetch()`. In a route that doesn't export `dynamic = 'force-dynamic'`, Next.js gives the handler a Proxy of the request and of each clone, which they refuse. In any route, `new Request(req)` and `fetch(req)` take the request's own body, which is read by then.
 
 <a name="query"></a>
 ## `req.vovk.query()`

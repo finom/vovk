@@ -1,7 +1,10 @@
 import { deepStrictEqual, strictEqual } from 'node:assert';
 import { describe, it } from 'node:test';
 import {
+  cloneControllerMetadata,
+  controllersToStaticParams,
   createDecorator,
+  deriveTools,
   get,
   HttpException,
   HttpStatus,
@@ -190,6 +193,110 @@ describe('Shared state', () => {
         }
       );
     });
+
+    it('Runs a decorator placed above the HTTP decorator on the route and in fn()', async () => {
+      const greet = createDecorator((req: VovkRequest, next, greeting: string) => {
+        req.vovk.meta({ greeting });
+        return next();
+      });
+      class GreetingController {
+        static greet = procedure().handle(({ vovk }) => ({ greeting: vovk.meta<{ greeting?: string }>().greeting }));
+      }
+      // @greet('hello') @get('greeting')
+      get('greeting')(GreetingController, 'greet');
+      greet('hello')(GreetingController, 'greet');
+      const handlers = initSegment({
+        segmentName: 'decorator-above',
+        controllers: { GreetingRPC: GreetingController },
+      });
+
+      deepStrictEqual(
+        {
+          route: await (await call(handlers, 'GET', 'greeting')).json(),
+          fn: await GreetingController.greet.fn(),
+        },
+        { route: { greeting: 'hello' }, fn: { greeting: 'hello' } }
+      );
+    });
+
+    it('Runs no controller decorators in fn() of the procedure itself, nor in its tool', async () => {
+      class ReportProcedures {
+        static getReport = procedure({ operationObject: { summary: 'Get the report' } }).handle(() => ({ total: 1 }));
+      }
+      class AdminReportController {
+        static getReport = ReportProcedures.getReport;
+      }
+      roleGuard('admin')(AdminReportController, 'getReport');
+      get('report')(AdminReportController, 'getReport');
+      const [tool] = deriveTools({ modules: { ReportProcedures } });
+
+      deepStrictEqual(
+        { fn: await ReportProcedures.getReport.fn(), tool: await tool.execute({}) },
+        { fn: { total: 1 }, tool: { total: 1 } }
+      );
+    });
+  });
+
+  describe('A controller that clones another one', () => {
+    const adminGuard = createDecorator((req: VovkRequest, next) => {
+      if (req.headers.get('authorization') !== 'Bearer admin') {
+        throw new HttpException(HttpStatus.UNAUTHORIZED, 'Admins only');
+      }
+      return next();
+    });
+
+    it("Serves the parent's member with its guard where the clone overrides it with a plain method", async () => {
+      class SecretController {
+        static secret() {
+          return 'parent';
+        }
+      }
+      adminGuard()(SecretController, 'secret');
+      get('secret')(SecretController, 'secret');
+      prefix('secrets')(SecretController);
+      class ChildSecretController extends SecretController {
+        static secret() {
+          return 'child';
+        }
+      }
+      prefix('child-secrets')(ChildSecretController);
+      cloneControllerMetadata()(ChildSecretController);
+      const handlers = initSegment({
+        segmentName: 'clone-override',
+        controllers: { SecretRPC: SecretController, ChildSecretRPC: ChildSecretController },
+      });
+
+      strictEqual((await call(handlers, 'GET', 'child-secrets/secret')).status, 401);
+    });
+
+    it('Keeps the guard a clone adds to an inherited procedure off the route of the parent', async () => {
+      class UserController {
+        static getUser = procedure().handle((_req, params) => ({ id: params.id }));
+      }
+      get('{id}')(UserController, 'getUser');
+      prefix('users')(UserController);
+      // the documented way to reuse a controller in another segment, with a guard there
+      class AdminUserController extends UserController {
+        static getUser = UserController.getUser;
+      }
+      adminGuard()(AdminUserController, 'getUser');
+      get('{id}')(AdminUserController, 'getUser');
+      prefix('admin/users')(AdminUserController);
+      cloneControllerMetadata()(AdminUserController);
+      const publicHandlers = initSegment({ segmentName: 'clone-public', controllers: { UserRPC: UserController } });
+      const adminHandlers = initSegment({
+        segmentName: 'clone-admin',
+        controllers: { AdminUserRPC: AdminUserController },
+      });
+
+      deepStrictEqual(
+        {
+          publicRoute: (await call(publicHandlers, 'GET', 'users/1')).status,
+          adminRoute: (await call(adminHandlers, 'GET', 'admin/users/1')).status,
+        },
+        { publicRoute: 200, adminRoute: 401 }
+      );
+    });
   });
 
   describe('A controller that extends another one', () => {
@@ -244,6 +351,54 @@ describe('Shared state', () => {
       };
 
       deepStrictEqual(await getStatus(true), await getStatus(false));
+    });
+
+    it("Lists, serves and gives static params for its parent's routes only where the parent is in the segment", async () => {
+      class BaseController {
+        static health() {
+          return 'ok';
+        }
+      }
+      get('health')(BaseController, 'health');
+      class ItemController extends BaseController {
+        static list() {
+          return [];
+        }
+      }
+      get('list')(ItemController, 'list');
+      prefix('items')(ItemController);
+      const withParent = { BaseRPC: BaseController, ItemRPC: ItemController };
+      const alone = { ItemRPC: ItemController };
+      const withParentHandlers = initSegmentInDevelopment({
+        segmentName: 'inherited-with-parent',
+        controllers: withParent,
+      });
+      const aloneHandlers = initSegmentInDevelopment({ segmentName: 'inherited-alone', controllers: alone });
+      const getPaths = (controllers: Record<string, typeof BaseController>) =>
+        controllersToStaticParams(controllers).map(({ vovk }) => vovk.join('/'));
+
+      deepStrictEqual(
+        {
+          withParent: {
+            handlers: await getHandlerNames(withParentHandlers, 'ItemRPC'),
+            status: (await call(withParentHandlers, 'GET', 'items/health')).status,
+            staticParams: getPaths(withParent),
+          },
+          alone: {
+            handlers: await getHandlerNames(aloneHandlers, 'ItemRPC'),
+            status: (await call(aloneHandlers, 'GET', 'items/health')).status,
+            staticParams: getPaths(alone),
+          },
+        },
+        {
+          withParent: {
+            handlers: ['health', 'list'],
+            status: 200,
+            staticParams: ['_schema_', 'health', 'items/health', 'items/list'],
+          },
+          alone: { handlers: ['list'], status: 404, staticParams: ['_schema_', 'items/list'] },
+        }
+      );
     });
   });
 });

@@ -1,6 +1,7 @@
-import type { VovkController, VovkHandlerSchema, VovkSegmentSchema } from '../types/core.js';
+import type { VovkController, VovkControllerSchema, VovkHandlerSchema, VovkSegmentSchema } from '../types/core.js';
 import { VovkSchemaIdEnum } from '../types/enums.js';
 import type { StaticClass } from '../types/utils.js';
+import { getServedHandlers } from './get-served-handlers.js';
 
 // the body's JSON Schema is built here only for its content types, and one that can't be built gives none
 const getBodyContentType = (validation: VovkHandlerSchema['validation']) => {
@@ -14,13 +15,14 @@ const getBodyContentType = (validation: VovkHandlerSchema['validation']) => {
 export async function getControllerSchema(
   controller: VovkController,
   rpcModuleName: string,
-  exposeValidation: boolean
+  exposeValidation: boolean,
+  servedHandlers: VovkControllerSchema['handlers']
 ) {
   // hidden validation keeps the declared content types, the clients encode a body by them
   const handlers = exposeValidation
-    ? (controller._handlers ?? {})
+    ? servedHandlers
     : Object.fromEntries(
-        Object.entries(controller._handlers ?? {}).map(([key, { validation, ...value }]) => {
+        Object.entries(servedHandlers).map(([key, { validation, ...value }]) => {
           const contentType = getBodyContentType(validation);
           return [key, contentType ? { ...value, validation: { body: { 'x-contentType': contentType } } } : value];
         })
@@ -52,8 +54,16 @@ export async function getSchema(options: {
 
   if (!emitSchema) return schema;
 
-  for (const [rpcModuleName, controller] of Object.entries(options.controllers ?? {}) as [string, VovkController][]) {
-    schema.controllers[rpcModuleName] = await getControllerSchema(controller, rpcModuleName, exposeValidation);
+  const controllerEntries = Object.entries(options.controllers ?? {}) as [string, VovkController][];
+  const controllers = new Set(controllerEntries.map(([, controller]) => controller));
+  for (const [rpcModuleName, controller] of controllerEntries) {
+    const { handlers } = getServedHandlers(controller, controllers);
+    schema.controllers[rpcModuleName] = await getControllerSchema(
+      controller,
+      rpcModuleName,
+      exposeValidation,
+      handlers
+    );
   }
 
   return schema;

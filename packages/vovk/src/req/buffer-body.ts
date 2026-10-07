@@ -34,8 +34,11 @@ async function replayBody<T extends Request>(req: T): Promise<T> {
   req.arrayBuffer = () => blob.arrayBuffer();
   req.bytes = () => replay().bytes();
   req.formData = () => replay().formData();
-  // a body given to the constructor skips the check that the request's own one is unread
-  if (hasBody) req.clone = () => new Request(req, { body: blob });
+  // built from the fields, as Next.js passes a route a Proxy of the request, which new Request(req) refuses
+  if (hasBody) {
+    req.clone = () =>
+      new Request(req.url, { method: req.method, headers: req.headers, body: blob, signal: req.signal });
+  }
 
   return req;
 }

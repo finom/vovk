@@ -20,30 +20,12 @@ export const initSegment = (options: {
   const controllerEntries = Object.entries(options.controllers ?? {}) as [string, VovkController][];
   const controllerSet = new Set(controllerEntries.map(([, c]) => c));
 
-  // ancestors first, so a controller copies the routes of a parent that already has its own parent's
-  const getDepth = (controller: object) => {
-    let depth = 0;
-    for (let parent = Object.getPrototypeOf(controller); parent; parent = Object.getPrototypeOf(parent)) depth++;
-    return depth;
-  };
-  controllerEntries.sort(([, a], [, b]) => getDepth(a) - getDepth(b));
-
   for (const [rpcModuleName, controller] of controllerEntries) {
     controller._segmentName = segmentName;
     controller._rpcModuleName = rpcModuleName;
     controller._onError = options?.onError;
     controller._onSuccess = options?.onSuccess;
     controller._onBefore = options?.onBefore;
-
-    // a controller that extends another one in the segment serves its parent's routes too
-    const parent = Object.getPrototypeOf(controller) as VovkController;
-    if (controllerSet.has(parent) && parent._handlers) {
-      controller._handlers = { ...parent._handlers, ...controller._handlers };
-      controller._handlersMetadata = { ...parent._handlersMetadata, ...controller._handlersMetadata };
-      for (const methods of Object.values(vovkApp.routes)) {
-        methods.set(controller, { ...(methods.get(parent) ?? {}), ...methods.get(controller) });
-      }
-    }
   }
 
   vovkApp.setSegment(segmentName, {

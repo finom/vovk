@@ -1839,6 +1839,49 @@ describe('Runtime sweep', () => {
     });
   });
 
+  describe('Decorators with experimentalDecorators', () => {
+    // as TypeScript's __decorate applies them to a static method: bottom-up, then it puts the method's own descriptor
+    // back on the class
+    const decorateMethod = (decorators: unknown[], target: object, key: string) => {
+      const descriptor = Object.getOwnPropertyDescriptor(target, key) as PropertyDescriptor;
+      for (const decorator of decorators.toReversed()) {
+        (decorator as (target: object, key: string, descriptor: PropertyDescriptor) => unknown)(
+          target,
+          key,
+          descriptor
+        );
+      }
+      Object.defineProperty(target, key, descriptor);
+    };
+
+    it('Runs the custom decorators of a static method placed below and above the HTTP decorator', async () => {
+      const greet = createDecorator((req: VovkRequest, next, greeting: string) => {
+        req.vovk.meta({ greeting });
+        return next();
+      });
+      class LegacyController {
+        static below(req: VovkRequest) {
+          return { greeting: req.vovk.meta<{ greeting?: string }>().greeting };
+        }
+
+        static above(req: VovkRequest) {
+          return { greeting: req.vovk.meta<{ greeting?: string }>().greeting };
+        }
+      }
+      decorateMethod([get('below'), greet('below')], LegacyController, 'below');
+      decorateMethod([greet('above'), get('above')], LegacyController, 'above');
+      const handlers = initSegment({ segmentName: 'legacy-decorators', controllers: { LegacyRPC: LegacyController } });
+
+      deepStrictEqual(
+        {
+          below: await (await call(handlers, 'GET', 'below')).json(),
+          above: await (await call(handlers, 'GET', 'above')).json(),
+        },
+        { below: { greeting: 'below' }, above: { greeting: 'above' } }
+      );
+    });
+  });
+
   describe('Decorators without experimentalDecorators', () => {
     // without the flag, SWC (Turbopack) applies 2018-09 decorators: each gets a descriptor, the class reaches a finisher
     type Descriptor2018 = { finisher?: (klass: unknown) => void };

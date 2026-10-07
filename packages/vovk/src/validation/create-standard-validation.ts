@@ -219,7 +219,6 @@ export function createStandardValidation({
     };
     definition: KnownAny;
     schema: KnownAny;
-    wrapper?: KnownAny;
   };
 
   // a schema left out gets VovkNoSchema, so a schema whose input type is unknown, such as z.unknown(), still counts
