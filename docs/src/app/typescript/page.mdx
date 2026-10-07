@@ -57,7 +57,7 @@ const updatedUser = await UserRPC.updateUser({
 });
 ```
 
-`updateUser` validates the input on the client, puts `query` and `params` into the URL, and sends a standard `fetch` request, which `UserController.updateUser` handles on the server. The RPC method returns a promise of the procedure's return type. In plain `fetch`, the call looks like this:
+`updateUser` validates the input on the client, puts `query` and `params` into the URL, and sends a standard `fetch` request, which `UserController.updateUser` handles on the server. The RPC method returns a promise of the procedure's return type. The result is the handler's value after JSON, so a handler returns JSON data: a `Date` arrives as a string. [`.fn()`](/fn) returns the value as is. In plain `fetch`, the call looks like this:
 
 ```ts showLineNumbers copy
 const resp = await fetch(`/api/users/${id}?notify=push`, {

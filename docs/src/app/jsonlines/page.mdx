@@ -24,7 +24,7 @@ Use JSON Lines for:
 
 ## Creating a JSON Lines Generator Procedure
 
-To stream JSON Lines, write the handler as a generator or an async generator. Each yielded value is serialized to JSON and sent as its own line.
+To stream JSON Lines, write the handler as a generator or an async generator. Each yielded value is serialized to JSON and sent as its own line, so the client gets each item after JSON: a `Date` arrives as a string. [`.fn()`](/fn) yields the values as they are.
 
 ```ts showLineNumbers copy
 import { z } from 'zod';
