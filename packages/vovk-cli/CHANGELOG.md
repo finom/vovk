@@ -83,6 +83,7 @@ A cleanup release. `vovk-cli` is pre-1.0, so this minor carries breaking changes
 - The controllers `vovk new` writes for zod, valibot and arktype read the body with `req.vovk.body()`, so `.fn()` and derived tools can call their create and update procedures; `req.json()` threw there ([#51](https://github.com/finom/vovk/pull/51))
 - `vovk dev --next-dev` runs the project's own Next.js, also under Yarn PnP, where `npx next dev` installed and ran the latest; without a `next` it fails instead of installing one ([#51](https://github.com/finom/vovk/pull/51))
 - In the project's own schema folder, `vovk generate` and `vovk bundle` take the meta (`libs`, `rootEntry`) from the current vovk.config, where an older `_meta.json` from the last `vovk dev` won; the TypeScript client holds the meta instead of importing `_meta.json` ([#51](https://github.com/finom/vovk/pull/51))
+- A relative `outputConfig.imports` path to a `.ts` file, as the v3 client needed, is written the way the project's tsconfig resolves it: without the extension under bundler resolution, by its `.js` name under `node16` or `nodenext`, `.mts` and `.cts` as `.mjs` and `.cjs`; the client failed the build with TS5097 ([#51](https://github.com/finom/vovk/pull/51))
 
 ### Security
 
@@ -101,5 +102,4 @@ A cleanup release. `vovk-cli` is pre-1.0, so this minor carries breaking changes
 9. Run `vovk dev` once after upgrading, and `vovk bundle` if you keep the prebundle folder: `vovk generate` and the build read the schema files it writes.
 10. Add the client folder to your linter's ignores, such as `globalIgnores(['src/client/**'])` in ESLint, which doesn't read `.gitignore`.
 11. If the client's `outDir` was outside `node_modules`, delete its old `.js` and `.d.ts` files: webpack picks `index.js` over `index.ts`.
-12. Write relative paths in `outputConfig.imports` without the `.ts` extension: TypeScript now checks the client, and refuses `.ts` without `allowImportingTsExtensions`.
-13. Outside a bundler, as in a script or `node --test`, run the client with tsx: `@/client` needs a loader that reads the tsconfig `paths`. Without one, set `module: nodenext` and `allowImportingTsExtensions` (with `noEmit`) and import the client by a relative path. For another project, build a package with `vovk bundle`.
+12. Outside a bundler, as in a script or `node --test`, run the client with tsx: `@/client` needs a loader that reads the tsconfig `paths`. Without one, set `module: nodenext` and `allowImportingTsExtensions` (with `noEmit`) and import the client by a relative path. For another project, build a package with `vovk bundle`.

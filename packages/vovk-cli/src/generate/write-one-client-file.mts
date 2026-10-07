@@ -238,6 +238,8 @@ export async function renderOneClientFile({
         relativeDir,
         segmentName,
         outputConfigs: getOutputConfigs(projectConfig, templateDef, configKey),
+        isNodeNextResolution,
+        tsExtension,
       })
     ),
     segmentImports: Object.fromEntries(
@@ -250,6 +252,8 @@ export async function renderOneClientFile({
           outCwdRelativeDir,
           relativeDir,
           outputConfigs: getOutputConfigs(projectConfig, templateDef, configKey),
+          isNodeNextResolution,
+          tsExtension,
         });
         const imports =
           configKey === 'composedClient' ? clientImports.composedClient : clientImports.segmentedClient[sName];

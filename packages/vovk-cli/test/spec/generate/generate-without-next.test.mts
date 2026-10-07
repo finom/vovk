@@ -176,6 +176,71 @@ await describe('vovk generate in a project without Next.js', async () => {
     assert.strictEqual(await typecheckProject(projectDir), '');
   });
 
+  await it('Writes a client that type-checks when imports.fetcher names the .ts file, as the v3 client in node_modules needed', async () => {
+    await createProject(projectDir, {
+      'package.json': { name: 'app', version: '1.0.0', type: 'module' },
+      // the compiler options of a new Next.js app: bundler resolution, no allowImportingTsExtensions
+      'tsconfig.json': {
+        compilerOptions: {
+          module: 'esnext',
+          moduleResolution: 'bundler',
+          strict: true,
+          noEmit: true,
+          skipLibCheck: true,
+          resolveJsonModule: true,
+        },
+        include: ['client', 'lib'],
+      },
+      'vovk.config.mjs': configFile({
+        composedClient: { outDir: 'client', prettifyClient: false },
+        outputConfig: { imports: { fetcher: './lib/fetcher.ts' } },
+      }),
+      'lib/fetcher.ts': "export { fetcher } from 'vovk/fetcher';\n",
+      '.vovk-schema/root.json': userSegmentSchema,
+    });
+
+    await runCLI(['generate'], { cwd: projectDir });
+
+    assert.strictEqual(await typecheckProject(projectDir), '');
+  });
+
+  await it('Writes an imports path with a TypeScript extension the way tsconfig.json resolves it', async () => {
+    const bundler = { module: 'esnext', moduleResolution: 'bundler' };
+    const nodenext = { module: 'nodenext' };
+    for (const [compilerOptions, file, expected] of [
+      [bundler, 'fetcher.mts', '../lib/fetcher.mjs'],
+      [nodenext, 'fetcher.ts', '../lib/fetcher.js'],
+      [nodenext, 'fetcher.mts', '../lib/fetcher.mjs'],
+      [{ ...nodenext, allowImportingTsExtensions: true }, 'fetcher.ts', '../lib/fetcher.ts'],
+    ] as const) {
+      await createProject(projectDir, {
+        'package.json': { name: 'app', version: '1.0.0', type: 'module' },
+        'tsconfig.json': {
+          compilerOptions: {
+            ...compilerOptions,
+            strict: true,
+            noEmit: true,
+            skipLibCheck: true,
+            resolveJsonModule: true,
+          },
+          include: ['client', 'lib'],
+        },
+        'vovk.config.mjs': configFile({
+          composedClient: { outDir: 'client', prettifyClient: false },
+          outputConfig: { imports: { fetcher: `./lib/${file}` } },
+        }),
+        [`lib/${file}`]: "export { fetcher } from 'vovk/fetcher';\n",
+        '.vovk-schema/root.json': userSegmentSchema,
+      });
+
+      await runCLI(['generate'], { cwd: projectDir });
+
+      const index = await read('client/index.ts');
+      assert.ok(index.includes(`import('${expected}')`), index);
+      assert.strictEqual(await typecheckProject(projectDir), '', JSON.stringify(compilerOptions));
+    }
+  });
+
   await it('Gives the TypeScript client the libs of vovk.config when _meta.json was written before them', async () => {
     const libs = { ajv: { options: { coerceTypes: 'array' } } };
     await createProject(projectDir, {
