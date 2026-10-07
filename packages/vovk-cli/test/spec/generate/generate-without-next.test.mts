@@ -263,6 +263,33 @@ await describe('vovk generate in a project without Next.js', async () => {
     assert.deepStrictEqual(schema.meta.config.libs, libs);
   });
 
+  await it('Leaves out of the client a key of _meta.json that vovk.config no longer exposes', async () => {
+    await createProject(projectDir, {
+      'package.json': { name: 'app', version: '1.0.0', type: 'module' },
+      'tsconfig.json': { compilerOptions: { module: 'esnext', moduleResolution: 'bundler', noEmit: true } },
+      'vovk.config.mjs': configFile({
+        composedClient: { outDir: 'client', prettifyClient: false },
+        exposeConfigKeys: [],
+      }),
+      'src/app/api/[[...vovk]]/route.ts': '',
+      // what vovk dev wrote while the config still exposed libs
+      '.vovk-schema/_meta.json': {
+        $schema: 'https://vovk.dev/api/schema/v3/meta.json',
+        config: {
+          libs: { ajv: { options: { coerceTypes: 'array' } } },
+          rootEntry: 'api',
+          $schema: 'https://vovk.dev/api/schema/v3/config.json',
+        },
+      },
+      '.vovk-schema/root.json': userSegmentSchema,
+    });
+
+    await runCLI(['generate'], { cwd: projectDir });
+
+    const { schema } = await import(`${pathToFileURL(path.join(projectDir, 'client/schema.ts')).href}?t=${Date.now()}`);
+    assert.deepStrictEqual(Object.keys(schema.meta.config).sort(), ['$schema', 'rootEntry']);
+  });
+
   await it('Builds the client URLs from the rootEntry of vovk.config when _meta.json was written before it changed', async () => {
     await createProject(projectDir, {
       'package.json': { name: 'app', version: '1.0.0', type: 'module' },
