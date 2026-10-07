@@ -283,7 +283,7 @@ The demo uses [@tanstack/react-query](https://www.npmjs.com/package/@tanstack/re
 
 <Tabs items={['index.tsx', 'user-form-demo.tsx', 'stream-demo.tsx']}>
 <Tabs.Tab>
-```ts showLineNumbers copy filename="src/components/demo/index.tsx" source="examples/hello-world"
+```tsx showLineNumbers copy filename="src/components/demo/index.tsx" source="examples/hello-world"
 'use client';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import StreamDemo from './stream-demo';
@@ -733,6 +733,8 @@ export const { GET } = initSegment({
 *[The code above is fetched from GitHub repository.](https://github.com/finom/vovk/blob/main/examples/hello-world/src/app/api/static/[[...vovk]]/route.ts)*
 </Tabs.Tab>
 </Tabs>
+
+The `static` segment exports `dynamic = 'force-static'`, and the root segment `runtime = 'edge'`. Next.js refuses both when `cacheComponents` is on, as `create-next-app` 16.4+ sets it. The example's **next.config** leaves it off; in your app, set `cacheComponents: false` to use them.
 
 The spec includes code samples that Scalar shows, ready to copy.
 

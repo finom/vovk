@@ -2,7 +2,7 @@ import { FileTree } from 'nextra/components';
 
 # Composed Client Mode
 
-By default, Vovk.ts generates one RPC client with the RPC modules of every segment: the **Composed Client**. It fits single-page apps, where one import gives you all RPC modules. The files go to the **src/client** folder (or **client** if the project has no `src` folder; you can [change it](/config)), and you import them as `@/client` with the default Next.js path alias.
+By default, Vovk.ts generates one RPC client with the RPC modules of every segment: the **Composed Client**. It fits single-page apps, where one import gives you all RPC modules. The files go to the **src/client** folder when the app is in `src/app` (otherwise **client**; you can [change it](/config)), and you import them as `@/client` with the default Next.js path alias.
 
 The default [ts](/templates#ts) template generates this **src/client** folder:
 
@@ -23,6 +23,8 @@ This [CLI](/generate) command does the same as the default generation:
 npm exec -- vovk generate --from ts --out src/client
 ```
 
+The composed client exports each RPC module by its name, so two segments can't both have a `UserRPC`: generation fails with a message that names both segments. Rename the module in one segment's `controllers` object, or leave that segment out with [`excludeSegments`](#excludesegments) and import it from the [segmented client](/segmented).
+
 ## Composed Client Config
 
 The options of the composed client:
@@ -33,7 +35,7 @@ const config = {
   composedClient: {
     enabled: true, // default
     fromTemplates: ['ts'], // default
-    outDir: './src/client', // default; './client' if there is no src folder
+    outDir: './src/client', // default; './client' when there is no src/app folder
     includeSegments: ['foo'], // or excludeSegments: ['bar'], not both
   },
 };
@@ -50,7 +52,7 @@ The templates that generate the composed client. The default, `["ts"]`, produces
 
 ### `outDir`
 
-Where the composed client is generated. Defaults to `./src/client` when the project has a `src` folder, or `./client` otherwise. The path is relative to the current working directory (CWD). If the folder already has files with the generated names, such as a hand-written `index.ts`, generation stops and names them; see [`--force`](/generate#other-flags).
+Where the composed client is generated. Defaults to `./src/client` when the project has a `src/app` folder (and no root `app` folder), or `./client` otherwise. The path is relative to the current working directory (CWD). If the folder already has files with the generated names, such as a hand-written `index.ts`, generation stops and names them; see [`--force`](/generate#other-flags).
 
 ### `includeSegments`
 

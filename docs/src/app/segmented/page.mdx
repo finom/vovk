@@ -4,7 +4,7 @@ import { FileTree } from 'nextra/components';
 
 The [Composed Client Mode](/composed) fits single-page apps. In a larger app, you may not want one client to expose the whole schema. The **Segmented Client** is a separate RPC client for each segment: smaller TypeScript modules that you import one by one, so a page doesn't load the RPC modules and schemas of unrelated segments. For example, “customer” pages don't import the “admin” RPC modules, and admin details stay out of customer code.
 
-By default, the segmented client is generated in the `./src/client` folder (or `./client` if you don't use a `src` folder) from the [ts](/templates#ts) template. For an app with several segments, it can look like this:
+By default, the segmented client is generated in the `./src/client` folder (or `./client` when the app isn't in `src/app`) from the [ts](/templates#ts) template. For an app with several segments, it can look like this:
 
 <FileTree>
   <FileTree.Folder name="src/client" defaultOpen>

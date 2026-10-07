@@ -8,6 +8,20 @@ Any test runner works: Vitest, Jest, the Node.js test runner and others. The exa
 
 The `vovk` package is ES modules only. Jest set up with `next/jest` can't load it as is, so add `transpilePackages: ['vovk']` to the Next.js config.
 
+Vitest doesn't read the `paths` of **tsconfig.json**, so it can't resolve `@/client` on its own. With Vite 8, which a new Vitest install uses, turn on `resolve.tsconfigPaths`. With an older Vite, use the `vite-tsconfig-paths` plugin or `resolve.alias`.
+
+```ts showLineNumbers copy filename="vitest.config.ts"
+import { defineConfig } from 'vitest/config';
+
+export default defineConfig({
+  resolve: { tsconfigPaths: true },
+});
+```
+
+With Vite 8, Vitest also drops the decorators on static fields, such as procedures, when `useDefineForClassFields` is off: `.fn()` then runs without them, auth guards included. It is off by default for a `target` below ES2022, such as the ES2017 that `create-next-app` writes. Set `"useDefineForClassFields": true` in **tsconfig.json**, or `"target": "ES2022"`.
+
+Node.js strips TypeScript types but doesn't compile decorators, so the Node.js test runner needs a loader that does, such as [tsx](https://tsx.is): `node --import tsx --test`. tsx also reads the `paths` of **tsconfig.json**, so `@/client` resolves. Without a loader, Node.js runs only the generated client (it strips types by default since 22.18): set `"module": "nodenext"` and `"allowImportingTsExtensions": true` (it needs `"noEmit": true`) in **tsconfig.json**, and import the client by a relative path. To use the client from another project, [bundle](/bundle) it.
+
 ## Testing with `.fn`
 
 Given this controller:
@@ -90,15 +104,17 @@ describe('UserController validation', () => {
 
 ## Integration Testing with RPC Modules
 
-For end-to-end tests through HTTP, call the generated [RPC modules](/typescript) against a running dev server:
+For end-to-end tests through HTTP, call the generated [RPC modules](/typescript) against a running dev server. The client calls `/api` by default, and `fetch` in Node.js takes no relative URL, so give it the server's address with `apiRoot`, or set [`outputConfig.origin`](/config#outputconfig).
 
 ```ts showLineNumbers copy filename="src/modules/user/user-controller.e2e.test.ts"
 import { describe, it, expect } from 'vitest';
 import { UserRPC } from '@/client';
 
+const LocalUserRPC = UserRPC.withDefaults({ apiRoot: 'http://localhost:3000/api' });
+
 describe('UserController E2E', () => {
   it('gets a user via HTTP', async () => {
-    const user = await UserRPC.getUser({ params: { id: '42' } });
+    const user = await LocalUserRPC.getUser({ params: { id: '42' } });
 
     expect(user).toEqual({ id: '42', name: 'John' });
   });

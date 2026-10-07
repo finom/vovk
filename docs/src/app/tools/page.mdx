@@ -8,7 +8,7 @@
 
 A tool comes from a [procedure](/procedure) or an RPC method that has an operation object, given by [`@operation`](/openapi), `@operation.tool` or `@operation.error`. Every [OpenAPI mixin](/mixins) method has one. Other members of a module are left out.
 
-```ts showLineNumbers copy filename="src/modules/user/user-controller.ts"
+```ts showLineNumbers copy filename="src/lib/tools.ts"
 import { deriveTools } from 'vovk';
 import { TaskRPC, PetstoreAPI } from '@/client';
 import UserController from '@/modules/user/user-controller';
@@ -159,8 +159,10 @@ const tools = deriveTools({
 The `createTool` utility was removed in v4. Derived tools follow the standard-tool convention. So you can create standalone tools, which don't map to your back end, with the [standard-tool](https://www.npmjs.com/package/standard-tool) package, or write them as plain objects of the same shape. Mix them with derived tools as you like:
 
 ```ts showLineNumbers copy
+import { deriveTools } from 'vovk';
 import { standardTool } from 'standard-tool';
 import { z } from 'zod';
+import UserController from '@/modules/user/user-controller';
 
 const sumNumbers = standardTool({
   name: 'sum_numbers',
@@ -220,7 +222,7 @@ export default class AiSdkController {
       llmTools.map(({ name, execute, description, inputSchema }) => [
         name,
         tool({
-          execute: (input) => execute(input),
+          execute,
           description,
           inputSchema: inputSchema ?? z.object({}),
         }),
@@ -245,13 +247,13 @@ The tool's `inputSchema` goes to the Vercel AI SDK as is. The SDK supports Stand
 
 On the client side, create a component with the [useChat](https://ai-sdk.dev/docs/reference/ai-sdk-ui/use-chat) hook:
 
-```tsx showLineNumbers copy filename="src/app/page.tsx"
+```tsx showLineNumbers copy filename="src/components/chat.tsx"
 'use client';
 import { useChat } from '@ai-sdk/react';
 import { DefaultChatTransport } from 'ai';
 import { useState } from 'react';
 
-export default function Page() {
+export default function Chat() {
   const [input, setInput] = useState('');
 
   const { messages, sendMessage, error, status } = useChat({
@@ -284,6 +286,21 @@ export default function Page() {
         <button>Send</button>
       </div>
     </form>
+  );
+}
+```
+
+`useChat` reads a random value when it renders. With `cacheComponents` on, which `create-next-app` 16.4+ sets, `next build` refuses a random value outside `<Suspense>`, so render the component inside `<Suspense>` from a server page:
+
+```tsx showLineNumbers copy filename="src/app/page.tsx"
+import { Suspense } from 'react';
+import Chat from '@/components/chat';
+
+export default function Page() {
+  return (
+    <Suspense>
+      <Chat />
+    </Suspense>
   );
 }
 ```

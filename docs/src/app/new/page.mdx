@@ -172,7 +172,7 @@ The metadata fields:
 The EJS template gets these variables in the `t` object:
 
 - `t.defaultOutDir: string` — the default output folder of the module.
-- `t.relativePathToSourceRoot: string` — the path from `t.defaultOutDir` to the source root (the `src` folder, or the project root without one), such as `../..`.
+- `t.relativePathToSourceRoot: string` — the path from `t.defaultOutDir` to the source root (`src` when the app is in `src/app`, otherwise the project root), such as `../..`.
 - `t.config: VovkConfig` — the Vovk.ts config.
 - `t.segmentName: string` — the segment name (an empty string for the root segment).
 - `t.withService: boolean` — whether a service is created together with the controller.
@@ -192,7 +192,7 @@ A module template for an ArkType controller and service. For readability, the te
 
 <Tabs items={['controller.ts.ejs', 'service.ts.ejs']}>
 <Tabs.Tab>
-```ejs filename="packages/vovk-cli/module-templates/arktype/controller.ts.ejs" source=".">
+```ejs filename="packages/vovk-cli/module-templates/arktype/controller.ts.ejs" source="."
 <% const vars = { 
   ModuleName: t.TheThing + 'Controller',
   ServiceName: t.TheThing + 'Service',
@@ -290,7 +290,7 @@ export default class <%= vars.ModuleName %> {
 
 <Tabs.Tab>
 
-```ejs filename="packages/vovk-cli/module-templates/type/service.ts.ejs" source=".">
+```ejs filename="packages/vovk-cli/module-templates/type/service.ts.ejs" source="."
 <% const vars = {
   ControllerName: t.TheThing + 'Controller',
   ServiceName: t.TheThing + 'Service',
