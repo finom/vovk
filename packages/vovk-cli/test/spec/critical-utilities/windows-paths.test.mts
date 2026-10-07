@@ -82,6 +82,7 @@ await describe('Paths in generated code and file lookups', async () => {
 
     const fullSchema = await getProjectFullSchema({
       schemaOutAbsolutePath,
+      isOwnSchemaFolder: false,
       isNextInstalled: false,
       log,
       config: { exposeConfigKeys: [] } as unknown as Parameters<typeof getProjectFullSchema>[0]['config'],

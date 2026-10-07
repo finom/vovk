@@ -121,7 +121,6 @@ export async function renderOneClientFile({
   tsExtension,
   tsModule,
   hasMixins,
-  isVovkProject,
   vovkCliPackage,
   isBundle,
   origin,
@@ -155,7 +154,6 @@ export async function renderOneClientFile({
   tsExtension: string;
   tsModule: string | undefined;
   hasMixins: boolean;
-  isVovkProject: boolean;
   vovkCliPackage: PackageJson;
   isBundle: boolean;
   origin: string | null;
@@ -204,7 +202,6 @@ export async function renderOneClientFile({
   const t = {
     _,
     hasMixins,
-    isVovkProject,
     package: packageJson,
     underscoredPackageName: getUnderscoredPackageName(packageJson, packageNameKey),
     readme,

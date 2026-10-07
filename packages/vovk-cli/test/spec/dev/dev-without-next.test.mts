@@ -264,7 +264,6 @@ await describe('vovk dev in a project without Next.js', async () => {
     assert.strictEqual(exitCode, 0, dev.getOutput());
     const schemaTs = await fs.readFile(path.join(projectDir, 'src/client/schema.ts'), 'utf-8');
     assert.match(schemaTs, /from '\.\/\.\.\/\.\.\/custom-schema\/root\.json'/, schemaTs);
-    assert.match(schemaTs, /from '\.\/\.\.\/\.\.\/custom-schema\/_meta\.json'/, schemaTs);
     assert.ok(!(await exists(path.join(projectDir, '.vovk-schema'))), dev.getOutput());
   });
 

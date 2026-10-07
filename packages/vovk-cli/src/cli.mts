@@ -9,6 +9,7 @@ import { getNextDevPort } from './dev/get-next-dev-port.mjs';
 import { VovkDev } from './dev/index.mjs';
 import { getProjectFullSchema } from './generate/get-project-full-schema.mjs';
 import { VovkGenerate } from './generate/index.mjs';
+import { isOwnSchemaFolder } from './generate/is-own-schema-folder.mjs';
 import { getProjectInfo, loadOpenAPIMixins } from './get-project-info/index.mjs';
 import { Init } from './init/index.mjs';
 import { newComponents } from './new/index.mjs';
@@ -189,6 +190,7 @@ program
     const { cwd, config, log, isNextInstalled } = projectInfo;
     const fullSchema = await getProjectFullSchema({
       schemaOutAbsolutePath: path.resolve(cwd, cliBundleOptions?.schemaPath ?? config.schemaOutDir),
+      isOwnSchemaFolder: isOwnSchemaFolder(projectInfo, cliBundleOptions?.schemaPath),
       log,
       isNextInstalled,
       config,

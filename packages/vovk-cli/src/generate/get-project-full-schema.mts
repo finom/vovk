@@ -9,21 +9,22 @@ import type { ProjectInfo } from '../get-project-info/index.mjs';
 
 export async function getProjectFullSchema({
   schemaOutAbsolutePath,
+  isOwnSchemaFolder,
   isNextInstalled,
   log,
   config,
 }: {
   schemaOutAbsolutePath: string;
+  isOwnSchemaFolder: boolean;
   isNextInstalled: boolean;
   log: ProjectInfo['log'];
   config: VovkStrictConfig;
 }): Promise<VovkSchema> {
+  const configMeta = getMetaSchema({ config });
   const result: VovkSchema = {
     $schema: VovkSchemaIdEnum.SCHEMA,
     segments: {},
-    meta: getMetaSchema({
-      config,
-    }),
+    meta: configMeta,
   };
 
   const isEmptyLogOrWarn = isNextInstalled ? log.warn : log.debug;
@@ -31,9 +32,17 @@ export async function getProjectFullSchema({
   const metaPath = path.join(schemaOutAbsolutePath, `${META_FILE_NAME}.json`);
   const metaContent = await readFile(metaPath, 'utf-8').catch(() => null);
   if (metaContent === null) {
-    isEmptyLogOrWarn(`${META_FILE_NAME}.json not found at ${metaPath}. Using empty meta as fallback.`);
+    // the project's own folder has none until vovk dev runs, and needs none
+    if (!isOwnSchemaFolder) {
+      isEmptyLogOrWarn(`${META_FILE_NAME}.json not found at ${metaPath}. Using the meta of vovk.config as fallback.`);
+    }
   } else {
-    result.meta = deepExtend({} as VovkMetaSchema, result.meta, parseSchemaFile(metaPath, metaContent));
+    const fromFile = parseSchemaFile(metaPath, metaContent) as VovkMetaSchema;
+    // vovk dev wrote the project's own _meta.json from the config as it was then, so each value the config exposes now
+    // replaces the file's; another project's folder keeps what that project wrote
+    result.meta = isOwnSchemaFolder
+      ? { ...fromFile, ...configMeta, config: { ...fromFile.config, ...configMeta.config } }
+      : deepExtend({} as VovkMetaSchema, configMeta, fromFile);
   }
   const segmentsDir = path.join(schemaOutAbsolutePath);
   try {
