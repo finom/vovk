@@ -6,7 +6,7 @@ import type { VovkSchema } from 'vovk';
 import getCLIAssertions from '../../lib/get-cli-assertions.mts';
 import updateConfig from '../../lib/update-config.mts';
 
-await describe.only('Composed & Segmented client', async () => {
+await describe('Composed & Segmented client', async () => {
   const { projectDir, runAtProjectDir, assertNotExists, vovkDevAndKill, assertDirFileList, createVovkApp } =
     getCLIAssertions({
       cwd: path.resolve(import.meta.dirname, '../../..'),

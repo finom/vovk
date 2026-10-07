@@ -37,6 +37,12 @@ const hasBody = (req: VovkRequestAny) => {
 // fn() calls made without a body, the local counterpart of a request without one
 const callsWithoutBody = new WeakSet<object>();
 
+type InputReaders = Pick<VovkRequestAny['vovk'], 'body' | 'query' | 'params'>;
+
+// the readers of the input as sent, by request: validation replaces them, and a decorator that calls next() again,
+// as to retry, gets each pass validated from the input as sent
+const inputReaders = new WeakMap<object, InputReaders>();
+
 // fn() reads a body as the server reads a request that carries it: a form or bytes by the content type the client
 // sends them with, any other value as it is
 const parseFnBody = async (body: unknown, contentType: string[] | undefined) => {
@@ -98,6 +104,19 @@ const withLoneValuesAsArrays = (query: unknown, plan: ArrayPlan | null): unknown
   }
   return result;
 };
+
+// a sync generator, a Set and other iterables the server streams, but no array or responder
+const isSyncIterable = (value: unknown): value is Iterable<unknown> =>
+  typeof value === 'object' &&
+  value !== null &&
+  !Array.isArray(value) &&
+  !(value instanceof JSONLinesResponder) &&
+  typeof (value as Iterable<unknown>)[Symbol.iterator] === 'function' &&
+  typeof (value as AsyncIterable<unknown>)[Symbol.asyncIterator] !== 'function';
+
+async function* toAsyncGenerator(iterable: Iterable<unknown>) {
+  yield* iterable;
+}
 
 // a buffered body read as JSON that has no bytes, as fetch() sends a JSON content type for a call without a body
 const isEmptyJSONBody = async (req: VovkRequestAny) => {
@@ -273,6 +292,9 @@ export function withValidationLibrary<
   };
 
   const resultHandler = (async (req: VovkRequestAny, handlerParams: Parameters<THandle>[1]) => {
+    const readers = inputReaders.get(req);
+    if (readers) Object.assign(req.vovk, readers);
+    else inputReaders.set(req, { body: req.vovk.body, query: req.vovk.query, params: req.vovk.params });
     const { __disableClientValidation } = req.vovk.meta<Meta>();
     // the handler gets the validated params as its second argument, the same value req.vovk.params() returns
     let validatedParams = handlerParams;
@@ -319,7 +341,6 @@ export function withValidationLibrary<
     return outputHandler(req, validatedParams);
   }) as THandle & {
     schema: Omit<VovkHandlerSchema, 'httpMethod' | 'path'> & Partial<VovkHandlerSchema>;
-    wrapper?: (req: VovkRequestAny, params: Parameters<THandle>[1]) => ReturnType<THandle>;
   };
 
   type FnBody = BodyTypeFromContentType<TContentType, THandle['__types']['body']>;
@@ -349,44 +370,51 @@ export function withValidationLibrary<
       : false
     : false;
 
-  function fn<TTransformed>(input: FnInputWithTransform<TTransformed>): Promise<TTransformed>;
-  function fn<TReturnType = ReturnType<THandle>>(input?: FnInput): TReturnType;
-  function fn<TReturnType = ReturnType<THandle>>(
-    input?: IsInputOptional extends true ? FnInput : never
-  ): IsInputOptional extends true ? TReturnType : never;
-  function fn<TReturnType = ReturnType<THandle>, TTransformed = never>(
-    input?: FnInput | FnInputWithTransform<TTransformed>
-  ): TReturnType | Promise<TTransformed> {
-    let parsedBody: Promise<unknown> | undefined;
+  // fn() of the procedure runs the procedure alone, the fn() of a decorated member runs its decorators too
+  const createFn = (run: (req: VovkRequestAny, params: Parameters<THandle>[1]) => unknown) => {
+    function fn<TTransformed>(input: FnInputWithTransform<TTransformed>): Promise<TTransformed>;
+    function fn<TReturnType = ReturnType<THandle>>(input?: FnInput): TReturnType;
+    function fn<TReturnType = ReturnType<THandle>>(
+      input?: IsInputOptional extends true ? FnInput : never
+    ): IsInputOptional extends true ? TReturnType : never;
+    function fn<TReturnType = ReturnType<THandle>, TTransformed = never>(
+      input?: FnInput | FnInputWithTransform<TTransformed>
+    ): TReturnType | Promise<TTransformed> {
+      let parsedBody: Promise<unknown> | undefined;
 
-    const fakeReq: Pick<
-      VovkRequest<THandle['__types']['body'], THandle['__types']['query'], THandle['__types']['params']>,
-      'vovk'
-    > = {
-      vovk: {
-        body: () => (parsedBody ??= parseFnBody(input?.body, contentType)),
-        query: () => input?.query ?? {},
-        params: () => input?.params ?? {},
-        meta: <T = KnownAny>(meta?: T | null) => reqMeta<T>(fakeReq, meta),
-      },
-    };
+      const fakeReq: Pick<
+        VovkRequest<THandle['__types']['body'], THandle['__types']['query'], THandle['__types']['params']>,
+        'vovk'
+      > = {
+        vovk: {
+          body: () => (parsedBody ??= parseFnBody(input?.body, contentType)),
+          query: () => input?.query ?? {},
+          params: () => input?.params ?? {},
+          meta: <T = KnownAny>(meta?: T | null) => reqMeta<T>(fakeReq, meta),
+        },
+      };
 
-    fakeReq.vovk.meta<Meta>({ __disableClientValidation: input?.disableClientValidation, ...input?.meta });
-    if (input?.body === undefined) callsWithoutBody.add(fakeReq);
+      fakeReq.vovk.meta<Meta>({ __disableClientValidation: input?.disableClientValidation, ...input?.meta });
+      if (input?.body === undefined) callsWithoutBody.add(fakeReq);
 
-    const result = (resultHandler.wrapper ?? resultHandler)(
-      fakeReq as VovkRequestAny,
-      (input?.params ?? {}) as Parameters<THandle>[1]
-    );
+      // a promise also when a sync decorator throws or answers without calling next()
+      const result = (async () => {
+        const data = await run(fakeReq as VovkRequestAny, (input?.params ?? {}) as Parameters<THandle>[1]);
+        // with an iteration schema, an async generator also where the items go unchecked
+        return iteration && isSyncIterable(data) ? toAsyncGenerator(data) : data;
+      })();
 
-    if (input && 'transform' in input && typeof input.transform === 'function') {
-      return Promise.resolve(result).then((resolvedResult) =>
-        input.transform(resolvedResult, fakeReq)
-      ) as Promise<TTransformed>;
+      if (input && 'transform' in input && typeof input.transform === 'function') {
+        return result.then((resolvedResult) =>
+          input.transform(resolvedResult as Awaited<ReturnType<THandle>>, fakeReq)
+        ) as Promise<TTransformed>;
+      }
+
+      return result as TReturnType;
     }
 
-    return result as TReturnType;
-  }
+    return fn;
+  };
 
   const definition = {
     contentType,
@@ -405,7 +433,11 @@ export function withValidationLibrary<
     operationObject,
   };
 
-  const resultHandlerEnhanced = Object.assign(resultHandler, { fn, definition });
+  const resultHandlerEnhanced = Object.assign(resultHandler, {
+    fn: createFn(resultHandler),
+    definition,
+    _createFn: createFn,
+  });
   const validation: VovkHandlerSchema['validation'] = {};
 
   if (toJSONSchema) {

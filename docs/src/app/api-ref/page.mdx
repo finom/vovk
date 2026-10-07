@@ -133,7 +133,7 @@ export default class HelloController {
 `@operation.tool()` adds AI tool data under the `x-tool` key of the operation object (see [Deriving AI Tools](/tools)), and `@operation.error(status, message)` documents an error response.
 
 ```ts showLineNumbers copy
-import { operation } from 'vovk';
+import { get, operation } from 'vovk';
 
 export default class HelloController {
   @operation.tool({
@@ -253,13 +253,11 @@ Lists the routes as static params, so the API is built at build time instead of 
 
 **Returns:**
 
-- `Array<Record<string, string[]>>{:ts}` — params objects for `generateStaticParams()`: `{ vovk: ['_schema_'] }` for the schema endpoint, then one per path, such as `{ vovk: ['hello', 'greeting.json'] }`.
+- `Array<Record<string, string[]>>{:ts}` — params objects for `generateStaticParams()`: one per path, such as `{ vovk: ['hello', 'greeting.json'] }`. The list starts with `{ vovk: ['_schema_'] }` for the schema endpoint when `NODE_ENV` is `development`, or when there is no other path, as `output: 'export'` needs one.
 
 ```ts showLineNumbers copy filename="src/app/api/[[...vovk]]/route.ts"
 // ...
 export type Controllers = typeof controllers;
-
-export const dynamic = 'force-static';
 
 export function generateStaticParams() {
   return controllersToStaticParams(controllers);
@@ -267,6 +265,8 @@ export function generateStaticParams() {
 
 export const { GET } = initSegment({ controllers });
 ```
+
+The segment needs no `dynamic` export: Next.js pre-renders the listed paths with `cacheComponents` on or off.
 
 For another slug folder, such as `src/app/api/[[...custom]]/route.ts`, pass its name as the second argument:
 
@@ -371,6 +371,7 @@ For client-side validation, see the [customization](/imports) page.
 Defines a procedure: a controller handler with validation and schema emission. `procedure(options)` returns `.handle()`, which takes the handler, `(req, params) => …`.
 
 ```ts showLineNumbers copy
+import { z } from 'zod';
 import { procedure } from 'vovk';
 
 export default class UserController {

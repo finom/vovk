@@ -7,7 +7,7 @@ description: Vovk.ts RPC client — how `vovk generate` turns controllers into t
 
 Every controller procedure with HTTP decorator automatically gets typed client counterpart. `vovk generate` produces these client modules from segment schemas, emitting TypeScript into the project:
 
-- **Composed client** (default): one client for all segments at `composedClient.outDir` (default `./src/client`, or `./client` without a `src` folder). Import from `'@/client'` (standard Next.js alias; alias-less projects use a relative path).
+- **Composed client** (default): one client for all segments at `composedClient.outDir` (default `./src/client`, or `./client` when the app isn't in `src/app`). Import from `'@/client'` (standard Next.js alias; alias-less projects use a relative path).
 - **Segmented client**: per-segment subdirs of `segmentedClient.outDir` (same default dir). Import from `'@/client/<segment>'`.
 
 **Key identity**: client module name = **key** used in `initSegment`'s `controllers` map, regardless of import path.
@@ -56,7 +56,7 @@ What it does:
 
 - Reads `.vovk-schema/**/*.json` for every segment (nested segments live in subdirectories, e.g. `.vovk-schema/customer/static.json`).
 - Emits generated code into configured `outDir` using selected `fromTemplates` preset (default `['ts']`).
-- Composed client (default): emits `index.ts`, `schema.ts`, `openapi.ts`, `openapi.json` at `outDir` root (default `./src/client`, or `./client` without a `src` folder). Project's own tsc handles the files; import from `'@/client'`.
+- Composed client (default): emits `index.ts`, `schema.ts`, `openapi.ts`, `openapi.json` at `outDir` root (default `./src/client`, or `./client` when the app isn't in `src/app`). Project's own tsc handles the files; import from `'@/client'`.
 - Segmented client: same four files per segment under `<outDir>/<segment>/`; import from `'@/client/<segment>'`.
 - Generated dir is gitignored by `vovk init` and rebuilt by the `prebuild` script (`vovk generate`); no need to commit it.
 
@@ -85,7 +85,7 @@ await ModuleRPC.methodName({
 
   // transport
   apiRoot?: string,                 // override the generation-time default
-  init?: RequestInit,               // headers, credentials, next.revalidate, etc. — see "init.signal is silently overwritten" below
+  init?: RequestInit,               // headers, credentials, signal, next.revalidate, etc. — see "init" below
 
   // validation
   disableClientValidation?: boolean,
@@ -121,13 +121,13 @@ Never hand-set `Content-Type` — fetcher derives it (multipart boundary include
 
 `apiRoot` **baked in at generation time**: defaults to `/${rootEntry}` (`rootEntry` defaults to `'api'`, so default baked-in value = `/api`). When `outputConfig.origin` is set, bake produces full URL like `http://localhost:3000/api`. Per-call `apiRoot` fully replaces baked-in value for that call — config-level changes still require `vovk generate`.
 
-In browser, relative `/api` resolves against page origin, so same call works from `/dashboard` and `/settings`. On server (Node, edge, integration tests) relative URLs don't resolve — pass full URL per call, bake one in via `outputConfig.origin`, or use `withDefaults({ apiRoot })`.
+In browser, relative `/api` resolves against page origin, so same call works from `/dashboard` and `/settings`. On server (Node, integration tests) relative URLs don't resolve — pass full URL per call, bake one in via `outputConfig.origin`, or use `withDefaults({ apiRoot })`.
 
 ### `init`
 
 `RequestInit` forwarded to `fetch` — `headers`, `credentials`, `mode`, `cache`, Next.js-specific `next: { revalidate: number }` all pass through.
 
-**`init.signal` is silently overwritten.** Internal fetcher creates own `AbortController` per call and overrides any `signal` you pass via `init` — `packages/vovk/src/client/fetcher.ts:134-136`. So passing `init.signal` does **NOT** abort request. For streaming endpoints, returned async iterable exposes `.abortController` — call `.abort()` on it. For non-streaming JSON responses, no public abort path exists today.
+**`init.signal` aborts the call.** The fetcher ties it to its own per-call `AbortController` (`packages/vovk/src/client/fetcher.ts:212-215`; without `AbortSignal.any`, as in React Native and Safari before 17.4, the signal aborts that controller). A pending JSON call rejects with the signal's reason as is (an `AbortError` when `abort()` gets no reason); a stream stops with an error whose `cause` is the reason. A streaming call's async iterable also exposes `.abortController` (and `abortSilently()`) to stop that one stream.
 
 ### `transform`
 
@@ -151,7 +151,7 @@ Two top-level config keys — `composedClient` and `segmentedClient` — = **ind
 
 | Key               | Default `enabled` | Default `fromTemplates` | Default `outDir`                           | Default import            |
 |-------------------|-------------------|--------------------------|---------------------------------------------|---------------------------|
-| `composedClient`  | `true`            | `['ts']`                 | `./src/client` (or `./client` if no `src`)  | `'@/client'`              |
+| `composedClient`  | `true`            | `['ts']`                 | `./src/client` (or `./client` without `src/app`) | `'@/client'`              |
 | `segmentedClient` | `false`           | `['ts']`                 | same dir, per-segment subdirs               | `'@/client/<segment>'`    |
 
 Both emit into the project source tree. When both are enabled they share `outDir`: composed files at the root, segments in subdirs.
@@ -194,7 +194,7 @@ import { AdminRPC } from '@/client/admin';
 
 | Client | Location | Import from |
 |--------|----------|-------------|
-| Composed (default) | `outDir` root (default `./src/client`, or `./client` without a `src` folder) | `'@/client'` |
+| Composed (default) | `outDir` root (default `./src/client`, or `./client` when the app isn't in `src/app`) | `'@/client'` |
 | Segmented | `<outDir>/<segment>` subdirs | `'@/client/<segment>'` |
 
 `@/client` is the standard Next.js `@/*` alias. Custom `outDir` shifts the path; projects without the alias use a relative import. Both layouts work with any package manager, pnpm included.
@@ -488,7 +488,7 @@ useEffect(() => { UserRPC.list().then(setUsers); }, []);
 - **Import name mismatch**: `UserRPC` (the `controllers` key), not `UserControllerRPC`. Most common "I can't import my RPC module" cause.
 - **Stale client**: `vovk generate` regenerates from `.vovk-schema/`, only refreshed by running dev server. If user edited controller and ran `vovk generate` directly, output stale. Fix: `npm run dev` to re-emit schemas, then regenerate.
 - **No HTTP decorator = no RPC**. Procedure without `@get`/`@post`/etc. is call-via-`.fn()` only; won't appear on client.
-- **Baked-in `apiRoot` defaults to `/api`** (`rootEntry: 'api'` with no `origin`). Works in browser (resolves against page origin), fails outside (Node, edge, integration tests). Pass full URL per call, bake one in via `outputConfig.origin`, or use `withDefaults({ apiRoot })`.
+- **Baked-in `apiRoot` defaults to `/api`** (`rootEntry: 'api'` with no `origin`). Works in browser (resolves against page origin), fails outside (Node, integration tests). Pass full URL per call, bake one in via `outputConfig.origin`, or use `withDefaults({ apiRoot })`.
 - **Fetcher path changes need regeneration**. Editing fetcher file fine; changing its path in `outputConfig.imports.fetcher` requires `vovk generate` (or dev-watcher restart).
 - **`disableClientValidation` only skips *client* validation pass**. Server-side validation still runs (unless procedure disables it, which should be rare).
 - **Client `meta` ≠ server `req.vovk.meta()`**. `meta` option serialized as `x-meta` header and lands on server under `xMetaHeader` key — isolated from server-set trusted state (what `authGuard` writes via `req.vovk.meta<AuthMeta>({ user })` is untouched by client). Treat client `meta` as advisory only; never use for auth or authorization decisions.

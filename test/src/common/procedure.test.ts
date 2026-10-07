@@ -4,7 +4,7 @@ import { toStandardJsonSchema } from '@valibot/to-json-schema';
 import { type } from 'arktype';
 import * as v from 'valibot';
 import type { VovkRequest } from 'vovk';
-import { procedure } from 'vovk';
+import { createDecorator, get, HttpException, HttpStatus, procedure } from 'vovk';
 import { z } from 'zod';
 
 describe('procedure features', async () => {
@@ -282,5 +282,52 @@ describe('procedure features', async () => {
     assert.deepEqual(await collect(await untransformedHandler.fn()), [{ count: '1' }]);
     assert.deepEqual(untransformedHandler.schema.validation?.iteration?.properties?.count, { type: 'string' });
     assert.deepEqual(handler.schema.validation?.iteration?.properties?.count, { type: 'number' });
+  });
+
+  it('Should reject the promise of fn() when a sync decorator throws', async () => {
+    // a sync guard, as the decorator examples write them
+    const guard = createDecorator((req: VovkRequest, next) => {
+      if (!req.vovk.meta<{ user?: string }>().user) throw new HttpException(HttpStatus.UNAUTHORIZED, 'No user');
+      return next();
+    });
+    class GuardedController {
+      static me = procedure().handle(async () => ({ me: true }));
+    }
+    guard()(GuardedController, 'me');
+    get('me')(GuardedController, 'me');
+
+    let result: unknown;
+    assert.doesNotThrow(() => {
+      result = GuardedController.me.fn();
+    });
+    await assert.rejects(result as Promise<unknown>, { statusCode: HttpStatus.UNAUTHORIZED });
+  });
+
+  it('Should return a promise from fn() when a sync decorator answers without calling next()', async () => {
+    // as the decorator page shows: skip the handler and respond with an object
+    const cached = createDecorator(() => ({ from: 'cache' }));
+    class CachedController {
+      static report = procedure().handle(async () => ({ from: 'handler' }));
+    }
+    cached()(CachedController, 'report');
+    get('report')(CachedController, 'report');
+
+    const result = CachedController.report.fn();
+
+    assert.ok(result instanceof Promise);
+    assert.deepEqual(await result, { from: 'cache' });
+  });
+
+  it('Should give an async generator from fn() with an iteration schema, also without validation', async () => {
+    const handler = procedure({ iteration: z.object({ n: z.number() }) }).handle(function* () {
+      yield { n: 1 };
+    });
+
+    const items = await handler.fn({ disableClientValidation: true });
+
+    assert.equal(typeof items[Symbol.asyncIterator], 'function');
+    const collected: unknown[] = [];
+    for await (const item of items) collected.push(item);
+    assert.deepEqual(collected, [{ n: 1 }]);
   });
 });

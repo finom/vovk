@@ -79,7 +79,7 @@ export default config;
 Why:
 
 - `composedClient.enabled: false` + `segmentedClient.enabled: true` — switches from single all-segments RPC bundle to one client per segment. Each tenant's frontend imports only RPC it uses → lean bundles.
-- `segmentNameOverride: ''` per tenant — strips segment-path prefix from generated client's import path, so each tenant's frontend imports its RPC as if root client. Without this, `admin`-tenant pages must import from prefixed path.
+- `segmentNameOverride: ''` per tenant — leaves the segment name out of the URLs that segment's client calls (`/api/users`, not `/api/admin/users`), so the proxy's `{ from: 'api', to: 'api/<tenant>' }` rewrite routes them to the tenant's segment. The client folder keeps the segment name: `admin` pages import `@/client/admin`.
 
 See **`rpc` skill** for full segmented-client reference.
 
@@ -156,7 +156,7 @@ Mapping cheat sheet:
 
 Inside per-tenant page:
 
-- Import segmented client for that tenant — import path depends on `outputConfig.segmentedClient.outDir` and `segmentNameOverride: ''` setup above. With defaults here, `admin`-tenant pages import `@/client` and see admin segment's RPC as "root" client for that frontend.
+- Import that tenant's segmented client from `@/client/<segment>` (`@/client/admin`, `@/client/customer`, `@/client/customer/pro`): `segmentedClient.outDir` (default `src/client`) plus the segment name. `segmentNameOverride` changes the URLs, not this path.
 - Call RPC normally — `{ from: 'api', to: 'api/<tenant>' }` override rewrites every `fetch('/api/...')` so it lands in that tenant's segment on backend.
 
 ### Deeper frontend trees

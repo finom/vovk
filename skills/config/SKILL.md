@@ -1,6 +1,6 @@
 ---
 name: config
-description: Vovk.ts configuration — vovk.config.{mjs,cjs,js} shape, every config key + default (rootEntry, schemaOutDir, libs, exposeConfigKeys, logLevel, devHttps, moduleTemplates, clientTemplateDefs, composedClient, segmentedClient, outputConfig, bundle, info), tsconfig.json setup (experimentalDecorators). Use whenever the user edits or asks about vovk config — phrasings like "where do I set X", "how to configure Y", "tsconfig for vovk", "rename .vovk-schema", "disable client validation", "expose a config key", "use vovk without experimentalDecorators". Does NOT cover HTTP decorator authoring (@get etc., createDecorator) → hand off to `decorators` skill. Does NOT cover bundle CLI flow → `bundle` skill. Does NOT cover composed vs segmented client output internals → `rpc` skill.
+description: Vovk.ts configuration — vovk.config.{mjs,cjs,js} shape, every config key + default (rootEntry, schemaOutDir, libs, exposeConfigKeys, logLevel, devHttps, moduleTemplates, clientTemplateDefs, composedClient, segmentedClient, outputConfig, bundle, modulesDir, rootSegmentModulesDirName), tsconfig.json setup (experimentalDecorators). Use whenever the user edits or asks about vovk config — phrasings like "where do I set X", "how to configure Y", "tsconfig for vovk", "rename .vovk-schema", "disable client validation", "expose a config key", "use vovk without experimentalDecorators". Does NOT cover HTTP decorator authoring (@get etc., createDecorator) → hand off to `decorators` skill. Does NOT cover bundle CLI flow → `bundle` skill. Does NOT cover composed vs segmented client output internals → `rpc` skill.
 ---
 
 # Vovk.ts configuration
@@ -36,7 +36,7 @@ export default config;
 | `devHttps` | `false` | Enable HTTPS in `vovk dev`. |
 | `exposeConfigKeys` | `['libs', 'rootEntry']` | Whitelist of config keys exposed in `.vovk-schema/_meta.json`. `true` = all, `false` = none, or custom array. |
 | `libs` | `{}` | Validation library config (used by `vovk-cli` codegen). |
-| `info` | `undefined` | OpenAPI `info` block (title, version, description, contact, license). |
+| `modulesDir` | `'src/modules'` (`'modules'` when the app isn't in `src/app`) | Folder `vovk new` creates modules in; `vovk dev` watches it. |
 | `moduleTemplates` | set by `vovk init` | Templates `vovk new controller service` uses. |
 | `clientTemplateDefs` | template defaults | Override / extend built-in templates (`ts`, `py`, `rs`, ...). |
 | `composedClient` | see below | Composed client output config. |
@@ -49,7 +49,7 @@ export default config;
 ```ts
 composedClient: {
   enabled: true,
-  outDir: 'src/client', // 'client' when project has no src folder
+  outDir: 'src/client', // 'client' when the app isn't in src/app
   fromTemplates: ['ts'],
   prettifyClient: true, // project prettier; warns and skips if not installed
 }
@@ -59,11 +59,10 @@ segmentedClient: {
   outDir: 'src/client',
   fromTemplates: ['ts'],
   prettifyClient: true,
-  segmentNameOverride: undefined,
 }
 ```
 
-Import composed from `@/client`, segmented from `@/client/<segment>`. Both enabled share `outDir`: composed files at the root, per-segment subdirs. `prettifyClient` uses the project-installed prettier; if missing, CLI warns once per run and writes unformatted.
+Import composed from `@/client`, segmented from `@/client/<segment>`. Both enabled share `outDir`: composed files at the root, per-segment subdirs. `prettifyClient` uses the project-installed prettier; if missing, CLI warns once per run and writes unformatted. `segmentNameOverride` is per segment, not a client key: `outputConfig.segments.<name>.segmentNameOverride` (→ `multitenant` skill).
 
 Multitenant projects flip these — `composedClient.enabled: false`, `segmentedClient.enabled: true`. Detail → `multitenant` skill.
 
@@ -93,8 +92,8 @@ Controller / Service templates `vovk new controller service <name>` uses. Writte
 
 ```ts
 moduleTemplates: {
-  controller: { source: '...' /* template path */ },
-  service: { source: '...' },
+  controller: 'vovk-cli/module-templates/zod/controller.ts.ejs', // a template path, as vovk init writes
+  service: 'vovk-cli/module-templates/type/service.ts.ejs',
 }
 ```
 
@@ -102,9 +101,9 @@ moduleTemplates: {
 
 Top-level `outputConfig` is the default for every generated client (`composedClient`, `segmentedClient`, `bundle`). Overridden per-target via `clientTemplateDefs.<name>.outputConfig`.
 
-Common keys: `origin` (baked-in API URL), `package` (npm/PyPI/crates.io metadata), `imports.validateOnClient` (e.g. `'vovk-ajv'`), `imports.fetcher`, `reExports`, `requires`, `readme.{banner,installCommand,description}`, `samples.{apiRoot,headers}`, `includeSegments`, `excludeSegments`.
+Keys: `origin` (baked-in API URL), `package` (npm/PyPI/crates.io metadata), `readme.{banner,installCommand,description}`, `samples.{apiRoot,headers}`, `openAPIObject` (merged into the generated OpenAPI document: `info`, `servers`, …), `reExports`, `imports.{fetcher,validateOnClient,createRPC}` (e.g. `validateOnClient: 'vovk-ajv'`). Top-level `outputConfig` also takes `segments.<name>`: the same keys (without `imports.createRPC`) plus `rootEntry`, `segmentNameOverride`, `openAPIMixin`.
 
-(Note: `requires`, `includeSegments`, `excludeSegments` for **`bundle`** live at the root of `bundle`, NOT under `bundle.outputConfig`. Detail → `bundle` skill.)
+(Note: `requires` is a key of `bundle` and of `clientTemplateDefs.<name>`; `includeSegments` / `excludeSegments` are keys of `composedClient`, `segmentedClient` and `bundle`. None of them goes under an `outputConfig`. Detail → `bundle` skill.)
 
 ## TypeScript setup
 

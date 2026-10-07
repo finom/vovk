@@ -1,9 +1,12 @@
 import type { DecoratorOptions, RouteHandler, VovkController, VovkHandlerSchema } from '../types/core.js';
 import { HttpMethod } from '../types/enums.js';
+import type { VovkRequest } from '../types/request.js';
 import type { KnownAny } from '../types/utils.js';
 import { toKebabCase } from '../utils/to-kebab-case.js';
 import { trimPath } from '../utils/trim-path.js';
 import { applyDecoratorAdapter } from './apply-decorator-adapter.js';
+import { getDecoratedMember } from './create-decorator.js';
+import { getOwn } from './get-served-handlers.js';
 import { vovkApp } from './vovk-app.js';
 
 const isClass = (func: unknown) => typeof func === 'function' && /class/.test(func.toString());
@@ -51,45 +54,66 @@ const assignSchema = ({
   const methods: Record<string, RouteHandler> = vovkApp.routes[httpMethod].get(controller) ?? {};
   vovkApp.routes[httpMethod].set(controller, methods);
 
-  const originalMethod = controller[propertyKey] as ((...args: unknown[]) => unknown) & {
-    _controller: VovkController;
-    fn?: (req: unknown, params: unknown) => unknown;
-    definition?: Record<string, unknown>;
+  type Member = ((...args: unknown[]) => unknown) & {
+    _controller?: VovkController;
+    _createFn?: (run: Member) => unknown;
+    _sourceMethod?: Member & { _getSchema?: (controller: VovkController) => VovkHandlerSchema };
     schema?: VovkHandlerSchema;
-    _sourceMethod?: ((...args: unknown[]) => unknown) & {
-      _getSchema?: (controller: VovkController) => VovkHandlerSchema;
-      wrapper?: (...args: unknown[]) => unknown;
-      fn?: (req: unknown, params: unknown) => unknown;
-      definition?: Record<string, unknown>;
-      schema?: VovkHandlerSchema;
-    };
+    definition?: Record<string, unknown>;
+    fn?: unknown;
   };
 
-  originalMethod._controller = controller;
-  originalMethod._sourceMethod = originalMethod._sourceMethod ?? originalMethod;
-  const schema = originalMethod._sourceMethod._getSchema?.(controller);
-  originalMethod.fn = originalMethod._sourceMethod?.fn;
-  originalMethod.definition = originalMethod._sourceMethod?.definition;
-  originalMethod._sourceMethod.wrapper = originalMethod;
+  let member = controller[propertyKey] as Member;
+  if (member._controller !== controller) {
+    if (!member._controller && !member._createFn) {
+      // a plain function no controller holds yet, as a static method of this class
+      member._controller = controller;
+    } else {
+      // a procedure, or another controller's member: each member is a copy, with its own schema and fn()
+      const target = member;
+      member = function (this: VovkController, req: VovkRequest, params: Record<string, string>) {
+        return target.call(this, req, params);
+      } as Member;
+      member._controller = controller;
+      member._sourceMethod = target._sourceMethod ?? target;
+      member.definition = target.definition;
+      member.fn = member._sourceMethod._createFn?.(member);
+      member.schema = target.schema;
+      controller[propertyKey] = member;
+    }
+  }
+
+  member._sourceMethod ??= member;
+  const schema = member._sourceMethod._getSchema?.(controller);
+  // a reused member carries what the decorators of its controller added, this controller's own decorators win
+  const { path: _path, httpMethod: _httpMethod, ...carried } = member.schema ?? {};
+  const handlers = getOwn(controller, '_handlers');
   controller._handlers = {
-    ...controller._handlers,
+    ...handlers,
     [propertyKey]: {
       ...schema,
-      ...(controller._handlers?.[propertyKey] as Partial<VovkHandlerSchema>),
+      ...carried,
+      ...(handlers?.[propertyKey] as Partial<VovkHandlerSchema>),
       path,
       httpMethod,
     },
   };
   // the schema of the RPC method, with what the decorators applied before this one added
-  originalMethod.schema = controller._handlers[propertyKey];
+  member.schema = controller._handlers[propertyKey];
 
-  methods[path] = originalMethod as RouteHandler;
-  methods[path]._options = options;
+  // the route calls the outermost decorator of the member, also one placed above the HTTP decorator; the options stay
+  // on the route, as one procedure can serve several members, each with its own decorators and routes
+  const route = function (this: VovkController, req: VovkRequest, params: Record<string, string>) {
+    return ((getDecoratedMember(controller, propertyKey) ?? member) as RouteHandler).call(this, req, params);
+  } as RouteHandler;
+  route._options = options;
+  methods[path] = route;
 
+  const handlersMetadata = getOwn(controller, '_handlersMetadata');
   controller._handlersMetadata = {
-    ...controller._handlersMetadata,
+    ...handlersMetadata,
     [propertyKey]: {
-      ...(controller._handlersMetadata?.[propertyKey] as Partial<VovkHandlerSchema>),
+      ...(handlersMetadata?.[propertyKey] as Partial<VovkHandlerSchema>),
       staticParams: options?.staticParams,
     },
   };
@@ -118,7 +142,7 @@ function createHTTPDecorator<T extends HttpMethod>(httpMethod: T) {
         // a procedure's schema reaches _handlers only with the HTTP decorator, so it's read from the source method
         const method = controller[propertyKey] as (Source & { _sourceMethod?: Source }) | undefined;
         const source = method?._sourceMethod ?? method;
-        const validation = controller._handlers?.[propertyKey]?.validation ?? source?.schema?.validation;
+        const validation = getOwn(controller, '_handlers')?.[propertyKey]?.validation ?? source?.schema?.validation;
         const definition = source?.definition;
         // skipSchemaEmission leaves the params out of the schema, the path still needs them
         const paramsSchema =
@@ -188,8 +212,11 @@ export function cloneControllerMetadata() {
     }
     const parent = Object.getPrototypeOf(c) as VovkController;
     const controller = c as unknown as VovkController;
-    controller._handlers = { ...parent._handlers, ...controller._handlers };
-    controller._handlersMetadata = { ...parent._handlersMetadata, ...controller._handlersMetadata };
+    controller._handlers = { ...getOwn(parent, '_handlers'), ...getOwn(controller, '_handlers') };
+    controller._handlersMetadata = {
+      ...getOwn(parent, '_handlersMetadata'),
+      ...getOwn(controller, '_handlersMetadata'),
+    };
 
     Object.values(vovkApp.routes).forEach((methods) => {
       const parentMethods = methods.get(parent) ?? {};

@@ -473,6 +473,16 @@ describe('Client sweep, pure functions', () => {
       );
     });
 
+    it('Names the URL once when the runtime cannot parse it', async () => {
+      // the real fetch, called without an origin as on the server
+      await rejects(rpcOf(handlers).get(), (error: unknown) => {
+        ok(error instanceof HttpException);
+        strictEqual(error.statusCode, 0);
+        strictEqual(error.message.split('/api/test').length, 2, error.message);
+        return true;
+      });
+    });
+
     it('Rethrows an abort as is', async () => {
       const controller = new AbortController();
       const reason = new Error('Stopped by the user');

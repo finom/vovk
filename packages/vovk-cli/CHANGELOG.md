@@ -10,8 +10,9 @@ A cleanup release. `vovk-cli` is pre-1.0, so this minor carries breaking changes
 
 ### Removed
 
+- The `draft` channel of `vovk init --channel` ([#51](https://github.com/finom/vovk/pull/51))
 - The library entry: `main`, `types` and the `VovkEnv` type export. Importing `vovk-cli` ran the CLI; the `vovk` bin is unchanged ([#44](https://github.com/finom/vovk/pull/44))
-- The `vovk-client` package: the composed client generates into your source tree (`src/client`, or `client/` without a `src` folder) and is imported as `@/client`, so it survives `npm ci` and works under pnpm and Yarn PnP ([#29](https://github.com/finom/vovk/pull/29))
+- The `vovk-client` package: the composed client generates into your source tree (`src/client`, or `client/` when the app isn't in `src/app`) and is imported as `@/client`, so it survives `npm ci` and works under pnpm and Yarn PnP ([#29](https://github.com/finom/vovk/pull/29))
 - The `js` template family (`js`, `jsBase`, `schemaJs`, `openapiJs`): use `ts` ([#29](https://github.com/finom/vovk/pull/29))
 - The `prettier` dependency: prettifying resolves prettier from your project and warns once when it is missing ([#29](https://github.com/finom/vovk/pull/29))
 - The `gray-matter` dependency: template front matter is read with `yaml`. gray-matter pulled in js-yaml 3, argparse 1 and sprintf-js, which has an advisory with no fix ([#45](https://github.com/finom/vovk/pull/45))
@@ -19,7 +20,7 @@ A cleanup release. `vovk-cli` is pre-1.0, so this minor carries breaking changes
 
 ### Changed
 
-- The default TypeScript client needs TypeScript 5.3+ for its JSON imports, and the controller and service pair `vovk new` writes needs 5.5+ ([#44](https://github.com/finom/vovk/pull/44))
+- The default TypeScript client needs TypeScript 5.3+ for its JSON imports, and a service typed from its procedure, as `vovk new` writes it and the docs show it, needs 5.5+ ([#44](https://github.com/finom/vovk/pull/44))
 - `vovk init` keeps a dependency range the project has when vovk works with it (zod 4.2+, valibot 1.2+, `@valibot/to-json-schema` 1.5+, arktype 2.1.28+), and names each range it replaces; it replaced zod 3 with zod 4 and logged it as added ([#44](https://github.com/finom/vovk/pull/44))
 - `vovk init` reads versions from the registry npm uses, and when a lookup fails it prints the install command and exits 1; it used registry.npmjs.org and reported success with nothing added ([#44](https://github.com/finom/vovk/pull/44))
 - `vovk init` writes `vovk generate` into the `build` script under Yarn 2+, which runs no `pre` scripts, and keeps a `dev` script that runs more than `next dev`, running it next to `vovk dev` with `concurrently` ([#44](https://github.com/finom/vovk/pull/44))
@@ -50,7 +51,6 @@ A cleanup release. `vovk-cli` is pre-1.0, so this minor carries breaking changes
 - A fetched schema's `segmentName` is no longer trusted as a write path ([5a2e564](https://github.com/finom/vovk/commit/5a2e564f))
 - `vovk init` only spawns a known package manager, never a path from `packageManager` ([9d99797](https://github.com/finom/vovk/commit/9d99797b))
 - `--prebundle-out-dir` takes effect and stays inside the project ([23c58dc](https://github.com/finom/vovk/commit/23c58dc2))
-- `vovk new segment` scaffolds `force-static` for static segments ([#25](https://github.com/finom/vovk/pull/25))
 - Windows: template and schema lookups find their files, and import paths in generated code use `/` ([#35](https://github.com/finom/vovk/pull/35))
 - `vovk dev --next-dev` runs from a path with spaces, and asks only the local dev server for schemas ([#35](https://github.com/finom/vovk/pull/35))
 - The pruner removes only folders whose every file the generator wrote ([#35](https://github.com/finom/vovk/pull/35))
@@ -79,6 +79,10 @@ A cleanup release. `vovk-cli` is pre-1.0, so this minor carries breaking changes
 - `py_name` and `rs_name` name the Python and Rust packages, not only the imports in the README samples, and a segmented client adds the segment to them ([#44](https://github.com/finom/vovk/pull/44))
 - Under `node16` or `nodenext`, the client and `vovk new` import a `.ts` file by its `.js` name unless `allowImportingTsExtensions` or `rewriteRelativeImportExtensions` is set, and the client's JSON imports carry `with { type: "json" }` only where TypeScript takes it ([#44](https://github.com/finom/vovk/pull/44))
 - Mixin types: an array of `allOf` items is `(A & B)[]`, a binary string is a `Blob`, a request type leaves out read-only properties and a response type write-only ones, `VovkOutput` and `VovkIteration` work on mixin methods, properties next to `additionalProperties` compile, a `true` schema is `unknown`, not `any`, and a `true` or `false` schema or a description that isn't a string no longer stops generation ([#44](https://github.com/finom/vovk/pull/44))
+- The controllers `vovk new` writes for zod, valibot and arktype read the body with `req.vovk.body()`, so `.fn()` and derived tools can call their create and update procedures; `req.json()` threw there ([#51](https://github.com/finom/vovk/pull/51))
+- `vovk dev --next-dev` runs the project's own Next.js, also under Yarn PnP, where `npx next dev` installed and ran the latest; without a `next` it fails instead of installing one ([#51](https://github.com/finom/vovk/pull/51))
+- In the project's own schema folder, `vovk generate` and `vovk bundle` take the meta (`libs`, `rootEntry`) from the current vovk.config, where an older `_meta.json` from the last `vovk dev` won; the TypeScript client holds the meta instead of importing `_meta.json` ([#51](https://github.com/finom/vovk/pull/51))
+- A relative `outputConfig.imports` path to a `.ts` file, as the v3 client needed, is written the way the project's tsconfig resolves it: without the extension under bundler resolution, by its `.js` name under `node16` or `nodenext`, `.mts` and `.cts` as `.mjs` and `.cjs`; the client failed the build with TS5097 ([#51](https://github.com/finom/vovk/pull/51))
 
 ### Security
 
@@ -86,11 +90,15 @@ A cleanup release. `vovk-cli` is pre-1.0, so this minor carries breaking changes
 
 ### Upgrading from 0.2.x
 
-1. Remove `vovk-client` from your dependencies and import from `@/client` (or a relative path to the configured `outDir`).
+1. Remove `vovk-client` from your dependencies and import from `@/client` (or a relative path to the configured `outDir`). Remove `composedClient.outDir: './node_modules/.vovk-client'` if your config copied the v3 default.
 2. Replace `fromTemplates: ['js']` and friends with `['ts']`.
 3. Install `prettier` yourself if you want the client formatted, or set `prettifyClient: false`.
 4. Add the composed client output directory to `.gitignore`; `vovk init` does this for new projects.
 5. A stale `node_modules/.vovk-client` is inert and can be deleted.
 6. Use Node 22.22.2+, 24.15+ or 26+.
-7. Use TypeScript 5.3+ for the generated client, 5.5+ for the controller and service pair `vovk new` writes.
+7. Use TypeScript 5.5+; the generated client alone compiles on 5.3+.
 8. Under Yarn 2+, move `vovk generate` from `prebuild` into the `build` script: Yarn 2+ runs no `pre` scripts.
+9. Run `vovk dev` once after upgrading, and `vovk bundle` if you keep the prebundle folder: `vovk generate` and the build read the schema files it writes.
+10. Add the client folder to your linter's ignores, such as `globalIgnores(['src/client/**'])` in ESLint, which doesn't read `.gitignore`.
+11. If the client's `outDir` was outside `node_modules`, delete its old `.js` and `.d.ts` files: webpack picks `index.js` over `index.ts`.
+12. Outside a bundler, as in a script or `node --test`, run the client with tsx: `@/client` needs a loader that reads the tsconfig `paths`. Without one, set `module: nodenext` and `allowImportingTsExtensions` (with `noEmit`) and import the client by a relative path. For another project, build a package with `vovk bundle`.

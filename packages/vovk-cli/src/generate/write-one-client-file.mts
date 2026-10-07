@@ -121,7 +121,6 @@ export async function renderOneClientFile({
   tsExtension,
   tsModule,
   hasMixins,
-  isVovkProject,
   vovkCliPackage,
   isBundle,
   origin,
@@ -155,7 +154,6 @@ export async function renderOneClientFile({
   tsExtension: string;
   tsModule: string | undefined;
   hasMixins: boolean;
-  isVovkProject: boolean;
   vovkCliPackage: PackageJson;
   isBundle: boolean;
   origin: string | null;
@@ -204,7 +202,6 @@ export async function renderOneClientFile({
   const t = {
     _,
     hasMixins,
-    isVovkProject,
     package: packageJson,
     underscoredPackageName: getUnderscoredPackageName(packageJson, packageNameKey),
     readme,
@@ -241,6 +238,8 @@ export async function renderOneClientFile({
         relativeDir,
         segmentName,
         outputConfigs: getOutputConfigs(projectConfig, templateDef, configKey),
+        isNodeNextResolution,
+        tsExtension,
       })
     ),
     segmentImports: Object.fromEntries(
@@ -253,6 +252,8 @@ export async function renderOneClientFile({
           outCwdRelativeDir,
           relativeDir,
           outputConfigs: getOutputConfigs(projectConfig, templateDef, configKey),
+          isNodeNextResolution,
+          tsExtension,
         });
         const imports =
           configKey === 'composedClient' ? clientImports.composedClient : clientImports.segmentedClient[sName];

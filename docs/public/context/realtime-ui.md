@@ -4,8 +4,8 @@ description: "Walkthrough of the Realtime Kanban example app — a live-updating
 see_also:
   label: "Vovk.ts Docs Context"
   url: https://vovk.dev/context/docs.md
-chars: 109598
-est_tokens: 27400
+chars: 109611
+est_tokens: 27403
 ---
 
 Page: https://vovk.dev/realtime-ui
@@ -163,7 +163,7 @@ How it works: a `parse` method takes each raw API response, extracts the entitie
 
 Any component can read an item from the registry:
 
-```ts showLineNumbers copy
+```tsx showLineNumbers copy
 export const UserProfile = ({ userId }: { userId: User['id'] }) => {
     const userProfile = useRegistry(useShallow(state => state.user[userId]));
     return <div>{userProfile.fullName}</div>
@@ -172,7 +172,7 @@ export const UserProfile = ({ userId }: { userId: User['id'] }) => {
 
 To get an array of entities, map over the IDs:
 
-```ts showLineNumbers copy
+```tsx showLineNumbers copy
 export const UserList = ({ userIds }: { userIds: User['id'][] }) => {
     const users = useRegistry(
       useShallow((state) => userIds.map((id) => state.user[id])),
@@ -183,7 +183,7 @@ export const UserList = ({ userIds }: { userIds: User['id'][] }) => {
 
 The implementation below also handles soft deletions: a deleted entity is marked non-enumerable but stays in the state. This prevents errors in components that still reference it.
 
-```ts showLineNumbers copy
+```tsx showLineNumbers copy
 export const UserList = ({ userIds }: { userIds: User['id'][] }) => {
     const users = useRegistry(
       useShallow(({ user: { ...userReg } }) => userIds.filter((id) => id in userReg).map((id) => userReg[id]))
@@ -282,7 +282,7 @@ export default config;
 
 The registry is built on Zustand. A `Registry` interface describes the state: entity maps keyed by `EntityType`, and a `parse` method. The file exports a `RegistryProvider`, a `useRegistry` selector hook, and a `useRegistryStore` hook for imperative access.
 
-```ts showLineNumbers copy filename="src/hooks/use-registry.tsx" source="examples/realtime-kanban"
+```tsx showLineNumbers copy filename="src/hooks/use-registry.tsx" source="examples/realtime-kanban"
 'use client';
 import { EntityType } from '@prisma/client';
 import type { TaskType } from '@schemas/models/Task.schema';
@@ -463,7 +463,7 @@ export function useRegistry<T>(selector: (state: Registry) => T): T {
 
 The function walks the whole structure and returns a normalized shape. It doesn't change the original objects:
 
-```ts showLineNumbers copy
+```jsonc showLineNumbers copy
 {
   "task": {
     "task-1": { "id": "task-1", "title": "Task 1", "entityType": "task", "user": { /* unchanged */ } },
@@ -535,7 +535,7 @@ When an entity arrives with `__isDeleted`, its property descriptor becomes non-e
 
 `RegistryProvider` connects the Zustand store, the fetcher, and the React component tree. It creates the store once (with `useRef`), filled with the data fetched on the server. It also subscribes to the fetcher's `onSuccess` event, so every later RPC response is parsed into the registry.
 
-```ts showLineNumbers copy
+```tsx showLineNumbers copy
 export function RegistryProvider({ initialData, children }) {
   const storeRef = useRef(null);
   if (!storeRef.current) {
@@ -642,7 +642,7 @@ The database has two tables: `User` and `Task`. The `EntityType` enum sets the `
 
 [prisma-zod-generator](https://www.npmjs.com/package/prisma-zod-generator?activeTab=readme) generates Zod schemas from the Prisma models, so you don't write them by hand and the server code stays short.
 
-```ts showLineNumbers copy filename="prisma/schema.prisma" source="examples/realtime-kanban"
+```prisma showLineNumbers copy filename="prisma/schema.prisma" source="examples/realtime-kanban"
 // This is your Prisma schema file,
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
@@ -2303,7 +2303,7 @@ The component is mounted in [layout.tsx](https://github.com/finom/vovk/blob/main
 
 The functions of the client-side tools are in the [lib/tools](https://github.com/finom/vovk/tree/main/examples/realtime-kanban/src/lib/tools) folder.
 
-```ts showLineNumbers copy filename="src/components/real-time-demo.tsx" source="examples/realtime-kanban"
+```tsx showLineNumbers copy filename="src/components/real-time-demo.tsx" source="examples/realtime-kanban"
 'use client';
 import { useRouter } from 'next/navigation';
 import { standardTool } from 'standard-tool';

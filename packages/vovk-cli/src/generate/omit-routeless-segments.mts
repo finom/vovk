@@ -1,8 +1,8 @@
-import path from 'node:path';
 import type { VovkSchema } from 'vovk';
 import type { ProjectInfo } from '../get-project-info/index.mjs';
 import { formatLoggedSegmentName } from '../utils/format-logged-segment-name.mjs';
 import type { Segment } from '../utils/locate-segments.mjs';
+import { isOwnSchemaFolder } from './is-own-schema-folder.mjs';
 
 // in a Next.js project, a segment schema without a route file is left over from a removed segment;
 // the route files describe the project's own schema folder only, not one given with --schema-path
@@ -12,7 +12,7 @@ export function omitRoutelessSegments(
   { srcRoot, log, cwd, config }: Pick<ProjectInfo, 'srcRoot' | 'log' | 'cwd' | 'config'>,
   schemaPath: string | undefined
 ): VovkSchema {
-  if (!srcRoot || (schemaPath && path.resolve(cwd, schemaPath) !== path.resolve(cwd, config.schemaOutDir))) {
+  if (!isOwnSchemaFolder({ srcRoot, cwd, config }, schemaPath)) {
     return fullSchema;
   }
 

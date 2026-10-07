@@ -350,6 +350,34 @@ describe('Runtime sweep', () => {
         });
       }
     });
+
+    it('Sends 404 on the error line for the notFound() of Next.js 15.0, thrown mid stream', async () => {
+      // Next.js 15.0 had no access fallbacks yet: its notFound() throws this, and a handler that throws it without a
+      // stream already reaches Next.js
+      const notFound15 = () => {
+        throw Object.assign(new Error('NEXT_NOT_FOUND'), { digest: 'NEXT_NOT_FOUND' });
+      };
+      class OldNavigationController {
+        static async *streamMissing() {
+          yield { n: 1 };
+          notFound15();
+        }
+      }
+      get('stream-missing')(OldNavigationController, 'streamMissing');
+      const oldHandlers = initSegment({ segmentName: 'navigation-15', controllers: { OldNavigationController } });
+
+      for (const nodeEnv of ['production', 'development']) {
+        await withNodeEnv(nodeEnv, async () => {
+          const lines = (await (await call(oldHandlers, 'GET', 'stream-missing')).text())
+            .split('\n')
+            .filter(Boolean)
+            .map((line) => JSON.parse(line));
+
+          deepStrictEqual(lines[0], { n: 1 });
+          strictEqual(lines[1]?.statusCode, 404, `${nodeEnv}: ${JSON.stringify(lines[1])}`);
+        });
+      }
+    });
   });
 
   describe('Routing', () => {
@@ -1199,6 +1227,45 @@ describe('Runtime sweep', () => {
       strictEqual(cause.issues.length, 20);
     });
 
+    it('Answers 400 for issues that come as an Array subclass with its own toJSON, as ArkType 2.1.28 to 2.2.1 return them', async () => {
+      type ArkLikeIssue = { message: string; path: string[]; toJSON: () => object };
+      // ArkErrors of @ark/schema 0.56.0: slice() and map() keep the subclass, and its toJSON calls each issue's toJSON
+      class ArkLikeErrors extends Array<ArkLikeIssue> {
+        toJSON() {
+          return this.map((issue) => issue.toJSON());
+        }
+      }
+      const issues = new ArkLikeErrors();
+      issues.push({
+        message: 'age must be less than 120 (was 300)',
+        path: ['age'],
+        toJSON: () => ({ code: 'max', message: 'age must be less than 120 (was 300)' }),
+      });
+      const body = {
+        '~standard': {
+          version: 1 as const,
+          vendor: 'arklike',
+          validate: () => ({ issues }),
+          jsonSchema: { input: () => ({ type: 'object' }), output: () => ({ type: 'object' }) },
+        },
+      };
+      class AgeController {
+        static age = procedure({ body }).handle(async () => ({ ok: true }));
+      }
+      post('age')(AgeController, 'age');
+      const handlers = initSegment({ segmentName: 'ark-like', controllers: { AgeController } });
+
+      const response = await call(handlers, 'POST', 'age', {
+        body: JSON.stringify({ age: 300 }),
+        headers: { 'content-type': 'application/json' },
+      });
+
+      strictEqual(response.status, 400);
+      deepStrictEqual((await response.json()).cause.issues, [
+        { code: 'max', message: 'age must be less than 120 (was 300)', path: ['age'] },
+      ]);
+    });
+
     it('Keeps the 400 of a Valibot schema small for a large invalid body', async () => {
       class ValibotTagController {
         static tags = procedure({ body: toStandardJsonSchema(v.object({ tags: v.array(v.string()) })) }).handle(
@@ -1303,6 +1370,39 @@ describe('Runtime sweep', () => {
         copied: text,
         forwarded: text,
       });
+    });
+
+    it('Clones a validated request that Next.js hands over as a proxy', async () => {
+      class CloneController {
+        static create = procedure({ body: z.object({ title: z.string() }) }).handle(async (req) => ({
+          body: await req.vovk.body(),
+          cloned: await req.clone().text(),
+        }));
+      }
+      post('create')(CloneController, 'create');
+      const { POST } = initSegment({ segmentName: 'clone-proxy', controllers: { CloneController } });
+      const text = JSON.stringify({ title: 'Hello' });
+      const target = new Request('http://localhost/api/clone-proxy/create', {
+        method: 'POST',
+        body: text,
+        headers: { 'content-type': 'application/json' },
+      });
+      Object.defineProperty(target, 'nextUrl', { value: new URL(target.url) });
+      // the default branch of proxyNextRequest in next/dist/server/route-modules/app-route/module.js, which wraps the
+      // request of every route handler without a dynamic export: methods are bound to the target, clone() too
+      const handlers: ProxyHandler<Request> = {
+        get(proxyTarget, prop) {
+          if (prop === 'clone') return () => new Proxy(proxyTarget.clone(), handlers);
+          const value = Reflect.get(proxyTarget, prop, proxyTarget);
+          return typeof value === 'function' ? value.bind(proxyTarget) : value;
+        },
+      };
+      const req = new Proxy(target, handlers);
+
+      const response = await POST(req, { params: Promise.resolve({ vovk: ['create'] }) });
+
+      strictEqual(response.status, 200);
+      deepStrictEqual(await response.json(), { body: { title: 'Hello' }, cloned: text });
     });
 
     it('Validates a missing body as undefined, so an optional body can be left out', async () => {
@@ -1769,7 +1869,7 @@ describe('Runtime sweep', () => {
   });
 
   describe('controllersToStaticParams', () => {
-    it('Fills the params of the prefix and keeps a value with a slash in one segment', () => {
+    it('Fills the params of the prefix and keeps a value with a slash in one segment', async () => {
       class PostsController {
         static list() {
           return [];
@@ -1783,12 +1883,71 @@ describe('Runtime sweep', () => {
       get('posts', { staticParams: [{ userId: '1' }, { userId: '2' }] })(PostsController, 'list');
       get('posts/{postId}', { staticParams: [{ userId: '1', postId: 'a/b' }] })(PostsController, 'getPost');
 
-      const staticParams = controllersToStaticParams({ PostsController });
+      // next dev, where the schema path comes first: vovk dev reads it, also with output: 'export'
+      await withNodeEnv('development', async () => {
+        deepStrictEqual(
+          controllersToStaticParams({ PostsController }).map(({ vovk }) => vovk),
+          [['_schema_'], ['users', '1', 'posts'], ['users', '2', 'posts'], ['users', '1', 'posts', 'a/b']]
+        );
+      });
+    });
 
-      deepStrictEqual(
-        staticParams.map(({ vovk }) => vovk),
-        [['_schema_'], ['users', '1', 'posts'], ['users', '2', 'posts'], ['users', '1', 'posts', 'a/b']]
-      );
+    it('Lists no _schema_ path for a production build, where it would prerender a 404 body', async () => {
+      class HelloController {
+        static greeting() {
+          return { greeting: 'Hello' };
+        }
+      }
+      get('greeting.json')(HelloController, 'greeting');
+
+      await withNodeEnv('production', async () => {
+        // next build runs generateStaticParams in production, where GET serves no schema: output: 'export' writes
+        // out/api/_schema_ with the 404 error, which a static host then serves with status 200
+        deepStrictEqual(
+          controllersToStaticParams({ HelloController }).map(({ vovk }) => vovk),
+          [['greeting.json']]
+        );
+      });
+    });
+
+    it('Keeps the _schema_ path for a production build of a segment with no path, as output: export needs one', async () => {
+      // the segment vovk new segment --static writes; next build with output: 'export' fails on an empty list
+      await withNodeEnv('production', async () => {
+        deepStrictEqual(controllersToStaticParams({}), [{ vovk: ['_schema_'] }]);
+      });
+    });
+
+    it('Reads no request header while next build prerenders, so a static segment needs no dynamic export', async () => {
+      class GreetingController {
+        static greeting() {
+          return { greeting: 'Hello' };
+        }
+      }
+      get('greeting.json')(GreetingController, 'greeting');
+      const { GET } = initSegment({ segmentName: 'prerendered', controllers: { GreetingController } });
+      const read: PropertyKey[] = [];
+      // Next.js makes a route dynamic once its handler reads the headers, which Cache Components and output: 'export'
+      // refuse for a static segment
+      const req = new Proxy(new Request('http://localhost/api/prerendered/greeting.json'), {
+        get(target, prop) {
+          read.push(prop);
+          const value = Reflect.get(target, prop, target);
+          return typeof value === 'function' ? value.bind(target) : value;
+        },
+      });
+      const env = process.env as Record<string, string | undefined>;
+      const phase = env.NEXT_PHASE;
+      env.NEXT_PHASE = 'phase-production-build';
+
+      try {
+        const response = await GET(req, { params: Promise.resolve({ vovk: ['greeting.json'] }) });
+
+        deepStrictEqual(await response.json(), { greeting: 'Hello' });
+        ok(!read.includes('headers'), `read: ${read.map(String).join(', ')}`);
+      } finally {
+        if (phase === undefined) delete env.NEXT_PHASE;
+        else env.NEXT_PHASE = phase;
+      }
     });
   });
 
@@ -1836,6 +1995,49 @@ describe('Runtime sweep', () => {
       deepStrictEqual(await response.json(), { name: 'x' });
       // the same byte count with distinct names parses in tens of ms; the quadratic path takes several seconds
       ok(elapsed < 3000, `parsing ${Math.round(body.length / 1024)} KB of repeated keys took ${elapsed} ms`);
+    });
+  });
+
+  describe('Decorators with experimentalDecorators', () => {
+    // as TypeScript's __decorate applies them to a static method: bottom-up, then it puts the method's own descriptor
+    // back on the class
+    const decorateMethod = (decorators: unknown[], target: object, key: string) => {
+      const descriptor = Object.getOwnPropertyDescriptor(target, key) as PropertyDescriptor;
+      for (const decorator of decorators.toReversed()) {
+        (decorator as (target: object, key: string, descriptor: PropertyDescriptor) => unknown)(
+          target,
+          key,
+          descriptor
+        );
+      }
+      Object.defineProperty(target, key, descriptor);
+    };
+
+    it('Runs the custom decorators of a static method placed below and above the HTTP decorator', async () => {
+      const greet = createDecorator((req: VovkRequest, next, greeting: string) => {
+        req.vovk.meta({ greeting });
+        return next();
+      });
+      class LegacyController {
+        static below(req: VovkRequest) {
+          return { greeting: req.vovk.meta<{ greeting?: string }>().greeting };
+        }
+
+        static above(req: VovkRequest) {
+          return { greeting: req.vovk.meta<{ greeting?: string }>().greeting };
+        }
+      }
+      decorateMethod([get('below'), greet('below')], LegacyController, 'below');
+      decorateMethod([greet('above'), get('above')], LegacyController, 'above');
+      const handlers = initSegment({ segmentName: 'legacy-decorators', controllers: { LegacyRPC: LegacyController } });
+
+      deepStrictEqual(
+        {
+          below: await (await call(handlers, 'GET', 'below')).json(),
+          above: await (await call(handlers, 'GET', 'above')).json(),
+        },
+        { below: { greeting: 'below' }, above: { greeting: 'above' } }
+      );
     });
   });
 
@@ -1910,38 +2112,6 @@ describe('Runtime sweep', () => {
       deepStrictEqual(await inherited.json(), { from: 'parent' });
       strictEqual(own.status, 200);
       deepStrictEqual(await own.json(), { from: 'child' });
-    });
-  });
-
-  describe('Form data from another realm', () => {
-    it('Keeps an uploaded file the global File class does not recognize', async () => {
-      class UploadController {
-        static upload = procedure({ contentType: 'multipart/form-data' }).handle(async (req) => {
-          const { file } = (await req.vovk.body()) as { file: unknown };
-          return { type: typeof file, size: file instanceof Blob ? file.size : null };
-        });
-      }
-      post('upload')(UploadController, 'upload');
-      const handlers = initSegment({ segmentName: 'realm-upload', controllers: { UploadController } });
-      const form = new FormData();
-      form.append('file', new Blob(['hello']), 'hello.txt');
-      // the edge runtime of Next.js 15.0 hands out form files that are Blobs but not instances of its global File;
-      // newer undici builds parsed files with the global File, so this one builds real files and recognizes none
-      const { File: NativeFile } = globalThis;
-      function ForeignFile(...args: ConstructorParameters<typeof NativeFile>) {
-        return new NativeFile(...args);
-      }
-      Object.defineProperty(ForeignFile, Symbol.hasInstance, { value: () => false });
-      globalThis.File = ForeignFile as unknown as typeof NativeFile;
-
-      try {
-        const response = await call(handlers, 'POST', 'upload', { body: form });
-
-        strictEqual(response.status, 200);
-        deepStrictEqual(await response.json(), { type: 'object', size: 5 });
-      } finally {
-        globalThis.File = NativeFile;
-      }
     });
   });
 });

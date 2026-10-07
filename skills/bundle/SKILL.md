@@ -15,7 +15,7 @@ Covers:
 
 - 4-step bundle workflow.
 - `bundle.build` async function (required) + canonical `tsdown@0.22.14` recipe.
-- `bundle.outputConfig` fields (`origin`, `package`, `reExports`, `imports`, `requires`, `readme`, `samples`, `includeSegments`/`excludeSegments`).
+- `bundle.outputConfig` fields (`origin`, `package`, `reExports`, `imports`, `readme`, `samples`, `openAPIObject`); `requires` and `includeSegments`/`excludeSegments` sit at the root of `bundle`.
 - Default directory layout (`tmp_prebundle` → `dist`).
 - Full CLI flag list including `--openapi-*` mixin family.
 - What's bundled / omitted (no `openapi`, no `schema` entry point — but `schema` still importable as named export).
@@ -33,7 +33,7 @@ Out of scope:
 
 | Command | Purpose | Output | When |
 |---|---|---|---|
-| `vovk generate` | In-project TypeScript client + OpenAPI spec | `src/client/` (or `client/` without `src`), `.vovk-schema/` | Every build (`prebuild` hook), on schema changes during `vovk dev`. |
+| `vovk generate` | In-project TypeScript client + OpenAPI spec | `src/client/` (or `client/` without `src/app`), `.vovk-schema/` | Every build (`prebuild` hook), on schema changes during `vovk dev`. |
 | `vovk bundle` | Publishable npm package — pre-built JS + `.d.ts` + `package.json` + `README.md` | `dist/` ready for `npm publish` | Ship SDK outside Next.js app. |
 
 Don't run `vovk bundle` in normal dev; in-project client faster. Bundle when you need registry artifact.
@@ -151,9 +151,7 @@ These three live on root `VovkBundleConfig` (`config.bundle.*`), **not** nested 
 | Field | Purpose |
 |---|---|
 | `requires` | Template dir overrides — `readme`, `packageJson`, or any custom template. Defaults to project root for both. Source: `packages/vovk/src/types/config.ts:46`. |
-| `includeSegments` / `excludeSegments` | Filter which Vovk segments contribute to bundle. Source: `packages/vovk/src/types/config.ts:52`; CLI reads them at `packages/vovk-cli/src/bundle/index.mts:55-56` from root `bundleConfig`. |
-
-> The published docs example nests these under `outputConfig` — that's the doc's mistake. Source places them at root `config.bundle.*`. Source wins.
+| `includeSegments` / `excludeSegments` | Filter which Vovk segments contribute to bundle. Source: `packages/vovk/src/types/config.ts:52`; CLI reads them at `packages/vovk-cli/src/bundle/index.mts:46-49` from root `bundleConfig`. |
 
 ## CLI flags
 
@@ -219,7 +217,7 @@ See **`tools`** skill for full pipeline.
 
 ### "Bundle a subset of segments as a public SDK"
 
-Set `bundle.outputConfig.includeSegments` (or pass `--include` on CLI) to ship only public-facing segments. Useful when `admin`/`internal` segments live in same Vovk app but only `public` ships to consumers.
+Set `bundle.includeSegments` (or pass `--include` on CLI) to ship only public-facing segments. Under `bundle.outputConfig` the key is ignored and every segment ships. Useful when `admin`/`internal` segments live in same Vovk app but only `public` ships to consumers.
 
 ### "Bundle our API combined with a third-party OpenAPI spec"
 

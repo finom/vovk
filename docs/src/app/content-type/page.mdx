@@ -152,9 +152,9 @@ export default class UserController {
 
 Text content types are parsed as a `string`: `text/*`, known text-like application types such as `application/xml` or `application/yaml`, and the suffixes `*+xml`, `*+text`, `*+yaml` and `*+json-seq`.
 
-The client sends a string body as the text type the procedure declares. A string body to a procedure that takes JSON, such as one with `body: z.string(){:ts}`, is sent as a JSON value.
+The client sends a string body as the text type the procedure declares. A string body to a procedure that takes JSON, such as one with `body: z.string(){:ts}`, or to a handler that declares no content type, is sent as a JSON value.
 
-```ts showLineNumbers copy {7}
+```ts showLineNumbers copy {6}
 import { procedure, post } from 'vovk';
 
 export default class UserController {
@@ -172,11 +172,11 @@ export default class UserController {
 
 Any other content type, such as `application/octet-stream`, `image/*`, `video/*` or `application/pdf`, is parsed into a `File{:ts}` on the server. On the client, `body` takes `File | ArrayBuffer | Uint8Array | Blob{:ts}`.
 
-Bytes without a type, such as an `ArrayBuffer{:ts}`, a `Uint8Array{:ts}` or a `Blob{:ts}` with an empty `type`, are sent as the first declared type that isn't JSON, a form or a wildcard, such as `image/png`. If there is none, they are sent as a wildcard other than `*/*`, such as `image/*`. Without either, they are sent as `application/octet-stream` to a procedure that takes any type (`*/*`), and otherwise as the JSON or URL-encoded type it declares. A `File{:ts}` or a typed `Blob{:ts}` is sent as its own type, and the server refuses a type the procedure doesn't declare, unless it declares `application/octet-stream`, which takes any file.
+Bytes without a type, such as an `ArrayBuffer{:ts}`, a `Uint8Array{:ts}` or a `Blob{:ts}` with an empty `type`, are sent as the first declared type that isn't JSON, a form or a wildcard, such as `image/png`. If there is none, they are sent as a wildcard other than `*/*`, such as `image/*`. Without either, they are sent as `application/octet-stream` to a procedure that takes any type (`*/*`), and otherwise as the JSON or URL-encoded type it declares. A `File{:ts}` or a typed `Blob{:ts}` is sent as its own type. If the procedure declares `application/octet-stream` but not that type, the TypeScript client sends it as `application/octet-stream`. The server refuses any type the procedure doesn't declare; a wildcard such as `image/*` or `*/*` takes a family or any type.
 
 The server names the `File{:ts}` after the request's `Content-Disposition` header, reading `filename*` before `filename`, and calls it `file` without one. The TypeScript client sends that header for a `File{:ts}` body. The name is client input, as is the name of a file in form data: never use it as a path.
 
-```ts showLineNumbers copy {7}
+```ts showLineNumbers copy {6}
 import { procedure, post } from 'vovk';
 
 export default class UserController {
@@ -194,7 +194,7 @@ export default class UserController {
 ```ts showLineNumbers copy
 import { UserRPC } from '@/client';
 
-const file = document.querySelector('input[type="file"]').files[0];
+const file = document.querySelector<HTMLInputElement>('input[type="file"]')!.files![0];
 
 await UserRPC.uploadImage({
   body: file,

@@ -34,6 +34,11 @@ export default class RuntimeSweepController {
     contentType: 'text/plain',
   }).handle(async () => ({ ok: true }));
 
+  @post('clone')
+  static cloneValidated = procedure({
+    body: z.object({ title: z.string() }),
+  }).handle(async (req) => ({ cloned: await req.clone().json() }));
+
   @get('docs/{id}')
   static readDocs(req: VovkRequest, params: Record<string, string>) {
     const seenBefore = { ...params };

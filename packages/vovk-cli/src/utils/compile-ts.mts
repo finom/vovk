@@ -100,7 +100,7 @@ function collectDefinitions(schema: JSONSchema7, refs: Map<string, JSONSchema7>)
 }
 
 function isSchema(value: JSONSchema7Definition | boolean): value is JSONSchema7 {
-  return typeof value === 'object' && !Array.isArray(value);
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
 
 function compileSchema(schema: JSONSchema7Definition | boolean, name: string, context: CompileContext): string {

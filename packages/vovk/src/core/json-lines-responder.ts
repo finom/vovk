@@ -14,12 +14,13 @@ const HIGH_WATER_MARK = 64 * 1024;
 // responder isn't stuck waiting for a read that can't start
 const UNREAD_LIMIT = 16 * 1024 * 1024;
 
-// the digests of notFound(), forbidden() and unauthorized() from next/navigation: once a stream started Next.js can't
-// answer them, so the error line carries their status
+// the digests of notFound(), forbidden() and unauthorized() from next/navigation, and of notFound() in Next.js 15.0:
+// once a stream started Next.js can't answer them, so the error line carries their status
 const NAVIGATION_ERROR_LINES: Record<string, StreamAbortMessage> = {
   'NEXT_HTTP_ERROR_FALLBACK;401': { isError: true, reason: 'Unauthorized', statusCode: HttpStatus.UNAUTHORIZED },
   'NEXT_HTTP_ERROR_FALLBACK;403': { isError: true, reason: 'Forbidden', statusCode: HttpStatus.FORBIDDEN },
   'NEXT_HTTP_ERROR_FALLBACK;404': { isError: true, reason: 'Not found', statusCode: HttpStatus.NOT_FOUND },
+  NEXT_NOT_FOUND: { isError: true, reason: 'Not found', statusCode: HttpStatus.NOT_FOUND },
 };
 
 type ResponderHooks = { onBeforeSend?: (item: unknown, i: number) => unknown; onError?: (error: unknown) => void };

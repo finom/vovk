@@ -5,6 +5,7 @@ import { createRequire } from 'node:module';
 import os from 'node:os';
 import path from 'node:path';
 import { after, describe, it } from 'node:test';
+import { pathToFileURL } from 'node:url';
 import { promisify } from 'node:util';
 import { createProject, runCLI, startCLI, userSegmentSchema } from '../../lib/minimal-project.mts';
 
@@ -93,6 +94,27 @@ await describe('vovk generate in a project without Next.js', async () => {
     }
   });
 
+  await it('Warns once that prettier is missing, also for the segments of a segmented client', async () => {
+    // outside the repo, so the repo's own prettier isn't found
+    const dir = await fs.mkdtemp(path.join(os.tmpdir(), 'vovk-no-prettier-'));
+    try {
+      await createProject(dir, {
+        'package.json': { name: 'app', version: '1.0.0', type: 'module' },
+        'vovk.config.mjs': configFile({ composedClient: { enabled: false }, segmentedClient: { enabled: true } }),
+        'src/app/api/a/[[...vovk]]/route.ts': '',
+        'src/app/api/b/[[...vovk]]/route.ts': '',
+        '.vovk-schema/a.json': segmentSchema('a', 'UserRPC'),
+        '.vovk-schema/b.json': segmentSchema('b', 'UserRPC'),
+      });
+
+      const { stdout, stderr } = await runCLI(['generate'], { cwd: dir });
+
+      assert.strictEqual(`${stdout}${stderr}`.match(/prettier is not installed/g)?.length, 1, `${stdout}${stderr}`);
+    } finally {
+      await fs.rm(dir, { recursive: true, force: true });
+    }
+  });
+
   await it('Imports the schema with an extension when tsconfig.json sets module to nodenext', async () => {
     await createProject(projectDir, {
       'package.json': { name: 'app', version: '1.0.0', type: 'module' },
@@ -154,6 +176,113 @@ await describe('vovk generate in a project without Next.js', async () => {
     assert.strictEqual(await typecheckProject(projectDir), '');
   });
 
+  await it('Writes a client that type-checks when imports.fetcher names the .ts file, as the v3 client in node_modules needed', async () => {
+    await createProject(projectDir, {
+      'package.json': { name: 'app', version: '1.0.0', type: 'module' },
+      // the compiler options of a new Next.js app: bundler resolution, no allowImportingTsExtensions
+      'tsconfig.json': {
+        compilerOptions: {
+          module: 'esnext',
+          moduleResolution: 'bundler',
+          strict: true,
+          noEmit: true,
+          skipLibCheck: true,
+          resolveJsonModule: true,
+        },
+        include: ['client', 'lib'],
+      },
+      'vovk.config.mjs': configFile({
+        composedClient: { outDir: 'client', prettifyClient: false },
+        outputConfig: { imports: { fetcher: './lib/fetcher.ts' } },
+      }),
+      'lib/fetcher.ts': "export { fetcher } from 'vovk/fetcher';\n",
+      '.vovk-schema/root.json': userSegmentSchema,
+    });
+
+    await runCLI(['generate'], { cwd: projectDir });
+
+    assert.strictEqual(await typecheckProject(projectDir), '');
+  });
+
+  await it('Writes an imports path with a TypeScript extension the way tsconfig.json resolves it', async () => {
+    const bundler = { module: 'esnext', moduleResolution: 'bundler' };
+    const nodenext = { module: 'nodenext' };
+    for (const [compilerOptions, file, expected] of [
+      [bundler, 'fetcher.mts', '../lib/fetcher.mjs'],
+      [nodenext, 'fetcher.ts', '../lib/fetcher.js'],
+      [nodenext, 'fetcher.mts', '../lib/fetcher.mjs'],
+      [{ ...nodenext, allowImportingTsExtensions: true }, 'fetcher.ts', '../lib/fetcher.ts'],
+    ] as const) {
+      await createProject(projectDir, {
+        'package.json': { name: 'app', version: '1.0.0', type: 'module' },
+        'tsconfig.json': {
+          compilerOptions: {
+            ...compilerOptions,
+            strict: true,
+            noEmit: true,
+            skipLibCheck: true,
+            resolveJsonModule: true,
+          },
+          include: ['client', 'lib'],
+        },
+        'vovk.config.mjs': configFile({
+          composedClient: { outDir: 'client', prettifyClient: false },
+          outputConfig: { imports: { fetcher: `./lib/${file}` } },
+        }),
+        [`lib/${file}`]: "export { fetcher } from 'vovk/fetcher';\n",
+        '.vovk-schema/root.json': userSegmentSchema,
+      });
+
+      await runCLI(['generate'], { cwd: projectDir });
+
+      const index = await read('client/index.ts');
+      assert.ok(index.includes(`import('${expected}')`), index);
+      assert.strictEqual(await typecheckProject(projectDir), '', JSON.stringify(compilerOptions));
+    }
+  });
+
+  await it('Gives the TypeScript client the libs of vovk.config when _meta.json was written before them', async () => {
+    const libs = { ajv: { options: { coerceTypes: 'array' } } };
+    await createProject(projectDir, {
+      'package.json': { name: 'app', version: '1.0.0', type: 'module' },
+      'tsconfig.json': { compilerOptions: { module: 'esnext', moduleResolution: 'bundler', noEmit: true } },
+      'vovk.config.mjs': configFile({ composedClient: { outDir: 'client', prettifyClient: false }, libs }),
+      // an app folder makes it a Vovk.ts project, whose own _meta.json vovk dev writes from the config
+      'src/app/api/[[...vovk]]/route.ts': '',
+      // what vovk dev wrote before the libs were added to the config, as after moving configure() of vovk-ajv
+      '.vovk-schema/_meta.json': {
+        $schema: 'https://vovk.dev/api/schema/v3/meta.json',
+        config: { libs: {}, rootEntry: 'api', $schema: 'https://vovk.dev/api/schema/v3/config.json' },
+      },
+      '.vovk-schema/root.json': userSegmentSchema,
+    });
+
+    await runCLI(['generate'], { cwd: projectDir });
+
+    const { schema } = await import(`${pathToFileURL(path.join(projectDir, 'client/schema.ts')).href}?t=${Date.now()}`);
+    assert.deepStrictEqual(schema.meta.config.libs, libs);
+  });
+
+  await it('Builds the client URLs from the rootEntry of vovk.config when _meta.json was written before it changed', async () => {
+    await createProject(projectDir, {
+      'package.json': { name: 'app', version: '1.0.0', type: 'module' },
+      'tsconfig.json': { compilerOptions: { module: 'nodenext', allowImportingTsExtensions: true, noEmit: true } },
+      'vovk.config.mjs': configFile({ composedClient: { outDir: 'client', prettifyClient: false }, rootEntry: 'rpc' }),
+      'src/app/rpc/[[...vovk]]/route.ts': '',
+      // what vovk dev wrote while rootEntry was "api"
+      '.vovk-schema/_meta.json': {
+        $schema: 'https://vovk.dev/api/schema/v3/meta.json',
+        config: { libs: {}, rootEntry: 'api', $schema: 'https://vovk.dev/api/schema/v3/config.json' },
+      },
+      '.vovk-schema/root.json': userSegmentSchema,
+    });
+
+    await runCLI(['generate'], { cwd: projectDir });
+
+    const { UserRPC } = await import(`${pathToFileURL(path.join(projectDir, 'client/index.ts')).href}?t=${Date.now()}`);
+    assert.strictEqual(UserRPC.getUser.getURL({ params: { id: '1' } }), '/rpc/users/1');
+  });
+
   await it('Writes a client that type-checks under module node16', async () => {
     await createProject(projectDir, {
       'package.json': { name: 'app', version: '1.0.0', type: 'module' },
@@ -163,6 +292,30 @@ await describe('vovk generate in a project without Next.js', async () => {
       },
       'vovk.config.mjs': configFile({ composedClient: { outDir: 'client', prettifyClient: false } }),
       '.vovk-schema/root.json': userSegmentSchema,
+    });
+
+    await runCLI(['generate'], { cwd: projectDir });
+
+    assert.strictEqual(await typecheckProject(projectDir), '');
+  });
+
+  await it('Writes a client that type-checks in a Next.js app before vovk dev has written the schema folder', async () => {
+    // an app right after vovk init: its prebuild runs vovk generate, and no .vovk-schema folder exists yet
+    await createProject(projectDir, {
+      'package.json': { name: 'app', version: '1.0.0', type: 'module' },
+      'tsconfig.json': {
+        compilerOptions: {
+          module: 'esnext',
+          moduleResolution: 'bundler',
+          strict: true,
+          noEmit: true,
+          skipLibCheck: true,
+          resolveJsonModule: true,
+        },
+        include: ['src/client'],
+      },
+      'src/app/layout.tsx': 'export default function RootLayout() {}\n',
+      'vovk.config.mjs': configFile({ composedClient: { prettifyClient: false } }),
     });
 
     await runCLI(['generate'], { cwd: projectDir });

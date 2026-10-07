@@ -312,7 +312,7 @@ const config = {
 ### "Ship a Python SDK to PyPI"
 
 1. `npx vovk generate --from py --out ./python_package`.
-2. Set `info.title` + `info.version` in `vovk.config.mjs` before generating.
+2. Set `version` (and `name`) in the root `package.json` before generating; to override them for this package only, use `clientTemplateDefs.py.outputConfig.package` (see above).
 3. `python3 -m build && twine upload dist/*` from `python_package/`.
 
 ### "Consume a streaming endpoint from Python"

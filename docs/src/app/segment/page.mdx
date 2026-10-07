@@ -19,7 +19,7 @@ A **segment** is the part of the back end where controllers are initialized. Seg
 
 Each segment owns a path, such as `/api/foo` or `/api/bar`, and is a small back end of its own. Segments split the back end as pages split the front end in Next.js. To initialize a segment, call `initSegment` in the **route.ts** file of a **[[...slug]]** folder. It returns the Next.js route handlers (`GET`, `POST` and so on) of the segment. Vovk.ts names the slug `vovk`, but any valid name works.
 
-When `NODE_ENV` is `"development"` (as with `next dev`), each segment serves its schema at a `_schema_` endpoint. The [dev CLI](/dev) reads it and writes the JSON files in **.vovk-schema/**. This way, Next.js code imports no Node.js modules, **route.ts** can use `export const runtime = 'edge'`, and the schema tooling stays simple.
+When `NODE_ENV` is `"development"` (as with `next dev`), each segment serves its schema at a `_schema_` endpoint. The [dev CLI](/dev) reads it and writes the JSON files in **.vovk-schema/**. This way, Next.js code imports no Node.js modules, and the schema tooling stays simple.
 
 Vovk.ts uses Optional Catch-All Segments instead of [Catch-All Segments](https://nextjs.org/docs/pages/building-your-application/routing/dynamic-routes#catch-all-segments), so a segment can have a root endpoint.
 
@@ -53,8 +53,8 @@ Example **route.ts** for a single-segment app:
 
 ```ts showLineNumbers copy filename="src/app/api/[[...vovk]]/route.ts"
 import { initSegment } from 'vovk';
-import UserController from '../../modules/user/user-controller';
-import PostController from '../../modules/post/post-controller';
+import UserController from '../../../modules/user/user-controller';
+import PostController from '../../../modules/post/post-controller';
 
 export const maxDuration = 300; // Next.js route handler option
 
@@ -116,7 +116,7 @@ With several segments, the most specific (deepest) one wins. For example:
 The `foo/bar` segment handles a request to **/api/foo/bar**. A request it doesn't match goes to `foo` if `foo` matches it, and to the root segment otherwise.
 
 <Callout type="info" emoji="ℹ️">
-  The `rootEntry` [config](/config) option changes the API folder name from `api` to any other name. An empty string serves the API from the app root.
+  The `rootEntry` [config](/config) option changes the API folder name from `api` to any other name. An empty string serves the API from the app root. The root segment then takes `/`, so it can't sit next to a root **page.tsx**: Next.js refuses the two routes.
 </Callout>
 
 ## RPC Client

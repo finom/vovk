@@ -13,7 +13,7 @@ Standalone tools (no procedure backing — SDK wrappers, calculators, file ops) 
 
 **Out of scope:** procedure authoring (**`procedure`**), `@operation` for OpenAPI docs (**`openapi`**), third-party OpenAPI mixin setup (**`mixins`**). MCP server transport / hosting outside Vovk; **for Next.js, recommended runtime is `mcp-handler` npm package** — example below.
 
-> **Import path note.** Code samples import from `'@/client'`: the composed client generated into `src/client` (or `client/` without a `src` folder). Custom `composedClient.outDir` changes the path. With segmented client, import from `@/client/<segment>`. Call shape identical. See **`rpc`** skill.
+> **Import path note.** Code samples import from `'@/client'`: the composed client generated into `src/client` (or `client/` when the app isn't in `src/app`). Custom `composedClient.outDir` changes the path. With segmented client, import from `@/client/<segment>`. Call shape identical. See **`rpc`** skill.
 
 ## `deriveTools` — core shape
 
@@ -131,6 +131,9 @@ For coarser selection — when same controller serves both REST and tool-exposed
 
 ```ts
 import { pick, omit } from 'lodash';
+import { deriveTools } from 'vovk';
+import { PostRPC } from '@/client';
+import UserController from '@/modules/user/user-controller';
 
 const tools = deriveTools({
   modules: {
@@ -331,8 +334,9 @@ Override keys (all optional, all merged shallowly; `annotations` go on each cont
 
 ```ts
 import { deriveTools, post, prefix, type VovkRequest } from 'vovk';
-import { jsonSchema, streamText, tool, convertToModelMessages, type UIMessage } from 'ai';
+import { streamText, tool, convertToModelMessages, type UIMessage } from 'ai';
 import { openai } from '@ai-sdk/openai';
+import { z } from 'zod';
 import UserController from '@/modules/user/user-controller';
 
 @prefix('ai-sdk')
@@ -345,7 +349,7 @@ export default class AiSdkController {
     const tools = Object.fromEntries(
       llmTools.map(({ name, execute, description, inputSchema }) => [
         name,
-        tool({ execute: (input) => execute(input), description, inputSchema }),
+        tool({ execute, description, inputSchema: inputSchema ?? z.object({}) }),
       ])
     );
 
@@ -359,7 +363,7 @@ export default class AiSdkController {
 }
 ```
 
-**No adapter needed** — `inputSchema` is passed as is. The AI SDK supports Standard Schema and Standard JSON Schema natively and uses it for both argument validation and JSON Schema conversion. Don't reach for `jsonSchema(...)` here; that was the v3 shape.
+**No adapter needed** — `inputSchema` is passed as is. The AI SDK supports Standard Schema and Standard JSON Schema natively and uses it for both argument validation and JSON Schema conversion. A procedure without input has no `inputSchema`, and the SDK requires one, so pass an empty object schema then. Don't reach for `jsonSchema(...)` here; that was the v3 shape.
 
 ### OpenAI / Anthropic function calling
 
@@ -412,20 +416,17 @@ const tools = deriveTools({
   onError: (e, { name }) => console.error(`Error in ${name}`, e),
 });
 
-const handler = createMcpHandler(
-  (server) => {
-    tools.forEach(({ title, name, execute, description, inputSchema }) => {
-      const shape = inputSchema
-        ? (z.fromJSONSchema(
-            inputSchema['~standard'].jsonSchema.input({ target: 'draft-2020-12' }),
-          ) as z.ZodObject).shape
-        : {};
-      server.registerTool(name, { title, description, inputSchema: shape }, execute);
-    });
-  },
-  {},
-  { basePath: '/api' }, // server lives at /api/mcp
-);
+// mcp-handler 2.x answers at the route file's own path: /api/mcp here
+const handler = createMcpHandler((server) => {
+  tools.forEach(({ title, name, execute, description, inputSchema }) => {
+    const shape = inputSchema
+      ? (z.fromJSONSchema(
+          inputSchema['~standard'].jsonSchema.input({ target: 'draft-2020-12' }),
+        ) as z.ZodObject).shape
+      : {};
+    server.registerTool(name, { title, description, inputSchema: shape }, execute);
+  });
+});
 
 export { handler as GET, handler as POST };
 ```

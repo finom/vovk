@@ -47,7 +47,7 @@ Options of the [bundle](/bundle), such as `excludeSegments` and the `build` func
 <a name="modulesdir" />
 ### `modulesDir = 'src/modules'`
 
-The folder of the module files; `modules` if the project has no `src` folder. [vovk new](/new) creates modules in it, and [vovk dev](/dev) watches it for changes.
+The folder of the module files; `modules` when the app isn't in `src/app`. [vovk new](/new) creates modules in it, and [vovk dev](/dev) watches it for changes.
 
 <a name="schemaoutdir" />
 ### `schemaOutDir = '.vovk-schema'`
@@ -57,7 +57,7 @@ The folder the schema is written to.
 <a name="rootentry" />
 ### `rootEntry = 'api'`
 
-The root path of the API. With the default `api`, routes are served under `/api`, and the segment `route.ts` files live in `./src/app/api` (the `src/` folder is optional). An empty string `''` serves the API from the domain root, with the segments in `./src/app`.
+The root path of the API. With the default `api`, routes are served under `/api`, and the segment `route.ts` files live in `./src/app/api` (the `src/` folder is optional). An empty string `''` serves the API from the domain root, with the segments in `./src/app`. The root segment then takes `/`, so it can't sit next to a root **page.tsx**: Next.js refuses the two routes.
 
 <a name="rootsegmentmodulesdirname" />
 ### `rootSegmentModulesDirName = ''`

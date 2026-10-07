@@ -50,7 +50,7 @@ To start, run the `init` command in an existing Next.js project.
 npx vovk-cli@latest init
 ```
 
-> Requires Node.js 22+, Next.js 15+ and TypeScript 5.3+. &nbsp; [Quick Start](/quick-install) · [Manual Install](/manual-install) · [Claude Plugin](/claude) · [GitHub](https://github.com/finom/vovk)
+> Requires Node.js 22+, Next.js 15+ and TypeScript 5.5+. &nbsp; [Quick Start](/quick-install) · [Manual Install](/manual-install) · [Claude Plugin](/claude) · [GitHub](https://github.com/finom/vovk)
 
 ---
 
@@ -78,7 +78,9 @@ Services hold the business logic. Plain classes, no decorators:
 ```ts
 export default class UserService {
   static async getUser(id: VovkParams<typeof UserController.getUser>['id']) {
-    return prisma.user.findUnique({ where: { id } });
+    const user = await prisma.user.findUnique({ where: { id } });
+    if (!user) throw new HttpException(HttpStatus.NOT_FOUND, 'User not found');
+    return user;
   }
 }
 ```

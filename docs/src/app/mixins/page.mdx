@@ -168,7 +168,7 @@ npm install -D vovk-cli
 npm install vovk vovk-ajv
 ```
 
-The [composed client](/composed), which combines all generated API clients into one, goes to `src/client` (or `composedClient.outDir`). Your code imports it directly, for example as `@/client`.
+The [composed client](/composed), which combines all generated API clients into one, goes to `client/` in standalone codegen, or to `src/client` in a Next.js app whose app folder is `src/app` (`composedClient.outDir` changes it). Your code imports it directly, for example as `@/client`.
 
 ### Create Config File
 
@@ -409,12 +409,13 @@ import { PetstoreAPI, GithubIssuesAPI } from '@/lib/client';
 
 The [segmented client](/segmented) splits the code into chunks. Each mixin goes to a folder named after its segment (`petstore`, `github` and so on, from `outputConfig.segments`).
 
-By default, the output goes to `src/client`. `segmentedClient.outDir` changes the folder.
+By default, the output goes to the composed client's folder: `src/client` with a `src/app` folder, `client/` otherwise. `segmentedClient.outDir` changes the folder.
 
 ```ts showLineNumbers copy filename="vovk.config.js"
 /** @type {import('vovk').VovkConfig} */
 const config = {
   segmentedClient: {
+    enabled: true,
     outDir: './src/lib/client', // a folder in your code
     prettifyClient: true, // prettify the output
   },

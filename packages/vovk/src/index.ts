@@ -18,7 +18,7 @@ export { ToModelOutput } from './tools/to-model-output.js';
 export type { VovkStreamAsyncIterable } from './types/client.js';
 export type { VovkConfig } from './types/config.js';
 export type { VovkSchema } from './types/core.js';
-export { HttpStatus } from './types/enums.js';
+export { HttpMethod, HttpStatus } from './types/enums.js';
 export type {
   VovkBody,
   VovkInput,

@@ -20,7 +20,7 @@ import { updateTypeScriptConfig } from './update-typescript-config.mjs';
 const VALIDATION_LIBRARIES = ['zod', 'valibot', 'arktype', 'none'];
 const LANGS = ['py', 'rs'];
 const UPDATE_SCRIPTS_MODES = ['implicit', 'explicit'];
-const CHANNELS = ['latest', 'beta', 'draft'];
+const CHANNELS = ['latest', 'beta'];
 
 // vovk.config.mjs.bak, then vovk.config.mjs.bak.1 and so on, an earlier backup is never overwritten
 async function getBackupPath(filePath: string) {

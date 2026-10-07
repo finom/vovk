@@ -98,6 +98,20 @@ describe('Runtime sweep over HTTP', () => {
     });
   });
 
+  describe('Request body', () => {
+    it('Clones a request whose body was validated', async () => {
+      // Next.js hands the handler a Proxy of the request, so a copy built with new Request(req) fails there
+      const response = await fetch(`${apiUrl}/runtime-sweep/clone`, {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ title: 'Hello' }),
+      });
+
+      strictEqual(response.status, 200);
+      deepStrictEqual(await response.json(), { cloned: { title: 'Hello' } });
+    });
+  });
+
   describe('Route params', () => {
     it('Gives every request its own params object', async () => {
       await request.get('/runtime-sweep/docs/42').set('x-role', 'admin');

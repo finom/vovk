@@ -14,7 +14,6 @@ A cleanup major: removals and renames; the only new exports are types.
 - The static `prefix` class property: use `@prefix()` on the class. A `static prefix` left in a class is ignored without an error, so its routes lose the prefix ([#44](https://github.com/finom/vovk/pull/44))
 - `fetcher`, `createFetcher` and `VovkFetcher` from `vovk`: import them from `vovk/fetcher` ([#44](https://github.com/finom/vovk/pull/44))
 - `createValidateOnClient` and `VovkValidateOnClient` from `vovk`: import them from `vovk/create-validate-on-client` ([#44](https://github.com/finom/vovk/pull/44))
-- `HttpMethod`: use the method name as a string, such as `'GET'` ([#44](https://github.com/finom/vovk/pull/44))
 - `DEFAULT_ERROR_MESSAGE`, `CreateFetcherOnSuccess` and `CreateFetcherOnError` from `vovk/fetcher` ([#44](https://github.com/finom/vovk/pull/44))
 - The exports of `vovk/internal` that no vovk package uses, such as `vovkApp` and `withValidationLibrary`; `VovkHandlerSchema` comes from `vovk/create-rpc`, and `vovk/internal` is not public API ([#44](https://github.com/finom/vovk/pull/44))
 - `toolsByName`: `deriveTools` returns the tools array only ([#28](https://github.com/finom/vovk/pull/28))
@@ -27,14 +26,13 @@ A cleanup major: removals and renames; the only new exports are types.
 - `.fn()` is typed as it runs: it requires the body, query and params the server requires, and returns a promise of the handler's result, or of an async generator of the checked items with an `iteration` schema ([#44](https://github.com/finom/vovk/pull/44))
 - `procedure()` type parameters: `TContentType` and a new `TPreferTransformed` come before `TReq`; a plain method typed `VovkRequest<string>` requires its body in the client ([#40](https://github.com/finom/vovk/pull/40), [#44](https://github.com/finom/vovk/pull/44))
 - A call without a body gives the fetcher and `validateOnClient` `body: undefined`, not `null`; a `null` body goes out as JSON when the body schema accepts null, and is no body otherwise ([#44](https://github.com/finom/vovk/pull/44))
-- `HttpStatus.TOO_MANY_TRequestS` renamed to `TOO_MANY_REQUESTS` ([900c3ed](https://github.com/finom/vovk/commit/900c3ed6))
 - Production error responses carry no internal detail; `onError` still receives the full error ([6dbb795](https://github.com/finom/vovk/commit/6dbb795f), [e069b6c](https://github.com/finom/vovk/commit/e069b6ca))
 - A declared `contentType` is enforced even without a body schema; disabling body validation opts out ([17156a3](https://github.com/finom/vovk/commit/17156a3d), [9b9460d](https://github.com/finom/vovk/commit/9b9460d4)); a request without a body skips the check ([#35](https://github.com/finom/vovk/pull/35))
 - Failed `output` or `iteration` validation is an internal error: 500 in production, the issues stay on the server ([#35](https://github.com/finom/vovk/pull/35))
 - Only an `HttpException` sets the status and keeps its message; any other error answers 500 and is masked in production, for AI tools too ([#35](https://github.com/finom/vovk/pull/35))
 - `Content-Type` must name one media type, compared case-insensitively; a list answers 415 ([#35](https://github.com/finom/vovk/pull/35))
 - The handler's second argument is the validated params ([#35](https://github.com/finom/vovk/pull/35))
-- The client throws `HttpException` for a non-JSON response with a status of 400 or more, sends no `content-type` without a body, and sends a string body as the declared text type ([#35](https://github.com/finom/vovk/pull/35))
+- The client throws `HttpException` for a non-JSON response with a status of 400 or more, sends no `content-type` without a body, and sends a string body as the declared text type, or as JSON to a method that declares none ([#35](https://github.com/finom/vovk/pull/35), [#40](https://github.com/finom/vovk/pull/40))
 - HEAD requests fall back to the GET route ([#35](https://github.com/finom/vovk/pull/35))
 - Repeated query keys collect into an array (`tag=a&tag=b` gives `['a','b']`), `[]` appends after the highest index, `a[][b]=1&a[][c]=2` is one element again, and `x=1&x[]=2` keeps the `1`; where the query schema takes an array, a key given once is a one-item array, as OpenAPI clients send it ([#40](https://github.com/finom/vovk/pull/40), [#44](https://github.com/finom/vovk/pull/44))
 - A known path called with another method answers 405 with `Allow` instead of 404 ([#40](https://github.com/finom/vovk/pull/40))
@@ -51,6 +49,10 @@ A cleanup major: removals and renames; the only new exports are types.
 - `procedure()` warns for each schema that has no Standard JSON Schema; its JSON Schema is emitted as `{}`, any value ([#44](https://github.com/finom/vovk/pull/44))
 - MCP output puts the `annotations` of `mcpOutput` on each content item, where MCP clients read them ([#44](https://github.com/finom/vovk/pull/44))
 - The `vovk-cli-npx` bin, which `pnpm dlx vovk` and `yarn dlx vovk` run, starts the project's vovk-cli and falls back to `npx vovk-cli@latest` only without one ([#44](https://github.com/finom/vovk/pull/44))
+- A `+` in the query is a space, as in `URLSearchParams`, so a literal `+` comes as `%2B`, as the vovk clients send it; under Next.js, v3 kept a raw `+` and read every space a client sent as `+` ([#35](https://github.com/finom/vovk/pull/35))
+- `.fn()` of a bare procedure, and the tools derived from a module of bare procedures, run no controller's decorators; they ran those of the controller member decorated last ([#51](https://github.com/finom/vovk/pull/51))
+- A function attached to several members, such as a procedure of a validated service, is copied for each member, so `A.x !== B.x` and each copy has its own `.schema` and `.fn()`; the one function showed the schema of the member decorated last ([#51](https://github.com/finom/vovk/pull/51))
+- A controller serves the routes of the class it extends, and lists them in its schema and static params, only when that class is in the same segment or the controller has `@cloneControllerMetadata()`; the schema listed them always, and whether they answered depended on which segment loaded first ([#51](https://github.com/finom/vovk/pull/51))
 
 ### Added
 
@@ -59,6 +61,7 @@ A cleanup major: removals and renames; the only new exports are types.
 
 ### Fixed
 
+- `HttpStatus.TOO_MANY_REQUESTS` was misspelled `TOO_MANY_TRequestS` ([900c3ed](https://github.com/finom/vovk/commit/900c3ed6))
 - Stacked decorators all run: HTTP routes dispatch through the outermost wrapper ([572f7f0](https://github.com/finom/vovk/commit/572f7f0a))
 - Prototype members such as `constructor` no longer resolve as route handlers ([24d727c](https://github.com/finom/vovk/commit/24d727cd))
 - The route match cache is scoped to its handlers map, fixing cross-method poisoning ([bae0fde](https://github.com/finom/vovk/commit/bae0fde5))
@@ -88,15 +91,15 @@ A cleanup major: removals and renames; the only new exports are types.
 - A guard or `onBefore` can read the body before validation, a chunked body counts as a body, and `filename*` names an uploaded file ([#40](https://github.com/finom/vovk/pull/40))
 - `controllersToStaticParams` fills the prefix params, and its declared return type is valid ([#40](https://github.com/finom/vovk/pull/40))
 - Client bodies follow the declared content type: strings, binary data, objects for a procedure that takes JSON and forms, `contentType` without a body schema, a `FormData` without files for a procedure that takes only urlencoded, and untyped bytes, as the Python and Rust clients send them ([#40](https://github.com/finom/vovk/pull/40), [#44](https://github.com/finom/vovk/pull/44))
-- Client: HEAD and empty JSON responses give `null`, also without `Content-Length`, `+json` types are parsed, headers merge by name, `init.signal` works without `AbortSignal.any`, query arrays have no index gaps, `toJSON` values and lone surrogates are encoded, no trailing slash at a segment root, network errors keep their cause ([#40](https://github.com/finom/vovk/pull/40), [#44](https://github.com/finom/vovk/pull/44))
+- Client: HEAD and empty JSON responses give `null`, also without `Content-Length`, `+json` types are parsed, headers merge by name, `init.signal` works without `AbortSignal.any`, query arrays have no index gaps, `toJSON` values and lone surrogates are encoded, no trailing slash at a segment root, network errors keep their cause and name the URL once ([#40](https://github.com/finom/vovk/pull/40), [#44](https://github.com/finom/vovk/pull/44), [#51](https://github.com/finom/vovk/pull/51))
 - Types: `.transform()` to a primitive, generators without an `iteration` schema, `createRPC<T>` with one type argument, per-call `fetcher` and `validateOnClient`; the client entry points typecheck without Node types ([#40](https://github.com/finom/vovk/pull/40))
 - Tools: a JSON Lines responder's items reach the model, an error status is an error, tool names are sanitized, capped at 64 characters and deduplicated, `execute(undefined)` works ([#40](https://github.com/finom/vovk/pull/40))
 - OpenAPI output validates as 3.1: every path param is declared and required, `$ref` query and params schemas are resolved, object query params use `deepObject`, component names are sanitized ([#40](https://github.com/finom/vovk/pull/40))
 - Mixins: `Mixins` type names match on both sides (accents kept, collisions numbered), controllers carry `prefix` and `originalControllerName`, `VovkStreamAsyncIterable` is exported, `rootEntry` reaches the client ([#40](https://github.com/finom/vovk/pull/40))
 - Decorators: in a Turbopack build without `experimentalDecorators`, `@prefix()` and `cloneControllerMetadata()` work, where the prefix was dropped without an error; `@operation()` reaches the method's schema whatever its order with the HTTP decorator, so `deriveTools` keeps the tool ([#44](https://github.com/finom/vovk/pull/44))
-- Requests: `req.clone()` works after body validation, a form file from another realm (the Next.js 15.0 edge runtime) stays a file, and hidden validation (`exposeValidation: false`, `skipSchemaEmission`) keeps the declared content types, so form, text and file calls no longer get 415 ([#44](https://github.com/finom/vovk/pull/44))
+- Requests: `req.clone()` works after body validation, also in a default Next.js route, and hidden validation (`exposeValidation: false`, `skipSchemaEmission`) keeps the declared content types, so form, text and file calls no longer get 415 ([#44](https://github.com/finom/vovk/pull/44), [#51](https://github.com/finom/vovk/pull/51))
 - Procedures: an `output` schema that accepts `undefined` lets the handler return nothing, `validateEachIteration` with iteration validation turned off no longer answers 500, and `fn()` reads `Blob`, `ArrayBuffer`, typed array and `URLSearchParams` bodies as HTTP does ([#44](https://github.com/finom/vovk/pull/44))
-- JSON Lines: `notFound()`, `forbidden()` and `unauthorized()` thrown mid-stream send 404, 403 and 401 in the error line, and a status outside 200-599 there becomes 500 ([#44](https://github.com/finom/vovk/pull/44))
+- JSON Lines: `notFound()` (Next.js 15.0's too), `forbidden()` and `unauthorized()` thrown mid-stream send 404, 403 and 401 in the error line, and a status outside 200-599 there becomes 500 ([#44](https://github.com/finom/vovk/pull/44), [#51](https://github.com/finom/vovk/pull/51))
 - A segment under a dynamic parent folder, such as `app/[lang]/api/[[...vovk]]`, passes `next build` on Next.js 15.5+ ([#44](https://github.com/finom/vovk/pull/44))
 - Client: `rootEntry: ''` calls the root of the origin, a `Date` path param goes out as its ISO string, an `application/x-ndjson` response streams as JSON Lines, and client-side validation checks a falsy body such as `0` or `''` ([#44](https://github.com/finom/vovk/pull/44))
 - `progressive()` works where `Promise.withResolvers` is missing (Safari before 17.4, Chrome before 119), and takes a key such as `constructor` or `__proto__` as any other ([#44](https://github.com/finom/vovk/pull/44))
@@ -106,6 +109,14 @@ A cleanup major: removals and renames; the only new exports are types.
 - Mixins: a body with several content types keeps its file, a response given as a `$ref` gets its type, OpenAPI 3.0 `nullable` and boolean `exclusiveMinimum` and `exclusiveMaximum` validate as JSON Schema does, a read-only property isn't required in a request, `application/x-ndjson` reads as JSON Lines, a property named `x-tsType` is kept, a binary form field is typed `Blob`, and `pruneComponents` keeps every schema a kept operation reaches ([#44](https://github.com/finom/vovk/pull/44))
 - OpenAPI: the document and the generated packages get version `0.0.0` when package.json has none, and the JSON Lines example of an item with `$defs` is no longer `null` ([#44](https://github.com/finom/vovk/pull/44))
 - Code samples in generated READMEs and OpenAPI: Python and Rust samples call the names the clients have and run as written (`True`, `None`), text from a schema stays inside strings and comments, a method name that isn't an identifier is called with brackets, and a description that isn't a string is left out ([#44](https://github.com/finom/vovk/pull/44))
+- A procedure that several controller members hold runs, in `.fn()` and in its tool, the decorators of the member it is called through; it ran those of the member decorated last ([#51](https://github.com/finom/vovk/pull/51))
+- Route options (`before`, `headers`, `cors`) stay with their route when one procedure serves several routes; the options of one route applied to all of them ([#51](https://github.com/finom/vovk/pull/51))
+- A decorated member that another controller reuses keeps its schema, its `@operation` data and its tool, and the other controller's schema and tools carry what those decorators added, with its own decorators on top; the other controller's HTTP decorator replaced them ([#51](https://github.com/finom/vovk/pull/51))
+- `fn()` always returns a promise: a sync decorator that throws rejects it, one that answers without `next()` resolves it, and with an `iteration` schema it gives an async generator also with `disableClientValidation` ([#51](https://github.com/finom/vovk/pull/51))
+- A decorator can call `next()` again, as to retry: each call validates the input as sent; the second call validated the already validated input, so a transform ran twice or a valid request answered 400 ([#51](https://github.com/finom/vovk/pull/51))
+- A segment's or template's `package` option with a nested field, such as `author` or `repository`, stays in its own package; it was merged into the project's package.json object, so every other package got it ([#51](https://github.com/finom/vovk/pull/51))
+- `controllersToStaticParams()` lists `_schema_` only in development, or for a segment with no other path, as `output: 'export'` needs one: a build wrote its 404 body, and a static export put it in `out`, where a static host serves it with 200 ([#51](https://github.com/finom/vovk/pull/51))
+- A static segment pre-renders with no `dynamic` export, also with `cacheComponents` on: `next build` reads no request header, where reading `x-meta` made every route dynamic; a malformed `x-meta` still answers 400 ([#51](https://github.com/finom/vovk/pull/51))
 
 ### Security
 
@@ -127,21 +138,24 @@ A cleanup major: removals and renames; the only new exports are types.
 
 ### Upgrading from 3.x
 
-1. Replace `HttpStatus.TOO_MANY_TRequestS` with `HttpStatus.TOO_MANY_REQUESTS`.
-2. Replace imports from `vovk/createRPC` and `vovk/createValidateOnClient` with `vovk/create-rpc` and `vovk/create-validate-on-client`.
-3. If you destructured `toolsByName` from `deriveTools`, build the map yourself from the returned array.
-4. If you used `createTool` / `VovkTool` / `inputSchemas`, move to the `StandardToolV0` shape.
-5. If you relied on error responses carrying internal messages in production, read them from `onError` instead.
-6. The composed client no longer comes from the `vovk-client` package; see the `vovk-cli` changelog.
-7. A handler that read raw strings from its second argument now gets the validated params, coerced types included.
-8. Throw `HttpException` for an expected error: another error with a `statusCode` now answers 500.
-9. A repeated query key now gives an array, so a plain string query field answers 400 for `tag=a&tag=b`.
-10. Read a JSON Lines stream once, or call `asPromise()`: a consumed stream iterated again yields nothing.
-11. `req.nextUrl.searchParams.get()` is typed as the string it returns; use `req.vovk.query()` for validated values.
-12. Rewrite a `decorate(get(), ..., procedure(...)).handle(fn)` member as `@get() ... static name = procedure(...).handle(fn)`, and a `static prefix = 'users'` as `@prefix('users')` on the class: a `static prefix` is now ignored without an error.
-13. Import `fetcher`, `createFetcher` and `VovkFetcher` from `vovk/fetcher`, and `createValidateOnClient` and `VovkValidateOnClient` from `vovk/create-validate-on-client`.
-14. Replace `HttpMethod.GET` and the other members with the strings `'GET'` and so on.
-15. In a custom fetcher, a call without a body has `body: undefined`, not `null`.
+1. Replace imports from `vovk/createRPC` and `vovk/createValidateOnClient` with `vovk/create-rpc` and `vovk/create-validate-on-client`.
+2. If you destructured `toolsByName` from `deriveTools`, build the map yourself from the returned array.
+3. If you used `createTool` / `VovkTool` / `inputSchemas`, move to the `StandardToolV0` shape. `parameters` is `tool.inputSchema['~standard'].jsonSchema.input({ target: 'draft-2020-12' })` without `$schema`, and `type` was always `'function'`. For createTool's `{ error }` results use `withFormattedOutput(standardTool(def))` from standard-tool, and for MCP output `withFormattedOutput(tool, (result) => ToModelOutput.MCP(result, tool, null))`.
+4. If you relied on error responses carrying internal messages in production, read them from `onError` instead.
+5. The composed client no longer comes from the `vovk-client` package; see the `vovk-cli` changelog.
+6. A handler that read raw strings from its second argument now gets the validated params, coerced types included.
+7. Throw `HttpException` for an expected error: another error with a `statusCode` now answers 500.
+8. A repeated query key now gives an array, so a plain string query field answers 400 for `tag=a&tag=b`.
+9. Read a JSON Lines stream once, or call `asPromise()`: a consumed stream iterated again yields nothing.
+10. `req.nextUrl.searchParams.get()` is typed as the string it returns; use `req.vovk.query()` for validated values.
+11. Rewrite a `decorate(get(), ..., procedure(...)).handle(fn)` member as `@get() ... static name = procedure(...).handle(fn)`, and a `static prefix = 'users'` as `@prefix('users')` on the class: a `static prefix` is now ignored without an error.
+12. Import `fetcher`, `createFetcher` and `VovkFetcher` from `vovk/fetcher`, and `createValidateOnClient` and `VovkValidateOnClient` from `vovk/create-validate-on-client`.
+13. In a custom fetcher, a call without a body has `body: undefined`, not `null`.
+14. A `+` in the query is a space, as in `URLSearchParams`; send a literal `+` as `%2B`, as the vovk clients do. Under Next.js, v3 kept a raw `+` and turned every space into `+`.
+15. A string body to a method that declares no content type, such as a plain handler typed `VovkRequest<string>`, goes out as JSON, where v3 sent raw `text/plain`: `req.vovk.body()` still gives the string, `req.text()` now gives it quoted. To keep raw text, use a procedure with a text `contentType`.
+16. `.fn()` of a bare procedure and the tools derived from a module of bare procedures run no controller's decorators: call `.fn()` on the controller member, or derive the tools from the controller, to run them.
+17. A controller that extends another one serves the parent's routes only when the parent is in the same segment: otherwise add `@cloneControllerMetadata()` to it.
+18. A function attached to several members is copied for each, so `UserController.getUser !== UserProcedures.getUser`: don't compare members by identity.
 
 ## 3.7.0 - 2026-06-11
 

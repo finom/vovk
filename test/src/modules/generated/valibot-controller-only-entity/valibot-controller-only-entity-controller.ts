@@ -30,7 +30,7 @@ export default class ValibotControllerOnlyEntityController {
     body: toStandardJsonSchema(v.object({ todo: v.literal(true) })),
     params: toStandardJsonSchema(v.object({ id: v.string() })),
   }).handle(async (req, { id }) => {
-    const body = await req.json();
+    const body = await req.vovk.body();
 
     return { message: `TODO: update valibotControllerOnlyEntity`, id, body };
   });
@@ -42,7 +42,7 @@ export default class ValibotControllerOnlyEntityController {
   static createValibotControllerOnlyEntity = procedure({
     body: toStandardJsonSchema(v.object({ todo: v.literal(true) })),
   }).handle(async (req) => {
-    const body = await req.json();
+    const body = await req.vovk.body();
 
     return { message: `TODO: create valibotControllerOnlyEntity`, body };
   });

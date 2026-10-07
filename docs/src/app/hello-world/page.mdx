@@ -177,8 +177,6 @@ import { initSegment } from 'vovk';
 import StreamController from '../../../modules/stream/stream-controller';
 import UserController from '../../../modules/user/user-controller';
 
-export const runtime = 'edge';
-
 const controllers = {
   UserRPC: UserController,
   StreamRPC: StreamController,
@@ -258,8 +256,6 @@ import { initSegment } from 'vovk';
 import StreamController from '../../../modules/stream/stream-controller';
 import UserController from '../../../modules/user/user-controller';
 
-export const runtime = 'edge';
-
 const controllers = {
   UserRPC: UserController,
   StreamRPC: StreamController,
@@ -283,7 +279,7 @@ The demo uses [@tanstack/react-query](https://www.npmjs.com/package/@tanstack/re
 
 <Tabs items={['index.tsx', 'user-form-demo.tsx', 'stream-demo.tsx']}>
 <Tabs.Tab>
-```ts showLineNumbers copy filename="src/components/demo/index.tsx" source="examples/hello-world"
+```tsx showLineNumbers copy filename="src/components/demo/index.tsx" source="examples/hello-world"
 'use client';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import StreamDemo from './stream-demo';
@@ -719,8 +715,6 @@ const controllers = {
 
 export type Controllers = typeof controllers;
 
-export const dynamic = 'force-static';
-
 export function generateStaticParams() {
   return controllersToStaticParams(controllers);
 }
@@ -830,7 +824,7 @@ once_cell = "1.17"
   features = [ "json", "multipart", "stream" ]
 
   [dependencies.tokio]
-  version = "1"
+  version = "1.49"
   features = [ "macros", "rt-multi-thread", "io-util" ]
 
   [dependencies.tokio-util]

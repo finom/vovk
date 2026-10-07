@@ -29,7 +29,7 @@ export default class ArktypeControllerOnlyEntityController {
     body: type({ todo: type('true') }),
     params: type({ id: type('string') }),
   }).handle(async (req, { id }) => {
-    const body = await req.json();
+    const body = await req.vovk.body();
 
     return { message: `TODO: update arktypeControllerOnlyEntity`, id, body };
   });
@@ -41,7 +41,7 @@ export default class ArktypeControllerOnlyEntityController {
   static createArktypeControllerOnlyEntity = procedure({
     body: type({ todo: type('true') }),
   }).handle(async (req) => {
-    const body = await req.json();
+    const body = await req.vovk.body();
 
     return { message: `TODO: create arktypeControllerOnlyEntity`, body };
   });

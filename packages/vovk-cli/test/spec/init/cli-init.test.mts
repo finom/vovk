@@ -133,7 +133,6 @@ await describe('CLI init', async () => {
   } = getCLIAssertions({ cwd, dir });
 
   async function vovkInit(flags?: string, options?: Omit<Parameters<typeof runScript>[1], 'cwd'>) {
-    // Use --channel=draft for draft features
     const script = `./dist/index.mjs init --prefix ${dir} --log-level=debug ${flags}`;
     return runScript(script, {
       ...options,

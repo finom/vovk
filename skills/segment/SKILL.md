@@ -41,7 +41,7 @@ src/app/api/foo/[[...vovk]]/route.ts          ← "foo" segment (path: /api/foo/
 src/app/api/foo/bar/[[...vovk]]/route.ts      ← "foo/bar" segment (path: /api/foo/bar/*)
 ```
 
-Slug name (`vovk`) is configurable via `rootEntry` config option but stick with `vovk` unless user has reason to change it.
+Slug name (`vovk`) can be any name: the CLI takes any `[[...name]]` folder that has a `route.ts`. Stick with `vovk` (what `vovk new segment` writes) unless user has reason to change it. `rootEntry` is something else: the API root folder (`api`).
 
 ### `initSegment()`
 
@@ -96,8 +96,8 @@ When adding new named segment, any existing root-handled paths under that prefix
 | Shape | When | Path |
 |---|---|---|
 | **Root** | Default. Most projects have exactly one. | `src/app/api/[[...vovk]]/route.ts` |
-| **Named** | Isolate slice with different runtime settings (`maxDuration`, `runtime: 'edge'`), or for multi-tenancy. | `src/app/api/<name>/[[...vovk]]/route.ts` |
-| **Static** | API that can be pre-rendered at build time — OpenAPI specs, enumerated datasets, infrequently changing reference data. Works with Next `output: 'export'`. | `src/app/api/<name>/[[...vovk]]/route.ts` + `generateStaticParams` |
+| **Named** | Isolate slice with different route options (`maxDuration`), or for multi-tenancy. | `src/app/api/<name>/[[...vovk]]/route.ts` |
+| **Static** | API that can be pre-rendered at build time — OpenAPI specs, enumerated datasets, infrequently changing reference data. Works with Next `output: 'export'`, which needs `cacheComponents` off. | `src/app/api/<name>/[[...vovk]]/route.ts` + `generateStaticParams` |
 
 **When user says...**
 
@@ -161,8 +161,6 @@ import HelloController from '../../../../modules/hello/hello-controller';
 const controllers = { HelloRPC: HelloController };
 export type Controllers = typeof controllers;
 
-export const dynamic = 'force-static'; // without it, next build renders the route per request
-
 export function generateStaticParams() {
   return controllersToStaticParams(controllers);
 }
@@ -174,6 +172,8 @@ export const { GET } = initSegment({
 ```
 
 If you've customized slug (not `vovk`), pass it: `controllersToStaticParams(controllers, 'custom')`.
+
+No `dynamic` export: the segment pre-renders with `cacheComponents` on or off, and with it on (create-next-app 16.4+ sets it) Next.js refuses `dynamic = 'force-static'`. `output: 'export'` needs `cacheComponents: false` in next.config.
 
 ### 2. Endpoints must be enumerable
 
@@ -308,7 +308,9 @@ Multi-tenant flow. Hand off to **`multitenant` skill**. Segment side is `npx vov
 
 ### "Change the API root from `/api` to `/rpc`"
 
-That's Next.js App Router path rename — move `src/app/api/` to `src/app/rpc/`. Vovk doesn't care which folder name you use; `[[...vovk]]` catch-all is what matters.
+1. Move `src/app/api/` to `src/app/rpc/`.
+2. Set `rootEntry: 'rpc'` in `vovk.config.mjs`. The CLI looks for segments under `src/app/<rootEntry>`: without it, `vovk generate` leaves them out of the client and `vovk dev` deletes their schema files.
+3. Run `vovk dev` once: it rewrites `.vovk-schema/_meta.json`, which the client reads `rootEntry` from. Commit `.vovk-schema/`.
 
 ## Gotchas
 

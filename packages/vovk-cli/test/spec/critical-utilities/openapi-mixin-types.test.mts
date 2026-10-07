@@ -163,3 +163,111 @@ await describe('OpenAPI mixin with an untrusted tsType', async () => {
     );
   });
 });
+
+// GitHub's spec patches component schemas in an `x-github-breaking-changes` extension, where a property set to null
+// is one the next version removes; mixins.d.ts.ejs compiles the request body and the output with a direction
+await describe('OpenAPI mixin with a vendor extension that holds a null property', async () => {
+  const vendorSpec: OpenAPIObject = {
+    openapi: '3.0.3',
+    info: { title: 'Repos', version: '1.0.0' },
+    servers: [{ url: 'https://api.example.com' }],
+    components: {
+      schemas: {
+        Repo: {
+          type: 'object',
+          properties: { name: { type: 'string' }, id: { type: 'integer', readOnly: true } },
+          required: ['name'],
+          'x-github-breaking-changes': [{ changeset: 'remove_id', patch: { properties: { id: null } } }],
+        } as never,
+      },
+    },
+    paths: {
+      '/repos': {
+        post: {
+          operationId: 'createRepo',
+          requestBody: { content: { 'application/json': { schema: { $ref: '#/components/schemas/Repo' } } } },
+          responses: {
+            '201': {
+              description: 'Created',
+              content: { 'application/json': { schema: { $ref: '#/components/schemas/Repo' } } },
+            },
+          },
+        },
+      },
+    },
+  };
+
+  await it('compiles the request body and the output types', async () => {
+    const mixin = await normalizeOpenAPIMixin({
+      mixinModule: {
+        source: { object: structuredClone(vendorSpec) },
+        getModuleName: 'ReposAPI',
+        getMethodName: 'auto',
+      },
+      log: console as never,
+    });
+    // biome-ignore lint/suspicious/noExplicitAny: loose test alias for readable assertions
+    const segment = openAPIToVovkSchema({ ...mixin, segmentName: 'api' }).segments.api as any;
+    const { components } = segment.meta.openAPIObject;
+    const { validation } = segment.controllers.ReposAPI.handlers.createRepo;
+    const body = compileJSONSchemaToTypeScriptType(validation.body, 'Body', components, { direction: 'request' });
+    const output = compileJSONSchemaToTypeScriptType(validation.output, 'Output', components, {
+      direction: 'response',
+    });
+    assert.match(body, /export type Body = /);
+    assert.match(output, /export type Output = /);
+  });
+});
+
+// a GeoJSON Feature: its example data holds a `properties` object too, here with a null value
+await describe('OpenAPI mixin whose example data holds a null property', async () => {
+  const featureSpec: OpenAPIObject = {
+    openapi: '3.0.3',
+    info: { title: 'Features', version: '1.0.0' },
+    servers: [{ url: 'https://api.example.com' }],
+    components: {
+      schemas: {
+        Feature: {
+          type: 'object',
+          properties: { id: { type: 'string', readOnly: true }, geometry: { type: 'object' } },
+          example: { type: 'Feature', properties: { name: null }, geometry: null },
+        },
+      },
+    },
+    paths: {
+      '/features': {
+        post: {
+          operationId: 'createFeature',
+          requestBody: { content: { 'application/json': { schema: { $ref: '#/components/schemas/Feature' } } } },
+          responses: {
+            '201': {
+              description: 'Created',
+              content: { 'application/json': { schema: { $ref: '#/components/schemas/Feature' } } },
+            },
+          },
+        },
+      },
+    },
+  };
+
+  await it('compiles the request body and the output types', async () => {
+    const mixin = await normalizeOpenAPIMixin({
+      mixinModule: {
+        source: { object: structuredClone(featureSpec) },
+        getModuleName: 'FeaturesAPI',
+        getMethodName: 'auto',
+      },
+      log: console as never,
+    });
+    // biome-ignore lint/suspicious/noExplicitAny: loose test alias for readable assertions
+    const segment = openAPIToVovkSchema({ ...mixin, segmentName: 'api' }).segments.api as any;
+    const { components } = segment.meta.openAPIObject;
+    const { validation } = segment.controllers.FeaturesAPI.handlers.createFeature;
+    const body = compileJSONSchemaToTypeScriptType(validation.body, 'Body', components, { direction: 'request' });
+    const output = compileJSONSchemaToTypeScriptType(validation.output, 'Output', components, {
+      direction: 'response',
+    });
+    assert.match(body, /export type Body = /);
+    assert.match(output, /export type Output = /);
+  });
+});

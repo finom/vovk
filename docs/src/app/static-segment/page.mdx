@@ -15,13 +15,13 @@ const nextConfig = {
 module.exports = nextConfig;
 ```
 
-Export `dynamic = 'force-static'` so Next.js pre-renders the route handler at build time, and make `generateStaticParams` return `controllersToStaticParams` with your controllers.
+Make `generateStaticParams` return `controllersToStaticParams` with your controllers, and Next.js pre-renders the route handler at build time. The segment needs no `dynamic` export, with `cacheComponents` on or off. Next.js refuses `dynamic = 'force-static'` when `cacheComponents` is on, as `create-next-app` 16.4+ sets it, so remove one that a segment still exports.
+
+Next.js also refuses `output: 'export'` when `cacheComponents` is on. For a static export, set `cacheComponents: false` in **next.config**.
 
 ```ts showLineNumbers copy filename="src/app/api/[[...vovk]]/route.ts"
 // ...
 export type Controllers = typeof controllers;
-
-export const dynamic = 'force-static';
 
 export function generateStaticParams() {
   return controllersToStaticParams(controllers);

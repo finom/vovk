@@ -10,6 +10,7 @@ import type {
 } from '../types/core.js';
 import { HttpMethod, HttpStatus } from '../types/enums.js';
 import type { VovkRequest } from '../types/request.js';
+import { getServingClasses } from './get-served-handlers.js';
 import { HttpException, isHttpException } from './http-exception.js';
 import { JSONLinesResponder, Responder, setResponderHooks } from './json-lines-responder.js';
 
@@ -364,18 +365,22 @@ class VovkApp {
   #allHandlers: Record<string, Partial<Record<HttpMethod, Record<string, Route>>>> = {};
 
   #collectHandlers = (httpMethod: HttpMethod, segmentName: string) => {
-    const controllers = this.routes[httpMethod];
-    const segment = this.#segments.get(segmentName);
+    const routes = this.routes[httpMethod];
+    // a segment set up without initSegment names its controllers by _segmentName
+    const controllers =
+      this.#segments.get(segmentName)?.controllers ??
+      new Set([...routes.keys()].filter((controller) => controller._segmentName === segmentName));
 
     const handlers: Record<string, Route> = {};
 
-    controllers.forEach((staticMethods, controller) => {
-      // a segment set up without initSegment names its controllers by _segmentName
-      const isInSegment = segment ? segment.controllers.has(controller) : controller._segmentName === segmentName;
-      if (!isInSegment) return;
+    controllers.forEach((controller) => {
       const prefix = controller._prefix ?? '';
+      const staticMethods: Record<string, RouteHandler> = Object.assign(
+        {},
+        ...getServingClasses(controller, controllers).map((servingClass) => routes.get(servingClass))
+      );
 
-      Object.entries(staticMethods ?? {}).forEach(([path, staticMethod]) => {
+      Object.entries(staticMethods).forEach(([path, staticMethod]) => {
         const fullPath = [prefix, path].filter(Boolean).join('/');
         const existing = handlers[fullPath];
         // a route a child inherits is its parent's handler, which answers the same
@@ -472,12 +477,15 @@ class VovkApp {
   }) => {
     const req = request as VovkRequest;
     const path = getCatchAllPath(params);
-    let headerList: typeof request.headers | null;
-    try {
-      headerList = request.headers;
-    } catch {
-      // static rendering has no headers
-      headerList = null;
+    let headerList: typeof request.headers | null = null;
+    // next build prerenders with no client, and reading the headers there makes the route dynamic: Cache Components
+    // and output: 'export' then refuse a static segment
+    if (process.env.NEXT_PHASE !== 'phase-production-build') {
+      try {
+        headerList = request.headers;
+      } catch {
+        // static rendering with dynamic = 'error' has no headers
+      }
     }
     const xMeta = headerList?.get('x-meta');
     let xMetaHeader: Record<string, unknown> | null = null;
@@ -546,8 +554,7 @@ class VovkApp {
 
       await staticMethod._options?.before?.call(controller, req);
       await onBefore?.(req);
-      // dispatch via the latest wrapper so decorators applied above the HTTP decorator still run
-      const result = await (staticMethod._sourceMethod?.wrapper ?? staticMethod).call(controller, req, methodParams);
+      const result = await staticMethod.call(controller, req, methodParams);
 
       if (result instanceof Response) {
         unsentBody = result.body;

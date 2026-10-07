@@ -176,7 +176,7 @@ By default, the segmented client goes to `./src/client`. The `outDir` option cha
 Then import the client in the front-end code:
 
 ```ts showLineNumbers copy
-import { ProductRPC } from '@/client/product';
+import { ProductRPC } from '@/client/root';
 
 await ProductRPC.getProducts();
 ```
@@ -269,6 +269,8 @@ Parameters:
 For wildcard subdomains, use square-bracket patterns, such as `[customer_name]`, for the [Dynamic Segment](https://nextjs.org/docs/app/api-reference/file-conventions/dynamic-routes). The page gets the value in `params`. A placeholder matches one DNS label (letters, digits and hyphens), and the host is matched case-insensitively, so a host such as `%2e%2e.customer.example.com` gets no rewrite.
 
 A rule rewrites a path prefix, so a host also reaches what is nested under its target: `acme.customer.example.com/api/pro` reaches the `customer/pro` segment, and `acme.customer.example.com/pro` the pro page.
+
+The proxy goes in **src/proxy.ts**. On Next.js 15, name the file **src/middleware.ts**.
 
 ```ts showLineNumbers copy filename="src/proxy.ts" source="examples/multitenant"
 import { type NextRequest, NextResponse } from 'next/server';

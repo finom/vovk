@@ -46,8 +46,6 @@ export type Controllers = typeof controllers;
 ${
   isStaticSegment
     ? `
-export const dynamic = 'force-static';
-
 export function generateStaticParams() {
   return controllersToStaticParams(controllers);
 }
