@@ -394,9 +394,9 @@ describe('Shared state', () => {
           withParent: {
             handlers: ['health', 'list'],
             status: 200,
-            staticParams: ['_schema_', 'health', 'items/health', 'items/list'],
+            staticParams: ['health', 'items/health', 'items/list'],
           },
-          alone: { handlers: ['list'], status: 404, staticParams: ['_schema_', 'items/list'] },
+          alone: { handlers: ['list'], status: 404, staticParams: ['items/list'] },
         }
       );
     });

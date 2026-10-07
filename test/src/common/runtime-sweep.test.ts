@@ -1869,7 +1869,7 @@ describe('Runtime sweep', () => {
   });
 
   describe('controllersToStaticParams', () => {
-    it('Fills the params of the prefix and keeps a value with a slash in one segment', () => {
+    it('Fills the params of the prefix and keeps a value with a slash in one segment', async () => {
       class PostsController {
         static list() {
           return [];
@@ -1883,12 +1883,13 @@ describe('Runtime sweep', () => {
       get('posts', { staticParams: [{ userId: '1' }, { userId: '2' }] })(PostsController, 'list');
       get('posts/{postId}', { staticParams: [{ userId: '1', postId: 'a/b' }] })(PostsController, 'getPost');
 
-      const staticParams = controllersToStaticParams({ PostsController });
-
-      deepStrictEqual(
-        staticParams.map(({ vovk }) => vovk),
-        [['_schema_'], ['users', '1', 'posts'], ['users', '2', 'posts'], ['users', '1', 'posts', 'a/b']]
-      );
+      // next dev, where the schema path comes first: vovk dev reads it, also with output: 'export'
+      await withNodeEnv('development', async () => {
+        deepStrictEqual(
+          controllersToStaticParams({ PostsController }).map(({ vovk }) => vovk),
+          [['_schema_'], ['users', '1', 'posts'], ['users', '2', 'posts'], ['users', '1', 'posts', 'a/b']]
+        );
+      });
     });
 
     it('Lists no _schema_ path for a production build, where it would prerender a 404 body', async () => {
@@ -1906,6 +1907,13 @@ describe('Runtime sweep', () => {
           controllersToStaticParams({ HelloController }).map(({ vovk }) => vovk),
           [['greeting.json']]
         );
+      });
+    });
+
+    it('Keeps the _schema_ path for a production build of a segment with no path, as output: export needs one', async () => {
+      // the segment vovk new segment --static writes; next build with output: 'export' fails on an empty list
+      await withNodeEnv('production', async () => {
+        deepStrictEqual(controllersToStaticParams({}), [{ vovk: ['_schema_'] }]);
       });
     });
   });
