@@ -79,6 +79,9 @@
       "@ai-sdk/provider-utils": "^4.0.33"
     },
     "deepmerge-ts": "^8.0.2",
+    "@hookform/resolvers": {
+      "ajv-formats": "^3.0.1"
+    },
     "katex": "^0.18.2",
     "@modelcontextprotocol/client": "^2.2.0",
     "mysql2": "^3.23.1",
