@@ -37,6 +37,12 @@ const hasBody = (req: VovkRequestAny) => {
 // fn() calls made without a body, the local counterpart of a request without one
 const callsWithoutBody = new WeakSet<object>();
 
+type InputReaders = Pick<VovkRequestAny['vovk'], 'body' | 'query' | 'params'>;
+
+// the readers of the input as sent, by request: validation replaces them, and a decorator that calls next() again,
+// as to retry, gets each pass validated from the input as sent
+const inputReaders = new WeakMap<object, InputReaders>();
+
 // fn() reads a body as the server reads a request that carries it: a form or bytes by the content type the client
 // sends them with, any other value as it is
 const parseFnBody = async (body: unknown, contentType: string[] | undefined) => {
@@ -286,6 +292,9 @@ export function withValidationLibrary<
   };
 
   const resultHandler = (async (req: VovkRequestAny, handlerParams: Parameters<THandle>[1]) => {
+    const readers = inputReaders.get(req);
+    if (readers) Object.assign(req.vovk, readers);
+    else inputReaders.set(req, { body: req.vovk.body, query: req.vovk.query, params: req.vovk.params });
     const { __disableClientValidation } = req.vovk.meta<Meta>();
     // the handler gets the validated params as its second argument, the same value req.vovk.params() returns
     let validatedParams = handlerParams;

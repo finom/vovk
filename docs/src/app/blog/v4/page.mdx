@@ -88,7 +88,7 @@ Each entry exports what your code writes against.
 
 `decorate()` and the `static prefix` class property are removed; use decorators and `@prefix()`. A `static prefix` left in a class is ignored without an error, so its routes lose the prefix.
 
-A procedure attached to several controller members runs each member's own decorators and route options, over HTTP, in `.fn()` and in tools. The procedure's own `.fn()` runs no controller's decorators. A controller serves the routes of the class it extends only when that class is in the same segment, or with `@cloneControllerMetadata()`, and its schema lists only the routes it serves.
+A procedure attached to several controller members runs each member's own decorators and route options, over HTTP, in `.fn()` and in tools. The procedure's own `.fn()` runs no controller's decorators. Each member holds its own copy of the procedure, so `UserController.getUser !== UserProcedures.getUser`, and a member reused from another controller carries the schema its decorators added. A controller serves the routes of the class it extends only when that class is in the same segment, or with `@cloneControllerMetadata()`, and its schema lists only the routes it serves.
 
 ## Types that match what runs
 
@@ -172,16 +172,17 @@ Measured on Node.js 24.1 and an Apple M4 Pro: about 1.5 µs of routing overhead 
 8. Replace `decorate(...)` with decorators, and `static prefix = 'users'` with `@prefix('users')`.
 9. `.fn()` of a bare procedure, and tools derived from a module of bare procedures, run no controller's decorators. Call `.fn()` on the controller member, or derive the tools from the controller.
 10. A controller that extends another one serves the parent's routes only when the parent is in the same segment. Otherwise add `@cloneControllerMetadata()`.
-11. Throw `HttpException` for expected errors. Read internal messages in `onError`.
-12. A handler that read raw strings from its second argument now gets the validated params.
-13. A repeated query key gives an array, so a plain string query field answers 400 for `tag=a&tag=b`.
-14. A `+` in the query is a space. Send a literal `+` as `%2B`. Under Next.js, v3 kept a raw `+` and turned every space into `+`.
-15. A string body to a method that declares no content type, such as a plain handler typed `VovkRequest<string>`, goes out as JSON. v3 sent it raw as `text/plain`. `req.vovk.body()` still gives the string; `req.text()` now gives it quoted. To keep raw text, use a procedure with a text `contentType`.
-16. Read a JSON Lines stream once, or call `asPromise()`.
-17. In a custom fetcher, a call without a body has `body: undefined`, not `null`.
-18. Use Node.js 22.22.2+, 24.15+ or 26+, and TypeScript 5.5+.
-19. Under Yarn 2+, move `vovk generate` from `prebuild` into the `build` script: Yarn 2+ runs no `pre` scripts.
-20. Python: a file response is `bytes`. Rust: a JSON or form procedure without files takes its typed body.
+11. A function attached to several members is copied for each, so `UserController.getUser !== UserProcedures.getUser`. Don't compare members by identity.
+12. Throw `HttpException` for expected errors. Read internal messages in `onError`.
+13. A handler that read raw strings from its second argument now gets the validated params.
+14. A repeated query key gives an array, so a plain string query field answers 400 for `tag=a&tag=b`.
+15. A `+` in the query is a space. Send a literal `+` as `%2B`. Under Next.js, v3 kept a raw `+` and turned every space into `+`.
+16. A string body to a method that declares no content type, such as a plain handler typed `VovkRequest<string>`, goes out as JSON. v3 sent it raw as `text/plain`. `req.vovk.body()` still gives the string; `req.text()` now gives it quoted. To keep raw text, use a procedure with a text `contentType`.
+17. Read a JSON Lines stream once, or call `asPromise()`.
+18. In a custom fetcher, a call without a body has `body: undefined`, not `null`.
+19. Use Node.js 22.22.2+, 24.15+ or 26+, and TypeScript 5.5+.
+20. Under Yarn 2+, move `vovk generate` from `prebuild` into the `build` script: Yarn 2+ runs no `pre` scripts.
+21. Python: a file response is `bytes`. Rust: a JSON or form procedure without files takes its typed body.
 
 ## Full changelogs
 
