@@ -22,9 +22,9 @@ Breaking changes:
 - A JSON Lines stream can be read once.
 - `vovk-ajv`: `configure()` moved to `libs.ajv` in `vovk.config`.
 - Python returns `bytes` for files. Rust sends a typed JSON body where it sent a multipart form.
-- The CLI needs Node.js 22.22.2+, 24.15+ or 26+, and the generated client TypeScript 5.3+.
+- The CLI needs Node.js 22.22.2+, 24.15+ or 26+, and TypeScript 5.5+.
 
-Fixes: several hundred bugs in routing, validation, streaming, the clients, code generation and the CLI, and security hardening of query parsing, content types and generated code. Four audits of every package found them, and each code fix comes with a test that failed before it.
+Fixes: several hundred bugs in routing, validation, streaming, the clients, code generation and the CLI, and security hardening of query parsing, content types and generated code. Five audits found them, and each code fix comes with a test that failed before it.
 
 The sections below cover each change and how to upgrade. Every package ships its own `CHANGELOG.md` with the full list; the links are at the [end](#full-changelogs).
 
@@ -48,16 +48,17 @@ If you generate Python or Rust clients, update `vovk-python` and `vovk-rust` too
 Requirements:
 
 - Node.js 22.22.2+, 24.15+ or 26+ for the CLI.
-- TypeScript 5.3+ for the generated client, 5.5+ for the files `vovk new` writes. TypeScript 7 works.
+- TypeScript 5.5+. The generated client alone compiles on 5.3+, but a service or handler that takes its types from its own procedure, as in the docs and the files `vovk new` writes, needs 5.5. TypeScript 7 works.
 - `"experimentalDecorators": true` in `tsconfig.json` if you build with webpack. Turbopack builds don't need it. `vovk init` asks whether to add it.
 
 ## The client is generated into your project
 
-- The [composed client](/composed) is TypeScript in `src/client` (or `client/` without a `src` folder), imported as `@/client`. The `vovk-client` package and the `node_modules/.vovk-client` folder are retired, which also ends the pnpm hoisting issues.
+- The [composed client](/composed) is TypeScript in `src/client` (or `client/` when the app isn't in `src/app`), imported as `@/client`. The `vovk-client` package and the `node_modules/.vovk-client` folder are retired, which also ends the pnpm hoisting issues.
 - The `js` templates (`js`, `jsBase`, `schemaJs`, `openapiJs`) are removed. [ts](/templates#ts) is the default for both client modes.
 - `prettifyClient` defaults to `true` and uses the Prettier installed in your project. The CLI no longer ships its own copy and warns once when it's missing.
 - `vovk init` adds the client folder to `.gitignore`, and the `prebuild: vovk generate` script regenerates it on every build.
 - `vovk generate` refuses to overwrite a file it didn't generate. `--force` overrides it.
+- The client takes `libs` and `rootEntry` from the current `vovk.config`, so `vovk generate` alone picks up a config change.
 
 ## Tools follow the [standard-tool](https://standard-tool.js.org/) convention
 
@@ -86,9 +87,11 @@ Each entry exports what your code writes against.
 
 `decorate()` and the `static prefix` class property are removed; use decorators and `@prefix()`. A `static prefix` left in a class is ignored without an error, so its routes lose the prefix.
 
+A procedure attached to several controller members runs each member's own decorators and route options, over HTTP, in `.fn()` and in tools. The procedure's own `.fn()` runs no controller's decorators. A controller serves the routes of the class it extends only when that class is in the same segment, or with `@cloneControllerMetadata()`, and its schema lists only the routes it serves.
+
 ## Types that match what runs
 
-- `.fn()` requires the body, query and params the server requires. It returns a promise of the handler's result, or an async generator of the checked items when the procedure has an `iteration` schema.
+- `.fn()` requires the body, query and params the server requires. It returns a promise of the handler's result, or of an async generator of the checked items when the procedure has an `iteration` schema.
 - Client input types come from the schemas' input types, so `.default()` and `.transform()` work.
 - Output and iteration JSON Schemas describe what the server sends, after defaults and transforms. `preferTransformed: false` keeps the old behavior. OpenAPI, the Python and Rust types and the tools' output schemas follow.
 - The handler's second argument is the validated params, coerced types included.
@@ -101,6 +104,7 @@ Each entry exports what your code writes against.
 - HEAD requests fall back to the GET route.
 - `Content-Type` must name one media type. A list answers 415. A declared `contentType` is enforced even without a body schema.
 - Malformed JSON, form and query input answers 400. An optional body can be left out; a missing required body answers 400.
+- A `+` in the query is a space, as in `URLSearchParams`. A literal `+` comes as `%2B`, as the vovk clients send it.
 - Repeated query keys collect into an array: `tag=a&tag=b` gives `['a', 'b']`. A key whose schema takes an array is a one-item array when sent once, as OpenAPI clients send it.
 - 204, 205 and 304 responses have no body. A status outside 200–599 becomes 500.
 - `HttpStatus.TOO_MANY_REQUESTS` is spelled right; it was `TOO_MANY_TRequestS`.
@@ -119,6 +123,11 @@ Each entry exports what your code writes against.
 - `notFound()`, `forbidden()` and `unauthorized()` thrown mid-stream send 404, 403 and 401 in the error line. Error lines carry `statusCode`.
 - The client reads only as fast as you take items, so a consumed stream iterated again yields nothing. Read it once, or call `asPromise()`.
 
+## Client-side validation
+
+- `vovk-ajv` turns Ajv's strict mode off, so `example`, `x-*` and other annotations no longer block a request.
+- Where Ajv can't generate code, as under a Content Security Policy without `'unsafe-eval'`, the client skips validation and warns once. The server still validates. Before, every validated call failed without sending a request.
+
 ## Python and Rust clients
 
 Both clients escape all schema text, so a spec can't inject code into the generated package. Path params and query keys are percent-encoded, and `..` is refused.
@@ -134,7 +143,7 @@ Rust:
 
 - **Breaking:** a procedure that takes JSON or a form, with no file field, takes its typed body and sends JSON. It took a `reqwest::multipart::Form`, so typed fields reached the server as text.
 - The crate compiles for every tested schema shape, and the schema is compiled into the crate.
-- Validation follows JSON Schema 2020-12. Rust 1.85+.
+- Validation follows JSON Schema 2020-12. Rust 1.85+, tokio 1.49+.
 
 ## Security
 
@@ -144,6 +153,7 @@ Rust:
 - A form body that repeats one field name is parsed in linear time. A 500 KB body could stall the server for seconds.
 - Multitenant hosts match case-insensitively, and only a DNS label is a wildcard value.
 - A crafted OpenAPI spec no longer makes code samples grow exponentially in `vovk generate` and `vovk bundle`.
+- `vovk-cli` no longer depends on gray-matter, whose dependency chain ends in an advisory with no fix.
 
 ## Performance
 
@@ -151,18 +161,27 @@ Measured on Node.js 24.1 and an Apple M4 Pro: about 1.5 µs of routing overhead 
 
 ## Upgrading from v3
 
-1. Remove `vovk-client` and import from `@/client`. Replace `fromTemplates: ['js']` with `['ts']`. Install `prettier`, or set `prettifyClient: false`. Add the client folder to `.gitignore`. A stale `node_modules/.vovk-client` can be deleted.
-2. Move the imports in the [table above](#smaller-entry-points).
-3. `deriveTools` returns an array. A name map is one line: `Object.fromEntries(tools.map((t) => [t.name, t]))`. Move `createTool`, `VovkTool` and `inputSchemas` to the `StandardToolV0` shape.
-4. Replace `decorate(...)` with decorators, and `static prefix = 'users'` with `@prefix('users')`.
-5. Throw `HttpException` for expected errors. Read internal messages in `onError`.
-6. A handler that read raw strings from its second argument now gets the validated params.
-7. A repeated query key gives an array, so a plain string query field answers 400 for `tag=a&tag=b`.
-8. Read a JSON Lines stream once, or call `asPromise()`.
-9. In a custom fetcher, a call without a body has `body: undefined`, not `null`.
-10. Use Node.js 22.22.2+, 24.15+ or 26+, and TypeScript 5.3+.
-11. Under Yarn 2+, move `vovk generate` from `prebuild` into the `build` script: Yarn 2+ runs no `pre` scripts.
-12. Python: a file response is `bytes`. Rust: a JSON or form procedure without files takes its typed body.
+1. Remove `vovk-client` and import from `@/client`. Replace `fromTemplates: ['js']` with `['ts']`. Install `prettier`, or set `prettifyClient: false`. Add the client folder to `.gitignore`. A stale `node_modules/.vovk-client` can be deleted. If your config sets `composedClient.outDir: './node_modules/.vovk-client'`, the v3 default, remove it.
+2. Run `vovk dev` once, and `vovk bundle` if you keep the prebundle folder. `vovk generate` and the build read the schema files that `vovk dev` writes.
+3. Add the client folder to your linter's ignores, for example `globalIgnores(['src/client/**'])`. ESLint doesn't read `.gitignore`.
+4. If the client's `outDir` was outside `node_modules`, delete the old `.js` and `.d.ts` files there. Webpack picks `index.js` over `index.ts`.
+5. Write relative paths in `outputConfig.imports` without the `.ts` extension. TypeScript now checks the client, and refuses `.ts` without `allowImportingTsExtensions`.
+6. Outside a bundler, as in a script or `node --test`, run the client with tsx: `@/client` needs a loader that reads the tsconfig `paths`. Or set `module: nodenext` and `allowImportingTsExtensions` (with `noEmit`) and import the client by a relative path. To use the client in another project, build it with `vovk bundle`.
+7. Move the imports in the [table above](#smaller-entry-points).
+8. `deriveTools` returns an array. A name map is one line: `Object.fromEntries(tools.map((t) => [t.name, t]))`. Move `createTool`, `VovkTool` and `inputSchemas` to the `StandardToolV0` shape. `parameters` is `tool.inputSchema['~standard'].jsonSchema.input({ target: 'draft-2020-12' })` without `$schema`, and `type` was always `'function'`. For createTool's `{ error }` results, use `withFormattedOutput(standardTool(def))` from standard-tool. For MCP output, use `withFormattedOutput(tool, (result) => ToModelOutput.MCP(result, tool, null))`.
+9. Replace `decorate(...)` with decorators, and `static prefix = 'users'` with `@prefix('users')`.
+10. `.fn()` of a bare procedure, and tools derived from a module of bare procedures, run no controller's decorators. Call `.fn()` on the controller member, or derive the tools from the controller.
+11. A controller that extends another one serves the parent's routes only when the parent is in the same segment. Otherwise add `@cloneControllerMetadata()`.
+12. Throw `HttpException` for expected errors. Read internal messages in `onError`.
+13. A handler that read raw strings from its second argument now gets the validated params.
+14. A repeated query key gives an array, so a plain string query field answers 400 for `tag=a&tag=b`.
+15. A `+` in the query is a space. Send a literal `+` as `%2B`. Under Next.js, v3 kept a raw `+` and turned every space into `+`.
+16. A string body to a method that declares no content type, such as a plain handler typed `VovkRequest<string>`, goes out as JSON. v3 sent it raw as `text/plain`. `req.vovk.body()` still gives the string; `req.text()` now gives it quoted. To keep raw text, use a procedure with a text `contentType`.
+17. Read a JSON Lines stream once, or call `asPromise()`.
+18. In a custom fetcher, a call without a body has `body: undefined`, not `null`.
+19. Use Node.js 22.22.2+, 24.15+ or 26+, and TypeScript 5.5+.
+20. Under Yarn 2+, move `vovk generate` from `prebuild` into the `build` script: Yarn 2+ runs no `pre` scripts.
+21. Python: a file response is `bytes`. Rust: a JSON or form procedure without files takes its typed body.
 
 ## Full changelogs
 
