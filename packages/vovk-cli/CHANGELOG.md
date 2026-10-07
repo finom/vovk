@@ -38,7 +38,6 @@ A cleanup release. `vovk-cli` is pre-1.0, so this minor carries breaking changes
 - Generation fails for a mixin named `root` or like a segment, and for one module name in two segments of the composed client; unnamed CLI mixins get `api`, `api2` and so on ([#40](https://github.com/finom/vovk/pull/40))
 - The bin runs with plain `node`, so it works on Alpine; `engines.node` is `^22.22.2 || ^24.15.0 || >=26.0.0`, and before Node.js 22 every command names the version it needs instead of crashing ([#40](https://github.com/finom/vovk/pull/40), [#44](https://github.com/finom/vovk/pull/44))
 - The `vovk` peer range is `>=3.7.0 || ^4.0.0-0`: 3.0-3.6 lack `vovk/create-rpc` ([#40](https://github.com/finom/vovk/pull/40))
-- `vovk new segment --static` writes no `dynamic = 'force-static'`, which Next.js refuses with `cacheComponents` on; the segment pre-renders without it ([#51](https://github.com/finom/vovk/pull/51))
 - A Python or Rust client generated without `outputConfig.origin` warns that its calls can't be sent; set it, or pass `api_root` to every call ([#44](https://github.com/finom/vovk/pull/44))
 
 ### Added
@@ -52,7 +51,6 @@ A cleanup release. `vovk-cli` is pre-1.0, so this minor carries breaking changes
 - A fetched schema's `segmentName` is no longer trusted as a write path ([5a2e564](https://github.com/finom/vovk/commit/5a2e564f))
 - `vovk init` only spawns a known package manager, never a path from `packageManager` ([9d99797](https://github.com/finom/vovk/commit/9d99797b))
 - `--prebundle-out-dir` takes effect and stays inside the project ([23c58dc](https://github.com/finom/vovk/commit/23c58dc2))
-- `vovk new segment` scaffolds `force-static` for static segments ([#25](https://github.com/finom/vovk/pull/25))
 - Windows: template and schema lookups find their files, and import paths in generated code use `/` ([#35](https://github.com/finom/vovk/pull/35))
 - `vovk dev --next-dev` runs from a path with spaces, and asks only the local dev server for schemas ([#35](https://github.com/finom/vovk/pull/35))
 - The pruner removes only folders whose every file the generator wrote ([#35](https://github.com/finom/vovk/pull/35))
