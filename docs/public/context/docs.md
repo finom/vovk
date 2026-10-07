@@ -4,8 +4,8 @@ description: "Full documentation for the Vovk.ts framework, excluding the Realti
 see_also:
   label: "Realtime Kanban Context"
   url: https://vovk.dev/context/realtime-ui.md
-chars: 394888
-est_tokens: 98722
+chars: 394290
+est_tokens: 98573
 ---
 
 Page: https://vovk.dev
@@ -739,7 +739,7 @@ A **segment** is the part of the back end where controllers are initialized. Seg
 
 Each segment owns a path, such as `/api/foo` or `/api/bar`, and is a small back end of its own. Segments split the back end as pages split the front end in Next.js. To initialize a segment, call `initSegment` in the **route.ts** file of a **[[...slug]]** folder. It returns the Next.js route handlers (`GET`, `POST` and so on) of the segment. Vovk.ts names the slug `vovk`, but any valid name works.
 
-When `NODE_ENV` is `"development"` (as with `next dev`), each segment serves its schema at a `_schema_` endpoint. The [dev CLI](https://vovk.dev/dev) reads it and writes the JSON files in **.vovk-schema/**. This way, Next.js code imports no Node.js modules, **route.ts** can use `export const runtime = 'edge'`, and the schema tooling stays simple. Next.js 16 deprecates the Edge runtime and prints a warning for it. With `cacheComponents` on, which `create-next-app` 16.4+ sets, Next.js refuses `runtime = 'edge'`: set `cacheComponents: false` in **next.config** to use it.
+When `NODE_ENV` is `"development"` (as with `next dev`), each segment serves its schema at a `_schema_` endpoint. The [dev CLI](https://vovk.dev/dev) reads it and writes the JSON files in **.vovk-schema/**. This way, Next.js code imports no Node.js modules, and the schema tooling stays simple.
 
 Vovk.ts uses Optional Catch-All Segments instead of [Catch-All Segments](https://nextjs.org/docs/pages/building-your-application/routing/dynamic-routes#catch-all-segments), so a segment can have a root endpoint.
 
@@ -871,15 +871,13 @@ const nextConfig = {
 module.exports = nextConfig;
 ```
 
-Export `dynamic = 'force-static'` so Next.js pre-renders the route handler at build time, and make `generateStaticParams` return `controllersToStaticParams` with your controllers.
+Make `generateStaticParams` return `controllersToStaticParams` with your controllers, and Next.js pre-renders the route handler at build time. The segment needs no `dynamic` export, with `cacheComponents` on or off. Next.js refuses `dynamic = 'force-static'` when `cacheComponents` is on, as `create-next-app` 16.4+ sets it, so remove one that a segment still exports.
 
-With `cacheComponents` on, which `create-next-app` 16.4+ sets, Next.js refuses both `dynamic = 'force-static'` and `output: 'export'`. For a static segment or a static export, set `cacheComponents: false` in **next.config**.
+Next.js also refuses `output: 'export'` when `cacheComponents` is on. For a static export, set `cacheComponents: false` in **next.config**.
 
 ```ts showLineNumbers copy filename="src/app/api/[[...vovk]]/route.ts"
 // ...
 export type Controllers = typeof controllers;
-
-export const dynamic = 'force-static';
 
 export function generateStaticParams() {
   return controllersToStaticParams(controllers);
@@ -3795,7 +3793,7 @@ A decorator adds behavior to a procedure. Use decorators for concerns that many 
 `createDecorator` makes a decorator factory: a function that returns a decorator for controller methods. It takes a middleware function with these parameters:
 
 - `request`, which extends `VovkRequest`. Its [req.vovk.meta](https://vovk.dev/req-vovk#meta) gets and sets metadata, to share data between decorators and the route handler.
-- `next`, a function that calls the next decorator or the route handler. Call it and return its result.
+- `next`, a function that calls the next decorator or the route handler. Call it and return its result. To retry, call it again: each call validates the input as the client sent it.
 - The arguments passed to the decorator factory.
 
 The optional second argument is an init handler. It runs each time the decorator is applied, and it can add validation or custom data to **.vovk-schema/\*.json**. It returns an object with the optional keys `"validation"`, `"operationObject"` and `"misc"` (custom metadata) to merge into the handler schema. Or it returns a function that gets the current handler schema and returns that object, so you merge them yourself.
@@ -4540,7 +4538,7 @@ const config = {
 export default config;
 ```
 
-The generated `index.ts` imports them, with relative paths adjusted to its folder:
+The generated `index.ts` imports them, with relative paths adjusted to its folder. A path to a `.ts` file is written the way `tsconfig.json` resolves it: without the extension under bundler resolution, by its `.js` name under `node16` or `nodenext`.
 
 ```ts showLineNumbers copy filename="./src/client/index.ts"
 import { createRPC } from 'vovk/create-rpc';
@@ -4717,7 +4715,7 @@ export const validateOnClient = createValidateOnClient({
 - A `pattern` is read with the `u` flag, which `\p{…}` needs, as in `z.emoji()`. A pattern the `u` flag refuses, such as one with a `\-` escape that Zod's regexes allow, is read without it.
 - OpenAPI 3.0's boolean `exclusiveMinimum` and `exclusiveMaximum` are read as the bounds they mark.
 - A `FormData` or `URLSearchParams` body holds strings, and so do `params` and `query`, which the URL carries. So they are validated with `coerceTypes: true`: `"5"` passes as a number. Ajv never edits the `params` and `query` it checks, so they are sent as given.
-- When Ajv can't compile a schema, the client skips validation for it and logs a warning. Where Ajv can't generate code at all, as on a page whose Content Security Policy has no `'unsafe-eval'` or in the Edge runtime, the client skips every check and warns once. The server still validates the request.
+- When Ajv can't compile a schema, the client skips validation for it and logs a warning. Where Ajv can't generate code at all, as on a page whose Content Security Policy has no `'unsafe-eval'`, the client skips every check and warns once. The server still validates the request.
 
 ```bash npm2yarn copy
 npm install vovk-ajv
@@ -5733,8 +5731,6 @@ import { initSegment } from 'vovk';
 import StreamController from '../../../modules/stream/stream-controller';
 import UserController from '../../../modules/user/user-controller';
 
-export const runtime = 'edge';
-
 const controllers = {
   UserRPC: UserController,
   StreamRPC: StreamController,
@@ -5924,8 +5920,6 @@ export default class StreamService {
 import { initSegment } from 'vovk';
 import StreamController from '../../../modules/stream/stream-controller';
 import UserController from '../../../modules/user/user-controller';
-
-export const runtime = 'edge';
 
 const controllers = {
   UserRPC: UserController,
@@ -6223,8 +6217,6 @@ import { initSegment } from 'vovk';
 import StreamController from '../../../modules/stream/stream-controller';
 import UserController from '../../../modules/user/user-controller';
 
-export const runtime = 'edge';
-
 const controllers = {
   UserRPC: UserController,
   StreamRPC: StreamController,
@@ -6503,8 +6495,6 @@ export default class StreamService {
 import { initSegment } from 'vovk';
 import StreamController from '../../../modules/stream/stream-controller';
 import UserController from '../../../modules/user/user-controller';
-
-export const runtime = 'edge';
 
 const controllers = {
   UserRPC: UserController,
@@ -8335,8 +8325,6 @@ import { initSegment } from 'vovk';
 import StreamController from '../../../modules/stream/stream-controller';
 import UserController from '../../../modules/user/user-controller';
 
-export const runtime = 'edge';
-
 const controllers = {
   UserRPC: UserController,
   StreamRPC: StreamController,
@@ -8408,8 +8396,6 @@ export default class StreamService {
 import { initSegment } from 'vovk';
 import StreamController from '../../../modules/stream/stream-controller';
 import UserController from '../../../modules/user/user-controller';
-
-export const runtime = 'edge';
 
 const controllers = {
   UserRPC: UserController,
@@ -8854,8 +8840,6 @@ const controllers = {
 
 export type Controllers = typeof controllers;
 
-export const dynamic = 'force-static';
-
 export function generateStaticParams() {
   return controllersToStaticParams(controllers);
 }
@@ -8866,8 +8850,6 @@ export const { GET } = initSegment({
 });
 ```
 *[The code above is fetched from GitHub repository.](https://github.com/finom/vovk/blob/main/examples/hello-world/src/app/api/static/[[...vovk]]/route.ts)*
-
-The `static` segment exports `dynamic = 'force-static'`, and the root segment `runtime = 'edge'`. Next.js refuses both when `cacheComponents` is on, as `create-next-app` 16.4+ sets it. The example's **next.config** leaves it off; in your app, set `cacheComponents: false` to use them.
 
 The spec includes code samples that Scalar shows, ready to copy.
 
@@ -9966,8 +9948,6 @@ Lists the routes as static params, so the API is built at build time instead of 
 // ...
 export type Controllers = typeof controllers;
 
-export const dynamic = 'force-static';
-
 export function generateStaticParams() {
   return controllersToStaticParams(controllers);
 }
@@ -9975,7 +9955,7 @@ export function generateStaticParams() {
 export const { GET } = initSegment({ controllers });
 ```
 
-With `cacheComponents` on, which `create-next-app` 16.4+ sets, Next.js refuses `dynamic = 'force-static'`: set `cacheComponents: false` in **next.config**.
+The segment needs no `dynamic` export: Next.js pre-renders the listed paths with `cacheComponents` on or off.
 
 For another slug folder, such as `src/app/api/[[...custom]]/route.ts`, pass its name as the second argument:
 
