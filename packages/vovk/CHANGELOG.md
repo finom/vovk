@@ -51,6 +51,7 @@ A cleanup major: removals and renames; the only new exports are types.
 - The `vovk-cli-npx` bin, which `pnpm dlx vovk` and `yarn dlx vovk` run, starts the project's vovk-cli and falls back to `npx vovk-cli@latest` only without one ([#44](https://github.com/finom/vovk/pull/44))
 - A `+` in the query is a space, as in `URLSearchParams`, so a literal `+` comes as `%2B`, as the vovk clients send it; under Next.js, v3 kept a raw `+` and read every space a client sent as `+` ([#35](https://github.com/finom/vovk/pull/35))
 - `.fn()` of a bare procedure, and the tools derived from a module of bare procedures, run no controller's decorators; they ran those of the controller member decorated last ([#51](https://github.com/finom/vovk/pull/51))
+- A function attached to several members, such as a procedure of a validated service, is copied for each member, so `A.x !== B.x` and each copy has its own `.schema` and `.fn()`; the one function showed the schema of the member decorated last ([#51](https://github.com/finom/vovk/pull/51))
 - A controller serves the routes of the class it extends, and lists them in its schema and static params, only when that class is in the same segment or the controller has `@cloneControllerMetadata()`; the schema listed them always, and whether they answered depended on which segment loaded first ([#51](https://github.com/finom/vovk/pull/51))
 
 ### Added
@@ -110,7 +111,7 @@ A cleanup major: removals and renames; the only new exports are types.
 - Code samples in generated READMEs and OpenAPI: Python and Rust samples call the names the clients have and run as written (`True`, `None`), text from a schema stays inside strings and comments, a method name that isn't an identifier is called with brackets, and a description that isn't a string is left out ([#44](https://github.com/finom/vovk/pull/44))
 - A procedure that several controller members hold runs, in `.fn()` and in its tool, the decorators of the member it is called through; it ran those of the member decorated last ([#51](https://github.com/finom/vovk/pull/51))
 - Route options (`before`, `headers`, `cors`) stay with their route when one procedure serves several routes; the options of one route applied to all of them ([#51](https://github.com/finom/vovk/pull/51))
-- A decorated member that another controller reuses keeps its schema, its `@operation` data and its tool; the other controller's HTTP decorator replaced them ([#51](https://github.com/finom/vovk/pull/51))
+- A decorated member that another controller reuses keeps its schema, its `@operation` data and its tool, and the other controller's schema and tools carry what those decorators added, with its own decorators on top; the other controller's HTTP decorator replaced them ([#51](https://github.com/finom/vovk/pull/51))
 - `fn()` always returns a promise: a sync decorator that throws rejects it, one that answers without `next()` resolves it, and with an `iteration` schema it gives an async generator also with `disableClientValidation` ([#51](https://github.com/finom/vovk/pull/51))
 - A decorator can call `next()` again, as to retry: each call validates the input as sent; the second call validated the already validated input, so a transform ran twice or a valid request answered 400 ([#51](https://github.com/finom/vovk/pull/51))
 - A segment's or template's `package` option with a nested field, such as `author` or `repository`, stays in its own package; it was merged into the project's package.json object, so every other package got it ([#51](https://github.com/finom/vovk/pull/51))
@@ -153,6 +154,7 @@ A cleanup major: removals and renames; the only new exports are types.
 15. A string body to a method that declares no content type, such as a plain handler typed `VovkRequest<string>`, goes out as JSON, where v3 sent raw `text/plain`: `req.vovk.body()` still gives the string, `req.text()` now gives it quoted. To keep raw text, use a procedure with a text `contentType`.
 16. `.fn()` of a bare procedure and the tools derived from a module of bare procedures run no controller's decorators: call `.fn()` on the controller member, or derive the tools from the controller, to run them.
 17. A controller that extends another one serves the parent's routes only when the parent is in the same segment: otherwise add `@cloneControllerMetadata()` to it.
+18. A function attached to several members is copied for each, so `UserController.getUser !== UserProcedures.getUser`: don't compare members by identity.
 
 ## 3.7.0 - 2026-06-11
 

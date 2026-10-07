@@ -54,37 +54,57 @@ const assignSchema = ({
   const methods: Record<string, RouteHandler> = vovkApp.routes[httpMethod].get(controller) ?? {};
   vovkApp.routes[httpMethod].set(controller, methods);
 
-  const originalMethod = controller[propertyKey] as ((...args: unknown[]) => unknown) & {
+  type Member = ((...args: unknown[]) => unknown) & {
     _controller?: VovkController;
+    _createFn?: (run: Member) => unknown;
+    _sourceMethod?: Member & { _getSchema?: (controller: VovkController) => VovkHandlerSchema };
     schema?: VovkHandlerSchema;
-    _sourceMethod?: ((...args: unknown[]) => unknown) & {
-      _getSchema?: (controller: VovkController) => VovkHandlerSchema;
-    };
+    definition?: Record<string, unknown>;
+    fn?: unknown;
   };
 
-  // a decorated member another controller reuses keeps the schema of the controller that decorated it; this one's
-  // is in its own _handlers
-  const isOwnMember = !originalMethod._controller || originalMethod._controller === controller;
-  originalMethod._sourceMethod = originalMethod._sourceMethod ?? originalMethod;
-  const schema = originalMethod._sourceMethod._getSchema?.(controller);
+  let member = controller[propertyKey] as Member;
+  if (member._controller !== controller) {
+    if (!member._controller && !member._createFn) {
+      // a plain function no controller holds yet, as a static method of this class
+      member._controller = controller;
+    } else {
+      // a procedure, or another controller's member: each member is a copy, with its own schema and fn()
+      const target = member;
+      member = function (this: VovkController, req: VovkRequest, params: Record<string, string>) {
+        return target.call(this, req, params);
+      } as Member;
+      member._controller = controller;
+      member._sourceMethod = target._sourceMethod ?? target;
+      member.definition = target.definition;
+      member.fn = member._sourceMethod._createFn?.(member);
+      member.schema = target.schema;
+      controller[propertyKey] = member;
+    }
+  }
+
+  member._sourceMethod ??= member;
+  const schema = member._sourceMethod._getSchema?.(controller);
+  // a reused member carries what the decorators of its controller added, this controller's own decorators win
+  const { path: _path, httpMethod: _httpMethod, ...carried } = member.schema ?? {};
   const handlers = getOwn(controller, '_handlers');
   controller._handlers = {
     ...handlers,
     [propertyKey]: {
       ...schema,
+      ...carried,
       ...(handlers?.[propertyKey] as Partial<VovkHandlerSchema>),
       path,
       httpMethod,
     },
   };
   // the schema of the RPC method, with what the decorators applied before this one added
-  if (isOwnMember) originalMethod.schema = controller._handlers[propertyKey];
+  member.schema = controller._handlers[propertyKey];
 
   // the route calls the outermost decorator of the member, also one placed above the HTTP decorator; the options stay
   // on the route, as one procedure can serve several members, each with its own decorators and routes
   const route = function (this: VovkController, req: VovkRequest, params: Record<string, string>) {
-    const member = getDecoratedMember(controller, propertyKey) ?? originalMethod;
-    return (member as RouteHandler).call(this, req, params);
+    return ((getDecoratedMember(controller, propertyKey) ?? member) as RouteHandler).call(this, req, params);
   } as RouteHandler;
   route._options = options;
   methods[path] = route;

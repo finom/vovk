@@ -15,6 +15,7 @@ import {
   procedure,
   type VovkRequest,
 } from 'vovk';
+import type { VovkHandlerSchema } from 'vovk/create-rpc';
 import { z } from 'zod';
 
 type Handlers = ReturnType<typeof initSegment>;
@@ -241,7 +242,7 @@ describe('Shared state', () => {
   });
 
   describe('A member that another controller reuses', () => {
-    it('Keeps the schema and the tool of each controller', async () => {
+    it("Carries the schema its decorators added, which the controller's own decorators override", async () => {
       class UserController {
         static getUser = procedure().handle(() => ({ id: '1' }));
       }
@@ -253,30 +254,100 @@ describe('Shared state', () => {
         static getUser = UserController.getUser;
       }
       get('admin/{id}')(AdminUserController, 'getUser');
+      class SupportUserController {
+        static getUser = UserController.getUser;
+      }
+      get('support/{id}')(SupportUserController, 'getUser');
+      operation({ summary: 'Get a user for support' })(SupportUserController, 'getUser');
       const handlers = initSegmentInDevelopment({
         segmentName: 'reused-member',
-        controllers: { UserRPC: UserController, AdminUserRPC: AdminUserController },
+        controllers: {
+          UserRPC: UserController,
+          AdminUserRPC: AdminUserController,
+          SupportUserRPC: SupportUserController,
+        },
       });
       const { schema } = await (await call(handlers, 'GET', '_schema_')).json();
       const getEmitted = (rpcModuleName: string) => {
         const { path, operationObject } = schema.controllers[rpcModuleName].handlers.getUser;
         return { path, summary: operationObject?.summary };
       };
+      const getMember = ({ schema: { path, operationObject } }: { schema: VovkHandlerSchema }) => ({
+        path,
+        summary: operationObject?.summary,
+      });
       const getToolTitles = (modules: Record<string, object>) => deriveTools({ modules }).map(({ title }) => title);
 
       deepStrictEqual(
         {
-          member: {
-            path: UserController.getUser.schema.path,
-            summary: UserController.getUser.schema.operationObject?.summary,
-          },
-          emitted: { user: getEmitted('UserRPC'), admin: getEmitted('AdminUserRPC') },
-          tools: { user: getToolTitles({ UserController }), admin: getToolTitles({ AdminUserController }) },
+          members: [UserController, AdminUserController, SupportUserController].map(({ getUser }) =>
+            getMember(getUser)
+          ),
+          emitted: ['UserRPC', 'AdminUserRPC', 'SupportUserRPC'].map(getEmitted),
+          tools: (
+            [{ UserController }, { AdminUserController }, { SupportUserController }] as Record<string, object>[]
+          ).map(getToolTitles),
         },
         {
-          member: { path: '{id}', summary: 'Get a user' },
-          emitted: { user: { path: '{id}', summary: 'Get a user' }, admin: { path: 'admin/{id}', summary: undefined } },
-          tools: { user: ['Get a user'], admin: [] },
+          members: [
+            { path: '{id}', summary: 'Get a user' },
+            { path: 'admin/{id}', summary: 'Get a user' },
+            { path: 'support/{id}', summary: 'Get a user for support' },
+          ],
+          emitted: [
+            { path: '{id}', summary: 'Get a user' },
+            { path: 'admin/{id}', summary: 'Get a user' },
+            { path: 'support/{id}', summary: 'Get a user for support' },
+          ],
+          tools: [['Get a user'], ['Get a user'], ['Get a user for support']],
+        }
+      );
+    });
+
+    it('Gives each controller its own copy of a procedure attached without decorators', async () => {
+      class UserProcedures {
+        static getUser = procedure({ operationObject: { summary: 'Get a user' } }).handle((_req, params) => ({
+          id: params.id,
+        }));
+      }
+      class UserController {
+        static getUser = UserProcedures.getUser;
+      }
+      get('{id}')(UserController, 'getUser');
+      prefix('users')(UserController);
+      class AdminUserController {
+        static getUser = UserProcedures.getUser;
+      }
+      get('admin/{id}')(AdminUserController, 'getUser');
+      const handlers = initSegmentInDevelopment({
+        segmentName: 'copied-procedure',
+        controllers: { UserRPC: UserController, AdminUserRPC: AdminUserController },
+      });
+      const { schema } = await (await call(handlers, 'GET', '_schema_')).json();
+
+      deepStrictEqual(
+        {
+          copies:
+            UserController.getUser !== AdminUserController.getUser && UserController.getUser !== UserProcedures.getUser,
+          paths: [UserProcedures, UserController, AdminUserController].map(({ getUser }) => getUser.schema.path),
+          emitted: ['UserRPC', 'AdminUserRPC'].map((name) => schema.controllers[name].handlers.getUser.path),
+          fn: await Promise.all(
+            [UserProcedures, UserController, AdminUserController].map(({ getUser }) =>
+              getUser.fn({ params: { id: '1' } })
+            )
+          ),
+          tools: ([{ UserProcedures }, { UserController }, { AdminUserController }] as Record<string, object>[]).map(
+            (modules) => deriveTools({ modules }).length
+          ),
+          routes: [(await call(handlers, 'GET', 'users/1')).status, (await call(handlers, 'GET', 'admin/1')).status],
+        },
+        {
+          copies: true,
+          paths: [undefined, '{id}', 'admin/{id}'],
+          emitted: ['{id}', 'admin/{id}'],
+          fn: [{ id: '1' }, { id: '1' }, { id: '1' }],
+          tools: [1, 1, 1],
+          routes: [200, 200],
         }
       );
     });
