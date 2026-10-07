@@ -730,7 +730,7 @@ export const { GET } = initSegment({
 </Tabs.Tab>
 </Tabs>
 
-The `static` segment exports `dynamic = 'force-static'`, and the root segment `runtime = 'edge'`. Next.js refuses both when `cacheComponents` is on, as `create-next-app` 16.4+ sets it. The example's **next.config** leaves it off; in your app, set `cacheComponents: false` to use them.
+The `static` segment exports `dynamic = 'force-static'`. Next.js refuses it when `cacheComponents` is on, as `create-next-app` 16.4+ sets it. The example's **next.config** leaves it off; in your app, set `cacheComponents: false` to use it.
 
 The spec includes code samples that Scalar shows, ready to copy.
 

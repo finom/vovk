@@ -96,7 +96,7 @@ When adding new named segment, any existing root-handled paths under that prefix
 | Shape | When | Path |
 |---|---|---|
 | **Root** | Default. Most projects have exactly one. | `src/app/api/[[...vovk]]/route.ts` |
-| **Named** | Isolate slice with different runtime settings (`maxDuration`, `runtime: 'edge'` — Next.js 16 deprecates edge and warns; with `cacheComponents` on, Next.js refuses it), or for multi-tenancy. | `src/app/api/<name>/[[...vovk]]/route.ts` |
+| **Named** | Isolate slice with different route options (`maxDuration`), or for multi-tenancy. | `src/app/api/<name>/[[...vovk]]/route.ts` |
 | **Static** | API that can be pre-rendered at build time — OpenAPI specs, enumerated datasets, infrequently changing reference data. Works with Next `output: 'export'`. Needs `cacheComponents` off. | `src/app/api/<name>/[[...vovk]]/route.ts` + `generateStaticParams` |
 
 **When user says...**
@@ -175,7 +175,7 @@ export const { GET } = initSegment({
 
 If you've customized slug (not `vovk`), pass it: `controllersToStaticParams(controllers, 'custom')`.
 
-With `cacheComponents` on (create-next-app 16.4+ sets it), Next.js refuses `dynamic = 'force-static'` and `output: 'export'` → set `cacheComponents: false` in next.config. Same for `runtime = 'edge'`.
+With `cacheComponents` on (create-next-app 16.4+ sets it), Next.js refuses `dynamic = 'force-static'` and `output: 'export'` → set `cacheComponents: false` in next.config.
 
 ### 2. Endpoints must be enumerable
 
