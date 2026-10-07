@@ -165,6 +165,11 @@ describe('Runtime sweep', () => {
         throw new HttpException(HttpStatus.CONTINUE, 'Informational status');
       }
 
+      // as JavaScript code or a cast can pass it
+      static stringStatus() {
+        throw new HttpException('400' as unknown as HttpStatus, 'String status');
+      }
+
       static throwString() {
         throw 'Plain string';
       }
@@ -183,10 +188,17 @@ describe('Runtime sweep', () => {
         yield { n: 1 };
         throw new HttpException(HttpStatus.NULL, 'No response');
       }
+
+      static async *streamStringStatus() {
+        yield { n: 1 };
+        throw new HttpException('400' as unknown as HttpStatus, 'String status');
+      }
     }
     get('stream-unknown-status')(FailureController, 'streamUnknownStatus');
     get('stream-informational-status')(FailureController, 'streamInformationalStatus');
     get('stream-null-status')(FailureController, 'streamNullStatus');
+    get('stream-string-status')(FailureController, 'streamStringStatus');
+    get('string-status')(FailureController, 'stringStatus');
     get('big-int', { cors: true })(FailureController, 'bigInt');
     get('big-int-cause', { cors: true })(FailureController, 'bigIntCause');
     get('not-modified')(FailureController, 'notModified');
@@ -278,6 +290,18 @@ describe('Runtime sweep', () => {
         { n: 1 },
         { isError: true, reason: 'No response', statusCode: 500 },
       ]);
+    });
+
+    it('Answers an HttpException whose status is not a number with 500, on a JSON response and an error line', async () => {
+      const response = await call(handlers, 'GET', 'string-status');
+      const lines = (await (await call(handlers, 'GET', 'stream-string-status')).text())
+        .split('\n')
+        .filter(Boolean)
+        .map((line) => JSON.parse(line));
+
+      strictEqual(response.status, 500);
+      deepStrictEqual(await response.json(), { statusCode: 500, message: 'String status', isError: true });
+      deepStrictEqual(lines, [{ n: 1 }, { isError: true, reason: 'String status', statusCode: 500 }]);
     });
 
     it('Sends a thrown value that is no Error as the message', async () => {
