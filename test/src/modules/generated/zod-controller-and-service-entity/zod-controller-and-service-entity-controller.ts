@@ -35,7 +35,7 @@ export default class ZodControllerAndServiceEntityController {
     }),
     params: z.object({ id: z.string() }),
   }).handle(async (req, { id }) => {
-    const body = await req.json();
+    const body = await req.vovk.body();
 
     return ZodControllerAndServiceEntityService.updateZodControllerAndServiceEntity(id, body);
   });
@@ -49,7 +49,7 @@ export default class ZodControllerAndServiceEntityController {
       todo: z.literal(true),
     }),
   }).handle(async (req) => {
-    const body = await req.json();
+    const body = await req.vovk.body();
 
     return ZodControllerAndServiceEntityService.createZodControllerAndServiceEntity(body);
   });

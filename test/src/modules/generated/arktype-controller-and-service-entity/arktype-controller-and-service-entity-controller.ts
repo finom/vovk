@@ -31,7 +31,7 @@ export default class ArktypeControllerAndServiceEntityController {
     body: type({ todo: type('true') }),
     params: type({ id: type('string') }),
   }).handle(async (req, { id }) => {
-    const body = await req.json();
+    const body = await req.vovk.body();
 
     return ArktypeControllerAndServiceEntityService.updateArktypeControllerAndServiceEntity(id, body);
   });
@@ -43,7 +43,7 @@ export default class ArktypeControllerAndServiceEntityController {
   static createArktypeControllerAndServiceEntity = procedure({
     body: type({ todo: type('true') }),
   }).handle(async (req) => {
-    const body = await req.json();
+    const body = await req.vovk.body();
 
     return ArktypeControllerAndServiceEntityService.createArktypeControllerAndServiceEntity(body);
   });

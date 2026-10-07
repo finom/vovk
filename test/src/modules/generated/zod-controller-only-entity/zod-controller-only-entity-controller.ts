@@ -33,7 +33,7 @@ export default class ZodControllerOnlyEntityController {
     }),
     params: z.object({ id: z.string() }),
   }).handle(async (req, { id }) => {
-    const body = await req.json();
+    const body = await req.vovk.body();
 
     return { message: `TODO: update zodControllerOnlyEntity`, id, body };
   });
@@ -47,7 +47,7 @@ export default class ZodControllerOnlyEntityController {
       todo: z.literal(true),
     }),
   }).handle(async (req) => {
-    const body = await req.json();
+    const body = await req.vovk.body();
 
     return { message: `TODO: create zodControllerOnlyEntity`, body };
   });
