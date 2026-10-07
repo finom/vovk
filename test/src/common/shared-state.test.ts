@@ -10,10 +10,12 @@ import {
   HttpStatus,
   initSegment,
   operation,
+  post,
   prefix,
   procedure,
   type VovkRequest,
 } from 'vovk';
+import { z } from 'zod';
 
 type Handlers = ReturnType<typeof initSegment>;
 
@@ -441,6 +443,70 @@ describe('Shared state', () => {
           },
           alone: { handlers: ['list'], status: 404, staticParams: ['items/list'] },
         }
+      );
+    });
+  });
+
+  describe('One request through a procedure twice', () => {
+    // retries the handler once, as for a transient database error
+    const retryOnce = createDecorator(async (_req: VovkRequest, next) => {
+      try {
+        return await next();
+      } catch {
+        return next();
+      }
+    });
+
+    it('Validates the input as sent when a decorator calls next() again', async () => {
+      let attempts = 0;
+      class RetryController {
+        static create = procedure({
+          body: z.object({ name: z.string().transform((name) => `${name}!`) }),
+          query: z.object({ n: z.string().transform(Number) }),
+        }).handle(async (req) => {
+          attempts++;
+          if (attempts === 1) throw new Error('Transient error');
+          return { body: await req.vovk.body(), query: req.vovk.query() };
+        });
+      }
+      retryOnce()(RetryController, 'create');
+      post('create')(RetryController, 'create');
+      const handlers = initSegment({ segmentName: 'retry', controllers: { RetryController } });
+
+      const response = await call(handlers, 'POST', 'create?n=5', {
+        body: JSON.stringify({ name: 'ann' }),
+        headers: { 'content-type': 'application/json' },
+      });
+
+      strictEqual(response.status, 200);
+      deepStrictEqual(await response.json(), { body: { name: 'ann!' }, query: { n: 5 } });
+    });
+
+    it('Applies a transform once per pass, over HTTP and in fn()', async () => {
+      let attempts = 0;
+      class PaymentController {
+        // dollars to cents, a transform that keeps the type
+        static charge = procedure({
+          body: z.object({ amount: z.number().transform((dollars) => dollars * 100) }),
+        }).handle(async (req) => {
+          attempts++;
+          const { amount } = await req.vovk.body();
+          if (attempts % 2 === 1) throw new Error('Transient error');
+          return { chargedCents: amount };
+        });
+      }
+      retryOnce()(PaymentController, 'charge');
+      post('charge')(PaymentController, 'charge');
+      const handlers = initSegment({ segmentName: 'retry-payment', controllers: { PaymentController } });
+
+      const response = await call(handlers, 'POST', 'charge', {
+        body: JSON.stringify({ amount: 5 }),
+        headers: { 'content-type': 'application/json' },
+      });
+
+      deepStrictEqual(
+        { http: await response.json(), fn: await PaymentController.charge.fn({ body: { amount: 5 } }) },
+        { http: { chargedCents: 500 }, fn: { chargedCents: 500 } }
       );
     });
   });

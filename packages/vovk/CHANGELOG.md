@@ -112,6 +112,7 @@ A cleanup major: removals and renames; the only new exports are types.
 - Route options (`before`, `headers`, `cors`) stay with their route when one procedure serves several routes; the options of one route applied to all of them ([#51](https://github.com/finom/vovk/pull/51))
 - A decorated member that another controller reuses keeps its schema, its `@operation` data and its tool; the other controller's HTTP decorator replaced them ([#51](https://github.com/finom/vovk/pull/51))
 - `fn()` always returns a promise: a sync decorator that throws rejects it, one that answers without `next()` resolves it, and with an `iteration` schema it gives an async generator also with `disableClientValidation` ([#51](https://github.com/finom/vovk/pull/51))
+- A decorator can call `next()` again, as to retry: each call validates the input as sent; the second call validated the already validated input, so a transform ran twice or a valid request answered 400 ([#51](https://github.com/finom/vovk/pull/51))
 - A segment's or template's `package` option with a nested field, such as `author` or `repository`, stays in its own package; it was merged into the project's package.json object, so every other package got it ([#51](https://github.com/finom/vovk/pull/51))
 - `controllersToStaticParams()` lists `_schema_` only in development, or for a segment with no other path, as `output: 'export'` needs one: a build wrote its 404 body, and a static export put it in `out`, where a static host serves it with 200 ([#51](https://github.com/finom/vovk/pull/51))
 
