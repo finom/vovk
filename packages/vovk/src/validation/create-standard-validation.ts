@@ -1,4 +1,4 @@
-import { HttpException } from '../core/http-exception.js';
+import { HttpException, withResponseCause } from '../core/http-exception.js';
 import type { JSONLinesResponder } from '../core/json-lines-responder.js';
 import type { VovkValidationType } from '../types/core.js';
 import type { VovkOperationObject } from '../types/operation.js';
@@ -16,7 +16,8 @@ import type {
 import { HttpStatus } from './create-validate-on-client.js';
 import { withValidationLibrary } from './with-validation-library.js';
 
-// an array of 100 000 wrong items has as many issues: a validation error lists the first ones, in its message and cause
+// an array of 100 000 wrong items has as many issues: a validation error lists the first ones, in its message and in
+// the cause a response sends
 const MAX_ISSUES = 20;
 
 // the fields of an issue that copy the value that failed: Valibot's input and received, ArkType's data and actual
@@ -28,18 +29,18 @@ type Issue = { message: string; path?: readonly (PropertyKey | { key: PropertyKe
 // the input in several places, and a union nests more issues, so it can be many times the size of the request
 const toIssue = (issue: Issue) => {
   // what JSON.stringify reads, as ArkType's toJSON()
-  const source = typeof issue.toJSON === 'function' ? issue.toJSON() : issue;
-  const fields = Object.entries(source).filter(
-    ([key, value]) =>
-      key !== 'path' &&
-      !INPUT_FIELDS.has(key) &&
-      (value === null || typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean')
-  );
-  return {
-    ...Object.fromEntries(fields),
-    message: issue.message,
-    ...(issue.path ? { path: issue.path.map((segment) => (typeof segment === 'object' ? segment.key : segment)) } : {}),
-  };
+  const source = (typeof issue.toJSON === 'function' ? issue.toJSON() : issue) as Record<string, unknown>;
+  const result: Record<string, unknown> = {};
+  for (const key in source) {
+    if (!Object.hasOwn(source, key) || key === 'path' || INPUT_FIELDS.has(key)) continue;
+    const value = source[key];
+    if (value === null || typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') {
+      result[key] = value;
+    }
+  }
+  result.message = issue.message;
+  if (issue.path) result.path = issue.path.map((segment) => (typeof segment === 'object' ? segment.key : segment));
+  return result as { message: string; path?: PropertyKey[] };
 };
 
 type ProcedureOptions<
@@ -142,12 +143,14 @@ export function createStandardValidation({
           const message = `Validation failed. Invalid ${validationType === 'iteration' ? `${validationType} #${i}` : validationType}: ${issues
             .map(({ message, path }) => `${message}${path?.length ? ` at ${path.map(String).join('.')}` : ''}`)
             .join(', ')}${moreIssues ? `, and ${moreIssues} more` : ''}`;
+          // the error's cause holds the library's own issues for onError, a response sends the trimmed ones
+          const cause = { issues: result.issues };
           // output and iterations are the handler's own data, and some libraries copy it into the issues:
           // without a status code the error is internal, so production answers 500 and keeps the issues on the server
           if (validationType === 'output' || validationType === 'iteration') {
-            throw new Error(message, { cause: { issues } });
+            throw withResponseCause(new Error(message, { cause }), { issues });
           }
-          throw new HttpException(HttpStatus.BAD_REQUEST, message, { issues });
+          throw withResponseCause(new HttpException(HttpStatus.BAD_REQUEST, message, cause), { issues });
         }
 
         return (result as CombinedSpec.SuccessResult<typeof model>).value;

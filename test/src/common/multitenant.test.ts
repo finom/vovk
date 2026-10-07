@@ -152,6 +152,93 @@ describe('Multitenant', async () => {
     assert.strictEqual(result.destination, 'https://acme.customer.example.com/api/customer/[customer_name]');
   });
 
+  await it('should redirect a percent-encoded reserved name', async () => {
+    const result = multitenant({
+      ...testConfig,
+      requestUrl: 'https://example.com/%61dmin/dash%20board',
+      requestHost: 'example.com',
+    });
+
+    assert.strictEqual(result.action, 'redirect');
+    assert.strictEqual(result.destination, 'https://admin.example.com/dash%20board');
+  });
+
+  await it('should match a percent-encoded prefix and keep the rest of the path as sent', async () => {
+    const encoded = multitenant({
+      ...testConfig,
+      requestUrl: 'https://admin.example.com/%61pi/us%20ers/',
+      requestHost: 'admin.example.com',
+    });
+    const longer = multitenant({
+      ...testConfig,
+      requestUrl: 'https://admin.example.com/apix/users',
+      requestHost: 'admin.example.com',
+    });
+
+    assert.strictEqual(encoded.destination, 'https://admin.example.com/api/admin/us%20ers/');
+    assert.strictEqual(longer.destination, 'https://admin.example.com/admin/apix/users');
+  });
+
+  await it('should match a host that carries a port when the target host has none', async () => {
+    const result = multitenant({
+      ...testConfig,
+      requestUrl: 'https://admin.example.com/api/users',
+      requestHost: 'admin.example.com:443',
+    });
+
+    assert.strictEqual(result.action, 'rewrite');
+    assert.strictEqual(result.destination, 'https://admin.example.com/api/admin/users');
+  });
+
+  await it("should keep the request's port in a redirect when the target host has none", async () => {
+    const result = multitenant({
+      ...testConfig,
+      targetHost: 'localhost',
+      requestUrl: 'http://localhost:3000/admin/dashboard',
+      requestHost: 'localhost:3000',
+    });
+
+    assert.strictEqual(result.action, 'redirect');
+    assert.strictEqual(result.destination, 'http://admin.localhost:3000/dashboard');
+  });
+
+  await it('should match a target host with a port only on that port', async () => {
+    const config = { ...testConfig, targetHost: 'localhost:3000' };
+    const onPort = multitenant({
+      ...config,
+      requestUrl: 'http://admin.localhost:3000/',
+      requestHost: 'admin.localhost:3000',
+    });
+    const otherPort = multitenant({
+      ...config,
+      requestUrl: 'http://admin.localhost:4000/',
+      requestHost: 'admin.localhost:4000',
+    });
+
+    assert.strictEqual(onPort.destination, 'http://admin.localhost:3000/admin');
+    assert.strictEqual(otherPort.action, null);
+  });
+
+  await it('should read every character of the target host and the patterns literally', async () => {
+    const config = {
+      targetHost: 'a+b.example.com',
+      overrides: { 'x+y': [{ from: '', to: 'x' }] },
+    };
+    const literal = multitenant({
+      ...config,
+      requestUrl: 'https://x+y.a+b.example.com/',
+      requestHost: 'x+y.a+b.example.com',
+    });
+    const asRegex = multitenant({
+      ...config,
+      requestUrl: 'https://xxy.aab.example.com/',
+      requestHost: 'xxy.aab.example.com',
+    });
+
+    assert.strictEqual(literal.action, 'rewrite');
+    assert.strictEqual(asRegex.action, null);
+  });
+
   await it('should return null action when no rules match', async () => {
     const result = multitenant({
       ...testConfig,

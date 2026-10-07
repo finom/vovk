@@ -87,7 +87,7 @@ import { operation, post, procedure, HttpStatus, HttpException } from 'vovk';
 static createUser = procedure({
   body: z.object({ email: z.string(), orgId: z.string() }),
 }).handle(async (req) => {
-  const { email, orgId } = await req.json();
+  const { email, orgId } = await req.vovk.body();
   if (!await orgExists(orgId)) throw new HttpException(HttpStatus.NOT_FOUND, 'Organization not found');
   if (await emailTaken(email)) throw new HttpException(HttpStatus.BAD_REQUEST, 'Email is already taken');
   // ...
