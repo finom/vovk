@@ -165,7 +165,7 @@ const myDecorator = createDecorator((req, next) => {
 });
 ```
 
-`req` is not a `Request`, but a local call can still use Next.js functions such as `headers` or `cookies` from `next/headers`:
+`req` is not a `Request`, but a local call made during a Next.js request, as in a server component or a server action, can still use Next.js functions such as `headers` or `cookies` from `next/headers`. Outside a request, as in a unit test, they throw, so mock `next/headers` there.
 
 ```ts showLineNumbers copy {5}
 import { createDecorator } from 'vovk';

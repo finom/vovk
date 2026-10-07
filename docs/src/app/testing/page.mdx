@@ -77,7 +77,7 @@ describe('UserController', () => {
 });
 ```
 
-`.fn` runs the whole procedure, with validation and [decorators](/decorator-overview), but without HTTP. That fits tests with mocked or stubbed data: there is no server to start, no network latency and no cold start, so the tests run fast.
+`.fn` runs the whole procedure, with validation and [decorators](/decorator-overview), but without HTTP. That fits tests with mocked or stubbed data: there is no server to start, no network latency and no cold start, so the tests run fast. A test runs outside a Next.js request, so `headers()` and `cookies()` from `next/headers` throw there: mock `next/headers` for a decorator that reads them.
 
 The trade-off: `.fn()` skips `proxy.js` (`middleware.js` in earlier Next.js versions). Logic that lives there, such as authentication checks, rate limiting or added headers, doesn't run in `.fn()` calls. To test that layer, use [integration tests with RPC modules](#integration-testing-with-rpc-modules) against a running dev server instead.
 
