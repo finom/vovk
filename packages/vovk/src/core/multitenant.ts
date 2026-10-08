@@ -22,7 +22,7 @@ const DNS_LABEL = '([a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?)';
 // every other character of a pattern or the target host is literal, as "+" or "*"
 const patternToRegex = (pattern: string): { regex: RegExp; paramNames: string[] } => {
   const paramNames: string[] = [];
-  const regexPattern = pattern.replace(/\[([^\]]+)\]|[.*+?^${}()|[\]\\]/g, (match, name?: string) => {
+  const regexPattern = pattern.replace(/\[([^[\]]+)\]|[.*+?^${}()|[\]\\]/g, (match, name?: string) => {
     if (name === undefined) return `\\${match}`;
     paramNames.push(name);
     return DNS_LABEL;

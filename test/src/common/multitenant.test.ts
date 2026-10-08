@@ -221,22 +221,42 @@ describe('Multitenant', async () => {
 
   await it('should read every character of the target host and the patterns literally', async () => {
     const config = {
-      targetHost: 'a+b.example.com',
+      targetHost: 'a+b.localhost',
       overrides: { 'x+y': [{ from: '', to: 'x' }] },
     };
     const literal = multitenant({
       ...config,
-      requestUrl: 'https://x+y.a+b.example.com/',
-      requestHost: 'x+y.a+b.example.com',
+      requestUrl: 'https://x+y.a+b.localhost/',
+      requestHost: 'x+y.a+b.localhost',
     });
     const asRegex = multitenant({
       ...config,
-      requestUrl: 'https://xxy.aab.example.com/',
-      requestHost: 'xxy.aab.example.com',
+      requestUrl: 'https://xxy.aab.localhost/',
+      requestHost: 'xxy.aab.localhost',
+    });
+    const dotAsRegex = multitenant({
+      ...config,
+      requestUrl: 'https://x+y.a+bxlocalhost/',
+      requestHost: 'x+y.a+bxlocalhost',
     });
 
     assert.strictEqual(literal.action, 'rewrite');
     assert.strictEqual(asRegex.action, null);
+    assert.strictEqual(dotAsRegex.action, null);
+  });
+
+  await it('should read a pattern of many "[" in linear time', async () => {
+    const start = performance.now();
+    const result = multitenant({
+      targetHost: 'example.com',
+      overrides: { ['['.repeat(30_000)]: [{ from: '', to: 'x' }] },
+      requestUrl: 'https://example.com/',
+      requestHost: 'example.com',
+    });
+
+    assert.strictEqual(result.action, null);
+    // a quadratic scan takes about 1 s here
+    assert.ok(performance.now() - start < 250);
   });
 
   await it('should return null action when no rules match', async () => {
