@@ -38,6 +38,59 @@ const mixinSpec = {
         },
       },
     },
+    // a query and an urlencoded body in the styles the document declares; a test server answers with what it got
+    '/styled': {
+      get: {
+        operationId: 'getStyled',
+        parameters: [
+          { name: 'tags', in: 'query', schema: { type: 'array', items: { type: 'string' } } },
+          { name: 'ids', in: 'query', explode: false, schema: { type: 'array', items: { type: 'integer' } } },
+          {
+            name: 'filter',
+            in: 'query',
+            style: 'deepObject',
+            explode: true,
+            schema: { type: 'object', properties: { status: { type: 'string' }, tag: { type: 'string' } } },
+          },
+          {
+            name: 'pipe',
+            in: 'query',
+            style: 'pipeDelimited',
+            explode: false,
+            schema: { type: 'array', items: { type: 'string' } },
+          },
+          {
+            name: 'space',
+            in: 'query',
+            style: 'spaceDelimited',
+            explode: false,
+            schema: { type: 'array', items: { type: 'string' } },
+          },
+          { name: 'obj', in: 'query', schema: { type: 'object', properties: { k: { type: 'string' } } } },
+        ],
+        responses: { 200: { description: 'ok' } },
+      },
+      post: {
+        operationId: 'postStyled',
+        requestBody: {
+          required: true,
+          content: {
+            'application/x-www-form-urlencoded': {
+              schema: {
+                type: 'object',
+                properties: {
+                  name: { type: 'string' },
+                  metadata: { type: 'object', additionalProperties: true },
+                  tags: { type: 'array', items: { type: 'string' } },
+                },
+              },
+              encoding: { metadata: { style: 'deepObject', explode: true } },
+            },
+          },
+        },
+        responses: { 200: { description: 'ok' } },
+      },
+    },
     '/with-zod/handle-query': {
       get: {
         operationId: 'handleQuery',
@@ -80,6 +133,8 @@ const vovkConfig = {
           apiRoot: `${origin}/api/foo/client`,
           getModuleName: 'MixinRPC',
           getMethodName: 'camel-case-operation-id',
+          // where its error bodies hold the message
+          errorMessageKey: 'error.reason',
         },
       },
     },

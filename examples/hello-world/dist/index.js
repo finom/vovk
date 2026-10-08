@@ -18,32 +18,6 @@ var __exportAll = (all, no_symbols) => {
 	return target;
 };
 //#endregion
-//#region ../../packages/vovk/dist/core/http-exception.js
-var HTTP_EXCEPTION_BRAND, HttpException;
-var init_http_exception = __esmMin(() => {
-	HTTP_EXCEPTION_BRAND = Symbol.for("vovk.HttpException");
-	HttpException = class extends Error {
-		statusCode;
-		message;
-		cause;
-		constructor(statusCode, message, cause) {
-			super(message);
-			this.statusCode = statusCode;
-			this.message = message;
-			this.cause = cause;
-		}
-		toJSON() {
-			return {
-				isError: true,
-				statusCode: this.statusCode,
-				message: this.message,
-				...this.cause ? { cause: this.cause } : {}
-			};
-		}
-	};
-	Object.defineProperty(HttpException.prototype, HTTP_EXCEPTION_BRAND, { value: true });
-});
-//#endregion
 //#region ../../packages/vovk/dist/types/enums.js
 var HttpMethod, HttpStatus, VovkSchemaIdEnum;
 var init_enums = __esmMin(() => {
@@ -115,9 +89,41 @@ var init_enums = __esmMin(() => {
 	})(VovkSchemaIdEnum || (VovkSchemaIdEnum = {}));
 });
 //#endregion
+//#region ../../packages/vovk/dist/core/http-exception.js
+function getResponseCause(error) {
+	if (typeof error === "object" && error !== null && RESPONSE_CAUSE in error) return error[RESPONSE_CAUSE];
+	return error?.cause;
+}
+var HTTP_EXCEPTION_BRAND, RESPONSE_CAUSE, HttpException;
+var init_http_exception = __esmMin(() => {
+	init_enums();
+	HTTP_EXCEPTION_BRAND = Symbol.for("vovk.HttpException");
+	RESPONSE_CAUSE = Symbol.for("vovk.responseCause");
+	HttpException = class extends Error {
+		statusCode;
+		message;
+		cause;
+		constructor(statusCode, message, cause) {
+			super(message);
+			this.statusCode = statusCode;
+			this.message = message;
+			this.cause = cause;
+		}
+		toJSON() {
+			const cause = getResponseCause(this);
+			return {
+				isError: true,
+				statusCode: this.statusCode,
+				message: this.message,
+				...cause ? { cause } : {}
+			};
+		}
+	};
+	Object.defineProperty(HttpException.prototype, HTTP_EXCEPTION_BRAND, { value: true });
+});
+//#endregion
 //#region ../../packages/vovk/dist/utils/deep-extend.js
 init_http_exception();
-init_enums();
 /*!
 * @description Recursive object extending
 * @author Viacheslav Lotsmanov <lotsmanov89@gmail.com>
@@ -243,6 +249,7 @@ if (typeof Symbol.asyncDispose !== "symbol") Object.defineProperty(Symbol, "asyn
 //#endregion
 //#region ../../packages/vovk/dist/client/default-stream-handler.js
 init_http_exception();
+init_enums();
 const ERROR_LINE_KEYS = /* @__PURE__ */ new Set([
 	"isError",
 	"reason",
@@ -618,7 +625,8 @@ function createFetcher({ prepareRequestInit, transformResponse, onSuccess: onSuc
 				response = await fetch(endpoint, requestInit);
 			} catch (e) {
 				if (requestInit.signal?.aborted) throw e;
-				throw new HttpException(HttpStatus.NULL, `${e?.message ?? DEFAULT_ERROR_MESSAGE} ${endpoint}`, e);
+				const message = String(e?.message ?? DEFAULT_ERROR_MESSAGE);
+				throw new HttpException(HttpStatus.NULL, message.includes(endpoint) ? message : `${message} ${endpoint}`, e);
 			}
 			const mediaType = getMediaType(interpretAs ?? response.headers.get("content-type"));
 			const isJSONLines = JSON_LINES_MEDIA_TYPES.includes(mediaType);
@@ -1124,9 +1132,9 @@ const schema = {
 	meta: {
 		$schema: "https://vovk.dev/api/schema/v3/meta.json",
 		config: {
-			"libs": {},
-			"rootEntry": "api",
-			"$schema": "https://vovk.dev/api/schema/v3/config.json"
+			libs: {},
+			rootEntry: "api",
+			$schema: "https://vovk.dev/api/schema/v3/config.json"
 		}
 	}
 };

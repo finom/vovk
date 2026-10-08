@@ -23,14 +23,7 @@ Start the Docker containers:
 docker-compose up -d
 ```
 
-Generate the Prisma client, the Zod schemas and the Vovk.ts client, then create the database tables:
-
-```bash copy
-npm run generate
-npx prisma migrate deploy
-```
-
-Start the development server:
+Start the development server. It first generates the Prisma client, the Zod schemas and the Vovk.ts client, and creates the database tables:
 
 ```sh
 npm run dev

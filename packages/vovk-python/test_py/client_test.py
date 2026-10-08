@@ -1,5 +1,6 @@
 import json
 import unittest
+from datetime import date, datetime, timezone
 from io import BytesIO
 from typing import Any, Dict, List
 from unittest import mock
@@ -56,6 +57,17 @@ class TestClient(unittest.TestCase):
                     ClientSweepRPC.get_content_type(api_root=FAKE_ROOT)
                 error = context.exception
                 self.assertEqual((error.status_code, error.message, error.cause), (404, message, body))
+
+    def test_error_message_key_of_a_mixin(self) -> None:
+        errors: List[Any] = [
+            ({'error': {'reason': 'No such pet'}, 'message': 'not this one'}, 'No such pet'),
+            ({'message': 'not this one', 'detail': 'Pet 42 does not exist'}, 'Pet 42 does not exist'),
+        ]
+        for body, message in errors:
+            with self.subTest(body=body):
+                with fake_transport(json_response(body, status=404)), self.assertRaises(HttpException) as context:
+                    PetstoreAPI.get_pet(params={'petId': '42'})
+                self.assertEqual(context.exception.message, message)
 
     def test_text_error(self) -> None:
         with self.assertRaises(HttpException) as context:
@@ -185,6 +197,27 @@ class TestClient(unittest.TestCase):
             [request.request.url for request in sent],
             ['https://petstore.test/v1/pets/5/vaccinated/true', 'https://petstore.test/v1/pets/2.5/vaccinated/false'],
         )
+
+    def test_dates_and_tuples_as_json_sends_them(self) -> None:
+        at = datetime(2026, 1, 2, 3, 4, 5, tzinfo=timezone.utc)
+        body_schema = {
+            'type': 'object',
+            'properties': {
+                'at': {'type': 'string', 'format': 'date-time'},
+                'pair': {'type': 'array', 'prefixItems': [{'type': 'string'}, {'type': 'number'}]},
+            },
+        }
+        query_schema = {'type': 'object', 'properties': {'since': {'type': 'string', 'format': 'date'}}}
+        with fake_transport(json_response(None)) as sent:
+            client.make_api_request(
+                url=f'{FAKE_ROOT}/events',
+                http_method='POST',
+                body={'at': at, 'pair': ('a', 1)},
+                query={'since': date(2026, 1, 2)},
+                validation={'body': body_schema, 'query': query_schema},
+            )
+        self.assertEqual(sent[0].request.url, f'{FAKE_ROOT}/events?since=2026-01-02')
+        self.assertEqual(json.loads(sent[0].request.body or ''), {'at': '2026-01-02T03:04:05+00:00', 'pair': ['a', 1]})
 
     def test_query_numbers_as_javascript_writes_them(self) -> None:
         self.assertEqual(RustSweepRPC.get_numeric_query(query={'limit': 10.0}), {'search': '?limit=10'})

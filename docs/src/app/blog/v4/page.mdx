@@ -21,8 +21,8 @@ Breaking changes:
 - A wrong method on a known path answers 405, and a `Content-Type` list answers 415.
 - A JSON Lines stream can be read once.
 - `vovk-ajv`: `configure()` moved to `libs.ajv` in `vovk.config`.
-- Python returns `bytes` for files. Rust sends a typed JSON body where it sent a multipart form.
-- The CLI needs Node.js 22.22.2+, 24.15+ or 26+, and TypeScript 5.5+.
+- Python returns `bytes` for files. Rust sends a typed JSON body where it sent a multipart form. Python and Rust mixin calls send the query in the OpenAPI document's `style` and `explode`.
+- The CLI needs Node.js 24+ and TypeScript 5.5+. The vovk packages take `vovk` 4 only as a peer.
 
 Fixes: several hundred bugs in routing, validation, streaming, the clients, code generation and the CLI, and security hardening of query parsing, content types and generated code. Five audits found them, and each code fix comes with a test that failed before it.
 
@@ -47,7 +47,7 @@ If you generate Python or Rust clients, update `vovk-python` and `vovk-rust` too
 
 Requirements:
 
-- Node.js 22.22.2+, 24.15+ or 26+ for the CLI.
+- Node.js 24+ for the CLI.
 - TypeScript 5.5+. The generated client alone compiles on 5.3+, but a service or handler that takes its types from its own procedure, as in the docs and the files `vovk new` writes, needs 5.5. TypeScript 7 works.
 - `"experimentalDecorators": true` in `tsconfig.json` if you build with webpack. Turbopack builds don't need it. `vovk init` asks whether to add it.
 
@@ -60,6 +60,8 @@ Requirements:
 - `vovk generate` refuses to overwrite a file it didn't generate. `--force` overrides it.
 - The client takes `libs` and `rootEntry` from the current `vovk.config`, so `vovk generate` alone picks up a config change.
 - A relative path in `outputConfig.imports` may keep the `.ts` extension the v3 client needed: the CLI writes it the way your `tsconfig.json` resolves it.
+- A segment's `rootEntry: ''` serves it from the root of its origin.
+- `vovk init`, `--help` and `--version` run without `vovk` installed. `vovk init` adds `openapi3-ts`, which the types of `vovk` import, since not every package manager installs a peer dependency.
 
 ## Tools follow the [standard-tool](https://standard-tool.js.org/) convention
 
@@ -98,6 +100,8 @@ A procedure attached to several controller members runs each member's own decora
 - The handler's second argument is the validated params, coerced types included.
 - `req.nextUrl.searchParams.get()` is typed as the string it returns. `req.vovk.query()` gives the validated values.
 - None of it needs `strictNullChecks`, and the types no longer import `next`.
+- The declarations of `vovk` are about half the size of 3.7.0's, and so are those of a controller that holds procedures.
+- A Swagger 2.0 [mixin](/mixins) is read as OpenAPI 3.0, so its parameters, bodies, responses and `definitions` are typed.
 
 ## HTTP behavior
 
@@ -116,7 +120,7 @@ A procedure attached to several controller members runs each member's own decora
 - In production, error responses carry no internal detail. `onError` still receives the full error.
 - Only an `HttpException` sets the status and keeps its message. Any other error answers 500, also in derived tools.
 - Failed `output` or `iteration` validation is a server error: 500, with the issues kept on the server.
-- A 400 lists at most 20 issues. A 1 MB body could produce a 91 MB response before.
+- A 400 lists at most 20 issues. A 1 MB body could produce a 91 MB response before. `onError` still gets the library's own issues in `cause.issues`.
 
 ## JSON Lines
 
@@ -137,6 +141,8 @@ A [static segment](/static-segment) pre-renders with no `dynamic` export, also w
 
 Both clients escape all schema text, so a spec can't inject code into the generated package. Path params and query keys are percent-encoded, and `..` is refused.
 
+[Mixin](/mixins) calls send the query and an urlencoded body in the OpenAPI document's `style` and `explode`, as the TypeScript client does; without them, an array repeats its key. The error message is read where a mixin's `errorMessageKey` points.
+
 Python:
 
 - **Breaking:** a response that is neither JSON nor text, such as a file, comes back as `bytes`, not `str`.
@@ -149,6 +155,7 @@ Rust:
 - **Breaking:** a procedure that takes JSON or a form, with no file field, takes its typed body and sends JSON. It took a `reqwest::multipart::Form`, so typed fields reached the server as text.
 - The crate compiles for every tested schema shape, and the schema is compiled into the crate.
 - Validation follows JSON Schema 2020-12. Rust 1.85+, tokio 1.49+.
+- `set_client_factory` builds the `reqwest::Client` the calls use, as with a timeout, a proxy or default headers.
 
 ## Security
 
@@ -184,9 +191,11 @@ Measured on Node.js 24.1 and an Apple M4 Pro: about 1.5 µs of routing overhead 
 16. A string body to a method that declares no content type, such as a plain handler typed `VovkRequest<string>`, goes out as JSON. v3 sent it raw as `text/plain`. `req.vovk.body()` still gives the string; `req.text()` now gives it quoted. To keep raw text, use a procedure with a text `contentType`.
 17. Read a JSON Lines stream once, or call `asPromise()`.
 18. In a custom fetcher, a call without a body has `body: undefined`, not `null`.
-19. Use Node.js 22.22.2+, 24.15+ or 26+, and TypeScript 5.5+.
+19. Use Node.js 24+ and TypeScript 5.5+.
 20. Under Yarn 2+, move `vovk generate` from `prebuild` into the `build` script: Yarn 2+ runs no `pre` scripts.
 21. Python: a file response is `bytes`. Rust: a JSON or form procedure without files takes its typed body.
+22. The vovk packages peer `vovk` 4 only: update `vovk-cli`, `vovk-ajv`, `vovk-python` and `vovk-rust` with it.
+23. Python and Rust mixin calls send queries in the document's `style` and `explode`; without them, arrays repeat their key.
 
 ## Full changelogs
 

@@ -137,8 +137,8 @@ export default class UserController {
       })
       .meta({ description: 'Response object' }),
   }).handle(async (req, { id }) => {
-    const body = await req.json();
-    const notify = req.nextUrl.searchParams.get('notify');
+    const body = await req.vovk.body();
+    const { notify } = req.vovk.query();
 
     return UserService.updateUser(id, body, notify);
   });
@@ -654,12 +654,12 @@ The package files listed below take their metadata (`repository`, `homepage`, `b
     "api"
   ],
   "dependencies": {
-    "@scalar/api-reference-react": "^0.9.74",
+    "@scalar/api-reference-react": "^0.9.76",
     "@standard-schema/spec": "^1.1.0",
     "@tanstack/react-query": "^5.104.0",
     "ajv": "^8.20.0",
     "ajv-errors": "^3.0.0",
-    "next": "^16.3.6",
+    "next": "^16.3.8",
     "react": "^19.3.0",
     "react-dom": "^19.3.0",
     "vovk": "^4.0.0-beta.0",
@@ -667,7 +667,7 @@ The package files listed below take their metadata (`repository`, `homepage`, `b
     "zod": "^4.6.5"
   },
   "devDependencies": {
-    "@biomejs/biome": "^2.5.14",
+    "@biomejs/biome": "^2.5.15",
     "@tailwindcss/postcss": "^4.3.3",
     "@types/node": "^26",
     "@types/react": "^19",
@@ -779,7 +779,7 @@ The generated package files:
 ```json showLineNumbers copy filename="dist/package.json" source="examples/hello-world"
 {
   "name": "vovk-hello-world",
-  "version": "0.0.88",
+  "version": "0.0.89",
   "description": "A \"Hello World!\" app built with Next.js, Vovk.ts and Zod. For details, visit https://vovk.dev/hello-world",
   "license": "MIT",
   "repository": {

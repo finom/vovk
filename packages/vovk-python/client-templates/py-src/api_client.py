@@ -3,6 +3,7 @@ import os
 import re
 import json
 import codecs
+import datetime
 import functools
 import requests
 from http.cookiejar import DefaultCookiePolicy
@@ -51,6 +52,21 @@ def _binary_content_type(declared: List[str]) -> str:
     wildcard = (t for t in declared if t != '*/*' and t.endswith('/*'))
     return next(concrete, None) or next(wildcard, None) or 'application/octet-stream'
 
+def _to_json_value(value: Any) -> Any:
+    # as JSON.stringify sends a value: a date or a time as ISO 8601 text, a tuple as a list
+    if isinstance(value, (datetime.date, datetime.time)):
+        return value.isoformat()
+    if isinstance(value, dict):
+        return {key: _to_json_value(item) for key, item in value.items()}
+    if isinstance(value, (list, tuple)):
+        return [_to_json_value(item) for item in value]
+    return value
+
+def _at_path(value: Any, path: str) -> Any:
+    for key in path.split('.'):
+        value = value.get(key) if isinstance(value, dict) else None
+    return value
+
 def _to_text(value: Any) -> str:
     # a scalar as JavaScript writes it: true and false, and a whole number without .0
     if isinstance(value, bool):
@@ -58,6 +74,57 @@ def _to_text(value: Any) -> str:
     if isinstance(value, float) and value.is_integer() and abs(value) < 2 ** 53:
         return str(int(value))
     return str(value)
+
+# a field of an OpenAPI style: the key, its parts and what joins them
+_StyledField = Tuple[str, List[str], str]
+
+_STYLE_DELIMITERS = {'form': ',', 'spaceDelimited': ' ', 'pipeDelimited': '|'}
+
+def _style_part(value: Any) -> Optional[str]:
+    # None is left out, a list or a dict is JSON
+    if value is None:
+        return None
+    if isinstance(value, (dict, list)):
+        return json.dumps(value, separators=(',', ':'), ensure_ascii=False)
+    return _to_text(value)
+
+def _deep_fields(key: str, value: Any) -> List[_StyledField]:
+    # deepObject: a bracket for every nested key, a list item by its index
+    if isinstance(value, (dict, list)):
+        items = value.items() if isinstance(value, dict) else enumerate(value)
+        return [field for k, v in items for field in _deep_fields(f'{key}[{k}]', v)]
+    part = _style_part(value)
+    return [] if part is None else [(key, [part], '')]
+
+def _styled_fields(name: str, value: Any, style_def: Dict[str, Any]) -> List[_StyledField]:
+    # a query parameter or a form property in the style and explode an OpenAPI document declares, as the TypeScript
+    # client sends it; without either, form and exploded
+    style = style_def.get('style', 'form')
+    explode = style_def.get('explode', style == 'form')
+    if style == 'deepObject' and isinstance(value, (dict, list)):
+        return _deep_fields(name, value)
+    delimiter = _STYLE_DELIMITERS.get(style, ',')
+    if not isinstance(value, (dict, list)):
+        part = _style_part(value)
+        return [] if part is None else [(name, [part], delimiter)]
+    entries = [(name, _style_part(item)) for item in value] if isinstance(value, list) else [
+        (key, _style_part(item)) for key, item in value.items()
+    ]
+    kept = [(key, part) for key, part in entries if part is not None]
+    if not kept:
+        return []
+    if explode:
+        return [(key, [part], delimiter) for key, part in kept]
+    parts = [part for _, part in kept] if isinstance(value, list) else [text for pair in kept for text in pair]
+    return [(name, parts, delimiter)]
+
+def _styled_query_string(query: Dict[str, Any], styles: Dict[str, Any]) -> str:
+    # a space joins as %20, other delimiters stay as they are, so an encoded one inside a value isn't read as one
+    return '&'.join(
+        f"{quote(key, safe='')}={('%20' if delimiter == ' ' else delimiter).join(quote(part, safe='') for part in parts)}"
+        for name, value in query.items()
+        for key, parts, delimiter in _styled_fields(name, value, styles.get(name) or {})
+    )
 
 @functools.lru_cache(maxsize=None)
 def _compile_pattern(pattern: str) -> Optional['re.Pattern[str]']:
@@ -150,6 +217,9 @@ class ApiClient:
         http_method = handler['httpMethod']
         validation = handler.get('validation', {})
 
+        misc = handler.get('misc') or {}
+        # an OpenAPI mixin sends its query and an urlencoded body in the styles its document declares
+        is_mixin = misc.get('isOpenAPIMixin') is True
         default_root, segment_path = self._segment_base(segment_name)
         url = self._join_url(api_root or default_root, segment_path, controller.get('prefix') or '', handler['path'])
 
@@ -164,6 +234,9 @@ class ApiClient:
             files=files,
             body_content_type=body_content_type,
             disable_client_validation=disable_client_validation,
+            error_message_key=(handler.get('operationObject') or {}).get('x-errorMessageKey'),
+            query_styles=(misc.get('queryStyles') or {}) if is_mixin else None,
+            form_styles=(misc.get('formStyles') or {}) if is_mixin else None,
         )
         
     def make_api_request(
@@ -178,6 +251,9 @@ class ApiClient:
         validation: Optional[Dict[str, Any]] = None,
         body_content_type: Optional[str] = None,
         disable_client_validation: bool = False,
+        error_message_key: Optional[str] = None,
+        query_styles: Optional[Dict[str, Any]] = None,
+        form_styles: Optional[Dict[str, Any]] = None,
     ) -> Any:
         """
         Make an API request with optional validation and parameter handling.
@@ -187,7 +263,8 @@ class ApiClient:
             http_method: HTTP method (GET, POST, PUT, DELETE, etc.)
             body: The body. A JSON value goes out as JSON. A dict goes out as a form when the procedure takes a form,
                 unless it also takes JSON and no files come with it. A str with body_content_type goes out as that
-                text, and bytes go out as they are.
+                text, and bytes go out as they are. In the body, the query and the params, a date, a time or a datetime goes
+                out as ISO 8601 text and a tuple as a list.
             query: Optional dictionary to convert to query parameters
             params: Optional dictionary to replace URL parameters
             headers: Optional dictionary of custom headers
@@ -196,6 +273,10 @@ class ApiClient:
             validation: Optional dictionary with JSON schemas to validate body, query, and params
             body_content_type: Optional content type for the body (e.g. 'text/plain', 'application/octet-stream')
             disable_client_validation: Whether to skip client-side validation
+            error_message_key: Where an error body holds the message, as a dotted path such as 'error.message'
+            query_styles: The OpenAPI style and explode of each query parameter, by name; with it, a parameter without
+                one goes out as form, exploded, as OpenAPI's default; without it, nested keys go out in brackets
+            form_styles: The OpenAPI style and explode of urlencoded body properties, by name
 
         Returns:
             If the response is JSON, returns the parsed JSON, or None for an empty body.
@@ -214,6 +295,10 @@ class ApiClient:
             raise ValueError("URL is required for making an API request")
         if not http_method:
             raise ValueError("HTTP method is required for making an API request")
+        if not isinstance(body, (str, bytes, bytearray)):
+            body = _to_json_value(body)
+        query = _to_json_value(query)
+        params = _to_json_value(params)
         body_ct: List[str] = validation['body'].get('x-contentType', []) if validation and validation.get('body') else []
         if body_content_type is None and isinstance(body, (bytes, bytearray)):
             # bytes for a body that also takes JSON, such as a file or an object: the file goes out as is
@@ -251,7 +336,9 @@ class ApiClient:
                 processed_url = processed_url.replace(f"{{{key}}}", quote(text, safe=''))
         
         if query:
-            query_string = self._build_query_string(query)
+            query_string = (
+                self._build_query_string(query) if query_styles is None else _styled_query_string(query, query_styles)
+            )
             if "?" in processed_url:
                 processed_url += "&" + query_string
             else:
@@ -273,7 +360,7 @@ class ApiClient:
             request_headers['Content-Type'] = body_content_type # type: ignore
             payload = {'data': body}
         elif TIsForm and isinstance(body, dict):
-            fields = self._to_form_fields(body)
+            fields = self._to_form_fields(body, None if TIsMultipart else form_styles)
             if TIsMultipart:
                 # a (None, text) part is a plain field, and makes requests send multipart even without a file
                 file_parts = list(files.items()) if isinstance(files, dict) else list(files or [])
@@ -288,6 +375,9 @@ class ApiClient:
         prepared = self.session.prepare_request(
             requests.Request(method=http_method.upper(), url=processed_url, headers=request_headers, **payload)
         )
+        if query_styles is not None and '?' in processed_url:
+            # requests encodes the | that joins pipeDelimited parts; the TypeScript client sends it as is
+            prepared.url = f"{(prepared.url or '').split('?', 1)[0]}?{processed_url.split('?', 1)[1]}"
         if isinstance(prepared.body, (bytes, bytearray)) and prepared.body:
             # sent in blocks, the connect timeout bounds each block and not the whole upload; as a stream the body
             # also goes out again from its start after a 307 or a 308
@@ -299,7 +389,7 @@ class ApiClient:
         content_type = response.headers.get('Content-Type', '')
 
         if response.status_code >= 400:
-            raise self._to_http_exception(response, content_type)
+            raise self._to_http_exception(response, content_type, error_message_key)
 
         media_type = content_type.split(';')[0].strip().lower()
         if media_type in _JSON_LINES_MEDIA_TYPES:
@@ -319,7 +409,7 @@ class ApiClient:
             return response.content.decode('utf-8', errors='replace')
 
     @staticmethod
-    def _to_http_exception(response: Response, content_type: str) -> HttpException:
+    def _to_http_exception(response: Response, content_type: str, error_message_key: Optional[str] = None) -> HttpException:
         # a proxy's error page or a plain text error has no JSON envelope, its text is the message
         text = response.text
         body: Any = None
@@ -329,8 +419,10 @@ class ApiClient:
             except ValueError:
                 pass
         envelope: Dict[str, Any] = body if isinstance(body, dict) else {}
-        # as the TypeScript client reads it: the message, else the detail or title of a problem document, else the text
-        message = next((envelope[key] for key in ('message', 'detail', 'title') if isinstance(envelope.get(key), str)), None)
+        # as the TypeScript client reads it: the message, or the mixin's errorMessageKey, else the detail or title of a
+        # problem document, else the text
+        paths = (error_message_key or 'message', 'detail', 'title')
+        message = next((value for value in (_at_path(envelope, path) for path in paths) if isinstance(value, str)), None)
         cause = envelope.get('cause')
         return HttpException({
             'message': message if message is not None else text or response.reason or 'Unknown error',
@@ -340,11 +432,14 @@ class ApiClient:
         })
 
     @staticmethod
-    def _to_form_fields(body: Dict[str, Any]) -> List[Tuple[str, str]]:
+    def _to_form_fields(body: Dict[str, Any], styles: Optional[Dict[str, Any]] = None) -> List[Tuple[str, str]]:
         # as the TypeScript client sends a form: None is left out, a list is one field per item,
-        # a boolean is true or false and any other object is JSON
+        # a boolean is true or false and any other object is JSON; a property with an OpenAPI style goes in that style
         fields: List[Tuple[str, str]] = []
         for key, value in body.items():
+            if styles and key in styles:
+                fields.extend((name, delimiter.join(parts)) for name, parts, delimiter in _styled_fields(key, value, styles[key]))
+                continue
             for item in value if isinstance(value, (list, tuple)) else [value]:
                 if item is None:
                     continue

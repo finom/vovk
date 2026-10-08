@@ -210,6 +210,8 @@ The third argument, `cause`, adds context:
 throw new HttpException(HttpStatus.BAD_REQUEST, 'Something went wrong', { hello: 'World' });
 ```
 
+An error from a vovk client that a handler calls, such as an [OpenAPI mixin](/mixins) or another segment, is an `HttpException` with the upstream status. It reaches the handler's caller with the upstream status, message and body, in production too. Catch it if the caller shouldn't see that.
+
 ## HttpStatus Enum
 
 The values of the `HttpStatus` enum:

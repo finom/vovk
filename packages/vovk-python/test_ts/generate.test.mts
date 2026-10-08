@@ -186,6 +186,16 @@ test('the README headings name the methods the package has', () => {
   assert.deepEqual(headings, ['UserRPC.get_user_by_id', 'UserRPC.get_user_by_id_2', 'UserRPC.import_']);
 });
 
+test("a segment's rootEntry of '' serves it from the root of the origin", () => {
+  const file = generate(
+    { UserRPC: controller('User', { list: { httpMethod: 'GET', path: '', validation: {} } }) },
+    { origin: 'https://example.com', segments: { '': { rootEntry: '' } } }
+  );
+  const source = fs.readFileSync(file('src/app/__init__.py'), 'utf-8');
+
+  assert.match(source, /^ {4}"": \("https:\/\/example\.com", ""\),$/m);
+});
+
 test('the README starts with readme.banner', () => {
   const file = generate(
     { UserRPC: controller('User', { list: { httpMethod: 'GET', path: '', validation: {} } }) },

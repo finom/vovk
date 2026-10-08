@@ -1366,9 +1366,15 @@ type VovkProcedureInput<TBody extends CombinedSpec, TQuery extends CombinedSpec,
 } : {
   params: CombinedSpec.InferInput<TParams>;
 });
+type ProcedureFnInput<TBody extends CombinedSpec, TQuery extends CombinedSpec, TParams extends CombinedSpec, TContentType extends ContentType[]> = ([TBody] extends [VovkNoSchema] ? {
+  body?: unknown;
+} : unknown) & ([TQuery] extends [VovkNoSchema] ? {
+  query?: unknown;
+} : unknown) & VovkProcedureInput<TBody, TQuery, TParams, TContentType>;
 /** Application MIME types that are parsed as text (derived from parseBody.ts textTypes). */
 type TextLikeApplicationType = (typeof textTypes)[number];
 type ContentType = 'application/json' | 'multipart/form-data' | 'application/x-www-form-urlencoded' | 'text/plain' | 'application/octet-stream' | TextLikeApplicationType | `text/${string}` | `application/${string}` | `${string}+json` | `${string}+xml` | `${string}+text` | `${string}+yaml` | `${string}+json-seq` | '*/*' | (string & {});
+type NormalizeContentType<T extends ContentType | ContentType[]> = T extends ContentType[] ? T : [T & ContentType];
 type BodyTypeFromContentType<T extends ContentType[], TBody> = T[number] extends (infer A) ? A extends '*/*' ? TBody | URLSearchParams | FormData | ArrayBuffer | Uint8Array | Blob : A extends 'application/json' | `${string}+json` ? TBody | Blob : A extends 'multipart/form-data' ? TBody | FormData | Blob : A extends 'application/x-www-form-urlencoded' ? TBody | URLSearchParams | FormData | Blob : A extends `text/${string}` | TextLikeApplicationType | `${string}+xml` | `${string}+text` | `${string}+yaml` | `${string}+json-seq` ? string | Blob : ArrayBuffer | Uint8Array | Blob : never;
 /**
  * Client-side validation function type.
@@ -1685,6 +1691,42 @@ type VovkFetcherOptions<T> = T & {
   }>;
   interpretAs?: string;
   init?: RequestInit;
+};
+//#endregion
+//#region ../../packages/vovk/dist/validation/create-standard-validation.d.ts
+type Received<TSchema extends CombinedSpec, TPreferTransformed extends boolean> = [TPreferTransformed] extends [false] ? CombinedSpec.InferInput<TSchema> : CombinedSpec.InferOutput<TSchema>;
+type HandlerParams<TParams extends CombinedSpec, TPreferTransformed extends boolean> = unknown extends Received<TParams, TPreferTransformed> ? Record<string, string> : Received<TParams, TPreferTransformed>;
+type FnResult<THandleFn extends (...args: KnownAny[]) => KnownAny, TIterationValue> = unknown extends TIterationValue ? Awaited<ReturnType<THandleFn>> : Awaited<ReturnType<THandleFn>> extends JSONLinesResponder<KnownAny> ? Awaited<ReturnType<THandleFn>> : AsyncGenerator<TIterationValue, void, unknown>;
+type FnArgs<TInput> = IsEmptyObject<TInput> extends true ? [input?: TInput] : [input: TInput];
+/**
+ * A procedure with its handler, as procedure().handle() returns it. It keeps THandleFn rather than its return type,
+ * so a handler that calls a service typed via the controller doesn't make inference circular.
+ */
+type VovkProcedure<TBody extends CombinedSpec, TQuery extends CombinedSpec, TParams extends CombinedSpec, TOutput extends CombinedSpec, TIteration extends CombinedSpec, TContentType extends ContentType | ContentType[], TPreferTransformed extends boolean, TReq extends VovkRequest<KnownAny, KnownAny, KnownAny>, THandleFn extends (...args: KnownAny[]) => KnownAny = (...args: KnownAny[]) => KnownAny, TFnInput = Prettify$1<ProcedureFnInput<TBody, TQuery, TParams, NormalizeContentType<TContentType>> & {
+  meta?: Record<string, KnownAny>;
+  disableClientValidation?: boolean;
+}>> = {
+  (req: TReq, params: HandlerParams<TParams, TPreferTransformed>): KnownAny;
+  __types: {
+    body: Received<TBody, TPreferTransformed>;
+    query: Received<TQuery, TPreferTransformed>;
+    params: Received<TParams, TPreferTransformed>;
+    output: unknown extends CombinedSpec.InferOutput<TOutput> ? KnownAny : Received<TOutput, TPreferTransformed>;
+    iteration: Received<TIteration, TPreferTransformed>;
+    contentType: NormalizeContentType<TContentType>;
+    input: VovkProcedureInput<TBody, TQuery, TParams, NormalizeContentType<TContentType>>;
+  };
+  __handleFn: THandleFn;
+  isRPC?: boolean;
+  fn: {
+    <TTransformed>(input: TFnInput & {
+      transform: (data: FnResult<THandleFn, Received<TIteration, TPreferTransformed>>, fakeReq: Pick<TReq, 'vovk'>) => TTransformed;
+    }): Promise<TTransformed>;
+    <TReturnType = FnResult<THandleFn, Received<TIteration, TPreferTransformed>>>(...input: FnArgs<TFnInput>): Promise<Awaited<VovkNoInference<TReturnType>>>;
+    (...input: FnArgs<TFnInput>): Promise<FnResult<THandleFn, Received<TIteration, TPreferTransformed>>>;
+  };
+  definition: KnownAny;
+  schema: KnownAny;
 };
 //#endregion
 //#region ../../node_modules/zod/v4/core/json-schema.d.cts
@@ -3756,6 +3798,9 @@ interface ZodNumberFormat<Format extends $ZodNumberFormats = $ZodNumberFormats> 
 }
 declare const ZodNumberFormat: $constructor<ZodNumberFormat>;
 interface ZodInt extends ZodNumberFormat<"safeint"> {}
+interface _ZodBoolean<T extends $ZodBooleanInternals = $ZodBooleanInternals> extends _ZodType<T> {}
+interface ZodBoolean extends _ZodBoolean<$ZodBooleanInternals<boolean>> {}
+declare const ZodBoolean: $constructor<ZodBoolean>;
 interface ZodArray<T extends SomeType = $ZodType> extends _ZodType<$ZodArrayInternals<T>>, $ZodArray<T> {
   element: T;
   min(minLength: number, params?: string | $ZodCheckMinLengthParams): this;
@@ -3875,242 +3920,106 @@ declare const ZodReadonly: $constructor<ZodReadonly>;
 //#endregion
 //#region src/modules/user/user-controller.d.ts
 declare class UserController {
-  static updateUser: {
-    (req: VovkRequest<{
-      email: string;
-      profile: {
-        name: string;
-        age: number;
-      };
-    }, {
-      notify: "email" | "none" | "push";
-    }, {
-      id: string;
-    }, {
-      email: string;
-      profile: {
-        name: string;
-        age: number;
-      };
-    }, {
-      notify: "email" | "none" | "push";
-    }>, params: {
-      id: string;
-    }): any;
-    __types: {
-      body: {
-        email: string;
-        profile: {
-          name: string;
-          age: number;
-        };
-      };
-      query: {
-        notify: "email" | "none" | "push";
-      };
-      params: {
-        id: string;
-      };
-      output: {
-        success: boolean;
-        id: string;
-        notify: "email" | "none" | "push";
-      };
-      iteration: unknown;
-      contentType: ["application/json"];
-      input: VovkProcedureInput<ZodObject<{
-        email: ZodEmail;
-        profile: ZodObject<{
-          name: ZodString;
-          age: ZodInt;
-        }, $strip>;
-      }, $strip>, ZodObject<{
-        notify: ZodEnum<{
-          email: "email";
-          none: "none";
-          push: "push";
-        }>;
-      }, $strip>, ZodObject<{
-        id: ZodUUID;
-      }, $strip>, ["application/json"]>;
+  static updateUser: VovkProcedure<ZodObject<{
+    email: ZodEmail;
+    profile: ZodObject<{
+      name: ZodString;
+      age: ZodInt;
+    }, $strip>;
+  }, $strip>, ZodObject<{
+    notify: ZodEnum<{
+      email: "email";
+      none: "none";
+      push: "push";
+    }>;
+  }, $strip>, ZodObject<{
+    id: ZodUUID;
+  }, $strip>, ZodObject<{
+    success: ZodBoolean;
+    id: ZodUUID;
+    notify: ZodEnum<{
+      email: "email";
+      none: "none";
+      push: "push";
+    }>;
+  }, $strip>, VovkNoSchema, ["application/json"], true, VovkRequest<{
+    email: string;
+    profile: {
+      name: string;
+      age: number;
     };
-    __handleFn: (req: VovkRequest<{
+  }, {
+    notify: "email" | "none" | "push";
+  }, {
+    id: string;
+  }, {
+    email: string;
+    profile: {
+      name: string;
+      age: number;
+    };
+  }, {
+    notify: "email" | "none" | "push";
+  }>, (req: VovkRequest<{
+    email: string;
+    profile: {
+      name: string;
+      age: number;
+    };
+  }, {
+    notify: "email" | "none" | "push";
+  }, {
+    id: string;
+  }, {
+    email: string;
+    profile: {
+      name: string;
+      age: number;
+    };
+  }, {
+    notify: "email" | "none" | "push";
+  }>, params: {
+    id: string;
+  }) => Promise<{
+    success: boolean;
+    id: string;
+    notify: "email" | "none" | "push";
+  }> | {
+    success: boolean;
+    id: string;
+    notify: "email" | "none" | "push";
+  }, {
+    body: Blob | {
       email: string;
       profile: {
         name: string;
         age: number;
       };
-    }, {
-      notify: "email" | "none" | "push";
-    }, {
-      id: string;
-    }, {
-      email: string;
-      profile: {
-        name: string;
-        age: number;
-      };
-    }, {
-      notify: "email" | "none" | "push";
-    }>, params: {
-      id: string;
-    }) => Promise<{
-      success: boolean;
-      id: string;
-      notify: "email" | "none" | "push";
-    }> | {
-      success: boolean;
-      id: string;
+    };
+    query: {
       notify: "email" | "none" | "push";
     };
-    isRPC?: boolean;
-    fn: {
-      <TTransformed>(input: {
-        body: Blob | {
-          email: string;
-          profile: {
-            name: string;
-            age: number;
-          };
-        };
-        query: {
-          notify: "email" | "none" | "push";
-        };
-        params: {
-          id: string;
-        };
-        meta?: Record<string, any>;
-        disableClientValidation?: boolean;
-      } & {
-        transform: (data: {
-          success: boolean;
-          id: string;
-          notify: "email" | "none" | "push";
-        }, fakeReq: Pick<VovkRequest<{
-          email: string;
-          profile: {
-            name: string;
-            age: number;
-          };
-        }, {
-          notify: "email" | "none" | "push";
-        }, {
-          id: string;
-        }, {
-          email: string;
-          profile: {
-            name: string;
-            age: number;
-          };
-        }, {
-          notify: "email" | "none" | "push";
-        }>, "vovk">) => TTransformed;
-      }): Promise<TTransformed>;
-      <TReturnType = {
-        success: boolean;
-        id: string;
-        notify: "email" | "none" | "push";
-      }>(input: {
-        body: Blob | {
-          email: string;
-          profile: {
-            name: string;
-            age: number;
-          };
-        };
-        query: {
-          notify: "email" | "none" | "push";
-        };
-        params: {
-          id: string;
-        };
-        meta?: Record<string, any>;
-        disableClientValidation?: boolean;
-      }): Promise<Awaited<VovkNoInference<TReturnType>>>;
-      (input: {
-        body: Blob | {
-          email: string;
-          profile: {
-            name: string;
-            age: number;
-          };
-        };
-        query: {
-          notify: "email" | "none" | "push";
-        };
-        params: {
-          id: string;
-        };
-        meta?: Record<string, any>;
-        disableClientValidation?: boolean;
-      }): Promise<{
-        success: boolean;
-        id: string;
-        notify: "email" | "none" | "push";
-      }>;
+    params: {
+      id: string;
     };
-    definition: any;
-    schema: any;
-    wrapper?: any;
-  };
+    meta?: Record<string, any>;
+    disableClientValidation?: boolean;
+  }>;
 }
 //#endregion
 //#region src/modules/stream/stream-controller.d.ts
 declare class StreamController {
-  static streamTokens: {
-    (req: VovkRequest<unknown, unknown, Record<string, string>, unknown, unknown>, params: Record<string, string>): any;
-    __types: {
-      body: unknown;
-      query: unknown;
-      params: unknown;
-      output: any;
-      iteration: {
-        message: string;
-      };
-      contentType: ["application/json"];
-      input: {
-        params?: Record<string, string>;
-      };
-    };
-    __handleFn: () => AsyncGenerator<{
-      message: string;
-    }, void, unknown>;
-    isRPC?: boolean;
-    fn: {
-      <TTransformed>(input: {
-        body?: unknown;
-        query?: unknown;
-        params?: Record<string, string>;
-        meta?: Record<string, any>;
-        disableClientValidation?: boolean;
-      } & {
-        transform: (data: AsyncGenerator<{
-          message: string;
-        }, void, unknown>, fakeReq: Pick<VovkRequest<unknown, unknown, Record<string, string>, unknown, unknown>, "vovk">) => TTransformed;
-      }): Promise<TTransformed>;
-      <TReturnType = AsyncGenerator<{
-        message: string;
-      }, void, unknown>>(input?: {
-        body?: unknown;
-        query?: unknown;
-        params?: Record<string, string>;
-        meta?: Record<string, any>;
-        disableClientValidation?: boolean;
-      } | undefined): Promise<Awaited<VovkNoInference<TReturnType>>>;
-      (input?: {
-        body?: unknown;
-        query?: unknown;
-        params?: Record<string, string>;
-        meta?: Record<string, any>;
-        disableClientValidation?: boolean;
-      } | undefined): Promise<AsyncGenerator<{
-        message: string;
-      }, void, unknown>>;
-    };
-    definition: any;
-    schema: any;
-    wrapper?: any;
-  };
+  static streamTokens: VovkProcedure<VovkNoSchema, VovkNoSchema, VovkNoSchema, VovkNoSchema, ZodObject<{
+    message: ZodString;
+  }, $strip>, ["application/json"], true, VovkRequest<unknown, unknown, Record<string, string>, unknown, unknown>, () => AsyncGenerator<{
+    message: string;
+  }, void, unknown>, {
+    params?: Record<string, string>;
+    body?: unknown;
+    query?: unknown;
+    meta?: Record<string, any>;
+    disableClientValidation?: boolean;
+  }>;
 }
 //#endregion
 //#region src/modules/static/openapi/openapi-controller.d.ts

@@ -3,16 +3,9 @@ import path from 'node:path';
 import 'dotenv/config';
 import { Command } from 'commander';
 import concurrently from 'concurrently';
-import { bundle } from './bundle/index.mjs';
 import { getNextDevCommand } from './dev/get-next-dev-command.mjs';
 import { getNextDevPort } from './dev/get-next-dev-port.mjs';
-import { VovkDev } from './dev/index.mjs';
-import { getProjectFullSchema } from './generate/get-project-full-schema.mjs';
-import { VovkGenerate } from './generate/index.mjs';
 import { isOwnSchemaFolder } from './generate/is-own-schema-folder.mjs';
-import { getProjectInfo, loadOpenAPIMixins } from './get-project-info/index.mjs';
-import { Init } from './init/index.mjs';
-import { newComponents } from './new/index.mjs';
 import type { BundleOptions, DevOptions, GenerateOptions, InitOptions, NewOptions, VovkEnv } from './types.mjs';
 import { getAvailablePort } from './utils/get-available-port.mjs';
 import { getCommandShell, quoteShellArgument } from './utils/quote-shell-argument.mjs';
@@ -24,6 +17,17 @@ const vovkCliPackage = JSON.parse(readFileSync(path.join(import.meta.dirname, '.
 };
 
 program.name('vovk').description('Vovk CLI').version(vovkCliPackage.version);
+
+// vovk is a peer dependency: init, help and --version run without it, the other commands load it when they start
+program.hook('preAction', (_program, command) => {
+  if (['init', 'help'].includes(command.name())) return;
+  try {
+    import.meta.resolve('vovk');
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException).code !== 'ERR_MODULE_NOT_FOUND') throw error;
+    throw new Error(`"vovk ${command.name()}" needs the vovk package. Install it in the project: npm install vovk`);
+  }
+});
 
 program
   .command('dev')
@@ -66,7 +70,6 @@ program
             env: {
               PORT,
               __VOVK_START_WATCHER_IN_STANDALONE_MODE__: 'true' as const,
-              // TODO: Pass these as flags
               __VOVK_SCHEMA_OUT_FLAG__: schemaOut ?? '',
               __VOVK_DEV_HTTPS_FLAG__: devHttps ? 'true' : '',
               __VOVK_EXIT__: exit ? 'true' : 'false',
@@ -93,6 +96,7 @@ program
         if (hasFailure) process.exit(1);
       }
     } else {
+      const { VovkDev } = await import('./dev/index.mjs');
       await new VovkDev({ schemaOut, devHttps, logLevel }).start({ exit });
     }
   });
@@ -137,6 +141,8 @@ program
   )
   .option('--log-level <level>', 'set the log level')
   .action(async (cliGenerateOptions: GenerateOptions) => {
+    const { getProjectInfo } = await import('./get-project-info/index.mjs');
+    const { VovkGenerate } = await import('./generate/index.mjs');
     const projectInfo = await getProjectInfo({
       configPath: cliGenerateOptions.configPath,
       srcRootRequired: false,
@@ -180,6 +186,9 @@ program
   )
   .option('--log-level <level>', 'set the log level')
   .action(async (cliBundleOptions: BundleOptions) => {
+    const { getProjectInfo, loadOpenAPIMixins } = await import('./get-project-info/index.mjs');
+    const { getProjectFullSchema } = await import('./generate/get-project-full-schema.mjs');
+    const { bundle } = await import('./bundle/index.mjs');
     const projectInfo = await loadOpenAPIMixins(
       await getProjectInfo({
         configPath: cliBundleOptions.configPath,
@@ -223,15 +232,11 @@ program
   .option('--empty', '(new module only) create an empty module')
   .option('--dry-run', 'do not write files to disk')
   .option('--log-level <level>', 'set the log level')
-  .action(async (components: string[], newOptions: NewOptions) =>
-    newComponents(
-      components,
-      await getProjectInfo({
-        logLevel: newOptions.logLevel,
-      }),
-      newOptions
-    )
-  );
+  .action(async (components: string[], newOptions: NewOptions) => {
+    const { getProjectInfo } = await import('./get-project-info/index.mjs');
+    const { newComponents } = await import('./new/index.mjs');
+    await newComponents(components, await getProjectInfo({ logLevel: newOptions.logLevel }), newOptions);
+  });
 
 program
   .command('init')
@@ -258,7 +263,10 @@ program
   )
   .option('--channel <channel>', 'channel to use for fetching packages', 'latest')
   .option('--dry-run', 'do not write files to disk')
-  .action((options: InitOptions) => new Init().main(options));
+  .action(async (options: InitOptions) => {
+    const { Init } = await import('./init/index.mjs');
+    await new Init().main(options);
+  });
 
 program
   .command('help')

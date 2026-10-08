@@ -38,10 +38,10 @@ export async function getProjectFullSchema({
     }
   } else {
     const fromFile = parseSchemaFile(metaPath, metaContent) as VovkMetaSchema;
-    // vovk dev wrote the project's own _meta.json from the config as it was then, so each value the config exposes now
-    // replaces the file's; another project's folder keeps what that project wrote
+    // vovk dev wrote the project's own _meta.json from the config as it was then, so what the config exposes now
+    // replaces the file's config; another project's folder keeps what that project wrote
     result.meta = isOwnSchemaFolder
-      ? { ...fromFile, ...configMeta, config: { ...fromFile.config, ...configMeta.config } }
+      ? { ...fromFile, ...configMeta }
       : deepExtend({} as VovkMetaSchema, configMeta, fromFile);
   }
   const segmentsDir = path.join(schemaOutAbsolutePath);

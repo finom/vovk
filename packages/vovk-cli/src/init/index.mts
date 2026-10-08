@@ -60,7 +60,8 @@ export class Init {
   ) {
     const { log, root } = this;
 
-    const dependencies: string[] = ['vovk', 'vovk-ajv'];
+    // vovk's types import openapi3-ts, a peer dependency that not every package manager installs
+    const dependencies: string[] = ['vovk', 'openapi3-ts', 'vovk-ajv'];
     const devDependencies: string[] = ['vovk-cli'];
 
     if (lang?.includes('py')) {

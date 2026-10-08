@@ -165,6 +165,11 @@ describe('Runtime sweep', () => {
         throw new HttpException(HttpStatus.CONTINUE, 'Informational status');
       }
 
+      // as JavaScript code or a cast can pass it
+      static stringStatus() {
+        throw new HttpException('400' as unknown as HttpStatus, 'String status');
+      }
+
       static throwString() {
         throw 'Plain string';
       }
@@ -183,10 +188,17 @@ describe('Runtime sweep', () => {
         yield { n: 1 };
         throw new HttpException(HttpStatus.NULL, 'No response');
       }
+
+      static async *streamStringStatus() {
+        yield { n: 1 };
+        throw new HttpException('400' as unknown as HttpStatus, 'String status');
+      }
     }
     get('stream-unknown-status')(FailureController, 'streamUnknownStatus');
     get('stream-informational-status')(FailureController, 'streamInformationalStatus');
     get('stream-null-status')(FailureController, 'streamNullStatus');
+    get('stream-string-status')(FailureController, 'streamStringStatus');
+    get('string-status')(FailureController, 'stringStatus');
     get('big-int', { cors: true })(FailureController, 'bigInt');
     get('big-int-cause', { cors: true })(FailureController, 'bigIntCause');
     get('not-modified')(FailureController, 'notModified');
@@ -278,6 +290,18 @@ describe('Runtime sweep', () => {
         { n: 1 },
         { isError: true, reason: 'No response', statusCode: 500 },
       ]);
+    });
+
+    it('Answers an HttpException whose status is not a number with 500, on a JSON response and an error line', async () => {
+      const response = await call(handlers, 'GET', 'string-status');
+      const lines = (await (await call(handlers, 'GET', 'stream-string-status')).text())
+        .split('\n')
+        .filter(Boolean)
+        .map((line) => JSON.parse(line));
+
+      strictEqual(response.status, 500);
+      deepStrictEqual(await response.json(), { statusCode: 500, message: 'String status', isError: true });
+      deepStrictEqual(lines, [{ n: 1 }, { isError: true, reason: 'String status', statusCode: 500 }]);
     });
 
     it('Sends a thrown value that is no Error as the message', async () => {
@@ -1285,6 +1309,69 @@ describe('Runtime sweep', () => {
       deepStrictEqual(JSON.parse(text).cause.issues[0].path, ['tags', 0]);
     });
 
+    it("Gives onError the library's own issues and the 400 the trimmed ones", async () => {
+      const errors: Error[] = [];
+      class ValibotNameController {
+        static save = procedure({ body: toStandardJsonSchema(v.object({ name: v.string() })) }).handle(async () => ({
+          ok: true,
+        }));
+      }
+      post('save')(ValibotNameController, 'save');
+      const handlers = initSegment({
+        segmentName: 'valibot-name',
+        controllers: { ValibotNameController },
+        onError: (error) => {
+          errors.push(error);
+        },
+      });
+
+      const response = await call(handlers, 'POST', 'save', {
+        body: JSON.stringify({ name: 1 }),
+        headers: { 'content-type': 'application/json' },
+      });
+      const [issue] = (errors[0].cause as { issues: v.BaseIssue<unknown>[] }).issues;
+
+      strictEqual(response.status, 400);
+      deepStrictEqual((await response.json()).cause.issues, [
+        {
+          kind: 'schema',
+          type: 'string',
+          expected: 'string',
+          message: 'Invalid type: Expected string but received 1',
+          path: ['name'],
+        },
+      ]);
+      strictEqual(issue.input, 1);
+      strictEqual(issue.received, '1');
+      deepStrictEqual(issue.path?.[0].input, { name: 1 });
+    });
+
+    it("Gives onError the library's own issues of an output and the response the trimmed ones", async () => {
+      const errors: Error[] = [];
+      class ValibotOutputController {
+        static out = procedure({ output: toStandardJsonSchema(v.object({ name: v.string() })) }).handle(
+          async () => ({ name: 1 }) as unknown as { name: string }
+        );
+      }
+      get('out')(ValibotOutputController, 'out');
+      const handlers = initSegment({
+        segmentName: 'valibot-output',
+        controllers: { ValibotOutputController },
+        onError: (error) => {
+          errors.push(error);
+        },
+      });
+
+      await withNodeEnv('development', async () => {
+        const response = await call(handlers, 'GET', 'out');
+        const [issue] = (errors[0].cause as { issues: v.BaseIssue<unknown>[] }).issues;
+
+        strictEqual(response.status, 500);
+        deepStrictEqual((await response.json()).cause.issues[0].path, ['name']);
+        strictEqual(issue.input, 1);
+      });
+    });
+
     it('Answers 400 for an issue that holds a BigInt', async () => {
       class LimitController {
         static limit = procedure({ query: z.object({ n: z.coerce.bigint().max(BigInt(10)) }) }).handle(async () => ({
@@ -1519,6 +1606,7 @@ describe('Runtime sweep', () => {
     it('Refuses output and iteration together before any handler runs', () => {
       const item = z.object({ n: z.number() });
 
+      // @ts-expect-error the types refuse them together too
       throws(() => procedure({ output: item, iteration: item }), {
         message: "Output and iteration are mutually exclusive. You can't use them together.",
       });

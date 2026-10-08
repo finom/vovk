@@ -11,7 +11,7 @@ import type {
 import { HttpMethod, HttpStatus } from '../types/enums.js';
 import type { VovkRequest } from '../types/request.js';
 import { getServingClasses } from './get-served-handlers.js';
-import { HttpException, isHttpException } from './http-exception.js';
+import { getResponseCause, HttpException, isHttpException, toResponseStatus } from './http-exception.js';
 import { JSONLinesResponder, Responder, setResponderHooks } from './json-lines-responder.js';
 
 // conflictsWith: the other controllers whose own handler has the same method and path in the segment
@@ -178,12 +178,10 @@ class VovkApp {
     // status 0 is what a client throws for a call that got no response, its message and cause hold the URL and the
     // input, so in production it is internal too
     if (isHttpException(e) && !(e.statusCode === HttpStatus.NULL && process.env.NODE_ENV === 'production')) {
-      // Response takes a status from 200 to 599 only
-      const isValidStatus = e.statusCode >= 200 && e.statusCode <= 599;
       return {
-        statusCode: isValidStatus ? e.statusCode : HttpStatus.INTERNAL_SERVER_ERROR,
+        statusCode: toResponseStatus(e.statusCode),
         message: e.message,
-        cause: e.cause,
+        cause: getResponseCause(e),
       };
     }
 
@@ -192,12 +190,12 @@ class VovkApp {
       console.error('🐺 Unhandled error in a Vovk handler:', e);
       return { statusCode: HttpStatus.INTERNAL_SERVER_ERROR, message: 'Internal server error' };
     }
-    const { message, cause } = (e ?? {}) as { message?: unknown; cause?: unknown };
+    const { message } = (e ?? {}) as { message?: unknown };
     // a thrown value that is no Error, as a string, is the message itself
     return {
       statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
       message: typeof message === 'string' ? message : String(e),
-      cause,
+      cause: getResponseCause(e),
     };
   }
 

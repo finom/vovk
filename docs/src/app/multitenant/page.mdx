@@ -263,7 +263,7 @@ Parameters:
 
 - `requestUrl`: the full request URL, such as `request.url`.
 - `requestHost`: the request host, such as `request.headers.get("host")`.
-- `targetHost`: the main host for redirects and rewrites (your production domain, or `localhost:3000` in development).
+- `targetHost`: the main host for redirects and rewrites (your production domain, or `localhost:3000` in development). A target host without a port matches the request host on any port.
 - `overrides`: maps tenant subdomain names to routing rules. Each rule is an array of objects with `from` (a path prefix) and `to` (the target path).
 
 For wildcard subdomains, use square-bracket patterns, such as `[customer_name]`, for the [Dynamic Segment](https://nextjs.org/docs/app/api-reference/file-conventions/dynamic-routes). The page gets the value in `params`. A placeholder matches one DNS label (letters, digits and hyphens), and the host is matched case-insensitively, so a host such as `%2e%2e.customer.example.com` gets no rewrite.

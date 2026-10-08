@@ -176,8 +176,8 @@ export default class UserController {
       })
       .meta({ description: 'Response object' }),
   }).handle(async (req, { id }) => {
-    const body = await req.json();
-    const notify = req.nextUrl.searchParams.get('notify');
+    const body = await req.vovk.body();
+    const { notify } = req.vovk.query();
 
     return UserService.updateUser(id, body, notify);
   });
@@ -430,13 +430,23 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
 The client uses [reqwest](https://docs.rs/reqwest/latest/reqwest/) for HTTP, [jsonschema](https://docs.rs/jsonschema/latest/jsonschema/) for client-side validation, and other common crates. Client-side validation reads a schema as JSON Schema 2020-12, or as draft 7 when the schema declares it. It checks formats such as `email` and `uuid`.
 
-The crate builds on Rust 1.86. Its `Cargo.toml` sets `rust-version = "1.85"` and resolver 3, so Cargo locks dependency versions that support Rust 1.85. A project that depends on the crate resolves dependencies with its own resolver. With edition 2024, or with `resolver = "3"` (Cargo 1.84+), it builds on Rust 1.86. An edition 2021 project without that resolver gets the newest versions, which need Rust 1.88.
+The crate needs Rust 1.85 or later. Its `Cargo.toml` sets `rust-version = "1.85"` and resolver 3, so Cargo locks dependency versions that support Rust 1.85. A project that depends on the crate resolves dependencies with its own resolver. With edition 2024, or with `resolver = "3"` (Cargo 1.84+), it builds on Rust 1.85. An edition 2021 project without that resolver gets the newest versions, which need Rust 1.88.
 
 For a procedure that takes `multipart/form-data`, the body is a [`reqwest::multipart::Form`](https://docs.rs/reqwest/latest/reqwest/multipart/struct.Form.html). Field names go out as written, in quotes, as browsers send them. Give files names without `"`, `\` or line breaks. reqwest escapes these with a backslash, which the server keeps in the name, and a `"` makes the form unreadable.
 
 A function without an output schema returns a `serde_json::Value`: the parsed JSON, or `null` for an empty body. A `text/*` response, or a response of any type with a charset, is a string, decoded as UTF-8 unless the charset names another encoding. Any other response, such as a file, is a string that holds its bytes in base64.
 
 A failed call returns an `HttpException`. Its `status_code()` is the response status, or 0 when the call failed before a response came, for example in client-side validation. `message()` and `cause()` hold the error the server sent. When no response came, or the response broke off, `source()` is the `reqwest::Error`, without the URL.
+
+The calls send their requests with a default `reqwest::Client`, which has no timeout. To set a timeout, a proxy or default headers, give `set_client_factory` a function that builds the client. The crate calls it again for each thread and tokio runtime it sends calls from, since a pooled connection works only on the runtime that opened it.
+
+```rs
+use std::time::Duration;
+
+vovk_hello_world::set_client_factory(|| {
+    reqwest::Client::builder().timeout(Duration::from_secs(30)).build().expect("a client")
+});
+```
 
 ### JSON Lines Endpoints
 

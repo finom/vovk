@@ -34,8 +34,10 @@ const hasBody = (req: VovkRequestAny) => {
   );
 };
 
-// fn() calls made without a body, the local counterpart of a request without one
-const callsWithoutBody = new WeakSet<object>();
+// marks an fn() call made without a body, the local counterpart of a request without one
+const NO_BODY = Symbol('vovk.noBody');
+
+type WithNoBody = { [NO_BODY]?: true };
 
 type InputReaders = Pick<VovkRequestAny['vovk'], 'body' | 'query' | 'params'>;
 
@@ -308,7 +310,7 @@ export function withValidationLibrary<
       if (body && !disableServerSideValidationKeys.includes('body')) {
         const isRequest = typeof req.url === 'string';
         // a missing body has no content type to check and is validated as undefined, which an optional schema accepts
-        const hasNoBody = isRequest ? !hasBody(req) : callsWithoutBody.has(req);
+        const hasNoBody = isRequest ? !hasBody(req) : (req as WithNoBody)[NO_BODY] === true;
         let data: unknown;
         if (!hasNoBody) {
           // a wrong content type gets its 415 before the body is read
@@ -395,7 +397,7 @@ export function withValidationLibrary<
       };
 
       fakeReq.vovk.meta<Meta>({ __disableClientValidation: input?.disableClientValidation, ...input?.meta });
-      if (input?.body === undefined) callsWithoutBody.add(fakeReq);
+      if (input?.body === undefined) (fakeReq as WithNoBody)[NO_BODY] = true;
 
       // a promise also when a sync decorator throws or answers without calling next()
       const result = (async () => {

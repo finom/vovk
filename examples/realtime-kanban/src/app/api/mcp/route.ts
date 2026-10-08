@@ -1,6 +1,5 @@
 import { createMcpHandler } from 'mcp-handler';
 import { deriveTools, ToModelOutput } from 'vovk';
-import { z } from 'zod';
 import TaskController from '@/modules/task/task-controller';
 import UserController from '@/modules/user/user-controller';
 
@@ -16,22 +15,7 @@ const tools = deriveTools({
 
 const handler = createMcpHandler((server) => {
   tools.forEach(({ title, name, execute, description, inputSchema }) => {
-    // mcp-handler wants a Zod raw shape, so convert the merged Standard Schema's
-    // JSON Schema back to Zod and take the body/query/params shape
-    const shape = inputSchema
-      ? (
-          z.fromJSONSchema(
-            inputSchema['~standard'].jsonSchema.input({
-              target: 'draft-2020-12',
-            }),
-          ) as z.ZodObject
-        ).shape
-      : {};
-    server.registerTool(
-      name,
-      { title, description, inputSchema: shape },
-      execute,
-    );
+    server.registerTool(name, { title, description, inputSchema }, execute);
   });
 });
 

@@ -14,6 +14,8 @@ export { operation } from './openapi/operation.js';
 
 export { deriveTools } from './tools/derive-tools.js';
 export { ToModelOutput } from './tools/to-model-output.js';
+export type { DefaultModelOutput as VovkDefaultModelOutput } from './tools/to-model-output-default.js';
+export type { MCPModelOutput as VovkMCPModelOutput } from './tools/to-model-output-mcp.js';
 
 export type { VovkStreamAsyncIterable } from './types/client.js';
 export type { VovkConfig } from './types/config.js';
@@ -35,4 +37,5 @@ export type { StandardToolV0 } from './types/standard-tool.js';
 export type { VovkNoInference } from './types/utils.js';
 export type { VovkNoSchema, VovkProcedureInput } from './types/validation.js';
 
+export type { VovkProcedure, VovkProcedureBuilder } from './validation/create-standard-validation.js';
 export { procedure } from './validation/procedure.js';

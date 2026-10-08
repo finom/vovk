@@ -857,6 +857,35 @@ async fn main() {
 
       assert.strictEqual(result.rs, expected);
     });
+
+    test('TypeScript quotes a header name that holds a quote', () => {
+      const result = createCodeSamples({
+        handlerName: 'sendData',
+        handlerSchema,
+        controllerSchema,
+        package: { name: 'vovk-client' },
+        config: { headers: { 'X-Say"Hi': 'a "b": c' } },
+      });
+
+      assert.ok(result.ts.includes(`"X-Say\\"Hi": "a \\"b\\": c"`), result.ts);
+    });
+
+    test('TypeScript writes a header name of many quotes in linear time', () => {
+      const name = '"'.repeat(50_000);
+      const start = performance.now();
+      const result = createCodeSamples({
+        handlerName: 'sendData',
+        handlerSchema,
+        controllerSchema,
+        package: { name: 'vovk-client' },
+        config: { headers: { [name]: name, plain: 'a' } },
+      });
+
+      const quoted = JSON.stringify(name);
+      assert.ok(result.ts.includes(`${quoted}: ${quoted}`));
+      assert.ok(result.ts.includes('plain: "a"'));
+      assert.ok(performance.now() - start < 500);
+    });
   });
 
   describe('Edge cases', () => {

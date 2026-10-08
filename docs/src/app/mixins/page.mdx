@@ -26,6 +26,8 @@ await PetstoreAPI.updatePet({
 });
 ```
 
+The client doesn't type or send the header and cookie parameters of the OpenAPI document. Send them by hand with `init.headers` (TypeScript), `headers=` (Python) or `headers` (Rust); a cookie goes in a `Cookie` header.
+
 `withDefaults` creates a copy of an API module with default options:
 
 ```ts showLineNumbers copy
@@ -158,14 +160,14 @@ To use the code generator as a standalone CLI, even without `package.json`, inst
 npm install -g vovk-cli
 ```
 
-Or install **vovk-cli** as a dev dependency and `vovk` and **vovk-ajv** as regular dependencies:
+Or install **vovk-cli** as a dev dependency and `vovk`, **openapi3-ts** and **vovk-ajv** as regular dependencies:
 
 ```sh npm2yarn copy
 npm install -D vovk-cli
 ```
 
 ```sh npm2yarn copy
-npm install vovk vovk-ajv
+npm install vovk openapi3-ts vovk-ajv
 ```
 
 The [composed client](/composed), which combines all generated API clients into one, goes to `client/` in standalone codegen, or to `src/client` in a Next.js app whose app folder is `src/app` (`composedClient.outDir` changes it). Your code imports it directly, for example as `@/client`.

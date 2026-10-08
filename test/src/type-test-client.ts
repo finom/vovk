@@ -1,5 +1,14 @@
 import { NextResponse } from 'next/server.js';
-import { procedure, type VovkBody, type VovkParams, type VovkQuery, type VovkRequest } from 'vovk';
+import {
+  deriveTools,
+  procedure,
+  type StandardToolV0,
+  ToModelOutput,
+  type VovkBody,
+  type VovkParams,
+  type VovkQuery,
+  type VovkRequest,
+} from 'vovk';
 import { createRPC } from 'vovk/create-rpc';
 import { createFetcher } from 'vovk/fetcher';
 // @ts-expect-error a module that isn't installed, as next is for a client bundle used without Next
@@ -391,4 +400,20 @@ export async function iterableResults() {
   const chunks = await rpc.chunks();
   (await chunks.asPromise()) satisfies { delta: string }[];
   chunks.abortSilently();
+}
+
+// ====== Derived tools: execute always returns a promise ======
+
+class ToolController {
+  static getItem = procedure({ params: z.object({ id: z.string() }) }).handle(async (_req, { id }) => ({ id }));
+}
+
+export async function derivedTools() {
+  const [tool] = deriveTools({ modules: { ToolController } });
+  tool.execute({ params: { id: 'a' } }) satisfies Promise<unknown>;
+  const [mcpTool] = deriveTools({ modules: { ToolController }, toModelOutput: ToModelOutput.MCP });
+  (await mcpTool.execute({})).content satisfies unknown[];
+  mcpTool.execute({}).then((output) => output.isError);
+  // a derived tool is a standard tool
+  [tool, mcpTool] satisfies StandardToolV0<{ body?: unknown; query?: unknown; params?: unknown }, unknown, unknown>[];
 }

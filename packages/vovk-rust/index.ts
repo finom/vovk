@@ -124,14 +124,19 @@ export function getBodyKind(schema: VovkJSONSchemaBase | undefined): BodyKind {
 
 const MAX_FILE_SEARCH_DEPTH = 16;
 
-// a file, or a list or a union that may be one
+// a file, or a list, a tuple or a combination that may hold one; vovk-python uses this rule too
 function isFileSchema(schema: Schema | undefined, root: Schema, depth = 0): boolean {
   if (!schema || typeof schema !== 'object' || depth > MAX_FILE_SEARCH_DEPTH) return false;
   if (schema.$ref) return isFileSchema(resolvePointer(schema.$ref, root), root, depth + 1);
   if (schema.format === 'binary' || schema.contentEncoding === 'binary') return true;
-  const items =
-    schema.items && typeof schema.items === 'object' && !Array.isArray(schema.items) ? schema.items : undefined;
-  return [items, ...(schema.anyOf ?? []), ...(schema.oneOf ?? [])].some((s) => isFileSchema(s, root, depth + 1));
+  const items = schema.items && typeof schema.items === 'object' ? [schema.items].flat() : [];
+  return [
+    ...(items as Schema[]),
+    ...(schema.prefixItems ?? []),
+    ...(schema.anyOf ?? []),
+    ...(schema.oneOf ?? []),
+    ...(schema.allOf ?? []),
+  ].some((s) => isFileSchema(s, root, depth + 1));
 }
 
 // a field of the body, or of any branch of it, holds a file
@@ -168,8 +173,9 @@ export function getBinaryContentType(schema: VovkJSONSchemaBase | undefined): st
 }
 
 // the variants of a union body that hold a file: they go out as bytes, the others as JSON
-export function getBinaryBodyVariants(schema: VovkJSONSchemaBase | undefined): string[] {
-  if (!schema || getBodyKind(schema) !== 'json') return [];
+export function getBinaryBodyVariants(givenSchema: VovkJSONSchemaBase | undefined): string[] {
+  if (!givenSchema || getBodyKind(givenSchema) !== 'json') return [];
+  const schema = withoutContentTypeAlternatives(givenSchema);
   const ctx: Context = { root: schema, defNames: new Map(), defSchemas: new Map(), pad: 0, enclosing: null, refs: [] };
   const target = effectiveSchema(schema, ctx);
   if (nominalKind(target, ctx) !== 'union') return [];
@@ -830,6 +836,20 @@ function emitNamed(schema: Schema, name: string, mod: Module, ctx: Context): voi
   mod.code += `${indent(mod.level, ctx.pad)}pub type ${name} = ${type};\n\n`;
 }
 
+// a mixin body that takes JSON or a form with one schema is an anyOf of that schema once per content type: it is the
+// schema itself
+function withoutContentTypeAlternatives(schema: VovkJSONSchemaBase): VovkJSONSchemaBase {
+  const branches = schema.anyOf;
+  if (!branches || branches.length < 2) return schema;
+  const [first, ...rest] = branches.map((branch) => {
+    const { 'x-contentType': _contentType, 'x-tsType': _tsType, ...shape } = branch as Record<string, unknown>;
+    return JSON.stringify(shape);
+  });
+  if (rest.some((shape) => shape !== first)) return schema;
+  const { anyOf: _, ...body } = schema;
+  return { ...body, ...JSON.parse(first) };
+}
+
 export function convertJSONSchemasToRustTypes({
   schemas,
   pad = 0,
@@ -839,7 +859,9 @@ export function convertJSONSchemasToRustTypes({
   pad?: number;
   rootName: string;
 }): string {
-  const slots = Object.entries(schemas).filter((entry): entry is [string, Schema] => !!entry[1]);
+  const slots = Object.entries(schemas)
+    .filter((entry): entry is [string, Schema] => !!entry[1])
+    .map(([slotName, schema]) => [slotName, withoutContentTypeAlternatives(schema)] as const);
   if (!slots.length) return '';
 
   const handlerMod = newModule(1, 0);

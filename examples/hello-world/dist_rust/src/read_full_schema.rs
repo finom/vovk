@@ -37,6 +37,8 @@ pub struct HandlerSchema {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub openapi: Option<OpenApiDocs>,
     #[serde(skip_serializing_if = "Option::is_none")]
+    pub operationObject: Option<Value>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub misc: Option<HashMap<String, Value>>,
 }
 

@@ -129,9 +129,5 @@ export function schemaToTsType(jsonSchema: VovkJSONSchemaBase | boolean): string
     return 'unknown[]';
   }
 
-  if (jsonSchema.properties) {
-    return schemaToTsType({ ...jsonSchema, type: 'object' });
-  }
-
   return 'unknown';
 }

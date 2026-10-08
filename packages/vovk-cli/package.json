@@ -17,8 +17,8 @@
     "build": "rm -rf dist tsconfig.build.tsbuildinfo && tsc -P tsconfig.build.json",
     "postbuild": "chmod +x ./dist/index.mjs",
     "pre-test": "npm run build && npm run clear-test-cache",
-    "test-only": "npm run pre-test && NODE_ENV=test node --experimental-strip-types --experimental-vm-modules --test --test-only test/spec/**/*.mts",
-    "test": "npm run pre-test && NODE_ENV=test node --experimental-strip-types --experimental-vm-modules --test --test-concurrency=1 test/spec/**/*.mts",
+    "test-only": "npm run pre-test && NODE_ENV=test node --experimental-strip-types --test --test-only test/spec/**/*.mts",
+    "test": "npm run pre-test && NODE_ENV=test node --experimental-strip-types --test --test-concurrency=1 test/spec/**/*.mts",
     "tsc": "tsc --noEmit",
     "ncu": "npm-check-updates -u -x tsdown",
     "prepublishOnly": "node -e \"if (!process.env.GITHUB_ACTIONS) { console.error('Publish from CI: PACKAGE=<name> npm run <type> tags a release, and the tag publishes it'); process.exit(1) }\"",
@@ -42,22 +42,22 @@
   },
   "homepage": "https://vovk.dev",
   "engines": {
-    "node": "^22.22.2 || ^24.15.0 || >=26.0.0"
+    "node": ">=24.0.0"
   },
   "peerDependencies": {
-    "vovk": ">=3.7.0 || ^4.0.0-0"
+    "vovk": "^4.0.0-0"
   },
   "dependencies": {
     "@iarna/toml": "^2.2.5",
     "@inquirer/prompts": "^8.7.2",
-    "@npmcli/package-json": "^8.0.0",
+    "@npmcli/package-json": "^7.0.5",
     "@types/json-schema": "^7.0.15",
     "@types/lodash": "^4.17.25",
     "chalk": "^6.0.1",
     "chokidar": "^5.0.0",
     "commander": "^15.0.0",
     "concurrently": "^10.0.5",
-    "dotenv": "^18.0.4",
+    "dotenv": "^18.0.5",
     "ejs": "^6.0.1",
     "get-tsconfig": "^4.14.3",
     "glob": "^13.0.6",
@@ -77,7 +77,7 @@
     "@types/npmcli__package-json": "^4.0.4",
     "@types/pluralize": "^0.0.33",
     "concat-stream": "^2.0.0",
-    "create-next-app": "^16.3.6",
+    "create-next-app": "^16.3.8",
     "node-pty": "1.1.0",
     "openapi3-ts": "^4.6.1",
     "tsdown": "0.22.14",

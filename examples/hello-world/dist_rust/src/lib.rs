@@ -3,7 +3,7 @@
 mod http_request;
 mod read_full_schema;
 
-pub use crate::http_request::HttpException;
+pub use crate::http_request::{set_client_factory, HttpException};
 
 pub mod user_rpc {
     #[allow(unused_imports)]

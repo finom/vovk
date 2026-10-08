@@ -55,7 +55,7 @@ jobs:
         run: |
           if [ "$FULL" = true ]; then
             echo 'os=["ubuntu-24.04","macos-latest"]' >> "$GITHUB_OUTPUT"
-            echo 'node=[22,24,26]' >> "$GITHUB_OUTPUT"
+            echo 'node=[24,26]' >> "$GITHUB_OUTPUT"
           else
             echo 'os=["ubuntu-24.04"]' >> "$GITHUB_OUTPUT"
             echo 'node=[24]' >> "$GITHUB_OUTPUT"
@@ -186,4 +186,4 @@ jobs:
             rest) specs="test/spec/generate/*.mts test/spec/new/*.mts test/spec/critical-utilities/*.mts" ;;
             *) specs="test/spec/${{ matrix.shard }}/*.mts" ;;
           esac
-          node --experimental-strip-types --experimental-vm-modules --test --test-concurrency=1 $specs
+          node --experimental-strip-types --test --test-concurrency=1 $specs

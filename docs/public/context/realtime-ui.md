@@ -4,8 +4,8 @@ description: "Walkthrough of the Realtime Kanban example app — a live-updating
 see_also:
   label: "Vovk.ts Docs Context"
   url: https://vovk.dev/context/docs.md
-chars: 109611
-est_tokens: 27403
+chars: 109121
+est_tokens: 27281
 ---
 
 Page: https://vovk.dev/realtime-ui
@@ -91,14 +91,7 @@ Start the Docker containers:
 docker-compose up -d
 ```
 
-Generate the Prisma client, the Zod schemas and the Vovk.ts client, then create the database tables:
-
-```bash copy
-npm run generate
-npx prisma migrate deploy
-```
-
-Start the development server:
+Start the development server. It first generates the Prisma client, the Zod schemas and the Vovk.ts client, and creates the database tables:
 
 ```sh
 npm run dev
@@ -270,7 +263,7 @@ const config = {
   outputConfig: {
     imports: {
       // ...
-      fetcher: './src/lib/fetcher',
+      fetcher: './src/lib/fetcher.ts',
     },
   },
 };
@@ -2433,7 +2426,6 @@ As on the other pages, the `deriveTools` function from the `vovk` package derive
 ```ts filename="src/app/api/mcp/route.ts" source="examples/realtime-kanban"
 import { createMcpHandler } from 'mcp-handler';
 import { deriveTools, ToModelOutput } from 'vovk';
-import { z } from 'zod';
 import TaskController from '@/modules/task/task-controller';
 import UserController from '@/modules/user/user-controller';
 
@@ -2449,22 +2441,7 @@ const tools = deriveTools({
 
 const handler = createMcpHandler((server) => {
   tools.forEach(({ title, name, execute, description, inputSchema }) => {
-    // mcp-handler wants a Zod raw shape, so convert the merged Standard Schema's
-    // JSON Schema back to Zod and take the body/query/params shape
-    const shape = inputSchema
-      ? (
-          z.fromJSONSchema(
-            inputSchema['~standard'].jsonSchema.input({
-              target: 'draft-2020-12',
-            }),
-          ) as z.ZodObject
-        ).shape
-      : {};
-    server.registerTool(
-      name,
-      { title, description, inputSchema: shape },
-      execute,
-    );
+    server.registerTool(name, { title, description, inputSchema }, execute);
   });
 });
 

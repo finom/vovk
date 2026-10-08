@@ -17,10 +17,11 @@ cd my-app
 ## Install vovk and vovk-cli
 
 - `vovk` is the runtime library.
+- `openapi3-ts` gives the OpenAPI types that the types of `vovk` import. It's a peer dependency of `vovk`, and not every package manager installs one.
 - `vovk-cli` is the Vovk.ts command-line tool, a development dependency.
 
 ```sh npm2yarn copy
-npm i vovk
+npm i vovk openapi3-ts
 ```
 
 ```sh npm2yarn copy

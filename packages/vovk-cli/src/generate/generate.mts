@@ -198,12 +198,7 @@ export async function generate({
   fullSchema = {
     ...fullSchema,
     // sort segments by name to avoid unnecessary rendering
-    segments: Object.fromEntries(
-      Object.entries(fullSchema.segments)
-        .sort(([a], [b]) => a.localeCompare(b))
-        // preserve original object, so segments can be extended
-        .map((segment) => ({ ...segment }))
-    ),
+    segments: Object.fromEntries(Object.entries(fullSchema.segments).sort(([a], [b]) => a.localeCompare(b))),
   };
   const { config, cwd, log, vovkCliPackage, packageJson: projectPackageJson } = projectInfo;
 
