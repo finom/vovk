@@ -256,7 +256,7 @@ const tools = deriveTools({
 });
 ```
 
-**MCP works too.** A mixin-derived tool's merged `inputSchema` exposes JSON Schema via `inputSchema['~standard'].jsonSchema.input({ target: 'draft-2020-12' })`, which is what `mcp-handler` needs (convert to Zod with `z.fromJSONSchema` and pass `.shape` — see **`tools`** skill). No `createTool` wrapper, no hand-written schema.
+**MCP works too.** A mixin-derived tool's merged `inputSchema` is a Standard Schema with JSON Schema, which `mcp-handler` 2.x `registerTool` takes as is (see **`tools`** skill). No `createTool` wrapper, no hand-written schema.
 
 See **`tools`** skill for full provider-wiring pipeline (OpenAI / Anthropic / MCP).
 

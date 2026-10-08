@@ -164,12 +164,11 @@ The `mcpOutput` key can also override other MCP output properties, including `co
 
 With the [mcp-handler](https://www.npmjs.com/package/mcp-handler) package, you can create an MCP API route that controls what your back end exposes to MCP clients.
 
-At the time of writing, **mcp-handler** supports only Zod schemas. The tool's merged `inputSchema` is a single Standard Schema. So the example converts its JSON Schema back to a Zod object with [`z.fromJSONSchema()`](https://zod.dev/json-schema?id=zfromjsonschema), and passes its `.shape` (the `body`, `query` and `params` slots) to `registerTool`.
+The tool's `inputSchema` is a Standard Schema with JSON Schema, which `registerTool` in **mcp-handler** 2 accepts as is.
 
 ```ts showLineNumbers copy filename="src/app/api/mcp/route.ts"
 import { createMcpHandler } from "mcp-handler";
 import { deriveTools, ToModelOutput } from "vovk";
-import z from "zod";
 import UserController from "@/modules/user/user-controller";
 
 const tools = deriveTools({
@@ -180,12 +179,7 @@ const tools = deriveTools({
 const handler = createMcpHandler(
   (server) => {
     tools.forEach(({ title, name, execute, description, inputSchema }) => {
-      // `inputSchema` is a single merged Standard Schema; mcp-handler wants a Zod
-      // raw shape, so convert its JSON Schema back to Zod and take the object shape.
-      const shape = inputSchema
-        ? (z.fromJSONSchema(inputSchema["~standard"].jsonSchema.input({ target: "draft-2020-12" })) as z.ZodObject).shape
-        : {};
-      server.registerTool(name, { title, description, inputSchema: shape }, execute);
+      server.registerTool(name, { title, description, inputSchema }, execute);
     });
   },
 );

@@ -400,12 +400,11 @@ The emitted JSON Schema carries vovk's own `x-` annotations (`x-tsType`, `x-cont
 
 Works for **every** module kind in v4 — controllers, RPC modules and OpenAPI mixins alike — because they all carry a merged `inputSchema`.
 
-At the time of writing `mcp-handler` accepts Zod schemas only, so convert the tool's JSON Schema back to Zod and hand `registerTool` the object shape (its `body`/`query`/`params` slots):
+`mcp-handler` 2.x `registerTool` accepts a Standard Schema with JSON Schema as `inputSchema`, which is what the tool carries, so pass it straight in:
 
 ```ts filename="src/app/api/mcp/route.ts"
 import { createMcpHandler } from 'mcp-handler';
 import { deriveTools, ToModelOutput } from 'vovk';
-import { z } from 'zod';
 import TaskController from '@/modules/task/task-controller';
 import UserController from '@/modules/user/user-controller';
 
@@ -419,12 +418,7 @@ const tools = deriveTools({
 // mcp-handler 2.x answers at the route file's own path: /api/mcp here
 const handler = createMcpHandler((server) => {
   tools.forEach(({ title, name, execute, description, inputSchema }) => {
-    const shape = inputSchema
-      ? (z.fromJSONSchema(
-          inputSchema['~standard'].jsonSchema.input({ target: 'draft-2020-12' }),
-        ) as z.ZodObject).shape
-      : {};
-    server.registerTool(name, { title, description, inputSchema: shape }, execute);
+    server.registerTool(name, { title, description, inputSchema }, execute);
   });
 });
 
@@ -467,7 +461,7 @@ const tools = deriveTools({
 });
 ```
 
-Mixin-derived tools carry an `inputSchema` reconstructed from the OpenAPI-generated JSON Schema, so the `z.fromJSONSchema` conversion above works for them identically. The only difference is depth of validation: a mixin's `validate` checks the envelope and defers slot values to execution time (see the table under "Each tool's fields"), whereas a controller's checks values too.
+Mixin-derived tools carry an `inputSchema` reconstructed from the OpenAPI-generated JSON Schema, so they register on an MCP server the same way. The only difference is depth of validation: a mixin's `validate` checks the envelope and defers slot values to execution time (see the table under "Each tool's fields"), whereas a controller's checks values too.
 
 > This replaces the v3 requirement to hand-write `createTool` wrappers for mixins — that advice, and `createTool` itself, are gone.
 
