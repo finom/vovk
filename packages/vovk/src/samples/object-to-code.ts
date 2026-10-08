@@ -4,8 +4,26 @@ interface SamplerOptions {
   nestingIndent?: number;
 }
 
-// a JSON string with its escapes; matched from the start of the text, every match is a whole string
-const JSON_STRING = /"(?:[^"\\]|\\.)*"/g;
+// a key of JSON.stringify output loses its quotes when it's an identifier
+// a scan, not a regex, so it stays linear on long runs of escaped quotes
+const unquoteKeys = (json: string): string => {
+  let result = '';
+  let copied = 0;
+  for (let start = 0; start < json.length; start++) {
+    if (json[start] !== '"') continue;
+    let end = start + 1;
+    while (end < json.length && json[end] !== '"') end += json[end] === '\\' ? 2 : 1;
+    if (json[end + 1] === ':') {
+      const key = JSON.parse(json.slice(start, end + 1)) as string;
+      if (/^[a-zA-Z_$][a-zA-Z0-9_$]*$/.test(key)) {
+        result += json.slice(copied, start) + key;
+        copied = end + 1;
+      }
+    }
+    start = end;
+  }
+  return result + json.slice(copied);
+};
 
 export function objectToCode(obj: unknown, options?: SamplerOptions): string {
   const { stripQuotes = false, indent = 0, nestingIndent = 2 } = options || {};
@@ -13,12 +31,7 @@ export function objectToCode(obj: unknown, options?: SamplerOptions): string {
   let result = JSON.stringify(obj, null, nestingIndent);
 
   if (stripQuotes) {
-    // a key loses its quotes only when it's an identifier
-    result = result.replace(JSON_STRING, (token, offset: number) => {
-      if (result[offset + token.length] !== ':') return token;
-      const key = JSON.parse(token) as string;
-      return /^[a-zA-Z_$][a-zA-Z0-9_$]*$/.test(key) ? key : token;
-    });
+    result = unquoteKeys(result);
   }
 
   if (indent > 0) {
