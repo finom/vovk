@@ -27,7 +27,7 @@
     "generate": "vovk generate",
     "bundle": "NODE_ENV=production vovk bundle",
     "prebuild": "vovk generate",
-    "postbuild": "pagefind --site .next/server/app --output-path public/_pagefind",
+    "postbuild": "node --experimental-strip-types ./scripts/buildSearchIndex.ts",
     "vercel-build": "npm run build",
     "update-mdx-github-codeblocks": "node --experimental-strip-types ./scripts/updateMDXFilesWithGithubContent.ts"
   },
