@@ -4,8 +4,8 @@ description: "Full documentation for the Vovk.ts framework, excluding the Realti
 see_also:
   label: "Realtime Kanban Context"
   url: https://vovk.dev/context/realtime-ui.md
-chars: 397461
-est_tokens: 99366
+chars: 397048
+est_tokens: 99262
 ---
 
 Page: https://vovk.dev
@@ -3600,12 +3600,11 @@ The `mcpOutput` key can also override other MCP output properties, including `co
 
 With the [mcp-handler](https://www.npmjs.com/package/mcp-handler) package, you can create an MCP API route that controls what your back end exposes to MCP clients.
 
-At the time of writing, **mcp-handler** supports only Zod schemas. The tool's merged `inputSchema` is a single Standard Schema. So the example converts its JSON Schema back to a Zod object with [`z.fromJSONSchema()`](https://zod.dev/json-schema?id=zfromjsonschema), and passes its `.shape` (the `body`, `query` and `params` slots) to `registerTool`.
+The tool's `inputSchema` is a Standard Schema with JSON Schema, which `registerTool` in **mcp-handler** 2 accepts as is.
 
 ```ts showLineNumbers copy filename="src/app/api/mcp/route.ts"
 import { createMcpHandler } from "mcp-handler";
 import { deriveTools, ToModelOutput } from "vovk";
-import z from "zod";
 import UserController from "@/modules/user/user-controller";
 
 const tools = deriveTools({
@@ -3616,12 +3615,7 @@ const tools = deriveTools({
 const handler = createMcpHandler(
   (server) => {
     tools.forEach(({ title, name, execute, description, inputSchema }) => {
-      // `inputSchema` is a single merged Standard Schema; mcp-handler wants a Zod
-      // raw shape, so convert its JSON Schema back to Zod and take the object shape.
-      const shape = inputSchema
-        ? (z.fromJSONSchema(inputSchema["~standard"].jsonSchema.input({ target: "draft-2020-12" })) as z.ZodObject).shape
-        : {};
-      server.registerTool(name, { title, description, inputSchema: shape }, execute);
+      server.registerTool(name, { title, description, inputSchema }, execute);
     });
   },
 );
@@ -5116,6 +5110,8 @@ await PetstoreAPI.updatePet({
 });
 ```
 
+The client doesn't type or send the header and cookie parameters of the OpenAPI document. Send them by hand with `init.headers` (TypeScript), `headers=` (Python) or `headers` (Rust); a cookie goes in a `Cookie` header.
+
 `withDefaults` creates a copy of an API module with default options:
 
 ```ts showLineNumbers copy
@@ -5695,8 +5691,8 @@ export default class UserController {
       })
       .meta({ description: 'Response object' }),
   }).handle(async (req, { id }) => {
-    const body = await req.json();
-    const notify = req.nextUrl.searchParams.get('notify');
+    const body = await req.vovk.body();
+    const { notify } = req.vovk.query();
 
     return UserService.updateUser(id, body, notify);
   });
@@ -6181,8 +6177,8 @@ export default class UserController {
       })
       .meta({ description: 'Response object' }),
   }).handle(async (req, { id }) => {
-    const body = await req.json();
-    const notify = req.nextUrl.searchParams.get('notify');
+    const body = await req.vovk.body();
+    const { notify } = req.vovk.query();
 
     return UserService.updateUser(id, body, notify);
   });
@@ -8293,8 +8289,8 @@ export default class UserController {
       })
       .meta({ description: 'Response object' }),
   }).handle(async (req, { id }) => {
-    const body = await req.json();
-    const notify = req.nextUrl.searchParams.get('notify');
+    const body = await req.vovk.body();
+    const { notify } = req.vovk.query();
 
     return UserService.updateUser(id, body, notify);
   });
@@ -8898,7 +8894,7 @@ The generated package files:
 ```json showLineNumbers copy filename="dist/package.json" source="examples/hello-world"
 {
   "name": "vovk-hello-world",
-  "version": "0.0.88",
+  "version": "0.0.89",
   "description": "A \"Hello World!\" app built with Next.js, Vovk.ts and Zod. For details, visit https://vovk.dev/hello-world",
   "license": "MIT",
   "repository": {
