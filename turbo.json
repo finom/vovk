@@ -1,4 +1,5 @@
 {
+  "agentGuidance": false,
   "tasks": {
     "build": {
       "dependsOn": ["^build"]
