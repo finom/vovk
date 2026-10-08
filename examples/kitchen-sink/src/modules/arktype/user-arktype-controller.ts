@@ -24,8 +24,8 @@ export default class UserArktypeController {
       success: type('boolean').describe('Success status'),
     }),
   }).handle(async (req, { id }) => {
-    const { name, age, email } = await req.json();
-    const notify = req.nextUrl.searchParams.get('notify');
+    const { name, age, email } = await req.vovk.body();
+    const { notify } = req.vovk.query();
 
     // do something with the data
     console.log(`Updating user ${id}:`, { name, age, email, notify });

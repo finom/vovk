@@ -17,7 +17,7 @@ export default class BasicController {
   })
   @post('greeting')
   static async postHello(req: VovkRequest<{ greeting: string }>) {
-    const { greeting } = await req.json();
+    const { greeting } = await req.vovk.body();
     return { greeting };
   }
 }

@@ -176,8 +176,8 @@ export default class UserController {
       })
       .meta({ description: 'Response object' }),
   }).handle(async (req, { id }) => {
-    const body = await req.json();
-    const notify = req.nextUrl.searchParams.get('notify');
+    const body = await req.vovk.body();
+    const { notify } = req.vovk.query();
 
     return UserService.updateUser(id, body, notify);
   });

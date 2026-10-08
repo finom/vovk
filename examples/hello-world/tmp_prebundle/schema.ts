@@ -4,7 +4,14 @@ import segment0 from './../.vovk-schema/root.json' with { type: 'json' };
 
 import segment1 from './../.vovk-schema/static.json' with { type: 'json' };
 
-import meta from './../.vovk-schema/_meta.json' with { type: 'json' };
+const meta = {
+  $schema: 'https://vovk.dev/api/schema/v3/meta.json',
+  config: {
+    libs: {},
+    rootEntry: 'api',
+    $schema: 'https://vovk.dev/api/schema/v3/config.json',
+  },
+};
 
 const segments = {
   '': segment0,

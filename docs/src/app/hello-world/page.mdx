@@ -137,8 +137,8 @@ export default class UserController {
       })
       .meta({ description: 'Response object' }),
   }).handle(async (req, { id }) => {
-    const body = await req.json();
-    const notify = req.nextUrl.searchParams.get('notify');
+    const body = await req.vovk.body();
+    const { notify } = req.vovk.query();
 
     return UserService.updateUser(id, body, notify);
   });
@@ -779,7 +779,7 @@ The generated package files:
 ```json showLineNumbers copy filename="dist/package.json" source="examples/hello-world"
 {
   "name": "vovk-hello-world",
-  "version": "0.0.88",
+  "version": "0.0.89",
   "description": "A \"Hello World!\" app built with Next.js, Vovk.ts and Zod. For details, visit https://vovk.dev/hello-world",
   "license": "MIT",
   "repository": {
