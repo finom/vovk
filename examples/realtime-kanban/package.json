@@ -4,6 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "predev": "npm run generate && prisma migrate deploy",
     "dev": "vovk dev --next-dev",
     "build": "next build",
     "prebuild": "npm run generate && prisma migrate deploy",
