@@ -61,7 +61,7 @@
   "devDependencies": {
     "@biomejs/biome": "^2.5.15",
     "@types/node": "^26.6.3",
-    "concurrently": "^10.0.5",
+    "concurrently": "^10.0.6",
     "cross-env": "^10.1.0",
     "next": "^16.3.8",
     "npm-check-updates": "^23.1.0",

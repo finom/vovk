@@ -4,7 +4,7 @@ All notable changes to `vovk` are documented here. This file is the canonical re
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## 4.0.0 - unreleased
+## 4.0.0 - 2026-10-09
 
 A cleanup major: removals and renames; the only new exports are types.
 
