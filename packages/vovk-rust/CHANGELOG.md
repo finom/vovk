@@ -6,7 +6,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 This package is experimental and its generated output may still shift between releases.
 
-## 0.0.5 - unreleased
+## 0.0.5 - 2026-10-09
 
 - **Breaking:** a procedure that takes JSON or a form, with no field that holds a file, takes its typed body and sends JSON; it took a `reqwest::multipart::Form`, so typed fields reached the server as text ([#44](https://github.com/finom/vovk/pull/44))
 - Schema text can no longer break out of doc comments, comments or string literals into code ([#35](https://github.com/finom/vovk/pull/35))
