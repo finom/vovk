@@ -6,6 +6,16 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 This package is experimental and its generated output may still shift between releases.
 
+## 0.0.5 - 2026-10-12
+
+### Changed
+
+- The README shows how to generate, use and publish the client ([#70](https://github.com/finom/vovk/pull/70))
+
+### Fixed
+
+- The templates trim slashes and find `{name}` placeholders in linear time ([#66](https://github.com/finom/vovk/pull/66))
+
 ## 0.0.4 - 2026-10-12
 
 - **Breaking:** a response that is neither JSON nor text, such as a file, comes back as `bytes`, not `str`; a `+json` type is parsed as JSON, and `text/*` without a charset is read as UTF-8, not Latin-1 ([#44](https://github.com/finom/vovk/pull/44))

@@ -6,6 +6,16 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 This package is experimental and its generated output may still shift between releases.
 
+## 0.0.6 - 2026-10-12
+
+### Changed
+
+- The README shows how to generate, use and publish the client ([#70](https://github.com/finom/vovk/pull/70))
+
+### Fixed
+
+- The templates trim slashes and find `{name}` placeholders in linear time ([#66](https://github.com/finom/vovk/pull/66))
+
 ## 0.0.5 - 2026-10-12
 
 - **Breaking:** a procedure that takes JSON or a form, with no field that holds a file, takes its typed body and sends JSON; it took a `reqwest::multipart::Form`, so typed fields reached the server as text ([#44](https://github.com/finom/vovk/pull/44))

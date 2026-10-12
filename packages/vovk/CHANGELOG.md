@@ -4,6 +4,16 @@ All notable changes to `vovk` are documented here. This file is the canonical re
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 4.0.2 - 2026-10-12
+
+### Removed
+
+- The `StandardToolV0` type export: import it from [standard-tool](https://www.npmjs.com/package/standard-tool). The tools `deriveTools` returns satisfy it ([#70](https://github.com/finom/vovk/pull/70))
+
+### Changed
+
+- The README shows setup and usage ([#70](https://github.com/finom/vovk/pull/70))
+
 ## 4.0.1 - 2026-10-12
 
 ### Changed
