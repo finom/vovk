@@ -1,8 +1,7 @@
-import crypto from 'node:crypto';
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { cache } from 'react';
-import { decrypt } from './session';
+import { decrypt, SESSION_USER_ID } from './session';
 
 const getSession = async () => {
   const cookie = (await cookies()).get('session')?.value;
@@ -14,11 +13,7 @@ const getSession = async () => {
 export const isLoggedIn = async () => {
   if (!process.env.PASSWORD) return true;
   const session = await getSession();
-  const userId = crypto
-    .createHash('md5')
-    .update(process.env.PASSWORD)
-    .digest('hex');
-  return session?.userId === userId;
+  return session?.userId === SESSION_USER_ID;
 };
 
 export const verifySession = cache(async () => {
