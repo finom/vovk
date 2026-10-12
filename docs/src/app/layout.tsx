@@ -4,16 +4,13 @@ import { getPageMap } from 'nextra/page-map';
 import 'nextra-theme-docs/style.css';
 import '@/globals.css';
 import VovkLogo from '@/components/vovk-logo';
-import { Inter, Fraunces, JetBrains_Mono } from 'next/font/google';
+import { Geist, Geist_Mono, JetBrains_Mono } from 'next/font/google';
 import type { Metadata } from 'next';
 
-// Warm, editorial type system: a clean grotesque for body/UI, a soft serif for
-// display headings, and a crisp mono for code. Exposed as CSS variables so the
-// Nextra theme (--x-font-sans / --x-font-mono) and our heading styles in
-// globals.css can pick them up.
-const fontSans = Inter({ subsets: ['latin'], variable: '--font-sans', display: 'swap' });
-const fontDisplay = Fraunces({ subsets: ['latin'], variable: '--font-display', display: 'swap' });
-const fontMono = JetBrains_Mono({ subsets: ['latin'], variable: '--font-mono', display: 'swap' });
+// Geist for text, Geist Mono for code, JetBrains Mono for the [[...]] marks. globals.css hands them to Nextra.
+const fontSans = Geist({ subsets: ['latin'], variable: '--font-sans', display: 'swap' });
+const fontMono = Geist_Mono({ subsets: ['latin'], variable: '--font-mono', display: 'swap' });
+const fontMarks = JetBrains_Mono({ subsets: ['latin'], variable: '--font-marks', display: 'swap' });
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://vovk.dev'),
@@ -34,19 +31,12 @@ export const metadata: Metadata = {
   },
   icons: {
     icon: [
-      { url: '/favicon.ico', sizes: '48x48' },
+      { url: '/favicon.ico', sizes: '32x32' },
       { url: '/favicon-32x32.png', sizes: '32x32', type: 'image/png' },
       { url: '/favicon-16x16.png', sizes: '16x16', type: 'image/png' },
-      {
-        media: '(prefers-color-scheme: light)',
-        url: '/icon.svg',
-        href: '/icon.svg',
-      },
-      {
-        media: '(prefers-color-scheme: dark)',
-        url: '/icon-white.svg',
-        href: '/icon-white.svg',
-      },
+      // An ink tile on a light browser UI, a paper tile on a dark one; icon.svg also switches by itself.
+      { url: '/icon.svg', type: 'image/svg+xml', media: '(prefers-color-scheme: light)' },
+      { url: '/icon-white.svg', type: 'image/svg+xml', media: '(prefers-color-scheme: dark)' },
     ],
     apple: '/apple-touch-icon.png',
   },
@@ -54,7 +44,7 @@ export const metadata: Metadata = {
 
 const navbar = (
   <Navbar
-    logo={<VovkLogo width={120} />}
+    logo={<VovkLogo width={132} />}
     projectLink="https://github.com/finom/vovk"
     chatLink="https://discord.com/invite/qdT8WEHUuP"
     // ... Your additional navbar options
@@ -94,24 +84,23 @@ export default async function RootLayout({ children }: { children: React.ReactNo
       dir="ltr"
       // Suggested by `next-themes` package https://github.com/pacocoursey/next-themes#with-app
       suppressHydrationWarning
-      className={`${fontSans.variable} ${fontDisplay.variable} ${fontMono.variable}`}
+      className={`${fontSans.variable} ${fontMono.variable} ${fontMarks.variable}`}
     >
       <Head
-        // Warm clay accent (replaces Nextra's default blue) plus cream / warm
-        // charcoal page backgrounds, matched to the oklch palette in globals.css.
+        // Vermilion links on paper and on #141412. The light one is darker than the logo's so that small text keeps 4.5:1.
         color={{
-          hue: { light: 18, dark: 20 },
-          saturation: { light: 55, dark: 60 },
-          lightness: { light: 50, dark: 62 },
+          hue: { light: 13, dark: 12 },
+          saturation: { light: 90, dark: 91 },
+          lightness: { light: 40, dark: 60 },
         }}
-        backgroundColor={{ light: '#f5f3ec', dark: '#1e1d1b' }}
+        backgroundColor={{ light: '#F2F0EB', dark: '#141412' }}
       />
       <body>
         <Layout
           /* banner={
             <Banner storageKey="initial-announcement">
               <Link href="/blog/announcement" className="text-white font-medium no-underline">
-                🐺 Vovk.ts is released. Read the blog post →
+                [[v]] Vovk.ts is released. Read the blog post →
               </Link>
             </Banner>
           } */

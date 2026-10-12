@@ -21,9 +21,7 @@ const GithubTabs = ({ githubFiles, owner, repo, ghRef, id }: Props) => {
           <span
             title={path}
             className={`pb-0.5 cursor-pointer border-b-2 border-solid ${
-              i === activeIndex
-                ? 'text-neutral-900 border-blue-500 dark:text-gray-100 dark:border-slate-500'
-                : 'text-slate-400 dark:text-[#525975] border-transparent'
+              i === activeIndex ? 'text-foreground border-primary' : 'text-muted-foreground border-transparent'
             }`}
             onClick={() => {
               document.querySelectorAll(`#${id} .github-tab-content`).forEach((el) => {
