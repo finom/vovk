@@ -18,7 +18,7 @@ The gate CI runs on a pull request:
 npm run test:main
 ```
 
-It generates the test app's client, runs the lint, the type checks and the unit and integration tests. `npm test` runs everything, the CLI specs and the Python and Rust suites included.
+It generates the test app's client, runs the lint, the type checks, the unit tests of `vovk` and `vovk-ajv`, and the integration tests against the test app's dev server. `npm run test:packages` runs only the unit tests, with no server. `npm test` runs everything, the CLI specs and the Python and Rust suites included.
 
 A change in behavior comes with a test. Lint warnings fail the gate.
 

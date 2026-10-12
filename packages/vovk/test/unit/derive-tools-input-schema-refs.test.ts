@@ -6,7 +6,7 @@ import { deriveTools, procedure } from 'vovk';
 import { createRPC } from 'vovk/create-rpc';
 import { openAPIToVovkSchema } from 'vovk/internal';
 import { z } from 'zod';
-import { validationSchemasObjectToSingleValidationSchema } from '../../../packages/vovk/dist/validation/validation-schemas-object-to-single-validation-schema.js';
+import { validationSchemasObjectToSingleValidationSchema } from '../../dist/validation/validation-schemas-object-to-single-validation-schema.js';
 
 type Tool = ReturnType<typeof deriveTools>[number];
 

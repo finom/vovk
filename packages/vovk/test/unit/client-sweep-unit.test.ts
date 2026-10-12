@@ -18,8 +18,8 @@ import { createRPC } from 'vovk/create-rpc';
 import { createFetcher } from 'vovk/fetcher';
 import { deepExtend } from 'vovk/internal';
 import { z } from 'zod';
-import { readableStreamToAsyncIterable } from '../../../packages/vovk/dist/client/default-stream-handler.js';
-import { validateOnClient } from '../../../packages/vovk-ajv/index.js';
+import { validateOnClient } from '../../../vovk-ajv/index.js';
+import { readableStreamToAsyncIterable } from '../../dist/client/default-stream-handler.js';
 
 const streamOf = (chunks: Uint8Array[]) =>
   new ReadableStream<Uint8Array>({
@@ -379,7 +379,7 @@ describe('Client sweep, pure functions', () => {
 
     it('Compiles a schema once', async () => {
       // the copy of Ajv that vovk-ajv itself loads
-      const requireFromAjvPackage = createRequire(new URL('../../../packages/vovk-ajv/index.js', import.meta.url));
+      const requireFromAjvPackage = createRequire(new URL('../../../vovk-ajv/index.js', import.meta.url));
       const AjvCore = requireFromAjvPackage('ajv/dist/core.js').default;
       const compile = AjvCore.prototype.compile;
       let compiles = 0;
@@ -593,7 +593,7 @@ describe('Client sweep, pure functions', () => {
     it('Takes validateOnClient per call as a module promise', async () => {
       const bodySchema = { type: 'object', properties: { name: { type: 'string' } }, required: ['name'] };
       const rpc = rpcOf({ create: { path: '', httpMethod: 'POST', validation: { body: bodySchema } } });
-      const validateOnClientModule = import('../../../packages/vovk-ajv/index.js');
+      const validateOnClientModule = import('../../../vovk-ajv/index.js');
 
       await withFetch(
         () => Response.json({ ok: true }),
@@ -981,10 +981,11 @@ describe('Client sweep, pure functions', () => {
     });
   });
 
+  // the consumer files sit at the repo root: inside packages/vovk, a declaration names any type by a relative path
   describe('shipped types', () => {
     it('Type-check the client entry points in a project without Node types or lib esnext', () => {
       // a front-end project: no @types/node, ES2022 and DOM libs, library declarations checked
-      const fileName = fileURLToPath(new URL('./front-end-consumer.mts', import.meta.url));
+      const fileName = fileURLToPath(new URL('../../../../front-end-consumer.mts', import.meta.url));
       const source = [
         "import { createRPC } from 'vovk/create-rpc';",
         "import { createFetcher, fetcher } from 'vovk/fetcher';",
@@ -1018,7 +1019,7 @@ describe('Client sweep, pure functions', () => {
 
     // a bundled client or a library ships declarations, which can name only what the package's entry points export
     const getDeclarationDiagnostics = (source: string) => {
-      const fileName = fileURLToPath(new URL('./declaration-consumer.mts', import.meta.url));
+      const fileName = fileURLToPath(new URL('../../../../declaration-consumer.mts', import.meta.url));
       const options: ts.CompilerOptions = {
         strict: true,
         noEmit: true,
@@ -1109,7 +1110,7 @@ describe('Client sweep, pure functions', () => {
     });
 
     it('Name a procedure by its type in the declarations of its controller', () => {
-      const fileName = fileURLToPath(new URL('./declaration-size-consumer.mts', import.meta.url));
+      const fileName = fileURLToPath(new URL('../../../../declaration-size-consumer.mts', import.meta.url));
       const source = [
         "import { procedure } from 'vovk';",
         "import { z } from 'zod';",

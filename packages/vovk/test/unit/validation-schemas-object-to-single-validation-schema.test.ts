@@ -1,7 +1,7 @@
 import assert from 'node:assert';
 import { describe, it } from 'node:test';
 import { z } from 'zod';
-import { validationSchemasObjectToSingleValidationSchema } from '../../../packages/vovk/dist/validation/validation-schemas-object-to-single-validation-schema.js';
+import { validationSchemasObjectToSingleValidationSchema } from '../../dist/validation/validation-schemas-object-to-single-validation-schema.js';
 
 type StandardResult = { value?: unknown; issues?: ReadonlyArray<{ message: string; path?: unknown[] }> };
 
