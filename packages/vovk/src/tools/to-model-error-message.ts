@@ -4,7 +4,7 @@ import { isHttpException } from '../core/http-exception.js';
 export function toModelErrorMessage(error: Error): string {
   // tools also run in the browser, where `process` can be missing
   if (!isHttpException(error) && typeof process !== 'undefined' && process.env.NODE_ENV === 'production') {
-    console.error('🐺 Unhandled error in a Vovk tool:', error);
+    console.error('[[v]] Unhandled error in a Vovk tool:', error);
     return 'Internal server error';
   }
   return error.message;

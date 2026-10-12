@@ -230,7 +230,7 @@ export function openAPIToVovkSchema({
       if (handlerName !== methodName) {
         const taken = handlers[methodName];
         console.warn(
-          `🐺 ${rpcModuleName}.${methodName} already calls ${taken.httpMethod} ${taken.path}, so ${method} ${path} is named ${handlerName}`
+          `[[v]] ${rpcModuleName}.${methodName} already calls ${taken.httpMethod} ${taken.path}, so ${method} ${path} is named ${handlerName}`
         );
       }
 

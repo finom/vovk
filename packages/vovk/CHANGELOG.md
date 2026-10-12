@@ -4,6 +4,17 @@ All notable changes to `vovk` are documented here. This file is the canonical re
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 4.0.1 - 2026-10-12
+
+### Changed
+
+- Log messages start with `[[v]]` instead of 🐺 ([#68](https://github.com/finom/vovk/pull/68))
+
+### Fixed
+
+- A segment or root route named after an `Object.prototype` member (`__proto__`, `constructor`, `toString`) is served like any other; a `__proto__` segment no longer writes to `Object.prototype` ([#66](https://github.com/finom/vovk/pull/66))
+- OpenAPI conversion and the fetcher read `{name}` templates and `rootEntry` slashes in linear time ([#66](https://github.com/finom/vovk/pull/66))
+
 ## 4.0.0 - 2026-10-12
 
 A cleanup major: removals and renames; the only new exports are types.

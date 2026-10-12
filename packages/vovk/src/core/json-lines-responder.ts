@@ -191,7 +191,7 @@ export class JSONLinesResponder<T> extends Responder {
     // same rule as a non streaming handler: an error other than an HttpException is internal, and so is status 0,
     // which a client throws for a call that got no response
     if ((!isHttpException(e) || e.statusCode === HttpStatus.NULL) && process.env.NODE_ENV === 'production') {
-      console.error('🐺 Unhandled error in a Vovk stream:', e);
+      console.error('[[v]] Unhandled error in a Vovk stream:', e);
       return JSON.stringify({ isError: true, reason: 'Internal server error' } satisfies StreamAbortMessage);
     }
     // the client takes a line for an error only with these keys; the status is the one a JSON response would have

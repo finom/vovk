@@ -295,7 +295,7 @@ export function createStandardValidation({
       const model = options?.[slot];
       if (model && !model['~standard']?.jsonSchema) {
         console.warn(
-          `🐺 The ${slot} schema of a procedure has no Standard JSON Schema, so the ${slot} is emitted as {} (any value): OpenAPI, client-side validation, AI tools and the Python and Rust clients take any value there.`
+          `[[v]] The ${slot} schema of a procedure has no Standard JSON Schema, so the ${slot} is emitted as {} (any value): OpenAPI, client-side validation, AI tools and the Python and Rust clients take any value there.`
         );
       }
     }

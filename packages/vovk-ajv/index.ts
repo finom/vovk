@@ -72,7 +72,7 @@ const tryCreateAjv = (options: Options, target: Target, coercesStrings: boolean)
   } catch (error) {
     if ((error as Error | null)?.name !== 'EvalError') throw error;
     generatesCode = false;
-    console.warn("🐺 Client-side validation is skipped, Ajv can't generate code here:", error);
+    console.warn("[[v]] Client-side validation is skipped, Ajv can't generate code here:", error);
     return null;
   }
 };
@@ -160,7 +160,7 @@ const getValidator = (
       try {
         validator = cached.ajv.compile(toNumericBounds(schema) as VovkJSONSchemaBase);
       } catch (error) {
-        console.warn(`🐺 Client-side validation of ${description} is skipped, Ajv can't compile its schema:`, error);
+        console.warn(`[[v]] Client-side validation of ${description} is skipped, Ajv can't compile its schema:`, error);
         validator = null;
       }
       cached.byText.set(text, validator);
