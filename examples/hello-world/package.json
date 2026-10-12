@@ -67,6 +67,6 @@
     "vovk-cli": "^0.3.0-beta.0",
     "vovk-hello-world-published": "npm:vovk-hello-world@^0.0.88",
     "vovk-python": "^0.0.4",
-    "vovk-rust": "^0.0.4"
+    "vovk-rust": "^0.0.5"
   }
 }
