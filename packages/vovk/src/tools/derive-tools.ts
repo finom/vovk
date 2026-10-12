@@ -108,11 +108,7 @@ async function caller<TOutput, TFormattedOutput>(
     // an error status fails the call, the formatter still gets the Response to show its body
     if (result instanceof Response && !result.ok) {
       const error = new HttpException(result.status, await responseErrorMessage(result.clone()));
-      return [
-        await toModelOutput(result as TOutput, tool, req),
-        req,
-        error,
-      ];
+      return [await toModelOutput(result as TOutput, tool, req), req, error];
     }
 
     // a responder streams the lines a client would read
@@ -127,18 +123,10 @@ async function caller<TOutput, TFormattedOutput>(
       result = items;
     }
 
-    return [
-      await toModelOutput(result as TOutput, tool, req),
-      req,
-      null,
-    ];
+    return [await toModelOutput(result as TOutput, tool, req), req, null];
   } catch (e) {
     // report the error separately, the formatted output is never an Error instance
-    return [
-      await toModelOutput(e as Error, tool, null),
-      null,
-      e as Error,
-    ];
+    return [await toModelOutput(e as Error, tool, null), null, e as Error];
   }
 }
 
