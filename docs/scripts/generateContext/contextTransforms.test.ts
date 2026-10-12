@@ -304,6 +304,10 @@ describe('removeHtmlTags', () => {
   test('removes nested HTML tags', () => {
     assert.strictEqual(removeHtmlTags('<div><span>deep</span></div>'), 'deep');
   });
+
+  test('removes a tag that another tag splits', () => {
+    assert.strictEqual(removeHtmlTags('a <scr<b>ipt>x</scr<i>ipt> b'), 'a x b');
+  });
 });
 
 describe('stripHtmlTagsOutsideCode', () => {
