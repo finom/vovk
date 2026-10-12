@@ -215,16 +215,14 @@ jobs:
               [ -n "$(npm view "$name@$version" version 2>/dev/null)" ] && continue
             else
               gh api "repos/$GITHUB_REPOSITORY/git/ref/tags/$tag" --silent 2>/dev/null || continue
+              # A release that has its provenance is done; its text stays as it is.
+              gh release view "$tag" --json assets --jq '.assets[].name' 2>/dev/null | grep -qxF "$file" && continue
             fi
             node scripts/changelog-section.mjs "packages/$dir/CHANGELOG.md" "$version" >notes.md
             printf '\n[Full changelog](https://github.com/%s/blob/%s/packages/%s/CHANGELOG.md) · [npm](https://www.npmjs.com/package/%s/v/%s)\n' \
               "$GITHUB_REPOSITORY" "$tag" "$dir" "$name" "$version" >>notes.md
             if [ "$DRY_RUN" = true ]; then
               { echo "## $name $version (dry run)"; echo; cat notes.md; echo; } | tee -a "$GITHUB_STEP_SUMMARY"
-              continue
-            fi
-            if gh release view "$tag" --json assets --jq '.assets[].name' 2>/dev/null | grep -qxF "$file"; then
-              gh release edit "$tag" --notes-file notes.md
               continue
             fi
             # npm serves the attestations with the version, a few minutes after the publish.
