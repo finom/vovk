@@ -1,12 +1,12 @@
 # Changelog
 
-All notable changes to `vovk-python` are documented here. This file is the canonical record: noteworthy changes only, one short line each, linked to the pull request or commit that made them. GitHub Releases are not used.
+All notable changes to `vovk-python` are documented here. This file is the canonical record: noteworthy changes only, one short line each, linked to the pull request or commit that made them. Each GitHub Release copies its version's section from this file.
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 This package is experimental and its generated output may still shift between releases.
 
-## 0.0.4 - 2026-10-09
+## 0.0.4 - 2026-10-12
 
 - **Breaking:** a response that is neither JSON nor text, such as a file, comes back as `bytes`, not `str`; a `+json` type is parsed as JSON, and `text/*` without a charset is read as UTF-8, not Latin-1 ([#44](https://github.com/finom/vovk/pull/44))
 - Schema text can no longer run code on import: docstrings, comments, strings and enum literals are escaped ([#35](https://github.com/finom/vovk/pull/35))

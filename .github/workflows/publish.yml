@@ -14,7 +14,7 @@ on:
         required: true
         options: [vovk, vovk-ajv, vovk-python, vovk-rust, vovk-cli]
       dry_run:
-        description: npm publish --dry-run and no GitHub Release. Off, the tag must point at the commit
+        description: npm publish --dry-run; the release text goes to the run summary. Off, the tag must point at the commit
         type: boolean
         default: true
 
@@ -84,6 +84,15 @@ jobs:
           echo "$tag: $package at $sha, dry run: $dry_run"
           echo "sha=$sha" >>"$GITHUB_OUTPUT"
           echo "dry_run=$dry_run" >>"$GITHUB_OUTPUT"
+      # A GitHub Release carries its version's CHANGELOG section, so a version without one never reaches npm.
+      - name: Check the CHANGELOG has a section for every version npm lacks
+        run: |
+          for dir in vovk vovk-ajv vovk-python vovk-rust vovk-cli; do
+            name="$(jq -r .name "packages/$dir/package.json")"
+            version="$(jq -r .version "packages/$dir/package.json")"
+            [ -n "$(npm view "$name@$version" version 2>/dev/null)" ] && continue
+            node scripts/changelog-section.mjs "packages/$dir/CHANGELOG.md" "$version" >/dev/null
+          done
       # The release commit's push runs main.yml on every OS and Node version; only a commit it passed publishes.
       - name: Wait for main.yml on the commit
         env:
@@ -181,7 +190,6 @@ jobs:
 
   release:
     needs: [check, publish]
-    if: needs.check.outputs.dry_run == 'false'
     runs-on: ubuntu-24.04
     timeout-minutes: 60
     permissions:
@@ -191,18 +199,34 @@ jobs:
         with:
           ref: ${{ needs.check.outputs.sha }}
           persist-credentials: false
-      # The release carries the npm provenance as an in-toto file, which is what Scorecard's Signed-Releases reads.
-      - name: A GitHub Release per pushed tag, with the npm provenance
+      # The release carries the version's CHANGELOG section, and the npm provenance as an in-toto file, which is what
+      # Scorecard's Signed-Releases reads. A dry run writes the text of each version npm lacks to the run summary.
+      - name: A GitHub Release per pushed tag, with the CHANGELOG section and the npm provenance
         env:
           GH_TOKEN: ${{ github.token }}
+          DRY_RUN: ${{ needs.check.outputs.dry_run }}
         run: |
           for dir in vovk vovk-ajv vovk-python vovk-rust vovk-cli; do
             name="$(jq -r .name "packages/$dir/package.json")"
             version="$(jq -r .version "packages/$dir/package.json")"
             tag="$dir-v$version"
             file="$tag.intoto.jsonl"
-            gh api "repos/$GITHUB_REPOSITORY/git/ref/tags/$tag" --silent 2>/dev/null || continue
-            gh release view "$tag" --json assets --jq '.assets[].name' 2>/dev/null | grep -qxF "$file" && continue
+            if [ "$DRY_RUN" = true ]; then
+              [ -n "$(npm view "$name@$version" version 2>/dev/null)" ] && continue
+            else
+              gh api "repos/$GITHUB_REPOSITORY/git/ref/tags/$tag" --silent 2>/dev/null || continue
+            fi
+            node scripts/changelog-section.mjs "packages/$dir/CHANGELOG.md" "$version" >notes.md
+            printf '\n[Full changelog](https://github.com/%s/blob/%s/packages/%s/CHANGELOG.md) · [npm](https://www.npmjs.com/package/%s/v/%s)\n' \
+              "$GITHUB_REPOSITORY" "$tag" "$dir" "$name" "$version" >>notes.md
+            if [ "$DRY_RUN" = true ]; then
+              { echo "## $name $version (dry run)"; echo; cat notes.md; echo; } | tee -a "$GITHUB_STEP_SUMMARY"
+              continue
+            fi
+            if gh release view "$tag" --json assets --jq '.assets[].name' 2>/dev/null | grep -qxF "$file"; then
+              gh release edit "$tag" --notes-file notes.md
+              continue
+            fi
             # npm serves the attestations with the version, a few minutes after the publish.
             curl -fsSL --retry 40 --retry-delay 15 --retry-all-errors \
               "https://registry.npmjs.org/-/npm/v1/attestations/$name@$version" |
@@ -210,10 +234,10 @@ jobs:
                 >"$file"
             if gh release view "$tag" >/dev/null 2>&1; then
               gh release upload "$tag" "$file" --clobber
+              gh release edit "$tag" --notes-file notes.md
             else
               prerelease=()
               case "$version" in *-*) prerelease=(--prerelease) ;; esac
-              gh release create "$tag" "$file" --verify-tag "${prerelease[@]}" --title "$name $version" \
-                --notes "[Changelog](https://github.com/$GITHUB_REPOSITORY/blob/$tag/packages/$dir/CHANGELOG.md) · [npm](https://www.npmjs.com/package/$name/v/$version)"
+              gh release create "$tag" "$file" --verify-tag "${prerelease[@]}" --title "$name $version" --notes-file notes.md
             fi
           done

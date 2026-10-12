@@ -1,10 +1,10 @@
 # Changelog
 
-All notable changes to `vovk-ajv` are documented here. This file is the canonical record: noteworthy changes only, one short line each, linked to the pull request or commit that made them. GitHub Releases are not used.
+All notable changes to `vovk-ajv` are documented here. This file is the canonical record: noteworthy changes only, one short line each, linked to the pull request or commit that made them. Each GitHub Release copies its version's section from this file.
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## 0.2.0 - 2026-10-09
+## 0.2.0 - 2026-10-12
 
 ### Removed
 

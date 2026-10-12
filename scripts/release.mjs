@@ -71,6 +71,10 @@ if (attempt('git', ['tag', '--list', tag]) || attempt('git', ['ls-remote', '--ta
   fail(`the tag ${tag} exists`);
 }
 if (attempt('npm', ['view', `${name}@${version}`, 'version'])) fail(`npm already has ${name}@${version}`);
+// the GitHub Release carries this section
+if (!attempt('node', ['scripts/changelog-section.mjs', `packages/${name}/CHANGELOG.md`, version])) {
+  fail(`packages/${name}/CHANGELOG.md has no section for ${version}`);
+}
 // publish.yml's rule: a prerelease goes to the dist-tag its id names (4.0.0-beta.1 → beta), a release to latest
 const distTag = version.includes('-') ? version.slice(version.indexOf('-') + 1).split('.')[0] : 'latest';
 
