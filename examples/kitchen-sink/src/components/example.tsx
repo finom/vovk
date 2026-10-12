@@ -12,7 +12,7 @@ const Example = ({ className, title, description, children }: Props) => {
     <>
       {title && <h1 className="text-center">{title}</h1>}
       {description && (
-        <p className="text-center max-w-[800px] m-auto [&_code]:bg-slate-700 [&_code]:px-1 [&_code]:py-0.5 [&_code]:rounded-sm">
+        <p className="text-center max-w-[800px] m-auto [&_code]:bg-muted [&_code]:px-1 [&_code]:py-0.5 [&_code]:rounded-sm">
           {description}
         </p>
       )}

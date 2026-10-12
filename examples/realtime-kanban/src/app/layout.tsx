@@ -23,14 +23,14 @@ export const metadata: Metadata = {
   icons: {
     icon: [
       {
-        media: '(prefers-color-scheme: light)',
         url: '/icon.svg',
-        href: '/icon.svg',
+        type: 'image/svg+xml',
+        media: '(prefers-color-scheme: light)',
       },
       {
-        media: '(prefers-color-scheme: dark)',
         url: '/icon-white.svg',
-        href: '/icon-white.svg',
+        type: 'image/svg+xml',
+        media: '(prefers-color-scheme: dark)',
       },
     ],
   },
