@@ -57,6 +57,14 @@ await describe('getDevScript', async () => {
     );
   });
 
+  await it('Escapes backslashes and quotes of the dev script in the explicit script', () => {
+    // inside double quotes a shell reads \\ as \ and \" as ", so a backslash before a quote stays one
+    assert.strictEqual(
+      getDevScript(withDevScript('node -e "console.log(\\"ready\\")" && next dev'), 'explicit'),
+      'cross-env PORT=3000 concurrently "node -e \\"console.log(\\\\\\"ready\\\\\\")\\" && next dev" "vovk dev" --kill-others'
+    );
+  });
+
   await it('Sets PORT to the port next dev listens on in the explicit script', () => {
     assert.match(getDevScript(withDevScript('next dev -p 4000'), 'explicit'), /PORT=4000 /);
     assert.match(getDevScript(withDevScript('next dev --turbopack'), 'explicit'), /PORT=3000 /);

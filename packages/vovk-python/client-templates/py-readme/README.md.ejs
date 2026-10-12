@@ -20,7 +20,7 @@ imports: ['vovk-python']
     // as the client builds it: a mixin's URLs start at its API's server, without a segment name
     const meta = t.segmentMeta[segment.segmentName] ?? {};
     const segmentPath = segment.forceApiRoot ? '' : typeof meta.segmentNameOverride === 'string' ? meta.segmentNameOverride : segmentName;
-    const segmentRoot = (meta.forceApiRoot ?? t.apiRoot ?? '').replace(/\/+$/, '');
+    const segmentRoot = t._.trimEnd(meta.forceApiRoot ?? t.apiRoot ?? '', '/');
     Object.values(segment.controllers).forEach((controllerSchema) => {
     // the names the package has
     const pyModuleName = t.imports['vovk-python'].toPythonIdentifier(controllerSchema.rpcModuleName);

@@ -36,9 +36,9 @@ pub mod <%= vars.toRustIdent(t._.snakeCase(controllerSchema.rpcModuleName)) %> {
 <% Object.entries(controllerSchema.handlers).forEach(([handlerNameOriginal, handlerSchema]) => { 
     const { validation, operationObject, httpMethod } = handlerSchema;
     const handlerName = functionNames.get(handlerNameOriginal);
-    const url = [apiRoot.replace(/\/+$/, ''), ...[segmentPath, controllerSchema.prefix ?? '', handlerSchema.path].map((part) => t._.trim(part, '/'))].filter(Boolean).join('/');
+    const url = [t._.trimEnd(apiRoot, '/'), ...[segmentPath, controllerSchema.prefix ?? '', handlerSchema.path].map((part) => t._.trim(part, '/'))].filter(Boolean).join('/');
     // a path with {name} placeholders takes params, with or without a params schema
-    const paramsType = validation?.params ? `${handlerName}_::params` : /\{[^}]+\}/.test(`${controllerSchema.prefix ?? ''}/${handlerSchema.path}`) ? 'HashMap<String, String>' : '()';
+    const paramsType = validation?.params ? `${handlerName}_::params` : /\{[^{}]+\}/.test(`${controllerSchema.prefix ?? ''}/${handlerSchema.path}`) ? 'HashMap<String, String>' : '()';
     %>
     // <%- vars.toRustCommentText(`${controllerSchema.rpcModuleName}.${handlerName} ${httpMethod} \`${url}\``) %>
 <%- 

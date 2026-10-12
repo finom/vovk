@@ -234,7 +234,7 @@ class VovkApp {
   setSegment = (segmentName: string, segment: SegmentHooks & { controllers: Set<VovkController> }) => {
     this.#segments.set(segmentName, segment);
     // a segment initialized again, as on a dev reload, collects its handlers again
-    delete this.#allHandlers[segmentName];
+    this.#allHandlers.delete(segmentName);
   };
 
   // a segment set up without initSegment keeps its hooks on the controller
@@ -361,18 +361,19 @@ class VovkApp {
     return { handler: null, methodParams };
   };
 
-  #allHandlers: Record<string, Partial<Record<HttpMethod, Record<string, Route>>>> = {};
+  // a Map and null-prototype tables, so a segment or route named __proto__ or toString is a key like any other
+  #allHandlers = new Map<string, Partial<Record<HttpMethod, Record<string, Route>>>>();
 
   #collectHandlers = (httpMethod: HttpMethod, segmentName: string) => {
     const routes = this.routes[httpMethod];
     const controllers = this.#segments.get(segmentName)?.controllers ?? new Set<VovkController>();
 
-    const handlers: Record<string, Route> = {};
+    const handlers: Record<string, Route> = Object.create(null);
 
     controllers.forEach((controller) => {
       const prefix = controller._prefix ?? '';
       const staticMethods: Record<string, RouteHandler> = Object.assign(
-        {},
+        Object.create(null),
         ...getServingClasses(controller, controllers).map((servingClass) => routes.get(servingClass))
       );
 
@@ -392,10 +393,13 @@ class VovkApp {
   };
 
   #getHandlers = (httpMethod: HttpMethod, segmentName: string) => {
-    const handlers = this.#allHandlers[segmentName]?.[httpMethod] ?? this.#collectHandlers(httpMethod, segmentName);
-    this.#allHandlers[segmentName] ??= {};
-    this.#allHandlers[segmentName][httpMethod] = handlers;
-    return handlers;
+    let segmentHandlers = this.#allHandlers.get(segmentName);
+    if (!segmentHandlers) {
+      segmentHandlers = {};
+      this.#allHandlers.set(segmentName, segmentHandlers);
+    }
+    segmentHandlers[httpMethod] ??= this.#collectHandlers(httpMethod, segmentName);
+    return segmentHandlers[httpMethod];
   };
 
   #findRoute = (httpMethod: HttpMethod, segmentName: string, path: string[]) => {

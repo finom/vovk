@@ -135,9 +135,10 @@ function withoutReadOnlyRequired(schema: unknown, defs: Defs): unknown {
 
 const toRequestBody = (body: VovkJSONSchemaBase) => withoutReadOnlyRequired(body, body.$defs) as VovkJSONSchemaBase;
 
-// a server URL may hold `{name}` variables, each declares a default
+// a server URL may hold `{name}` variables, each declares a default; a name holds no brace, which keeps the match
+// linear on a long run of unclosed ones
 function resolveServerURL(server: ServerObject | undefined): string | undefined {
-  return server?.url?.replace(/\{([^}]+)\}/g, (variable, name: string) => {
+  return server?.url?.replace(/\{([^{}]+)\}/g, (variable, name: string) => {
     const value = server.variables?.[name]?.default;
     return value === undefined ? variable : String(value);
   });

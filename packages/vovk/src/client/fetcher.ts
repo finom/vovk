@@ -154,7 +154,7 @@ export function createFetcher<T>({
       // built from the validated query and params, which are the ones to send
       const endpoint = getURL({ apiRoot, params, query });
       // a given param replaces its placeholder with an encoded value, so a brace left in the path is a missing one
-      const missingParams = Array.from(endpoint.split('?')[0].matchAll(/\{([^}]+)\}/g), ([, name]) => name);
+      const missingParams = Array.from(endpoint.split('?')[0].matchAll(/\{([^{}]+)\}/g), ([, name]) => name);
 
       if (missingParams.length) {
         throw new HttpException(HttpStatus.NULL, `Missing params: ${missingParams.join(', ')} in ${endpoint}`, {

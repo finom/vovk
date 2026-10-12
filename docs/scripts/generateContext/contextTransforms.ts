@@ -17,6 +17,17 @@ function processOutsideCode(content: string, fn: (text: string) => string): stri
   return parts.join('');
 }
 
+// a tag split by another, as <scr<b>ipt>, is whole again after one pass, so replace until nothing changes
+function replaceUntilStable(text: string, pattern: RegExp, replacement: string): string {
+  let previous: string;
+  let result = text;
+  do {
+    previous = result;
+    result = result.replace(pattern, replacement);
+  } while (result !== previous);
+  return result;
+}
+
 // --- FileTree conversion ---
 
 function extractFileTreeName(block: string, startIndex: number): { name: string; endIndex: number } {
@@ -39,8 +50,7 @@ function extractFileTreeName(block: string, startIndex: number): { name: string;
       i++;
     }
     const jsxContent = block.slice(afterEquals + 1, i - 1);
-    const text = jsxContent
-      .replace(/<[^>]+>/g, '')
+    const text = replaceUntilStable(jsxContent, /<[^>]+>/g, '')
       .replace(/\{'\s*'\}/g, ' ')
       .replace(/\s+/g, ' ')
       .trim();
@@ -198,7 +208,7 @@ export function resolveLinks(content: string): string {
 // --- HTML tag stripping ---
 
 export function removeHtmlTags(text: string): string {
-  return text.replace(/<\/?[a-z][a-z0-9]*(?:\s[\s\S]*?)?\/?\s*>/g, '');
+  return replaceUntilStable(text, /<\/?[a-z][a-z0-9]*(?:\s[\s\S]*?)?\/?\s*>/g, '');
 }
 
 export function stripHtmlTagsOutsideCode(content: string): string {

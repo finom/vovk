@@ -5,6 +5,9 @@ import { cookies } from 'next/headers';
 const secretKey = process.env.SESSION_SECRET || 'CHANGE_ME_TO_A_RANDOM_SECRET';
 const encodedKey = new TextEncoder().encode(secretKey);
 
+// the JWT payload is readable, so the session holds no password hash
+export const SESSION_USER_ID = 'admin';
+
 export async function encrypt(payload: JWTPayload) {
   return new SignJWT(payload)
     .setProtectedHeader({ alg: 'HS256' })

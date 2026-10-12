@@ -454,6 +454,46 @@ describe('Runtime sweep', () => {
       });
     });
 
+    it('Keeps the handlers of a segment named after an Object.prototype member off the prototype', async () => {
+      try {
+        for (const segmentName of ['__proto__', 'constructor']) {
+          class ProtoSegmentController {
+            static list() {
+              return segmentName;
+            }
+          }
+          get('list')(ProtoSegmentController, 'list');
+          const handlers = initSegment({ segmentName, controllers: { ProtoSegmentController } });
+
+          deepStrictEqual(await (await call(handlers, 'GET', 'list')).json(), segmentName);
+        }
+        strictEqual(Object.hasOwn(Object.prototype, 'GET'), false);
+        strictEqual(Object.hasOwn(Object, 'GET'), false);
+      } finally {
+        delete (Object.prototype as unknown as Record<string, unknown>).GET;
+        delete (Object as unknown as Record<string, unknown>).GET;
+      }
+    });
+
+    it('Serves a route named after an Object.prototype member', async () => {
+      class PrototypeNamesController {
+        static asString() {
+          return 'toString';
+        }
+
+        static asConstructor() {
+          return 'constructor';
+        }
+      }
+      get('toString')(PrototypeNamesController, 'asString');
+      get('constructor')(PrototypeNamesController, 'asConstructor');
+      const handlers = initSegment({ segmentName: 'prototype-names', controllers: { PrototypeNamesController } });
+
+      deepStrictEqual(await (await call(handlers, 'GET', 'toString')).json(), 'toString');
+      deepStrictEqual(await (await call(handlers, 'GET', 'constructor')).json(), 'constructor');
+      strictEqual((await call(handlers, 'GET', 'valueOf')).status, 404);
+    });
+
     it('Has no decorate() export', async () => {
       const vovk = await import('vovk');
 
