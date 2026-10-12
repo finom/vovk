@@ -1,35 +1,34 @@
 'use client';
 import { type ReactNode, useCallback, useEffect, useRef, useState } from 'react';
 
-const ORBIT_A = 500;
-const ORBIT_B = 160;
-const TILT_RAD = (60 * Math.PI) / 180;
+// Slots circle the base of the center block; a slot takes the next snippet while it is hidden behind the block.
+// Fewer slots on a narrower stage, so the cards in front don't cover each other.
+const slotCount = (stageWidth: number) => (stageWidth >= 800 ? 5 : stageWidth >= 600 ? 4 : 3);
 const ORBIT_SPEED = 0.0000875;
-const CROSS_HALF = 0.15;
-const CONTAINER_W = 832;
-const CARD_W = 170;
-const MAX_X = (CONTAINER_W - CARD_W) / 2;
-// A card is a docs code block at full size, scaled down to CARD_W.
-const CARD_NATURAL_W = 300;
-const CARD_SCALE = CARD_W / CARD_NATURAL_W;
+const ORBIT_Y = 80;
+// A card is a docs code block shown at 84% (behind) to 92% (in front) of its size.
+const SCALE_BACK = 0.84;
+const SCALE_FRONT = 0.92;
+const CARD_W = 270;
+const PADDING_TOP = 40;
+const PADDING_BOTTOM = 160;
 
-function getPos(index: number, total: number, time: number) {
-  const angle = (index / total) * Math.PI * 2 + time * ORBIT_SPEED;
-  const rawX = Math.cos(angle) * ORBIT_A;
-  const x = Math.tanh(rawX / MAX_X) * MAX_X;
-  const yFlat = Math.sin(angle) * ORBIT_B;
-  const y = yFlat * Math.cos(TILT_RAD);
-  const z = yFlat * Math.sin(TILT_RAD);
-  const yFloat = Math.sin((index / total) * Math.PI * 3 + time * 0.0005) * 6;
-  return { x, y: y + yFloat, z };
+function slotAt(slot: number, slots: number, time: number) {
+  const angle = (slot / slots) * Math.PI * 2 + time * ORBIT_SPEED;
+  // Laps counted from the back of the ring, so the snippet changes where the card can't be seen.
+  const lap = Math.floor((angle + Math.PI / 2) / (Math.PI * 2));
+  const yFloat = Math.sin((slot / slots) * Math.PI * 3 + time * 0.0005) * 4;
+  return { lap, x: Math.cos(angle), y: Math.sin(angle) * ORBIT_Y + yFloat, depth: (Math.sin(angle) + 1) / 2 };
 }
 
 export function Orbit({ center, cards }: { center: ReactNode; cards: { key: string; block: ReactNode }[] }) {
   const [time, setTime] = useState(0);
   const [mouse, setMouse] = useState({ x: 0, y: 0 });
+  const [stage, setStage] = useState({ width: 832, base: PADDING_TOP + 460 });
   const lastRef = useRef<number | null>(null);
   const rafRef = useRef<number | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
+  const centerRef = useRef<HTMLDivElement | null>(null);
 
   const loop = useCallback((ts: number) => {
     if (lastRef.current === null) lastRef.current = ts;
@@ -48,14 +47,26 @@ export function Orbit({ center, cards }: { center: ReactNode; cards: { key: stri
 
   useEffect(() => {
     const el = containerRef.current;
-    if (!el) return;
+    const block = centerRef.current;
+    if (!el || !block) return;
+    const measure = () => setStage({ width: el.clientWidth, base: block.offsetTop + block.offsetHeight });
+    measure();
+    const observer = new ResizeObserver(measure);
+    observer.observe(el);
+    observer.observe(block);
     const h = (e: MouseEvent) => {
       const r = el.getBoundingClientRect();
       setMouse({ x: (e.clientX - r.left - r.width / 2) * 0.015, y: (e.clientY - r.top - r.height / 2) * 0.015 });
     };
     el.addEventListener('mousemove', h);
-    return () => el.removeEventListener('mousemove', h);
+    return () => {
+      observer.disconnect();
+      el.removeEventListener('mousemove', h);
+    };
   }, []);
+
+  const slots = slotCount(stage.width);
+  const maxX = Math.max(0, stage.width / 2 - (CARD_W * SCALE_FRONT) / 2);
 
   return (
     <div
@@ -64,23 +75,24 @@ export function Orbit({ center, cards }: { center: ReactNode; cards: { key: stri
       style={{
         position: 'relative',
         width: '100%',
-        maxWidth: CONTAINER_W,
         margin: '0 auto',
-        paddingTop: 40,
-        paddingBottom: 40,
+        paddingTop: PADDING_TOP,
+        paddingBottom: PADDING_BOTTOM,
         display: 'flex',
-        alignItems: 'center',
         justifyContent: 'center',
         overflow: 'hidden',
+        // Keeps the cards' z-index inside the stage, under the sticky navbar.
+        isolation: 'isolate',
         userSelect: 'none',
       }}
     >
       <style>{`
-        @keyframes code-orbit-pulse { 0%{transform:scale(1);opacity:.35} 100%{transform:scale(1.1);opacity:0} }
+        @keyframes code-orbit-pulse { 0%{transform:scale(1);opacity:.35} 100%{transform:scale(1.06);opacity:0} }
         .code-orbit-ring { border-color: var(--border); }
         .code-orbit-pulse { border-color: var(--vovk-logo-accent); }
-        .code-orbit-card { transition: transform .25s ease; }
-        .code-orbit-card:hover { transform: scale(1.08); }
+        .code-orbit-card { transition: transform .25s ease; border-radius: 6px; box-shadow: 0 6px 20px rgba(17,17,17,.08); }
+        .dark .code-orbit-card { box-shadow: 0 6px 20px rgba(0,0,0,.5); }
+        .code-orbit-card:hover { transform: scale(1.04); }
         .code-orbit-card button { display: none; }
       `}</style>
 
@@ -90,10 +102,10 @@ export function Orbit({ center, cards }: { center: ReactNode; cards: { key: stri
         style={{
           position: 'absolute',
           left: '50%',
-          top: '50%',
-          width: MAX_X * 2,
-          height: ORBIT_B * 2,
-          transform: 'translate(-50%,-50%) rotateX(60deg)',
+          top: stage.base,
+          width: maxX * 2,
+          height: ORBIT_Y * 2,
+          transform: 'translate(-50%,-50%)',
           borderWidth: 1,
           borderStyle: 'solid',
           borderRadius: '50%',
@@ -102,7 +114,7 @@ export function Orbit({ center, cards }: { center: ReactNode; cards: { key: stri
       />
 
       {/* central block */}
-      <div style={{ position: 'relative', zIndex: 100, width: 540, maxWidth: '100%' }}>
+      <div ref={centerRef} style={{ position: 'relative', zIndex: 100, width: 540, maxWidth: '100%' }}>
         <div
           className="code-orbit-pulse"
           style={{
@@ -118,35 +130,30 @@ export function Orbit({ center, cards }: { center: ReactNode; cards: { key: stri
         {center}
       </div>
 
-      {/* orbiting snippets */}
-      <div style={{ position: 'absolute', inset: 0, zIndex: 101, isolation: 'isolate', pointerEvents: 'none' }}>
-        {cards.map(({ key, block }, i) => {
-          const { x, y, z } = getPos(i, cards.length, time);
-          const dn = (z + ORBIT_B) / (ORBIT_B * 2);
-          const opacity = dn ** 1.2;
-          const blur = (1 - dn) * 0.35;
-          const crossIntensity = Math.max(0, 1 - Math.abs(dn - 0.5) / CROSS_HALF);
-          const scale = (0.65 + dn * 0.55) * (1 + crossIntensity * 0.04) * CARD_SCALE;
-          return (
-            <div
-              key={key}
-              style={{
-                position: 'absolute',
-                left: '50%',
-                top: '50%',
-                width: CARD_NATURAL_W,
-                transform: `translate(calc(-50% + ${x + mouse.x}px),calc(-50% + ${y + mouse.y}px)) scale(${scale})`,
-                opacity,
-                filter: blur > 0.1 ? `blur(${blur}px)` : 'none',
-                pointerEvents: opacity > 0.05 ? 'auto' : 'none',
-                zIndex: Math.round(dn * 200),
-              }}
-            >
-              <div className="code-orbit-card">{block}</div>
-            </div>
-          );
-        })}
-      </div>
+      {/* orbiting snippets: behind the block at the back of the ring, over its last lines at the front */}
+      {Array.from({ length: slots }, (_, slot) => {
+        const { lap, x, y, depth } = slotAt(slot, slots, time);
+        const card = cards[(slot + lap * slots) % cards.length];
+        const scale = SCALE_BACK + (SCALE_FRONT - SCALE_BACK) * depth;
+        return (
+          <div
+            // biome-ignore lint/suspicious/noArrayIndexKey: a slot is a position on the ring
+            key={slot}
+            style={{
+              position: 'absolute',
+              left: '50%',
+              top: stage.base,
+              width: 'max-content',
+              minWidth: CARD_W,
+              transform: `translate(calc(-50% + ${x * maxX + mouse.x}px),calc(-50% + ${y + mouse.y}px)) scale(${scale})`,
+              opacity: Math.min(1, 0.3 + depth * 1.4),
+              zIndex: Math.round(depth * 200),
+            }}
+          >
+            <div className="code-orbit-card">{card.block}</div>
+          </div>
+        );
+      })}
     </div>
   );
 }
