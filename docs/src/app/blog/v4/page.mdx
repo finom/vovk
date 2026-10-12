@@ -22,7 +22,7 @@ Breaking changes:
 - A JSON Lines stream can be read once.
 - `vovk-ajv`: `configure()` moved to `libs.ajv` in `vovk.config`.
 - Python returns `bytes` for files. Rust sends a typed JSON body where it sent a multipart form. Python and Rust mixin calls send the query in the OpenAPI document's `style` and `explode`.
-- The CLI needs Node.js 24+ and TypeScript 5.5+. The vovk packages take `vovk` 4 only as a peer.
+- The CLI needs Node.js 24.15+ and TypeScript 5.5+. The vovk packages take `vovk` 4 only as a peer.
 
 Fixes: several hundred bugs in routing, validation, streaming, the clients, code generation and the CLI, and security hardening of query parsing, content types and generated code. Five audits found them, and each code fix comes with a test that failed before it.
 
@@ -47,7 +47,7 @@ If you generate Python or Rust clients, update `vovk-python` and `vovk-rust` too
 
 Requirements:
 
-- Node.js 24+ for the CLI.
+- Node.js 24.15+ for the CLI.
 - TypeScript 5.5+. The generated client alone compiles on 5.3+, but a service or handler that takes its types from its own procedure, as in the docs and the files `vovk new` writes, needs 5.5. TypeScript 7 works.
 - `"experimentalDecorators": true` in `tsconfig.json` if you build with webpack. Turbopack builds don't need it. `vovk init` asks whether to add it.
 
@@ -191,7 +191,7 @@ Measured on Node.js 24.1 and an Apple M4 Pro: about 1.5 µs of routing overhead 
 16. A string body to a method that declares no content type, such as a plain handler typed `VovkRequest<string>`, goes out as JSON. v3 sent it raw as `text/plain`. `req.vovk.body()` still gives the string; `req.text()` now gives it quoted. To keep raw text, use a procedure with a text `contentType`.
 17. Read a JSON Lines stream once, or call `asPromise()`.
 18. In a custom fetcher, a call without a body has `body: undefined`, not `null`.
-19. Use Node.js 24+ and TypeScript 5.5+.
+19. Use Node.js 24.15+ and TypeScript 5.5+.
 20. Under Yarn 2+, move `vovk generate` from `prebuild` into the `build` script: Yarn 2+ runs no `pre` scripts.
 21. Python: a file response is `bytes`. Rust: a JSON or form procedure without files takes its typed body.
 22. The vovk packages peer `vovk` 4 only: update `vovk-cli`, `vovk-ajv`, `vovk-python` and `vovk-rust` with it.

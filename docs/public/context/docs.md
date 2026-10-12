@@ -4,8 +4,8 @@ description: "Full documentation for the Vovk.ts framework, excluding the Realti
 see_also:
   label: "Realtime Kanban Context"
   url: https://vovk.dev/context/realtime-ui.md
-chars: 397048
-est_tokens: 99262
+chars: 397601
+est_tokens: 99401
 ---
 
 Page: https://vovk.dev
@@ -24,7 +24,7 @@ To start, run the `init` command in an existing Next.js project.
 npx vovk-cli@latest init
 ```
 
-> Requires Node.js 24+, Next.js 15+ and TypeScript 5.5+. &nbsp; [Quick Start](https://vovk.dev/quick-install) · [Manual Install](https://vovk.dev/manual-install) · [Claude Plugin](https://vovk.dev/claude) · [GitHub](https://github.com/finom/vovk)
+> Requires Node.js 24.15+, Next.js 15+ and TypeScript 5.5+. &nbsp; [Quick Start](https://vovk.dev/quick-install) · [Manual Install](https://vovk.dev/manual-install) · [Claude Plugin](https://vovk.dev/claude) · [GitHub](https://github.com/finom/vovk)
 
 ---
 
@@ -7348,12 +7348,12 @@ const config = {
 
 > [!IMPORTANT]
 >
-> The tsdown API can break between minor versions. The config below is tested with **tsdown@0.22.14**. If a newer version breaks it, pin this one until newer versions are confirmed to work.
+> The tsdown API can break between minor versions. The config below is tested with **tsdown@0.23.0**. If a newer version breaks it, pin this one until newer versions are confirmed to work.
 
 Install `tsdown` as a dev dependency:
 
 ```sh npm2yarn copy
-npm install --save-dev tsdown@0.22.14
+npm install --save-dev tsdown@0.23.0
 ```
 
 Add this `build` function to the `bundle` object in the [config](https://vovk.dev/config) file:
@@ -7364,26 +7364,29 @@ const config = {
   bundle: {
     build: async ({ entry, outDir }) => {
       const { build } = await import('tsdown');
-      await build({
-        entry,
-        dts: true,
-        format: 'esm',
-        hash: false,
-        fixedExtension: true,
-        clean: true,
-        outDir,
-        platform: 'neutral',
-        outExtensions: () => ({ js: '.js', dts: '.d.ts' }),
-        outputOptions: {
-          codeSplitting: false,
-        },
-        inputOptions: {
-          resolve: {
-            mainFields: ['module', 'main'],
+      // the code and the types build in two passes: one pass writes an extra chunk.js
+      for (const dts of [false, { emitDtsOnly: true }]) {
+        await build({
+          entry,
+          dts,
+          format: 'esm',
+          hash: false,
+          fixedExtension: true,
+          clean: !dts,
+          outDir,
+          platform: 'neutral',
+          outExtensions: () => ({ js: '.js', dts: '.d.ts' }),
+          outputOptions: {
+            codeSplitting: false,
           },
-        },
-        deps: { alwaysBundle: ['!next/**'] },
-      });
+          inputOptions: {
+            resolve: {
+              mainFields: ['module', 'main'],
+            },
+          },
+          deps: { alwaysBundle: ['!next/**'] },
+        });
+      }
     },
     // ...
   },
@@ -7409,26 +7412,29 @@ const config = {
   bundle: {
     build: async ({ entry, outDir }) => {
       const { build } = await import('tsdown');
-      await build({
-        entry,
-        dts: true,
-        format: 'esm',
-        hash: false,
-        fixedExtension: true,
-        clean: true,
-        outDir,
-        platform: 'neutral',
-        outExtensions: () => ({ js: '.js', dts: '.d.ts' }),
-        outputOptions: {
-          codeSplitting: false,
-        },
-        inputOptions: {
-          resolve: {
-            mainFields: ['module', 'main'],
+      // the code and the types build in two passes: one pass writes an extra chunk.js
+      for (const dts of [false, { emitDtsOnly: true }]) {
+        await build({
+          entry,
+          dts,
+          format: 'esm',
+          hash: false,
+          fixedExtension: true,
+          clean: !dts,
+          outDir,
+          platform: 'neutral',
+          outExtensions: () => ({ js: '.js', dts: '.d.ts' }),
+          outputOptions: {
+            codeSplitting: false,
           },
-        },
-        deps: { alwaysBundle: ['!next/**'] },
-      });
+          inputOptions: {
+            resolve: {
+              mainFields: ['module', 'main'],
+            },
+          },
+          deps: { alwaysBundle: ['!next/**'] },
+        });
+      }
     },
     outputConfig: {
       origin: 'https://example.com',
@@ -8701,26 +8707,29 @@ const config = {
     keepPrebundleDir: true,
     build: async ({ entry, outDir }) => {
       const { build } = await import('tsdown');
-      await build({
-        entry,
-        dts: true,
-        format: 'esm',
-        hash: false,
-        fixedExtension: true,
-        clean: true,
-        outDir,
-        platform: 'neutral',
-        outExtensions: () => ({ js: '.js', dts: '.d.ts' }),
-        outputOptions: {
-          inlineDynamicImports: true,
-        },
-        inputOptions: {
-          resolve: {
-            mainFields: ['module', 'main'],
+      // the code and the types build in two passes: one pass writes an extra chunk.js
+      for (const dts of [false, { emitDtsOnly: true }]) {
+        await build({
+          entry,
+          dts,
+          format: 'esm',
+          hash: false,
+          fixedExtension: true,
+          clean: !dts,
+          outDir,
+          platform: 'neutral',
+          outExtensions: () => ({ js: '.js', dts: '.d.ts' }),
+          outputOptions: {
+            codeSplitting: false,
           },
-        },
-        noExternal: ['!next/**'],
-      });
+          inputOptions: {
+            resolve: {
+              mainFields: ['module', 'main'],
+            },
+          },
+          deps: { alwaysBundle: ['!next/**'] },
+        });
+      }
     },
   },
   clientTemplateDefs: {
@@ -8785,16 +8794,16 @@ The package files listed below take their metadata (`repository`, `homepage`, `b
     "api"
   ],
   "dependencies": {
-    "@scalar/api-reference-react": "^0.9.76",
+    "@scalar/api-reference-react": "^0.9.77",
     "@standard-schema/spec": "^1.1.0",
-    "@tanstack/react-query": "^5.104.0",
+    "@tanstack/react-query": "^5.104.1",
     "ajv": "^8.20.0",
     "ajv-errors": "^3.0.0",
     "next": "^16.3.8",
     "react": "^19.3.0",
     "react-dom": "^19.3.0",
-    "vovk": "^4.0.0-beta.0",
-    "vovk-ajv": "^0.1.0",
+    "vovk": "^4.0.0",
+    "vovk-ajv": "^0.2.0",
     "zod": "^4.6.5"
   },
   "devDependencies": {
@@ -8806,13 +8815,13 @@ The package files listed below take their metadata (`repository`, `homepage`, `b
     "postcss": "^8",
     "prettier": "^3.9.9",
     "tailwindcss": "^4.3.3",
-    "tsdown": "^0.22.14",
+    "tsdown": "^0.23.0",
     "tsx": "^4.23.15",
     "typescript": "^7",
-    "vovk-cli": "^0.3.0-beta.0",
+    "vovk-cli": "^0.3.0",
     "vovk-hello-world-published": "npm:vovk-hello-world@^0.0.88",
-    "vovk-python": "^0.0.3",
-    "vovk-rust": "^0.0.4"
+    "vovk-python": "^0.0.4",
+    "vovk-rust": "^0.0.5"
   }
 }
 ```

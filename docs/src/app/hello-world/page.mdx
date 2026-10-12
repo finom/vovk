@@ -569,26 +569,29 @@ const config = {
     keepPrebundleDir: true,
     build: async ({ entry, outDir }) => {
       const { build } = await import('tsdown');
-      await build({
-        entry,
-        dts: true,
-        format: 'esm',
-        hash: false,
-        fixedExtension: true,
-        clean: true,
-        outDir,
-        platform: 'neutral',
-        outExtensions: () => ({ js: '.js', dts: '.d.ts' }),
-        outputOptions: {
-          inlineDynamicImports: true,
-        },
-        inputOptions: {
-          resolve: {
-            mainFields: ['module', 'main'],
+      // the code and the types build in two passes: one pass writes an extra chunk.js
+      for (const dts of [false, { emitDtsOnly: true }]) {
+        await build({
+          entry,
+          dts,
+          format: 'esm',
+          hash: false,
+          fixedExtension: true,
+          clean: !dts,
+          outDir,
+          platform: 'neutral',
+          outExtensions: () => ({ js: '.js', dts: '.d.ts' }),
+          outputOptions: {
+            codeSplitting: false,
           },
-        },
-        noExternal: ['!next/**'],
-      });
+          inputOptions: {
+            resolve: {
+              mainFields: ['module', 'main'],
+            },
+          },
+          deps: { alwaysBundle: ['!next/**'] },
+        });
+      }
     },
   },
   clientTemplateDefs: {
@@ -654,16 +657,16 @@ The package files listed below take their metadata (`repository`, `homepage`, `b
     "api"
   ],
   "dependencies": {
-    "@scalar/api-reference-react": "^0.9.76",
+    "@scalar/api-reference-react": "^0.9.77",
     "@standard-schema/spec": "^1.1.0",
-    "@tanstack/react-query": "^5.104.0",
+    "@tanstack/react-query": "^5.104.1",
     "ajv": "^8.20.0",
     "ajv-errors": "^3.0.0",
     "next": "^16.3.8",
     "react": "^19.3.0",
     "react-dom": "^19.3.0",
-    "vovk": "^4.0.0-beta.0",
-    "vovk-ajv": "^0.1.0",
+    "vovk": "^4.0.0",
+    "vovk-ajv": "^0.2.0",
     "zod": "^4.6.5"
   },
   "devDependencies": {
@@ -675,13 +678,13 @@ The package files listed below take their metadata (`repository`, `homepage`, `b
     "postcss": "^8",
     "prettier": "^3.9.9",
     "tailwindcss": "^4.3.3",
-    "tsdown": "^0.22.14",
+    "tsdown": "^0.23.0",
     "tsx": "^4.23.15",
     "typescript": "^7",
-    "vovk-cli": "^0.3.0-beta.0",
+    "vovk-cli": "^0.3.0",
     "vovk-hello-world-published": "npm:vovk-hello-world@^0.0.88",
-    "vovk-python": "^0.0.3",
-    "vovk-rust": "^0.0.4"
+    "vovk-python": "^0.0.4",
+    "vovk-rust": "^0.0.5"
   }
 }
 ```

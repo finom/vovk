@@ -70,26 +70,29 @@ const config = {
     keepPrebundleDir: true,
     build: async ({ entry, outDir }) => {
       const { build } = await import('tsdown');
-      await build({
-        entry,
-        dts: true,
-        format: 'esm',
-        hash: false,
-        fixedExtension: true,
-        clean: true,
-        outDir,
-        platform: 'neutral',
-        outExtensions: () => ({ js: '.js', dts: '.d.ts' }),
-        outputOptions: {
-          inlineDynamicImports: true,
-        },
-        inputOptions: {
-          resolve: {
-            mainFields: ['module', 'main'],
+      // the code and the types build in two passes: one pass writes an extra chunk.js
+      for (const dts of [false, { emitDtsOnly: true }]) {
+        await build({
+          entry,
+          dts,
+          format: 'esm',
+          hash: false,
+          fixedExtension: true,
+          clean: !dts,
+          outDir,
+          platform: 'neutral',
+          outExtensions: () => ({ js: '.js', dts: '.d.ts' }),
+          outputOptions: {
+            codeSplitting: false,
           },
-        },
-        noExternal: ['!next/**'],
-      });
+          inputOptions: {
+            resolve: {
+              mainFields: ['module', 'main'],
+            },
+          },
+          deps: { alwaysBundle: ['!next/**'] },
+        });
+      }
     },
   },
   clientTemplateDefs: {

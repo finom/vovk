@@ -9,26 +9,29 @@ import { updateConfigProperty } from '../utils/update-config-property.mjs';
 
 export const BUNDLE_BUILD_TSDOWN = async ({ entry, outDir }: Parameters<VovkStrictConfig['bundle']['build']>[0]) => {
   const { build } = await import('tsdown');
-  await build({
-    entry,
-    dts: true,
-    format: 'esm',
-    hash: false,
-    fixedExtension: true,
-    clean: true,
-    outDir,
-    platform: 'neutral',
-    outExtensions: () => ({ js: '.js', dts: '.d.ts' }),
-    outputOptions: {
-      codeSplitting: false,
-    },
-    inputOptions: {
-      resolve: {
-        mainFields: ['module', 'main'],
+  // the code and the types build in two passes: one pass writes an extra chunk.js
+  for (const dts of [false, { emitDtsOnly: true }]) {
+    await build({
+      entry,
+      dts,
+      format: 'esm',
+      hash: false,
+      fixedExtension: true,
+      clean: !dts,
+      outDir,
+      platform: 'neutral',
+      outExtensions: () => ({ js: '.js', dts: '.d.ts' }),
+      outputOptions: {
+        codeSplitting: false,
       },
-    },
-    deps: { alwaysBundle: ['!next/**'] },
-  });
+      inputOptions: {
+        resolve: {
+          mainFields: ['module', 'main'],
+        },
+      },
+      deps: { alwaysBundle: ['!next/**'] },
+    });
+  }
 };
 
 // returns the config file to write, the caller writes it

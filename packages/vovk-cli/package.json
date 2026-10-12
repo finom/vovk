@@ -20,7 +20,7 @@
     "test-only": "npm run pre-test && NODE_ENV=test node --experimental-strip-types --test --test-only test/spec/**/*.mts",
     "test": "npm run pre-test && NODE_ENV=test node --experimental-strip-types --test --test-concurrency=1 test/spec/**/*.mts",
     "tsc": "tsc --noEmit",
-    "ncu": "npm-check-updates -u -x tsdown",
+    "ncu": "npm-check-updates -u -x tsdown --cooldown 7",
     "prepublishOnly": "node -e \"if (!process.env.GITHUB_ACTIONS) { console.error('Publish from CI: PACKAGE=<name> npm run <type> tags a release, and the tag publishes it'); process.exit(1) }\"",
     "clear-test-cache": "rm -rf ./tmp_*"
   },
@@ -42,7 +42,7 @@
   },
   "homepage": "https://vovk.dev",
   "engines": {
-    "node": ">=24.0.0"
+    "node": ">=24.15.0"
   },
   "peerDependencies": {
     "vovk": "^4.0.0-0"
@@ -50,7 +50,7 @@
   "dependencies": {
     "@iarna/toml": "^2.2.5",
     "@inquirer/prompts": "^8.7.3",
-    "@npmcli/package-json": "^7.0.5",
+    "@npmcli/package-json": "^8.0.0",
     "@types/json-schema": "^7.0.15",
     "@types/lodash": "^4.17.25",
     "chalk": "^6.0.1",
@@ -80,7 +80,7 @@
     "create-next-app": "^16.3.8",
     "node-pty": "1.1.0",
     "openapi3-ts": "^4.6.1",
-    "tsdown": "0.22.14",
+    "tsdown": "0.23.0",
     "zod": "^4.6.5"
   }
 }

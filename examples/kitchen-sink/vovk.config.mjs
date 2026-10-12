@@ -17,27 +17,30 @@ const config = {
     prebundleOutDir: './src/client',
     build: async ({ entry, outDir }) => {
       const { build } = await import('tsdown');
-      await build({
-        entry,
-        dts: true,
-        format: 'esm',
-        hash: false,
-        fixedExtension: true,
-        clean: true,
-        outDir,
-        platform: 'neutral',
-        outExtensions: () => ({ js: '.js', dts: '.d.ts' }),
-        outputOptions: {
-          inlineDynamicImports: true,
-        },
-        inputOptions: {
-          resolve: {
-            mainFields: ['module', 'main'],
+      // the code and the types build in two passes: one pass writes an extra chunk.js
+      for (const dts of [false, { emitDtsOnly: true }]) {
+        await build({
+          entry,
+          dts,
+          format: 'esm',
+          hash: false,
+          fixedExtension: true,
+          clean: !dts,
+          outDir,
+          platform: 'neutral',
+          outExtensions: () => ({ js: '.js', dts: '.d.ts' }),
+          outputOptions: {
+            codeSplitting: false,
           },
-        },
-        // vovk-examples doesn't depend on vovk, so the bundle carries it
-        deps: { alwaysBundle: ['vovk', 'vovk/**'] },
-      });
+          inputOptions: {
+            resolve: {
+              mainFields: ['module', 'main'],
+            },
+          },
+          // vovk-examples doesn't depend on vovk, so the bundle carries it
+          deps: { alwaysBundle: ['vovk', 'vovk/**'] },
+        });
+      }
     },
     outputConfig: {
       origin: 'https://examples.vovk.dev',

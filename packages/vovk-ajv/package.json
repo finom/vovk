@@ -19,7 +19,7 @@
     "build": "tsc",
     "tsc": "tsc --noEmit",
     "prepublishOnly": "node -e \"if (!process.env.GITHUB_ACTIONS) { console.error('Publish from CI: PACKAGE=<name> npm run <type> tags a release, and the tag publishes it'); process.exit(1) }\"",
-    "ncu": "npm-check-updates -u"
+    "ncu": "npm-check-updates -u --cooldown 7"
   },
   "repository": {
     "type": "git",
