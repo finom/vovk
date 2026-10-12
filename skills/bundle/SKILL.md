@@ -1,6 +1,6 @@
 ---
 name: bundle
-description: "Vovk.ts `vovk bundle` CLI — packages composed TypeScript client as zero-dep publishable npm package. Covers `bundle.build` async fn, `tsdown@0.22.14` recipe, `outputConfig.origin` / `package` / `reExports` / `imports.validateOnClient: null`, `prebundleOutDir` / `outDir` / `keepPrebundleDir`, `--include`/`--exclude` segments, `--openapi-*` mixin flags. Use when user asks to \"publish my API client\", \"ship an SDK to npm\", \"build a publishable client package\", \"bundle the Vovk client\", \"generate a distributable npm SDK\", \"use tsdown with vovk\", or variations including why bundled package omits `openapi`/`schema` entry points. Note: `vovk bundle` is **TypeScript-only**. For Python/PyPI publishing, hand off to **`python`** skill. For Rust/crates.io publishing, hand off to **`rust`** skill. Does NOT cover in-project client codegen (`@/client`) → **`rpc`** skill."
+description: "Vovk.ts `vovk bundle` CLI — packages composed TypeScript client as zero-dep publishable npm package. Covers `bundle.build` async fn, `tsdown@0.23.0` recipe, `outputConfig.origin` / `package` / `reExports` / `imports.validateOnClient: null`, `prebundleOutDir` / `outDir` / `keepPrebundleDir`, `--include`/`--exclude` segments, `--openapi-*` mixin flags. Use when user asks to \"publish my API client\", \"ship an SDK to npm\", \"build a publishable client package\", \"bundle the Vovk client\", \"generate a distributable npm SDK\", \"use tsdown with vovk\", or variations including why bundled package omits `openapi`/`schema` entry points. Note: `vovk bundle` is **TypeScript-only**. For Python/PyPI publishing, hand off to **`python`** skill. For Rust/crates.io publishing, hand off to **`rust`** skill. Does NOT cover in-project client codegen (`@/client`) → **`rpc`** skill."
 ---
 
 # Vovk.ts `vovk bundle`
@@ -14,7 +14,7 @@ description: "Vovk.ts `vovk bundle` CLI — packages composed TypeScript client 
 Covers:
 
 - 4-step bundle workflow.
-- `bundle.build` async function (required) + canonical `tsdown@0.22.14` recipe.
+- `bundle.build` async function (required) + canonical `tsdown@0.23.0` recipe.
 - `bundle.outputConfig` fields (`origin`, `package`, `reExports`, `imports`, `readme`, `samples`, `openAPIObject`); `requires` and `includeSegments`/`excludeSegments` sit at the root of `bundle`.
 - Default directory layout (`tmp_prebundle` → `dist`).
 - Full CLI flag list including `--openapi-*` mixin family.
@@ -72,12 +72,12 @@ build: async ({ entry, outDir, prebundleDir }) => {
 }
 ```
 
-Vovk is bundler-agnostic — `esbuild`, `tsup`, `tsdown`, even `child_process` shell-out work. Only **tsdown** tested by Vovk's authors; docs warn: **pin `tsdown@0.22.14`** until newer versions confirmed compatible.
+Vovk is bundler-agnostic — `esbuild`, `tsup`, `tsdown`, even `child_process` shell-out work. Only **tsdown** tested by Vovk's authors; docs warn: **pin `tsdown@0.23.0`** until newer versions confirmed compatible.
 
-### Canonical `tsdown` recipe (pin 0.22.14)
+### Canonical `tsdown` recipe (pin 0.23.0)
 
 ```sh
-npm install --save-dev tsdown@0.22.14
+npm install --save-dev tsdown@0.23.0
 ```
 
 ```ts filename="vovk.config.mjs"
@@ -86,20 +86,23 @@ const config = {
   bundle: {
     build: async ({ entry, outDir }) => {
       const { build } = await import('tsdown');
-      await build({
-        entry,
-        dts: true,
-        format: 'esm',
-        hash: false,
-        fixedExtension: true,
-        clean: true,
-        outDir,
-        platform: 'neutral',
-        outExtensions: () => ({ js: '.js', dts: '.d.ts' }),
-        outputOptions: { codeSplitting: false },
-        inputOptions: { resolve: { mainFields: ['module', 'main'] } },
-        deps: { alwaysBundle: ['!next/**'] },
-      });
+      // the code and the types build in two passes: one pass writes an extra chunk.js
+      for (const dts of [false, { emitDtsOnly: true }]) {
+        await build({
+          entry,
+          dts,
+          format: 'esm',
+          hash: false,
+          fixedExtension: true,
+          clean: !dts,
+          outDir,
+          platform: 'neutral',
+          outExtensions: () => ({ js: '.js', dts: '.d.ts' }),
+          outputOptions: { codeSplitting: false },
+          inputOptions: { resolve: { mainFields: ['module', 'main'] } },
+          deps: { alwaysBundle: ['!next/**'] },
+        });
+      }
     },
     outputConfig: {
       origin: 'https://example.com',
@@ -242,7 +245,7 @@ Set `bundle.keepPrebundleDir: true` (or pass `--keep-prebundle-dir`). `tmp_prebu
 ## Gotchas
 
 - **`bundle` is TypeScript-only.** Don't reach for Python/Rust SDKs — those use `vovk generate` with `py`/`pySrc`/`rs`/`rsSrc` templates + language-native publish commands. See **`python`** / **`rust`** skills.
-- **Pin `tsdown@0.22.14`.** Docs warn tsdown's API may break between minor versions; recipe above validated against 0.22.14. No floating range until upstream stability confirmed.
+- **Pin `tsdown@0.23.0`.** Docs warn tsdown's API may break between minor versions; recipe above validated against 0.23.0. No floating range until upstream stability confirmed.
 - **`origin` required.** Without it, bundled client has no default API base URL and consumers must pass `apiRoot` on every call. Bake it in — or use `withDefaults` post-import as one-off.
 - **`NextResponse` type inference needs `next` package** at consumer install time (Next.js limitation, not Vovk's). For dynamic response headers in bundled controller, return plain `Response` w/ manual type casting.
 - **`openapi` module isn't bundled** — consumers needing spec should fetch from runtime endpoint (see **`openapi`** skill's `OpenApiController` pattern). Deliberate size choice.

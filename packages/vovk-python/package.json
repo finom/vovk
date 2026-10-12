@@ -13,7 +13,7 @@
     "build": "tsc",
     "prepublishOnly": "node -e \"if (!process.env.GITHUB_ACTIONS) { console.error('Publish from CI: PACKAGE=<name> npm run <type> tags a release, and the tag publishes it'); process.exit(1) }\"",
     "tsc": "tsc --noEmit",
-    "ncu": "npm-check-updates -u",
+    "ncu": "npm-check-updates -u --cooldown 7",
     "pre-test": "npm run build",
     "test-only": "npm run pre-test && node --experimental-strip-types --test --test-only test/test/**/*.mts",
     "unit": "npm run pre-test && node --experimental-strip-types --test --test-concurrency=1 test/*.mts",

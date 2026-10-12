@@ -12,7 +12,7 @@
   "packageManager": "npm@11.17.0",
   "description": "Back-end framework for Next.js App Router",
   "scripts": {
-    "ncu": "turbo run ncu --dangerously-disable-package-manager-check && npm run --prefix test ncu && npm-check-updates -u && npm i --legacy-peer-deps",
+    "ncu": "turbo run ncu --dangerously-disable-package-manager-check && npm run --prefix test ncu && npm-check-updates -u --cooldown 7 && npx -y npm@10 install",
     "test:main": "npm --prefix test run generate && npm --prefix test run build-other-compiled-sources && npm run lint && turbo run tsc --dangerously-disable-package-manager-check && tsc --project ./test && tsc --project ./test/tsconfig.non-strict.json && npm run unit",
     "test:cli": "npm --prefix packages/vovk-cli run test",
     "test:py": "npm --prefix packages/vovk-python run test",

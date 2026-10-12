@@ -82,7 +82,7 @@ export class Init {
     }
 
     if (bundle) {
-      const TSDOWN_VERSION = '0.22.14';
+      const TSDOWN_VERSION = '0.23.0';
       devDependencies.push(`tsdown@${TSDOWN_VERSION}`);
     }
 

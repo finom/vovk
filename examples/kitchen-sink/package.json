@@ -71,7 +71,7 @@
     "react-loading-skeleton": "^3.5.0",
     "react-to-string": "^0.1.1",
     "tailwind-merge": "^3.7.0",
-    "tsdown": "^0.22.14",
+    "tsdown": "^0.23.0",
     "valibot": "^1.5.0",
     "vovk": "^4.0.0",
     "vovk-ajv": "^0.2.0",

@@ -185,13 +185,13 @@ const config = {
 
 > [!IMPORTANT]
 >
-> The tsdown API can break between minor versions. The config below is tested with **tsdown@0.22.14**. If a newer version breaks it, pin this one until newer versions are confirmed to work.
+> The tsdown API can break between minor versions. The config below is tested with **tsdown@0.23.0**. If a newer version breaks it, pin this one until newer versions are confirmed to work.
 
 
 Install `tsdown` as a dev dependency:
 
 ```sh npm2yarn copy
-npm install --save-dev tsdown@0.22.14
+npm install --save-dev tsdown@0.23.0
 ```
 
 Add this `build` function to the `bundle` object in the [config](/config) file:
@@ -202,26 +202,29 @@ const config = {
   bundle: {
     build: async ({ entry, outDir }) => {
       const { build } = await import('tsdown');
-      await build({
-        entry,
-        dts: true,
-        format: 'esm',
-        hash: false,
-        fixedExtension: true,
-        clean: true,
-        outDir,
-        platform: 'neutral',
-        outExtensions: () => ({ js: '.js', dts: '.d.ts' }),
-        outputOptions: {
-          codeSplitting: false,
-        },
-        inputOptions: {
-          resolve: {
-            mainFields: ['module', 'main'],
+      // the code and the types build in two passes: one pass writes an extra chunk.js
+      for (const dts of [false, { emitDtsOnly: true }]) {
+        await build({
+          entry,
+          dts,
+          format: 'esm',
+          hash: false,
+          fixedExtension: true,
+          clean: !dts,
+          outDir,
+          platform: 'neutral',
+          outExtensions: () => ({ js: '.js', dts: '.d.ts' }),
+          outputOptions: {
+            codeSplitting: false,
           },
-        },
-        deps: { alwaysBundle: ['!next/**'] },
-      });
+          inputOptions: {
+            resolve: {
+              mainFields: ['module', 'main'],
+            },
+          },
+          deps: { alwaysBundle: ['!next/**'] },
+        });
+      }
     },
     // ...
   },
@@ -248,26 +251,29 @@ const config = {
   bundle: {
     build: async ({ entry, outDir }) => {
       const { build } = await import('tsdown');
-      await build({
-        entry,
-        dts: true,
-        format: 'esm',
-        hash: false,
-        fixedExtension: true,
-        clean: true,
-        outDir,
-        platform: 'neutral',
-        outExtensions: () => ({ js: '.js', dts: '.d.ts' }),
-        outputOptions: {
-          codeSplitting: false,
-        },
-        inputOptions: {
-          resolve: {
-            mainFields: ['module', 'main'],
+      // the code and the types build in two passes: one pass writes an extra chunk.js
+      for (const dts of [false, { emitDtsOnly: true }]) {
+        await build({
+          entry,
+          dts,
+          format: 'esm',
+          hash: false,
+          fixedExtension: true,
+          clean: !dts,
+          outDir,
+          platform: 'neutral',
+          outExtensions: () => ({ js: '.js', dts: '.d.ts' }),
+          outputOptions: {
+            codeSplitting: false,
           },
-        },
-        deps: { alwaysBundle: ['!next/**'] },
-      });
+          inputOptions: {
+            resolve: {
+              mainFields: ['module', 'main'],
+            },
+          },
+          deps: { alwaysBundle: ['!next/**'] },
+        });
+      }
     },
     outputConfig: {
       origin: 'https://example.com',
