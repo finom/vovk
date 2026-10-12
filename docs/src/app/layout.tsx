@@ -4,12 +4,13 @@ import { getPageMap } from 'nextra/page-map';
 import 'nextra-theme-docs/style.css';
 import '@/globals.css';
 import VovkLogo, { VovkMark } from '@/components/vovk-logo';
-import { Geist, Geist_Mono } from 'next/font/google';
+import { Geist, Geist_Mono, JetBrains_Mono } from 'next/font/google';
 import type { Metadata } from 'next';
 
-// Geist for text, Geist Mono for code. globals.css hands them to Nextra.
+// Geist for text, Geist Mono for code. globals.css hands them to Nextra. JetBrains Mono for the home page's code orbit.
 const fontSans = Geist({ subsets: ['latin'], variable: '--font-sans', display: 'swap' });
 const fontMono = Geist_Mono({ subsets: ['latin'], variable: '--font-mono', display: 'swap' });
+const fontMarks = JetBrains_Mono({ subsets: ['latin'], variable: '--font-marks', display: 'swap' });
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://vovk.dev'),
@@ -89,7 +90,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
       dir="ltr"
       // Suggested by `next-themes` package https://github.com/pacocoursey/next-themes#with-app
       suppressHydrationWarning
-      className={`${fontSans.variable} ${fontMono.variable}`}
+      className={`${fontSans.variable} ${fontMono.variable} ${fontMarks.variable}`}
     >
       <Head
         // Vermilion links on white and on #111111. The light one is darker than the logo's so that small text keeps 4.5:1.
