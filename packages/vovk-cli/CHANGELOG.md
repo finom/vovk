@@ -4,6 +4,18 @@ All notable changes to `vovk-cli` are documented here. This file is the canonica
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 0.3.1 - 2026-10-12
+
+### Changed
+
+- Node.js 24.15 or later: `@npmcli/package-json` 8 needs it, and the CLI checks it on start ([#65](https://github.com/finom/vovk/pull/65))
+- `vovk init --bundle` installs tsdown 0.23.0, and its `bundle.build` builds the types in a second pass, so the bundle stays one `index.js` and one `index.d.ts` ([#65](https://github.com/finom/vovk/pull/65))
+
+### Fixed
+
+- `vovk init` escapes backslashes in the explicit dev script ([#66](https://github.com/finom/vovk/pull/66))
+- Method names for an OpenAPI path with unclosed braces are built in linear time ([#66](https://github.com/finom/vovk/pull/66))
+
 ## 0.3.0 - 2026-10-12
 
 A cleanup release. `vovk-cli` is pre-1.0, so this minor carries breaking changes: `^0.2.0` does not match `0.3.0`.
