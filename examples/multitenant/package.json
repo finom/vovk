@@ -28,7 +28,7 @@
     "prettier": "^3.9.9",
     "tailwindcss": "^4",
     "typescript": "^7",
-    "vovk-cli": "^0.3.0",
+    "vovk-cli": "^0.3.1",
     "vovk-python": "^0.0.4",
     "vovk-rust": "^0.0.5"
   }
