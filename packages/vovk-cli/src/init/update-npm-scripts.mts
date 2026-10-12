@@ -21,7 +21,7 @@ export function getDevScript(pkgJson: NPMCliPackageJson, updateScriptsMode: Upda
   const port = getNextDevPort(nextDevFlags.split(/\s+/)) ?? '3000';
   // cross-env and double quotes, so cmd.exe runs it too
   return getDevScriptMode(pkgJson, updateScriptsMode) === 'explicit'
-    ? `cross-env PORT=${port} concurrently "${dev.replace(/"/g, '\\"')}" "vovk dev" --kill-others`
+    ? `cross-env PORT=${port} concurrently "${dev.replace(/\\/g, '\\\\').replace(/"/g, '\\"')}" "vovk dev" --kill-others`
     : `vovk dev --next-dev${nextDevFlags ? ` -- ${nextDevFlags}` : ''}`;
 }
 
