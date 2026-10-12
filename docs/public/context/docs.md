@@ -4,15 +4,13 @@ description: "Full documentation for the Vovk.ts framework, excluding the Realti
 see_also:
   label: "Realtime Kanban Context"
   url: https://vovk.dev/context/realtime-ui.md
-chars: 397601
-est_tokens: 99401
+chars: 397720
+est_tokens: 99430
 ---
 
 Page: https://vovk.dev
 
-Vovk.ts
-
-# Back-end Framework for Next.js App Router
+Vovk.ts Back-end Framework for Next.js App Router
 
 Back-end Framework for Next.js App Router. One codebase → type-safe clients, OpenAPI, and AI tools.
 
@@ -3083,8 +3081,8 @@ async function App() {
 export default App;
 ```
 
-![](https://vovk.dev/screenshots/scalar-screenshot-light.png)
-![](https://vovk.dev/screenshots/scalar-screenshot-dark.png)
+![Scalar API reference generated from the OpenAPI specification](https://vovk.dev/screenshots/scalar-screenshot-light.png)
+![Scalar API reference generated from the OpenAPI specification](https://vovk.dev/screenshots/scalar-screenshot-dark.png)
 
 For a live demo, see the ["Hello World" application spec](https://hello-world.vovk.dev/openapi). The ["Hello World"](https://vovk.dev/hello-world) page has the details.
 

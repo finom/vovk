@@ -2,7 +2,7 @@ const meta = {
   index: {
     theme: {
       sidebar: false,
-      breadcrumb: true,
+      breadcrumb: false,
     },
   },
   v4: {

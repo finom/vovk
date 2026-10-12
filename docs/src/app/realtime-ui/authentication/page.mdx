@@ -1,3 +1,7 @@
+---
+description: "Password protection for the Realtime Kanban app: a session cookie set by a login server action, a data access layer and a session guard decorator."
+---
+
 # Basic Authentication and Authorization for Password Protection
 
 The app has simple authentication with an optional `PASSWORD` in the `.env` file. When the user enters the password, the app creates a session cookie that authorizes the next requests. The session's `userId` is a hash of the password, so changing the `PASSWORD` variable in production ends all sessions.

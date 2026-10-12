@@ -4,8 +4,9 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "test": "npm run lint && tsc --noEmit && tsx --test scripts/generateContext/contextTransforms.test.ts",
-    "predev": "npm run update-mdx-github-codeblocks",
+    "test": "npm run lint && tsc --noEmit && npm run test:unit",
+    "test:unit": "tsx --test scripts/generateContext/contextTransforms.test.ts src/lib/pages.test.ts",
+    "predev": "npm run update-mdx-github-codeblocks && tsx ./scripts/generateContext/index.ts",
     "dev": "vovk dev --next-dev",
     "dev-exit": "vovk dev --next-dev --exit",
     "build": "next build",

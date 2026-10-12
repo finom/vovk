@@ -44,3 +44,8 @@ public/_pagefind
 # written by next dev
 /AGENTS.md
 /CLAUDE.md
+
+# written by scripts/generateContext; the .md copies in public/context are committed
+/public/llms.txt
+/public/llms-full.txt
+/public/context/*.txt

@@ -1,3 +1,7 @@
+---
+description: "Generate an OpenAPI 3.1 specification from procedures: the @operation decorator, how validation schemas map to the operation object, and serving the spec."
+---
+
 # OpenAPI Specification and `@operation` Decorator
 
 Vovk.ts generates an OpenAPI specification from the procedures that have an operation object. It fills `parameters`, `requestBody` and `responses` from the validation models. The `@operation` decorator gives a procedure its operation object, with metadata such as `summary`, `description` and `tags`. `@operation.tool` and `@operation.error` give it one too. A procedure without any of them is left out of the specification, and [deriveTools](/tools) makes no tool of it either. The decorator takes the `OperationObject` type from [openapi3-ts/oas31](https://www.npmjs.com/package/openapi3-ts), plus the Vovk.ts `x-tool` property for the [deriveTools](/tools) function.
@@ -145,8 +149,8 @@ async function App() {
 export default App;
 ```
 
-<img src="/screenshots/scalar-screenshot-light.png" className='dark:hidden mt-4' />
-<img src="/screenshots/scalar-screenshot-dark.png" className='hidden dark:block mt-4' />
+<img src="/screenshots/scalar-screenshot-light.png" alt="Scalar API reference generated from the OpenAPI specification" className='dark:hidden mt-4' />
+<img src="/screenshots/scalar-screenshot-dark.png" alt="Scalar API reference generated from the OpenAPI specification" className='hidden dark:block mt-4' />
 
 For a live demo, see the ["Hello World" application spec](https://hello-world.vovk.dev/openapi). The ["Hello World"](/hello-world) page has the details.
 

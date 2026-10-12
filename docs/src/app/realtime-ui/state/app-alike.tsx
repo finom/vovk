@@ -13,7 +13,7 @@ const AppAlikeNormal = ({ fullName, setFullName }: { fullName: string; setFullNa
       <div className="flex">
         <div className="border-r border-gray-200 dark:border-gray-800 p-4 flex items-end min-w-44">👤 {fullName}</div>
         <div className="p-4 flex-1">
-          <h1 className="font-bold text-2xl mb-4">Update your profile, {fullName}!</h1>
+          <h2 className="font-bold text-2xl mb-4">Update your profile, {fullName}!</h2>
           <label htmlFor="fullName" className="block">
             Full name
           </label>
@@ -50,7 +50,7 @@ const AppAlikeWithCode = () => {
       <div className="flex">
         <div className="border-r border-gray-200 dark:border-gray-800 p-4 flex items-end min-w-44">👤 {fullName}</div>
         <div className="p-4 flex-1">
-          <h1 className="font-bold text-2xl mb-4">Update your profile, {fullName}!</h1>
+          <h2 className="font-bold text-2xl mb-4">Update your profile, {fullName}!</h2>
           <label htmlFor="fullName" className="block">
             Full name
           </label>
