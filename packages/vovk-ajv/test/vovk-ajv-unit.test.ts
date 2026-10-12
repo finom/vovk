@@ -4,7 +4,7 @@ import { createRequire } from 'node:module';
 import { describe, it } from 'node:test';
 import { procedure, type VovkJSONSchemaBase } from 'vovk';
 import { z } from 'zod';
-import { validateOnClient } from '../../../packages/vovk-ajv/index.js';
+import { validateOnClient } from '../index.js';
 
 const fullSchema = { $schema: '', segments: {} };
 const $schema = 'https://json-schema.org/draft/2020-12/schema' as const;
@@ -183,7 +183,7 @@ describe('vovk-ajv', () => {
 
   it('Compiles a schema once for every object with the same text', async () => {
     // the copy of Ajv that vovk-ajv itself loads
-    const requireFromAjvPackage = createRequire(new URL('../../../packages/vovk-ajv/index.js', import.meta.url));
+    const requireFromAjvPackage = createRequire(new URL('../index.js', import.meta.url));
     const AjvCore = requireFromAjvPackage('ajv/dist/core.js').default;
     const compile = AjvCore.prototype.compile;
     let compiles = 0;
@@ -206,7 +206,7 @@ describe('vovk-ajv', () => {
 
   it('Skips client-side validation where code generation from strings is disallowed', () => {
     // as in a browser whose CSP has no 'unsafe-eval'; a fresh process, since vovk-ajv makes its Ajv once
-    const vovkAjv = new URL('../../../packages/vovk-ajv/index.js', import.meta.url).href;
+    const vovkAjv = new URL('../index.js', import.meta.url).href;
     const script = `
       const { validateOnClient } = await import(${JSON.stringify(vovkAjv)});
       console.warn = () => {};
@@ -224,7 +224,7 @@ describe('vovk-ajv', () => {
   });
 
   it('Warns once where code generation from strings is disallowed, and leaves every input to the server', () => {
-    const vovkAjv = new URL('../../../packages/vovk-ajv/index.js', import.meta.url).href;
+    const vovkAjv = new URL('../index.js', import.meta.url).href;
     // an invalid body, then a form, which another Ajv instance would check
     const script = `
       const { validateOnClient } = await import(${JSON.stringify(vovkAjv)});

@@ -2,7 +2,7 @@ import { deepStrictEqual, ok, strictEqual } from 'node:assert';
 import { describe, it } from 'node:test';
 import type { PackageJson } from 'type-fest';
 import { resolveGeneratorConfigValues, type VovkStrictConfig } from 'vovk/internal';
-import type { VovkOutputConfig } from '../../../packages/vovk/dist/types/config.js';
+import type { VovkOutputConfig } from '../../dist/types/config.js';
 
 describe('resolveGeneratorConfigValues', () => {
   describe('Basic Configuration Resolution', () => {

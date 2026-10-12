@@ -46,7 +46,9 @@
     "build": "rm -f *.tsbuildinfo && tsc",
     "rm-dist": "rm -rf dist mjs cjs",
     "lint": "biome check --fix",
-    "tsc": "tsc --noEmit",
+    "tsc": "tsc --noEmit && tsc --noEmit -p test",
+    "test": "NODE_ENV=test node --experimental-strip-types --test --test-concurrency=1 test/unit/*.test.ts",
+    "test-only": "NODE_ENV=test node --experimental-strip-types --test --test-only --test-concurrency=1 test/unit/*.test.ts",
     "prepublishOnly": "node -e \"if (!process.env.GITHUB_ACTIONS) { console.error('Publish from CI: PACKAGE=<name> npm run <type> tags a release, and the tag publishes it'); process.exit(1) }\"",
     "ncu": "npm-check-updates -u --cooldown 7"
   },
@@ -62,5 +64,18 @@
   "homepage": "https://vovk.dev",
   "peerDependencies": {
     "openapi3-ts": "^4.5.0"
+  },
+  "devDependencies": {
+    "@typescript/typescript6": "^6.0.2",
+    "@valibot/to-json-schema": "^1.8.0",
+    "ajv": "^8.20.0",
+    "arktype": "^2.2.7",
+    "fast-check": "^4.10.2",
+    "next": "^16.3.8",
+    "openapi3-ts": "^4.6.1",
+    "standard-tool": "^0.1.1",
+    "type-fest": "^5.10.0",
+    "valibot": "^1.5.0",
+    "zod": "^4.6.5"
   }
 }

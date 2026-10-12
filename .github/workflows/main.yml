@@ -81,6 +81,7 @@ jobs:
       - run: npm --prefix test run generate && npm --prefix test run build-other-compiled-sources
       - run: npx tsc --project ./test
       - run: npx tsc --project ./test/tsconfig.non-strict.json
+      - run: npm run test:packages
       - run: npm run unit:ts --prefix packages/vovk-python && npm run unit:ts --prefix packages/vovk-rust
 
   integration:
@@ -105,6 +106,8 @@ jobs:
             test/package-lock.json
       - run: npm ci && npm --prefix test ci
       - run: npm run build
+      # the package unit tests also run here, on every OS and Node version
+      - run: npm run test:packages
       - run: npm --prefix test run generate && npm --prefix test run build-other-compiled-sources
       - run: npm run unit
 

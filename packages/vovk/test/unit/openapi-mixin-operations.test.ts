@@ -2,7 +2,7 @@ import { deepStrictEqual, ok, rejects, strictEqual } from 'node:assert';
 import { afterEach, beforeEach, describe, it, mock } from 'node:test';
 import type { OpenAPIObject, SchemaObject } from 'openapi3-ts/oas31';
 import { openAPIToVovkSchema } from 'vovk/internal';
-import { validateOnClient } from '../../../packages/vovk-ajv/index.js';
+import { validateOnClient } from '../../../vovk-ajv/index.js';
 
 // biome-ignore lint/suspicious/noExplicitAny: loose test alias for readable assertions
 type Obj = Record<string, any>;
