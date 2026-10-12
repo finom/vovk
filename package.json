@@ -24,7 +24,7 @@
     "prettier": "prettier --write .",
     "serve:unit": "npm --prefix test run generate && npm --prefix test run dev",
     "lint-fix": "biome check --fix",
-    "lint": "biome check",
+    "lint": "biome check --error-on-warnings",
     "build": "npm run rm-dist --prefix packages/vovk && npm run build --prefix packages/vovk && npm run build --prefix packages/vovk-cli && turbo run build --force --dangerously-disable-package-manager-check --filter='./packages/*' && npm run link-cli",
     "patch": "node scripts/release.mjs patch",
     "minor": "node scripts/release.mjs minor",
