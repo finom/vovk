@@ -40,9 +40,9 @@
     "api"
   ],
   "dependencies": {
-    "@scalar/api-reference-react": "^0.9.76",
+    "@scalar/api-reference-react": "^0.9.77",
     "@standard-schema/spec": "^1.1.0",
-    "@tanstack/react-query": "^5.104.0",
+    "@tanstack/react-query": "^5.104.1",
     "ajv": "^8.20.0",
     "ajv-errors": "^3.0.0",
     "next": "^16.3.8",
