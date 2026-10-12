@@ -1,6 +1,7 @@
 import type { StandardJSONSchemaV1, StandardSchemaV1 } from './standard-schema.js';
 
-// a copy of the published standard-tool type, with no dependency; keep the two identical
+// standard-tool's StandardToolV0 with each schema's input and output sides equal, as derived tools have them; it is
+// assignable to the published type, which users import from standard-tool, so it is not exported
 /**
  * A tool in the Standard Tool shape (https://standard-tool.js.org). `deriveTools` returns these.
  * @see https://vovk.dev/tools

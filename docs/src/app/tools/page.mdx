@@ -28,7 +28,7 @@ const tools = deriveTools({
 console.log('Derived tools:', tools); // [{ name, description, inputSchema, execute, ... }, ...]
 ```
 
-The function returns an array of tools. Each tool satisfies the `StandardToolV0` interface of the [standard-tool](https://standard-tool.js.org/) convention:
+The function returns an array of tools. Each tool satisfies the `StandardToolV0` interface of the [standard-tool](https://standard-tool.js.org/) convention. `vovk` doesn't export the type; import it from the [standard-tool](https://www.npmjs.com/package/standard-tool) package (`import type { StandardToolV0 } from 'standard-tool'{:ts}`):
 
 - `name: string{:ts}` - the tool name, made from the module and method names as `${moduleName}_${handlerName}`. `x-tool.name` overrides it (see below). As model APIs require, each character other than `A-Z`, `a-z`, `0-9`, `_` and `-` becomes `_`. A name longer than 64 characters is cut to 64 and ends with a hash of the whole name. Two tools with the same name make `deriveTools` throw.
 - `title?: string{:ts}` - an optional title, used mainly by MCP. It comes from `x-tool.title` or the OpenAPI `summary`, if there is one.

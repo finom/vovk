@@ -1,8 +1,8 @@
 import { NextResponse } from 'next/server.js';
+import type { StandardToolV0 } from 'standard-tool';
 import {
   deriveTools,
   procedure,
-  type StandardToolV0,
   ToModelOutput,
   type VovkBody,
   type VovkParams,
