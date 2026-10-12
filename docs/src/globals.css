@@ -116,44 +116,75 @@ html {
 */
 
 :root {
-  /* Route the next/font faces into Nextra's body + code (it reads --x-font-*). */
+  /* The next/font faces, for Nextra's text and code (it reads --x-font-*). */
   --x-font-sans: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
   --x-font-mono: var(--font-mono), ui-monospace, SFMono-Regular, Menlo, Monaco, monospace;
 
-  --radius: 0.625rem;
-  /* Warm light palette — cream paper, ink-brown text, clay accent. Chroma is
-     kept low on neutrals (hue ~80) so surfaces read "warm gray", not beige. */
-  --card: oklch(0.995 0.003 83);
-  --card-foreground: oklch(0.26 0.008 65);
-  --popover: oklch(0.995 0.003 83);
-  --popover-foreground: oklch(0.26 0.008 65);
-  --primary: oklch(0.62 0.115 42);
-  --primary-foreground: oklch(0.99 0.004 83);
-  --secondary: oklch(0.955 0.009 84);
-  --secondary-foreground: oklch(0.3 0.01 65);
-  --muted: oklch(0.955 0.009 84);
-  --muted-foreground: oklch(0.55 0.012 70);
-  --accent: oklch(0.93 0.02 70);
-  --accent-foreground: oklch(0.3 0.01 65);
+  /* White, ink and one vermilion. The logo's vermilion is for marks and large text; small text on white takes
+     the darker --primary, which keeps 4.5:1. */
+  --vovk-logo-accent: #dd4115;
+  /* A quiet tint behind the active sidebar item. */
+  --x-color-primary-100: #fcebe6;
+
+  /* Nextra's gray scales, as neutral grays. */
+  --x-color-gray-50: #fafafa;
+  --x-color-gray-100: #f4f4f5;
+  --x-color-gray-200: #e4e4e7;
+  --x-color-gray-300: #d4d4d8;
+  --x-color-gray-400: #a1a1aa;
+  --x-color-gray-500: #71717a;
+  --x-color-gray-600: #5c5c60;
+  --x-color-gray-700: #3f3f46;
+  --x-color-gray-800: #27272a;
+  --x-color-gray-900: #18181b;
+  --x-color-neutral-50: #fafafa;
+  --x-color-neutral-100: #f4f4f5;
+  --x-color-neutral-200: #e4e4e7;
+  --x-color-neutral-300: #d4d4d8;
+  --x-color-neutral-400: #a1a1aa;
+  --x-color-neutral-500: #71717a;
+  --x-color-neutral-600: #5c5c60;
+  --x-color-neutral-700: #3f3f46;
+  --x-color-neutral-800: #27272a;
+  --x-color-neutral-900: #18181b;
+  --x-color-slate-50: #fafafa;
+  --x-color-slate-100: #f4f4f5;
+  --x-color-slate-200: #e4e4e7;
+  --x-color-slate-700: #3f3f46;
+  --x-color-slate-900: #18181b;
+
+  --radius: 0.5rem;
+  --background: #ffffff;
+  --foreground: #111111;
+  --card: #fafafa;
+  --card-foreground: #111111;
+  --popover: #ffffff;
+  --popover-foreground: #111111;
+  --primary: #c2320a;
+  --primary-foreground: #ffffff;
+  --secondary: #f4f4f5;
+  --secondary-foreground: #111111;
+  --muted: #f4f4f5;
+  --muted-foreground: #5c5c60;
+  --accent: #f4f4f5;
+  --accent-foreground: #111111;
   --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.9 0.011 80);
-  --input: oklch(0.9 0.011 80);
-  --ring: oklch(0.62 0.115 42);
+  --border: #e4e4e7;
+  --input: #e4e4e7;
+  --ring: #dd4115;
   --chart-1: oklch(0.646 0.222 41.116);
   --chart-2: oklch(0.6 0.118 184.704);
   --chart-3: oklch(0.398 0.07 227.392);
   --chart-4: oklch(0.828 0.189 84.429);
   --chart-5: oklch(0.769 0.188 70.08);
-  --sidebar: oklch(0.975 0.007 83);
-  --sidebar-foreground: oklch(0.26 0.008 65);
-  --sidebar-primary: oklch(0.62 0.115 42);
-  --sidebar-primary-foreground: oklch(0.99 0.004 83);
-  --sidebar-accent: oklch(0.93 0.02 70);
-  --sidebar-accent-foreground: oklch(0.3 0.01 65);
-  --sidebar-border: oklch(0.9 0.011 80);
-  --sidebar-ring: oklch(0.62 0.115 42);
-  --background: oklch(0.972 0.008 83);
-  --foreground: oklch(0.26 0.008 65);
+  --sidebar: #ffffff;
+  --sidebar-foreground: #111111;
+  --sidebar-primary: #c2320a;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #f4f4f5;
+  --sidebar-accent-foreground: #111111;
+  --sidebar-border: #e4e4e7;
+  --sidebar-ring: #dd4115;
 }
 
 /*
@@ -161,39 +192,38 @@ html {
 */
 
 .dark {
-  /* Warm charcoal — never pure black; cream text, brighter clay accent so links
-     stay legible on the dark surface. */
-  --background: oklch(0.205 0.006 70);
-  --foreground: oklch(0.92 0.008 83);
-  --card: oklch(0.245 0.006 70);
-  --card-foreground: oklch(0.92 0.008 83);
-  --popover: oklch(0.245 0.006 70);
-  --popover-foreground: oklch(0.92 0.008 83);
-  --primary: oklch(0.7 0.105 45);
-  --primary-foreground: oklch(0.2 0.01 60);
-  --secondary: oklch(0.28 0.007 70);
-  --secondary-foreground: oklch(0.92 0.008 83);
-  --muted: oklch(0.28 0.007 70);
-  --muted-foreground: oklch(0.7 0.01 80);
-  --accent: oklch(0.31 0.009 68);
-  --accent-foreground: oklch(0.92 0.008 83);
+  --vovk-logo-accent: #f6623d;
+  --background: #111111;
+  --foreground: #ffffff;
+  --card: #18181b;
+  --card-foreground: #ffffff;
+  --popover: #18181b;
+  --popover-foreground: #ffffff;
+  --primary: #f6623d;
+  --primary-foreground: #111111;
+  --secondary: #1f1f22;
+  --secondary-foreground: #ffffff;
+  --muted: #1f1f22;
+  --muted-foreground: #8e8e95;
+  --accent: #27272a;
+  --accent-foreground: #ffffff;
   --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(0.92 0.02 80 / 10%);
-  --input: oklch(0.92 0.02 80 / 14%);
-  --ring: oklch(0.7 0.105 45);
+  --border: #27272a;
+  --input: #3f3f46;
+  --ring: #f6623d;
   --chart-1: oklch(0.488 0.243 264.376);
   --chart-2: oklch(0.696 0.17 162.48);
   --chart-3: oklch(0.769 0.188 70.08);
   --chart-4: oklch(0.627 0.265 303.9);
   --chart-5: oklch(0.645 0.246 16.439);
-  --sidebar: oklch(0.225 0.006 70);
-  --sidebar-foreground: oklch(0.92 0.008 83);
-  --sidebar-primary: oklch(0.7 0.105 45);
-  --sidebar-primary-foreground: oklch(0.2 0.01 60);
-  --sidebar-accent: oklch(0.31 0.009 68);
-  --sidebar-accent-foreground: oklch(0.92 0.008 83);
-  --sidebar-border: oklch(0.92 0.02 80 / 10%);
-  --sidebar-ring: oklch(0.7 0.105 45);
+  --sidebar: #111111;
+  --sidebar-foreground: #ffffff;
+  --sidebar-primary: #f6623d;
+  --sidebar-primary-foreground: #111111;
+  --sidebar-accent: #27272a;
+  --sidebar-accent-foreground: #ffffff;
+  --sidebar-border: #27272a;
+  --sidebar-ring: #f6623d;
 }
 
 /*
@@ -248,37 +278,36 @@ html {
   z-index: 10;
 }
 
-/*
-  Editorial display headings: the soft Fraunces serif for the page title,
-  section heads, and sub-section / Steps headings (h1–h3) gives the docs a
-  designed, magazine-like feel while the body stays in a clean grotesque.
-  Scoped to the content <article> (Nextra wraps MDX there) so the navbar,
-  sidebar, and TOC keep the sans; h4–h6 stay sans for a clear hierarchy.
-  Existing weight/size utilities on the hero are left intact — we only swap
-  the family, optical sizing, and tracking.
-*/
+/* Headings in Geist 600 with tight tracking, as in the logo sheet. */
 article h1,
 article h2,
 article h3 {
-  font-family: var(--font-display), ui-serif, Georgia, 'Times New Roman', serif;
-  font-optical-sizing: auto;
+  font-weight: 600;
   letter-spacing: -0.02em;
 }
 
-/* Smoother rendering for the new sans across the whole document. */
+article h1 {
+  letter-spacing: -0.03em;
+}
+
+/* Code blocks sit on the card color, not on white or black. */
+.nextra-code pre {
+  background-color: var(--card);
+}
+
+/* Paragraphs in one quote read as lines of one note. Alerts ([!NOTE] and the rest) are not blockquotes. */
+article blockquote > p + p {
+  margin-top: 0.25em;
+}
+
+/* Smoother text rendering across the document. */
 body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
 }
 
-/*
-  Nextra's footer uses Tailwind's cool gray text (text-gray-600 / dark:text-gray-400),
-  which reads cold against the warm cream / charcoal palette. Re-tint the footer's
-  inherited text to the warm muted token so it matches the rest of the site; links
-  keep their own accent color. !important wins over Nextra's prefixed utilities
-  without coupling to their internal class names.
-*/
+/* The footer text takes the muted token; links keep their own color. */
 footer {
   color: var(--muted-foreground) !important;
 }

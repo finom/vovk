@@ -18,11 +18,19 @@ export default async function Home() {
           />
           <span className="text-4xl">+</span>
           <Image
-            className="dark:invert"
+            className="dark:hidden"
             src="https://vovk.dev/vovk-logo.svg"
             alt="Vovk.ts logo"
-            width={160}
-            height={38}
+            width={180}
+            height={30}
+            priority
+          />
+          <Image
+            className="hidden dark:block"
+            src="https://vovk.dev/vovk-logo-white.svg"
+            alt="Vovk.ts logo"
+            width={180}
+            height={30}
             priority
           />
         </div>

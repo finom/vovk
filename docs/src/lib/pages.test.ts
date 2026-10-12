@@ -1,5 +1,5 @@
 import assert from 'node:assert';
-import { readdirSync, readFileSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 import { test } from 'node:test';
 import { frontMatterSource, pageTitle } from './page-source';
@@ -31,4 +31,19 @@ test('every page has a title of its own', () => {
     return title;
   });
   assert.deepStrictEqual(repeated(titles), []);
+});
+
+// src/og/og-card.tsx draws each card from the page's front matter, so each page names its own route.
+test('every page has an opengraph-image.tsx that draws its own route', () => {
+  for (const { file } of pages) {
+    const folder = path.dirname(file);
+    const route = folder === '.' ? '/' : `/${folder}`;
+    const image = path.join(APP, folder, 'opengraph-image.tsx');
+    assert.ok(existsSync(image), `${folder}/ has no opengraph-image.tsx`);
+    const source = readFileSync(image, 'utf8');
+    assert.ok(
+      source.includes(`ogImageMetadata('${route}')`) && source.includes(`ogImage('${route}')`),
+      `${folder}/opengraph-image.tsx does not draw ${route}`
+    );
+  }
 });

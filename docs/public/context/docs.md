@@ -4,8 +4,8 @@ description: "Full documentation for the Vovk.ts framework, excluding the Realti
 see_also:
   label: "Realtime Kanban Context"
   url: https://vovk.dev/context/realtime-ui.md
-chars: 397720
-est_tokens: 99430
+chars: 397978
+est_tokens: 99495
 ---
 
 Page: https://vovk.dev
@@ -3141,7 +3141,7 @@ const tools = deriveTools({
 console.log('Derived tools:', tools); // [{ name, description, inputSchema, execute, ... }, ...]
 ```
 
-The function returns an array of tools. Each tool satisfies the `StandardToolV0` interface of the [standard-tool](https://standard-tool.js.org/) convention:
+The function returns an array of tools. Each tool satisfies the `StandardToolV0` interface of the [standard-tool](https://standard-tool.js.org/) convention. `vovk` doesn't export the type; import it from the [standard-tool](https://www.npmjs.com/package/standard-tool) package (`import type { StandardToolV0 } from 'standard-tool'{:ts}`). A package that emits declarations and exports derived tools annotates them with it: `export const tools: StandardToolV0[] = deriveTools({ modules }){:ts}`. Each tool has these fields:
 
 - `name: string{:ts}` - the tool name, made from the module and method names as `${moduleName}_${handlerName}`. `x-tool.name` overrides it (see below). As model APIs require, each character other than `A-Z`, `a-z`, `0-9`, `_` and `-` becomes `_`. A name longer than 64 characters is cut to 64 and ends with a hash of the whole name. Two tools with the same name make `deriveTools` throw.
 - `title?: string{:ts}` - an optional title, used mainly by MCP. It comes from `x-tool.title` or the OpenAPI `summary`, if there is one.
@@ -3149,7 +3149,7 @@ The function returns an array of tools. Each tool satisfies the `StandardToolV0`
 - `inputSchema?: StandardSchemaV1 & StandardJSONSchemaV1{:ts}` - one Standard Schema that merges the procedure's `body`, `query` and `params`, when there are any.
 - `outputSchema?: StandardSchemaV1 & StandardJSONSchemaV1{:ts}` - the procedure's `output` schema, when there is one.
 - `meta?: Record<string, unknown>{:ts}` - static data about the tool, copied as is from `x-tool.meta` (see below). The code that uses the tools reads it; the LLM never gets it.
-- `execute: (input: { body?, query?, params? }) => Promise{:ts}` - runs the tool. For RPC modules, it sends an HTTP request. For controllers, it calls the `fn` method, which runs in the current context without HTTP. A [JSON Lines](https://vovk.dev/jsonlines) result, from a generator or a `JSONLinesResponder`, reaches the model as the array of its items.
+- `execute: (input: unknown) => Promise{:ts}` - runs the tool with the model's `{ body, query, params }`. The type takes `unknown`, as the model wrote it; the procedure validates it. For RPC modules, it sends an HTTP request. For controllers, it calls the `fn` method, which runs in the current context without HTTP. A [JSON Lines](https://vovk.dev/jsonlines) result, from a generator or a `JSONLinesResponder`, reaches the model as the array of its items.
 
 > `inputSchema` validates the `{ body, query, params }` envelope itself, and leaves each slot's value to your original library schema (Zod, Valibot, ArkType). For RPC modules and OpenAPI mixins, it's rebuilt from the generated JSON Schemas, so it checks only the envelope, and the values are validated when the tool runs.
 
@@ -10290,12 +10290,6 @@ See the [schema docs](https://vovk.dev/schema).
 ### `VovkConfig`
 
 The type of the [config](https://vovk.dev/config) file.
-
-### `StandardToolV0`
-
-The type of the LLM tools that [deriveTools](#derivetools) returns, from the [standard-tool](https://standard-tool.js.org/) convention.
-
-See [Deriving AI Tools](https://vovk.dev/tools).
 
 ### `VovkJSONSchemaBase`
 

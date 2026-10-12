@@ -20,7 +20,7 @@ Breaking changes:
 - Repeated query keys become arrays, and a handler's second argument is the validated params.
 - A wrong method on a known path answers 405, and a `Content-Type` list answers 415.
 - A JSON Lines stream can be read once.
-- `vovk-ajv`: `configure()` moved to `libs.ajv` in `vovk.config`.
+- `vovk-ajv`: `validateOnClient.configure()` is removed. The Ajv options go in `libs.ajv` in `vovk.config`.
 - Python returns `bytes` for files. Rust sends a typed JSON body where it sent a multipart form. Python and Rust mixin calls send the query in the OpenAPI document's `style` and `explode`.
 - The CLI needs Node.js 24+ and TypeScript 5.5+. The vovk packages take `vovk` 4 only as a peer.
 
@@ -54,6 +54,15 @@ Requirements:
 ## The client is generated into your project
 
 - The [composed client](/composed) is TypeScript in `src/client` (or `client/` when the app isn't in `src/app`), imported as `@/client`. The `vovk-client` package and the `node_modules/.vovk-client` folder are retired, which also ends the pnpm hoisting issues.
+
+```ts
+// v3
+import { UserRPC } from 'vovk-client';
+
+// v4
+import { UserRPC } from '@/client';
+```
+
 - The `js` templates (`js`, `jsBase`, `schemaJs`, `openapiJs`) are removed. [ts](/templates#ts) is the default for both client modes.
 - `prettifyClient` defaults to `true` and uses the Prettier installed in your project. The CLI no longer ships its own copy and warns once when it's missing.
 - `vovk init` adds the client folder to `.gitignore`, and the `prebuild: vovk generate` script regenerates it on every build.
@@ -67,11 +76,95 @@ Requirements:
 
 [standard-tool](https://standard-tool.js.org/) is an open convention for LLM tools.
 
-- [deriveTools](/tools) returns an array of tools that implement its `StandardToolV0` interface: `name`, `title`, `description`, `inputSchema`, `outputSchema`, `meta` and `execute`. `StandardToolV0` is exported from `vovk`.
+- [deriveTools](/tools) returns an array of tools that implement its `StandardToolV0` interface: `name`, `title`, `description`, `inputSchema`, `outputSchema`, `meta` and `execute`. Import the type from the `standard-tool` package: `import type { StandardToolV0 } from 'standard-tool'`.
+
+```ts
+// v3
+const { tools, toolsByName } = deriveTools({
+  modules: { UserRPC, TaskController },
+});
+const { parameters, execute } = toolsByName.UserRPC_findUsers;
+```
+
+```ts
+// v4
+const tools = deriveTools({ modules: { UserRPC, TaskController } });
+const toolsByName = Object.fromEntries(tools.map((t) => [t.name, t]));
+const { inputSchema, execute } = toolsByName.UserRPC_findUsers;
+
+// v3's parameters
+const parameters = inputSchema?.['~standard'].jsonSchema.input({
+  target: 'draft-2020-12',
+});
+
+await execute({ query: { search: 'Jane' } });
+```
+
 - Tools derived from RPC modules and [OpenAPI mixins](/mixins) carry schemas too, rebuilt from the generated JSON Schemas.
 - `@operation.tool({ meta })` sets a tool's `meta`.
 - Removed: `createTool` (use the [standard-tool](https://www.npmjs.com/package/standard-tool) package or plain objects of the same shape), the `VovkTool` type, the `toolsByName` return value, and the `parameters`, `type` and `inputSchemas` tool fields.
+
+```ts
+// v3: import { createTool } from 'vovk';
+import { standardTool, withFormattedOutput } from 'standard-tool';
+import type { StandardToolV0 } from 'standard-tool';
+import { z } from 'zod';
+
+// v3: createTool() with the same fields
+const sumNumbers = standardTool({
+  name: 'sum_numbers',
+  description: 'Returns the sum of two numbers.',
+  inputSchema: z.object({ a: z.number(), b: z.number() }),
+  outputSchema: z.number(),
+  execute: ({ a, b }) => a + b,
+});
+
+// on failure, createTool returned { error: message }; standardTool throws.
+// withFormattedOutput returns { error: message }, as derived tools do.
+const allTools: StandardToolV0[] = [
+  ...tools,
+  withFormattedOutput(sumNumbers),
+];
+```
+
 - Tool names are sanitized, capped at 64 characters and deduplicated. The input is checked once under the AI SDK, so a `.transform()` no longer runs twice.
+
+The AI SDK and **mcp-handler** 2 take `inputSchema` as is. The full examples are on the [Tools](/tools) and [MCP](/tools-mcp) pages.
+
+```ts
+import { tool } from 'ai';
+import { z } from 'zod';
+
+const toolSet = Object.fromEntries(
+  tools.map(({ name, execute, description, inputSchema }) => [
+    name,
+    // v3: inputSchema: jsonSchema(parameters)
+    // a procedure without input has no inputSchema
+    tool({
+      execute,
+      description,
+      inputSchema: inputSchema ?? z.object({}),
+    }),
+  ])
+);
+```
+
+```ts
+import { createMcpHandler } from 'mcp-handler';
+import { deriveTools, ToModelOutput } from 'vovk';
+
+const mcpTools = deriveTools({
+  modules: { UserController, TaskController },
+  toModelOutput: ToModelOutput.MCP,
+});
+
+const handler = createMcpHandler((server) => {
+  mcpTools.forEach(({ title, name, execute, description, inputSchema }) => {
+    // v3 passed inputSchemas, cast to Zod types
+    server.registerTool(name, { title, description, inputSchema }, execute);
+  });
+});
+```
 
 ## Smaller entry points
 
@@ -82,13 +175,48 @@ Each entry exports what your code writes against.
 | `fetcher`, `createFetcher`, `VovkFetcher` from `vovk` | from `vovk/fetcher` |
 | `createValidateOnClient`, `VovkValidateOnClient` from `vovk` | from `vovk/create-validate-on-client` |
 | `vovk/createRPC`, `vovk/createValidateOnClient` | `vovk/create-rpc`, `vovk/create-validate-on-client` |
-| `validateOnClient.configure()` in `vovk-ajv` | `libs.ajv` in `vovk.config` |
+| `validateOnClient.configure()` in `vovk-ajv` | removed: the Ajv options go in `libs.ajv` in `vovk.config` |
+
+```ts
+// v3
+import { fetcher, createFetcher } from 'vovk';
+
+// v4
+import { fetcher, createFetcher } from 'vovk/fetcher';
+```
 
 `vovk/internal` is not public API. `vovk-cli` has no library entry: importing it ran the CLI. The `vovk` command is unchanged.
 
 ## One controller syntax
 
 `decorate()` and the `static prefix` class property are removed; use decorators and `@prefix()`. A `static prefix` left in a class is ignored without an error, so its routes lose the prefix.
+
+```ts
+// v3
+import { decorate, get, procedure } from 'vovk';
+
+export default class UserController {
+  static prefix = 'users';
+
+  static getUser = decorate(
+    get('{id}'),
+    procedure({ params: z.object({ id: z.string() }) })
+  ).handle(async (req, { id }) => UserService.getUser(id));
+}
+```
+
+```ts
+// v4
+import { get, prefix, procedure } from 'vovk';
+
+@prefix('users')
+export default class UserController {
+  @get('{id}')
+  static getUser = procedure({
+    params: z.object({ id: z.string() }),
+  }).handle(async (req, { id }) => UserService.getUser(id));
+}
+```
 
 A procedure attached to several controller members runs each member's own decorators and route options, over HTTP, in `.fn()` and in tools. The procedure's own `.fn()` runs no controller's decorators. Each member holds its own copy of the procedure, so `UserController.getUser !== UserProcedures.getUser`, and a member reused from another controller carries the schema its decorators added. A controller serves the routes of the class it extends only when that class is in the same segment, or with `@cloneControllerMetadata()`, and its schema lists only the routes it serves.
 
@@ -119,6 +247,31 @@ A procedure attached to several controller members runs each member's own decora
 
 - In production, error responses carry no internal detail. `onError` still receives the full error.
 - Only an `HttpException` sets the status and keeps its message. Any other error answers 500, also in derived tools.
+
+```ts
+@prefix('users')
+export default class UserController {
+  @get('{id}')
+  static getUser = procedure({
+    params: z.object({ id: z.string() }),
+  }).handle(async (req, { id }) => {
+    // a Prisma error answers 500; v4 hides its message in production
+    const user = await prisma.user.findUnique({ where: { id } });
+    // 404 with this message, in v3 and v4
+    if (!user) {
+      throw new HttpException(HttpStatus.NOT_FOUND, 'User not found');
+    }
+    return user;
+  });
+}
+```
+
+In production, v4 answers the Prisma error with this body and logs the error:
+
+```json
+{ "statusCode": 500, "message": "Internal server error", "isError": true }
+```
+
 - Failed `output` or `iteration` validation is a server error: 500, with the issues kept on the server.
 - A 400 lists at most 20 issues. A 1 MB body could produce a 91 MB response before. `onError` still gets the library's own issues in `cause.issues`.
 
@@ -128,12 +281,27 @@ A procedure attached to several controller members runs each member's own decora
 - `notFound()`, `forbidden()` and `unauthorized()` thrown mid-stream send 404, 403 and 401 in the error line. Error lines carry `statusCode`.
 - The client reads only as fast as you take items, so a consumed stream iterated again yields nothing. Read it once, or call `asPromise()`.
 
+```ts
+using stream = await StreamRPC.streamTokens();
+
+for await (const { message } of stream) console.log(message);
+// a second loop: v3 gave every item again, v4 gives nothing
+for await (const { message } of stream) console.log(message);
+```
+
+```ts
+// to use the items more than once, collect them
+using stream = await StreamRPC.streamTokens();
+const tokens = await stream.asPromise();
+```
+
 ## Static segments
 
 A [static segment](/static-segment) pre-renders with no `dynamic` export, also with `cacheComponents` on, which `create-next-app` 16.4+ sets. Next.js refuses `dynamic = 'force-static'` there. A static export still needs `cacheComponents` off.
 
 ## Client-side validation
 
+- `validateOnClient.configure()` is removed. The Ajv options go in `libs.ajv` in `vovk.config`. They reach the client through `.vovk-schema/_meta.json`, so they must be JSON.
 - `vovk-ajv` turns Ajv's strict mode off, so `example`, `x-*` and other annotations no longer block a request.
 - Where Ajv can't generate code, as under a Content Security Policy without `'unsafe-eval'`, the client skips validation and warns once. The server still validates. Before, every validated call failed without sending a request.
 

@@ -22,18 +22,79 @@
 
 ## vovk-cli [![npm version](https://badge.fury.io/js/vovk-cli.svg)](https://www.npmjs.com/package/vovk-cli)
 
-The Vovk.ts CLI. Install it as a dev dependency of a Vovk.ts app.
+The Vovk.ts command line. It sets up a project, watches the controllers, writes the schema and generates the TypeScript, Python and Rust clients and the OpenAPI document. It needs Node.js 24.15+ and goes in the dev dependencies, next to [vovk](https://www.npmjs.com/package/vovk).
+
+## Set up
+
+In a Next.js app with the App Router and TypeScript:
 
 ```sh
-npm install -D vovk-cli
+npx vovk-cli@latest init
 ```
 
-- [vovk dev](https://vovk.dev/dev) - watches [controllers](https://vovk.dev/procedure) for changes and updates the [schema](https://vovk.dev/schema) and the [client](https://vovk.dev/typescript)
-- [vovk generate](https://vovk.dev/generate) - generates the client from the schema
-- [vovk bundle](https://vovk.dev/bundle) - bundles the client (needs the `bundle.build` config)
-- [vovk init](https://vovk.dev/init) - sets up Vovk.ts in an existing Next.js app
-- [vovk new](https://vovk.dev/new) - creates a segment, a controller, a service or a custom module
+`vovk init` asks a few questions (`-y` takes the defaults). It installs the dependencies, turns on `experimentalDecorators` in `tsconfig.json`, writes `vovk.config.mjs` and sets the npm scripts:
+
+```json
+{
+  "scripts": {
+    "dev": "vovk dev --next-dev",
+    "prebuild": "vovk generate"
+  }
+}
+```
+
+`npm run dev` starts `next dev` and the Vovk.ts watcher together. `prebuild` generates the client before `next build`.
+
+Then create a segment and a module from the built-in templates:
 
 ```sh
-npx vovk-cli --help
+npx vovk new segment
+npx vovk new controller service user
 ```
+
+## Commands
+
+| Command | What it does |
+| --- | --- |
+| [`vovk dev`](https://vovk.dev/dev) | Watches the controllers, writes the schema to `.vovk-schema/` and generates the client again on every change. `--next-dev` also runs `next dev` on a free port; arguments after `--` go to `next dev`. |
+| [`vovk generate`](https://vovk.dev/generate) | Generates the clients from `.vovk-schema/`. `--from py --out ./python_package` picks other templates; `--openapi <file or URL>` adds a third-party API as an [OpenAPI mixin](https://vovk.dev/mixins). |
+| [`vovk bundle`](https://vovk.dev/bundle) | Builds the TypeScript client into a publishable npm package (needs `bundle.build` in the config). |
+| [`vovk new`](https://vovk.dev/new) | Creates a segment, a controller, a service or a module of your own template. `--dry-run` writes nothing. |
+| [`vovk init`](https://vovk.dev/init) | Sets up Vovk.ts in an existing Next.js app. `--use-pnpm`, `--skip-install`, `--bundle` and more. |
+
+`npx vovk --help` and `npx vovk <command> --help` list every flag.
+
+## Config
+
+`vovk.config.mjs` at the project root. A few common options:
+
+```js
+/** @type {import('vovk').VovkConfig} */
+const config = {
+  outputConfig: {
+    // client-side validation in the generated client
+    imports: { validateOnClient: 'vovk-ajv' },
+  },
+  composedClient: {
+    // also generate the Python client
+    fromTemplates: ['ts', 'py'],
+  },
+  clientTemplateDefs: {
+    py: {
+      extends: 'py',
+      // the server the Python client calls; the TypeScript client keeps relative URLs
+      outputConfig: { origin: 'https://example.com' },
+    },
+  },
+};
+
+export default config;
+```
+
+See [Config](https://vovk.dev/config) for every option.
+
+## Docs
+
+- [Quick Start](https://vovk.dev/quick-install)
+- [vovk dev](https://vovk.dev/dev), [vovk generate](https://vovk.dev/generate), [vovk bundle](https://vovk.dev/bundle), [vovk new](https://vovk.dev/new), [vovk init](https://vovk.dev/init)
+- [Config](https://vovk.dev/config), [Client templates](https://vovk.dev/templates), [Schema](https://vovk.dev/schema)
