@@ -2,7 +2,7 @@
 
 ## Setup
 
-Node 24.15 or newer. The Python and Rust client tests also need Python 3.10+ and Rust 1.85+.
+Node 24.15 or newer. The Python and Rust client tests also need Python 3.9+ and Rust 1.85+.
 
 ```sh
 npm ci
