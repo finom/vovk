@@ -31,7 +31,7 @@ imports: ['vovk-rust']
 
 <%- handlerSchema.operationObject?.description ? `${handlerSchema.operationObject.description}` : '' %>
 
-`<%= handlerSchema.httpMethod %> <%= [apiRoot.replace(/\/+$/, ''), ...[segmentPath, controllerSchema.prefix ?? '', handlerSchema.path].map((part) => t._.trim(part, '/'))].filter(Boolean).join('/') %>`
+`<%= handlerSchema.httpMethod %> <%= [t._.trimEnd(apiRoot, '/'), ...[segmentPath, controllerSchema.prefix ?? '', handlerSchema.path].map((part) => t._.trim(part, '/'))].filter(Boolean).join('/') %>`
 
 ```rust
 <%- t.createCodeSamples({

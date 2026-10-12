@@ -457,6 +457,22 @@ describe('Client sweep, pure functions', () => {
       deepStrictEqual(calls, ['error 1', 'error 2', 'success 1', 'success 2']);
     });
 
+    it('Reports a missing param before sending the request', async () => {
+      await rejects(rpcOf({ get: { path: '{id}/posts/{postId}', httpMethod: 'GET' } }).get({ params: { id: '1' } }), {
+        message: 'Missing params: postId in /api/test/1/posts/{postId}',
+      });
+    });
+
+    it('Reads a long path of unclosed braces in linear time', async () => {
+      const path = '{'.repeat(100_000);
+      const start = performance.now();
+      await withFetch(
+        () => Response.json({ ok: true }),
+        () => rpcOf({ get: { path, httpMethod: 'GET' } }).get()
+      );
+      ok(performance.now() - start < 1000, `${performance.now() - start} ms`);
+    });
+
     it('Keeps a network error as the cause', async () => {
       const failure = new TypeError('fetch failed');
 

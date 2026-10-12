@@ -434,6 +434,13 @@ describe('openAPIToVovkSchema — server URL', () => {
     strictEqual(segment.forceApiRoot, 'https://api.example.com/{version}');
   });
 
+  it('Reads a long server URL of unclosed braces in linear time', () => {
+    const url = `https://${'{'.repeat(100_000)}`;
+    const start = performance.now();
+    strictEqual(convert({ servers: [{ url }], paths: {} }).forceApiRoot, url);
+    ok(performance.now() - start < 1000, `${performance.now() - start} ms`);
+  });
+
   it('Prefers apiRoot from the config', () => {
     const segment = convert(
       { servers: [{ url: 'https://{region}.example.com', variables: { region: { default: 'eu' } } }], paths: {} },

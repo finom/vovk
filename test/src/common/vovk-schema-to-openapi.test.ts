@@ -219,6 +219,27 @@ describe('vovkSchemaToOpenAPI — paths', () => {
     deepStrictEqual(Object.keys(toOpenAPI(handlers, { config, segmentName: '' }).paths), ['/v2/tenant/things/{id}']);
   });
 
+  it('Trims the slashes around rootEntry', () => {
+    const config = { outputConfig: { segments: { '': { rootEntry: '//v2/beta//' } } } };
+    deepStrictEqual(Object.keys(toOpenAPI(handlers, { config }).paths), ['/v2/beta/things/{id}']);
+  });
+
+  it('Reads a long run of slashes in rootEntry in linear time', () => {
+    const rootEntry = `v2${'/'.repeat(100_000)}beta`;
+    const start = performance.now();
+    const config = { outputConfig: { segments: { '': { rootEntry } } } };
+    deepStrictEqual(Object.keys(toOpenAPI(handlers, { config }).paths), [`/${rootEntry}/things/{id}`]);
+    ok(performance.now() - start < 1000, `${performance.now() - start} ms`);
+  });
+
+  it('Reads a long path of unclosed braces in linear time', () => {
+    const path = '{'.repeat(100_000);
+    const start = performance.now();
+    const { parameters } = toOpenAPI({ getThing: { path, httpMethod: 'GET' } }).paths[`/api/things/${path}`].get;
+    strictEqual(parameters, undefined);
+    ok(performance.now() - start < 1000, `${performance.now() - start} ms`);
+  });
+
   it('Drops the segment name when segmentNameOverride is empty', () => {
     const schema = (segmentName: string) => ({
       $schema: 'https://vovk.dev/schema',

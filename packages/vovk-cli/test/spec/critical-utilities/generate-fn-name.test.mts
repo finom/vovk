@@ -52,6 +52,12 @@ await describe('generateFnName', async () => {
     for (const name of names) assert.ok(isIdentifier(name), name);
   });
 
+  await it('Reads a long path of unclosed braces in linear time', () => {
+    const start = performance.now();
+    assert.strictEqual(generateFnName(HttpMethod.GET, `/users/${'{'.repeat(100_000)}`), 'listUsers');
+    assert.ok(performance.now() - start < 1000, `${performance.now() - start} ms`);
+  });
+
   await it('Names a method missing from the verb map after the method itself', () => {
     assert.strictEqual(generateFnName('TRACE' as HttpMethod, '/users'), 'traceUsers');
   });

@@ -29,6 +29,15 @@ const isNumberedDefinitionName = (name: string) => /^__schema\d+$/.test(name);
 // OpenAPI allows letters, digits, ".", "-" and "_" in a component name
 const toComponentName = (name: string) => name.replace(/[^A-Za-z0-9._-]/g, '_');
 
+// a loop: a regex for the slashes at the end backtracks on a long run of them inside the path
+const trimSlashes = (path: string) => {
+  let start = 0;
+  let end = path.length;
+  while (start < end && path[start] === '/') start++;
+  while (end > start && path[end - 1] === '/') end--;
+  return path.slice(start, end);
+};
+
 // moves a slot's $defs and definitions to components; a numbered name, or one another slot took for a different
 // schema, gets the slot's name in front, and a slot that refers to its own root becomes a component too
 function extractComponents(
@@ -252,9 +261,9 @@ export function vovkSchemaToOpenAPI({
 
           const path =
             (h.misc?.originalPath as string) ??
-            `/${[segmentRootEntry.replace(/^\/+|\/+$/g, ''), segmentPathName, c.prefix, h.path].filter(Boolean).join('/')}`;
+            `/${[trimSlashes(segmentRootEntry), segmentPathName, c.prefix, h.path].filter(Boolean).join('/')}`;
           // every {name} of the path is a parameter, a string when no params schema describes it
-          const templateParameters = Array.from(path.matchAll(/\{([^}]+)\}/g), ([, name]) => name)
+          const templateParameters = Array.from(path.matchAll(/\{([^{}]+)\}/g), ([, name]) => name)
             .filter((name) => !pathParameters?.some((parameter) => parameter.name === name))
             .map((name) => ({ name, in: 'path', required: true, schema: { type: 'string' } }));
           paths[path] = paths[path] ?? {};

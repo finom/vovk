@@ -47,7 +47,7 @@ export function generateFnName(method: HttpMethod, rawPath: string, opts: Genera
   for (const segment of rawPath.split('/')) {
     if (!segment || ignoreSegments?.includes(segment.toLowerCase())) continue;
     // a segment can mix literal text and params, e.g. "{name}.json"
-    const literal = segment.replace(/\{([^}]*)\}/g, (_, param: string) => {
+    const literal = segment.replace(/\{([^{}]*)\}/g, (_, param: string) => {
       params.push(...toWords(param));
       return ' ';
     });
