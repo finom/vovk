@@ -1,8 +1,8 @@
 import { NextResponse } from 'next/server.js';
+import type { StandardToolV0 } from 'standard-tool';
 import {
   deriveTools,
   procedure,
-  type StandardToolV0,
   ToModelOutput,
   type VovkBody,
   type VovkParams,
@@ -15,6 +15,8 @@ import { createFetcher } from 'vovk/fetcher';
 import type { MissingResponse } from 'vovk-missing-module';
 import { z } from 'zod';
 import type { VovkFetcherOptions } from '../../packages/vovk/dist/types/client.js';
+// not exported from vovk; read from the source to check it against the published type
+import type { StandardToolV0 as VovkStandardToolV0 } from '../../packages/vovk/src/types/standard-tool.js';
 
 // Type checks for RPC modules: the test app's tsc run fails if a line without @ts-expect-error doesn't compile
 
@@ -402,7 +404,7 @@ export async function iterableResults() {
   chunks.abortSilently();
 }
 
-// ====== Derived tools: execute always returns a promise ======
+// ====== Derived tools are standard-tool's StandardToolV0 ======
 
 class ToolController {
   static getItem = procedure({ params: z.object({ id: z.string() }) }).handle(async (_req, { id }) => ({ id }));
@@ -410,10 +412,18 @@ class ToolController {
 
 export async function derivedTools() {
   const [tool] = deriveTools({ modules: { ToolController } });
-  tool.execute({ params: { id: 'a' } }) satisfies Promise<unknown>;
+  (await tool.execute({ params: { id: 'a' } })) satisfies unknown;
   const [mcpTool] = deriveTools({ modules: { ToolController }, toModelOutput: ToModelOutput.MCP });
-  (await mcpTool.execute({})).content satisfies unknown[];
-  mcpTool.execute({}).then((output) => output.isError);
-  // a derived tool is a standard tool
-  [tool, mcpTool] satisfies StandardToolV0<{ body?: unknown; query?: unknown; params?: unknown }, unknown, unknown>[];
+  const output = await mcpTool.execute({});
+  output.content satisfies unknown[];
+  output.isError satisfies boolean | undefined;
+  [tool, mcpTool] satisfies StandardToolV0[];
 }
+
+// vovk's private copy of StandardToolV0 is the published one, and deriveTools returns it
+type SameType<A, B> = [A] extends [B] ? ([B] extends [A] ? true : false) : false;
+type In = { a: string };
+type Out = { b: number };
+true satisfies SameType<VovkStandardToolV0<In, Out, string, { c: true }>, StandardToolV0<In, Out, string, { c: true }>>;
+type DerivedTool<TOutput, TFormattedOutput> = ReturnType<typeof deriveTools<TOutput, TFormattedOutput>>[number];
+true satisfies SameType<DerivedTool<Out, string>, StandardToolV0<unknown, Out, string>>;

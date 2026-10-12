@@ -17,16 +17,6 @@ import { responseErrorMessage } from './to-model-error-message.js';
 import { ToModelOutput } from './to-model-output.js';
 import type { DefaultModelOutput } from './to-model-output-default.js';
 
-type DerivedToolInput = { body?: unknown; query?: unknown; params?: unknown };
-
-// a standard tool whose execute always returns a promise
-type DerivedTool<TOutput, TFormattedOutput> = Omit<
-  StandardToolV0<DerivedToolInput, TOutput, TFormattedOutput>,
-  'execute'
-> & {
-  execute(input: DerivedToolInput, context?: unknown): Promise<TFormattedOutput>;
-};
-
 type Handler = ((...args: unknown[]) => unknown) & {
   fn?: (input: unknown) => [unknown, Pick<VovkRequest, 'vovk'> | null];
   isRPC?: boolean;
@@ -87,7 +77,7 @@ const getHandlerSchema = (module: object, handlerName: string, handler: Handler)
 
 async function caller<TOutput, TFormattedOutput>(
   { handler, handlerName, body, query, params, meta, toModelOutput }: CallerInput<TOutput, TFormattedOutput>,
-  tool: StandardToolV0<DerivedToolInput, TOutput, TFormattedOutput>
+  tool: StandardToolV0<unknown, TOutput, TFormattedOutput>
 ): Promise<[TFormattedOutput, Pick<VovkRequest, 'vovk'> | null, Error | null]> {
   try {
     let result: unknown;
@@ -118,11 +108,7 @@ async function caller<TOutput, TFormattedOutput>(
     // an error status fails the call, the formatter still gets the Response to show its body
     if (result instanceof Response && !result.ok) {
       const error = new HttpException(result.status, await responseErrorMessage(result.clone()));
-      return [
-        await toModelOutput(result as TOutput, tool as StandardToolV0<unknown, TOutput, TFormattedOutput>, req),
-        req,
-        error,
-      ];
+      return [await toModelOutput(result as TOutput, tool, req), req, error];
     }
 
     // a responder streams the lines a client would read
@@ -137,18 +123,10 @@ async function caller<TOutput, TFormattedOutput>(
       result = items;
     }
 
-    return [
-      await toModelOutput(result as TOutput, tool as StandardToolV0<unknown, TOutput, TFormattedOutput>, req),
-      req,
-      null,
-    ];
+    return [await toModelOutput(result as TOutput, tool, req), req, null];
   } catch (e) {
     // report the error separately, the formatted output is never an Error instance
-    return [
-      await toModelOutput(e as Error, tool as StandardToolV0<unknown, TOutput, TFormattedOutput>, null),
-      null,
-      e as Error,
-    ];
+    return [await toModelOutput(e as Error, tool, null), null, e as Error];
   }
 }
 
@@ -168,15 +146,15 @@ const makeTool = <TOutput, TFormattedOutput>({
   toModelOutput: ToModelOutputFn<unknown, TOutput, TFormattedOutput>;
   onExecute: (
     result: unknown,
-    tool: StandardToolV0<DerivedToolInput, TOutput, TFormattedOutput>,
+    tool: StandardToolV0<unknown, TOutput, TFormattedOutput>,
     req: Pick<VovkRequest, 'vovk'> | null
   ) => void;
   onError: (
     error: Error,
-    tool: StandardToolV0<DerivedToolInput, TOutput, TFormattedOutput>,
+    tool: StandardToolV0<unknown, TOutput, TFormattedOutput>,
     req: Pick<VovkRequest, 'vovk'> | null
   ) => void;
-}): DerivedTool<TOutput, TFormattedOutput> => {
+}): StandardToolV0<unknown, TOutput, TFormattedOutput> => {
   if (!module) {
     throw new Error(`Module "${moduleName}" not found.`);
   }
@@ -210,9 +188,13 @@ const makeTool = <TOutput, TFormattedOutput>({
     definition?.output ??
     (schema?.validation?.output ? jsonSchemaToJSONSchemaOnlySpec({ jsonSchema: schema.validation.output }) : undefined);
 
-  const execute = async (input: { body?: unknown; query?: unknown; params?: unknown }): Promise<TFormattedOutput> => {
+  // the input is untrusted, as the model wrote it: the procedure validates it
+  const execute = async (input: unknown): Promise<TFormattedOutput> => {
     // a tool without input may be called with nothing
-    const { body, query, params } = input ?? {};
+    const fields = typeof input === 'object' && input !== null ? input : {};
+    const body = 'body' in fields ? fields.body : undefined;
+    const query = 'query' in fields ? fields.query : undefined;
+    const params = 'params' in fields ? fields.params : undefined;
 
     const callerInput: CallerInput<TOutput, TFormattedOutput> = {
       schema,
@@ -235,11 +217,11 @@ const makeTool = <TOutput, TFormattedOutput>({
 
     return result;
   };
-  const tool: DerivedTool<TOutput, TFormattedOutput> = {
+  const tool: StandardToolV0<unknown, TOutput, TFormattedOutput> = {
     execute,
     name,
-    inputSchema: inputSchema as StandardToolV0<DerivedToolInput, TOutput, TFormattedOutput>['inputSchema'],
-    outputSchema: outputSchema as StandardToolV0<DerivedToolInput, TOutput, TFormattedOutput>['outputSchema'],
+    inputSchema,
+    outputSchema: outputSchema as StandardToolV0<unknown, TOutput, TFormattedOutput>['outputSchema'],
     title: schema?.operationObject?.['x-tool']?.title ?? schema?.operationObject?.summary,
     // static tool data from @operation.tool({ meta }), not the runtime `meta` handed to handlers
     meta: schema?.operationObject?.['x-tool']?.meta,
@@ -259,12 +241,12 @@ type DeriveToolsBaseOptions<TOutput = unknown, TFormattedOutput = unknown> = {
   meta?: Record<string, unknown>;
   onExecute?: (
     result: unknown,
-    tool: StandardToolV0<DerivedToolInput, TOutput, TFormattedOutput>,
+    tool: StandardToolV0<unknown, TOutput, TFormattedOutput>,
     req: Pick<VovkRequest, 'vovk'> | null
   ) => void;
   onError?: (
     error: Error,
-    tool: StandardToolV0<DerivedToolInput, TOutput, TFormattedOutput>,
+    tool: StandardToolV0<unknown, TOutput, TFormattedOutput>,
     req: Pick<VovkRequest, 'vovk'> | null
   ) => void;
 };
@@ -293,13 +275,13 @@ export function deriveTools<TOutput = unknown, TFormattedOutput = DefaultModelOu
   options: DeriveToolsBaseOptions & {
     toModelOutput?: never;
   }
-): DerivedTool<TOutput, TFormattedOutput>[];
+): StandardToolV0<unknown, TOutput, TFormattedOutput>[];
 
 export function deriveTools<TOutput = unknown, TFormattedOutput = unknown>(
   options: DeriveToolsBaseOptions & {
     toModelOutput: ToModelOutputFn<unknown, TOutput, TFormattedOutput>;
   }
-): DerivedTool<TOutput, TFormattedOutput>[];
+): StandardToolV0<unknown, TOutput, TFormattedOutput>[];
 
 export function deriveTools<TOutput = unknown, TFormattedOutput = unknown>(options: {
   modules: Record<string, object>;
@@ -307,15 +289,15 @@ export function deriveTools<TOutput = unknown, TFormattedOutput = unknown>(optio
   toModelOutput?: ToModelOutputFn<unknown, TOutput, TFormattedOutput>;
   onExecute?: (
     result: unknown,
-    tool: StandardToolV0<DerivedToolInput, TOutput, TFormattedOutput>,
+    tool: StandardToolV0<unknown, TOutput, TFormattedOutput>,
     req: Pick<VovkRequest, 'vovk'> | null
   ) => void;
   onError?: (
     error: Error,
-    tool: StandardToolV0<DerivedToolInput, TOutput, TFormattedOutput>,
+    tool: StandardToolV0<unknown, TOutput, TFormattedOutput>,
     req: Pick<VovkRequest, 'vovk'> | null
   ) => void;
-}): DerivedTool<TOutput, TFormattedOutput>[] {
+}): StandardToolV0<unknown, TOutput, TFormattedOutput>[] {
   const {
     modules,
     meta,

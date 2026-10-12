@@ -47,6 +47,8 @@ const result = await byName[call.name].execute(call.arguments);
 
 ### Each tool's fields
 
+The type comes from the `standard-tool` package (`import type { StandardToolV0 } from 'standard-tool'`); `vovk` doesn't export it.
+
 ```ts
 type StandardToolV0 = {
   name: string;                         // default: `${moduleName}_${handlerName}` — e.g. UserController_getUser

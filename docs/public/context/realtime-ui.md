@@ -4,8 +4,8 @@ description: "Walkthrough of the Realtime Kanban example app — a live-updating
 see_also:
   label: "Vovk.ts Docs Context"
   url: https://vovk.dev/context/docs.md
-chars: 109145
-est_tokens: 27287
+chars: 109154
+est_tokens: 27289
 ---
 
 Page: https://vovk.dev/realtime-ui
@@ -2097,7 +2097,7 @@ The main parts of the hook:
 ```ts showLineNumbers copy filename="src/hooks/use-web-rtc-audio-session.ts" source="examples/realtime-kanban" {87-139}
 'use client';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import type { StandardToolV0 } from 'vovk';
+import type { StandardToolV0 } from 'standard-tool';
 import { RealtimeRPC } from '@/client';
 
 /**

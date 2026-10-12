@@ -4,6 +4,12 @@ All notable changes to `vovk-cli` are documented here. This file is the canonica
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 0.3.2 - 2026-10-12
+
+### Changed
+
+- The README shows setup, the commands and the config ([#70](https://github.com/finom/vovk/pull/70))
+
 ## 0.3.1 - 2026-10-12
 
 ### Changed
