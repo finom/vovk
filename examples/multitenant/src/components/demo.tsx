@@ -36,11 +36,19 @@ const Demo = ({ tenantName, response, data }: Props) => (
     <main className="flex flex-1 flex-col gap-6 row-start-2 items-center justify-items-stretch sm:items-start">
       <div className="mx-auto text-center">
         <Image
-          className="dark:invert"
+          className="mx-auto dark:hidden"
           src="https://vovk.dev/vovk-logo.svg"
           alt="Vovk.ts logo"
-          width={319.95556 / 1.4}
-          height={92 / 1.4}
+          width={200}
+          height={33}
+          priority
+        />
+        <Image
+          className="mx-auto hidden dark:block"
+          src="https://vovk.dev/vovk-logo-white.svg"
+          alt="Vovk.ts logo"
+          width={200}
+          height={33}
           priority
         />
         <div className="text-xs opacity-50">Multitenancy demo</div>

@@ -100,84 +100,113 @@
 }
 
 :root {
-  /* Editorial type system (loaded from Google Fonts in layout.tsx) wired into
-     Nextra's body + code, which read --x-font-sans / --x-font-mono. */
-  --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif;
-  --font-display: 'Fraunces', ui-serif, Georgia, 'Times New Roman', serif;
-  --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, monospace;
+  /* Geist, Geist Mono and JetBrains Mono come from Google Fonts in layout.tsx. Nextra reads --x-font-*. */
+  --font-sans: 'Geist', ui-sans-serif, system-ui, sans-serif;
+  --font-mono: 'Geist Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, monospace;
+  --font-marks: 'JetBrains Mono', ui-monospace, monospace;
   --x-font-sans: var(--font-sans);
   --x-font-mono: var(--font-mono);
 
-  --radius: 0.625rem;
-  /* Warm light palette — cream paper, ink-brown text, clay accent. Chroma is
-     kept low on neutrals (hue ~80) so surfaces read "warm gray", not beige. */
-  --background: oklch(0.972 0.008 83);
-  --foreground: oklch(0.26 0.008 65);
-  --card: oklch(0.995 0.003 83);
-  --card-foreground: oklch(0.26 0.008 65);
-  --popover: oklch(0.995 0.003 83);
-  --popover-foreground: oklch(0.26 0.008 65);
-  --primary: oklch(0.62 0.115 42);
-  --primary-foreground: oklch(0.99 0.004 83);
-  --secondary: oklch(0.955 0.009 84);
-  --secondary-foreground: oklch(0.3 0.01 65);
-  --muted: oklch(0.955 0.009 84);
-  --muted-foreground: oklch(0.55 0.012 70);
-  --accent: oklch(0.93 0.02 70);
-  --accent-foreground: oklch(0.3 0.01 65);
+  /* Paper, ink and one vermilion. The logo's vermilion is for marks and large text; small text on paper takes
+     the darker --primary, which keeps 4.5:1. */
+  --vovk-logo-accent: #dd4115;
+  /* A quiet tint behind the active sidebar item. */
+  --x-color-primary-100: #f0e2da;
+
+  /* Nextra's gray scales, warmed to the paper and ink ramp. */
+  --x-color-gray-50: #fbfaf7;
+  --x-color-gray-100: #eeebe5;
+  --x-color-gray-200: #e4e0d8;
+  --x-color-gray-300: #d8d4cc;
+  --x-color-gray-400: #a29d93;
+  --x-color-gray-500: #85817a;
+  --x-color-gray-600: #5f5d58;
+  --x-color-gray-700: #47453f;
+  --x-color-gray-800: #2a2926;
+  --x-color-gray-900: #1b1a18;
+  --x-color-neutral-50: #fbfaf7;
+  --x-color-neutral-100: #eeebe5;
+  --x-color-neutral-200: #e4e0d8;
+  --x-color-neutral-300: #d8d4cc;
+  --x-color-neutral-400: #a29d93;
+  --x-color-neutral-500: #85817a;
+  --x-color-neutral-600: #5f5d58;
+  --x-color-neutral-700: #3a3834;
+  --x-color-neutral-800: #2a2926;
+  --x-color-neutral-900: #1b1a18;
+  --x-color-slate-50: #fbfaf7;
+  --x-color-slate-100: #eeebe5;
+  --x-color-slate-200: #e4e0d8;
+  --x-color-slate-700: #47453f;
+  --x-color-slate-900: #1b1a18;
+
+  --radius: 0.5rem;
+  --background: #f2f0eb;
+  --foreground: #111111;
+  --card: #fbfaf7;
+  --card-foreground: #111111;
+  --popover: #fbfaf7;
+  --popover-foreground: #111111;
+  --primary: #c2320a;
+  --primary-foreground: #fbfaf7;
+  --secondary: #e8e5de;
+  --secondary-foreground: #111111;
+  --muted: #e8e5de;
+  --muted-foreground: #5f5d58;
+  --accent: #e8e5de;
+  --accent-foreground: #111111;
   --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.9 0.011 80);
-  --input: oklch(0.9 0.011 80);
-  --ring: oklch(0.62 0.115 42);
+  --border: #d8d4cc;
+  --input: #d8d4cc;
+  --ring: #dd4115;
   --chart-1: oklch(0.646 0.222 41.116);
   --chart-2: oklch(0.6 0.118 184.704);
   --chart-3: oklch(0.398 0.07 227.392);
   --chart-4: oklch(0.828 0.189 84.429);
   --chart-5: oklch(0.769 0.188 70.08);
-  --sidebar: oklch(0.975 0.007 83);
-  --sidebar-foreground: oklch(0.26 0.008 65);
-  --sidebar-primary: oklch(0.62 0.115 42);
-  --sidebar-primary-foreground: oklch(0.99 0.004 83);
-  --sidebar-accent: oklch(0.93 0.02 70);
-  --sidebar-accent-foreground: oklch(0.3 0.01 65);
-  --sidebar-border: oklch(0.9 0.011 80);
-  --sidebar-ring: oklch(0.62 0.115 42);
+  --sidebar: #f2f0eb;
+  --sidebar-foreground: #111111;
+  --sidebar-primary: #c2320a;
+  --sidebar-primary-foreground: #fbfaf7;
+  --sidebar-accent: #e8e5de;
+  --sidebar-accent-foreground: #111111;
+  --sidebar-border: #d8d4cc;
+  --sidebar-ring: #dd4115;
 }
 
 .dark {
-  /* Warm charcoal — never pure black; cream text, brighter clay accent so links
-     stay legible on the dark surface. */
-  --background: oklch(0.205 0.006 70);
-  --foreground: oklch(0.92 0.008 83);
-  --card: oklch(0.245 0.006 70);
-  --card-foreground: oklch(0.92 0.008 83);
-  --popover: oklch(0.245 0.006 70);
-  --popover-foreground: oklch(0.92 0.008 83);
-  --primary: oklch(0.7 0.105 45);
-  --primary-foreground: oklch(0.2 0.01 60);
-  --secondary: oklch(0.28 0.007 70);
-  --secondary-foreground: oklch(0.92 0.008 83);
-  --muted: oklch(0.28 0.007 70);
-  --muted-foreground: oklch(0.7 0.01 80);
-  --accent: oklch(0.31 0.009 68);
-  --accent-foreground: oklch(0.92 0.008 83);
+  --vovk-logo-accent: #f6623d;
+  --background: #141412;
+  --foreground: #f2f0eb;
+  --card: #1b1a18;
+  --card-foreground: #f2f0eb;
+  --popover: #1b1a18;
+  --popover-foreground: #f2f0eb;
+  --primary: #f6623d;
+  --primary-foreground: #141412;
+  --secondary: #22211e;
+  --secondary-foreground: #f2f0eb;
+  --muted: #22211e;
+  --muted-foreground: #a29d93;
+  --accent: #2a2926;
+  --accent-foreground: #f2f0eb;
   --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(0.92 0.02 80 / 10%);
-  --input: oklch(0.92 0.02 80 / 14%);
-  --ring: oklch(0.7 0.105 45);
+  --border: #2a2926;
+  --input: #3a3834;
+  --ring: #f6623d;
   --chart-1: oklch(0.488 0.243 264.376);
   --chart-2: oklch(0.696 0.17 162.48);
   --chart-3: oklch(0.769 0.188 70.08);
   --chart-4: oklch(0.627 0.265 303.9);
   --chart-5: oklch(0.645 0.246 16.439);
-  --sidebar: oklch(0.225 0.006 70);
-  --sidebar-foreground: oklch(0.92 0.008 83);
-  --sidebar-primary: oklch(0.7 0.105 45);
-  --sidebar-primary-foreground: oklch(0.2 0.01 60);
-  --sidebar-accent: oklch(0.31 0.009 68);
-  --sidebar-accent-foreground: oklch(0.92 0.008 83);
-  --sidebar-border: oklch(0.92 0.02 80 / 10%);
-  --sidebar-ring: oklch(0.7 0.105 45);
+  --sidebar: #141412;
+  --sidebar-foreground: #f2f0eb;
+  --sidebar-primary: #f6623d;
+  --sidebar-primary-foreground: #141412;
+  --sidebar-accent: #2a2926;
+  --sidebar-accent-foreground: #f2f0eb;
+  --sidebar-border: #2a2926;
+  --sidebar-ring: #f6623d;
 }
 
 @layer base {
@@ -189,22 +218,24 @@
   }
 }
 
-/*
-  Editorial display headings: the soft Fraunces serif for the page title,
-  section heads, and sub-section / Steps headings (h1–h3) gives the docs a
-  designed, magazine-like feel while the body stays in a clean grotesque.
-  Scoped to the content <article> (Nextra wraps MDX there) so the navbar,
-  sidebar, and TOC keep the sans; h4–h6 stay sans for a clear hierarchy.
-*/
+/* Headings in Geist 600 with tight tracking, as in the logo sheet. */
 article h1,
 article h2,
 article h3 {
-  font-family: var(--font-display), ui-serif, Georgia, 'Times New Roman', serif;
-  font-optical-sizing: auto;
+  font-weight: 600;
   letter-spacing: -0.02em;
 }
 
-/* Smoother rendering for the new sans across the whole document. */
+article h1 {
+  letter-spacing: -0.03em;
+}
+
+/* Code blocks sit on the card color, not on white or black. */
+.nextra-code pre {
+  background-color: var(--card);
+}
+
+/* Smoother text rendering across the document. */
 body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
