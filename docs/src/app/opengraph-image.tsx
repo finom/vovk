@@ -10,6 +10,8 @@ export const size = {
 
 export const dynamic = 'force-static';
 
+export const alt = 'Vovk.ts: Backend Framework for Next.js App Router';
+
 export const contentType = 'image/png';
 
 // Image generation

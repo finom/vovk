@@ -20,14 +20,17 @@ export const metadata: Metadata = {
   manifest: '/site.webmanifest',
   title: {
     default: 'Vovk.ts - Back-end Framework for Next.js App Router',
-    template: '%s | Vovk.ts - Back-end Framework for Next.js App Router',
+    template: '%s | Vovk.ts',
   },
+  // Each page has its own description, which Open Graph and X take. og:url and og:type come from the MDX wrapper.
+  description: 'Back-end framework for Next.js App Router. One codebase gives type-safe clients, OpenAPI and AI tools.',
   openGraph: {
-    url: 'https://vovk.dev',
     siteName: 'Vovk.ts',
     locale: 'en_US',
-    type: 'website',
-    description: 'One codebase → type-safe clients, OpenAPI, and AI tools',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    site: '@vovkts',
   },
   icons: {
     icon: [

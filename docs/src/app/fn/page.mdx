@@ -1,3 +1,7 @@
+---
+description: "Call a procedure as a function with .fn(), without HTTP: in SSR, server actions, tests and AI tools. The rules a handler follows to run this way."
+---
+
 # Local Procedure Call (LPC)
 
 Every procedure made with the [procedure](/procedure#procedure) function can be called as a regular function through its `fn` property. It takes `{ params, query, body }`, the same shape as the generated RPC client. The RPC client mirrors `fn`, not the other way around.

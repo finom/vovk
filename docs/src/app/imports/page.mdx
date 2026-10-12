@@ -1,3 +1,7 @@
+---
+description: "Replace the modules that the generated TypeScript client imports with outputConfig.imports: a custom fetcher, and client-side validation with vovk-ajv."
+---
+
 # TypeScript Client Customization
 
 You can replace the lower-level modules that the generated TypeScript client imports: the [fetcher](#fetcher) and [validateOnClient](#validateonclient). Set them in the `outputConfig.imports` object of the [config](/config) file. The object also takes `createRPC`: the module the client imports `createRPC` from, `vovk/create-rpc` by default (see [config](/config)).

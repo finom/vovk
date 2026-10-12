@@ -46,6 +46,7 @@ jobs:
       - run: npm ci
       - run: npm run build
       - run: npx biome check docs
+      - run: npm run test:unit -w vovk.dev
       # the docs import the client that examples/kitchen-sink publishes as vovk-examples
       - run: npm run generate -w vovk-examples && npm run bundle -w vovk-examples
       - run: npm run update-mdx-github-codeblocks -w vovk.dev
