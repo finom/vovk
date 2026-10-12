@@ -44,7 +44,7 @@
     "recharts": "^3.10.1",
     "tailwind-merge": "^3.7.0",
     "vovk": "^4.0.0",
-    "vovk-ajv": "^0.1.0",
+    "vovk-ajv": "^0.2.0",
     "vovk-examples": "^3.0.22",
     "zod": "^4.6.5"
   },
