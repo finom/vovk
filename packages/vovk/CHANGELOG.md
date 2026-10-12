@@ -6,6 +6,10 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## 4.0.1 - 2026-10-12
 
+### Changed
+
+- Log messages start with `[[v]]` instead of 🐺 ([#68](https://github.com/finom/vovk/pull/68))
+
 ### Fixed
 
 - A segment or root route named after an `Object.prototype` member (`__proto__`, `constructor`, `toString`) is served like any other; a `__proto__` segment no longer writes to `Object.prototype` ([#66](https://github.com/finom/vovk/pull/66))

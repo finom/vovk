@@ -19,6 +19,7 @@ import type { DevOptions, VovkEnv } from '../types.mjs';
 import { chalkHighlightThing } from '../utils/chalk-highlight-thing.mjs';
 import { debounceWithArgs } from '../utils/debounce-with-args.mjs';
 import { formatLoggedSegmentName } from '../utils/format-logged-segment-name.mjs';
+import { logPrefix } from '../utils/get-logger.mjs';
 import { locateSegments, type Segment } from '../utils/locate-segments.mjs';
 import { oneAtATime } from '../utils/one-at-a-time.mjs';
 import { toPosixPath } from '../utils/to-import-path.mjs';
@@ -681,7 +682,7 @@ if (env.__VOVK_START_WATCHER_IN_STANDALONE_MODE__ === 'true') {
     })
     // exit code 1 makes vovk dev --next-dev stop next dev and fail too
     .catch((error: unknown) => {
-      console.error(`🐺 ❌ ${error instanceof Error ? error.message : String(error)}`);
+      console.error(`${logPrefix} ❌ ${error instanceof Error ? error.message : String(error)}`);
       process.exit(1);
     });
 }

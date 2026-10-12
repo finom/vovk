@@ -132,7 +132,7 @@ export const createRPC = <T, OPTS extends Record<string, KnownAny> = VovkFetcher
   const client = {} as VovkRPCModule<T, OPTS>;
   if (!controllerSchema) {
     console.warn(
-      `🐺 Unable to create RPC module. Controller schema is missing for module "${rpcModuleName}" from segment "${segmentName}". Assuming that schema is not ready yet and a segment is importing an uncompiled RPC module.`
+      `[[v]] Unable to create RPC module. Controller schema is missing for module "${rpcModuleName}" from segment "${segmentName}". Assuming that schema is not ready yet and a segment is importing an uncompiled RPC module.`
     );
 
     controllerSchema = {

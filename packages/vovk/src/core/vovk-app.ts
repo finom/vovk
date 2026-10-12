@@ -187,7 +187,7 @@ class VovkApp {
 
     // anything but an HttpException is internal, in production its message and cause stay on the server
     if (process.env.NODE_ENV === 'production') {
-      console.error('🐺 Unhandled error in a Vovk handler:', e);
+      console.error('[[v]] Unhandled error in a Vovk handler:', e);
       return { statusCode: HttpStatus.INTERNAL_SERVER_ERROR, message: 'Internal server error' };
     }
     const { message } = (e ?? {}) as { message?: unknown };

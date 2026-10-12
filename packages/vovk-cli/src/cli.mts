@@ -8,6 +8,7 @@ import { getNextDevPort } from './dev/get-next-dev-port.mjs';
 import { isOwnSchemaFolder } from './generate/is-own-schema-folder.mjs';
 import type { BundleOptions, DevOptions, GenerateOptions, InitOptions, NewOptions, VovkEnv } from './types.mjs';
 import { getAvailablePort } from './utils/get-available-port.mjs';
+import { logPrefix } from './utils/get-logger.mjs';
 import { getCommandShell, quoteShellArgument } from './utils/quote-shell-argument.mjs';
 
 const program = new Command();
@@ -47,7 +48,7 @@ program
       : getNextDevPort(nextArgs) ||
         process.env.PORT ||
         (await getAvailablePort(3000, portAttempts, 0, (failedPort, tryingPort) =>
-          console.warn(`🐺 Port ${failedPort} is in use, trying ${tryingPort} instead.`)
+          console.warn(`${logPrefix} Port ${failedPort} is in use, trying ${tryingPort} instead.`)
         ).catch(() => {
           throw new Error(`Failed to find an available port after ${portAttempts} attempts`);
         }));
@@ -277,7 +278,7 @@ program.parseAsync(process.argv).catch((error: unknown) => {
   const logLevelFlagIndex = process.argv.indexOf('--log-level');
   const isDebug = ['debug', 'trace'].includes(process.argv[logLevelFlagIndex + 1] ?? '');
   const err = error instanceof Error ? error : new Error(String(error));
-  console.error(`🐺 ❌ ${isDebug ? (err.stack ?? err.message) : err.message}`);
+  console.error(`${logPrefix} ❌ ${isDebug ? (err.stack ?? err.message) : err.message}`);
   process.exit(1);
 });
 

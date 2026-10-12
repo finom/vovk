@@ -10,6 +10,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 - Node.js 24.15 or later: `@npmcli/package-json` 8 needs it, and the CLI checks it on start ([#65](https://github.com/finom/vovk/pull/65))
 - `vovk init --bundle` installs tsdown 0.23.0, and its `bundle.build` builds the types in a second pass, so the bundle stays one `index.js` and one `index.d.ts` ([#65](https://github.com/finom/vovk/pull/65))
+- Log messages start with `[[v]]` instead of 🐺 ([#68](https://github.com/finom/vovk/pull/68))
 
 ### Fixed
 
