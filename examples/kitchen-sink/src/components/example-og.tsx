@@ -15,11 +15,11 @@ export const constants = {
   contentType: 'image/png',
 };
 
-// Paper, ink and one vermilion, in hex: Satori takes no oklch.
-const PAPER = '#F2F0EB';
+// White, ink and one vermilion, in hex: Satori takes no oklch.
+const WHITE = '#FFFFFF';
 const INK = '#111111';
-const MUTED = '#5F5D58';
-const RULE = '#D8D4CC';
+const MUTED = '#5C5C60';
+const RULE = '#E4E4E7';
 const VERMILION = '#DD4115';
 
 export default function ExampleOg({ title }: Props) {
@@ -31,7 +31,7 @@ export default function ExampleOg({ title }: Props) {
         width: '100%',
         height: '100%',
         padding: '60px 72px',
-        background: PAPER,
+        background: WHITE,
         color: INK,
         fontFamily: 'Geist',
       }}

@@ -26,4 +26,26 @@ const VovkLogo = ({ width, className }: Props) => (
   </svg>
 );
 
+// The [[v]] mark, for a navbar too narrow for the wordmark. Same glyphs and colors.
+export const VovkMark = ({ width, className }: Props) => (
+  <svg
+    className={className}
+    xmlns="http://www.w3.org/2000/svg"
+    width={width}
+    height={(width * 940) / 2420}
+    viewBox="0 0 2420 940"
+    role="img"
+  >
+    <title>Vovk.ts</title>
+    <path
+      style={{ fill: 'var(--vovk-logo-accent)' }}
+      d="M0 940V0H305V140H150V800H305V940ZM540 940V0H845V140H690V800H845V940ZM1575 940V800H1730V140H1575V0H1880V940ZM2115 940V800H2270V140H2115V0H2420V940Z"
+    />
+    <path
+      fill="currentColor"
+      d="M1117 830 934 280H1089L1185 589Q1194 617 1201.5 647Q1209 677 1211 703Q1213 677 1220 647Q1227 617 1235 590L1329 280H1486L1305 830Z"
+    />
+  </svg>
+);
+
 export default VovkLogo;

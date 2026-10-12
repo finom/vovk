@@ -8,10 +8,10 @@ import { sectionNameOf } from '@/lib/site';
 // The Open Graph card of every page, in the [[...vovk]] style. Satori draws it: flexbox only, hex colors only.
 
 const SIZE = { width: 1200, height: 630 };
-const PAPER = '#F2F0EB';
+const WHITE = '#FFFFFF';
 const INK = '#111111';
-const MUTED = '#5F5D58';
-const RULE = '#D8D4CC';
+const MUTED = '#5C5C60';
+const RULE = '#E4E4E7';
 const VERMILION = '#DD4115';
 const PADDING_X = 72;
 
@@ -73,7 +73,7 @@ const frame = {
   display: 'flex',
   flexDirection: 'column',
   padding: `60px ${PADDING_X}px`,
-  background: PAPER,
+  background: WHITE,
   color: INK,
   fontFamily: 'Geist',
 } as const;

@@ -3,14 +3,13 @@ import { Head } from 'nextra/components';
 import { getPageMap } from 'nextra/page-map';
 import 'nextra-theme-docs/style.css';
 import '@/globals.css';
-import VovkLogo from '@/components/vovk-logo';
-import { Geist, Geist_Mono, JetBrains_Mono } from 'next/font/google';
+import VovkLogo, { VovkMark } from '@/components/vovk-logo';
+import { Geist, Geist_Mono } from 'next/font/google';
 import type { Metadata } from 'next';
 
-// Geist for text, Geist Mono for code, JetBrains Mono for the [[...]] marks. globals.css hands them to Nextra.
+// Geist for text, Geist Mono for code. globals.css hands them to Nextra.
 const fontSans = Geist({ subsets: ['latin'], variable: '--font-sans', display: 'swap' });
 const fontMono = Geist_Mono({ subsets: ['latin'], variable: '--font-mono', display: 'swap' });
-const fontMarks = JetBrains_Mono({ subsets: ['latin'], variable: '--font-marks', display: 'swap' });
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://vovk.dev'),
@@ -34,7 +33,7 @@ export const metadata: Metadata = {
       { url: '/favicon.ico', sizes: '32x32' },
       { url: '/favicon-32x32.png', sizes: '32x32', type: 'image/png' },
       { url: '/favicon-16x16.png', sizes: '16x16', type: 'image/png' },
-      // An ink tile on a light browser UI, a paper tile on a dark one; icon.svg also switches by itself.
+      // An ink tile on a light browser UI, a white tile on a dark one; icon.svg also switches by itself.
       { url: '/icon.svg', type: 'image/svg+xml', media: '(prefers-color-scheme: light)' },
       { url: '/icon-white.svg', type: 'image/svg+xml', media: '(prefers-color-scheme: dark)' },
     ],
@@ -44,7 +43,13 @@ export const metadata: Metadata = {
 
 const navbar = (
   <Navbar
-    logo={<VovkLogo width={132} />}
+    logo={
+      // Below 360px the wordmark and the icons don't fit in one row.
+      <>
+        <VovkLogo width={132} className="max-[360px]:hidden" />
+        <VovkMark width={56} className="min-[360px]:hidden" />
+      </>
+    }
     projectLink="https://github.com/finom/vovk"
     chatLink="https://discord.com/invite/qdT8WEHUuP"
     // ... Your additional navbar options
@@ -84,16 +89,16 @@ export default async function RootLayout({ children }: { children: React.ReactNo
       dir="ltr"
       // Suggested by `next-themes` package https://github.com/pacocoursey/next-themes#with-app
       suppressHydrationWarning
-      className={`${fontSans.variable} ${fontMono.variable} ${fontMarks.variable}`}
+      className={`${fontSans.variable} ${fontMono.variable}`}
     >
       <Head
-        // Vermilion links on paper and on #141412. The light one is darker than the logo's so that small text keeps 4.5:1.
+        // Vermilion links on white and on #111111. The light one is darker than the logo's so that small text keeps 4.5:1.
         color={{
           hue: { light: 13, dark: 12 },
           saturation: { light: 90, dark: 91 },
           lightness: { light: 40, dark: 60 },
         }}
-        backgroundColor={{ light: '#F2F0EB', dark: '#141412' }}
+        backgroundColor={{ light: '#FFFFFF', dark: '#111111' }}
       />
       <body>
         <Layout
