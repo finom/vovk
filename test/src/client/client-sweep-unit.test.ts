@@ -1093,16 +1093,18 @@ describe('Client sweep, pure functions', () => {
       deepStrictEqual(getDeclarationDiagnostics(source), []);
     });
 
-    it('Name the type of derived tools in declarations', () => {
+    it('Name derived tools in declarations with the standard-tool type', () => {
+      // vovk keeps its copy of StandardToolV0 private, so exported tools are annotated with the published type
       const source = [
+        "import type { StandardToolV0 } from 'standard-tool';",
         "import { deriveTools, operation, procedure, ToModelOutput } from 'vovk';",
         'class ItemController {',
         "  @operation({ summary: 'Get an item' })",
         '  static getItem = procedure().handle(async () => ({ ok: true }));',
         '}',
-        'export const tools = deriveTools({ modules: { ItemController } });',
-        'export const mcpTools = deriveTools({ modules: { ItemController }, toModelOutput: ToModelOutput.MCP });',
-        'export const typedTools = deriveTools<{ ok: boolean }>({ modules: { ItemController } });',
+        'export const tools: StandardToolV0[] = deriveTools({ modules: { ItemController } });',
+        'export const mcpTools: StandardToolV0[] = deriveTools({ modules: { ItemController }, toModelOutput: ToModelOutput.MCP });',
+        'export const typedTools: StandardToolV0[] = deriveTools<{ ok: boolean }>({ modules: { ItemController } });',
       ].join('\n');
 
       deepStrictEqual(getDeclarationDiagnostics(source), []);

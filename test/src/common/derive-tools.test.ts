@@ -97,15 +97,7 @@ describe('deriveTools', () => {
       onExecute: (result) => console.log('onExecute', result),
     });
 
-    tools satisfies StandardToolV0<
-      {
-        body?: unknown;
-        query?: unknown;
-        params?: unknown;
-      },
-      unknown,
-      unknown
-    >[];
+    tools satisfies StandardToolV0<unknown, unknown, unknown>[];
 
     const getTool = (name: string) => {
       const tool = tools.find((tool) => tool.name === name);
@@ -183,15 +175,7 @@ describe('deriveTools', () => {
       },
     });
 
-    tools satisfies StandardToolV0<
-      {
-        body?: unknown;
-        query?: unknown;
-        params?: unknown;
-      },
-      unknown,
-      { myResult?: unknown; myError?: string }
-    >[];
+    tools satisfies StandardToolV0<unknown, unknown, { myResult?: unknown; myError?: string }>[];
 
     it('Should validate input', async () => {
       const [tool] = tools;
@@ -215,15 +199,7 @@ describe('deriveTools', () => {
       },
     });
 
-    tools satisfies StandardToolV0<
-      {
-        body?: unknown;
-        query?: unknown;
-        params?: unknown;
-      },
-      unknown,
-      unknown
-    >[];
+    tools satisfies StandardToolV0<unknown, unknown, unknown>[];
 
     it('Should return tools', async () => {
       assert.equal(tools.length, 1);
@@ -255,15 +231,7 @@ describe('deriveTools', () => {
         onExecute: (result, { name }) => console.log(`${name} executed`, result),
       });
 
-      tools satisfies StandardToolV0<
-        {
-          body?: unknown;
-          query?: unknown;
-          params?: unknown;
-        },
-        unknown,
-        MCPModelOutput
-      >[];
+      tools satisfies StandardToolV0<unknown, unknown, MCPModelOutput>[];
 
       it('Should validate input', async () => {
         const [tool] = tools;
@@ -827,7 +795,7 @@ describe('deriveTools', () => {
 
   describe('Input validated with inputSchema first', () => {
     // the Vercel AI SDK validates the model's arguments with inputSchema and calls execute with the value it returns
-    const validateAndExecute = async (tool: ReturnType<typeof deriveTools>[number], input: unknown) => {
+    const validateAndExecute = async (tool: StandardToolV0, input: unknown) => {
       assert.ok(tool.inputSchema, 'expected the tool to have an inputSchema');
       const result = await tool.inputSchema['~standard'].validate(input);
       if (result.issues) throw new Error(`inputSchema refused the input: ${JSON.stringify(result.issues)}`);
@@ -927,15 +895,7 @@ describe('deriveTools', () => {
       },
     });
 
-    tools satisfies StandardToolV0<
-      {
-        body?: unknown;
-        query?: unknown;
-        params?: unknown;
-      },
-      unknown,
-      { myResult?: unknown; myError?: string }
-    >[];
+    tools satisfies StandardToolV0<unknown, unknown, { myResult?: unknown; myError?: string }>[];
 
     it('Should validate input', async () => {
       const [tool] = tools;

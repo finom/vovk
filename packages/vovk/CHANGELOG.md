@@ -8,10 +8,11 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ### Removed
 
-- The `StandardToolV0` type export: import it from [standard-tool](https://www.npmjs.com/package/standard-tool). The tools `deriveTools` returns satisfy it ([#70](https://github.com/finom/vovk/pull/70))
+- The `StandardToolV0` type export: import it from [standard-tool](https://www.npmjs.com/package/standard-tool). A package that emits declarations and exports derived tools annotates them with it ([#70](https://github.com/finom/vovk/pull/70))
 
 ### Changed
 
+- `deriveTools` returns standard-tool's `StandardToolV0` as published in 0.1.1: `execute` takes `unknown` (the model's input, which the procedure validates) and returns the formatted output or a promise of it ([#70](https://github.com/finom/vovk/pull/70))
 - The README shows setup and usage ([#70](https://github.com/finom/vovk/pull/70))
 
 ## 4.0.1 - 2026-10-12
