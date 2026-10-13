@@ -62,5 +62,5 @@ A derived tool is named `<module>_<handler>`, such as `OrderRPC_list`. Set the n
 static list = procedure({
   query: z.object({ minTotal: z.coerce.number().default(0) }),
   output: z.object({ orders: z.array(Order) }),
-}).handle(async ({ vovk }) => OrderService.list(vovk.query()));
+}).handle(({ vovk }) => OrderService.list(vovk.query()));
 ```
