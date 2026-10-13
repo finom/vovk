@@ -683,6 +683,91 @@ describe('deriveTools', () => {
     });
   });
 
+  describe('toModelOutput = ToModelOutput.RAW', () => {
+    const notFound = procedure({ operationObject: { description: 'd' } }).handle(async () =>
+      Response.json({ message: 'User not found' }, { status: 404 })
+    );
+    const throwsForbidden = procedure({ operationObject: { description: 'd' } }).handle(async () => {
+      throw new HttpException(403, 'Forbidden');
+    });
+
+    it('Returns the output as the procedure gives it', async () => {
+      const calls: string[] = [];
+      const [tool] = deriveTools({
+        meta: { inputMeta: 'hello' },
+        toModelOutput: ToModelOutput.RAW,
+        modules: { MyModule: { procedureWithBody } },
+        onExecute: (result) => calls.push(`onExecute ${JSON.stringify(result)}`),
+      });
+      assert.deepStrictEqual(await tool.execute({ body: { foo: 'foo1' } }), { foo: 'foo1', inputMeta: 'hello' });
+      assert.deepStrictEqual(calls, ['onExecute {"foo":"foo1","inputMeta":"hello"}']);
+    });
+
+    it('Throws the error of a failed call after onError', async () => {
+      const calls: string[] = [];
+      const [validationTool, statusTool, thrownTool] = deriveTools({
+        toModelOutput: ToModelOutput.RAW,
+        modules: { MyModule: { procedureWithBody, notFound, throwsForbidden } },
+        onExecute: () => calls.push('onExecute'),
+        onError: (error) => calls.push(`onError ${error.message}`),
+      });
+
+      await assert.rejects(
+        async () => validationTool.execute({ body: { foo: 'foo1long' } }),
+        (error: HttpException) => {
+          assert.ok(error instanceof HttpException);
+          assert.strictEqual(error.statusCode, 400);
+          assert.match(error.message, /^Validation failed\. Invalid body/);
+          return true;
+        }
+      );
+      await assert.rejects(async () => statusTool.execute({}), { statusCode: 404, message: 'User not found' });
+      await assert.rejects(async () => thrownTool.execute({}), { statusCode: 403, message: 'Forbidden' });
+      assert.strictEqual(calls.length, 3);
+      assert.ok(calls.every((call) => call.startsWith('onError ')));
+    });
+
+    it('Throws the error of a failed RPC call', async () => {
+      const schema = {
+        segments: {
+          '': {
+            segmentName: '',
+            segmentType: 'segment',
+            emitSchema: true,
+            controllers: {
+              UserRPC: {
+                rpcModuleName: 'UserRPC',
+                prefix: 'users',
+                handlers: {
+                  getUser: { path: '{id}', httpMethod: 'GET', operationObject: { summary: 'Get a user' } },
+                },
+              },
+            },
+          },
+        },
+      };
+      const UserRPC = (createRPC as (...args: unknown[]) => Record<string, unknown>)(schema, '', 'UserRPC');
+      const [tool] = deriveTools({ modules: { UserRPC }, toModelOutput: ToModelOutput.RAW });
+      const original = globalThis.fetch;
+      globalThis.fetch = (async (url: string) =>
+        url.endsWith('/users/1')
+          ? Response.json({ id: 1 })
+          : Response.json(
+              { statusCode: 404, message: 'User not found', isError: true },
+              { status: 404 }
+            )) as typeof fetch;
+      try {
+        assert.deepStrictEqual(await tool.execute({ params: { id: '1' } }), { id: 1 });
+        await assert.rejects(async () => tool.execute({ params: { id: '2' } }), {
+          statusCode: 404,
+          message: 'User not found',
+        });
+      } finally {
+        globalThis.fetch = original;
+      }
+    });
+  });
+
   describe('JSONLinesResponder results', () => {
     const returnsResponder = procedure({ operationObject: { description: 'd' } }).handle(async (req) => {
       const responder = new JSONLinesResponder<{ n: number }>(req);

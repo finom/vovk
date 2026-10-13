@@ -1,4 +1,4 @@
-import { deepStrictEqual, strictEqual } from 'node:assert';
+import { deepStrictEqual, ok, strictEqual } from 'node:assert';
 import { afterEach, beforeEach, describe, it, mock } from 'node:test';
 import type { StandardToolV0 } from 'standard-tool';
 import { deriveTools, HttpException, HttpStatus, procedure, ToModelOutput } from 'vovk';
@@ -110,5 +110,46 @@ describe('ToModelOutput error messages in production', () => {
     env.NODE_ENV = 'development';
     deepStrictEqual(await ToModelOutput.DEFAULT(internal, tool, null), { error: internal.message });
     strictEqual(consoleError.mock.callCount(), 0);
+  });
+
+  it('Hides the message of an internal error from the RAW output', async () => {
+    const output = await ToModelOutput.RAW(internal, tool, null);
+    ok(output instanceof HttpException);
+    strictEqual(output.statusCode, HttpStatus.INTERNAL_SERVER_ERROR);
+    strictEqual(output.message, 'Internal server error');
+    strictEqual(consoleError.mock.callCount(), 1, 'the error is logged on the server');
+  });
+
+  it('Gives an HttpException back as it is from the RAW output', async () => {
+    strictEqual(await ToModelOutput.RAW(expected, tool, null), expected);
+    strictEqual(consoleError.mock.callCount(), 0);
+  });
+
+  it('Gives an internal error back as it is from the RAW output outside production', async () => {
+    env.NODE_ENV = 'development';
+    strictEqual(await ToModelOutput.RAW(internal, tool, null), internal);
+  });
+});
+
+describe('ToModelOutput.RAW output', () => {
+  it('Gives a value back as it is', async () => {
+    const value = { orders: [{ id: 1 }] };
+    strictEqual(await ToModelOutput.RAW(value, tool, null), value);
+    strictEqual(await ToModelOutput.RAW(undefined, tool, null), undefined);
+  });
+
+  it('Reads the body of a JSON response', async () => {
+    deepStrictEqual(await ToModelOutput.RAW(Response.json({ id: 1 }), tool, null), { id: 1 });
+  });
+
+  it('Gives an error status back as an HttpException with its status and message', async () => {
+    const output = await ToModelOutput.RAW(
+      Response.json({ message: 'Thing 1 is not found' }, { status: 404 }),
+      tool,
+      null
+    );
+    ok(output instanceof HttpException);
+    strictEqual(output.statusCode, HttpStatus.NOT_FOUND);
+    strictEqual(output.message, 'Thing 1 is not found');
   });
 });

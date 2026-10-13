@@ -16,7 +16,7 @@ const toBase64 = (buf: ArrayBuffer) =>
     : btoa([...new Uint8Array(buf)].map((b) => String.fromCharCode(b)).join(''));
 
 // a Response has no enumerable keys, so handing it to an SDK would serialize it as {} and leave the body unread
-async function responseToData(res: Response): Promise<unknown> {
+export async function responseToData(res: Response): Promise<unknown> {
   const mimeType = res.headers.get('Content-Type')?.split(';')[0].trim() || '';
 
   if (mimeType === 'application/json' || mimeType.endsWith('+json')) {

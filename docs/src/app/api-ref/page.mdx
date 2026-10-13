@@ -319,7 +319,7 @@ Options:
 - `modules: Record<string, object>{:ts}` – module names mapped to objects with methods. Each method needs the `schema` property that RPC methods and procedures have, and either `isRPC: true` (RPC modules) or the [fn](/fn) function (controllers).
 - `onExecute?: (result: unknown, tool: StandardToolV0, req: Pick<VovkRequest, 'vovk'> | null) => void{:ts}` – called after each successful tool call. For a controller, `req` is the request of the call, with `req.vovk`; for an RPC method, it's `null`.
 - `onError?: (e: Error, tool: StandardToolV0, req: Pick<VovkRequest, 'vovk'> | null) => void{:ts}` – called when a tool call throws, or when a controller returns a `Response` with an error status. `req` is as in `onExecute`, or `null` for a thrown error.
-- `toModelOutput` – formats the tool result for the model.
+- `toModelOutput` – formats the tool result for the model. A formatter that returns an `Error` for a failed call makes the tool throw it.
 - `meta?: Record<string, any>{:ts}` – data passed to each call of a controller handler or RPC method; see [`req.vovk.meta()`](/req-vovk#meta).
 
 ```ts showLineNumbers copy
@@ -347,6 +347,7 @@ Built-in `toModelOutput` formatters for `deriveTools`. They shape tool results f
 
 - `ToModelOutput.DEFAULT` — the default, used when `toModelOutput` isn't set.
 - `ToModelOutput.MCP` — formats the output in the MCP tool output shape: text, JSON, image or audio. See [tools](/tools) for details and examples.
+- `ToModelOutput.RAW` — the result as the procedure gives it; a failed call throws its error, after `onError`. See [Using with uicast](/uicast).
 
 ### `createValidateOnClient`
 
