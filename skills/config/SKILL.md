@@ -118,12 +118,3 @@ Vovk's decorators (`@get`, `@post`, `@prefix`, `@operation`, ...) are the only w
 ```
 
 A webpack build needs it: without it `next build --webpack` fails, and webpack is Next.js 15's default build. Turbopack (Next.js 16's default) compiles vovk's decorators with or without it; TypeScript 5.0+ type-checks them either way.
-
-## Out of scope
-
-- Authoring HTTP decorators (`@get` etc.), custom decorators, auth patterns → **`decorators`** skill.
-- `vovk bundle` CLI flow, tsdown recipe, publishing → **`bundle`** skill.
-- Composed vs segmented client *consumption* (call shape, types, fetcher) → **`rpc`** skill.
-- Procedure authoring, validation, `.fn()` → **`procedure`** skill.
-- Multitenant routing config → **`multitenant`** skill.
-- OpenAPI generation → **`openapi`** skill.

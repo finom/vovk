@@ -1,6 +1,6 @@
 ---
 name: procedure
-description: Vovk.ts procedures — atomic unit of server-side logic in Vovk project. Use whenever user asks to build ANYTHING producing or consuming data on server — page loading data ("users page", "dashboard", "product list"), endpoint, API handler, server action, form submission, controller, validation with Zod / Valibot / ArkType, request/response shape, file upload, file download, error handling (`HttpException`, status codes), content types (JSON, multipart, text, binary), or calling server code from React Server Component / SSR / SSG / PPR / server action. Triggers on phrasings like "build a users page", "add an endpoint", "create a form handler", "fetch X from the server", "handle file upload", "validate input", "throw a 404", "server action for Y", "controller for Z", "add `req.body` parsing", ".fn()", "CORS". Does NOT cover segments / `route.ts` / `initSegment` → hand off to `segment` skill. Does NOT cover RPC client generation, fetcher, `@/client` imports → hand off to `rpc` skill. Does NOT cover custom decorators, `createDecorator`, authorization / auth guards → hand off to `decorators` skill. Does NOT cover `deriveTools` / MCP / AI tool wiring → hand off to `tools` skill. Does NOT cover JSON Lines streaming / generators / `JSONLinesResponder` → hand off to `jsonlines` skill. Does NOT cover `@operation` metadata / Scalar docs → hand off to `openapi` skill.
+description: Vovk.ts procedures in depth (`base` already has a complete endpoint, validation, errors and status codes) — atomic unit of server-side logic in Vovk project. Use whenever user asks to build ANYTHING producing or consuming data on server — page loading data ("users page", "dashboard", "product list"), endpoint, API handler, server action, form submission, controller, validation with Zod / Valibot / ArkType, request/response shape, file upload, file download, error handling (`HttpException`, status codes), content types (JSON, multipart, text, binary), or calling server code from React Server Component / SSR / SSG / PPR / server action. Triggers on phrasings like "build a users page", "add an endpoint", "create a form handler", "fetch X from the server", "handle file upload", "validate input", "throw a 404", "server action for Y", "controller for Z", "add `req.body` parsing", ".fn()", "CORS". Does NOT cover segments / `route.ts` / `initSegment` → hand off to `segment` skill. Does NOT cover RPC client generation, fetcher, `@/client` imports → hand off to `rpc` skill. Does NOT cover custom decorators, `createDecorator`, authorization / auth guards → hand off to `decorators` skill. Does NOT cover `deriveTools` / MCP / AI tool wiring → hand off to `tools` skill. Does NOT cover JSON Lines streaming / generators / `JSONLinesResponder` → hand off to `jsonlines` skill. Does NOT cover `@operation` metadata / Scalar docs → hand off to `openapi` skill.
 ---
 
 # Vovk.ts procedures
@@ -13,12 +13,6 @@ description: Vovk.ts procedures — atomic unit of server-side logic in Vovk pro
 - **HTTP decorator (`@get`, `@post`, `@put`, `@patch`, `@del`) OPTIONAL.** Add only when exposing procedure as HTTP endpoint (also makes callable via generated RPC client from browser).
 
 Opposite of most frameworks: procedures first, HTTP opt-in.
-
-## Scope
-
-Covers procedure authoring end-to-end: `procedure({...}).handle(...)` options, validation with Zod/Valibot/ArkType (+ `vovk-ajv` client-side), controller classes and HTTP decorators (`@prefix`, `@get/@post/@put/@patch/@del`, `.auto()`), `req.vovk` + `VovkRequest`, error handling (`HttpException` / `HttpStatus`), content types (JSON, multipart, URL-encoded, text, binary, downloads), response headers + CORS, `.fn()` for server components / SSR / server actions, `vovk new controller service` CLI.
-
-Out of scope (→ skill): segment setup / `initSegment` / `route.ts` → `segment`. RPC client generation / `@/client` → `rpc`. Custom decorators / `createDecorator` / auth guards → `decorators`. AI tools (`deriveTools`) → `tools`. Generator handlers / streaming → `jsonlines`. `@operation` / Scalar docs → `openapi`. Inference helpers against RPC modules → `rpc`.
 
 ## Procedure, minimally
 
@@ -226,7 +220,7 @@ Route string framework builds:
 /{rootEntry}/{segmentName}/{controllerPrefix}/{methodPath}
 ```
 
-Empty parts dropped, joined with `/` (verified in `packages/vovk/src/openapi/vovk-schema-to-openapi.ts:162`). So:
+Empty parts dropped, joined with `/`. So:
 
 | `rootEntry` | segment | `@prefix` | method | URL |
 |---|---|---|---|---|
@@ -389,28 +383,11 @@ Accepts `Blob | File | ArrayBuffer | Uint8Array | ReadableStream<Uint8Array> | s
 
 ## Error handling
 
-Throw `HttpException` for controlled failures:
-
-```ts
-import { HttpException, HttpStatus } from 'vovk';
-
-static getUser = procedure({ /* ... */ }).handle(async (_req, { id }) => {
-  const user = await UserService.byId(id);
-  if (!user) {
-    throw new HttpException(HttpStatus.NOT_FOUND, 'User not found', { id });
-  }
-  return user;
-});
-```
-
-- Bare `Error` instances → HTTP 500, message stripped in production.
-- On RPC client, `HttpException` re-thrown with same status/message/cause — `try/catch` works identically both sides.
-
-Common statuses from `HttpStatus`: `OK` (200), `CREATED` (201), `NO_CONTENT` (204), `BAD_REQUEST` (400), `UNAUTHORIZED` (401), `FORBIDDEN` (403), `NOT_FOUND` (404), `CONFLICT` (409), `UNPROCESSABLE_ENTITY` (422), `INTERNAL_SERVER_ERROR` (500).
+`throw new HttpException(HttpStatus.NOT_FOUND, 'User not found', { id })`. The error body, what vovk answers by itself (validation, invalid JSON, 415, 404, 405, 500), a status other than 200 and a custom error format → **`base`** skill.
 
 ## Response headers (dynamic)
 
-Static headers go on decorator (`@get('x', { headers: {...} })`). For dynamic:
+Static headers go on decorator (`@get('x', { headers: {...} })`). For dynamic, return a `Response` (without an `output` schema: the output check would fail on it, see **`base`**):
 
 ```ts
 import { NextResponse } from 'next/server';
@@ -498,6 +475,5 @@ HTML ships with data inline; browser never talks to server.
 - **`req.vovk.body()` async; `.query()` and `.params()` sync.** Easy to mix up.
 - **`req.url` is `undefined` in `.fn()` context.** Any decorator checking URL must guard.
 - **Zod default = `vovk init`'s choice** — if user chose Valibot/ArkType, match their choice when adding schemas.
-- **CORS on decorator = preflight handling only.** Doesn't whitelist origins — configure at Next.js / platform layer.
 - **`procedure().handle()` = the shape.** Don't confuse with `procedure(...).handle(...)` mid-chain — options go in `procedure(...)`, handler in `.handle(...)`.
 - **Never pass `req` to service.** Procedures pre-calculate (`vovk.body()`, `vovk.meta()`, `next/headers`) and hand service plain typed values — see "Controller / procedure / service — split of responsibilities" above.

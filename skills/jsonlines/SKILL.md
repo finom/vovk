@@ -12,25 +12,6 @@ Two authoring styles:
 - **Generator handlers** — `function*` / `async function*` with `yield`. Common case.
 - **`JSONLinesResponder`** — low-level manual `send` / `close` / `throw`. For orchestration, fan-in, or when stream shape doesn't fit a generator.
 
-## Scope
-
-Covers:
-
-- Generator handler syntax (`function*`, `async function*`, `yield*`).
-- `procedure({ iteration, validateEachIteration })` for per-item schema validation.
-- `JSONLinesResponder` class — `send`, `close`, `throw`, properties.
-- Client consumption — `for await`, `using`, `asPromise`, `onIterate`, `abortController`, `abortSilently`.
-- `progressive()` for multi-shape progressive responses.
-- `VovkIteration` + `VovkYieldType` type helpers.
-- `Accept: application/jsonl` behavior.
-- Real-world patterns (OpenAI chat streaming, polling, multi-promise fan-in).
-
-Out of scope:
-
-- Non-streaming procedures → **`procedure` skill**.
-- Client generation / `@/client` setup → **`rpc` skill**.
-- Generator basics (JS language) — assume reader knows them.
-
 ## Generator handler
 
 Simplest streaming handler: `async function*` yielding objects. Each yield → one JSON line on wire.

@@ -23,29 +23,6 @@ await UserRPC.getUser({ params: { id: '42' } });
 
 Not `UserControllerRPC`. Not `UserController`. Whatever the key is.
 
-## Scope
-
-Covers:
-
-- `vovk generate` — when to run, what it produces.
-- Composed vs segmented clients (`composedClient` / `segmentedClient` config).
-- RPC method call shape.
-- Fetcher customization via `createFetcher` + `outputConfig.imports.fetcher`, plus dynamically registered `onSuccess` / `onError` subscribers.
-- Client-side validation (`vovk-ajv` integration, custom via `createValidateOnClient`).
-- Error rethrow (`HttpException`, status/message/cause, `HttpStatus.NULL`).
-- RPC method surface (`.withDefaults`, `.getURL`, `.queryKey`, `.schema`, `.controllerSchema`, `.segmentSchema`, `.fullSchema`, `.isRPC`).
-- React Query / TanStack Query integration.
-- `openapi` and `schema` payload imports.
-- Cancellation — what's supported, what isn't.
-
-Out of scope:
-
-- Segment registration → **`segment` skill**.
-- Procedure / handler / validation authoring → **`procedure` skill**.
-- Streaming clients (async iteration, `progressive()`) → **`jsonlines` skill**.
-- Python / Rust clients → **`python` / `rust` skills**.
-- `@operation` metadata for OpenAPI → **`openapi` skill**.
-
 ## Generating client
 
 ```bash
@@ -64,12 +41,12 @@ See "Client layout and import paths" below.
 
 **`vovk generate` does NOT rebuild schemas from controller source.** Schema emission = separate step: `vovk dev` runs alongside Next.js dev server, hits each segment's `_schema_` endpoint (only available when `NODE_ENV === 'development'`), writes JSON into `.vovk-schema/`. `vovk generate` reads whatever's there.
 
-Consequence: if backend changed and client looks stale, running `vovk generate` alone isn't enough — `.vovk-schema/` hasn't been refreshed. Run `npm run dev` (starts `vovk dev` alongside `next dev` via `concurrently`) to re-emit schemas, then client regenerates from them.
+Consequence: if backend changed and client looks stale, running `vovk generate` alone isn't enough — `.vovk-schema/` hasn't been refreshed. One shot: `PORT=<port> npx vovk dev --next-dev --exit` starts Next.js, writes `.vovk-schema/` and the client, stops, and exits with 1 on failure. While developing, `npm run dev` keeps both fresh.
 
 When to run:
 
 - **Automatic**: `prebuild` script installed by `vovk init` runs `vovk generate` before `next build`. During `npm run dev`, dev watcher refreshes `.vovk-schema/` on backend changes, client regenerates.
-- **Explicit**: before integration tests, after checking out branch, if client method appears missing ("compiled fine, why is `UserRPC.createUser` undefined?"). If method just written is missing, schema probably stale — restart `npm run dev` rather than re-running `vovk generate`.
+- **Explicit**: before integration tests, after checking out branch, if client method appears missing ("compiled fine, why is `UserRPC.createUser` undefined?"). If method just written is missing, schema probably stale — run `vovk dev --next-dev --exit` (or restart `npm run dev`) rather than re-running `vovk generate`.
 
 ## Call shape
 
@@ -127,7 +104,7 @@ In browser, relative `/api` resolves against page origin, so same call works fro
 
 `RequestInit` forwarded to `fetch` — `headers`, `credentials`, `mode`, `cache`, Next.js-specific `next: { revalidate: number }` all pass through.
 
-**`init.signal` aborts the call.** The fetcher ties it to its own per-call `AbortController` (`packages/vovk/src/client/fetcher.ts:212-215`; without `AbortSignal.any`, as in React Native and Safari before 17.4, the signal aborts that controller). A pending JSON call rejects with the signal's reason as is (an `AbortError` when `abort()` gets no reason); a stream stops with an error whose `cause` is the reason. A streaming call's async iterable also exposes `.abortController` (and `abortSilently()`) to stop that one stream.
+**`init.signal` aborts the call.** The fetcher ties it to its own per-call `AbortController` (without `AbortSignal.any`, as in React Native and Safari before 17.4, the signal aborts that controller). A pending JSON call rejects with the signal's reason as is (an `AbortError` when `abort()` gets no reason); a stream stops with an error whose `cause` is the reason. A streaming call's async iterable also exposes `.abortController` (and `abortSilently()`) to stop that one stream.
 
 ### `transform`
 
@@ -190,16 +167,7 @@ import { UserRPC } from '@/client/customer';
 import { AdminRPC } from '@/client/admin';
 ```
 
-### Client layout and import paths
-
-| Client | Location | Import from |
-|--------|----------|-------------|
-| Composed (default) | `outDir` root (default `./src/client`, or `./client` when the app isn't in `src/app`) | `'@/client'` |
-| Segmented | `<outDir>/<segment>` subdirs | `'@/client/<segment>'` |
-
-`@/client` is the standard Next.js `@/*` alias. Custom `outDir` shifts the path; projects without the alias use a relative import. Both layouts work with any package manager, pnpm included.
-
-Step-by-step setup → **`init` skill**.
+`@/client` is the standard Next.js `@/*` alias. Custom `outDir` shifts the path; projects without the alias use a relative import. Step-by-step setup → **`init` skill**.
 
 ## Fetcher
 
@@ -371,29 +339,7 @@ Bare `Error` on server → `HttpException` with status 500 on client. Network fa
 
 ## Types against RPC modules
 
-Same inference helpers as controller-side (from `vovk`):
-
-```ts
-import type {
-  VovkBody,
-  VovkQuery,
-  VovkParams,
-  VovkInput,        // { params, query, body }
-  VovkOutput,
-  VovkIteration,    // per-chunk type for JSON Lines streams (see `jsonlines` skill)
-  VovkYieldType,    // actual yielded type even when input isn't validated
-  VovkReturnType,   // actual return type even when input isn't validated
-} from 'vovk';
-import { UserRPC } from '@/client';
-
-type Body   = VovkBody<typeof UserRPC.updateUser>;
-type Query  = VovkQuery<typeof UserRPC.updateUser>;
-type Params = VovkParams<typeof UserRPC.updateUser>;
-type In     = VovkInput<typeof UserRPC.updateUser>;
-type Out    = VovkOutput<typeof UserRPC.updateUser>;
-```
-
-All work identically against controller methods, RPC modules, imported mixin modules. `VovkYieldType` / `VovkReturnType` exist for cases where validation hasn't been declared on method (can't be used for self-references in services without triggering "implicit any" TypeScript errors).
+`VovkBody`, `VovkQuery`, `VovkParams`, `VovkInput`, `VovkOutput`, `VovkIteration`, `VovkYieldType`, `VovkReturnType` (from `vovk`) work on RPC methods as on controller methods: `type Out = VovkOutput<typeof UserRPC.updateUser>`. Details → **`procedure`** skill, Type inference.
 
 ## RPC method surface
 
@@ -477,7 +423,7 @@ useEffect(() => { UserRPC.list().then(setUsers); }, []);
 
 **"Add auth header to every RPC call"** — `createFetcher({ prepareRequestInit })`, point `outputConfig.imports.fetcher` at it. Don't hand-roll per-call.
 
-**"My new procedure isn't on client"** — restart `npm run dev` to re-emit `.vovk-schema/`. Still missing → check controller is registered in `initSegment({ controllers })` and method has HTTP decorator.
+**"My new procedure isn't on client"** — `PORT=<port> npx vovk dev --next-dev --exit` (or restart `npm run dev`) to re-emit `.vovk-schema/`. Still missing → check controller is registered in `initSegment({ controllers })` and method has HTTP decorator.
 
 **"Call API from another Node process"** — pass full URL: `UserRPC.list({ apiRoot: 'https://api.example.com/api' })`, or bake via `UserRPC.withDefaults({ apiRoot })`.
 
@@ -486,7 +432,7 @@ useEffect(() => { UserRPC.list().then(setUsers); }, []);
 ## Gotchas
 
 - **Import name mismatch**: `UserRPC` (the `controllers` key), not `UserControllerRPC`. Most common "I can't import my RPC module" cause.
-- **Stale client**: `vovk generate` regenerates from `.vovk-schema/`, only refreshed by running dev server. If user edited controller and ran `vovk generate` directly, output stale. Fix: `npm run dev` to re-emit schemas, then regenerate.
+- **Stale client**: `vovk generate` regenerates from `.vovk-schema/`, only refreshed by running dev server. If user edited controller and ran `vovk generate` directly, output stale. Fix: `vovk dev --next-dev --exit` (above).
 - **No HTTP decorator = no RPC**. Procedure without `@get`/`@post`/etc. is call-via-`.fn()` only; won't appear on client.
 - **Baked-in `apiRoot` defaults to `/api`** (`rootEntry: 'api'` with no `origin`). Works in browser (resolves against page origin), fails outside (Node, integration tests). Pass full URL per call, bake one in via `outputConfig.origin`, or use `withDefaults({ apiRoot })`.
 - **Fetcher path changes need regeneration**. Editing fetcher file fine; changing its path in `outputConfig.imports.fetcher` requires `vovk generate` (or dev-watcher restart).

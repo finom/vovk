@@ -7,25 +7,6 @@ description: Vovk.ts OpenAPI generation — how the OpenAPI 3.x spec is derived 
 
 OpenAPI 3.x spec is byproduct of code you already write. Procedures + validation schemas + `@operation` metadata → spec. No separate doc authoring.
 
-## Scope
-
-Covers:
-
-- What gets mapped to what (schemas → OpenAPI fields).
-- `@operation({...})` — summary, description, tags, security, deprecated, any OpenAPI 3.1 `OperationObject` field.
-- `@operation.error(status, message)` — document known error responses.
-- `@operation.tool({...})` — AI-tool metadata (`x-tool`). Read by `deriveTools`; full usage in **`tools` skill**.
-- Global OpenAPI object (`outputConfig.openAPIObject`).
-- Per-segment overrides (`outputConfig.segments.<name>.openAPIObject`).
-- Accessing the spec: `import { openapi } from '@/client/openapi'`.
-- Serving spec JSON from controller so any OpenAPI viewer (Scalar, Redoc, Swagger UI) can point at it.
-
-Out of scope:
-
-- Writing procedures / schemas → **`procedure` skill**.
-- `deriveTools()` / standalone tools / MCP wiring → **`tools` skill**.
-- Third-party OpenAPI codegen → **`mixins` skill**.
-
 ## How procedures map to OpenAPI
 
 | Procedure field | OpenAPI output |
@@ -33,7 +14,7 @@ Out of scope:
 | `params` schema | `parameters` with `in: 'path'` |
 | `query` schema | `parameters` with `in: 'query'` |
 | `body` schema | `requestBody` (content type from `contentType`, default `application/json`) |
-| `output` schema | `responses.200` with `application/json` |
+| `output` schema | `responses.200` with `application/json`; other statuses via `@operation({ responses: { 201: … } })`, merged over it |
 | `iteration` schema | `responses.200` with `application/jsonl` |
 | `@operation` fields | operation-level metadata (`summary`, `description`, `tags`, etc.) |
 
@@ -256,17 +237,7 @@ All three need just spec JSON — endpoint above is the integration point. Check
 
 ## Schema artifacts
 
-Each segment emits one JSON file to `.vovk-schema/`:
-
-```
-.vovk-schema/
-  root.json
-  admin.json
-  foo/bar.json
-  _meta.json
-```
-
-`vovk dev` writes these (it reads each segment's `_schema_` endpoint); `vovk generate` and `vovk bundle` read them, as do the client, OpenAPI and AI tool pipelines. **Commit `.vovk-schema/`** so builds are reproducible.
+`vovk dev` writes `.vovk-schema/` (one JSON file per segment, plus `_meta.json`); `vovk generate`, `vovk bundle`, the client, the OpenAPI document and AI tools read it. Commit it.
 
 ## Flows
 
@@ -335,7 +306,7 @@ static createUser = procedure({ body: /* ... */ }).handle(async (req) => {
 
 - **A procedure without an operation decorator is left out**: no spec entry and no derived tool. `@operation({})` is enough to include it.
 - **`@operation.error` message strings are identity-linked to `HttpException`**: decorator pins response's `message` to `enum` of declared values. If runtime throws different message string, docs will be accurate about status code but wrong about message. Keep them in sync, or parameterize via shared constant.
-- **Regeneration required**: after changing `@operation*` decorators, run `vovk dev` (it rewrites `.vovk-schema/` and the client); `vovk generate` alone reads the committed `.vovk-schema/` and doesn't see decorator changes. A `vovk.config.mjs` change such as `outputConfig.openAPIObject` needs only `vovk generate`.
+- **Regeneration required**: after changing `@operation*` decorators, run `PORT=<port> npx vovk dev --next-dev --exit` (it rewrites `.vovk-schema/` and the client, then exits); `vovk generate` alone reads the committed `.vovk-schema/` and doesn't see decorator changes. A `vovk.config.mjs` change such as `outputConfig.openAPIObject` needs only `vovk generate`.
 - **`x-tool` doesn't affect OpenAPI semantics** — consumed only by `deriveTools`. Safe to include; `x-` fields are standard OpenAPI extension mechanism, though some strict linters still warn.
 - **Segment key vs. path**: `outputConfig.segments.admin` matches `segmentName: 'admin'` — not folder path and not class name.
 - **Content type is respected**: procedures with `contentType: 'multipart/form-data'` appear in spec with correct request-body encoding. Don't hand-patch generated spec.

@@ -7,7 +7,7 @@ description: Vovk.ts OpenAPI mixins — importing third-party OpenAPI 3.x schema
 
 Mixins turn any OpenAPI 3.x spec into typed client module behaving exactly like native Vovk RPC module — same `{ params, query, body }` call shape, same client surface, same type-inference helpers (`VovkBody`, `VovkOutput`, …). Can run mixins standalone (no Next.js) as pure codegen tool.
 
-**LLM tool exposure works out of the box.** Pass mixin modules straight to `deriveTools` — for function calling *and* for MCP. Each derived tool gets a merged `inputSchema` that is both a Standard Schema and a Standard JSON Schema, rebuilt from the mixin's OpenAPI-derived JSON Schema (`jsonSchemasObjectToSingleJSONSchemaOnlySpec` in `packages/vovk/src/validation/json-schema-only-spec.ts`, selected in `packages/vovk/src/tools/derive-tools.ts` when a handler has no `definition`).
+**LLM tool exposure works out of the box.** Pass mixin modules straight to `deriveTools` — for function calling *and* for MCP. Each derived tool gets a merged `inputSchema` that is both a Standard Schema and a Standard JSON Schema, rebuilt from the mixin's OpenAPI-derived JSON Schema.
 
 The one real difference from a procedure-backed controller: that schema's `validate` checks the `{ body, query, params }` **envelope only** — required slots present, no unknown keys — and defers slot values to execution time, where the generated client's AJV validation and the remote API enforce them. Controllers validate values up front because they carry your original Zod / Valibot / ArkType schemas.
 
@@ -24,26 +24,6 @@ Mixins right tool when:
 - **Spec-as-source-of-truth** — internal microservices where OpenAPI doc is generated and you want client drift to surface as TypeScript error at build time.
 
 For everything else (Stripe charges, S3 uploads, Octokit pagination), reach for official package.
-
-## Scope
-
-Covers:
-
-- Declaring mixins under `outputConfig.segments.<name>.openAPIMixin`.
-- `source` variants: remote URL (with fallback), local file, inline object.
-- `getModuleName` / `getMethodName` — preset strategies + function form.
-- `apiRoot` + authorization via `withDefaults`.
-- Per-mixin fetcher + AJV options.
-- `Mixins` namespace for `components/schemas` types.
-- Composed vs segmented output (pointer to **`rpc`** skill).
-- LLM tool exposure: `deriveTools` direct, for function-calling and MCP alike (pointer to **`tools`** skill).
-
-Out of scope:
-
-- Authoring own procedures → **`procedure`** skill.
-- RPC client call shape, `createFetcher`, per-call `init` → **`rpc`** skill.
-- AI tool derivation details → **`tools`** skill.
-- Writing OpenAPI specs by hand — this skill consumes them.
 
 ## Declaring a mixin
 

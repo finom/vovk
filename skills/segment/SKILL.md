@@ -1,6 +1,6 @@
 ---
 name: segment
-description: "Vovk.ts segments — the unit of backend slicing in a Vovk project. Use whenever the user talks about splitting a backend into parts, API paths, catch-all routes, `route.ts`, `initSegment`, per-segment runtime/maxDuration, static APIs (OpenAPI specs, historical datasets), static export (`output: 'export'`), `generateStaticParams`, or the `vovk new segment` CLI. Triggers on phrasings like \"split my backend\", \"add an API slice\", \"make a static OpenAPI endpoint\", \"separate admin API\", \"pre-render API at build time\", \"I need a `/api/foo` namespace\", \"add a root/named/static segment\". Does NOT cover procedures/handlers themselves — hand off to the `procedure` skill for anything inside a controller. Does NOT cover OpenAPI authoring beyond wiring per-segment `openAPIObject` — hand off to the `openapi` skill. Does NOT cover multi-tenant routing mechanics (subdomains, `multitenant()` proxy, per-tenant frontend pages) — hand off to the `multitenant` skill."
+description: "Vovk.ts segments in depth (`base` already covers the one root segment and its `route.ts`) — the unit of backend slicing in a Vovk project. Use whenever the user talks about splitting a backend into parts, API paths, catch-all routes, `route.ts`, `initSegment`, per-segment runtime/maxDuration, static APIs (OpenAPI specs, historical datasets), static export (`output: 'export'`), `generateStaticParams`, or the `vovk new segment` CLI. Triggers on phrasings like \"split my backend\", \"add an API slice\", \"make a static OpenAPI endpoint\", \"separate admin API\", \"pre-render API at build time\", \"I need a `/api/foo` namespace\", \"add a root/named/static segment\". Does NOT cover procedures/handlers themselves — hand off to the `procedure` skill for anything inside a controller. Does NOT cover OpenAPI authoring beyond wiring per-segment `openAPIObject` — hand off to the `openapi` skill. Does NOT cover multi-tenant routing mechanics (subdomains, `multitenant()` proxy, per-tenant frontend pages) — hand off to the `multitenant` skill."
 ---
 
 # Vovk.ts segments
@@ -8,26 +8,6 @@ description: "Vovk.ts segments — the unit of backend slicing in a Vovk project
 A segment is a **backend slice**. Owns API path prefix (`/api`, `/api/admin`, `/api/openapi`, etc.), set of controllers, own Next.js route-handler file. Each segment compiles to independent serverless function, so runtime settings (`runtime`, `maxDuration`, etc.) can differ per segment.
 
 Think: "one segment = one mini-backend."
-
-## Scope of this skill
-
-Covers:
-
-- What a segment is, when to create one, how to pick between root / named / static.
-- `vovk new segment` CLI.
-- `initSegment()` call shape and parameters.
-- Segment priority (deepest path wins).
-- Static segments: `generateStaticParams`, `controllersToStaticParams`, `staticParams` option on decorators, `output: 'export'`, `.json` endpoints.
-- Per-segment config in `vovk.config.mjs` (`outputConfig.segments.<name>`).
-- `_schema_` dev endpoint (mention only — see `base` skill for details).
-
-Out of scope (do not duplicate):
-
-- Writing handlers / `procedure()` / validation / `.fn()` / `req.vovk` / decorators → **`procedure` skill**.
-- RPC client generation, composed vs. segmented clients → **`rpc` skill**.
-- OpenAPI metadata (`@operation`, Scalar) beyond segment-level `openAPIObject` → **`openapi` skill**.
-- `vovk.config.mjs` global options → **`config` skill**. API surface + type inference helpers (`VovkBody`, `VovkOutput`, etc.) → **`base` skill** (registry) and **`procedure`** / **`rpc`** skills (usage).
-- Multi-tenant routing (subdomains, `multitenant()` proxy, per-tenant frontend pages, `segmentNameOverride`) → **`multitenant` skill**. This skill only mentions segment side in passing.
 
 ## Core concepts
 
@@ -77,7 +57,7 @@ export const { GET, POST, PATCH, PUT, HEAD, OPTIONS, DELETE } = initSegment({
 | `segmentName` | no | `""` (root) | Identifier; must mirror folder path for named segments (e.g., `"foo/bar"`). |
 | `emitSchema` | no | `true` | Emit schema for codegen. Leave on unless you know why. |
 | `exposeValidation` | no | `true` | Expose validation data to client. Leave on for client-side validation. |
-| `onError` | no | — | `(err: Error, req: VovkRequest) => void \| Promise<void>` — for logging/metrics. `VovkRequest` extends `NextRequest`; `err` is whatever the handler threw (often `HttpException`). |
+| `onError` | no | — | `(err: Error, req: VovkRequest) => void \| Promise<void>` — for logging/metrics; it can't change the response (a custom error format → **`base`**). `err` is whatever the handler threw (often `HttpException`). |
 | `onSuccess` | no | — | `(resp: unknown, req: VovkRequest) => void \| Promise<void>` — fires after successful response. Use for metrics, audit logs. |
 | `onBefore` | no | — | `(req: VovkRequest) => void \| Promise<void>` — fires before handler runs. Use for tracing, request enrichment. |
 
@@ -239,9 +219,7 @@ const resp = await StaticParamsRPC.getStaticParams({
 
 ## Multi-tenant routing
 
-One named segment per tenant, plus Next.js proxy (`proxy.ts`) mapping subdomains to tenant segments via `multitenant()` helper from `vovk`, lets one app serve `admin.example.com`, `customer.example.com`, `*.customer.example.com`, etc.
-
-This skill covers only **segment side** (use `vovk new segment <tenant>` as usual). For proxy wiring, `overrides` shape, `segmentNameOverride` in `vovk.config.mjs`, per-tenant frontend pages, and DNS, **hand off to the `multitenant` skill**.
+One named segment per tenant plus a `proxy.ts` with `multitenant()` serves `admin.example.com`, `customer.example.com`, … from one app. This skill creates the segments; everything else → **`multitenant` skill**.
 
 ## Per-segment configuration
 
@@ -272,17 +250,7 @@ Segment-specific overrides supported: `openAPIObject`, `imports`, other output s
 
 ## Schema output
 
-Each segment emits one schema file:
-
-```
-.vovk-schema/
-  root.json           ← root segment (segmentName: "")
-  admin.json          ← "admin" segment
-  foo/bar.json        ← "foo/bar" segment
-  _meta.json
-```
-
-Commit `.vovk-schema/` to version control — source of truth for codegen. Details on schema consumption belong to `base` and `rpc` skills.
+Each segment writes one file: `.vovk-schema/root.json` for the root segment, `.vovk-schema/<segmentName>.json` for the others, plus `_meta.json`. Commit `.vovk-schema/`.
 
 ## Common flows
 
