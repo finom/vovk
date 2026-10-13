@@ -1,0 +1,66 @@
+---
+description: "Derived tools as uicast host functions: deriveTools() from RPC modules, a toModelOutput that rethrows errors, and what uicast gets when a call fails."
+---
+
+# Using with uicast
+
+[**uicast**](https://uicast.dev) renders UIs that a model writes as JSON Lines. Expressions in those UIs reach your API through [host functions](https://uicast.dev/expr/functions), and each host function is a [standard-tool](https://standard-tool.js.org/) (`StandardToolV0`). [`deriveTools()`](/tools) returns the same type, so your procedures can be the host functions, with no tool written by hand.
+
+## Derive the Tools from RPC Modules
+
+Host functions run where **uicast** renders, in the browser. Derive them from the modules of the [TypeScript client](/typescript), which call the endpoints over HTTP. Deriving them from controllers would put server code in the browser bundle.
+
+```ts showLineNumbers copy filename="src/tools.ts"
+import { deriveTools, ToModelOutput } from 'vovk';
+import { OrderRPC } from '@/client';
+
+export const tools = deriveTools({
+  modules: { OrderRPC },
+  toModelOutput: ToModelOutput.RAW,
+});
+```
+
+The same `tools` go to the evaluator in the browser and to the prompt on the server:
+
+```ts showLineNumbers copy
+import { Evaluator } from '@uicast/expr';
+import { tools } from '@/tools';
+
+const evaluator = new Evaluator({ functions: tools });
+```
+
+```ts showLineNumbers copy
+import { getFunctionsPartialPrompt } from '@uicast/core/prompt';
+import { tools } from '@/tools';
+
+const functionsPrompt = getFunctionsPartialPrompt({ functions: tools });
+```
+
+The prompt shows each tool's input and output types, from the procedure's schemas. The model calls a tool with one argument that holds the procedure's `body`, `query` and `params`:
+
+```ts
+createOrder({ body: { customer: 'Grace', total: 50 } })
+```
+
+## Errors
+
+By default, a derived tool doesn't throw: a failed call returns `{ error: message }`, which a model in a tool-calling loop reads as the result. **uicast** takes a returned value as success, so it needs the throw. `ToModelOutput.RAW` returns the result as the procedure gives it and throws the error of a failed call. The failed call then reaches **uicast**'s `onError`, and a callback stops at that step.
+
+What **uicast** gets when a call fails:
+
+- An argument with a key other than `body`, `query` and `params`, or without a required one: `invalid-arguments`. The tool checks the argument's shape in the browser.
+- A value the procedure's schema rejects: `host-function`, with the validation message. The server checks the values, so the fault is `environment`, not `document`, and a [recovery loop](https://uicast.dev/error-recovery) that sends `document` faults back to the model skips it.
+- A thrown error: `host-function`. In production, only an `HttpException{:ts}` keeps its message.
+
+## Tool Names
+
+A derived tool is named `<module>_<handler>`, such as `OrderRPC_list`. Set the name and the description the model reads with `@operation.tool`:
+
+```ts showLineNumbers copy
+@operation.tool({ name: 'listOrders', description: 'Orders, newest first.' })
+@get()
+static list = procedure({
+  query: z.object({ minTotal: z.coerce.number().default(0) }),
+  output: z.object({ orders: z.array(Order) }),
+}).handle(async ({ vovk }) => OrderService.list(vovk.query()));
+```

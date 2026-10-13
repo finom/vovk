@@ -50,6 +50,9 @@ The function returns an array of tools. Each tool satisfies the `StandardToolV0`
 - `toModelOutput?: ToModelOutputFn<TInput, TOutput, TFormattedOutput>{:ts}` - an optional function that formats the output for the LLM. Set it to your own function or to a built-in formatter from the `ToModelOutput` object, exported from `vovk`:
   - `ToModelOutput.MCP` for MCP formatting.
   - `ToModelOutput.DEFAULT`, the default when `toModelOutput` isn't set.
+  - `ToModelOutput.RAW`: the result as the procedure gives it, and a failed call throws its error after `onError`. For callers that need the throw, such as [**uicast**](/uicast).
+
+  A formatter that returns an `Error` for a failed call makes the tool throw it.
 - `meta?: Record<string, unknown>{:ts}` - optional metadata for each controller or RPC method. The back end reads it with [req.vovk.meta](/req-vovk#meta). A controller procedure merges it with its own meta as usual. An RPC method gets it under the `xMetaHeader` key. [OpenAPI mixins](/mixins) don't get it, since their hosts are third parties.
 
 ## Custom Operation Attributes with `x-tool` or `@operation.tool` Decorator

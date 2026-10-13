@@ -1,6 +1,6 @@
 ---
 name: tools
-description: Building LLM tools with Vovk.ts — `deriveTools()` (procedures → tools) returning a `StandardToolV0[]` array, standalone tools via the `standard-tool` package, `@operation.tool({ name, title, description, hidden, meta })` decorator, `x-tool` metadata, `ToModelOutput.DEFAULT` vs `ToModelOutput.MCP` formatters, the merged `inputSchema`, the `meta` option for passing context to procedures, `withDefaults` for baking auth into third-party API tools, and the `pick` / `omit` pattern for selecting specific procedures. Use whenever the user asks to expose an API to an LLM, wire up tool calling, build an MCP server, "let Claude / GPT call this", "turn my controllers into tools", "function calling with Vercel AI SDK", "standalone tool", "hide a procedure from the LLM", "tool that wraps a third-party SDK", or any variation. Does NOT cover procedure authoring → `procedure` skill. Does NOT cover the OpenAPI spec beyond `@operation`/`x-tool` → `openapi` skill. Does NOT cover third-party OpenAPI mixin setup → `mixins` skill.
+description: Building LLM tools with Vovk.ts — `deriveTools()` (procedures → tools) returning a `StandardToolV0[]` array, standalone tools via the `standard-tool` package, `@operation.tool({ name, title, description, hidden, meta })` decorator, `x-tool` metadata, `ToModelOutput` formatters (`DEFAULT`, `MCP`, `RAW`), the merged `inputSchema`, the `meta` option for passing context to procedures, `withDefaults` for baking auth into third-party API tools, and the `pick` / `omit` pattern for selecting specific procedures. Use whenever the user asks to expose an API to an LLM, wire up tool calling, build an MCP server, "let Claude / GPT call this", "turn my controllers into tools", "function calling with Vercel AI SDK", "standalone tool", "hide a procedure from the LLM", "tool that wraps a third-party SDK", or any variation. Does NOT cover procedure authoring → `procedure` skill. Does NOT cover the OpenAPI spec beyond `@operation`/`x-tool` → `openapi` skill. Does NOT cover third-party OpenAPI mixin setup → `mixins` skill.
 ---
 
 # Vovk.ts LLM tools
@@ -246,8 +246,9 @@ const allTools = [...tools, getWeather, sendEmail];
 |---|---|---|
 | `ToModelOutput.DEFAULT` | Raw result, or `{ error: string }` on failure. | OpenAI / Anthropic function calling, Vercel AI SDK. |
 | `ToModelOutput.MCP` | `{ content: [{ type: 'text' \| 'image' \| 'audio', … }], structuredContent?, isError? }`. Detects `Response` objects with binary content types and emits correct MCP block. | MCP servers. |
+| `ToModelOutput.RAW` | Result as procedure gives it (`Response` read). Failed call: tool throws the error, after `onError`. | Callers that need a throw: uicast host functions, plain code. |
 
-Custom formatters: write function matching `ToModelOutputFn<TInput, TOutput, TFormattedOutput>`.
+Custom formatters: write function matching `ToModelOutputFn<TInput, TOutput, TFormattedOutput>`. Returning an `Error` for a failed call makes the tool throw it.
 
 ### Return binary / file content via `Response` (MCP)
 

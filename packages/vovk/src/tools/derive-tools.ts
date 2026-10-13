@@ -125,7 +125,7 @@ async function caller<TOutput, TFormattedOutput>(
 
     return [await toModelOutput(result as TOutput, tool, req), req, null];
   } catch (e) {
-    // report the error separately, the formatted output is never an Error instance
+    // report the error separately; the formatted output is an Error only from ToModelOutput.RAW, to be thrown
     return [await toModelOutput(e as Error, tool, null), null, e as Error];
   }
 }
@@ -211,6 +211,7 @@ const makeTool = <TOutput, TFormattedOutput>({
     const [result, req, error] = await caller(callerInput, tool);
     if (error) {
       onError(error, tool, req);
+      if (result instanceof Error) throw result;
     } else {
       onExecute(result, tool, req);
     }

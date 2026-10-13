@@ -417,7 +417,9 @@ export async function derivedTools() {
   const output = await mcpTool.execute({});
   output.content satisfies unknown[];
   output.isError satisfies boolean | undefined;
-  [tool, mcpTool] satisfies StandardToolV0[];
+  const [rawTool] = deriveTools({ modules: { ToolController }, toModelOutput: ToModelOutput.RAW });
+  (await rawTool.execute({ params: { id: 'a' } })) satisfies unknown;
+  [tool, mcpTool, rawTool] satisfies StandardToolV0[];
 }
 
 // vovk's private copy of StandardToolV0 is the published one, and deriveTools returns it
