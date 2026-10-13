@@ -9,25 +9,6 @@ description: The Vovk.ts Python client — generating a typed Python package fro
 
 **Experimental** — generated API may shift between Vovk versions. Pin version on consume.
 
-## Scope
-
-Covers:
-
-- Install `vovk-python` + generate Python package.
-- Templates: `py` (standalone) vs `pySrc` (source files to embed).
-- Auto-gen config in `vovk.config.mjs`.
-- Call shape (`TypedDict` per `[MethodName][Input|Output|Body|Query|Params]`).
-- JSON Lines streaming via Python generators.
-- Client-side validation toggle.
-- PyPI publishing flow.
-
-Out of scope:
-
-- Procedure / controller authoring → **`procedure` skill**.
-- `vovk bundle` general (TS, Rust) → **`bundle` skill**.
-- Server-side JSON Lines → **`jsonlines` skill**.
-- OpenAPI spec tuning → **`openapi` skill**.
-
 ## Install + generate
 
 ```bash
@@ -99,7 +80,7 @@ After this, every `npx vovk generate` (+ every `vovk dev` regen) refreshes Pytho
 
 ## Generated call shape
 
-Types follow `[PascalCaseMethodName][Body|Query|Params|Output]` as `TypedDict`. Methods static, snake_case. Positional arg order from generator (`packages/vovk-python/client-templates/py-src/__init__.py.ejs:67-78`): only emits slots where validation declared, in this order: `body`, `files` (multipart only, sits between `body` and `query`), `query`, `params`, then always-present trailing kwargs `headers`, `api_root`, `disable_client_validation`.
+Types follow `[PascalCaseMethodName][Body|Query|Params|Output]` as `TypedDict`. Methods static, snake_case. Positional arg order: the generator only emits slots where validation declared, in this order: `body`, `files` (multipart only, sits between `body` and `query`), `query`, `params`, then always-present trailing kwargs `headers`, `api_root`, `disable_client_validation`.
 
 ```python
 from my_api_client import UserRPC  # whatever package the generator wrote

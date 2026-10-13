@@ -13,25 +13,6 @@ Decorators wrap static methods on controllers. Three kinds:
 
 One syntax: `@decorator`. `vovk init` enables `experimentalDecorators` in `tsconfig.json`; a webpack build (`next build --webpack`, Next.js 15's default) needs it, Turbopack (Next.js 16's default) compiles vovk's decorators either way.
 
-## Scope
-
-Covers:
-
-- `@prefix` for route prefixes.
-- `.auto()` for name-derived routes.
-- HTTP decorator options (`headers`, `cors`).
-- `createDecorator` — runs before/after handler.
-- Auth pattern with `req.vovk.meta()` state passing.
-- Stacking order (top-down — outermost runs first).
-- Local (`.fn()`) context detection.
-
-Out of scope:
-
-- Writing procedures + validation → **`procedure` skill**.
-- `@operation` for OpenAPI docs → **`openapi` skill**.
-- `@operation.tool` for AI tool derivation → **`tools` skill**.
-- Next.js middleware (`middleware.ts`) — separate, runs earlier in request lifecycle.
-
 ## `@prefix`
 
 Class-level route prefix:
@@ -82,11 +63,11 @@ static doSomething = procedure().handle(/* ... */);
 ```
 
 - `headers` — merged into response.
-- `cors: true` — auto permissive CORS (responds to `OPTIONS`, sets `Access-Control-*`). Needs `OPTIONS` in segment's `initSegment()` exports (`export const { GET, POST, ..., OPTIONS } = initSegment();`) — else Next.js answers the preflight itself (204 with `Allow`, no `Access-Control-*` headers), and the browser blocks the cross-origin call. For finer control, custom decorator or Next.js middleware.
+- `cors: true` — permissive CORS for that route (`access-control-allow-origin: *`, preflight answered). Needs `OPTIONS` in segment's `initSegment()` exports — else Next.js answers the preflight itself (204 with `Allow`, no `Access-Control-*` headers), and the browser blocks the cross-origin call. Exact headers and CORS for every route → **`base`**.
 
 ## Custom decorators — `createDecorator`
 
-Middleware-shaped: receive request + `next`, work before/after, return response.
+Middleware-shaped: receive request + `next`, work before/after, return response. `next()` returns the handler's value (after the `output` check) or throws its error (validation errors included). What the decorator returns is the response: a value is sent as JSON with 200, a `Response` as it is — the way to set a status other than 200 or answer errors in another format (recipes in **`base`**).
 
 ```ts
 import { createDecorator } from 'vovk';
@@ -99,7 +80,7 @@ const timingDecorator = createDecorator(async (req, next) => {
 });
 ```
 
-Apply above HTTP decorator (stacking order below):
+Stack it with the HTTP decorator (order below):
 
 ```ts
 @get('{id}')
@@ -132,7 +113,7 @@ export const authGuard = createDecorator(async (req, next) => {
 });
 ```
 
-Reading token via `next/headers` (not `req.headers`) → guard works identically over HTTP and under `.fn()` called inside a Next.js request (server components, server actions, route handlers). Outside one — a unit test, a script — `headers()` throws "`headers` was called outside a request scope": mock it in tests, e.g. `vi.mock('next/headers', () => ({ headers: async () => new Headers({ authorization: 'Bearer test' }) }))`. See **Local vs HTTP context** below.
+Reading the token via `next/headers` (not `req.headers`) makes the guard work over HTTP and under `.fn()`. See **Local vs HTTP context** below.
 
 Consume in handler — same `AuthMeta`:
 
@@ -238,7 +219,7 @@ const myDecorator = createDecorator((req, next) => {
 });
 ```
 
-For headers/cookies, prefer imported `headers()` / `cookies()` from `next/headers` over `req.headers` / `req.cookies`. `next/headers` works over HTTP and under `.fn()` inside a Next.js request — no branch, no reliance on caller synthesizing `req`. Outside a request (unit test, script) it throws; mock it there:
+For headers/cookies, prefer imported `headers()` / `cookies()` from `next/headers` over `req.headers` / `req.cookies`. `next/headers` works over HTTP and under `.fn()` inside a Next.js request — no branch, no reliance on caller synthesizing `req`. Outside a request (unit test, script) it throws "`headers` was called outside a request scope"; mock it there, e.g. `vi.mock('next/headers', () => ({ headers: async () => new Headers({ authorization: 'Bearer test' }) }))`:
 
 ```ts
 import { createDecorator } from 'vovk';
@@ -290,6 +271,5 @@ If you skip guard for one callsite, audit every other `.fn()` callsite for same 
 - **Throw to short-circuit.** `throw new HttpException(...)` is standard control-flow for auth failures. Returning response works but unusual + easy to misread.
 - **Local context has no `req.url`.** If decorator dereferences HTTP-specific fields, guard. `next/headers` works in both, inside a Next.js request; in a unit test, mock it.
 - **Decorators on `.fn()` still run.** If you don't want auth in SSR, either don't stack decorator on that procedure or branch inside body. Controller-only procedures (no HTTP decorator) can still have custom decorators — run on every `.fn()` call.
-- **Vitest on Vite 8 drops decorators on static fields** when `useDefineForClassFields` is off — the default for `target` below ES2022, e.g. create-next-app's ES2017. `.fn()` then runs without guards, and a test expecting success passes silently. Set `"useDefineForClassFields": true` (or `"target": "ES2022"`) in tsconfig.json.
-- **CORS via `cors: true`** is coarse + needs segment's `route.ts` to export `OPTIONS` from `initSegment()` (`export const { GET, POST, ..., OPTIONS } = initSegment();`) — else Next.js answers the preflight itself (204 with `Allow`, no `Access-Control-*` headers), and the browser blocks the cross-origin call. For per-origin allowlists, skip option + use custom decorator or Next.js middleware.
+- **Vitest drops decorators** unless `useDefineForClassFields` is on → `procedure` skill, Testing.
 - **`.auto()` names flow from method names.** Renaming method renames route — breaking change for consumers. Prefer explicit paths on public APIs.

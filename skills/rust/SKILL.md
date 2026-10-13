@@ -9,24 +9,6 @@ description: The Vovk.ts Rust client — generating a typed Rust crate from a Vo
 
 **Experimental** — generated API may shift between Vovk versions. Pin crate version on consume.
 
-## Scope
-
-Covers:
-
-- Install `vovk-rust` + generate Rust crate.
-- Templates: `rs` (standalone crate) vs `rsSrc` (source files to embed).
-- Auto-gen config in `vovk.config.mjs`.
-- Async call shape + nested-module `_::` type convention.
-- JSON Lines streaming via `futures::Stream`.
-- Client-side validation toggle.
-- crates.io publishing flow.
-
-Out of scope:
-
-- Procedure / controller authoring → **`procedure` skill**.
-- `vovk bundle` general (TS, Python) → **`bundle` skill**.
-- Server-side JSON Lines → **`jsonlines` skill**.
-
 ## Install + generate
 
 ```bash
@@ -106,7 +88,7 @@ pub async fn update_user(
 ) -> Result<update_user_::output, HttpException>
 ```
 
-**Per-endpoint type variation** (verified in `packages/vovk-rust/client-templates/rs-src/lib.rs.ejs:84-90`): each of `query`, `params` typed `<handler_name>_::query` / `_::params` **only when procedure declares validation for that key**; else slot is Rust unit type `()` → pass `()` at call site. `body` has three cases: `multipart/form-data` content-type → `reqwest::multipart::Form`; declared body validation (JSON / urlencoded form / text / binary) → `<handler>_::body`, which is `String` for a text type and `Vec<u8>` for a binary one; no body → `()`. A urlencoded form goes out with `.form()`, a text or binary body with the content type the procedure declares. So endpoint with no body/query/params signature:
+**Per-endpoint type variation**: each of `query`, `params` typed `<handler_name>_::query` / `_::params` **only when procedure declares validation for that key**; else slot is Rust unit type `()` → pass `()` at call site. `body` has three cases: `multipart/form-data` content-type → `reqwest::multipart::Form`; declared body validation (JSON / urlencoded form / text / binary) → `<handler>_::body`, which is `String` for a text type and `Vec<u8>` for a binary one; no body → `()`. A urlencoded form goes out with `.form()`, a text or binary body with the content type the procedure declares. So endpoint with no body/query/params signature:
 
 ```rust
 pub async fn ping(

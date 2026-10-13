@@ -9,26 +9,6 @@ description: "Vovk.ts `vovk bundle` CLI — packages composed TypeScript client 
 
 **TypeScript-only.** Despite name, ships no Python/Rust clients. Those have own templates (`py` / `pySrc` / `rs` / `rsSrc`) and own publish flows — see **`python`** and **`rust`** skills.
 
-## Scope
-
-Covers:
-
-- 4-step bundle workflow.
-- `bundle.build` async function (required) + canonical `tsdown@0.23.0` recipe.
-- `bundle.outputConfig` fields (`origin`, `package`, `reExports`, `imports`, `readme`, `samples`, `openAPIObject`); `requires` and `includeSegments`/`excludeSegments` sit at the root of `bundle`.
-- Default directory layout (`tmp_prebundle` → `dist`).
-- Full CLI flag list including `--openapi-*` mixin family.
-- What's bundled / omitted (no `openapi`, no `schema` entry point — but `schema` still importable as named export).
-- `npm publish dist` flow + consumer-side usage.
-- `deriveTools` integration (bundled modules feed it identically).
-
-Out of scope:
-
-- In-project client generation (`@/client`) → **`rpc`** skill.
-- Python client publishing (PyPI) → **`python`** skill.
-- Rust client publishing (crates.io) → **`rust`** skill.
-- Mixin authoring (consumed here as bundle inputs) → **`mixins`** skill.
-
 ## `bundle` vs `generate`
 
 | Command | Purpose | Output | When |
@@ -153,8 +133,8 @@ These three live on root `VovkBundleConfig` (`config.bundle.*`), **not** nested 
 
 | Field | Purpose |
 |---|---|
-| `requires` | Template dir overrides — `readme`, `packageJson`, or any custom template. Defaults to project root for both. Source: `packages/vovk/src/types/config.ts:46`. |
-| `includeSegments` / `excludeSegments` | Filter which Vovk segments contribute to bundle. Source: `packages/vovk/src/types/config.ts:52`; CLI reads them at `packages/vovk-cli/src/bundle/index.mts:46-49` from root `bundleConfig`. |
+| `requires` | Template dir overrides — `readme`, `packageJson`, or any custom template. Defaults to project root for both. |
+| `includeSegments` / `excludeSegments` | Filter which Vovk segments contribute to bundle. Read from the root `bundle` config. |
 
 ## CLI flags
 

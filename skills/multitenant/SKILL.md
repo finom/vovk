@@ -17,24 +17,6 @@ Typical shape:
 
 Pick any shape; this skill shows wiring for any.
 
-## Scope of this skill
-
-Covers:
-
-- Multi-tenant architecture (segments + proxy + frontend pages).
-- `vovk.config.mjs` changes (composed → segmented client, `segmentNameOverride`).
-- `proxy.ts` wiring with `multitenant()` helper from `vovk`.
-- `overrides` shape (static, dynamic, nested) and reserved-path guard.
-- Per-tenant frontend page routes, how they pair with overrides.
-- DNS wildcard; local subdomains under `localhost`.
-- Add-a-tenant checklist.
-
-Out of scope (hand off):
-
-- Creating/configuring individual segment (`initSegment()`, `segmentName`, nested segments, segment priority) → **`segment` skill**.
-- Writing controllers inside tenant segment → **`procedure` skill**.
-- Client generation modes (composed vs. segmented, `outDir`, templates) → **`rpc` skill**.
-
 ## Architecture
 
 Three layers, one request:
