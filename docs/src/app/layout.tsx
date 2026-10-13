@@ -66,16 +66,11 @@ const navbar = (
   </Navbar>
 );
 const footer = (
-  <Footer className="justify-between">
+  <Footer>
     <div>
       MIT © 2023-{new Date().getFullYear()}{' '}
       <Link href="https://github.com/finom" className="ml-1">
         Andrey Gubanov
-      </Link>
-    </div>
-    <div className="flex gap-4 items-center">
-      <Link href="https://github.com/sponsors/finom" target="_blank" className="block">
-        Sponsor
       </Link>
     </div>
   </Footer>
