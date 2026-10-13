@@ -1,6 +1,11 @@
 {
   "name": "vovk",
-  "owner": { "name": "Andrey Gubanov" },
+  "owner": {
+    "name": "Andrey Gubanov"
+  },
+  "metadata": {
+    "description": "The Vovk.ts plugin: skills that teach coding agents the framework"
+  },
   "plugins": [
     {
       "name": "vovk",

@@ -29,9 +29,9 @@ Without it, asking Claude to *"scaffold a Vovk procedure with Zod validation"* g
 With the plugin, the agent loads the framework's patterns as topic skills:
 
 - **One topic at a time.** Only the needed skills load, so Claude doesn't read thousands of lines of docs for one question.
-- **Self-contained.** The base skill, loaded with every other skill, tells the agent *not to fetch vovk.dev mid-task*: the plugin is the source of truth. It works offline, with a predictable cost and no rate limits.
+- **Self-contained.** The base skill, loaded first for any Vovk.ts task, holds the facts an API build needs, checked against vovk 4's code. It tells the agent *not to fetch vovk.dev mid-task* and not to read vovk's source in `node_modules`: the plugin is the source of truth. It works offline, with a predictable cost and no rate limits.
 - **Handoffs between skills.** A skill points to the one that owns a topic: mixins to tools for LLM tools, procedure to jsonlines for streaming. The agent loads the context it needs, not the context next to it.
-- **Compressed text.** Terse "caveman" prose: about 10% fewer tokens per load, with the same content.
+- **Compressed text.** The topic skills use terse "caveman" prose: about 10% fewer tokens per load, with the same content.
 
 ## Install
 
@@ -60,7 +60,7 @@ In Claude Code, run `/plugin`: the **Installed** tab lists `vovk`. Skill names s
 The plugin has fifteen topic skills that cover every part of Vovk.ts:
 
 - **`vovk:init`** — set up Vovk.ts in a Next.js App Router project, or create a new Next.js app and run `vovk init` in it.
-- **`vovk:base`** — base rules loaded with every other vovk:* skill: commit policy for `.vovk-schema/`, runtime requirements, template names, the `_schema_` endpoint, a short API and inference-type summary (`VovkBody`, `VovkOutput`, …).
+- **`vovk:base`** — the essentials, loaded first for any Vovk.ts task: what `vovk` exports, the project layout, a complete endpoint, how requests, validation and errors behave, status codes, a custom error format, CORS, and how to get the schema, the typed client and the OpenAPI document.
 - **`vovk:config`** — the `vovk.config.{mjs,cjs,js}` shape, every config key and default (`rootEntry`, `schemaOutDir`, `composedClient`, `segmentedClient`, `clientTemplateDefs`, `outputConfig`, `bundle`, …), and the `tsconfig.json` setup.
 - **`vovk:segment`** — segments (root, named, static), `initSegment`, segment priority, `generateStaticParams`.
 - **`vovk:multitenant`** — routing tenants by subdomain: the `multitenant()` proxy, the `overrides` shape, per-tenant segments and front-end pages, wildcard DNS.
