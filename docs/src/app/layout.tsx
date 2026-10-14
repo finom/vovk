@@ -27,7 +27,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    site: '@vovkts',
+    site: '@andrey_gubanov1',
   },
   icons: {
     icon: [
@@ -55,9 +55,9 @@ const navbar = (
     chatLink="https://discord.com/invite/qdT8WEHUuP"
     // ... Your additional navbar options
   >
-    <a href="https://x.com/vovkts" target="_blank" rel="noopener noreferrer">
+    <a href="https://x.com/andrey_gubanov1" target="_blank" rel="noopener noreferrer">
       <svg viewBox="0 0 24 24" width={24} height={24} fill="currentColor" className="inline">
-        <title>Vovk.ts on X</title>
+        <title>Andrey Gubanov on X</title>
         <g>
           <path d="M21.742 21.75l-7.563-11.179 7.056-8.321h-2.456l-5.691 6.714-4.54-6.714H2.359l7.29 10.776L2.25 21.75h2.456l6.035-7.118 4.818 7.118h6.191-.008zM7.739 3.818L18.81 20.182h-2.447L5.29 3.818h2.447z"></path>
         </g>
