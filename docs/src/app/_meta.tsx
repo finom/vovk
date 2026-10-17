@@ -34,7 +34,7 @@ const meta: MetaRecord = {
   inference: 'Type Inference',
   openapi: 'OpenAPI Specification',
 
-  '#tools': separator('🤖 AI Tools'),
+  '#tools': separator('AI Tools'),
   tools: 'Deriving AI Tools from Procedures',
   'tools-mcp': 'MCP Formatting',
   uicast: 'Using with uicast',
@@ -52,8 +52,8 @@ const meta: MetaRecord = {
   '#advanced-codegen': separator('Codegen Extras'),
   schema: 'Schema',
   mixins: 'OpenAPI Mixins',
-  python: 'Python Client 🧪',
-  rust: 'Rust Client 🧪',
+  python: 'Python Client',
+  rust: 'Rust Client',
   templates: 'Codegen Templates Reference',
 
   '#cli': separator('CLI & Configuration'),
@@ -71,7 +71,7 @@ const meta: MetaRecord = {
   'hello-world': '"Hello World!"',
   multitenant: 'Multitenancy Tutorial',
   'realtime-ui': {
-    title: '🤖 Realtime Kanban',
+    title: 'Realtime Kanban',
     theme: {
       collapsed: true,
       copyPage: true,

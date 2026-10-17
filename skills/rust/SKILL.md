@@ -1,13 +1,11 @@
 ---
 name: rust
-description: The Vovk.ts Rust client — generating a typed Rust crate from a Vovk API with `vovk-rust`, the `rs` / `rsSrc` templates, the generated async call shape using `reqwest` + `serde`, JSON + JSON Lines (futures Stream) consumption, client-side validation, and crates.io publishing. Use whenever the user wants a typed Rust SDK, ongoing Rust integration, or crates.io publishing — phrasings like "generate a Rust crate / SDK", "ship a Rust SDK for my API", "use vovk-rust", "rsSrc template", "rust streaming with reqwest", "publish to crates.io". Experimental package — shape may shift. Does NOT cover controller / procedure authoring → hand off to `procedure` skill. Does NOT cover `vovk bundle` in general → hand off to `bundle` skill. Does NOT cover JSON Lines server-side → hand off to `jsonlines` skill. **Does NOT cover one-off HTTP calls** — Vovk endpoints are plain REST, so `reqwest` / `ureq` / `curl` against `/api/...` is the simpler answer for "I just want to hit my API from a Rust binary / CLI" use cases. Reach for this skill only when the user actually wants generated typed crate code.
+description: The Vovk.ts Rust client — generating a typed Rust crate from a Vovk API with `vovk-rust`, the `rs` / `rsSrc` templates, the generated async call shape using `reqwest` + `serde`, JSON + JSON Lines (futures Stream) consumption, client-side validation, and crates.io publishing. Use whenever the user wants a typed Rust SDK, ongoing Rust integration, or crates.io publishing — phrasings like "generate a Rust crate / SDK", "ship a Rust SDK for my API", "use vovk-rust", "rsSrc template", "rust streaming with reqwest", "publish to crates.io". Does NOT cover controller / procedure authoring → hand off to `procedure` skill. Does NOT cover `vovk bundle` in general → hand off to `bundle` skill. Does NOT cover JSON Lines server-side → hand off to `jsonlines` skill. **Does NOT cover one-off HTTP calls** — Vovk endpoints are plain REST, so `reqwest` / `ureq` / `curl` against `/api/...` is the simpler answer for "I just want to hit my API from a Rust binary / CLI" use cases. Reach for this skill only when the user actually wants generated typed crate code.
 ---
 
 # Vovk.ts Rust client
 
 `vovk-rust` generates typed Rust crate from same `.vovk-schema/` artifacts driving TS client. Async by default via `reqwest` + `tokio`; streaming via `futures`.
-
-**Experimental** — generated API may shift between Vovk versions. Pin crate version on consume.
 
 ## Install + generate
 
@@ -304,7 +302,6 @@ Add module to `src/lib.rs`: `pub mod api;`.
 
 ## Gotchas
 
-- **Experimental.** Pin crate version; expect breaks on Vovk upgrades. Integration-test after each bump.
 - **Nested types deep.** `body_::profile_::address_::zip` patterns common. `use ... as Name;` import trick keeps call sites readable.
 - **OpenAPI mixins with circular `$refs` not fully supported yet** — if mixin has cycles, generator may fail. Roadmap.
 - **`text/plain` and `application/octet-stream` body params not fully supported** — JSON is solid path today.

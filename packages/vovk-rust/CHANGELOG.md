@@ -4,8 +4,6 @@ All notable changes to `vovk-rust` are documented here. This file is the canonic
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-This package is experimental and its generated output may still shift between releases.
-
 ## 0.0.6 - 2026-10-12
 
 ### Changed

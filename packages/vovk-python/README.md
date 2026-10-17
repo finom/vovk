@@ -24,8 +24,6 @@
 
 The templates that generate a typed [Python client](https://vovk.dev/python) from a Vovk.ts schema: a package with `TypedDict` types for every body, query, params and output, client-side validation with `jsonschema`, and a README. The generated package needs Python 3.9+.
 
-> The Python client is experimental.
-
 ## Install
 
 In the Vovk.ts app, next to [vovk-cli](https://www.npmjs.com/package/vovk-cli):

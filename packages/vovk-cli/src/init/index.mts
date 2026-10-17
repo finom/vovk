@@ -395,7 +395,7 @@ export class Init {
         });
 
     lang ??= await checkbox({
-      message: 'Do you want to generate RPC client for other languages besides TypeScript (experimental)?',
+      message: 'Do you want to generate RPC client for other languages besides TypeScript?',
       choices: [
         { name: 'Python', value: 'py' },
         { name: 'Rust', value: 'rs' },
