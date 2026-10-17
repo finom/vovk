@@ -188,6 +188,10 @@ const vovkConfig = {
           version: '0.0.1',
           license: 'MIT',
           description: 'Vovk Python Client',
+          // as npm writes them
+          repository: { type: 'git', url: 'git+https://github.com/finom/vovk.git', directory: 'packages/vovk-python' },
+          homepage: 'https://vovk.dev/python',
+          bugs: { url: 'https://github.com/finom/vovk/issues' },
         },
       },
     },
