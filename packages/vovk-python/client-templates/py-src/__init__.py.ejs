@@ -22,7 +22,18 @@ const segmentBases = Object.fromEntries(Object.entries(t.schema.segments).map(([
     const path = segment.forceApiRoot ? '' : typeof meta.segmentNameOverride === 'string' ? meta.segmentNameOverride : segmentName;
     return [segmentName, [meta.forceApiRoot ?? t.apiRoot ?? '', path]];
 }));
-const joinURL = (root, ...parts) => [t._.trimEnd(root, '/'), ...parts.map((part) => t._.trim(part ?? '', '/'))].filter(Boolean).join('/'); %>
+const joinURL = (root, ...parts) => [t._.trimEnd(root, '/'), ...parts.map((part) => t._.trim(part ?? '', '/'))].filter(Boolean).join('/');
+// bytes go out as the TypeScript client sends untyped bytes: the first declared type that isn't JSON or a form, then a
+// wildcard other than */*, then application/octet-stream where it's taken, else the JSON or URL-encoded type declared
+const getBinaryContentType = (schema) => {
+    const declared = schema?.['x-contentType'] ?? [];
+    const isJSON = (type) => type === 'application/json' || type.endsWith('+json');
+    const isForm = (type) => type === 'multipart/form-data' || type === 'application/x-www-form-urlencoded';
+    const binaryType = declared.find((type) => !type.includes('*') && !isForm(type) && !isJSON(type)) ?? declared.find((type) => type !== '*/*' && type.endsWith('/*'));
+    if (binaryType) return binaryType;
+    if (!declared.length || declared.some((pattern) => ['*/*', 'application/*', 'application/octet-stream'].includes(pattern))) return 'application/octet-stream';
+    return declared.find((type) => isJSON(type) || type === 'application/x-www-form-urlencoded') ?? 'application/octet-stream';
+}; %>
 from __future__ import annotations
 import sys
 from typing import Any, Dict, List, Literal, Optional, Set, TypedDict, Union, Tuple, Generator, BinaryIO # type: ignore
@@ -49,7 +60,7 @@ class <%- pyModuleName %>: <% if (!Object.keys(controllerSchema.handlers).length
     const handlerNameOriginalCapitalized = vars.toPythonIdentifier(handlerNameOriginal.charAt(0).toUpperCase() + handlerNameOriginal.slice(1));
     const handlerName = methodNames.get(handlerNameOriginal);
     const bodyKind = vars.getBodyKind(validation?.body);
-    const bodyContentType = bodyKind === 'text' ? vars.getTextContentType(validation?.body) : validation?.body?.['x-contentType']?.[0] || 'application/octet-stream';
+    const bodyContentType = bodyKind === 'text' ? vars.getTextContentType(validation?.body) : getBinaryContentType(validation?.body);
     // a path with {name} placeholders takes params, with or without a params schema
     const paramsType = validation?.params ? `${handlerNameOriginalCapitalized}Params` : /\{[^{}]+\}/.test(`${controllerSchema.prefix ?? ''}/${handlerSchema.path}`) ? 'Dict[str, str]' : null;
     // files a call may leave out, as for a JSON-or-file union, come after the arguments every call takes
