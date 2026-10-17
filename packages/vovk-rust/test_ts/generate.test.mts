@@ -108,6 +108,13 @@ describe('the generated crate', () => {
     assert.match(source, /pub async fn get_thing\(/);
   });
 
+  test('schema text is never compiled as a doctest', () => {
+    const source = generate(listUsers)('src/lib.rs');
+    const attribute = source.indexOf('\n#![cfg(not(doctest))]\n');
+
+    assert.ok(attribute !== -1 && attribute < source.search(/^mod /m), source);
+  });
+
   test('the README adds the crate as a dependency: it is a library', () => {
     const readme = generate(listUsers)('README.md');
 

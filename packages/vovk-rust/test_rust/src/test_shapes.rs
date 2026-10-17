@@ -16,6 +16,12 @@ pub mod test_shapes {
         assert_eq!(round_trip::<T>(value.clone()), value);
     }
 
+    // the value read into T, after it writes back unchanged
+    fn round_trip_value<T: DeserializeOwned + Serialize>(value: Value) -> T {
+        assert_round_trip::<T>(value.clone());
+        serde_json::from_value(value).unwrap()
+    }
+
     #[test]
     fn test_numbers_keep_their_precision() {
         let output: shapes_rpc::floats_::output =
@@ -98,6 +104,147 @@ pub mod test_shapes {
             json!({"expr": {"op": "+", "args": [1.5, {"op": "-", "args": [2.5]}]}}),
         );
         assert_round_trip::<shapes_rpc::tree_::output>(json!({"value": "a", "children": [{"value": "b", "children": []}]}));
+        // a list or a map of itself, with no struct between
+        assert_round_trip::<shapes_rpc::recursive_record_::body>(json!({"t": {"a": {"b": {}}}}));
+        assert!(serde_json::from_value::<shapes_rpc::recursive_record_::body>(json!({"t": {"a": 1}})).is_err());
+        assert_round_trip::<shapes_rpc::recursive_aliases_::output>(
+            json!({"m": [[[]], []], "a": [{"x": []}, {"y": [{}]}], "n": [null, [null]], "p": ["a", [["b", []]]]}),
+        );
+    }
+
+    // serde reads an untagged enum as its first variant that takes the value: a constant must refuse the others
+    #[test]
+    fn test_a_union_reads_the_variant_its_constant_names() {
+        use shapes_rpc::discriminated_union_::{output, output_};
+        let done: output = serde_json::from_value(json!({"status": "done", "result": 5.5})).unwrap();
+        assert!(matches!(&done, output::Variant1(variant) if variant.result == 5.5), "{:?}", done);
+        assert_round_trip::<output>(json!({"status": "done", "result": 5.5}));
+        assert!(matches!(round_trip_value::<output>(json!({"status": "pending"})), output::Variant0(_)));
+        assert!(serde_json::from_value::<output>(json!({"status": "other"})).is_err());
+        // the types are as they were
+        let _ = output::Variant1(output_::Variant1 { status: "done".to_string(), result: 1.5 });
+
+        use shapes_rpc::boolean_discriminator_::output as with_bool;
+        let failed: with_bool = serde_json::from_value(json!({"ok": false, "reason": "r"})).unwrap();
+        assert!(matches!(&failed, with_bool::Variant1(variant) if variant.reason == "r"), "{:?}", failed);
+        assert_round_trip::<with_bool>(json!({"ok": true, "value": 1.5}));
+
+        use shapes_rpc::literal_union_::{output as literal, output_::l};
+        assert!(matches!(round_trip_value::<literal>(json!({"l": "b"})).l, l::Variant1(_)));
+        assert_round_trip::<literal>(json!({"l": "a"}));
+        assert!(serde_json::from_value::<literal>(json!({"l": "zzz"})).is_err());
+
+        use shapes_rpc::untyped_const_union_::output as untyped;
+        let untyped_done: untyped = serde_json::from_value(json!({"status": "done", "result": 5.5})).unwrap();
+        assert!(matches!(&untyped_done, untyped::Variant1(variant) if variant.result == 5.5), "{:?}", untyped_done);
+    }
+
+    // a constant of any type, through a named schema, in a nested struct, next to a type named Result
+    #[test]
+    fn test_constants_of_every_kind() {
+        use shapes_rpc::const_kinds_::{output, output_::{pick, tagged}};
+        let value = json!({
+            "kind": "k", "small": 3, "ratio": 0.5, "maybe": null, "nested": {"tag": "t"},
+            "pick": "one", "tagged": {"type": "a", "v": 1.5}, "result": {"ok": true},
+        });
+        assert_round_trip::<output>(value.clone());
+        let wrong_values = [
+            ("kind", json!("x")),
+            ("small", json!(4)),
+            ("ratio", json!(1.5)),
+            ("maybe", json!("n")),
+            ("result", json!({"ok": false})),
+        ];
+        for (field, wrong) in wrong_values {
+            let mut changed = value.clone();
+            changed[field] = wrong;
+            assert!(serde_json::from_value::<output>(changed).is_err(), "{}", field);
+        }
+        let mut changed = value.clone();
+        changed["nested"]["tag"] = json!("x");
+        assert!(serde_json::from_value::<output>(changed).is_err());
+
+        let read = |field: &str, item: Value| {
+            let mut changed = value.clone();
+            changed[field] = item;
+            round_trip_value::<output>(changed)
+        };
+        assert!(matches!(read("pick", json!(1)).pick, pick::Variant0(1)));
+        assert!(matches!(read("pick", json!(true)).pick, pick::Variant2(true)));
+        assert!(serde_json::from_value::<pick>(json!(2)).is_err());
+        assert!(matches!(read("maybe", json!("m")).maybe.as_deref(), Some("m")));
+        assert!(matches!(read("tagged", json!("none")).tagged, tagged::Variant1(_)));
+        assert!(serde_json::from_value::<tagged>(json!("other")).is_err());
+    }
+
+    #[test]
+    fn test_an_openapi_discriminator_picks_the_variant() {
+        use petstore_api::get_any_pet_::AnyPet;
+        let dog: AnyPet = serde_json::from_value(json!({"name": "Rex", "petType": "Dog", "bark": true})).unwrap();
+        assert!(matches!(&dog, AnyPet::Variant1(dog) if dog.bark == Some(true)), "{:?}", dog);
+        assert_round_trip::<AnyPet>(json!({"name": "Rex", "petType": "Dog", "bark": true}));
+        assert_round_trip::<AnyPet>(json!({"name": "Tom", "petType": "Cat", "lives": 9}));
+        // a value the discriminator doesn't name is read as before, as the first variant that takes it
+        assert!(matches!(round_trip_value::<AnyPet>(json!({"name": "L", "petType": "Lizard"})), AnyPet::Variant0(_)));
+        let error = serde_json::from_value::<AnyPet>(json!({"x": 1})).unwrap_err();
+        assert!(error.to_string().contains("did not match any variant"), "{}", error);
+
+        use petstore_api::get_last_event_::Event;
+        let deleted = json!({"type": "deleted", "at": "2026-10-17", "reason": "spam"});
+        assert!(matches!(round_trip_value::<Event>(deleted.clone()), Event::Variant1(_)));
+        assert_round_trip::<Event>(deleted);
+    }
+
+    // a server that answers every request with this JSON; returns its origin
+    async fn serve_json(body: &'static str) -> String {
+        use tokio::io::{AsyncReadExt, AsyncWriteExt};
+
+        let listener = tokio::net::TcpListener::bind("127.0.0.1:0").await.unwrap();
+        let origin = format!("http://{}", listener.local_addr().unwrap());
+        tokio::spawn(async move {
+            while let Ok((mut socket, _)) = listener.accept().await {
+                // a GET ends with its head
+                let mut request = Vec::new();
+                let mut buffer = [0; 4096];
+                while !request.ends_with(b"\r\n\r\n") {
+                    let Ok(read @ 1..) = socket.read(&mut buffer).await else { break };
+                    request.extend_from_slice(&buffer[..read]);
+                }
+                let head = "HTTP/1.1 200 OK\r\ncontent-type: application/json\r\nconnection: close";
+                let response = format!("{}\r\ncontent-length: {}\r\n\r\n{}", head, body.len(), body);
+                let _ = socket.write_all(response.as_bytes()).await;
+                let _ = socket.shutdown().await;
+            }
+        });
+        origin
+    }
+
+    #[tokio::test]
+    async fn test_a_call_returns_the_variant_the_server_sent() {
+        let origin = serve_json(r#"{"status": "done", "result": 5.5}"#).await;
+        let done = shapes_rpc::discriminated_union((), (), (), None, Some(&origin), false).await.unwrap();
+        let is_done = matches!(&done, shapes_rpc::discriminated_union_::output::Variant1(variant) if variant.result == 5.5);
+        assert!(is_done, "{:?}", done);
+
+        let origin = serve_json(r#"{"name": "Rex", "petType": "Dog", "bark": true}"#).await;
+        let dog = petstore_api::get_any_pet((), (), (), None, Some(&origin), false).await.unwrap();
+        let is_dog = matches!(&dog, petstore_api::get_any_pet_::AnyPet::Variant1(dog) if dog.bark == Some(true));
+        assert!(is_dog, "{:?}", dog);
+    }
+
+    // zod and valibot give the unnamed recursive schemas of every slot the same names
+    #[test]
+    fn test_slots_with_defs_of_one_name() {
+        assert_round_trip::<shapes_rpc::shared_def_name_::body>(json!({"cat": {"name": "a", "children": []}}));
+        assert_round_trip::<shapes_rpc::shared_def_name_::output>(
+            json!({"c": {"text": "hi", "likes": 1.5, "replies": [{"text": "b", "likes": 2.5, "replies": []}]}}),
+        );
+        assert_round_trip::<shapes_rpc::valibot_shared_def_name_::body>(
+            json!({"cat": {"value": "a", "children": [{"value": "b", "children": []}]}}),
+        );
+        assert_round_trip::<shapes_rpc::valibot_shared_def_name_::output>(
+            json!({"c": {"text": "a", "replies": [{"text": "b", "replies": []}]}}),
+        );
     }
 
     #[test]

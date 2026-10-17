@@ -40,6 +40,28 @@
           }
         }
       }
+    },
+    "/pets/any": {
+      "get": {
+        "operationId": "getAnyPet",
+        "responses": {
+          "200": {
+            "description": "ok",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/AnyPet" } } }
+          }
+        }
+      }
+    },
+    "/events/last": {
+      "get": {
+        "operationId": "getLastEvent",
+        "responses": {
+          "200": {
+            "description": "ok",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Event" } } }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -58,7 +80,45 @@
         "type": "object",
         "properties": { "id": { "type": "integer" }, "name": { "type": "string" } }
       },
-      "Pets": { "type": "array", "items": { "$ref": "#/components/schemas/Pet" } }
+      "Pets": { "type": "array", "items": { "$ref": "#/components/schemas/Pet" } },
+      "Animal": {
+        "type": "object",
+        "required": ["name", "petType"],
+        "properties": { "name": { "type": "string" }, "petType": { "type": "string" } }
+      },
+      "Cat": {
+        "allOf": [
+          { "$ref": "#/components/schemas/Animal" },
+          { "type": "object", "properties": { "lives": { "type": "integer" } } }
+        ]
+      },
+      "Dog": {
+        "allOf": [
+          { "$ref": "#/components/schemas/Animal" },
+          { "type": "object", "properties": { "bark": { "type": "boolean" } } }
+        ]
+      },
+      "AnyPet": {
+        "oneOf": [{ "$ref": "#/components/schemas/Cat" }, { "$ref": "#/components/schemas/Dog" }],
+        "discriminator": { "propertyName": "petType" }
+      },
+      "Created": {
+        "type": "object",
+        "required": ["type", "at"],
+        "properties": { "type": { "type": "string" }, "at": { "type": "string" } }
+      },
+      "Deleted": {
+        "type": "object",
+        "required": ["type", "at"],
+        "properties": { "type": { "type": "string" }, "at": { "type": "string" }, "reason": { "type": "string" } }
+      },
+      "Event": {
+        "oneOf": [{ "$ref": "#/components/schemas/Created" }, { "$ref": "#/components/schemas/Deleted" }],
+        "discriminator": {
+          "propertyName": "type",
+          "mapping": { "created": "#/components/schemas/Created", "deleted": "#/components/schemas/Deleted" }
+        }
+      }
     }
   }
 }

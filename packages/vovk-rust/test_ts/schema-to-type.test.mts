@@ -676,3 +676,263 @@ describe('schema shapes', () => {
     assert.ok(!/[\r\u202e]/u.test(output), output);
   });
 });
+
+describe('a union reads the variant the value belongs to', () => {
+  const convert = (schemas: Record<string, VovkJSONSchemaBase>) =>
+    convertJSONSchemasToRustTypes({ schemas, rootName: 'test' });
+  // the source of each function a field or a variant names in deserialize_with
+  const readers = (output: string, field: RegExp) =>
+    [...output.matchAll(field)].map(([, name]) => {
+      const start = output.indexOf(`fn ${name}<'de`);
+      assert.ok(start !== -1, `no fn ${name}\n${output}`);
+      return output.slice(start, output.indexOf('\n\n', start));
+    });
+
+  test('a constant field reads only its value, its type stays', () => {
+    // z.discriminatedUnion, the shorter variant first
+    const output = convert({
+      output: {
+        oneOf: [
+          {
+            type: 'object',
+            properties: { status: { type: 'string', const: 'pending' } },
+            required: ['status'],
+            additionalProperties: false,
+          },
+          {
+            type: 'object',
+            properties: { status: { type: 'string', const: 'done' }, result: { type: 'number' } },
+            required: ['status', 'result'],
+            additionalProperties: false,
+          },
+        ],
+      },
+    });
+    const [pending, done] = readers(output, /deserialize_with = "(\w+)"\)\]\n\s*pub status: String,/g);
+
+    assert.match(pending, /-> ::std::result::Result<String, __D::Error>/);
+    assert.match(pending, /if __value == "pending" \{/);
+    assert.match(done, /if __value == "done" \{/);
+    assert.ok(output.includes('pub result: f64,'), output);
+  });
+
+  test('a constant without a type, a boolean, a number and an optional constant', () => {
+    // valibot and arktype leave the type out
+    const output = convert({
+      output: {
+        anyOf: [
+          {
+            type: 'object',
+            properties: { kind: { const: 'a' }, ok: { type: 'boolean', const: true }, n: { type: 'number', const: 2 } },
+            required: ['kind', 'ok', 'n'],
+          },
+          {
+            type: 'object',
+            properties: { kind: { const: 'b' }, i: { type: 'integer', const: -1 } },
+            required: ['kind'],
+          },
+        ],
+      },
+    });
+
+    assert.match(readers(output, /deserialize_with = "(\w+)"\)\]\n\s*pub kind: String,/g)[1], /__value == "b"/);
+    assert.match(readers(output, /deserialize_with = "(\w+)"\)\]\n\s*pub ok: bool,/g)[0], /__value == true/);
+    assert.match(readers(output, /deserialize_with = "(\w+)"\)\]\n\s*pub n: f64,/g)[0], /__value == 2\.0/);
+    const [optional] = readers(output, /deserialize_with = "(\w+)"\)\]\n\s*pub i: Option<i64>,/g);
+    assert.match(optional, /-> ::std::result::Result<Option<i64>, __D::Error>/);
+    // an unset optional field reads as None
+    assert.match(optional, /__value\.as_ref\(\)\.map_or\(true, \|__v\| \*__v == -1\)/);
+  });
+
+  test('a union of constants reads each through its own check', () => {
+    // z.union([z.literal('a'), z.literal('b')])
+    const output = convert({
+      output: {
+        type: 'object',
+        properties: {
+          l: {
+            anyOf: [
+              { type: 'string', const: 'a' },
+              { type: 'string', const: 'b' },
+            ],
+          },
+        },
+        required: ['l'],
+      },
+    });
+    const [a, b] = readers(output, /Variant\d\(#\[serde\(deserialize_with = "(\w+)"\)\] String\),/g);
+
+    assert.match(a, /__value == "a"/);
+    assert.match(b, /__value == "b"/);
+  });
+
+  test('an OpenAPI discriminator picks the variant its value names', () => {
+    const output = convert({
+      output: {
+        type: 'object',
+        properties: { pet: { $ref: '#/$defs/AnyPet' }, event: { $ref: '#/$defs/Event' } },
+        required: ['pet', 'event'],
+        $defs: {
+          AnyPet: {
+            oneOf: [{ $ref: '#/$defs/Cat' }, { $ref: '#/$defs/Dog' }],
+            discriminator: { propertyName: 'petType' },
+          },
+          Cat: { allOf: [{ $ref: '#/$defs/Pet' }, { type: 'object', properties: { lives: { type: 'integer' } } }] },
+          Dog: { allOf: [{ $ref: '#/$defs/Pet' }, { type: 'object', properties: { bark: { type: 'boolean' } } }] },
+          Pet: { type: 'object', properties: { name: { type: 'string' }, petType: { type: 'string' } } },
+          Event: {
+            oneOf: [{ $ref: '#/$defs/Created' }, { $ref: '#/$defs/Deleted' }],
+            discriminator: {
+              propertyName: 'type',
+              mapping: { created: '#/components/schemas/Created', deleted: 'Deleted' },
+            },
+          },
+          Created: { type: 'object', properties: { type: { type: 'string' } } },
+          Deleted: { type: 'object', properties: { type: { type: 'string' }, reason: { type: 'string' } } },
+        },
+      } as VovkJSONSchemaBase,
+    });
+    const impl = (name: string) => {
+      const start = output.indexOf(`impl<'de> serde::Deserialize<'de> for ${name} {`);
+      assert.ok(start !== -1, output);
+      return output.slice(start, output.indexOf('\n  }\n', start));
+    };
+
+    assert.ok(
+      output.includes(
+        '#[derive(Debug, Serialize, Clone)]\n  #[allow(non_camel_case_types)]\n  #[serde(untagged)]\n  pub enum AnyPet {'
+      ),
+      output
+    );
+    assert.match(impl('AnyPet'), /__value\.get\("petType"\)/);
+    assert.match(impl('AnyPet'), /"Cat" => 0,\n\s*"Dog" => 1,\n\s*_ => 2,/);
+    assert.match(impl('Event'), /"created" => 0,\n\s*"deleted" => 1,/);
+    // a variant the mapping names is still named by its component name too
+    assert.match(impl('Event'), /"Deleted" => 1,/);
+  });
+
+  test('a union without a discriminator keeps the derived reader', () => {
+    const output = convert({
+      output: { oneOf: [{ type: 'string' }, { type: 'object', properties: { a: { type: 'string' } } }] },
+    });
+
+    assert.ok(output.includes('#[derive(Debug, Serialize, Deserialize, Clone)]'), output);
+    assert.ok(!output.includes('impl<'), output);
+  });
+});
+
+describe('a named schema in two slots', () => {
+  const convert = (schemas: Record<string, VovkJSONSchemaBase>) =>
+    convertJSONSchemasToRustTypes({ schemas, rootName: 'test' });
+
+  test('two unnamed recursive schemas of one name get a type each', () => {
+    // zod names the first unnamed recursive schema of each slot __schema0, valibot names it "0"
+    const output = convert({
+      body: JSON.parse(
+        '{"type":"object","properties":{"cat":{"$ref":"#/$defs/__schema0"}},"required":["cat"],"$defs":{"__schema0":{"type":"object","properties":{"name":{"type":"string"},"children":{"type":"array","items":{"$ref":"#/$defs/__schema0"}}},"required":["name","children"]}}}'
+      ),
+      output: JSON.parse(
+        '{"type":"object","properties":{"c":{"$ref":"#/$defs/__schema0"}},"required":["c"],"additionalProperties":false,"$defs":{"__schema0":{"type":"object","properties":{"text":{"type":"string"},"likes":{"type":"number"},"replies":{"type":"array","items":{"$ref":"#/$defs/__schema0"}}},"required":["text","likes","replies"],"additionalProperties":false}}}'
+      ),
+    });
+
+    assert.ok(output.includes('pub struct __schema0 {') && output.includes('pub struct __schema0_2 {'), output);
+    assert.ok(output.includes('pub cat: __schema0,') && output.includes('pub children: Vec<__schema0>,'), output);
+    assert.ok(output.includes('pub c: __schema0_2,') && output.includes('pub replies: Vec<__schema0_2>,'), output);
+  });
+
+  test('a def that refers to a def of its own slot gets its own type with it', () => {
+    const slot = (field: string) =>
+      JSON.parse(
+        `{"$ref":"#/$defs/A","$defs":{"A":{"type":"object","properties":{"b":{"$ref":"#/$defs/B"}},"required":["b"]},"B":{"type":"object","properties":{"${field}":{"type":"string"}},"required":["${field}"]}}}`
+      );
+    const output = convert({ body: slot('x'), output: slot('y') });
+
+    assert.ok(output.includes('pub b: B,') && output.includes('pub x: String,'), output);
+    assert.ok(output.includes('pub struct A_2 {') && output.includes('pub b: B_2,'), output);
+    assert.ok(output.includes('pub y: String,') && output.includes('pub type output = A_2;'), output);
+  });
+
+  test('the input and output forms of one schema share its type', () => {
+    // a zod schema with .meta({ id: 'User' }): a default and a transform differ between input and output
+    const output = convert({
+      body: JSON.parse(
+        '{"type":"object","properties":{"u":{"$ref":"#/$defs/User"}},"required":["u"],"$defs":{"User":{"type":"object","properties":{"id":{"type":"string"},"role":{"default":"user","type":"string"},"n":{"type":"string"}},"required":["id"]}}}'
+      ),
+      output: JSON.parse(
+        '{"type":"object","properties":{"u":{"$ref":"#/$defs/User"}},"required":["u"],"additionalProperties":false,"$defs":{"User":{"type":"object","properties":{"id":{"type":"string"},"role":{"default":"user","type":"string"},"n":{}},"required":["id","role","n"],"additionalProperties":false}}}'
+      ),
+    });
+
+    assert.strictEqual(output.match(/pub struct User /g)?.length, 1, output);
+    assert.ok(!output.includes('User_2'), output);
+  });
+});
+
+describe('a recursive named schema that is not a struct or an enum', () => {
+  const convert = (schemas: Record<string, VovkJSONSchemaBase>) =>
+    convertJSONSchemasToRustTypes({ schemas, rootName: 'test' });
+
+  test('becomes a newtype: rustc rejects a recursive type alias', () => {
+    const output = convert({
+      // z.record(z.string(), z.lazy(() => Tree))
+      body: JSON.parse(
+        '{"type":"object","properties":{"t":{"$ref":"#/$defs/__schema0"}},"required":["t"],"$defs":{"__schema0":{"type":"object","propertyNames":{"type":"string"},"additionalProperties":{"$ref":"#/$defs/__schema0"}}}}'
+      ),
+      output: {
+        type: 'object',
+        properties: {
+          m: { $ref: '#/$defs/Nested' },
+          a: { $ref: '#/$defs/A' },
+          n: { $ref: '#/$defs/N' },
+          p: { $ref: '#/$defs/P' },
+          o: { $ref: '#/$defs/O' },
+        },
+        required: ['m', 'a', 'n', 'p', 'o'],
+        $defs: {
+          Nested: { type: 'array', items: { $ref: '#/$defs/Nested' } },
+          A: { type: 'array', items: { $ref: '#/$defs/B' } },
+          B: { type: 'object', additionalProperties: { $ref: '#/$defs/A' } },
+          N: { anyOf: [{ type: 'array', items: { $ref: '#/$defs/N' } }, { type: 'null' }] },
+          P: {
+            type: 'array',
+            prefixItems: [{ type: 'string' }, { type: 'array', items: { $ref: '#/$defs/P' } }],
+            items: false,
+            minItems: 2,
+          },
+          O: { anyOf: [{ $ref: '#/$defs/O' }, { type: 'null' }] },
+        },
+      },
+    });
+    const newtype = (name: string, type: string) => `#[serde(transparent)]\n  pub struct ${name}(pub ${type});`;
+
+    assert.ok(output.includes(newtype('__schema0', 'std::collections::HashMap<String, __schema0>')), output);
+    assert.ok(output.includes(newtype('Nested', 'Vec<Nested>')), output);
+    assert.ok(output.includes(newtype('A', 'Vec<B>')), output);
+    assert.ok(output.includes(newtype('B', 'std::collections::HashMap<String, A>')), output);
+    assert.ok(output.includes(newtype('N', 'Option<Vec<N>>')), output);
+    assert.ok(output.includes(newtype('P', '(String, Vec<P>)')), output);
+    assert.ok(output.includes(newtype('O', 'Option<Box<O>>')), output);
+  });
+
+  test('stays an alias when nothing recurses, or when a struct comes between', () => {
+    const output = convert({
+      body: {
+        type: 'object',
+        properties: { tags: { $ref: '#/$defs/Tags' }, l: { $ref: '#/$defs/L' }, open: { $ref: '#/$defs/Open' } },
+        required: ['tags', 'l', 'open'],
+        $defs: {
+          Tags: { type: 'array', items: { type: 'string' } },
+          L: { type: 'array', items: { type: 'object', properties: { next: { $ref: '#/$defs/L' } } } },
+          // an open tuple is a list of any value, the reference is not in its type
+          Open: { type: 'array', prefixItems: [{ $ref: '#/$defs/Open' }] },
+        },
+      },
+    });
+
+    assert.ok(output.includes('pub type Tags = Vec<String>;'), output);
+    assert.ok(output.includes('pub type L = Vec<LItem>;'), output);
+    assert.ok(output.includes('pub type Open = Vec<serde_json::Value>;'), output);
+    assert.ok(!output.includes('transparent'), output);
+  });
+});
