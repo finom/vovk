@@ -2,7 +2,7 @@ import assert from 'node:assert';
 import { describe, it } from 'node:test';
 import { createCodeSamples, toUnderscoredPackageName } from 'vovk/internal';
 import { normalizeOutTemplatePath } from '../../../dist/generate/write-one-client-file.mjs';
-import { toPythonPackageName } from '../../../dist/utils/python-package-name.mjs';
+import { PYTHON_STDLIB_MODULES, toPythonPackageName } from '../../../dist/utils/python-package-name.mjs';
 
 await describe('toUnderscoredPackageName', async () => {
   await it('Turns an npm name into a Python and Cargo package name', () => {
@@ -69,6 +69,17 @@ await describe('toUnderscoredPackageName', async () => {
         config: {},
       });
       assert.strictEqual(py.split('\n')[0], `from ${toPythonPackageName(py_name)} import UserRPC`, py_name);
+    }
+  });
+});
+
+await describe('PYTHON_STDLIB_MODULES', async () => {
+  await it('Lists the top-level modules of the Python standard library, test included', () => {
+    for (const name of ['test', 'site', 'email', 'json', 'platform', 'types', 'http', 'distutils', 'tomllib']) {
+      assert.ok(PYTHON_STDLIB_MODULES.has(name), name);
+    }
+    for (const name of ['requests', 'web_app', 'acme_web_app', 'my_package_name']) {
+      assert.ok(!PYTHON_STDLIB_MODULES.has(name), name);
     }
   });
 });

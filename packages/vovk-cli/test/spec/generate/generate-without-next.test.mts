@@ -1042,6 +1042,32 @@ imports:
     assert.doesNotMatch(withOrigin.stdout + withOrigin.stderr, /outputConfig\.origin/);
   });
 
+  await it('Warns once that a Python package named after a standard library module cannot be imported', async () => {
+    const warningsOf = async (packageJson: object, args: string[], pkg?: object) => {
+      await createProject(projectDir, {
+        'package.json': { version: '1.0.0', type: 'module', ...packageJson },
+        'vovk.config.mjs': configFile({
+          composedClient: { prettifyClient: false },
+          outputConfig: { origin: 'https://example.com', package: pkg },
+        }),
+        '.vovk-schema/root.json': userSegmentSchema,
+      });
+      const { stdout, stderr } = await runCLI(['generate', ...args], { cwd: projectDir });
+      return `${stdout}${stderr}`.split('\n').filter((line) => line.includes('standard library'));
+    };
+
+    for (const name of ['site', 'test']) {
+      const warnings = await warningsOf({ name }, ['--from', 'py']);
+      assert.strictEqual(warnings.length, 1, warnings.join('\n'));
+      assert.ok(warnings[0].includes(`"${name}"`), warnings[0]);
+      assert.ok(warnings[0].includes('outputConfig.package.py_name'), warnings[0]);
+    }
+    assert.strictEqual((await warningsOf({ name: 'app' }, ['--from', 'py'], { py_name: 'email' })).length, 1);
+    assert.deepStrictEqual(await warningsOf({ name: 'site' }, ['--from', 'py'], { py_name: 'site_client' }), []);
+    // a Rust crate of that name works
+    assert.deepStrictEqual(await warningsOf({ name: 'site' }, ['--from', 'rs']), []);
+  });
+
   await it('Gives the OpenAPI document and the Python package a version when package.json has none', async () => {
     await createProject(projectDir, {
       'package.json': { name: 'app', type: 'module' },

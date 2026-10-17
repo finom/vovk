@@ -27,7 +27,7 @@ import { GENERATED_BANNER_PREFIX, hasGeneratedBanner } from '../utils/generated-
 import { getJSONImportAttributes } from '../utils/get-ts-import-options.mjs';
 import type { Segment } from '../utils/locate-segments.mjs';
 import { prettify, warnIfPrettierMissing } from '../utils/prettify.mjs';
-import { toPythonPackageName } from '../utils/python-package-name.mjs';
+import { PYTHON_STDLIB_MODULES, toPythonPackageName } from '../utils/python-package-name.mjs';
 import { toImportPath, toPosixPath } from '../utils/to-import-path.mjs';
 import type { ClientTemplateFile } from './get-client-template-files.mjs';
 import { getTemplateClientImports } from './get-template-client-imports.mjs';
@@ -61,6 +61,7 @@ export function getOutputConfigs(
 
 // a template is warned about once per process, as vovk dev generates again and again
 const templatesWithoutOrigin = new Set<string>();
+const stdlibPackageNames = new Set<string>();
 
 // Python imports the package by its folder name, so a py_name it can't import is made valid; Cargo takes any rs_name
 const getUnderscoredPackageName = (packageJson: VovkPackageJson, packageNameKey?: 'py_name' | 'rs_name') =>
@@ -312,6 +313,18 @@ export async function renderOneClientFile({
         `The "${templateName}" template writes a client without an origin, so its calls can't be sent. Set outputConfig.origin, or pass api_root to every call.`
       );
     }
+  }
+
+  // renaming the package would break the clients generated before, so the user picks another name
+  if (
+    packageNameKey === 'py_name' &&
+    PYTHON_STDLIB_MODULES.has(t.underscoredPackageName) &&
+    !stdlibPackageNames.has(t.underscoredPackageName)
+  ) {
+    stdlibPackageNames.add(t.underscoredPackageName);
+    log.warn(
+      `The Python package name "${t.underscoredPackageName}" is a module of the Python standard library, so "import ${t.underscoredPackageName}" loads that module, not the client. Set outputConfig.package.py_name to another name.`
+    );
   }
 
   if (Array.isArray(data.imports)) {
