@@ -16,6 +16,16 @@ test('a type name the docs tell users to annotate with is a type for mypy', asyn
         $defs: { Pet: { type: 'object', properties: { name: { type: 'string' } }, required: ['name'] } },
       },
     ],
+    // a class and an alias of one name: mypy reports no-redef, pyright refuses the name as a type
+    [
+      'an object that may be null, as an OpenAPI 3.0 mixin body or response is',
+      { type: ['object', 'null'], properties: { name: { type: 'string' } }, required: ['name'] },
+    ],
+    [
+      'an object that may be null, with a key that is not a plain name',
+      { type: ['object', 'null'], properties: { 'content-type': { type: 'string' } } },
+    ],
+    ['an object or an array', { type: ['object', 'array'], properties: { name: { type: 'string' } } }],
   ];
 
   for (const [label, schema] of cases) {
@@ -26,9 +36,10 @@ test('a type name the docs tell users to annotate with is a type for mypy', asyn
         className: 'GetPetOutput',
         pad: 4,
       });
-      const declaration = result.split('\n').find((line) => /^\s*(class )?GetPetOutput\b/.test(line)) ?? '';
+      const declarations = result.split('\n').filter((line) => /^\s*(class )?GetPetOutput\b/.test(line));
 
-      assert.match(declaration, /^\s*(class GetPetOutput\(|GetPetOutput = TypedDict\(|GetPetOutput: TypeAlias = )/);
+      assert.equal(declarations.length, 1, result);
+      assert.match(declarations[0], /^\s*(class GetPetOutput\(|GetPetOutput = TypedDict\(|GetPetOutput: TypeAlias = )/);
     });
   }
 });

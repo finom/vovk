@@ -63,6 +63,19 @@ const petstore = {
         },
       },
     },
+    // a tuple from a component, which the response refers to
+    '/pets/{petId}/position': {
+      get: {
+        operationId: 'getPetPosition',
+        parameters: [{ name: 'petId', in: 'path', required: true, schema: { type: 'string' } }],
+        responses: {
+          200: {
+            description: 'ok',
+            content: { 'application/json': { schema: { $ref: '#/components/schemas/Position' } } },
+          },
+        },
+      },
+    },
     // a query and an urlencoded body in the styles the document declares
     '/styled': {
       get: {
@@ -135,6 +148,7 @@ const petstore = {
         required: ['name'],
         properties: { name: { type: 'string' }, tag: { type: 'string' } },
       },
+      Position: { type: 'array', prefixItems: [{ type: 'number' }, { type: 'number' }], items: false },
       // definitions that refer to themselves
       Json: {
         anyOf: [
