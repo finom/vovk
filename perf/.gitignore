@@ -41,10 +41,9 @@ yarn-error.log*
 next-env.d.ts
 
 tmp*
-# generated: npm run create-modules, npm run create-cold-start-tests
+# generated: npm run create-modules
 /src/modules/
 /src/app/api/
-/bench/generated_coldStartPerfTest.ts
 
 # written by next dev
 /AGENTS.md

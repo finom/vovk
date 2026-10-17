@@ -316,7 +316,7 @@ Third-party OAS documents can contain keywords that JSON Schema doesn't define, 
 
 ### Filter Operations and Prune Components
 
-A large spec makes a large client: every operation becomes a method, and the generated schema carries the whole `components` dictionary. Stripe's spec gives 534 methods and 1693 components, megabytes of generated JSON for an app that may call a few endpoints. Two options cut this down:
+A large spec makes a large client: every operation becomes a method, and the generated schema carries the whole `components` dictionary. Stripe's spec gives 559 methods and 1823 components, megabytes of generated JSON for an app that may call a few endpoints. Two options cut this down:
 
 - `filterOperations`: only the operations the predicate returns `true` for are generated. It receives the same object as the naming functions (`operationObject`, `method`, `path`, `openAPIObject`) and runs before them, so a filtered-out operation produces no method, types or validation schemas. Omit it to keep all operations.
 - `pruneComponents` (default `false`): removes from the segment schema every component that the kept operations don't reference, directly or through other components. Don't turn it on if you import `Mixins.<Segment>.<Component>` types for components that no kept operation uses: they are removed with their schemas.
@@ -348,7 +348,7 @@ const config = {
 export default config;
 ```
 
-For this Stripe subset, the segment schema drops from ~8.4 MB (534 operations, 1693 components) to ~1.2 MB (8 operations, 863 components). Stripe's core objects reference each other a lot, so the 8 operations still reach 863 components.
+For this Stripe subset, the generated `mixins.json` drops from ~19 MB (559 operations, 1823 components) to ~2.4 MB (8 operations, 927 components); minified, from ~9.6 MB to ~1.4 MB. Stripe's core objects reference each other a lot, so the 8 operations still reach 927 components. Measured on Stripe's spec `2026-09-30.endive`; the numbers change as the spec grows.
 
 ### Customize Fetcher
 

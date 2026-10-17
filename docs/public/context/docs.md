@@ -4,8 +4,8 @@ description: "Full documentation for the Vovk.ts framework, excluding the Realti
 see_also:
   label: "Realtime Kanban Context"
   url: https://vovk.dev/context/realtime-ui.md
-chars: 397978
-est_tokens: 99495
+chars: 406567
+est_tokens: 101642
 ---
 
 Page: https://vovk.dev
@@ -22,7 +22,9 @@ To start, run the `init` command in an existing Next.js project.
 npx vovk-cli@latest init
 ```
 
-> Requires Node.js 24.15+, Next.js 15+ and TypeScript 5.5+. &nbsp; [Quick Start](https://vovk.dev/quick-install) · [Manual Install](https://vovk.dev/manual-install) · [Claude Plugin](https://vovk.dev/claude) · [GitHub](https://github.com/finom/vovk)
+> Requires Node.js 24.15+, Next.js 15+ and TypeScript 5.5+.
+>
+> [Quick Start](https://vovk.dev/quick-install) · [Manual Install](https://vovk.dev/manual-install) · [Claude Plugin](https://vovk.dev/claude) · [GitHub](https://github.com/finom/vovk)
 
 ---
 
@@ -659,9 +661,9 @@ Without it, asking Claude to *"scaffold a Vovk procedure with Zod validation"* g
 With the plugin, the agent loads the framework's patterns as topic skills:
 
 - **One topic at a time.** Only the needed skills load, so Claude doesn't read thousands of lines of docs for one question.
-- **Self-contained.** The base skill, loaded with every other skill, tells the agent *not to fetch vovk.dev mid-task*: the plugin is the source of truth. It works offline, with a predictable cost and no rate limits.
+- **Self-contained.** The base skill, loaded first for any Vovk.ts task, holds the facts an API build needs, checked against vovk 4's code. It tells the agent *not to fetch vovk.dev mid-task* and not to read vovk's source in `node_modules`: the plugin is the source of truth. It works offline, with a predictable cost and no rate limits.
 - **Handoffs between skills.** A skill points to the one that owns a topic: mixins to tools for LLM tools, procedure to jsonlines for streaming. The agent loads the context it needs, not the context next to it.
-- **Compressed text.** Terse "caveman" prose: about 10% fewer tokens per load, with the same content.
+- **Compressed text.** The topic skills use terse "caveman" prose: about 10% fewer tokens per load, with the same content.
 
 ## Install
 
@@ -690,7 +692,7 @@ In Claude Code, run `/plugin`: the **Installed** tab lists `vovk`. Skill names s
 The plugin has fifteen topic skills that cover every part of Vovk.ts:
 
 - **`vovk:init`** — set up Vovk.ts in a Next.js App Router project, or create a new Next.js app and run `vovk init` in it.
-- **`vovk:base`** — base rules loaded with every other vovk:* skill: commit policy for `.vovk-schema/`, runtime requirements, template names, the `_schema_` endpoint, a short API and inference-type summary (`VovkBody`, `VovkOutput`, …).
+- **`vovk:base`** — the essentials, loaded first for any Vovk.ts task: what `vovk` exports, the project layout, a complete endpoint, how requests, validation and errors behave, status codes, a custom error format, CORS, and how to get the schema, the typed client and the OpenAPI document.
 - **`vovk:config`** — the `vovk.config.{mjs,cjs,js}` shape, every config key and default (`rootEntry`, `schemaOutDir`, `composedClient`, `segmentedClient`, `clientTemplateDefs`, `outputConfig`, `bundle`, …), and the `tsconfig.json` setup.
 - **`vovk:segment`** — segments (root, named, static), `initSegment`, segment priority, `generateStaticParams`.
 - **`vovk:multitenant`** — routing tenants by subdomain: the `multitenant()` proxy, the `overrides` shape, per-tenant segments and front-end pages, wildcard DNS.
@@ -3163,6 +3165,9 @@ The function returns an array of tools. Each tool satisfies the `StandardToolV0`
 - `toModelOutput?: ToModelOutputFn<TInput, TOutput, TFormattedOutput>{:ts}` - an optional function that formats the output for the LLM. Set it to your own function or to a built-in formatter from the `ToModelOutput` object, exported from `vovk`:
   - `ToModelOutput.MCP` for MCP formatting.
   - `ToModelOutput.DEFAULT`, the default when `toModelOutput` isn't set.
+  - `ToModelOutput.RAW`: the result as the procedure gives it, and a failed call throws its error after `onError`. For callers that need the throw, such as [**uicast**](https://vovk.dev/uicast).
+
+  A formatter that returns an `Error` for a failed call makes the tool throw it.
 - `meta?: Record<string, unknown>{:ts}` - optional metadata for each controller or RPC method. The back end reads it with [req.vovk.meta](https://vovk.dev/req-vovk#meta). A controller procedure merges it with its own meta as usual. An RPC method gets it under the `xMetaHeader` key. [OpenAPI mixins](https://vovk.dev/mixins) don't get it, since their hosts are third parties.
 
 ## Custom Operation Attributes with `x-tool` or `@operation.tool` Decorator
@@ -3648,6 +3653,73 @@ const sumNumbersMCP = withFormattedOutput(sumNumbers, (result) =>
 ---
 
 See [Realtime Kanban / MCP](https://vovk.dev/realtime-ui/mcp) for more.
+
+---
+
+Page: https://vovk.dev/uicast
+
+# Using with uicast
+
+[**uicast**](https://uicast.dev) renders UIs that a model writes as JSON Lines. Expressions in those UIs reach your API through [host functions](https://uicast.dev/expr/functions), and each host function is a [standard-tool](https://standard-tool.js.org/) (`StandardToolV0`). [`deriveTools()`](https://vovk.dev/tools) returns the same type, so your procedures can be the host functions, with no tool written by hand.
+
+## Derive the Tools from RPC Modules
+
+Host functions run where **uicast** renders, in the browser. Derive them from the modules of the [TypeScript client](https://vovk.dev/typescript), which call the endpoints over HTTP. Deriving them from controllers would put server code in the browser bundle.
+
+```ts showLineNumbers copy filename="src/tools.ts"
+import { deriveTools, ToModelOutput } from 'vovk';
+import { OrderRPC } from '@/client';
+
+export const tools = deriveTools({
+  modules: { OrderRPC },
+  toModelOutput: ToModelOutput.RAW,
+});
+```
+
+The same `tools` go to the evaluator in the browser and to the prompt on the server:
+
+```ts showLineNumbers copy
+import { Evaluator } from '@uicast/expr';
+import { tools } from '@/tools';
+
+const evaluator = new Evaluator({ functions: tools });
+```
+
+```ts showLineNumbers copy
+import { getFunctionsPartialPrompt } from '@uicast/core/prompt';
+import { tools } from '@/tools';
+
+const functionsPrompt = getFunctionsPartialPrompt({ functions: tools });
+```
+
+The prompt shows each tool's input and output types, from the procedure's schemas. The model calls a tool with one argument that holds the procedure's `body`, `query` and `params`:
+
+```ts
+createOrder({ body: { customer: 'Grace', total: 50 } })
+```
+
+## Errors
+
+By default, a derived tool doesn't throw: a failed call returns `{ error: message }`, which a model in a tool-calling loop reads as the result. **uicast** takes a returned value as success, so it needs the throw. `ToModelOutput.RAW` returns the result as the procedure gives it and throws the error of a failed call. The failed call then reaches **uicast**'s `onError`, and a callback stops at that step.
+
+What **uicast** gets when a call fails:
+
+- An argument with a key other than `body`, `query` and `params`, or without a required one: `invalid-arguments`. The tool checks the argument's shape in the browser.
+- A value the procedure's schema rejects: `host-function`, with the validation message. The server checks the values, so the fault is `environment`, not `document`, and a [recovery loop](https://uicast.dev/error-recovery) that sends `document` faults back to the model skips it.
+- A thrown error: `host-function`. In production, only an `HttpException{:ts}` keeps its message.
+
+## Tool Names
+
+A derived tool is named `_`, such as `OrderRPC_list`. Set the name and the description the model reads with `@operation.tool`:
+
+```ts showLineNumbers copy
+@operation.tool({ name: 'listOrders', description: 'Orders, newest first.' })
+@get()
+static list = procedure({
+  query: z.object({ minTotal: z.coerce.number().default(0) }),
+  output: z.object({ orders: z.array(Order) }),
+}).handle(({ vovk }) => OrderService.list(vovk.query()));
+```
 
 ---
 
@@ -5394,7 +5466,7 @@ Third-party OAS documents can contain keywords that JSON Schema doesn't define, 
 
 ### Filter Operations and Prune Components
 
-A large spec makes a large client: every operation becomes a method, and the generated schema carries the whole `components` dictionary. Stripe's spec gives 534 methods and 1693 components, megabytes of generated JSON for an app that may call a few endpoints. Two options cut this down:
+A large spec makes a large client: every operation becomes a method, and the generated schema carries the whole `components` dictionary. Stripe's spec gives 559 methods and 1823 components, megabytes of generated JSON for an app that may call a few endpoints. Two options cut this down:
 
 - `filterOperations`: only the operations the predicate returns `true` for are generated. It receives the same object as the naming functions (`operationObject`, `method`, `path`, `openAPIObject`) and runs before them, so a filtered-out operation produces no method, types or validation schemas. Omit it to keep all operations.
 - `pruneComponents` (default `false`): removes from the segment schema every component that the kept operations don't reference, directly or through other components. Don't turn it on if you import `Mixins.<Segment>.<Component>` types for components that no kept operation uses: they are removed with their schemas.
@@ -5426,7 +5498,7 @@ const config = {
 export default config;
 ```
 
-For this Stripe subset, the segment schema drops from ~8.4 MB (534 operations, 1693 components) to ~1.2 MB (8 operations, 863 components). Stripe's core objects reference each other a lot, so the 8 operations still reach 863 components.
+For this Stripe subset, the generated `mixins.json` drops from ~19 MB (559 operations, 1823 components) to ~2.4 MB (8 operations, 927 components); minified, from ~9.6 MB to ~1.4 MB. Stripe's core objects reference each other a lot, so the 8 operations still reach 927 components. Measured on Stripe's spec `2026-09-30.endive`; the numbers change as the spec grows.
 
 ### Customize Fetcher
 
@@ -9440,9 +9512,9 @@ Page: https://vovk.dev/performance
 ## Summary
 
 - Goal: measure Vovk.ts overhead over native Next.js route handlers (not the HTTP stack).
-- Routing: ~1.5 µs median per request from 1 to 1,000 controllers, ~1.75–1.83 µs at 10,000 (20,000 endpoints). Throughput ~545k–675k ops/s per core. The test repeats one path, which the route cache serves; see the notes below the results.
-- Cold start: grows linearly. ~8 ms at 1,000 controllers, ~114 ms at 10,000. About 11–12× the cost of no-op decorators.
-- Notes: Tinybench on Node.js 24.1 and an Apple M4 Pro, measured on 2026-10-06. Next.js runtime cost is not measured. Written from real benchmark output with AI help and small edits. The scripts are in the [`perf`](https://github.com/finom/vovk/tree/main/perf) folder of the Vovk.ts repository.
+- Routing: ~2.1 µs median per request from 1 to 1,000 controllers, 3.2 µs at 10,000 (20,000 endpoints) and 2.1 µs at 50,000 (100,000 endpoints). Throughput ~470k–490k ops/s per core up to 1,000 controllers. The GET path is a static route and the POST path one the route cache has seen; other paths are measured below the results.
+- Cold start: ~11 µs per controller (two endpoints each) up to 1,000 controllers, ~14 µs at 10,000 and 50,000. ~11 ms at 1,000 controllers, ~137 ms at 10,000, ~0.71 s at 50,000. About 11–16× the cost of no-op decorators. The first request of each method then builds that method's route table: ~0.11 s at 50,000 controllers.
+- Notes: Tinybench on Node.js 24.21 and an Apple M4 Pro, measured on 2026-10-17. Each figure is the lowest median of five runs, since other work on the machine only adds time; the first-request table shows the median of the five runs. On Node.js 24.1 the same code routes a request in 1.58 µs; Node.js 24.21 adds about 0.5 µs. Next.js runtime cost is not measured. Written from real benchmark output with AI help and small edits. The scripts are in the [`perf`](https://github.com/finom/vovk/tree/main/perf) folder of the Vovk.ts repository.
 
 ## Reproducing the Tests
 
@@ -9455,7 +9527,7 @@ npm ci
 npm run build
 ```
 
-Run the performance tests from the `perf` folder. The script first generates the 11,111 test controllers.
+Run the performance tests from the `perf` folder. The script first generates the 61,111 test controllers. The suite takes about three minutes on an M4 Pro.
 
 ```sh copy
 cd perf
@@ -9512,9 +9584,10 @@ export default class AController {
 
 ### Methodology (short)
 
-- Generate N controllers (N ∈ \{1, 10, 100, 1,000, 10,000\}), each with:
+- Generate N controllers (N ∈ \{1, 10, 100, 1,000, 10,000, 50,000\}), each with:
   - GET without params.
   - POST with path param "\{id\}" (pattern match).
+- Two endpoints per controller, so 50,000 controllers serve 100,000 endpoints from one segment.
 - Minimal handlers; the full routing and handler path is measured.
 - Tinybench: at least 100 ms per test, nanosecond timing; median latency and throughput.
 
@@ -9522,75 +9595,106 @@ export default class AController {
 
 | Controllers | Endpoints | GET Latency (med) | POST Latency (med) | GET Throughput (med ops/s) | POST Throughput (med ops/s) |
 | ----------- | --------- | ----------------- | ------------------ | -------------------------- | --------------------------- |
-| 1           | 2         | 1,500 ns          | 1,500 ns           | 666,667                    | 666,667                     |
-| 10          | 20        | 1,500 ns          | 1,480 ns           | 666,667                    | 676,034                     |
-| 100         | 200       | 1,500 ns          | 1,500 ns           | 666,667                    | 666,667                     |
-| 1,000       | 2,000     | 1,500 ns          | 1,500 ns           | 666,667                    | 666,667                     |
-| 10,000      | 20,000    | 1,833 ns          | 1,750 ns           | 545,554                    | 571,429                     |
+| 1           | 2         | 2,083 ns          | 2,084 ns           | 480,077                    | 479,846                     |
+| 10          | 20        | 2,041 ns          | 2,084 ns           | 489,956                    | 479,846                     |
+| 100         | 200       | 2,083 ns          | 2,125 ns           | 480,077                    | 470,588                     |
+| 1,000       | 2,000     | 2,083 ns          | 2,125 ns           | 480,077                    | 470,588                     |
+| 10,000      | 20,000    | 3,250 ns          | 3,209 ns           | 307,692                    | 311,624                     |
+| 50,000      | 100,000   | 2,125 ns          | 2,167 ns           | 470,588                    | 461,467                     |
 
 Key takeaways:
 
-- Flat latency up to 1,000 controllers, about 20% higher at 10,000.
-- ≈1.5 µs overhead at typical sizes; GET ≈ POST, so reading the path param costs little.
-- The test repeats one path, which the route cache serves. The first request to a new path with a param scans the routes of its method: about 2.7 µs at 10 controllers, 42 µs at 1,000 and 0.8 ms at 10,000. A path that matches no route is never cached and costs about 3.4 µs, 123 µs and 3.1 ms.
+- Flat latency, ≈2.1 µs, up to 1,000 controllers; GET ≈ POST, so reading the path param costs little.
+- At 10,000 controllers every run is slower, 3.2–3.75 µs; at 50,000 a request takes 2.1–2.3 µs, as at 1,000. A CPU profile puts the extra time at 10,000 in Node.js's `Request`/`Response` code; the Vovk.ts code takes about the same time at every size, about 16% more at 50,000 controllers than at 1,000.
+- The GET path is a static route, found by its literal key. The POST repeats one path with a param, which the route cache serves. Other paths are measured below.
+
+### Paths the route cache can't serve
+
+The route cache keeps up to 1,000 paths per segment and method. The first request to a new path with a param checks every route of its method. A path that matches no route is never cached: it checks the routes of every method, to answer 405 with an `Allow` header or 404. The test sends a new param value on each POST, and a GET to a path with no route ([`routeScan.ts`](https://github.com/finom/vovk/blob/main/perf/bench/routeScanPerfTests/routeScan.ts)).
+
+| Controllers | Endpoints | New path with a param (med) | Path with no route (med) |
+| ----------- | --------- | --------------------------- | ------------------------ |
+| 10          | 20        | 3.1 µs                      | 3.7 µs                   |
+| 1,000       | 2,000     | 31.1 µs                     | 94.6 µs                  |
+| 10,000      | 20,000    | 558 µs                      | 2.1 ms                   |
+| 50,000      | 100,000   | 10.5 ms                     | 26.3 ms                  |
+
+The cost depends on the routes in one segment, so [segments](https://vovk.dev/segment) keep it small.
+
+### First request
+
+A method's route table is built on its first request, and each route is parsed the first time a path is checked against it: a static path checks only its own route, while a new path with a param, or a path with no route, checks every route of the methods it scans. The test starts a fresh process three times per size and times the first GET (a static path), the first POST (a path with a param), and then the first path with no route, which builds the tables of the other methods ([`firstRequest.ts`](https://github.com/finom/vovk/blob/main/perf/bench/firstRequestPerfTests/firstRequest.ts)). A first request is one sample, and a garbage collection pause during it is part of its cost, so the table shows the median of the five runs, each the median of three processes.
+
+| Controllers | Endpoints | First GET (med) | First POST (med) | First path with no route (med) |
+| ----------- | --------- | --------------- | ---------------- | ------------------------------ |
+| 1           | 2         | 7.9 ms          | 0.24 ms          | 0.13 ms                        |
+| 1,000       | 2,000     | 8.8 ms          | 1.85 ms          | 1.5 ms                         |
+| 10,000      | 20,000    | 22.2 ms         | 22.5 ms          | 21.2 ms                        |
+| 50,000      | 100,000   | 111 ms          | 115 ms           | 152 ms                         |
+
+At 1 controller the first GET takes 7.9 ms and the first POST 0.24 ms: about 8 ms of the first GET is a fresh process's first request, at any size, not the route table.
 
 ## Cold Start Overhead
 
-Example cold-start benchmark (N = 1), Vovk.ts against no-op decorators:
+Cold-start benchmark: N controllers of the request tests, defined in a loop and passed to `initSegment()`, against the same classes with no-op decorators:
 
-```ts showLineNumbers copy filename="bench/generated_coldStartPerfTest.ts"
-bench.add("Cold start for 1 controllers", async () => {
+```ts showLineNumbers copy filename="bench/coldStartPerfTest.ts"
+function createSegment(count: number) {
   const controllers: Record<string, Function> = {};
-  @prefix("one/0")
-  class One0Controller {
-    @operation({
-      summary: "Create",
-    })
-    @post("{id}")
-    static create = procedure().handle(() => null);
+  for (let i = 0; i < count; i++) {
+    @prefix(`c/${i}`)
+    class Controller {
+      @operation({ summary: "Get" })
+      @get()
+      static getOne = procedure().handle(() => null);
+
+      @operation({ summary: "Create" })
+      @post("{id}")
+      static create = procedure({
+        disableServerSideValidation: ["params"],
+        params,
+      }).handle(() => null);
+    }
+    controllers[`C${i}Controller`] = Controller;
   }
+  return initSegment({ segmentName: "", emitSchema: true, controllers });
+}
 
-  controllers["One0Controller"] = One0Controller;
+function createNoopClasses(count: number) {
+  const classes: Record<string, Function> = {};
+  for (let i = 0; i < count; i++) {
+    @noopClassDecorator()
+    class Controller {
+      @noopDecorator({ summary: "Get" })
+      @noopDecorator()
+      static getOne = () => null;
 
-  initSegment({
-    segmentName: "",
-    emitSchema: true,
-    controllers,
-  });
-});
-
-bench.add("No-op decorators for 1 classes", async () => {
-  const controllers: Record<string, Function> = {};
-  @noopClassDecorator()
-  class One0Controller {
-    @noopDecorator({
-      summary: "Create",
-    })
-    @noopDecorator("{id}")
-    static create = () => {
-      return null;
-    };
+      @noopDecorator({ summary: "Create" })
+      @noopDecorator("{id}")
+      static create = () => null;
+    }
+    classes[`C${i}Controller`] = Controller;
   }
-});
+  return classes;
+}
 ```
 
 ### Methodology (short)
 
-For N ∈ \{1, 10, 100, 1,000, 10,000\} measure:
+For N ∈ \{1, 10, 100, 1,000, 10,000, 50,000\} measure:
 
-- App creation, decorator processing, metadata build and `initSegment()`.
+- Decorator processing, metadata build and `initSegment()`. The route tables are built later, on each method's [first request](#first-request).
 - Compare with equivalent classes using no-op decorators, to isolate the framework's work.
+- The classes are defined in a loop: at 50,000 classes, one function with every class written out makes V8 spend most of the run compiling that function.
 
 Example no‑op decorators:
 
 ```ts showLineNumbers copy
-function noopDecorator() {
-  return function (..._args: any[]) {};
+function noopDecorator(_arg?: unknown) {
+  return (_target: object, _key: string) => {};
 }
-function noopClassDecorator() {
-  return function <T extends new (...a: any[]) => any>(c: T) {
-    return c;
-  };
+function noopClassDecorator(_message?: string) {
+  return <T>(target: T) => target;
 }
 ```
 
@@ -9598,26 +9702,27 @@ function noopClassDecorator() {
 
 | Controllers | Vovk.ts Init Time (med) | No-op Time (med) | Overhead Ratio | Throughput (ops/s) |
 | ----------- | ----------------------- | ---------------- | -------------- | ------------------ |
-| 1           | 6.896 μs                | 0.583 μs         | 11.8x          | 145,023            |
-| 10          | 64.750 μs               | 5.229 μs         | 12.4x          | 15,444             |
-| 100         | 664.021 μs              | 56.251 μs        | 11.8x          | 1,507              |
-| 1,000       | 8,000.167 μs            | 698.417 μs       | 11.5x          | 125                |
-| 10,000      | 113,550.011 μs          | 18,652.260 μs    | 6.1x           | 9                  |
+| 1           | 11.833 μs               | 0.750 μs         | 15.8x          | 84,509             |
+| 10          | 106.542 μs              | 7.167 μs         | 14.9x          | 9,386              |
+| 100         | 1,037.666 μs            | 76.417 μs        | 13.6x          | 964                |
+| 1,000       | 10,995.937 μs           | 779.917 μs       | 14.1x          | 91                 |
+| 10,000      | 137,407.458 μs          | 10,123.854 μs    | 13.6x          | 7                  |
+| 50,000      | 710,273.646 μs          | 66,843.376 μs    | 10.6x          | 1                  |
 
 Key takeaways:
 
-- Linear growth: about 6.5–8 µs per controller up to 1,000 controllers, about 11 µs per controller at 10,000.
-- At 10,000 classes, garbage collection dominates the no-op run, so its ratio is low.
+- About 11 µs per controller (two endpoints each) up to 1,000 controllers, about 14 µs per controller at 10,000 and 50,000.
+- 50,000 controllers (100,000 endpoints) take about 0.71 s, plus about 0.11 s for each method's first request.
 - Absolute times are small for long-running services, and acceptable for serverless at typical sizes.
 
 ## Practical guidance
 
 - For high-performance workloads, split the app into several [segments](https://vovk.dev/segment) (serverless functions built from Next.js route.ts files), each with up to 1,000 procedures.
-- In theory, with well-planned segments and enough hardware, one Next.js/Vovk.ts app can host up to ~100,000 procedures. Test this in your environment: the real limits are memory, bundle size, cold start budgets and platform quotas.
+- One segment with 100,000 endpoints (50,000 controllers) is measured above: ~2.1–2.3 µs per request to a static or cached path, ~0.71 s of cold start, ~0.11 s for each method's first request, and then ~10.5 ms for a new path with a param and ~26 ms for a path with no route. Test your own app: the real limits are memory, bundle size, cold start budgets and platform quotas.
 
 ---
 
-Benchmarks: Tinybench on Node.js 24.1, on an Apple M4 Pro, 2026-10-06. Numbers can vary with the runtime, hardware and build settings. Scripts: https://github.com/finom/vovk/tree/main/perf
+Benchmarks: Tinybench on Node.js 24.21, on an Apple M4 Pro, 2026-10-17; each figure is the lowest median of five runs. Numbers can vary with the runtime, hardware and build settings. Scripts: https://github.com/finom/vovk/tree/main/perf
 
 ---
 
@@ -10028,7 +10133,7 @@ Options:
 - `modules: Record<string, object>{:ts}` – module names mapped to objects with methods. Each method needs the `schema` property that RPC methods and procedures have, and either `isRPC: true` (RPC modules) or the [fn](https://vovk.dev/fn) function (controllers).
 - `onExecute?: (result: unknown, tool: StandardToolV0, req: Pick<VovkRequest, 'vovk'> | null) => void{:ts}` – called after each successful tool call. For a controller, `req` is the request of the call, with `req.vovk`; for an RPC method, it's `null`.
 - `onError?: (e: Error, tool: StandardToolV0, req: Pick<VovkRequest, 'vovk'> | null) => void{:ts}` – called when a tool call throws, or when a controller returns a `Response` with an error status. `req` is as in `onExecute`, or `null` for a thrown error.
-- `toModelOutput` – formats the tool result for the model.
+- `toModelOutput` – formats the tool result for the model. A formatter that returns an `Error` for a failed call makes the tool throw it.
 - `meta?: Record<string, any>{:ts}` – data passed to each call of a controller handler or RPC method; see [`req.vovk.meta()`](https://vovk.dev/req-vovk#meta).
 
 ```ts showLineNumbers copy
@@ -10056,6 +10161,7 @@ Built-in `toModelOutput` formatters for `deriveTools`. They shape tool results f
 
 - `ToModelOutput.DEFAULT` — the default, used when `toModelOutput` isn't set.
 - `ToModelOutput.MCP` — formats the output in the MCP tool output shape: text, JSON, image or audio. See [tools](https://vovk.dev/tools) for details and examples.
+- `ToModelOutput.RAW` — the result as the procedure gives it; a failed call throws its error, after `onError`. See [Using with uicast](https://vovk.dev/uicast).
 
 ### `createValidateOnClient`
 

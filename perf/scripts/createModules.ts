@@ -1,13 +1,14 @@
 import fs from "node:fs/promises";
 import path from "node:path";
 
-// Writes what `vovk new segment` and `vovk new controller` produce, without spawning the CLI 11,111 times.
+// Writes what `vovk new segment` and `vovk new controller` produce, without spawning the CLI 61,111 times.
 const cases = {
   one: 1,
   ten: 10,
   hundred: 100,
   thousand: 1_000,
   tenThousand: 10_000,
+  fiftyThousand: 50_000,
 };
 
 function numberToLetters(num: number): string {
