@@ -11,6 +11,8 @@ const cliPath = path.join(import.meta.dirname, '../../vovk-cli/dist/index.mjs');
 const hasPython = spawnSync('python3', ['--version']).status === 0;
 // the generated package imports them
 const hasClientDeps = hasPython && spawnSync('python3', ['-c', 'import requests, jsonschema']).status === 0;
+// requirements-ci.txt installs it with the type stubs the generated package needs
+const hasMypy = hasClientDeps && spawnSync('python3', ['-c', 'import mypy']).status === 0;
 const projectDirs: string[] = [];
 
 after(() => {
@@ -282,6 +284,96 @@ test('the types of an OpenAPI mixin', { skip: !hasPython && 'python3 not found' 
   await t.test('every annotation resolves', () => {
     assert.equal(annotationProblems(file), '');
   });
+});
+
+// the values a user writes for the shapes zod, valibot, arktype and OpenAPI documents give
+const shapesUsage = `from typing import List
+from app import ShapeRPC
+
+loose: ShapeRPC.PostLooseBody = {'any': 1, 'key': [True]}
+ShapeRPC.post_loose(body=loose)
+ShapeRPC.post_any_object(body={'a': {'b': None}})
+ShapeRPC.post_pattern(body={'Zoë': 'x'})
+ShapeRPC.post_union(body={'kind': 'a', 'a': 1})
+ShapeRPC.post_union(body={'kind': 'b', 'b': 'x'})
+ShapeRPC.post_literals(body={'size': 's', 'ratio': 0.5})
+tree: ShapeRPC.PostTreeBody = {'name': 'root', 'children': [{'name': 'leaf', 'children': []}]}
+ShapeRPC.post_tree(body=tree)
+ShapeRPC.post_status(body={'status': 'on'})
+ShapeRPC.post_mixed(body={'id': '1', 'a': 'x'})
+profile = ShapeRPC.put_profile(body={'name': 'Rex', 'password': 'secret'})
+ShapeRPC.put_profile(body=None)
+names: List[str] = [] if profile is None else [profile['name'], profile.get('password', '')]
+# a response leaves out a write-only property
+stored: ShapeRPC.PutProfileOutput = {'name': 'Rex'}
+first, second = ShapeRPC.get_pair()
+pair: List[float] = [len(first), second]
+with open(__file__, 'rb') as a, open(__file__, 'rb') as b:
+    ShapeRPC.post_files(files={'a': a, 'b': ('b.txt', b, 'text/plain')})
+    ShapeRPC.post_files(files=[('a', a), ('b', b)])
+`;
+
+test('the types of every schema shape pass mypy', { skip: !hasMypy && 'python3 with mypy not found' }, () => {
+  const body = (schema: unknown) => ({ httpMethod: 'POST', path: '', validation: { body: schema } });
+  const object = (properties: Record<string, unknown>, required = Object.keys(properties)) => ({
+    type: 'object',
+    properties,
+    required,
+  });
+  const profile = {
+    type: ['object', 'null'],
+    properties: { name: { type: 'string' }, password: { type: 'string', writeOnly: true } },
+    required: ['name', 'password'],
+  };
+  const file = { type: 'string', format: 'binary' };
+  const generated = generate({
+    ShapeRPC: controller('Shape', {
+      // zod's looseObject({}); arktype's type('object') and a free-form OpenAPI object; a pattern for the keys
+      postLoose: body({ type: 'object', properties: {}, additionalProperties: {} }),
+      postAnyObject: body({ type: 'object' }),
+      postPattern: body({ type: 'object', patternProperties: { '^\\p{L}+$': { type: 'string' } } }),
+      // zod's discriminatedUnion, valibot's variant
+      postUnion: body({
+        oneOf: [
+          object({ kind: { type: 'string', const: 'a' }, a: { type: 'number' } }),
+          object({ kind: { type: 'string', const: 'b' }, b: { type: 'string' } }),
+        ],
+      }),
+      postLiterals: body(
+        object({ size: { type: 'string', enum: ['s', 'm'] }, ratio: { type: 'number', enum: [0.5, 1, 1.5] } })
+      ),
+      // a zod getter that refers to the whole schema
+      postTree: body(object({ name: { type: 'string' }, children: { type: 'array', items: { $ref: '#' } } }, ['name'])),
+      postStatus: body({
+        ...object({ status: { allOf: [{ $ref: '#/$defs/Status' }] } }),
+        $defs: { Status: { type: 'string', enum: ['on', 'off'] } },
+      }),
+      postMixed: body({
+        allOf: [object({ id: { type: 'string' } }), { oneOf: [object({ a: { type: 'string' } }), object({ b: {} })] }],
+      }),
+      putProfile: { httpMethod: 'PUT', path: 'profile', validation: { body: profile, output: profile } },
+      getPair: {
+        httpMethod: 'GET',
+        path: 'pair',
+        validation: { output: { type: 'array', prefixItems: [{ type: 'string' }, { type: 'number' }], items: false } },
+      },
+      postFiles: body({ ...object({ a: file, b: file }), 'x-contentType': ['multipart/form-data'] }),
+    }),
+  });
+  fs.writeFileSync(generated('src/usage.py'), shapesUsage);
+  const mypy = (...args: string[]) =>
+    spawnSync('python3', ['-m', 'mypy', '--cache-dir', generated('.mypy_cache'), ...args, 'src/usage.py'], {
+      cwd: generated(''),
+      encoding: 'utf-8',
+    });
+
+  for (const args of [
+    ['--config-file', 'pyproject.toml'],
+    ['--config-file', os.devNull, '--strict'],
+  ]) {
+    const result = mypy(...args);
+    assert.equal(result.status, 0, `mypy ${args.join(' ')}\n${result.stdout}${result.stderr}`);
+  }
 });
 
 test('the files a multipart procedure takes', { skip: !hasPython && 'python3 not found' }, () => {
