@@ -1,11 +1,20 @@
 import type { VovkJSONSchemaBase } from '../types/json-schema.js';
 import { createSampleBudget, type SampleBudget, spend } from './sample-budget.js';
 
-export function schemaToObject(
+// what a $ref gives where the schema repeats itself or the budget is spent: an object leaves the property out and an
+// array the item, so the sample still fits the type
+const NO_VALUE = Symbol('no value');
+
+export function schemaToObject(schema: VovkJSONSchemaBase, rootSchema?: VovkJSONSchemaBase): unknown {
+  const value = toValue(schema, rootSchema, new Set(), createSampleBudget());
+  return value === NO_VALUE ? null : value;
+}
+
+function toValue(
   schema: VovkJSONSchemaBase,
-  rootSchema?: VovkJSONSchemaBase,
-  seen: Set<string> = new Set(),
-  budget: SampleBudget = createSampleBudget()
+  rootSchema: VovkJSONSchemaBase | undefined,
+  seen: Set<string>,
+  budget: SampleBudget
 ): unknown {
   if (!schema || typeof schema !== 'object') return null;
   rootSchema = rootSchema || schema;
@@ -31,11 +40,11 @@ export function schemaToObject(
   }
 
   if (schema.oneOf && schema.oneOf.length > 0) {
-    return schemaToObject(schema.oneOf[0], rootSchema, seen, budget);
+    return firstValue(schema.oneOf, rootSchema, seen, budget);
   }
 
   if (schema.anyOf && schema.anyOf.length > 0) {
-    return schemaToObject(schema.anyOf[0], rootSchema, seen, budget);
+    return firstValue(schema.anyOf, rootSchema, seen, budget);
   }
 
   if (schema.allOf && schema.allOf.length > 0) {
@@ -43,7 +52,7 @@ export function schemaToObject(
       (acc: VovkJSONSchemaBase, s: VovkJSONSchemaBase) => Object.assign(acc, s),
       {}
     );
-    return schemaToObject(mergedSchema, rootSchema, seen, budget);
+    return toValue(mergedSchema, rootSchema, seen, budget);
   }
 
   if (schema.type) {
@@ -73,9 +82,23 @@ export function schemaToObject(
   return null;
 }
 
+// the first branch that has a value: a branch that only repeats the schema has none
+function firstValue(
+  branches: VovkJSONSchemaBase[],
+  rootSchema: VovkJSONSchemaBase,
+  seen: Set<string>,
+  budget: SampleBudget
+): unknown {
+  for (const branch of branches) {
+    const value = toValue(branch, rootSchema, seen, budget);
+    if (value !== NO_VALUE) return value;
+  }
+  return NO_VALUE;
+}
+
 function handleRef(ref: string, rootSchema: VovkJSONSchemaBase, seen: Set<string>, budget: SampleBudget): unknown {
   // a ref already being expanded means the schema is circular, stop instead of recursing forever
-  if (seen.has(ref) || !spend(budget)) return null;
+  if (seen.has(ref) || !spend(budget)) return NO_VALUE;
 
   const path = ref.split('/').slice(1) as (keyof VovkJSONSchemaBase)[];
   let current = rootSchema;
@@ -86,10 +109,17 @@ function handleRef(ref: string, rootSchema: VovkJSONSchemaBase, seen: Set<string
     }
   }
 
-  return schemaToObject(current, rootSchema, new Set(seen).add(ref), budget);
+  return toValue(current, rootSchema, new Set(seen).add(ref), budget);
 }
 
+// a sample string the length limits allow
 function handleString(schema: VovkJSONSchemaBase): string {
+  const value = stringSample(schema);
+  const { minLength = 0, maxLength = Infinity } = schema;
+  return value.padEnd(minLength, value).slice(0, Math.max(maxLength, 1));
+}
+
+function stringSample(schema: VovkJSONSchemaBase): string {
   if (schema.format) {
     switch (schema.format) {
       case 'email':
@@ -164,13 +194,15 @@ function handleObject(
     for (const [key, propSchema] of Object.entries<VovkJSONSchemaBase>(schema.properties)) {
       // the required properties, or all of them when none is
       if (required.includes(key) || required.length === 0) {
-        result[key] = schemaToObject(propSchema, rootSchema, seen, budget);
+        const value = toValue(propSchema, rootSchema, seen, budget);
+        if (value !== NO_VALUE) result[key] = value;
       }
     }
   }
 
   if (schema.additionalProperties && typeof schema.additionalProperties === 'object') {
-    result.additionalProp = schemaToObject(schema.additionalProperties, rootSchema, seen, budget);
+    const value = toValue(schema.additionalProperties, rootSchema, seen, budget);
+    if (value !== NO_VALUE) result.additionalProp = value;
   }
 
   return result;
@@ -190,7 +222,9 @@ function handleArray(
 
     const items: unknown[] = [];
     for (let i = 0; i < numItems && spend(budget); i++) {
-      items.push(schemaToObject(itemSchema, rootSchema, seen, budget));
+      const item = toValue(itemSchema, rootSchema, seen, budget);
+      if (item === NO_VALUE) break;
+      items.push(item);
     }
     return items;
   }

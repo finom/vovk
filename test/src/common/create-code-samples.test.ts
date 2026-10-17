@@ -1193,7 +1193,8 @@ const response = await MixedFormRPC.uploadProfile({
       });
 
       assert.ok(result.ts.includes('name: "string"'));
-      assert.ok(result.ts.includes('child: null'));
+      // null isn't a Node: the repeated property is left out
+      assert.ok(!result.ts.includes('child'));
     });
 
     test('mutually referential $refs terminate', () => {

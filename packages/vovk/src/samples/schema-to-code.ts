@@ -86,12 +86,25 @@ export function schemaToCode(
   );
 }
 
+// what a $ref gives where the schema repeats itself or the budget is spent: an object leaves the property out and an
+// array the item, so the sample still fits the type
+const NO_VALUE = Symbol('no value');
+
 export function getSampleValue(
   schema: VovkJSONSchemaBase,
   rootSchema?: VovkJSONSchemaBase,
-  ignoreBinary?: boolean,
-  seen: Set<string> = new Set(),
-  budget: SampleBudget = createSampleBudget()
+  ignoreBinary?: boolean
+): unknown {
+  const value = toSampleValue(schema, rootSchema, ignoreBinary, new Set(), createSampleBudget());
+  return value === NO_VALUE ? null : value;
+}
+
+function toSampleValue(
+  schema: VovkJSONSchemaBase,
+  rootSchema: VovkJSONSchemaBase | undefined,
+  ignoreBinary: boolean | undefined,
+  seen: Set<string>,
+  budget: SampleBudget
 ): unknown {
   if (!schema || typeof schema !== 'object') return null;
   rootSchema = rootSchema || schema;
@@ -121,11 +134,11 @@ export function getSampleValue(
   }
 
   if (schema.oneOf && schema.oneOf.length > 0) {
-    return getSampleValue(schema.oneOf[0], rootSchema, ignoreBinary, seen, budget);
+    return firstValue(schema.oneOf, rootSchema, ignoreBinary, seen, budget);
   }
 
   if (schema.anyOf && schema.anyOf.length > 0) {
-    return getSampleValue(schema.anyOf[0], rootSchema, ignoreBinary, seen, budget);
+    return firstValue(schema.anyOf, rootSchema, ignoreBinary, seen, budget);
   }
 
   if (schema.allOf && schema.allOf.length > 0) {
@@ -142,7 +155,7 @@ export function getSampleValue(
       const required = merged.required && part.required && [...merged.required, ...part.required];
       Object.assign(merged, part, properties && { properties }, required && { required });
     }
-    return getSampleValue(merged, rootSchema, ignoreBinary, refs, budget);
+    return toSampleValue(merged, rootSchema, ignoreBinary, refs, budget);
   }
 
   if (schema.type) {
@@ -309,6 +322,21 @@ export function resolveRef(ref: string, rootSchema: VovkJSONSchemaBase): VovkJSO
   return current;
 }
 
+// the first branch that has a value: a branch that only repeats the schema has none
+function firstValue(
+  branches: VovkJSONSchemaBase[],
+  rootSchema: VovkJSONSchemaBase,
+  ignoreBinary: boolean | undefined,
+  seen: Set<string>,
+  budget: SampleBudget
+): unknown {
+  for (const branch of branches) {
+    const value = toSampleValue(branch, rootSchema, ignoreBinary, seen, budget);
+    if (value !== NO_VALUE) return value;
+  }
+  return NO_VALUE;
+}
+
 function handleRef(
   ref: string,
   rootSchema: VovkJSONSchemaBase,
@@ -317,12 +345,19 @@ function handleRef(
   budget: SampleBudget
 ): unknown {
   // a ref already being expanded means the schema is circular, stop instead of recursing forever
-  if (seen.has(ref) || !spend(budget)) return null;
+  if (seen.has(ref) || !spend(budget)) return NO_VALUE;
   const resolved = resolveRef(ref, rootSchema);
-  return getSampleValue(resolved, rootSchema, ignoreBinary, new Set(seen).add(ref), budget);
+  return toSampleValue(resolved, rootSchema, ignoreBinary, new Set(seen).add(ref), budget);
 }
 
+// a sample string the length limits allow
 function handleString(schema: VovkJSONSchemaBase): string {
+  const value = stringSample(schema);
+  const { minLength = 0, maxLength = Infinity } = schema;
+  return value.padEnd(minLength, value).slice(0, Math.max(maxLength, 1));
+}
+
+function stringSample(schema: VovkJSONSchemaBase): string {
   if (schema.format) {
     switch (schema.format) {
       case 'email':
@@ -399,9 +434,9 @@ function handleObject(
 
     for (const [key, propSchema] of Object.entries<VovkJSONSchemaBase>(schema.properties)) {
       if (required.includes(key) || required.length === 0) {
-        const value = getSampleValue(propSchema, rootSchema, ignoreBinary, seen, budget);
+        const value = toSampleValue(propSchema, rootSchema, ignoreBinary, seen, budget);
         // undefined is an ignored binary field
-        if (value !== undefined) {
+        if (value !== undefined && value !== NO_VALUE) {
           result[key] = value;
         }
       }
@@ -409,8 +444,8 @@ function handleObject(
   }
 
   if (schema.additionalProperties && typeof schema.additionalProperties === 'object') {
-    const value = getSampleValue(schema.additionalProperties, rootSchema, ignoreBinary, seen, budget);
-    if (value !== undefined) {
+    const value = toSampleValue(schema.additionalProperties, rootSchema, ignoreBinary, seen, budget);
+    if (value !== undefined && value !== NO_VALUE) {
       result.additionalProp = value;
     }
   }
@@ -428,8 +463,8 @@ function handleArray(
   // a tuple: a sample of each of its own items
   if (schema.prefixItems?.length) {
     return schema.prefixItems.map((item) => {
-      const value = spend(budget) ? getSampleValue(item, rootSchema, ignoreBinary, seen, budget) : null;
-      return value === undefined ? null : value;
+      const value = spend(budget) ? toSampleValue(item, rootSchema, ignoreBinary, seen, budget) : null;
+      return value === undefined || value === NO_VALUE ? null : value;
     });
   }
 
@@ -451,7 +486,8 @@ function handleArray(
     const items: unknown[] = [];
     let ignoredItems = 0;
     for (let i = 0; i < numItems && spend(budget); i++) {
-      const item = getSampleValue(itemSchema, rootSchema, ignoreBinary, seen, budget);
+      const item = toSampleValue(itemSchema, rootSchema, ignoreBinary, seen, budget);
+      if (item === NO_VALUE) break;
       // an ignored binary item
       if (item === undefined) ignoredItems++;
       else items.push(item);
