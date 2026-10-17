@@ -94,6 +94,22 @@ export function withSegmentPackageName<T extends VovkPackageJson>(
   return result;
 }
 
+const PLACEHOLDER_LINES = [
+  "This is a temporary placeholder to avoid compilation errors if client is imported before it's generated.",
+  'If you still see this text, the client is not generated yet because of an unknown problem.',
+  'Feel free to report an issue at https://github.com/finom/vovk/issues',
+];
+const HASH_COMMENT_EXTENSIONS = ['.py', '.pyi', '.toml', '.cfg', '.yaml', '.yml', '.sh'];
+const SLASH_COMMENT_EXTENSIONS = ['.ts', '.mts', '.cts', '.tsx', '.js', '.mjs', '.cjs', '.jsx', '.rs', '.go', '.kt'];
+
+// the placeholder is a comment in the file's own syntax; a file without one, such as JSON or py.typed, gets none
+function getPlaceholder(outPath: string) {
+  const ext = path.extname(outPath);
+  if (ext === '.md' || ext === '.html') return `<!--\n${PLACEHOLDER_LINES.join('\n')}\n-->`;
+  const prefix = HASH_COMMENT_EXTENSIONS.includes(ext) ? '#' : SLASH_COMMENT_EXTENSIONS.includes(ext) ? '//' : null;
+  return prefix ? PLACEHOLDER_LINES.map((line) => `${prefix} ${line}`).join('\n') : '';
+}
+
 export interface ClientFile {
   templateName: string;
   outPath: string;
@@ -177,14 +193,6 @@ export async function renderOneClientFile({
     normalizeOutTemplatePath(path.join(outCwdRelativeDir, segmentDir, relativeDir), packageJson, packageNameKey)
   );
   const outPath = path.join(outDir, path.basename(templateFilePath).replace('.ejs', ''));
-
-  let placeholder = templateFilePath.endsWith('.json.ejs')
-    ? ''
-    : `// This is a temporary placeholder to avoid compilation errors if client is imported before it's generated.
-// If you still see this text, the client is not generated yet because of an unknown problem.
-// Feel free to report an issue at https://github.com/finom/vovk/issues`;
-
-  placeholder = outPath.endsWith('.py') ? placeholder.replace(/\/\//g, '#') : placeholder;
 
   const getFirstLineBanner = (type: 'html' | 'sh' | 'c' = 'c') => {
     // no timestamp: regenerating unchanged sources must not change committed files
@@ -349,7 +357,8 @@ export async function renderOneClientFile({
     rendered = await prettify(rendered, outPath);
   }
 
-  if (isEnsuringClient) {
+  const placeholder = isEnsuringClient ? getPlaceholder(outPath) : '';
+  if (placeholder) {
     rendered = `${rendered}\n\n${placeholder}`;
   }
 
