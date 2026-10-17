@@ -165,6 +165,26 @@ test('convertJSONSchemaToPythonDataType - enum types', async (t) => {
 
     assert.equal(result, 'NumericEnum: TypeAlias = Literal[1, 2, 3]');
   });
+
+  await t.test('types a value Literal cannot hold by its kind', () => {
+    // Literal holds str, int, bool and None; Zod writes z.literal([0.5, 1]) as { type: 'number', enum: [0.5, 1] }
+    const cases: [unknown[], string][] = [
+      [[0.5, 1], 'Union[Literal[1], float]'],
+      [[1e21, 2], 'Union[Literal[2], float]'],
+      [['a', { x: 1 }, [1]], 'Union[Literal["a"], Dict[str, Any], List[Any]]'],
+      [[1, 2, -3], 'Literal[1, 2, -3]'],
+    ];
+    for (const [values, type] of cases) {
+      const result = convertJSONSchemaToPythonDataType({
+        schema: { enum: values },
+        namespace: 'MyNamespace',
+        className: 'Kind',
+        pad: 0,
+      });
+
+      assert.equal(result, `Kind: TypeAlias = ${type}`);
+    }
+  });
 });
 
 test('convertJSONSchemaToPythonDataType - union types', async (t) => {
@@ -179,6 +199,45 @@ test('convertJSONSchemaToPythonDataType - union types', async (t) => {
     });
 
     assert.equal(result, 'OptionalString: TypeAlias = Union[str, None]');
+  });
+
+  await t.test('an object that may be null gets a class of its own next to the alias', () => {
+    // as an OpenAPI 3.0 object with nullable: true is normalized
+    const result = convertJSONSchemaToPythonDataType({
+      schema: {
+        type: ['object', 'null'],
+        properties: { name: { type: 'string' }, owner: { type: 'object', properties: { id: { type: 'string' } } } },
+        required: ['name'],
+      },
+      namespace: 'MyNamespace',
+      className: 'Pet',
+      pad: 0,
+    });
+
+    assert.equal(
+      result,
+      `class _Pet_owner(TypedDict):
+    id: NotRequired[str]
+class _Pet_object(TypedDict):
+    name: str
+    owner: NotRequired[MyNamespace._Pet_owner]
+Pet: TypeAlias = Union[_Pet_object, None]`
+    );
+  });
+
+  await t.test('an object that may be null and has keys that are not plain names', () => {
+    const result = convertJSONSchemaToPythonDataType({
+      schema: { type: ['object', 'null'], properties: { 'content-type': { type: 'string' } } },
+      namespace: 'MyNamespace',
+      className: 'Pet',
+      pad: 0,
+    });
+
+    assert.equal(
+      result,
+      `_Pet_object = TypedDict("_Pet_object", {"content-type": "NotRequired[str]"})
+Pet: TypeAlias = Union[_Pet_object, None]`
+    );
   });
 
   await t.test('converts union with oneOf', () => {
@@ -540,14 +599,12 @@ test('convertJSONSchemaToPythonDataType - real-world examples', async (t) => {
       pad: 0,
     });
 
-    const expected = `class _Response_data_users_items_meta(TypedDict):
-    pass
-class _Response_data_users_items(TypedDict):
+    const expected = `class _Response_data_users_items(TypedDict):
     id: str
     name: str
     email: str
     role: NotRequired[Literal["admin", "user", "guest"]]
-    meta: NotRequired[API._Response_data_users_items_meta]
+    meta: NotRequired[Dict[str, Any]]
 class _Response_data_pagination(TypedDict):
     page: int
     totalPages: int
@@ -680,11 +737,9 @@ class _AppConfig_database(TypedDict):
     type: Literal["mysql", "postgres", "mongodb"]
     name: str
     credentials: Config._AppConfig_database_credentials
-class _AppConfig_features_auth_providers_items_config(TypedDict):
-    pass
 class _AppConfig_features_auth_providers_items(TypedDict):
     name: str
-    config: NotRequired[Config._AppConfig_features_auth_providers_items_config]
+    config: NotRequired[Dict[str, Any]]
 class _AppConfig_features_auth(TypedDict):
     enabled: NotRequired[bool]
     providers: NotRequired[List[Config._AppConfig_features_auth_providers_items]]
@@ -900,7 +955,7 @@ test('schema text never leaves its literal', async (t) => {
       pad: 0,
     });
 
-    assert.equal(result, 'Kind: TypeAlias = Literal["say \\"hi\\"", True, None, 1.5]');
+    assert.equal(result, 'Kind: TypeAlias = Union[Literal["say \\"hi\\"", True, None], float, Dict[str, Any]]');
   });
 
   await t.test('names the helpers for templates', () => {
@@ -929,6 +984,141 @@ test('allOf and $ref bodies', async (t) => {
     assert.ok(result.includes('    id: int'), result);
     assert.ok(result.includes('    extra: NotRequired[str]'), result);
     assert.ok(result.includes('    own: NotRequired[bool]'), result);
+  });
+
+  await t.test('a lone member that is not an object with keys is that member', () => {
+    // as FastAPI and NestJS wrap a $ref to an enum to give it a description
+    const result = convertJSONSchemaToPythonDataType({
+      schema: {
+        type: 'object',
+        properties: {
+          status: { allOf: [{ $ref: '#/$defs/Status' }], description: 'The status' },
+          scores: { allOf: [{ type: 'object', additionalProperties: { type: 'number' } }] },
+          // the nullable wrapper an OpenAPI 3.0 document gets
+          previous: { anyOf: [{ allOf: [{ $ref: '#/$defs/Status' }] }, { type: 'null' }] },
+        },
+        required: ['status'],
+        $defs: { Status: { type: 'string', enum: ['active', 'inactive'] } },
+      },
+      namespace: 'Rpc',
+      className: 'Body',
+      pad: 0,
+    });
+
+    assert.equal(
+      result,
+      `_Body_Status: TypeAlias = Literal["active", "inactive"]
+class Body(TypedDict):
+    status: Rpc._Body_Status
+    scores: NotRequired[Dict[str, float]]
+    previous: NotRequired[Union[Rpc._Body_Status, None]]`
+    );
+  });
+
+  await t.test('a lone member that is an object with keys stays a class of its own', () => {
+    const result = convertJSONSchemaToPythonDataType({
+      schema: {
+        type: 'object',
+        properties: { owner: { allOf: [{ $ref: '#/$defs/User' }], description: 'The owner' } },
+        required: ['owner'],
+        $defs: { User: { type: 'object', properties: { name: { type: 'string' } }, required: ['name'] } },
+      },
+      namespace: 'Rpc',
+      className: 'Body',
+      pad: 0,
+    });
+
+    assert.equal(
+      result,
+      `class _Body_owner(TypedDict):
+    """
+    The owner
+    """
+    name: str
+class Body(TypedDict):
+    owner: Rpc._Body_owner`
+    );
+  });
+
+  await t.test('a member with branches gives an object per branch', () => {
+    // OpenAPI polymorphism: the keys of a base and of one of the subtypes
+    const result = convertJSONSchemaToPythonDataType({
+      schema: {
+        allOf: [
+          { $ref: '#/$defs/Base' },
+          {
+            oneOf: [
+              { type: 'object', properties: { a: { type: 'string' } }, required: ['a'] },
+              { type: 'object', properties: { b: { type: 'string' } }, required: ['b'] },
+            ],
+          },
+        ],
+        $defs: { Base: { type: 'object', properties: { id: { type: 'string' } }, required: ['id'] } },
+      },
+      namespace: 'Rpc',
+      className: 'Body',
+      pad: 0,
+    });
+
+    assert.equal(
+      result,
+      `class _Body_0(TypedDict):
+    id: str
+    a: str
+class _Body_1(TypedDict):
+    id: str
+    b: str
+Body: TypeAlias = Union[_Body_0, _Body_1]`
+    );
+  });
+
+  await t.test('the keys of the member with branches are in each object', () => {
+    const result = convertJSONSchemaToPythonDataType({
+      schema: {
+        allOf: [
+          {
+            type: 'object',
+            properties: { kind: { type: 'string' } },
+            required: ['kind'],
+            anyOf: [
+              { type: 'object', properties: { a: { type: 'string' } } },
+              { type: 'object', properties: { b: { type: 'string' } } },
+            ],
+          },
+        ],
+      },
+      namespace: 'Rpc',
+      className: 'Body',
+      pad: 0,
+    });
+
+    assert.equal(
+      result,
+      `class _Body_0(TypedDict):
+    kind: str
+    a: NotRequired[str]
+class _Body_1(TypedDict):
+    kind: str
+    b: NotRequired[str]
+Body: TypeAlias = Union[_Body_0, _Body_1]`
+    );
+  });
+
+  await t.test('a union that holds itself is distributed once', () => {
+    const result = convertJSONSchemaToPythonDataType({
+      schema: {
+        allOf: [{ $ref: '#/$defs/Base' }, { $ref: '#/$defs/Loop' }],
+        $defs: {
+          Base: { type: 'object', properties: { id: { type: 'string' } }, required: ['id'] },
+          Loop: { anyOf: [{ $ref: '#/$defs/Loop' }, { type: 'object', properties: { a: { type: 'string' } } }] },
+        },
+      },
+      namespace: 'Rpc',
+      className: 'Body',
+      pad: 0,
+    });
+
+    assert.ok(result.includes('Body: TypeAlias = Union['), result);
   });
 
   await t.test('looks through a bare $ref body for its fields', () => {
@@ -1085,6 +1275,89 @@ test('bodies without top-level properties', async (t) => {
 
     assert.equal(result, 'class Body(TypedDict):\n    meta: Dict[str, Any]');
   });
+
+  await t.test('an object that lists no keys and allows others is a Dict', () => {
+    const cases: [VovkJSONSchemaBase, string][] = [
+      // OpenAPI's free-form object
+      [{ type: 'object' }, 'Dict[str, Any]'],
+      // keys by pattern, as arktype writes an index signature
+      [{ type: 'object', patternProperties: { '^x-': { type: 'string' } } } as VovkJSONSchemaBase, 'Dict[str, str]'],
+      [
+        {
+          type: 'object',
+          patternProperties: { '^s': { type: 'string' }, '^i': { type: 'integer' } },
+        } as VovkJSONSchemaBase,
+        'Dict[str, Union[str, int]]',
+      ],
+      // as Zod emits z.looseObject({}) and z.object({}).catchall(z.number())
+      [{ type: 'object', properties: {}, additionalProperties: {} }, 'Dict[str, Any]'],
+      [{ type: 'object', properties: {}, additionalProperties: { type: 'number' } }, 'Dict[str, float]'],
+    ];
+    for (const [schema, type] of cases) {
+      const result = convertJSONSchemaToPythonDataType({ schema, namespace: 'Rpc', className: 'Body', pad: 0 });
+
+      assert.equal(result, `Body: TypeAlias = ${type}`, JSON.stringify(schema));
+    }
+  });
+
+  await t.test('a free-form object in a property is a Dict', () => {
+    const result = convertJSONSchemaToPythonDataType({
+      schema: { type: 'object', properties: { meta: { type: 'object' } }, required: ['meta'] },
+      namespace: 'Rpc',
+      className: 'Body',
+      pad: 0,
+    });
+
+    assert.equal(result, 'class Body(TypedDict):\n    meta: Dict[str, Any]');
+  });
+
+  await t.test('an object that allows no other keys stays a TypedDict', () => {
+    // as Zod emits z.object({}) and z.strictObject({})
+    const schemas: VovkJSONSchemaBase[] = [
+      { type: 'object', properties: {} },
+      { type: 'object', properties: {}, additionalProperties: false },
+      { type: 'object', additionalProperties: false },
+    ];
+    for (const schema of schemas) {
+      const result = convertJSONSchemaToPythonDataType({ schema, namespace: 'Rpc', className: 'Body', pad: 0 });
+
+      assert.equal(result, 'class Body(TypedDict):\n    pass', JSON.stringify(schema));
+    }
+  });
+});
+
+test('a write-only property', async (t) => {
+  const user = {
+    type: 'object',
+    properties: {
+      name: { type: 'string' },
+      password: { type: 'string', writeOnly: true },
+      pin: { $ref: '#/$defs/Pin' },
+    },
+    required: ['name', 'password', 'pin'],
+    $defs: { Pin: { type: 'string', writeOnly: true } },
+  } as VovkJSONSchemaBase;
+
+  await t.test('may be missing from a response', () => {
+    const result = convertJSONSchemaToPythonDataType({
+      schema: user,
+      namespace: 'Rpc',
+      className: 'Output',
+      pad: 0,
+      direction: 'response',
+    });
+
+    assert.ok(result.includes('    name: str'), result);
+    assert.ok(result.includes('    password: NotRequired[str]'), result);
+    assert.ok(result.includes('    pin: NotRequired[Rpc._Output_Pin]'), result);
+  });
+
+  await t.test('is required in a request', () => {
+    const result = convertJSONSchemaToPythonDataType({ schema: user, namespace: 'Rpc', className: 'Body', pad: 0 });
+
+    assert.ok(result.includes('    password: str'), result);
+    assert.ok(result.includes('    pin: Rpc._Body_Pin'), result);
+  });
 });
 
 test('recursive definitions', async (t) => {
@@ -1225,5 +1498,33 @@ class Body(TypedDict):
     assert.ok(result.includes('class _Body_User(TypedDict):\n    id: str'), result);
     assert.ok(result.includes('class _Body_User_2(TypedDict):\n    name: str'), result);
     assert.ok(result.includes('    owner: Rpc._Body_User_2'), result);
+  });
+
+  await t.test('the names of a type whose name starts with an underscore have one leading underscore', () => {
+    // a handler named _internal: its body is _internalBody
+    const result = convertJSONSchemaToPythonDataType({
+      schema: {
+        type: 'object',
+        properties: {
+          profile: { type: 'object', properties: { name: { type: 'string' } } },
+          user: { $ref: '#/$defs/User' },
+          kind: { $ref: '#/$defs/Kind' },
+        },
+        required: ['profile', 'user', 'kind'],
+        $defs: {
+          User: { type: 'object', properties: { friend: { $ref: '#/$defs/User' } } },
+          Kind: { type: 'string', enum: ['a', 'b'] },
+        },
+      },
+      namespace: 'UserRPC',
+      className: '_internalBody',
+      pad: 0,
+    });
+
+    assert.ok(result.includes('class _internalBody_profile(TypedDict):'), result);
+    assert.ok(result.includes('    profile: UserRPC._internalBody_profile'), result);
+    assert.ok(result.includes('class _internalBody_User(TypedDict):'), result);
+    assert.ok(result.includes('_internalBody_Kind: TypeAlias = Literal["a", "b"]'), result);
+    assert.doesNotMatch(result, /^(class )?__|UserRPC\.__/m);
   });
 });

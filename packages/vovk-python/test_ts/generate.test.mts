@@ -33,6 +33,32 @@ function generate(controllers: Record<string, unknown>, outputConfig: object = {
   return (file: string) => path.join(dir, 'dist_python', file);
 }
 
+// what test_py's test_every_annotation_resolves checks, on a generated package: the annotations of every class and
+// method of every RPC class resolve; the runtime is left out, as the annotations don't need it
+function annotationProblems(file: (file: string) => string, packageName = 'app') {
+  const script = `
+import importlib, inspect, sys, types, typing
+sys.path.insert(0, sys.argv[1])
+stub = types.ModuleType(sys.argv[2] + '.api_client')
+stub.ApiClient = lambda *args: None
+stub.HttpException = Exception
+sys.modules[stub.__name__] = stub
+package = importlib.import_module(sys.argv[2])
+for rpc in [value for value in vars(package).values() if isinstance(value, type) and value.__module__ == package.__name__]:
+    for name, value in vars(rpc).items():
+        target = value.__func__ if isinstance(value, staticmethod) else value
+        if (name.startswith('__') and name.endswith('__')) or not (isinstance(target, type) or inspect.isroutine(target)):
+            continue
+        try:
+            typing.get_type_hints(target, localns=dict(vars(rpc)))
+        except Exception as error:
+            print(f'{rpc.__name__}.{name}: {type(error).__name__}: {error}')
+`;
+  const result = spawnSync('python3', ['-c', script, file('src'), packageName], { encoding: 'utf-8' });
+  assert.equal(result.status, 0, result.stderr);
+  return result.stdout.trim();
+}
+
 const controller = (name: string, handlers: Record<string, unknown>) => ({
   rpcModuleName: `${name}RPC`,
   originalControllerName: `${name}Controller`,
@@ -151,6 +177,168 @@ test('a title or description that is not a string', { skip: !hasPython && 'pytho
     { encoding: 'utf-8' }
   );
   assert.equal(result.status, 0, result.stderr);
+});
+
+test('a handler name that starts with an underscore or a dollar', { skip: !hasPython && 'python3 not found' }, () => {
+  // Python mangles a __name inside a class body, so a nested class named so can't be found by its annotation
+  const nested = {
+    type: 'object',
+    properties: { profile: { type: 'object', properties: { name: { type: 'string' } } } },
+    required: ['profile'],
+  };
+  const file = generate({
+    UserRPC: controller('User', {
+      _internal: { httpMethod: 'POST', path: 'internal', validation: { body: nested, output: nested } },
+      $dollar: { httpMethod: 'GET', path: 'dollar', validation: { query: nested } },
+    }),
+  });
+  const source = fs.readFileSync(file('src/app/__init__.py'), 'utf-8');
+
+  assert.equal(annotationProblems(file), '');
+  assert.doesNotMatch(source, /class __|UserRPC\.__/);
+});
+
+// an OpenAPI document with a write-only property and an object that may be null
+const users = {
+  openapi: '3.1.0',
+  info: { title: 'Users', version: '1.0.0' },
+  servers: [{ url: 'https://api.example.com' }],
+  paths: {
+    '/users': {
+      post: {
+        operationId: 'createUser',
+        requestBody: {
+          required: true,
+          content: { 'application/json': { schema: { $ref: '#/components/schemas/User' } } },
+        },
+        responses: {
+          200: {
+            description: 'ok',
+            content: { 'application/json': { schema: { $ref: '#/components/schemas/User' } } },
+          },
+        },
+      },
+    },
+    '/me': {
+      get: {
+        operationId: 'getMe',
+        responses: {
+          200: {
+            description: 'ok',
+            content: {
+              'application/json': {
+                schema: { type: ['object', 'null'], properties: { name: { type: 'string' } }, required: ['name'] },
+              },
+            },
+          },
+        },
+      },
+    },
+  },
+  components: {
+    schemas: {
+      User: {
+        type: 'object',
+        required: ['id', 'name', 'password'],
+        properties: {
+          id: { type: 'string', readOnly: true },
+          name: { type: 'string' },
+          password: { type: 'string', writeOnly: true },
+        },
+      },
+    },
+  },
+};
+
+test('the types of an OpenAPI mixin', { skip: !hasPython && 'python3 not found' }, async (t) => {
+  const file = generate(
+    { UserRPC: controller('User', { list: { httpMethod: 'GET', path: '', validation: {} } }) },
+    { segments: { users: { openAPIMixin: { source: { object: users }, getModuleName: 'UsersAPI' } } } }
+  );
+  const source = fs.readFileSync(file('src/app/__init__.py'), 'utf-8');
+  // the lines of a class, up to the next declaration
+  const classBody = (name: string) => source.match(new RegExp(`class ${name}\\(TypedDict\\):\\n((?: {8}.*\\n)*)`))?.[1];
+
+  await t.test('a write-only property may be missing from a response, as a server never sends it', () => {
+    assert.match(classBody('_CreateUserOutput_User') ?? '', /^ {8}password: NotRequired\[str\]$/m, source);
+    assert.match(classBody('_CreateUserBody_User') ?? '', /^ {8}password: str$/m, source);
+  });
+
+  await t.test('an object that may be null is declared once', () => {
+    assert.equal(source.match(/^ {4}(class )?GetMeOutput\b/gm)?.length, 1, source);
+    assert.match(source, /^ {4}GetMeOutput: TypeAlias = Union\[_GetMeOutput_object, None\]$/m);
+  });
+
+  await t.test('every annotation resolves', () => {
+    assert.equal(annotationProblems(file), '');
+  });
+});
+
+test('the files a multipart procedure takes', { skip: !hasPython && 'python3 not found' }, () => {
+  const file = { type: 'string', format: 'binary' };
+  const multipart = (properties: Record<string, unknown>) => ({
+    type: 'object',
+    properties,
+    'x-contentType': ['multipart/form-data'],
+  });
+  const generated = generate({
+    UserRPC: controller('User', {
+      uploadImages: {
+        httpMethod: 'POST',
+        path: 'images',
+        validation: { body: multipart({ avatar: file, cover: file }) },
+      },
+      uploadMany: {
+        httpMethod: 'POST',
+        path: 'many',
+        validation: { body: multipart({ files: { type: 'array', items: file } }) },
+      },
+      uploadAvatar: { httpMethod: 'POST', path: 'avatar', validation: { body: multipart({ avatar: file }) } },
+    }),
+  });
+  const source = fs.readFileSync(generated('src/app/__init__.py'), 'utf-8');
+  const fileValue =
+    'Union[BinaryIO, Tuple[str, BinaryIO], Tuple[str, BinaryIO, str], Tuple[str, BinaryIO, str, Dict[str, str]]]';
+
+  // several single files: a dict, as requests takes one, or (field name, file) pairs; a pair holds a file or a tuple
+  assert.ok(
+    source.includes(`files: Union[UploadImagesFiles, Dict[str, ${fileValue}], Sequence[Tuple[str, ${fileValue}]]],`),
+    source
+  );
+  // a dict holds one file for a field, and a list of files needs one pair per file
+  assert.ok(source.includes(`files: Union[UploadManyFiles, Sequence[Tuple[str, ${fileValue}]]],`), source);
+  assert.ok(source.includes('files: UploadAvatarFiles,'), source);
+  // the aliases stay as they were, so a list annotated with one still takes append
+  assert.match(source, /^ {4}UploadImagesFiles = List\[Tuple\[str, Union\[Tuple\[str, BinaryIO\], /m);
+  assert.equal(annotationProblems(generated), '');
+});
+
+test('a body the server reads as text takes a str', { skip: !hasPython && 'python3 not found' }, () => {
+  const body = (schema: Record<string, unknown>) => ({ httpMethod: 'POST', path: '', validation: { body: schema } });
+  const file = generate({
+    UserRPC: controller('User', {
+      postXml: body({ 'x-contentType': ['application/xml'] }),
+      postLines: body({ type: 'string', 'x-contentType': ['application/jsonl'] }),
+      postAtom: body({ type: 'string', 'x-contentType': ['application/atom+xml'] }),
+      postBytes: body({ type: 'string', 'x-contentType': ['application/octet-stream'] }),
+      postImage: body({ type: 'string', 'x-contentType': ['image/png'] }),
+      postXmlFile: body({ type: 'string', format: 'binary', 'x-contentType': ['application/xml'] }),
+    }),
+  });
+  const source = fs.readFileSync(file('src/app/__init__.py'), 'utf-8');
+  const bodyTypes = Object.fromEntries(
+    [...source.matchAll(/^ {4}def (\w+)\(\n {8}body: (.+),$/gm)].map(([, name, type]) => [name, type])
+  );
+
+  assert.deepEqual(bodyTypes, {
+    post_xml: 'Union[str, bytes]',
+    post_lines: 'Union[str, bytes]',
+    post_atom: 'Union[str, bytes]',
+    post_bytes: 'bytes',
+    post_image: 'bytes',
+    post_xml_file: 'bytes',
+  });
+  assert.equal(annotationProblems(file), '');
 });
 
 test('handler names that are alike in snake_case get a method each', () => {

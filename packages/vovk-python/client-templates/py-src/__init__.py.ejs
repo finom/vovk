@@ -5,6 +5,8 @@ imports: ['vovk-python']
 <% const vars = {
     convertJSONSchemaToPythonDataType: t.imports['vovk-python'].convertJSONSchemaToPythonDataType,
     convertJSONSchemaToPythonFilesType: t.imports['vovk-python'].convertJSONSchemaToPythonFilesType,
+    getPythonFilesParamType: t.imports['vovk-python'].getPythonFilesParamType,
+    takesTextBody: t.imports['vovk-python'].takesTextBody,
     hasFiles: t.imports['vovk-python'].hasFiles,
     areFilesOptional: t.imports['vovk-python'].areFilesOptional,
     hasNormalData: t.imports['vovk-python'].hasNormalData,
@@ -25,7 +27,7 @@ const segmentBases = Object.fromEntries(Object.entries(t.schema.segments).map(([
 const joinURL = (root, ...parts) => [t._.trimEnd(root, '/'), ...parts.map((part) => t._.trim(part ?? '', '/'))].filter(Boolean).join('/'); %>
 from __future__ import annotations
 import sys
-from typing import Any, Dict, List, Literal, Optional, Set, TypedDict, Union, Tuple, Generator, BinaryIO # type: ignore
+from typing import Any, Dict, List, Literal, Optional, Sequence, Set, TypedDict, Union, Tuple, Generator, BinaryIO # type: ignore
 from .api_client import ApiClient, HttpException
 
 if sys.version_info >= (3, 11):
@@ -53,25 +55,26 @@ class <%- pyModuleName %>: <% if (!Object.keys(controllerSchema.handlers).length
     // a path with {name} placeholders takes params, with or without a params schema
     const paramsType = validation?.params ? `${handlerNameOriginalCapitalized}Params` : /\{[^{}]+\}/.test(`${controllerSchema.prefix ?? ''}/${handlerSchema.path}`) ? 'Dict[str, str]' : null;
     // files a call may leave out, as for a JSON-or-file union, come after the arguments every call takes
-    const files = validation?.body && vars.hasFiles(validation.body) ? (vars.areFilesOptional(validation.body) ? 'optional' : 'required') : null; %>
+    const files = validation?.body && vars.hasFiles(validation.body) ? (vars.areFilesOptional(validation.body) ? 'optional' : 'required') : null;
+    const filesType = files && vars.getPythonFilesParamType({ schema: validation.body, className: `${handlerNameOriginalCapitalized}Files` }); %>
     # <%- vars.toPythonCommentText(`${rpcModuleName}.${handlerName} ${httpMethod} \`${joinURL(...segmentBases[segmentName], controllerSchema.prefix, handlerSchema.path)}\``) %>
 <%- ([
         bodyKind === 'text' ? '' : bodyKind === 'binary' ? '' : vars.convertJSONSchemaToPythonDataType({ schema: validation?.body, namespace: pyModuleName, className: `${handlerNameOriginalCapitalized}Body`, pad: 4 }),
         vars.convertJSONSchemaToPythonFilesType({ schema: validation?.body, namespace: pyModuleName, className: `${handlerNameOriginalCapitalized}Files`, pad: 4 }),
         vars.convertJSONSchemaToPythonDataType({ schema: validation?.query, namespace: pyModuleName, className: `${handlerNameOriginalCapitalized}Query`, pad: 4 }),
         vars.convertJSONSchemaToPythonDataType({ schema: validation?.params, namespace: pyModuleName, className: `${handlerNameOriginalCapitalized}Params`, pad: 4 }),
-        vars.convertJSONSchemaToPythonDataType({ schema: t.reattachMixinDefs(validation?.output, segment), namespace: pyModuleName, className: `${handlerNameOriginalCapitalized}Output`, pad: 4 }),
-        vars.convertJSONSchemaToPythonDataType({ schema: t.reattachMixinDefs(validation?.iteration, segment), namespace: pyModuleName, className: `${handlerNameOriginalCapitalized}Iteration`, pad: 4 })
+        vars.convertJSONSchemaToPythonDataType({ schema: t.reattachMixinDefs(validation?.output, segment), namespace: pyModuleName, className: `${handlerNameOriginalCapitalized}Output`, pad: 4, direction: 'response' }),
+        vars.convertJSONSchemaToPythonDataType({ schema: t.reattachMixinDefs(validation?.iteration, segment), namespace: pyModuleName, className: `${handlerNameOriginalCapitalized}Iteration`, pad: 4, direction: 'response' })
     ]).filter(Boolean).join('\n') %>
     @staticmethod
     def <%= handlerName %>(
 <%= [
-            bodyKind === 'text' ? 'body: str,' : bodyKind === 'binary' ? 'body: bytes,' : '',
+            bodyKind === 'text' ? 'body: str,' : bodyKind === 'binary' ? (vars.takesTextBody(validation?.body) ? 'body: Union[str, bytes],' : 'body: bytes,') : '',
             bodyKind === 'json' || (bodyKind === 'form' && vars.hasNormalData(validation.body)) ? `body: ${handlerNameOriginalCapitalized}Body,` : '',
-            files === 'required' ? `files: ${handlerNameOriginalCapitalized}Files,` : '',
+            files === 'required' ? `files: ${filesType},` : '',
             validation?.query ? `query: ${handlerNameOriginalCapitalized}Query,` : '',
             paramsType ? `params: ${paramsType},` : '',
-            files === 'optional' ? `files: Optional[${handlerNameOriginalCapitalized}Files] = None,` : ''
+            files === 'optional' ? `files: Optional[${filesType}] = None,` : ''
         ].filter(Boolean).map((s) => ' '.repeat(8) + s).join('\n') %>
         headers: Optional[Dict[str, str]] = None,
         api_root: Optional[str] = None,

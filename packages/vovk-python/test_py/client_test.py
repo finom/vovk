@@ -18,6 +18,9 @@ from utils import fake_transport, form_fields, json_response
 FAKE_ROOT = 'http://fake.test/api'
 JSONL_HEADERS = {'Content-Type': 'application/jsonl; charset=utf-8'}
 
+# as Zod writes z.tuple([z.string(), z.number()])
+PAIR: Dict[str, Any] = {'type': 'array', 'prefixItems': [{'type': 'string'}, {'type': 'number'}], 'items': False}
+
 FORM_BODY: Dict[str, Any] = {'hello': 'world', 'flag': False, 'count': 5, 'tags': ['a', 'b'], 'meta': {'x': 1}, 'nick': None}
 # as the TypeScript client sends it: None left out, one field per list item, booleans as JSON writes them, objects as JSON
 FORM_FIELDS = [('hello', 'world'), ('flag', 'false'), ('count', '5'), ('tags', 'a'), ('tags', 'b'), ('meta', '{"x":1}')]
@@ -188,6 +191,9 @@ class TestClient(unittest.TestCase):
         with self.subTest('an object goes out as JSON, whatever text type the procedure also takes'):
             data = ClientSweepRPC.post_object_text_or_json(body={'event': 'click'})
             self.assertEqual(data, {'body': {'event': 'click'}, 'contentType': 'application/json'})
+        with self.subTest('a string goes out as a text type that is not text/*'):
+            self.assertEqual(ClientSweepRPC.post_lines(body='{"a":1}\n'), {'contentType': 'application/jsonl', 'body': '{"a":1}\n'})
+            self.assertEqual(ClientSweepRPC.post_xml(body='<a>Zoë</a>'), {'xml': '<a>Zoë</a>', 'contentType': 'application/xml'})
 
     def test_path_params_as_javascript_writes_them(self) -> None:
         with fake_transport(json_response(None)) as sent:
@@ -235,6 +241,43 @@ class TestClient(unittest.TestCase):
             with self.subTest(content_type):
                 with fake_transport(lambda request: (200, {'Content-Type': content_type}, body)):
                     self.assertEqual(ClientSweepRPC.get_content_type(api_root=FAKE_ROOT), expected)
+
+    def test_tuple_output(self) -> None:
+        # JSON has no tuple: an array the types declare a Tuple comes back as one
+        strings = {'type': 'array', 'items': {'type': 'string'}}
+        outputs: List[Any] = [
+            (PAIR, ['a', 1], ('a', 1)),
+            ({'type': 'object', 'properties': {'p': PAIR, 'q': strings}}, {'p': ['a', 1], 'q': ['x']}, {'p': ('a', 1), 'q': ['x']}),
+            ({'type': 'array', 'items': PAIR}, [['a', 1], ['b', 2]], [('a', 1), ('b', 2)]),
+            ({'type': 'object', 'additionalProperties': PAIR}, {'k': ['a', 1]}, {'k': ('a', 1)}),
+            ({'$ref': '#/$defs/Pair', '$defs': {'Pair': PAIR}}, ['a', 1], ('a', 1)),
+            ({'anyOf': [strings, PAIR]}, ['x', 'y'], ['x', 'y']),
+            ({'anyOf': [strings, PAIR]}, ['a', 1], ('a', 1)),
+            ({'anyOf': [PAIR, {'type': 'null'}]}, None, None),
+            ({'allOf': [{'type': 'object', 'properties': {'p': PAIR}}, {'type': 'object', 'properties': {'n': {'type': 'number'}}}]}, {'p': ['a', 1], 'n': 1}, {'p': ('a', 1), 'n': 1}),
+            # a member with branches: its own keys are in each branch's type
+            ({'allOf': [{'type': 'object', 'properties': {'p': PAIR}, 'anyOf': [{'type': 'object', 'required': ['a']}, {'type': 'object', 'required': ['b']}]}]}, {'p': ['a', 1], 'b': 1}, {'p': ('a', 1), 'b': 1}),
+            # a draft 7 tuple
+            ({'type': 'array', 'items': [{'type': 'string'}, {'type': 'number'}]}, ['a', 1], ('a', 1)),
+            # items after the tuple's own: the type is a list
+            ({'type': 'array', 'prefixItems': [{'type': 'string'}], 'items': {'type': 'number'}}, ['a', 1], ['a', 1]),
+        ]
+        for output, sent, expected in outputs:
+            with self.subTest(output=output, sent=sent):
+                with fake_transport(json_response(sent)):
+                    value = client.make_api_request(url=f'{FAKE_ROOT}/pair', http_method='GET', validation={'output': output})
+                self.assertEqual(value, expected)
+
+    def test_tuple_iteration(self) -> None:
+        with fake_transport(lambda request: (200, JSONL_HEADERS, b'["a",1]\n["b",2]\n')):
+            items = list(client.make_api_request(url=f'{FAKE_ROOT}/pairs', http_method='GET', validation={'iteration': PAIR}))
+        self.assertEqual(items, [('a', 1), ('b', 2)])
+
+    def test_tuple_output_of_a_mixin(self) -> None:
+        # the output refers to a component of the OpenAPI document
+        with fake_transport(json_response([1.5, 2])):
+            position = PetstoreAPI.get_pet_position(params={'petId': '1'})
+        self.assertEqual(position, (1.5, 2))
 
     def test_json_lines_media_types(self) -> None:
         for media_type in ['application/jsonl', 'application/jsonlines', 'application/x-ndjson']:

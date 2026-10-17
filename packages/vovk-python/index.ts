@@ -5,6 +5,8 @@ interface ConvertOptions {
   namespace: string;
   className: string;
   pad: number;
+  // a response never holds a write-only property, so it may be missing there
+  direction?: 'request' | 'response';
 }
 
 // biome-ignore format: a word list
@@ -64,11 +66,20 @@ function isPlainPythonName(name: string): boolean {
   );
 }
 
+// Literal holds a str, an int, a bool or None (PEP 586), not a float: String(1e21) is 1e+21
 function toPythonLiteral(value: unknown): string | null {
   if (typeof value === 'string') return toPythonString(value);
   if (typeof value === 'boolean') return value ? 'True' : 'False';
-  if (typeof value === 'number' && Number.isFinite(value)) return String(value);
+  if (typeof value === 'number' && /^-?\d+$/.test(String(value))) return String(value);
   if (value === null) return 'None';
+  return null;
+}
+
+// the type of an enum value Literal can't hold
+function toPythonValueType(value: unknown): string | null {
+  if (typeof value === 'number') return 'float';
+  if (Array.isArray(value)) return 'List[Any]';
+  if (value && typeof value === 'object') return 'Dict[str, Any]';
   return null;
 }
 
@@ -152,6 +163,24 @@ export function getBodyKind(schema: VovkJSONSchemaBase | undefined): 'none' | 'f
   return 'json';
 }
 
+// the application types the server reads as text, as packages/vovk/src/req/parse-body.ts lists them
+// biome-ignore format: a list
+const TEXT_APPLICATION_TYPES = [
+  'application/xml', 'application/xhtml+xml', 'application/javascript', 'application/x-javascript',
+  'application/ecmascript', 'application/yaml', 'application/x-yaml', 'application/graphql', 'application/sql',
+  'application/toml', 'application/x-ndjson', 'application/ndjson', 'application/jsonl', 'application/jsonlines',
+  'application/x-jsonlines',
+];
+
+// a binary body the server reads as text, as application/xml or JSON Lines, also takes a str, as the TypeScript
+// client takes a string
+export function takesTextBody(schema: VovkJSONSchemaBase | undefined): boolean {
+  if (!schema || isBinary(schema) || getBodyKind(schema) !== 'binary') return false;
+  const isText = (c: string) =>
+    c.startsWith('text/') || TEXT_APPLICATION_TYPES.includes(c) || /\+(xml|text|yaml|json-seq)$/.test(c);
+  return (schema['x-contentType'] as string[] | undefined)?.every(isText) ?? false;
+}
+
 // a text body goes out as the type the procedure declares, as the TypeScript client sends it
 export function getTextContentType(schema: VovkJSONSchemaBase | undefined): string {
   const isTextLike = (type: string) =>
@@ -199,10 +228,10 @@ export function convertJSONSchemaToPythonDataType(options: ConvertOptions): stri
   const namedTypeNames = new Map<string, string>();
 
   // one call's classes and aliases share the namespace's class body, so their names are unique together;
-  // one leading underscore, as Python mangles __names inside a class body
+  // one leading underscore, as Python mangles __names inside a class body, also for a type named _x
   const usedNames = new Set<string>([className]);
   function uniqueName(base: string): string {
-    const ident = base.replace(/[^A-Za-z0-9_]/g, '_');
+    const ident = base.replace(/[^A-Za-z0-9_]/g, '_').replace(/^_+/, '_');
     let name = ident;
     let i = 2;
     while (usedNames.has(name)) name = `${ident}_${i++}`;
@@ -213,6 +242,15 @@ export function convertJSONSchemaToPythonDataType(options: ConvertOptions): stri
   function refNameOf(ref: string): string | undefined {
     return ref.startsWith('#/') ? ref.split('/').pop() : undefined;
   }
+
+  const resolve = (s: VovkJSONSchemaBase): VovkJSONSchemaBase | undefined =>
+    s.$ref ? namedSchemas[refNameOf(s.$ref) ?? ''] : s;
+
+  const isWriteOnly = (s: VovkJSONSchemaBase) =>
+    [s, resolve(s)].some((target) => (target as { writeOnly?: boolean } | undefined)?.writeOnly === true);
+
+  // the unions an allOf is being distributed over, so a union that holds itself is distributed once
+  const distributing = new Set<VovkJSONSchemaBase>();
 
   // buildType marks the names it writes: a TypedDict annotation is evaluated later and takes the full name,
   // an alias is evaluated at once in the class body and takes the local one, or Any while it is still being built
@@ -264,10 +302,35 @@ export function convertJSONSchemaToPythonDataType(options: ConvertOptions): stri
 
     if (s.enum && s.enum.length > 0) {
       const literalValues = s.enum.map(toPythonLiteral).filter((literal) => literal !== null);
-      return literalValues.length ? `Literal[${literalValues.join(', ')}]` : 'Any';
+      const otherTypes = new Set(
+        s.enum.flatMap((value) => (toPythonLiteral(value) === null ? (toPythonValueType(value) ?? []) : []))
+      );
+      const parts = [...(literalValues.length ? [`Literal[${literalValues.join(', ')}]`] : []), ...otherTypes];
+      return parts.length > 1 ? `Union[${parts.join(', ')}]` : (parts[0] ?? 'Any');
     }
 
     if (s.allOf && s.allOf.length > 0) {
+      // a lone member that isn't an object with keys, as an enum OpenAPI 3.0 wraps to describe it, is that member
+      const lone = s.allOf.length === 1 && !s.properties ? resolve(s.allOf[0]) : undefined;
+      if (lone && !lone.properties && !lone.allOf) return buildType(s.allOf[0], propNameForParent);
+      // a member with branches: an object for each branch with the other members
+      const branching = s.allOf.find((member) => {
+        const resolved = resolve(member);
+        return resolved && !distributing.has(resolved) && (resolved.anyOf?.length || resolved.oneOf?.length);
+      });
+      const union = branching && resolve(branching);
+      if (union) {
+        distributing.add(union);
+        const { anyOf, oneOf, ...unionOwn } = union;
+        const branches = (anyOf?.length ? anyOf : oneOf) ?? [];
+        const others = [...s.allOf.filter((member) => member !== branching), unionOwn];
+        const types = branches.map((branch, i) =>
+          buildType({ ...s, allOf: [...others, branch] }, `${propNameForParent}_${i}`)
+        );
+        distributing.delete(union);
+        return `Union[${types.join(', ')}]`;
+      }
+
       const merged: VovkJSONSchemaBase = {
         type: 'object',
         title: s.title,
@@ -278,7 +341,7 @@ export function convertJSONSchemaToPythonDataType(options: ConvertOptions): stri
       // a member may be a $ref or an allOf itself, and the schema may list its own properties next to allOf
       const seen = new Set<VovkJSONSchemaBase>();
       const mergeMember = (member: VovkJSONSchemaBase) => {
-        const resolved = member.$ref ? namedSchemas[refNameOf(member.$ref) ?? ''] : member;
+        const resolved = resolve(member);
         if (!resolved || seen.has(resolved)) return;
         seen.add(resolved);
         resolved.allOf?.forEach(mergeMember);
@@ -301,7 +364,14 @@ export function convertJSONSchemaToPythonDataType(options: ConvertOptions): stri
     }
 
     if (allTypes.length > 1) {
-      const subTypes = allTypes.map((t) => buildType({ ...s, type: t }, propNameForParent));
+      // at the top level the type's own name is the union's alias, so an object member gets a class of its own
+      const subTypes = allTypes.map((t) =>
+        buildType(
+          { ...s, type: t },
+          propNameForParent,
+          propNameForParent === className && t === 'object' ? uniqueName(`_${className}_object`) : undefined
+        )
+      );
       return `Union[${subTypes.join(', ')}]`;
     }
 
@@ -338,10 +408,33 @@ export function convertJSONSchemaToPythonDataType(options: ConvertOptions): stri
         }
 
         case 'object': {
-          // a record: no listed keys, every value matches one schema
+          // a record: no listed keys and other keys allowed, which an object without properties or additionalProperties
+          // allows too
           const values = s.additionalProperties;
-          if (!s.properties && ('propertyNames' in s || (values !== undefined && values !== false))) {
-            return `Dict[str, ${typeof values === 'object' ? buildType(values, `${propNameForParent}_values`) : 'Any'}]`;
+          const patterns = Object.values(
+            (s as { patternProperties?: Record<string, VovkJSONSchemaBase> }).patternProperties ?? {}
+          );
+          const listsNoKeys = !s.properties || Object.keys(s.properties).length === 0;
+          const allowsOtherKeys =
+            (values === undefined && !s.properties) ||
+            (values !== undefined && values !== false) ||
+            patterns.length > 0 ||
+            'propertyNames' in s;
+          if (listsNoKeys && allowsOtherKeys) {
+            const valueTypes = new Set([
+              ...(typeof values === 'object'
+                ? [buildType(values, `${propNameForParent}_values`)]
+                : values === true || !patterns.length
+                  ? ['Any']
+                  : []),
+              ...patterns.map((pattern, i) => buildType(pattern, `${propNameForParent}_pattern_${i}`)),
+            ]);
+            const valueType = valueTypes.has('Any')
+              ? 'Any'
+              : valueTypes.size === 1
+                ? [...valueTypes][0]
+                : `Union[${[...valueTypes].join(', ')}]`;
+            return `Dict[str, ${valueType}]`;
           }
 
           if (seenObjects.has(s)) {
@@ -360,8 +453,10 @@ export function convertJSONSchemaToPythonDataType(options: ConvertOptions): stri
             .filter(([, propSchema]) => !isFileField(propSchema, schema))
             .map(([propName, propSchema]) => {
               const childType = buildType(propSchema, `${propNameForParent}_${propName}`);
+              const isRequired =
+                required.has(propName) && !(options.direction === 'response' && isWriteOnly(propSchema));
               // a key that may be missing, not one that may be None
-              return [propName, required.has(propName) ? childType : `NotRequired[${childType}]`] as const;
+              return [propName, isRequired ? childType : `NotRequired[${childType}]`] as const;
             });
           const docLines = [
             ...(s.title ? toPythonDocstringLines(s.title) : []),
@@ -417,6 +512,34 @@ export function convertJSONSchemaToPythonDataType(options: ConvertOptions): stri
     .join('\n');
 }
 
+// the file fields of the body and of each branch of it, each name once
+function uniqueFileFields(schema: VovkJSONSchemaBase): [string, VovkJSONSchemaBase][] {
+  const fileProps: [string, VovkJSONSchemaBase][] = [];
+  for (const [name, prop] of fileFieldsOf(schema, schema)) {
+    if (!fileProps.some(([seen]) => seen === name)) fileProps.push([name, prop]);
+  }
+  return fileProps;
+}
+
+const isFileList = ([, propSchema]: [string, VovkJSONSchemaBase]) => propSchema.type === 'array';
+
+// a list of (field name, file) pairs, not a TypedDict: a field takes several files, or there are several fields
+const takesFilePairs = (fileProps: [string, VovkJSONSchemaBase][]) =>
+  fileProps.length > 1 || fileProps.some(isFileList);
+
+const FILE_VALUE =
+  'Union[BinaryIO, Tuple[str, BinaryIO], Tuple[str, BinaryIO, str], Tuple[str, BinaryIO, str, Dict[str, str]]]';
+
+// the files argument of a call: the type, and for pairs also a dict and pairs that hold a bare file, as requests
+// takes them; the type itself stays a list, so a list annotated with it still takes append
+export function getPythonFilesParamType({ schema, className }: { schema: VovkJSONSchemaBase; className: string }) {
+  const fileProps = uniqueFileFields(schema);
+  if (!takesFilePairs(fileProps)) return className;
+  // a dict holds one file for a field, and a field of several files needs a pair for each
+  const dict = fileProps.some(isFileList) ? [] : [`Dict[str, ${FILE_VALUE}]`];
+  return `Union[${[className, ...dict, `Sequence[Tuple[str, ${FILE_VALUE}]]`].join(', ')}]`;
+}
+
 export function convertJSONSchemaToPythonFilesType(options: ConvertOptions): string {
   const { className, pad } = options;
   if (!options.schema) return '';
@@ -425,10 +548,7 @@ export function convertJSONSchemaToPythonFilesType(options: ConvertOptions): str
   const lines: string[] = [];
   // the file fields of the body and of each branch of it; one is required when every branch with it requires it
   const objects = bodyObjects(options.schema, options.schema);
-  const fileProps: [string, VovkJSONSchemaBase][] = [];
-  for (const [name, prop] of fileFieldsOf(options.schema, options.schema)) {
-    if (!fileProps.some(([seen]) => seen === name)) fileProps.push([name, prop]);
-  }
+  const fileProps = uniqueFileFields(options.schema);
   const required = new Set(
     fileProps
       .map(([name]) => name)
@@ -447,9 +567,7 @@ export function convertJSONSchemaToPythonFilesType(options: ConvertOptions): str
     ...(schema.description ? toPythonDocstringLines(schema.description) : []),
   ];
 
-  const hasArrayFields = fileProps.some(([, propSchema]) => propSchema.type === 'array');
-
-  if (hasArrayFields || fileProps.length > 1) {
+  if (takesFilePairs(fileProps)) {
     lines.push(
       `# a (field name, file) pair per file, as in files=[(${toPythonString(fileProps[0][0])}, ('a.pdf', open('a.pdf', 'rb')))]`
     );
@@ -466,9 +584,7 @@ export function convertJSONSchemaToPythonFilesType(options: ConvertOptions): str
     const [propName] = fileProps[0];
     const isRequired = required.has(propName);
 
-    const fileType =
-      'Union[BinaryIO, Tuple[str, BinaryIO], Tuple[str, BinaryIO, str], Tuple[str, BinaryIO, str, Dict[str, str]]]';
-    const finalType = isRequired ? fileType : `Optional[${fileType}]`;
+    const finalType = isRequired ? FILE_VALUE : `Optional[${FILE_VALUE}]`;
 
     if (!isPlainPythonName(propName)) {
       lines.push(

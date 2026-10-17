@@ -1,3 +1,4 @@
+import collections.abc
 import configparser
 import inspect
 import json
@@ -6,9 +7,9 @@ import re
 import sys
 import typing
 import unittest
-from typing import List
+from typing import BinaryIO, Dict, List, Union
 import generated_python_client.src.test_generated_python_client as package
-from generated_python_client.src.test_generated_python_client import ClientSweepRPC, PetstoreAPI
+from generated_python_client.src.test_generated_python_client import ClientSweepRPC, PetstoreAPI, WithValidationRPC
 from utils import fake_transport, json_response
 
 if sys.version_info >= (3, 11):
@@ -43,6 +44,27 @@ class TestTypes(unittest.TestCase):
                 except Exception as error:  # noqa: BLE001
                     problems.append(f'{rpc.__name__}.{name}: {type(error).__name__}: {error}')
         self.assertEqual(problems, [])
+
+    def test_body_of_keys_by_pattern(self) -> None:
+        # the keys aren't listed, so a TypedDict would refuse each of them
+        self.assertEqual(PetstoreAPI.CreateTagsBody, Dict[str, str])
+
+    def test_text_body_takes_a_str(self) -> None:
+        # the server reads JSON Lines and XML as text
+        for method in (ClientSweepRPC.post_lines, ClientSweepRPC.post_xml):
+            with self.subTest(method.__name__):
+                hints = typing.get_type_hints(method, localns=dict(vars(ClientSweepRPC)))
+                self.assertEqual(hints['body'], Union[str, bytes])
+
+    def test_files_take_a_bare_file(self) -> None:
+        # a (field name, file) pair holds a file or a tuple, as requests takes it
+        hints = typing.get_type_hints(
+            WithValidationRPC.handle_multipart_data_with_multiple_files, localns=dict(vars(WithValidationRPC))
+        )
+        pairs = [arg for arg in typing.get_args(hints['files']) if typing.get_origin(arg) is collections.abc.Sequence]
+        self.assertEqual(len(pairs), 1, hints['files'])
+        _, file_value = typing.get_args(typing.get_args(pairs[0])[0])
+        self.assertIn(BinaryIO, typing.get_args(file_value))
 
     def test_optional_key(self) -> None:
         hints = typing.get_type_hints(ClientSweepRPC.GetEchoQuery, include_extras=True)

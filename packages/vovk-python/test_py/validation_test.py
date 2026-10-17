@@ -227,6 +227,14 @@ class TestValidation(unittest.TestCase):
         )
         self.assertEqual(data, {'files': ['file_text_content1', 'file_text_content2'], 'hello': 'world', 'search': 'value'})
 
+        # a bare file, as requests takes it
+        data = WithValidationRPC.handle_multipart_data_with_multiple_files(
+            body={"hello": "world"},
+            query={"search": "value"},
+            files=[('files', BytesIO(b'one')), ('files', BytesIO(b'two'))]
+        )
+        self.assertEqual(data['files'], ['one', 'two'])
+
         with self.assertRaises(HttpException) as context2:
             WithValidationRPC.handle_multipart_data_with_multiple_files(
                 body={"hello": "wrong_length"},
