@@ -34,13 +34,22 @@ if (t.package.license) {
   data.package.license = t.package.license;
 }
 
-if (t.package.repository) {
-  data.package.repository = typeof t.package.repository === 'string' 
-    ? t.package.repository 
-    : t.package.repository.url;
+// crates.io takes only an http(s) URL; npm writes git+https:// or git+ssh:// and allows shorthands such as github:owner/repo
+const repository = typeof t.package.repository === 'string' ? t.package.repository : t.package.repository?.url;
+if (typeof repository === 'string') {
+  const shorthand = /^(?:(github|gitlab|bitbucket):)?([\w-][\w.-]*\/[\w.-]+)$/.exec(repository);
+  const repositoryUrl = shorthand
+    ? `https://${{ github: 'github.com', gitlab: 'gitlab.com', bitbucket: 'bitbucket.org' }[shorthand[1] ?? 'github']}/${shorthand[2]}`
+    : repository
+        .replace(/^git\+/, '')
+        .replace(/^(?:git|ssh):\/\/(?:git@)?/, 'https://')
+        .replace(/^git@([^:/]+):/, 'https://$1/');
+  if (/^https?:\/\//.test(repositoryUrl)) {
+    data.package.repository = repositoryUrl;
+  }
 }
 
-if (t.package.homepage) {
+if (/^https?:\/\//.test(t.package.homepage)) {
   data.package.homepage = t.package.homepage;
 }
 
@@ -71,8 +80,12 @@ if (authors.length) {
   data.package.authors = authors;
 }
 
-if (t.package.keywords && t.package.keywords.length) {
-  data.package.keywords = t.package.keywords;
+// crates.io takes at most 5 keywords of up to 20 characters: a letter or digit, then letters, digits, _, - or +
+const keywords = (Array.isArray(t.package.keywords) ? t.package.keywords : [])
+  .filter((keyword) => typeof keyword === 'string' && /^[A-Za-z0-9][A-Za-z0-9_+-]{0,19}$/.test(keyword))
+  .slice(0, 5);
+if (keywords.length) {
+  data.package.keywords = keywords;
 }
 
 if (t.package.bugs) {

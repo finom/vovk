@@ -13,7 +13,11 @@ after(() => {
 });
 
 // generates the rs client of a project with one segment of these controllers; returns a reader of dist_rust
-function generate(controllers: Record<string, unknown>, outputConfig: object = {}) {
+function generate(
+  controllers: Record<string, unknown>,
+  outputConfig: object = {},
+  packageJson: object = { name: 'app', version: '1.0.0' }
+) {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'vovk-rust-'));
   projectDirs.push(dir);
   const segment = {
@@ -26,7 +30,7 @@ function generate(controllers: Record<string, unknown>, outputConfig: object = {
   const config = { composedClient: { fromTemplates: ['rs'], prettifyClient: false }, outputConfig };
   fs.mkdirSync(path.join(dir, '.vovk-schema'));
   fs.writeFileSync(path.join(dir, '.vovk-schema/root.json'), JSON.stringify(segment));
-  fs.writeFileSync(path.join(dir, 'package.json'), JSON.stringify({ name: 'app', version: '1.0.0' }));
+  fs.writeFileSync(path.join(dir, 'package.json'), JSON.stringify(packageJson));
   fs.writeFileSync(path.join(dir, 'vovk.config.mjs'), `export default ${JSON.stringify(config)};`);
   execFileSync(process.execPath, [cliPath, 'generate'], { cwd: dir, stdio: 'pipe' });
   return (file: string) => fs.readFileSync(path.join(dir, 'dist_rust', file), 'utf-8');
@@ -37,6 +41,12 @@ const userController = (handlers: Record<string, unknown>) => ({
 });
 
 const listUsers = userController({ list: { httpMethod: 'GET', path: '', validation: {} } });
+
+// the [package] table of a generated Cargo.toml, without its subtables
+const cargoPackageTable = (cargoToml: string) =>
+  cargoToml.slice(cargoToml.indexOf('[package]')).split(/^\s*\[(?!package])/m)[0];
+
+const readmeInstallBlock = (readme: string) => readme.match(/^```bash\n([\s\S]*?)^```$/m)?.[1] ?? '';
 
 // an OpenAPI document from a third party may hold any JSON as a title, a summary or a description
 const numericTexts = {
@@ -105,6 +115,50 @@ describe('the generated crate', () => {
     assert.ok(!readme.includes('cargo install'), readme);
   });
 
+  test('the README installs the crates its samples use', () => {
+    const plain = readmeInstallBlock(generate(listUsers)('README.md'));
+
+    assert.match(plain, /^cargo add tokio --features macros,rt-multi-thread$/m, plain);
+    assert.match(plain, /^cargo add serde_json$/m, plain);
+    assert.doesNotMatch(plain, /futures-util|reqwest/, plain);
+
+    const read = generate(
+      userController({
+        stream: {
+          httpMethod: 'GET',
+          path: 'stream',
+          validation: { iteration: { type: 'object', properties: { n: { type: 'number' } } } },
+        },
+        upload: {
+          httpMethod: 'POST',
+          path: 'upload',
+          validation: {
+            body: {
+              type: 'object',
+              'x-contentType': ['multipart/form-data'],
+              properties: { file: { type: 'string', format: 'binary' } },
+            },
+          },
+        },
+      }),
+      { readme: { installCommand: 'cargo add app --git https://github.com/acme/app' } }
+    );
+    const install = readmeInstallBlock(read('README.md'));
+    // a Form of another reqwest version is another type
+    const reqwestVersion = read('Cargo.toml').match(/^\s*\[dependencies\.reqwest\]\n\s*version = "(.+)"$/m)?.[1];
+
+    // installCommand replaces the crate's own line only
+    assert.match(install, /^cargo add app --git https:\/\/github\.com\/acme\/app$/m, install);
+    assert.doesNotMatch(install, /^cargo add app$/m, install);
+    assert.match(install, /^cargo add tokio --features macros,rt-multi-thread$/m, install);
+    assert.match(install, /^cargo add serde_json$/m, install);
+    assert.match(install, /^cargo add futures-util$/m, install);
+    assert.ok(
+      reqwestVersion && install.includes(`\ncargo add reqwest@${reqwestVersion} --features multipart\n`),
+      install
+    );
+  });
+
   test('Cargo.toml declares the Rust version the crate needs', () => {
     const cargoToml = generate(listUsers)('Cargo.toml');
     const packageTable = cargoToml.slice(cargoToml.indexOf('[package]')).split(/^\s*\[(?!package])/m)[0];
@@ -112,6 +166,87 @@ describe('the generated crate', () => {
     assert.match(packageTable, /^rust-version = "1\.85"$/m, cargoToml);
     // the 2021 edition's resolver ignores rust-version: built on its own, the crate would take dependencies that need 1.88
     assert.match(packageTable, /^resolver = "3"$/m, cargoToml);
+  });
+
+  test('Cargo.toml takes the package.json metadata in the forms crates.io accepts', () => {
+    const cargoToml = generate(
+      listUsers,
+      {},
+      {
+        name: 'app',
+        version: '1.0.0',
+        description: 'Users API',
+        license: 'MIT',
+        author: { name: 'Ann', email: 'ann@example.com' },
+        homepage: 'https://example.com',
+        bugs: { url: 'https://example.com/issues' },
+        // the form npm init writes
+        repository: { type: 'git', url: 'git+https://github.com/acme/app.git' },
+        keywords: [
+          'api',
+          'next.js',
+          'client',
+          'web app',
+          'rpc',
+          'a-keyword-of-21-chars',
+          'openapi',
+          'types',
+          'codegen',
+        ],
+      }
+    )('Cargo.toml');
+    const packageTable = cargoPackageTable(cargoToml);
+    const keywords = JSON.parse(packageTable.match(/^keywords = (\[[^\]]*\])$/m)?.[1] ?? '[]');
+
+    assert.match(packageTable, /^description = "Users API"$/m, cargoToml);
+    assert.match(packageTable, /^license = "MIT"$/m, cargoToml);
+    assert.match(packageTable, /^authors = \[ "Ann <ann@example\.com>" \]$/m, cargoToml);
+    assert.match(packageTable, /^homepage = "https:\/\/example\.com"$/m, cargoToml);
+    assert.match(cargoToml, /^\[package\.metadata\.package\]\nbugs = "https:\/\/example\.com\/issues"$/m, cargoToml);
+    // crates.io refuses a URL that isn't http(s), more than 5 keywords,
+    // and a keyword other than up to 20 letters, digits, _, - or + that starts with a letter or digit
+    assert.match(packageTable, /^repository = "https:\/\/github\.com\/acme\/app\.git"$/m, cargoToml);
+    assert.deepStrictEqual(keywords, ['api', 'client', 'rpc', 'openapi', 'types']);
+  });
+
+  test("a repository in npm's other forms is an https URL in Cargo.toml, or is left out", () => {
+    const repositories = {
+      'github:acme/app': 'https://github.com/acme/app',
+      'acme/app': 'https://github.com/acme/app',
+      'gitlab:acme/app': 'https://gitlab.com/acme/app',
+      'bitbucket:acme/app': 'https://bitbucket.org/acme/app',
+      'git+ssh://git@github.com/acme/app.git': 'https://github.com/acme/app.git',
+      'git@github.com:acme/app.git': 'https://github.com/acme/app.git',
+      'git://github.com/acme/app.git': 'https://github.com/acme/app.git',
+      'https://gitlab.com/acme/app': 'https://gitlab.com/acme/app',
+      'file:../app': undefined,
+    };
+
+    for (const [repository, url] of Object.entries(repositories)) {
+      const cargoToml = generate(listUsers, { package: { repository } })('Cargo.toml');
+
+      assert.strictEqual(cargoPackageTable(cargoToml).match(/^repository = "(.*)"$/m)?.[1], url, cargoToml);
+    }
+    // crates.io checks the homepage the same way
+    assert.doesNotMatch(generate(listUsers, { package: { homepage: 'example.com' } })('Cargo.toml'), /^homepage/m);
+  });
+
+  test("a crate name that isn't snake_case builds with warnings denied", () => {
+    // rustc warns on a crate name with a capital or a double underscore inside
+    for (const [name, crateName] of [
+      ['MyClient', 'MyClient'],
+      ['@acme/web--app', 'acme_web__app'],
+    ]) {
+      const read = generate(listUsers, { package: { name } });
+      const source = read('src/lib.rs');
+
+      assert.match(cargoPackageTable(read('Cargo.toml')), new RegExp(`^name = "${crateName}"$`, 'm'));
+      assert.match(source.slice(0, source.indexOf('\nmod ')), /^#!\[allow\(non_snake_case\)\]/m, source);
+    }
+    // other crates keep the lint for the names they generate
+    const source = generate(listUsers, { package: { name: '@acme/web-app' } })('src/lib.rs');
+
+    assert.ok(!source.includes('#![allow(non_snake_case)]'), source);
   });
 
   test('the README headings name the functions the crate has', () => {

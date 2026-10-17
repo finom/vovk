@@ -59,14 +59,14 @@ const vovkConfig = {
         samples: { apiRoot: 'http://localhost:1/api', headers: { Authorization: 'Bearer token' } },
       },
     },
-    // generated with --from rsReadonly --include readonly
+    // generated with --from rsReadonly --include readonly; a crate name that isn't snake_case builds too
     rsReadonly: {
       extends: 'rs',
       composedClient: {
         outDir: './generated_readonly_client',
       },
       outputConfig: {
-        package: { name: 'generated_readonly_client', version: '0.1.0', license: 'MIT' },
+        package: { name: 'GeneratedReadonlyClient', version: '0.1.0', license: 'MIT' },
       },
     },
   },

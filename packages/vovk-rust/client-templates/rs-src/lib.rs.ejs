@@ -2,6 +2,7 @@
 imports: ['vovk-rust']
 ---
 <%- t.getFirstLineBanner() %>
+<%- /\p{Uppercase}|[^_]__+[^_]/u.test(t.underscoredPackageName.replaceAll('-', '_')) ? '#![allow(non_snake_case)] // rustc wants a snake_case crate name\n' : '' -%>
 <% const vars = {
     convertJSONSchemasToRustTypes: t.imports['vovk-rust'].convertJSONSchemasToRustTypes,
     getBodyKind: t.imports['vovk-rust'].getBodyKind,
