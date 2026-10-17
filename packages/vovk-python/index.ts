@@ -35,6 +35,19 @@ export function toPythonIdentifier(name: string, used?: Set<string>): string {
   return candidate;
 }
 
+// the class of each RPC module of a package, in schema order: of the modules with one identifier (User$RPC and
+// User_RPC are User_RPC) the last keeps it, as a later class of a name replaced an earlier one, and the others get the
+// first free suffix; "client" is the ApiClient every method calls
+export function getClassNames(rpcModuleNames: string[]): string[] {
+  const identifiers = rpcModuleNames.map((name) => toPythonIdentifier(name));
+  const used = new Set(['client', ...identifiers]);
+  return identifiers.map((identifier, i) =>
+    identifier !== 'client' && identifiers.lastIndexOf(identifier) === i
+      ? identifier
+      : toPythonIdentifier(identifier, used)
+  );
+}
+
 // the method of each handler of a class, by handler name: in schema order, a name already taken gets the first free
 // suffix, so getUserByID and getUserById become get_user_by_id and get_user_by_id_2
 export function getMethodNames(handlerNames: string[], toSnakeCase: (name: string) => string): Map<string, string> {

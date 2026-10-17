@@ -495,6 +495,8 @@ export function createCodeSamples({
   package: packageJson,
   config,
   rustModuleName,
+  rustFunctionName,
+  pythonClassName,
 }: {
   handlerName: string;
   handlerSchema: VovkHandlerSchema;
@@ -503,6 +505,10 @@ export function createCodeSamples({
   config: VovkSamplesConfig;
   // the module name the crate gives the controller when another module took its own (getRustModuleNames)
   rustModuleName?: string;
+  // the function to call when it isn't the handler's own, such as the one with _json for a JSON-or-file body
+  rustFunctionName?: string;
+  // the class name the package gives the controller when another class took its own (getPythonClassNames)
+  pythonClassName?: string;
 }) {
   const queryValidation = handlerSchema?.validation?.query as VovkJSONSchemaBase | undefined;
   const bodyValidation = handlerSchema?.validation?.body as VovkJSONSchemaBase | undefined;
@@ -541,7 +547,7 @@ export function createCodeSamples({
     ...commonParams,
     paramsValidation: pathParamsValidation,
     packageName: pyPackageName,
-    rpcName: getPythonClassName(rpcName),
+    rpcName: pythonClassName ?? getPythonClassName(rpcName),
     methodName: getPythonMethodName(handlerName, handlers),
   });
   const rs = generateRustCode({
@@ -549,7 +555,7 @@ export function createCodeSamples({
     paramsValidation: pathParamsValidation,
     packageName: rsPackageName,
     rpcName: rustModuleName ?? getRustModuleName(rpcName),
-    methodName: getRustFunctionName(handlerName, handlers),
+    methodName: rustFunctionName ?? getRustFunctionName(handlerName, handlers),
   });
 
   return { ts, py, rs };

@@ -648,6 +648,68 @@ await describe('vovk generate in a project without Next.js', async () => {
     assert.notStrictEqual(await read('src/client/openapi.json'), userSpec);
   });
 
+  await it('Writes again a generated file deleted by hand, and still refuses a file of its own', async () => {
+    await createProject(projectDir, {
+      'package.json': { name: 'app', version: '1.0.0', type: 'module' },
+      'vovk.config.mjs': configFile({ composedClient: { prettifyClient: false } }),
+      '.vovk-schema/root.json': withHandlers(['getUser']),
+    });
+    const generatePythonAndRust = async () => {
+      await runCLI(['generate', '--from', 'py', '--out', 'dist_python'], { cwd: projectDir });
+      await runCLI(['generate', '--from', 'rs', '--out', 'dist_rust'], { cwd: projectDir });
+    };
+    await generatePythonAndRust();
+
+    // the one stamped file of each src folder; a changed schema rewrites the schema.json beside it
+    await fs.rm(path.join(projectDir, 'dist_python/src/app/__init__.py'));
+    await fs.rm(path.join(projectDir, 'dist_rust/src/lib.rs'));
+    await fs.writeFile(path.join(projectDir, '.vovk-schema/root.json'), JSON.stringify(withHandlers(['findUser'])));
+    await generatePythonAndRust();
+
+    for (const file of [
+      'dist_python/src/app/__init__.py',
+      'dist_python/src/app/schema.json',
+      'dist_rust/src/lib.rs',
+      'dist_rust/src/schema.json',
+    ]) {
+      assert.ok((await read(file)).includes('findUser'), file);
+    }
+
+    const userLib = 'pub fn mine() {}\n';
+    await fs.writeFile(path.join(projectDir, 'dist_rust/src/lib.rs'), userLib);
+    await assert.rejects(
+      runCLI(['generate', '--from', 'rs', '--out', 'dist_rust'], { cwd: projectDir }),
+      (error: Error) => error.message.includes(path.join('dist_rust', 'src', 'lib.rs'))
+    );
+    assert.strictEqual(await read('dist_rust/src/lib.rs'), userLib);
+
+    // in a folder it never generated into, a JSON file is the user's
+    const userSchema = '{ "mine": true }\n';
+    await fs.mkdir(path.join(projectDir, 'mine/src'), { recursive: true });
+    await fs.writeFile(path.join(projectDir, 'mine/src/schema.json'), userSchema);
+    await assert.rejects(runCLI(['generate', '--from', 'rs', '--out', 'mine'], { cwd: projectDir }), (error: Error) =>
+      error.message.includes(path.join('mine', 'src', 'schema.json'))
+    );
+    assert.strictEqual(await read('mine/src/schema.json'), userSchema);
+  });
+
+  await it('Writes readme.installCommand into the README as written', async () => {
+    const installCommand = `npm install "app@>=1 <2" --registry 'https://x.test/?a=1&b=2'`;
+    await createProject(projectDir, {
+      'package.json': { name: 'app', version: '1.0.0', type: 'module' },
+      'vovk.config.mjs': configFile({
+        composedClient: { prettifyClient: false },
+        outputConfig: { readme: { installCommand } },
+      }),
+      '.vovk-schema/root.json': userSegmentSchema,
+    });
+
+    await runCLI(['generate', '--from', 'readme', '--out', 'dist_readme'], { cwd: projectDir });
+    const readme = await read('dist_readme/README.md');
+
+    assert.ok(readme.includes(`\n# Install the package\n${installCommand}\n`), readme);
+  });
+
   await it('Replaces the files it generated before', async () => {
     const schemaWith = (handlerName: string) => ({
       ...userSegmentSchema,

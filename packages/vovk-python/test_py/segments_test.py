@@ -21,6 +21,24 @@ class TestSegments(unittest.TestCase):
 
         self.assertEqual(sent[0].request.url, 'http://proxy.test/petstore/pets/1')
 
+    def test_mixin_path_keeps_its_trailing_slash(self) -> None:
+        # /slash/ and /slash are different paths, as the TypeScript client sends them
+        with fake_transport(json_response(None)) as sent:
+            PetstoreAPI.get_root()
+            PetstoreAPI.get_slash()
+            PetstoreAPI.get_slash_item(params={'id': 7})
+            PetstoreAPI.get_slash(api_root='http://proxy.test/petstore/')
+
+        self.assertEqual(
+            [item.request.url for item in sent],
+            [
+                'https://petstore.test/v1/',
+                'https://petstore.test/v1/slash/',
+                'https://petstore.test/v1/slash/7/',
+                'http://proxy.test/petstore/slash/',
+            ],
+        )
+
     def test_mixin_query_and_form_styles(self) -> None:
         # as the TypeScript client sends them
         with fake_transport(json_response(None)) as sent:

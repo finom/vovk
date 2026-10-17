@@ -295,4 +295,15 @@ pub mod test_client_validation {
         assert!(is_refused(shapes_rpc::unevaluated_properties(json!({"x": 1}), (), (), None, None, false)).await);
         assert!(!is_refused(shapes_rpc::unevaluated_properties(json!({}), (), (), None, None, false)).await);
     }
+
+    // a schema that declares draft 7 is read as draft 7, where items is a tuple's list; read as 2020-12 it wouldn't
+    // compile and the client would leave it to the server, so only the refused values show how it was read
+    #[tokio::test]
+    async fn test_draft7_schema() {
+        let call = |t| shapes_rpc::draft_7_tuple(shapes_rpc::draft_7_tuple_::body { t }, (), (), None, None, false);
+
+        assert!(!is_refused(call(vec![json!("a"), json!(1)])).await);
+        assert!(is_refused(call(vec![json!("a"), json!(1), json!("x")])).await);
+        assert!(is_refused(call(vec![json!(1), json!("a")])).await);
+    }
 }

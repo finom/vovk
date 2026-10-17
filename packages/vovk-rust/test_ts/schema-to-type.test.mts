@@ -736,12 +736,13 @@ describe('a union reads the variant the value belongs to', () => {
     });
 
     assert.match(readers(output, /deserialize_with = "(\w+)"\)\]\n\s*pub kind: String,/g)[1], /__value == "b"/);
-    assert.match(readers(output, /deserialize_with = "(\w+)"\)\]\n\s*pub ok: bool,/g)[0], /__value == true/);
+    // a bool is the condition itself
+    assert.match(readers(output, /deserialize_with = "(\w+)"\)\]\n\s*pub ok: bool,/g)[0], /if __value \{/);
     assert.match(readers(output, /deserialize_with = "(\w+)"\)\]\n\s*pub n: f64,/g)[0], /__value == 2\.0/);
     const [optional] = readers(output, /deserialize_with = "(\w+)"\)\]\n\s*pub i: Option<i64>,/g);
     assert.match(optional, /-> ::std::result::Result<Option<i64>, __D::Error>/);
     // an unset optional field reads as None
-    assert.match(optional, /__value\.as_ref\(\)\.map_or\(true, \|__v\| \*__v == -1\)/);
+    assert.match(optional, /__value\.as_ref\(\)\.is_none_or\(\|__v\| \*__v == -1\)/);
   });
 
   test('a union of constants reads each through its own check', () => {

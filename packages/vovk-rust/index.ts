@@ -189,6 +189,43 @@ export function getBinaryBodyVariants(givenSchema: VovkJSONSchemaBase | undefine
   });
 }
 
+// a union body that takes JSON or a form, with a file in some branch, goes out as a form; its branches without a file
+// can go out as JSON, as the TypeScript client sends them: those branches as one body schema, else null
+function getJSONBranchesBody(body: Schema): Schema | null {
+  const isJSON = (type: string) => type === 'application/json' || type.endsWith('+json');
+  if (!((body['x-contentType'] as string[] | undefined) ?? []).some(isJSON)) return null;
+  const { anyOf, oneOf, 'x-contentType': _, ...rest } = body;
+  // getBodyKind reads a schema that takes JSON or a form as JSON when it holds no file; a $ref reads the body's $defs
+  const holdsNoFile = (schema: Schema) =>
+    getBodyKind({ ...rest, ...schema, 'x-contentType': ['application/json', 'multipart/form-data'] }) === 'json';
+  // a mixin's branch declares its own content type: a branch for a form only stays a form
+  const branches = (anyOf ?? oneOf ?? []).filter(
+    (branch) =>
+      ((branch['x-contentType'] as string[] | undefined) ?? ['application/json']).some(isJSON) && holdsNoFile(branch)
+  );
+  if (!branches.length || !holdsNoFile(rest)) return null;
+  // one branch, with nothing else to check, is the body itself
+  const isBare = Object.keys(rest).every((key) =>
+    ['$schema', '$defs', 'definitions', 'components', 'title', 'description'].includes(key)
+  );
+  const json =
+    branches.length === 1 && isBare ? { ...rest, ...branches[0] } : { ...rest, [anyOf ? 'anyOf' : 'oneOf']: branches };
+  return { ...json, 'x-contentType': ['application/json'] };
+}
+
+// the function with _json that sends the branches of a JSON-or-file body without a file as JSON, with the body it
+// takes; null for another body, or when a handler of the module has that name
+export function getJSONFunction(
+  body: VovkJSONSchemaBase | undefined,
+  functionName: string,
+  functionNames: Map<string, string>
+): { name: string; body: VovkJSONSchemaBase } | null {
+  const name = `${functionName}_json`;
+  if (!body || getBodyKind(body) !== 'form' || [...functionNames.values()].includes(name)) return null;
+  const jsonBody = getJSONBranchesBody(body);
+  return jsonBody && { name, body: jsonBody };
+}
+
 function indent(level: number, pad: number = 0): string {
   return ' '.repeat(pad + level * 2);
 }
@@ -775,7 +812,10 @@ function emitConstCheck(schema: Schema, type: string, baseName: string, mod: Mod
 
   const name = allocateName(mod, `${baseName}_const`);
   const ind = (depth: number) => indent(mod.level + depth, ctx.pad);
-  const matches = optional ? `__value.as_ref().map_or(true, |__v| *__v == ${literal})` : `__value == ${literal}`;
+  // a bool is the condition itself, as clippy wants it
+  const equals = (value: string) =>
+    literal === 'true' ? value : literal === 'false' ? `!${value}` : `${value} == ${literal}`;
+  const matches = optional ? `__value.as_ref().is_none_or(|__v| ${equals('*__v')})` : equals('__value');
   const error = `serde::de::Error::custom(${toRustString(`expected ${JSON.stringify(target.const)}`)})`;
   mod.code += `${ind(0)}#[allow(non_snake_case)]\n`;
   mod.code += `${ind(0)}fn ${name}<'de, __D: serde::Deserializer<'de>>(__deserializer: __D) -> ${RESULT}<${type}, __D::Error> {\n`;

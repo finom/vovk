@@ -116,6 +116,8 @@ function getPlaceholder(outPath: string) {
 export interface ClientFile {
   templateName: string;
   outPath: string;
+  // the output directory of the client the file belongs to
+  clientDir: string;
   content: string;
   // null when there is no file yet
   existingContent: string | null;
@@ -194,6 +196,10 @@ export async function renderOneClientFile({
   const outDir = path.resolve(
     cwd,
     normalizeOutTemplatePath(path.join(outCwdRelativeDir, segmentDir, relativeDir), packageJson, packageNameKey)
+  );
+  const clientDir = path.resolve(
+    cwd,
+    normalizeOutTemplatePath(path.join(outCwdRelativeDir, segmentDir), packageJson, packageNameKey)
   );
   const outPath = path.join(outDir, path.basename(templateFilePath).replace('.ejs', ''));
 
@@ -373,6 +379,7 @@ export async function renderOneClientFile({
   return {
     templateName: clientTemplateFile.templateName,
     outPath,
+    clientDir,
     content: rendered,
     existingContent,
     needsWriting,
@@ -380,22 +387,32 @@ export async function renderOneClientFile({
 }
 
 // the files that would replace one vovk-cli can't tell it generated: it stamps every file that can hold a comment,
-// and JSON counts as generated beside a file that carried the stamp before this run
+// and JSON counts as generated beside a file that carried the stamp before this run, or in a client that had one, so
+// a stamped file deleted by hand is written again
 export function findForeignClientFiles(clientFiles: ClientFile[]): string[] {
   const dirsWithStampedFiles = new Set<string>();
   const dirsStampedBefore = new Set<string>();
-  for (const { outPath, content, existingContent } of clientFiles) {
+  const clientsStampedBefore = new Set<string>();
+  for (const { outPath, clientDir, content, existingContent } of clientFiles) {
     if (hasGeneratedBanner(content)) dirsWithStampedFiles.add(path.dirname(outPath));
-    if (existingContent && hasGeneratedBanner(existingContent)) dirsStampedBefore.add(path.dirname(outPath));
+    if (existingContent && hasGeneratedBanner(existingContent)) {
+      dirsStampedBefore.add(path.dirname(outPath));
+      clientsStampedBefore.add(clientDir);
+    }
   }
 
   return clientFiles
-    .filter(({ outPath, content, existingContent, needsWriting }) => {
+    .filter(({ outPath, clientDir, content, existingContent, needsWriting }) => {
       if (!needsWriting || !existingContent?.trim() || hasGeneratedBanner(existingContent)) return false;
       if (hasGeneratedBanner(content)) return true;
       // a file copied as is, or from a custom template without the stamp, leaves nothing to check
       const dir = path.dirname(outPath);
-      return path.extname(outPath) === '.json' && dirsWithStampedFiles.has(dir) && !dirsStampedBefore.has(dir);
+      return (
+        path.extname(outPath) === '.json' &&
+        dirsWithStampedFiles.has(dir) &&
+        !dirsStampedBefore.has(dir) &&
+        !clientsStampedBefore.has(clientDir)
+      );
     })
     .map(({ outPath }) => outPath);
 }

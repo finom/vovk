@@ -5,6 +5,9 @@ mod test_shapes;
 mod test_requests;
 mod test_runtime;
 mod test_parity;
+mod test_streams;
+mod test_errors;
+mod test_patterns;
 
 // Helper function to create objects with specific validation issues
 pub fn get_constraining_object(key: Option<String>) -> serde_json::Value {        
@@ -60,6 +63,7 @@ pub fn get_constraining_object(key: Option<String>) -> serde_json::Value {
         "num_maximum": 200,
         "num_exclusiveMinimum": 0,
         "num_exclusiveMaximum": 100,
+        "num_multipleOf": 12,
         "num_int": 42.5,
         "num_int32": 4294967296_i64,
         

@@ -325,7 +325,10 @@ class ApiClient:
 
     @staticmethod
     def _join_url(root: str, *parts: str) -> str:
-        return '/'.join(part for part in [root.rstrip('/'), *(part.strip('/') for part in parts)] if part)
+        url = '/'.join(part for part in [root.rstrip('/'), *(part.strip('/') for part in parts)] if part)
+        # a mixin path keeps the trailing slash its OpenAPI document declares, as the TypeScript client sends it: /items/
+        # and /items are different paths
+        return url + '/' if parts and parts[-1].endswith('/') else url
 
     def request(
         self,

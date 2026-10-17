@@ -286,6 +286,78 @@ describe('the generated crate', () => {
     assert.match(file('src/lib.rs'), /api_root: "https:\/\/example\.com",/);
   });
 
+  test('the README shows readme.installCommand as written', () => {
+    const installCommand = `cargo add app --git "https://x.test/a?b=1&c=2" --branch 'main' && echo <ok>`;
+    const install = readmeInstallBlock(generate(listUsers, { readme: { installCommand } })('README.md'));
+
+    assert.ok(install.startsWith(`# Install the package\n${installCommand}\n`), install);
+  });
+
+  test('the README URL of a mixin path keeps its trailing slash, as the client sends it', () => {
+    const ok = { 200: { description: 'ok' } };
+    const items = {
+      openapi: '3.1.0',
+      info: { title: 'Items', version: '1.0.0' },
+      servers: [{ url: 'https://api.example.com/' }],
+      paths: {
+        '/': { get: { operationId: 'getRoot', responses: ok } },
+        '/items/': { get: { operationId: 'listItems', responses: ok } },
+        '/items/{id}/': {
+          get: {
+            operationId: 'getItem',
+            parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'string' } }],
+            responses: ok,
+          },
+        },
+        '/plain': { get: { operationId: 'getPlain', responses: ok } },
+      },
+    };
+    const read = generate(listUsers, {
+      segments: { items: { openAPIMixin: { source: { object: items }, getModuleName: 'ItemsAPI' } } },
+    });
+    const readmeURLs = [...read('README.md').matchAll(/^`GET (https:.+)`$/gm)].map(([, url]) => url);
+    const commentURLs = [...read('src/lib.rs').matchAll(/^ {4}\/\/ ItemsAPI\.\w+ GET `(.+)`$/gm)].map(([, url]) => url);
+
+    assert.deepStrictEqual(readmeURLs, [
+      'https://api.example.com/',
+      'https://api.example.com/items/',
+      'https://api.example.com/items/{id}/',
+      'https://api.example.com/plain',
+    ]);
+    assert.deepStrictEqual(readmeURLs, commentURLs);
+  });
+
+  test('the README lists the function that sends the branches of a JSON-or-file body without a file as JSON', () => {
+    const file = { type: 'object', properties: { file: { type: 'string', format: 'binary' } }, required: ['file'] };
+    const data = { type: 'object', properties: { n: { type: 'number' } }, required: ['n'] };
+    const read = generate(
+      userController({
+        upload: {
+          httpMethod: 'POST',
+          path: 'upload',
+          validation: { body: { anyOf: [data, file], 'x-contentType': ['application/json', 'multipart/form-data'] } },
+        },
+      })
+    );
+    const readme = read('README.md');
+    const headings = [...readme.matchAll(/^### (.+)$/gm)].map(([, heading]) => heading);
+    const functions = [...read('src/lib.rs').matchAll(/^ {4}pub async fn (\w+)\(/gm)].map(
+      ([, name]) => `user_rpc::${name}`
+    );
+    // the sample under each heading
+    const samples = Object.fromEntries(
+      [...readme.matchAll(/^### (.+)$[\s\S]*?^```rust\n([\s\S]*?)^```$/gm)].map(([, heading, sample]) => [
+        heading,
+        sample,
+      ])
+    );
+
+    assert.deepStrictEqual(headings, ['user_rpc::upload', 'user_rpc::upload_json']);
+    assert.deepStrictEqual(headings, functions);
+    assert.match(samples['user_rpc::upload'], /user_rpc::upload\(\n\s+form,/);
+    assert.match(samples['user_rpc::upload_json'], /user_rpc::upload_json\(\n\s+from_value\(json!\(\{\n\s+"n": /);
+  });
+
   test('the README starts with readme.banner', () => {
     const readme = generate(listUsers, { readme: { banner: 'Banner line' } })('README.md');
     const bannerAt = readme.indexOf('Banner line');
