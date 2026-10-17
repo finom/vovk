@@ -11,7 +11,9 @@ from urllib.parse import quote
 from jsonschema import FormatChecker, validators
 from jsonschema.exceptions import ValidationError, best_match
 from requests.models import Response
+from requests.structures import CaseInsensitiveDict
 from urllib3.exceptions import DecodeError, ProtocolError, ReadTimeoutError, SSLError
+from urllib3.filepost import encode_multipart_formdata
 from typing import Dict, Optional, Any, Generator, Iterator, Literal, List, Tuple, TypedDict, Union
 
 class HttpExceptionResponseBody(TypedDict):
@@ -46,14 +48,61 @@ def _charset(content_type: str) -> Optional[str]:
             return value.strip().strip('"\'') or None
     return None
 
+def _decode_text(content: bytes, content_type: str) -> str:
+    # UTF-8 unless the charset says otherwise, not requests' Latin-1 for text/* or its guess for +json
+    try:
+        return content.decode(_charset(content_type) or 'utf-8', errors='replace')
+    except LookupError:
+        return content.decode('utf-8', errors='replace')
+
+def _matches_media_type(media_type: str, pattern: str) -> bool:
+    return pattern == '*/*' or (media_type.startswith(pattern[:-1]) if pattern.endswith('/*') else media_type == pattern)
+
+def _takes_media_type(declared: List[str], content_type: Any) -> bool:
+    # as the server matches a Content-Type: its media type, a family/* wildcard or */*; declaring none takes any
+    if not isinstance(content_type, str):
+        return False
+    media_type = content_type.split(';')[0].strip().lower()
+    return not declared or any(_matches_media_type(media_type, pattern.lower()) for pattern in declared)
+
 def _binary_content_type(declared: List[str]) -> str:
-    # bytes go out as the first type the procedure declares that isn't JSON or a form, such as image/png
+    # bytes go out as the first type the procedure declares that isn't JSON or a form, such as image/png, then a
+    # wildcard such as image/*, as the TypeScript client sends untyped bytes
     concrete = (t for t in declared if '*' not in t and t not in _FORM_MEDIA_TYPES and not _is_json_media_type(t))
     wildcard = (t for t in declared if t != '*/*' and t.endswith('/*'))
-    return next(concrete, None) or next(wildcard, None) or 'application/octet-stream'
+    binary_type = next(concrete, None) or next(wildcard, None)
+    if binary_type:
+        return binary_type
+    if _takes_media_type(declared, 'application/octet-stream'):
+        return 'application/octet-stream'
+    # a procedure that takes only JSON or a URL-encoded form parses the bytes as that
+    return next((t for t in declared if _is_json_media_type(t) or t == 'application/x-www-form-urlencoded'), 'application/octet-stream')
+
+def _accepts_null(schema: Any) -> bool:
+    # type null or a list of types with it, OpenAPI 3.0's nullable, or an anyOf or oneOf branch that accepts null
+    if not isinstance(schema, dict):
+        return False
+    schema_type = schema.get('type')
+    return (
+        schema_type == 'null'
+        or (isinstance(schema_type, list) and 'null' in schema_type)
+        or schema.get('nullable') is True
+        or any(isinstance(branches, list) and any(_accepts_null(b) for b in branches) for branches in (schema.get('anyOf'), schema.get('oneOf')))
+    )
+
+def _takes_null_body(schema: Any) -> bool:
+    # None goes out as the JSON body null only when the body schema accepts null and takes JSON, declared or by default,
+    # as the TypeScript client sends null
+    if not _accepts_null(schema):
+        return False
+    declared = schema.get('x-contentType')
+    return declared is None or any(_is_json_media_type(t.split(';')[0].strip().lower()) for t in declared)
 
 def _to_json_value(value: Any) -> Any:
-    # as JSON.stringify sends a value: a date or a time as ISO 8601 text, a tuple as a list
+    # as JSON.stringify sends a value: a date or a time as ISO 8601 text, a datetime with an offset in UTC with a Z, a
+    # tuple as a list
+    if isinstance(value, datetime.datetime) and value.utcoffset() is not None:
+        return value.astimezone(datetime.timezone.utc).isoformat()[:-6] + 'Z'
     if isinstance(value, (datetime.date, datetime.time)):
         return value.isoformat()
     if isinstance(value, dict):
@@ -356,10 +405,12 @@ class ApiClient:
             body: The body. A JSON value goes out as JSON. A dict goes out as a form when the procedure takes a form,
                 unless it also takes JSON and no files come with it. A str with body_content_type goes out as that
                 text, and bytes go out as they are. In the body, the query and the params, a date, a time or a datetime goes
-                out as ISO 8601 text and a tuple as a list.
+                out as ISO 8601 text, a datetime with an offset in UTC with a Z, and a tuple as a list. None goes out as
+                the JSON body null when the body schema accepts null.
             query: Optional dictionary to convert to query parameters
             params: Optional dictionary to replace URL parameters
-            headers: Optional dictionary of custom headers
+            headers: Optional dictionary of custom headers. A value goes out without the spaces, tabs and line breaks
+                around it. A Content-Type the procedure takes replaces the declared one of a text or binary body.
             files: Files of a multipart body, as requests takes them: a dict of field name to file, or a list of
                 (field name, file) pairs
             validation: Optional dictionary with JSON schemas to validate body, query, and params
@@ -379,8 +430,9 @@ class ApiClient:
 
         Raises:
             jsonschema.exceptions.ValidationError: If client-side validation fails
-            ValueError: If the body, query or params the schema asks for is missing, or a path parameter is "", "."
-                or ".."
+            ValueError: If the body, query or params the schema asks for is missing, a path parameter is missing or
+                None, or a path parameter is "", "." or ".."
+            requests.exceptions.InvalidHeader: If a header name or value is invalid; the message leaves out the value
             HttpException: If the response status is 400 or higher
             requests.RequestException: If the request fails, as on a timeout or a refused connection
         """
@@ -402,10 +454,11 @@ class ApiClient:
         # an object goes out as a form only when JSON can't carry it: no JSON declared, or files to send
         TIsForm = any(t in _FORM_MEDIA_TYPES for t in body_ct) and bool(files or not any(_is_json_media_type(t) for t in body_ct))
         TIsMultipart = TIsForm and 'multipart/form-data' in body_ct
+        TIsNull = body is None and _takes_null_body((validation or {}).get('body'))
         if validation and not disable_client_validation:
             # a form or binary body is left to the server
             if validation.get('body') and not TIsForm and not TIsBinary:
-                if body is None:
+                if body is None and not TIsNull:
                     raise ValueError("Body is required for validation but not provided")
                 _validate(body, validation['body'])
 
@@ -422,12 +475,19 @@ class ApiClient:
         processed_url = url
         if params:
             for key, value in params.items():
+                # a missing value keeps its placeholder, which is reported below
+                if value is None:
+                    continue
                 text = _to_text(value)
                 # "", "." and ".." would drop or climb a path segment and so reach another route
                 if text in ('', '.', '..'):
                     raise ValueError(f'Path parameter "{key}" cannot be empty, "." or "..", got "{text}"')
                 processed_url = processed_url.replace(f"{{{key}}}", quote(text, safe=''))
-        
+        # a given param replaces its placeholder with an encoded value, so a brace left in the path is a missing one
+        missing_params = re.findall(r'\{([^{}]+)\}', processed_url.split('?', 1)[0])
+        if missing_params:
+            raise ValueError(f"Missing params: {', '.join(missing_params)} in {processed_url}")
+
         if query:
             query_string = (
                 self._build_query_string(query) if query_styles is None else _styled_query_string(query, query_styles)
@@ -436,30 +496,53 @@ class ApiClient:
                 processed_url += "&" + query_string
             else:
                 processed_url += "?" + query_string
-        
-        request_headers = {
-            'Accept': 'application/jsonl, application/json'
-        }
-        
-        if headers:
-            request_headers.update(headers)
-        
+
+        # case-insensitive, so a header given for the call replaces its default
+        request_headers: CaseInsensitiveDict[Any] = CaseInsensitiveDict({'Accept': 'application/jsonl, application/json'})
+        for name, value in (headers or {}).items():
+            # a value goes out without the spaces, tabs and line breaks around it, as fetch sends it
+            if isinstance(value, str):
+                value = value.strip(' \t\r\n')
+            if isinstance(value, (str, bytes)):
+                try:
+                    requests.utils.check_header_validity((name, value))
+                except requests.exceptions.InvalidHeader:
+                    # requests' message quotes the value, which may be a secret
+                    raise requests.exceptions.InvalidHeader(f'Invalid header "{name}"') from None
+            request_headers[name] = value
+
+        if (TIsText or TIsBinary) and not _takes_media_type(body_ct, request_headers.get('Content-Type')):
+            # a type the caller gives goes out when the procedure takes it, such as image/jpeg for image/*
+            request_headers['Content-Type'] = body_content_type
+
         # the body as requests takes it: data, files or json
         payload: Dict[str, Any]
-        if TIsText:
-            request_headers['Content-Type'] = body_content_type # type: ignore
+        if TIsNull:
+            # requests sends json=None as no body
+            request_headers.setdefault('Content-Type', 'application/json')
+            payload = {'data': b'null'}
+        elif TIsText:
             payload = {'data': body.encode('utf-8') if isinstance(body, str) else body}
         elif TIsBinary:
-            request_headers['Content-Type'] = body_content_type # type: ignore
             payload = {'data': body}
         elif TIsForm and isinstance(body, dict):
             fields = self._to_form_fields(body, None if TIsMultipart else form_styles)
             if TIsMultipart:
                 # a (None, text) part is a plain field, and makes requests send multipart even without a file
                 file_parts = list(files.items()) if isinstance(files, dict) else list(files or [])
-                payload = {'files': [(key, (None, text)) for key, text in fields] + file_parts}
-            else:
+                parts = [(key, (None, text)) for key, text in fields] + file_parts
+                if parts:
+                    payload = {'files': parts}
+                else:
+                    # requests sends no body for an empty form; the server then reads no form at all
+                    data, content_type = encode_multipart_formdata([])
+                    request_headers.setdefault('Content-Type', content_type)
+                    payload = {'data': data}
+            elif fields or files:
                 payload = {'files': files, 'data': fields}
+            else:
+                request_headers.setdefault('Content-Type', 'application/x-www-form-urlencoded')
+                payload = {'data': b''}
         elif TIsForm:
             payload = {'files': files, 'data': body}
         else:
@@ -469,8 +552,13 @@ class ApiClient:
             requests.Request(method=http_method.upper(), url=processed_url, headers=request_headers, **payload)
         )
         if query_styles is not None and '?' in processed_url:
-            # requests encodes the | that joins pipeDelimited parts; the TypeScript client sends it as is
-            prepared.url = f"{(prepared.url or '').split('?', 1)[0]}?{processed_url.split('?', 1)[1]}"
+            # requests encodes the | that joins pipeDelimited parts; the TypeScript client sends it as is. What requests
+            # adds after the query, such as the session's params, stays
+            base, _, sent_query = (prepared.url or '').partition('?')
+            query_string = processed_url.split('?', 1)[1]
+            encoded = requests.utils.requote_uri(query_string)
+            if sent_query.startswith(encoded):
+                prepared.url = f"{base}?{query_string}{sent_query[len(encoded):]}"
         if isinstance(prepared.body, (bytes, bytearray)) and prepared.body:
             # sent in blocks, the connect timeout bounds each block and not the whole upload; as a stream the body
             # also goes out again from its start after a 307 or a 308
@@ -493,20 +581,16 @@ class ApiClient:
             return _with_tuples(response.json(), (validation or {}).get('output')) if response.content else None
 
         # a file comes back as its bytes; text as str, and without a charset text/* is UTF-8, not requests' Latin-1
-        charset = _charset(content_type)
-        if charset is None and not media_type.startswith('text/'):
+        if _charset(content_type) is None and not media_type.startswith('text/'):
             return response.content
-        try:
-            return response.content.decode(charset or 'utf-8', errors='replace')
-        except LookupError:
-            return response.content.decode('utf-8', errors='replace')
+        return _decode_text(response.content, content_type)
 
     @staticmethod
     def _to_http_exception(response: Response, content_type: str, error_message_key: Optional[str] = None) -> HttpException:
         # a proxy's error page or a plain text error has no JSON envelope, its text is the message
-        text = response.text
+        text = _decode_text(response.content, content_type)
         body: Any = None
-        if 'json' in content_type:
+        if 'json' in content_type.lower():
             try:
                 body = json.loads(text)
             except ValueError:
@@ -602,7 +686,8 @@ class ApiClient:
         # the errors iter_content raises
         try:
             while True:
-                chunk = read1(65536)
+                # requests opens the response without decoding, and decodes only in iter_content
+                chunk = read1(65536, decode_content=True)
                 if not chunk:
                     return
                 yield chunk

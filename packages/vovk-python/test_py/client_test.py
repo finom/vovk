@@ -223,7 +223,7 @@ class TestClient(unittest.TestCase):
                 validation={'body': body_schema, 'query': query_schema},
             )
         self.assertEqual(sent[0].request.url, f'{FAKE_ROOT}/events?since=2026-01-02')
-        self.assertEqual(json.loads(sent[0].request.body or ''), {'at': '2026-01-02T03:04:05+00:00', 'pair': ['a', 1]})
+        self.assertEqual(json.loads(sent[0].request.body or ''), {'at': '2026-01-02T03:04:05Z', 'pair': ['a', 1]})
 
     def test_query_numbers_as_javascript_writes_them(self) -> None:
         self.assertEqual(RustSweepRPC.get_numeric_query(query={'limit': 10.0}), {'search': '?limit=10'})
