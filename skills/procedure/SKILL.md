@@ -383,7 +383,7 @@ Accepts `Blob | File | ArrayBuffer | Uint8Array | ReadableStream<Uint8Array> | s
 
 ## Error handling
 
-`throw new HttpException(HttpStatus.NOT_FOUND, 'User not found', { id })`. The error body, what vovk answers by itself (validation, invalid JSON, 415, 404, 405, 500), a status other than 200 and a custom error format → **`base`** skill.
+`import { HttpException, HttpStatus } from 'vovk'`, then `throw new HttpException(HttpStatus.NOT_FOUND, 'User not found', { id })`. The error body, what vovk answers by itself (validation, invalid JSON, 415, 404, 405, 500), a status other than 200 and a custom error format → **`base`** skill.
 
 ## Response headers (dynamic)
 
