@@ -129,6 +129,16 @@ const petstore = {
         responses: { 200: { description: 'ok' } },
       },
     },
+    // paths with a trailing slash, as FastAPI and Django declare them
+    '/': { get: { operationId: 'getRoot', responses: { 200: { description: 'ok' } } } },
+    '/slash/': { get: { operationId: 'getSlash', responses: { 200: { description: 'ok' } } } },
+    '/slash/{id}/': {
+      get: {
+        operationId: 'getSlashItem',
+        parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'integer' } }],
+        responses: { 200: { description: 'ok' } },
+      },
+    },
     // a number and a boolean in the path
     '/pets/{petId}/vaccinated/{vaccinated}': {
       put: {

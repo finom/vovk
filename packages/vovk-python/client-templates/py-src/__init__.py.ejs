@@ -16,15 +16,20 @@ imports: ['vovk-python']
     toPythonIdentifier: t.imports['vovk-python'].toPythonIdentifier,
     getMethodNames: t.imports['vovk-python'].getMethodNames,
     toPythonDocstringLines: t.imports['vovk-python'].toPythonDocstringLines,
-    toPythonCommentText: t.imports['vovk-python'].toPythonCommentText
+    toPythonCommentText: t.imports['vovk-python'].toPythonCommentText,
+    getClassNames: t.imports['vovk-python'].getClassNames
 };
+// the class of each RPC module, one name each across the package
+const controllerSchemas = Object.values(t.schema.segments).flatMap((segment) => Object.values(segment.controllers));
+const classNames = new Map(vars.getClassNames(controllerSchemas.map(({ rpcModuleName }) => rpcModuleName)).map((name, i) => [controllerSchemas[i], name]));
 // the root a segment's URLs start with and the segment's path after it; a mixin's root is its API's server
 const segmentBases = Object.fromEntries(Object.entries(t.schema.segments).map(([segmentName, segment]) => {
     const meta = t.segmentMeta[segment.segmentName] ?? {};
     const path = segment.forceApiRoot ? '' : typeof meta.segmentNameOverride === 'string' ? meta.segmentNameOverride : segmentName;
     return [segmentName, [meta.forceApiRoot ?? t.apiRoot ?? '', path]];
 }));
-const joinURL = (root, ...parts) => [t._.trimEnd(root, '/'), ...parts.map((part) => t._.trim(part ?? '', '/'))].filter(Boolean).join('/');
+// as the client joins them: a mixin path keeps its trailing slash
+const joinURL = (root, ...parts) => [t._.trimEnd(root, '/'), ...parts.map((part) => t._.trim(part ?? '', '/'))].filter(Boolean).join('/') + (parts.at(-1)?.endsWith('/') ? '/' : '');
 // bytes go out as the TypeScript client sends untyped bytes: the first declared type that isn't JSON or a form, then a
 // wildcard other than */*, then application/octet-stream where it's taken, else the JSON or URL-encoded type declared
 const getBinaryContentType = (schema) => {
@@ -54,7 +59,7 @@ client = ApiClient(<%- vars.toPythonString(t.apiRoot ?? '') %>, {
 <% Object.entries(t.schema.segments).forEach(([segmentName, segment]) => {
     Object.values(segment.controllers).forEach((controllerSchema) => {
 const { rpcModuleName } = controllerSchema;
-const pyModuleName = vars.toPythonIdentifier(rpcModuleName);
+const pyModuleName = classNames.get(controllerSchema);
 const methodNames = vars.getMethodNames(Object.keys(controllerSchema.handlers), t._.snakeCase); %>
 class <%- pyModuleName %>: <% if (!Object.keys(controllerSchema.handlers).length) { %>
     pass<% } %><% Object.entries(controllerSchema.handlers).forEach(([handlerNameOriginal, handlerSchema]) => {

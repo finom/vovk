@@ -16,14 +16,18 @@ imports: ['vovk-python']
 <%- t.readme.installCommand ?? `pip install ${t.underscoredPackageName}` %>
 ```
 
-<% Object.entries(t.schema.segments).forEach(([segmentName, segment]) => {
+<%
+// the class of each RPC module, one name each across the package, as in __init__.py
+const controllerSchemas = Object.values(t.schema.segments).flatMap((segment) => Object.values(segment.controllers));
+const classNames = new Map(t.imports['vovk-python'].getClassNames(controllerSchemas.map(({ rpcModuleName }) => rpcModuleName)).map((name, i) => [controllerSchemas[i], name]));
+Object.entries(t.schema.segments).forEach(([segmentName, segment]) => {
     // as the client builds it: a mixin's URLs start at its API's server, without a segment name
     const meta = t.segmentMeta[segment.segmentName] ?? {};
     const segmentPath = segment.forceApiRoot ? '' : typeof meta.segmentNameOverride === 'string' ? meta.segmentNameOverride : segmentName;
     const segmentRoot = t._.trimEnd(meta.forceApiRoot ?? t.apiRoot ?? '', '/');
     Object.values(segment.controllers).forEach((controllerSchema) => {
     // the names the package has
-    const pyModuleName = t.imports['vovk-python'].toPythonIdentifier(controllerSchema.rpcModuleName);
+    const pyModuleName = classNames.get(controllerSchema);
     const methodNames = t.imports['vovk-python'].getMethodNames(Object.keys(controllerSchema.handlers), t._.snakeCase); %>
 
 ## <%= pyModuleName %>
@@ -33,7 +37,7 @@ imports: ['vovk-python']
 
 <%- handlerSchema.operationObject?.description ? `${handlerSchema.operationObject.description}` : '' %>
 
-`<%= handlerSchema.httpMethod %> <%= [segmentRoot, ...[segmentPath, controllerSchema.prefix, handlerSchema.path].map((part) => t._.trim(part ?? '', '/'))].filter(Boolean).join('/') %>`
+`<%= handlerSchema.httpMethod %> <%= [segmentRoot, ...[segmentPath, controllerSchema.prefix, handlerSchema.path].map((part) => t._.trim(part ?? '', '/'))].filter(Boolean).join('/') + (handlerSchema.path.endsWith('/') ? '/' : '') %>`
 
 ```py
 <%- t.createCodeSamples({
@@ -42,6 +46,7 @@ imports: ['vovk-python']
     controllerSchema,
     package: t.package,
     config: t.samples,
+    pythonClassName: pyModuleName,
 }).py %>
 ```
         <% }) %>

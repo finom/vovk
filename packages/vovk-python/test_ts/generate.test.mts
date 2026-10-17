@@ -4,6 +4,8 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { after, test } from 'node:test';
+import type { VovkSchema } from 'vovk';
+import { type VovkStrictConfig, vovkSchemaToOpenAPI } from 'vovk/internal';
 
 const cliPath = path.join(import.meta.dirname, '../../vovk-cli/dist/index.mjs');
 const hasPython = spawnSync('python3', ['--version']).status === 0;
@@ -15,25 +17,31 @@ after(() => {
   for (const dir of projectDirs) fs.rmSync(dir, { recursive: true, force: true });
 });
 
-// generates the py client of a project with one segment of these controllers into dist_python
-function generate(controllers: Record<string, unknown>, outputConfig: object = {}) {
+// generates the py client of a project with a segment per entry of these controllers into dist_python
+function generateSegments(segments: Record<string, Record<string, unknown>>, outputConfig: object = {}) {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'vovk-python-'));
   projectDirs.push(dir);
-  const segment = {
-    $schema: 'https://vovk.dev/api/schema/v3/segment.json',
-    emitSchema: true,
-    segmentName: '',
-    segmentType: 'segment',
-    controllers,
-  };
   const config = { composedClient: { fromTemplates: ['py'], prettifyClient: false }, outputConfig };
   fs.mkdirSync(path.join(dir, '.vovk-schema'));
-  fs.writeFileSync(path.join(dir, '.vovk-schema/root.json'), JSON.stringify(segment));
+  for (const [segmentName, controllers] of Object.entries(segments)) {
+    const segment = {
+      $schema: 'https://vovk.dev/api/schema/v3/segment.json',
+      emitSchema: true,
+      segmentName,
+      segmentType: 'segment',
+      controllers,
+    };
+    fs.writeFileSync(path.join(dir, `.vovk-schema/${segmentName || 'root'}.json`), JSON.stringify(segment));
+  }
   fs.writeFileSync(path.join(dir, 'package.json'), JSON.stringify({ name: 'app', version: '1.0.0' }));
   fs.writeFileSync(path.join(dir, 'vovk.config.mjs'), `export default ${JSON.stringify(config)};`);
   execFileSync(process.execPath, [cliPath, 'generate'], { cwd: dir, stdio: 'pipe' });
   return (file: string) => path.join(dir, 'dist_python', file);
 }
+
+// the same, with one segment
+const generate = (controllers: Record<string, unknown>, outputConfig: object = {}) =>
+  generateSegments({ '': controllers }, outputConfig);
 
 // what test_py's test_every_annotation_resolves checks, on a generated package: the annotations of every class and
 // method of every RPC class resolve; the runtime is left out, as the annotations don't need it
@@ -459,4 +467,120 @@ test('every README sample calls its method with the arguments it takes', {
     { encoding: 'utf-8' }
   );
   assert.equal(result.status, 0, result.stdout + result.stderr);
+});
+
+test('a mixin path keeps its trailing slash in the comments and the README', () => {
+  const ok = { 200: { description: 'ok' } };
+  const items = {
+    openapi: '3.1.0',
+    info: { title: 'Items', version: '1.0.0' },
+    servers: [{ url: 'https://api.example.com/' }],
+    paths: {
+      '/': { get: { operationId: 'getRoot', responses: ok } },
+      '/items/': { get: { operationId: 'listItems', responses: ok } },
+      '/items/{id}/': {
+        get: {
+          operationId: 'getItem',
+          parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'string' } }],
+          responses: ok,
+        },
+      },
+      '/plain': { get: { operationId: 'getPlain', responses: ok } },
+    },
+  };
+  const file = generate(
+    {},
+    { segments: { items: { openAPIMixin: { source: { object: items }, getModuleName: 'ItemsAPI' } } } }
+  );
+  const readme = fs.readFileSync(file('README.md'), 'utf-8');
+  const source = fs.readFileSync(file('src/app/__init__.py'), 'utf-8');
+  // as the client sends them
+  const expected = [
+    'https://api.example.com/',
+    'https://api.example.com/items/',
+    'https://api.example.com/items/{id}/',
+    'https://api.example.com/plain',
+  ];
+
+  assert.deepEqual(
+    [...readme.matchAll(/^`GET (.+)`$/gm)].map(([, url]) => url),
+    expected
+  );
+  assert.deepEqual(
+    [...source.matchAll(/^ {4}# ItemsAPI\.\w+ GET `(.+)`$/gm)].map(([, url]) => url),
+    expected
+  );
+});
+
+// RPC modules whose names are one Python identifier: User$RPC and User_RPC are both User_RPC; "client" is the
+// package's ApiClient
+const alikeModules = () => {
+  const list = (validation = {}) => ({ httpMethod: 'GET', path: '', validation, operationObject: { summary: 'list' } });
+  const named = (rpcModuleName: string, handlers: Record<string, unknown>) => ({
+    [rpcModuleName]: { ...controller('Thing', handlers), rpcModuleName, prefix: rpcModuleName.replace('$', '') },
+  });
+  return {
+    '': { ...named('User$RPC', { list: list() }), ...named('client', { list: list() }) },
+    other: named('User_RPC', { list: list({ query: idSchema }) }),
+  };
+};
+
+test('RPC modules alike as Python identifiers get a class each across segments', {
+  skip: !hasPython && 'python3 not found',
+}, () => {
+  const file = generateSegments(alikeModules());
+  const source = fs.readFileSync(file('src/app/__init__.py'), 'utf-8');
+  const readme = fs.readFileSync(file('README.md'), 'utf-8');
+  // each class and the RPC module its method calls
+  const classes = [...source.matchAll(/^class (\w+): *\n[\s\S]*?rpc_name="([^"]+)"/gm)].map(([, name, rpcName]) => [
+    name,
+    rpcName,
+  ]);
+
+  // a second class of a name replaced the first, so the last module of a name keeps it; a class named client would
+  // replace the ApiClient every method calls
+  assert.deepEqual(classes, [
+    ['User_RPC_2', 'User$RPC'],
+    ['client_2', 'client'],
+    ['User_RPC', 'User_RPC'],
+  ]);
+  assert.deepEqual(
+    [...readme.matchAll(/^## (\w+)$/gm)].map(([, name]) => name),
+    ['User_RPC_2', 'client_2', 'User_RPC']
+  );
+  assert.match(readme, /^from app import User_RPC_2$/m);
+  assert.match(readme, /^response = User_RPC_2\.list\(/m);
+  assert.match(readme, /^response = client_2\.list\(/m);
+  assert.equal(annotationProblems(file), '');
+});
+
+test('the OpenAPI samples name the classes the package has', () => {
+  const segments = alikeModules();
+  const source = fs.readFileSync(generateSegments(segments)('src/app/__init__.py'), 'utf-8');
+  const schema = {
+    $schema: 'https://vovk.dev/api/schema/v3/schema.json',
+    segments: Object.fromEntries(
+      Object.entries(segments).map(([segmentName, controllers]) => [
+        segmentName,
+        { $schema: '', emitSchema: true, segmentName, segmentType: 'segment', controllers },
+      ])
+    ),
+  } as unknown as VovkSchema;
+  const { paths } = vovkSchemaToOpenAPI({
+    config: { outputConfig: { samples: {} } } as unknown as VovkStrictConfig,
+    schema,
+    outputConfigs: [],
+    isBundle: false,
+    segmentName: null,
+    projectPackageJson: { name: 'app' },
+  }).openAPIObject;
+  const sampleClasses = Object.values(paths ?? {}).map((item) => {
+    const samples: { lang: string; source: string }[] = item.get?.['x-codeSamples'] ?? [];
+    return samples.find(({ lang }) => lang === 'python')?.source.match(/^response = (\w+)\.list\(/m)?.[1];
+  });
+
+  assert.deepEqual(
+    sampleClasses,
+    [...source.matchAll(/^class (\w+):/gm)].map(([, name]) => name)
+  );
 });

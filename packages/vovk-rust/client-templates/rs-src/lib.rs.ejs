@@ -16,6 +16,7 @@ imports: ['vovk-rust']
     toRustDocLines: t.imports['vovk-rust'].toRustDocLines,
     toRustCommentText: t.imports['vovk-rust'].toRustCommentText,
     toRustString: t.imports['vovk-rust'].toRustString,
+    getJSONFunction: t.imports['vovk-rust'].getJSONFunction,
 };
 // in schema order across the crate, a taken module name gets the first free suffix, as a function name does
 const usedModuleNames = new Set(['http_request', 'read_full_schema']);
@@ -24,22 +25,6 @@ const moduleNames = new Map(
         .flatMap((segment) => Object.values(segment.controllers))
         .map((controllerSchema) => [controllerSchema, vars.toRustIdent(t._.snakeCase(controllerSchema.rpcModuleName), usedModuleNames)])
 );
-// a union body that takes JSON or a form, with a file in some branch, goes out as a form; its branches without a file
-// can go out as JSON, as the TypeScript client sends them: those branches as one body schema, else null
-const getJSONBranchesBody = (body) => {
-    const isJSON = (type) => type === 'application/json' || type.endsWith('+json');
-    if (!(body['x-contentType'] ?? []).some(isJSON)) return null;
-    const { anyOf, oneOf, 'x-contentType': _, ...rest } = body;
-    // getBodyKind reads a schema that takes JSON or a form as JSON when it holds no file; a $ref reads the body's $defs
-    const holdsNoFile = (schema) => vars.getBodyKind({ ...rest, ...schema, 'x-contentType': ['application/json', 'multipart/form-data'] }) === 'json';
-    // a mixin's branch declares its own content type: a branch for a form only stays a form
-    const branches = (anyOf ?? oneOf ?? []).filter((branch) => (branch['x-contentType'] ?? ['application/json']).some(isJSON) && holdsNoFile(branch));
-    if (!branches.length || !holdsNoFile(rest)) return null;
-    // one branch, with nothing else to check, is the body itself
-    const isBare = Object.keys(rest).every((key) => ['$schema', '$defs', 'definitions', 'components', 'title', 'description'].includes(key));
-    const json = branches.length === 1 && isBare ? { ...rest, ...branches[0] } : { ...rest, [anyOf ? 'anyOf' : 'oneOf']: branches };
-    return { ...json, 'x-contentType': ['application/json'] };
-};
 %>
 mod http_request;
 mod read_full_schema;
@@ -108,18 +93,16 @@ vars.convertJSONSchemasToRustTypes({
         text: `RequestBody::Text(body, ${vars.toRustString(vars.getTextContentType(validation?.body))})`,
         binary: `RequestBody::Binary(body, ${vars.toRustString(vars.getBinaryContentType(validation?.body))})`,
     }[bodyKind];
-    // the branches of a JSON-or-form body without a file also go out as JSON, by the function with _json, unless a
-    // handler has that name
-    const jsonName = `${handlerName}_json`;
-    const jsonBody = bodyKind === 'form' && ![...functionNames.values()].includes(jsonName) ? getJSONBranchesBody(validation.body) : null;
+    // the branches of a JSON-or-form body without a file also go out as JSON, by the function with _json
+    const jsonFunction = vars.getJSONFunction(validation?.body, handlerName, functionNames);
     const functions = [
         { name: handlerName, body: bodyKind === 'form' ? 'reqwest::multipart::Form' : bodyKind !== 'none' ? `${handlerName}_::body` : '()', typedBody, requestBody },
-        ...(jsonBody ? [{ name: jsonName, body: `${jsonName}_::body`, typedBody: true, requestBody: 'RequestBody::Json(&body)' }] : []),
+        ...(jsonFunction ? [{ name: jsonFunction.name, body: `${jsonFunction.name}_::body`, typedBody: true, requestBody: 'RequestBody::Json(&body)' }] : []),
     ];
 %>
 <% functions.forEach(({ name, body, typedBody, requestBody }, index) => { if (index > 0) { -%>
 
-<%- vars.convertJSONSchemasToRustTypes({ schemas: { body: jsonBody }, rootName: name, pad: 4 }) %>
+<%- vars.convertJSONSchemasToRustTypes({ schemas: { body: jsonFunction.body }, rootName: name, pad: 4 }) %>
     /// Sends the branches of the body without a file as JSON
 <% } -%>
 <% // without a body the function still takes body: (), every function takes the same arguments

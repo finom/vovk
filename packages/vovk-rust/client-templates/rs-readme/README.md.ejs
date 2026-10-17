@@ -18,21 +18,34 @@ const moduleNames = new Map(
         .flatMap((segment) => Object.values(segment.controllers))
         .map((controllerSchema) => [controllerSchema, t.imports['vovk-rust'].toRustIdent(t._.snakeCase(controllerSchema.rpcModuleName), usedModuleNames)])
 );
-// the samples come first: the install block lists the crates they use
-const samples = new Map();
+// the functions of each handler with their samples, which come first: the install block lists the crates they use
+const handlerFunctions = new Map();
 Object.values(t.schema.segments).forEach((segment) => Object.values(segment.controllers).forEach((controllerSchema) => {
+    const functionNames = t.imports['vovk-rust'].getFunctionNames(Object.keys(controllerSchema.handlers), t._.snakeCase);
     Object.entries(controllerSchema.handlers).forEach(([handlerName, handlerSchema]) => {
-        samples.set(handlerSchema, t.createCodeSamples({
-            handlerSchema,
+        const getSample = (givenSchema, rustFunctionName) => t.createCodeSamples({
+            handlerSchema: givenSchema,
             handlerName,
             controllerSchema,
             package: t.package,
             config: t.samples,
             rustModuleName: moduleNames.get(controllerSchema),
-        }).rs);
+            rustFunctionName,
+        }).rs;
+        const name = functionNames.get(handlerName);
+        // a JSON-or-file body also has a function with _json, as in lib.rs
+        const jsonFunction = t.imports['vovk-rust'].getJSONFunction(handlerSchema.validation?.body, name, functionNames);
+        handlerFunctions.set(handlerSchema, [
+            { name, sample: getSample(handlerSchema, name) },
+            ...(jsonFunction ? [{
+                name: jsonFunction.name,
+                summary: 'Sends the branches of the body without a file as JSON',
+                sample: getSample({ ...handlerSchema, validation: { ...handlerSchema.validation, body: jsonFunction.body } }, jsonFunction.name),
+            }] : []),
+        ]);
     });
 }));
-const sampleCode = [...samples.values()].join('\n');
+const sampleCode = [...handlerFunctions.values()].flat().map(({ sample }) => sample).join('\n');
 const sampleCrates = [
     ['tokio::', 'cargo add tokio --features macros,rt-multi-thread'],
     ['serde_json::', 'cargo add serde_json'],
@@ -43,7 +56,7 @@ const sampleCrates = [
 -%>
 ```bash
 # Install the package
-<%= t.readme.installCommand ?? `cargo add ${t.underscoredPackageName}` %>
+<%- t.readme.installCommand ?? `cargo add ${t.underscoredPackageName}` %>
 <% if (sampleCrates.length) { %># The samples below also use
 <%- sampleCrates.map(([, command]) => command).join('\n') %>
 <% } %>```
@@ -54,21 +67,24 @@ const sampleCrates = [
     const segmentPath = segment.forceApiRoot ? '' : typeof segmentMeta.segmentNameOverride === 'string' ? segmentMeta.segmentNameOverride : segmentName;
     Object.values(segment.controllers).forEach((controllerSchema) => {
     // the names the crate has
-    const moduleName = moduleNames.get(controllerSchema);
-    const functionNames = t.imports['vovk-rust'].getFunctionNames(Object.keys(controllerSchema.handlers), t._.snakeCase); %>
+    const moduleName = moduleNames.get(controllerSchema); %>
 
 ## mod <%= moduleName %>
-        <% Object.entries(controllerSchema.handlers).forEach(([handlerName, handlerSchema]) => { %>
-### <%= moduleName %>::<%= functionNames.get(handlerName) %>
-<%- handlerSchema.operationObject?.summary ? `> ${handlerSchema.operationObject.summary}` : '' %>
+        <% Object.values(controllerSchema.handlers).forEach((handlerSchema) => {
+        // as lib.rs writes it: a mixin path keeps its trailing slash
+        const url = [t._.trimEnd(apiRoot, '/'), ...[segmentPath, controllerSchema.prefix ?? '', handlerSchema.path].map((part) => t._.trim(part, '/'))].filter(Boolean).join('/') + (handlerSchema.path.endsWith('/') ? '/' : '');
+        handlerFunctions.get(handlerSchema).forEach(({ name, summary, sample }) => { %>
+### <%= moduleName %>::<%= name %>
+<%- summary ? `> ${summary}` : handlerSchema.operationObject?.summary ? `> ${handlerSchema.operationObject.summary}` : '' %>
 
-<%- handlerSchema.operationObject?.description ? `${handlerSchema.operationObject.description}` : '' %>
+<%- !summary && handlerSchema.operationObject?.description ? `${handlerSchema.operationObject.description}` : '' %>
 
-`<%= handlerSchema.httpMethod %> <%= [t._.trimEnd(apiRoot, '/'), ...[segmentPath, controllerSchema.prefix ?? '', handlerSchema.path].map((part) => t._.trim(part, '/'))].filter(Boolean).join('/') %>`
+`<%= handlerSchema.httpMethod %> <%= url %>`
 
 ```rust
-<%- samples.get(handlerSchema) %>
+<%- sample %>
 ```
+        <% }) %>
         <% }) %>
     <% }) %>
 <% }) %>

@@ -130,6 +130,20 @@ const pythonMethodNames = new WeakMap<object, Map<string, string>>();
 
 export const getPythonClassName = (rpcModuleName: string) => toPythonIdentifier(rpcModuleName);
 
+// the class names a package gives its RPC modules, as vovk-python's getClassNames does: of the modules with one
+// identifier, the last keeps it and the others get the first free suffix in schema order; "client" is the ApiClient
+export function getPythonClassNames(rpcModuleNames: string[]): string[] {
+  const identifiers = rpcModuleNames.map(getPythonClassName);
+  const used = new Set(['client', ...identifiers]);
+  return identifiers.map((identifier, i) => {
+    if (identifier !== 'client' && identifiers.lastIndexOf(identifier) === i) return identifier;
+    let unique = identifier;
+    for (let n = 2; used.has(unique); n++) unique = `${identifier}_${n}`;
+    used.add(unique);
+    return unique;
+  });
+}
+
 export const getPythonMethodName = (handlerName: string, handlers: object) =>
   getModuleNames(handlers, pythonMethodNames, toPythonName).get(handlerName) ??
   getUniqueName(handlerName, Object.keys(handlers), toPythonName);
