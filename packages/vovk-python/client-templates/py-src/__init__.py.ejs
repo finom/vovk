@@ -38,7 +38,7 @@ const getBinaryContentType = (schema) => {
 }; %>
 from __future__ import annotations
 import sys
-from typing import Any, Dict, List, Literal, Optional, Sequence, Set, TypedDict, Union, Tuple, Generator, BinaryIO # type: ignore
+from typing import Any, Dict, List, Literal, Optional, Sequence, Set, TypedDict, Union, Tuple, Generator, BinaryIO # pyright: ignore[reportUnusedImport]
 from .api_client import ApiClient, HttpException
 
 if sys.version_info >= (3, 11):
@@ -100,7 +100,7 @@ class <%- pyModuleName %>: <% if (!Object.keys(controllerSchema.handlers).length
                 validation?.output?.description ? `Returns: ${validation?.output?.description}`: ''
             ]).filter(Boolean).flatMap((s) => vars.toPythonDocstringLines(s)).map((s) => ' '.repeat(8) + s).join('\n') %>
         """
-        return client.request( # type: ignore
+        return client.request(<%- validation?.output || validation?.iteration ? ' # type: ignore[no-any-return, unused-ignore]' : '' %>
             segment_name=<%- vars.toPythonString(segmentName) %>,
             rpc_name=<%- vars.toPythonString(rpcModuleName) %>,
             handler_name=<%- vars.toPythonString(handlerNameOriginal) %>,

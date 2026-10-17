@@ -168,12 +168,12 @@ class TestClient(unittest.TestCase):
 
     def test_form_or_json_body_without_a_file(self) -> None:
         # a form sends every value as text, so typed fields keep their types only as JSON
-        body: Dict[str, Any] = {'n': 5, 'flag': True, 'tags': ['a', 'b']}
         with self.subTest('urlencoded or JSON'):
+            body: ClientSweepRPC.PostFormOrJsonBody = {'n': 5, 'flag': True, 'tags': ['a', 'b']}
             self.assertEqual(ClientSweepRPC.post_form_or_json(body=body), {'body': body, 'contentType': 'application/json'})
         with self.subTest('multipart or JSON'):
-            body = {'n': 1, 'tags': ['a'], 'nested': {'a': True}}
-            self.assertEqual(ClientSweepRPC.post_json_or_form(body=body), {'body': body, 'contentType': 'application/json'})
+            other: ClientSweepRPC.PostJsonOrFormBody = {'n': 1, 'tags': ['a'], 'nested': {'a': True}}
+            self.assertEqual(ClientSweepRPC.post_json_or_form(body=other), {'body': other, 'contentType': 'application/json'})
 
     def test_form_or_json_body_with_a_file(self) -> None:
         # the file branch of a JSON-or-file body: the files go out as a form, the object branch as JSON

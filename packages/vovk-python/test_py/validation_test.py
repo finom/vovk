@@ -39,7 +39,7 @@ class TestValidation(unittest.TestCase):
             WithValidationRPC.handle_body(
                 body={"hello": "wrong_length"}
             )
-            self.assertIn("'wrong_length' is too long", str(context.exception).lower())
+        self.assertIn("'wrong_length' is too long", str(context.exception).lower())
 
 
         with self.assertRaises(HttpException) as context2:

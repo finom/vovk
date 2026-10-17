@@ -121,18 +121,25 @@ jobs:
       matrix:
         os: ${{ fromJSON(needs.matrix.outputs.os) }}
         node-version: ${{ fromJSON(needs.matrix.outputs.node) }}
+        python-version: ['3.13']
+        include:
+          # the oldest Python the generated package declares (requires-python), for the Python client only
+          - os: ubuntu-24.04
+            node-version: 24
+            python-version: '3.9'
     runs-on: ${{ matrix.os }}
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
         with:
-          python-version: '3.13'
+          python-version: ${{ matrix.python-version }}
           cache: pip
           cache-dependency-path: packages/vovk-python/requirements-ci.txt
-      # every package pinned by hash; the file's header has the command that regenerates it
+      # every package pinned by hash, for each Python from 3.9; the file's header has the command that regenerates it
       - run: pip install --require-hashes -r ./packages/vovk-python/requirements-ci.txt
-      - uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2.9.2
+      - if: matrix.python-version != '3.9'
+        uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2.9.2
         with:
           workspaces: packages/vovk-rust/test_rust
       - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
@@ -145,7 +152,8 @@ jobs:
       - run: npm ci && npm --prefix test ci
       - run: npm run build
       - run: npm --prefix test run generate && npm --prefix test run build-other-compiled-sources
-      - run: npm run test:rs
+      - if: matrix.python-version != '3.9'
+        run: npm run test:rs
       - run: npm run test:py
 
   cli:

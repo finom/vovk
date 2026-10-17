@@ -9,9 +9,9 @@ import typing
 from typing import Any, Dict, List
 
 if sys.version_info >= (3, 11):
-    from typing import NotRequired, Required
+    from typing import NotRequired, Required, is_typeddict
 else:
-    from typing_extensions import NotRequired, Required
+    from typing_extensions import NotRequired, Required, is_typeddict
 
 # the placeholders the samples leave to the reader
 NAMESPACE = {'binary_data': b'binary data', 'BytesIO': io.BytesIO}
@@ -33,7 +33,7 @@ def fits(value: Any, hint: Any, localns: Dict[str, Any]) -> bool:
         return value in args
     if hint is typing.BinaryIO:
         return callable(getattr(value, 'read', None))
-    if typing.is_typeddict(hint):
+    if is_typeddict(hint):
         if not isinstance(value, dict):
             return False
         hints = typing.get_type_hints(hint, localns=localns, include_extras=True)

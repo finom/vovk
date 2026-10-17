@@ -105,8 +105,12 @@ const petstore = {
             schema: { type: 'array', items: { type: 'string' } },
           },
           { name: 'obj', in: 'query', schema: { type: 'object', properties: { k: { type: 'string' } } } },
+          { name: 'limit', in: 'query', schema: { type: 'integer' } },
+          { name: 'status', in: 'query', schema: { type: 'string' } },
+          { name: 'vaccinated', in: 'query', schema: { type: 'boolean' } },
         ],
-        responses: { 200: { description: 'ok' } },
+        // any JSON: the declared output type is Any
+        responses: { 200: { description: 'ok', content: { 'application/json': { schema: {} } } } },
       },
       post: {
         operationId: 'postStyled',
@@ -129,6 +133,55 @@ const petstore = {
         responses: { 200: { description: 'ok' } },
       },
     },
+    // a multipart body of a file alone, under a name that isn't a Python identifier
+    '/pets/{petId}/photo': {
+      post: {
+        operationId: 'uploadPetPhoto',
+        parameters: [{ name: 'petId', in: 'path', required: true, schema: { type: 'string' } }],
+        requestBody: {
+          required: true,
+          content: {
+            'multipart/form-data': {
+              schema: {
+                type: 'object',
+                required: ['pet-photo'],
+                properties: { 'pet-photo': { type: 'string', format: 'binary' } },
+              },
+            },
+          },
+        },
+        responses: { 200: { description: 'ok' } },
+      },
+    },
+    // a body and a response that may be null, with a free-form object and a property the server never sends
+    '/pets/{petId}/profile': {
+      put: {
+        operationId: 'updatePetProfile',
+        parameters: [{ name: 'petId', in: 'path', required: true, schema: { type: 'string' } }],
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: {
+                type: ['object', 'null'],
+                required: ['name', 'password'],
+                properties: {
+                  name: { type: 'string' },
+                  extra: { type: 'object' },
+                  password: { type: 'string', writeOnly: true },
+                },
+              },
+            },
+          },
+        },
+        responses: {
+          200: {
+            description: 'ok',
+            content: { 'application/json': { schema: { $ref: '#/components/schemas/Profile' } } },
+          },
+        },
+      },
+    },
     // a number and a boolean in the path
     '/pets/{petId}/vaccinated/{vaccinated}': {
       put: {
@@ -149,6 +202,15 @@ const petstore = {
         properties: { name: { type: 'string' }, tag: { type: 'string' } },
       },
       Position: { type: 'array', prefixItems: [{ type: 'number' }, { type: 'number' }], items: false },
+      Profile: {
+        type: ['object', 'null'],
+        required: ['name', 'password'],
+        properties: {
+          name: { type: 'string' },
+          extra: { type: 'object' },
+          password: { type: 'string', writeOnly: true },
+        },
+      },
       // definitions that refer to themselves
       Json: {
         anyOf: [

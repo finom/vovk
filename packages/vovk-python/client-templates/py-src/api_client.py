@@ -190,7 +190,7 @@ def _pattern(validator: Any, pattern: str, instance: Any, schema: Dict[str, Any]
 
 @functools.lru_cache(maxsize=None)
 def _validator_class(base: Any) -> Any:
-    return validators.extend(base, {'pattern': _pattern})
+    return validators.extend(base, {'pattern': _pattern})  # type: ignore[no-untyped-call, unused-ignore]
 
 def _validate(instance: Any, schema: Dict[str, Any]) -> None:
     # unlike jsonschema.validate, the schema itself isn't checked: that check reads its patterns with Python's re
@@ -492,10 +492,9 @@ class ApiClient:
             query_string = (
                 self._build_query_string(query) if query_styles is None else _styled_query_string(query, query_styles)
             )
-            if "?" in processed_url:
-                processed_url += "&" + query_string
-            else:
-                processed_url += "?" + query_string
+            # a query of None values and empty lists adds no ?, as in the TypeScript client
+            if query_string:
+                processed_url += ("&" if "?" in processed_url else "?") + query_string
 
         # case-insensitive, so a header given for the call replaces its default
         request_headers: CaseInsensitiveDict[Any] = CaseInsensitiveDict({'Accept': 'application/jsonl, application/json'})
@@ -627,15 +626,15 @@ class ApiClient:
                 fields.append((key, text))
         return fields
 
-    def _build_query_string(self, data: dict[str, Any], prefix: str = '') -> str:
+    def _build_query_string(self, data: Any, prefix: str = '') -> str:
         parts: List[str] = []
         
-        if isinstance(data, dict): # type: ignore
+        if isinstance(data, dict):
             for key, value in data.items():
                 new_prefix = f"{prefix}[{key}]" if prefix else key
                 parts.append(self._build_query_string(value, new_prefix))
         
-        elif isinstance(data, list): # type: ignore
+        elif isinstance(data, list):
             # an item that sends nothing, such as None, gives its index to the next one:
             # the server reads indexes with a gap as an object
             for item in data:
