@@ -33,6 +33,16 @@ const vovkConfig = {
       readonly: {
         openAPIMixin: { source: { object: readonlySpec }, getModuleName: 'ReadonlyAPI', getMethodName: 'auto' },
       },
+      // module names alike in snake_case, and one the crate's own module has: each gets a module
+      'user-upper': {
+        openAPIMixin: { source: { object: readonlySpec }, getModuleName: 'UserRPC', getMethodName: 'auto' },
+      },
+      'user-camel': {
+        openAPIMixin: { source: { object: readonlySpec }, getModuleName: 'UserRpc', getMethodName: 'auto' },
+      },
+      'http-request': {
+        openAPIMixin: { source: { object: readonlySpec }, getModuleName: 'HttpRequest', getMethodName: 'auto' },
+      },
       petstore: {
         openAPIMixin: {
           source: { file: './test_shapes/petstore.json' },

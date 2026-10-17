@@ -14,7 +14,7 @@ pub mod test_requests {
     }
 
     // a server that reads each request in full, then answers it with this status, these headers and this body
-    async fn serve(status: &str, headers: &[(&str, &str)], body: &str) -> String {
+    pub(crate) async fn serve(status: &str, headers: &[(&str, &str)], body: &str) -> String {
         use tokio::io::{AsyncReadExt, AsyncWriteExt};
 
         let listener = tokio::net::TcpListener::bind("127.0.0.1:0").await.unwrap();
@@ -401,7 +401,7 @@ pub mod test_requests {
     }
 
     // a server that answers each request with its target and body, {"target": "/api/...?...", "body": "..."}
-    async fn echo() -> String {
+    pub(crate) async fn echo() -> String {
         use tokio::io::{AsyncReadExt, AsyncWriteExt};
 
         let listener = tokio::net::TcpListener::bind("127.0.0.1:0").await.unwrap();
