@@ -1,7 +1,7 @@
 import type { VovkSamplesConfig } from '../types/config.js';
 import type { VovkControllerSchema, VovkHandlerSchema } from '../types/core.js';
 import type { VovkJSONSchemaBase } from '../types/json-schema.js';
-import { toUnderscoredPackageName } from '../utils/to-underscored-package-name.js';
+import { toPythonPackageName, toUnderscoredPackageName } from '../utils/to-underscored-package-name.js';
 import { getPythonClassName, getPythonMethodName, getRustFunctionName, getRustModuleName } from './client-names.js';
 import { objectToCode } from './object-to-code.js';
 import {
@@ -416,9 +416,11 @@ export function createCodeSamples({
   const hasArg = !!queryValidation || !!bodyValidation || !!paramsValidation || !!config?.apiRoot || !!config?.headers;
   const rpcName = controllerSchema.rpcModuleName;
   const packageName = packageJson?.name || '@/client';
-  // the names the generated Python and Rust packages go by
-  const pyPackageName = packageJson?.py_name ?? toUnderscoredPackageName(packageJson?.name);
-  const rsPackageName = packageJson?.rs_name ?? toUnderscoredPackageName(packageJson?.name);
+  // the names the generated Python and Rust packages are imported by; Rust imports a crate with '-' as '_'
+  const pyPackageName = packageJson?.py_name
+    ? toPythonPackageName(packageJson.py_name)
+    : toUnderscoredPackageName(packageJson?.name);
+  const rsPackageName = (packageJson?.rs_name || toUnderscoredPackageName(packageJson?.name)).replace(/-/g, '_');
   const handlers = controllerSchema.handlers ?? {};
 
   const commonParams: CodeGenerationParams = {

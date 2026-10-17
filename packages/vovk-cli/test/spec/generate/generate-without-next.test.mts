@@ -859,6 +859,39 @@ imports:
     assert.match(await read('dist_rust/README.md'), /^use acme_rs::user_rpc;$/m);
   });
 
+  await it('Names the Python folder and the README imports after a py_name or rs_name that Python or Rust cannot import', async () => {
+    for (const [py_name, importName] of [
+      ['acme-client', 'acme_client'],
+      ['acme.client', 'acme_client'],
+      ['class', 'class_pkg'],
+      // a name Python can import stays as it is, a Rust keyword too
+      ['match', 'match'],
+    ]) {
+      await createProject(projectDir, {
+        'package.json': { name: 'acme-api', version: '1.0.0', type: 'module' },
+        'vovk.config.mjs': configFile({
+          composedClient: { prettifyClient: false },
+          outputConfig: { package: { py_name, rs_name: 'acme-client' } },
+        }),
+        '.vovk-schema/root.json': userSegmentSchema,
+      });
+
+      await runCLI(['generate', '--from', 'py', '--out', 'dist_python'], { cwd: projectDir });
+
+      assert.deepStrictEqual(await fs.readdir(path.join(projectDir, 'dist_python/src')), [importName]);
+      assert.match(await read('dist_python/pyproject.toml'), new RegExp(`^name = "${importName}"$`, 'm'));
+      assert.match(await read('dist_python/README.md'), new RegExp(`^from ${importName} import UserRPC$`, 'm'));
+    }
+
+    // Cargo takes the dash, and Rust code imports the crate with an underscore
+    await runCLI(['generate', '--from', 'rs', '--out', 'dist_rust'], { cwd: projectDir });
+    const readme = await read('dist_rust/README.md');
+    assert.match(await read('dist_rust/Cargo.toml'), /^name = "acme-client"$/m);
+    assert.match(readme, /^cargo add acme-client$/m);
+    assert.match(readme, /^use acme_client::user_rpc;$/m);
+    assert.doesNotMatch(readme, /^use acme-client/m);
+  });
+
   await it('Imports a package with a scoped name by its Python and Rust name in the README samples', async () => {
     await createProject(projectDir, {
       'package.json': { name: '@acme/web-app', version: '1.0.0', type: 'module' },

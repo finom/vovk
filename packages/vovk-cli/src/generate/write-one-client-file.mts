@@ -27,6 +27,7 @@ import { GENERATED_BANNER_PREFIX, hasGeneratedBanner } from '../utils/generated-
 import { getJSONImportAttributes } from '../utils/get-ts-import-options.mjs';
 import type { Segment } from '../utils/locate-segments.mjs';
 import { prettify, warnIfPrettierMissing } from '../utils/prettify.mjs';
+import { toPythonPackageName } from '../utils/python-package-name.mjs';
 import { toImportPath, toPosixPath } from '../utils/to-import-path.mjs';
 import type { ClientTemplateFile } from './get-client-template-files.mjs';
 import { getTemplateClientImports } from './get-template-client-imports.mjs';
@@ -61,8 +62,11 @@ export function getOutputConfigs(
 // a template is warned about once per process, as vovk dev generates again and again
 const templatesWithoutOrigin = new Set<string>();
 
+// Python imports the package by its folder name, so a py_name it can't import is made valid; Cargo takes any rs_name
 const getUnderscoredPackageName = (packageJson: VovkPackageJson, packageNameKey?: 'py_name' | 'rs_name') =>
-  (packageNameKey && packageJson[packageNameKey]) || toUnderscoredPackageName(packageJson.name);
+  packageNameKey === 'py_name' && packageJson.py_name
+    ? toPythonPackageName(packageJson.py_name)
+    : (packageNameKey && packageJson[packageNameKey]) || toUnderscoredPackageName(packageJson.name);
 
 export function normalizeOutTemplatePath(
   out: string,
