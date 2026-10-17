@@ -7,6 +7,7 @@ use std::error::Error;
 use std::fmt;
 use std::pin::Pin;
 use std::sync::{Arc, Mutex};
+use std::task::{ready, Context, Poll};
 use jsonschema::{Draft, Validator};
 use serde_json::Value;
 // relative paths, so the files also build as a module of another crate
@@ -831,7 +832,30 @@ where
         })
     });
 
-    Ok(Box::pin(typed_stream))
+    Ok(Box::pin(UntilError { stream: Some(Box::pin(typed_stream)) }))
+}
+
+// the first error ends the stream, as in the TypeScript client: an error line, a line that isn't JSON or isn't the
+// item type, or a body that broke off
+struct UntilError<S> {
+    stream: Option<S>,
+}
+
+impl<S, T> Stream for UntilError<S>
+where
+    S: Stream<Item = Result<T, HttpException>> + Unpin,
+{
+    type Item = Result<T, HttpException>;
+
+    fn poll_next(mut self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Option<Self::Item>> {
+        let Some(stream) = self.stream.as_mut() else { return Poll::Ready(None) };
+        let item = ready!(stream.poll_next_unpin(cx));
+        if !matches!(item, Some(Ok(_))) {
+            // drops the response, which closes its connection
+            self.stream = None;
+        }
+        Poll::Ready(item)
+    }
 }
 
 // only the envelope a responder writes ends the stream, not a data item that happens to have these keys
