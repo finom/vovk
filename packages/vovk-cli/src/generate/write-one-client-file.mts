@@ -100,7 +100,10 @@ const PLACEHOLDER_LINES = [
   'Feel free to report an issue at https://github.com/finom/vovk/issues',
 ];
 const HASH_COMMENT_EXTENSIONS = ['.py', '.pyi', '.toml', '.cfg', '.yaml', '.yml', '.sh'];
-const SLASH_COMMENT_EXTENSIONS = ['.ts', '.mts', '.cts', '.tsx', '.js', '.mjs', '.cjs', '.jsx', '.rs', '.go', '.kt'];
+// biome-ignore format: a word list
+const SLASH_COMMENT_EXTENSIONS = [
+  '.ts', '.mts', '.cts', '.tsx', '.js', '.mjs', '.cjs', '.jsx', '.rs', '.go', '.java', '.kt', '.swift', '.dart', '.cs',
+];
 
 // the placeholder is a comment in the file's own syntax; a file without one, such as JSON or py.typed, gets none
 function getPlaceholder(outPath: string) {
