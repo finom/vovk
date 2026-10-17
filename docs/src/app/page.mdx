@@ -49,7 +49,7 @@ npx vovk-cli@latest init
 
 > Requires Node.js 24.15+, Next.js 15+ and TypeScript 5.5+.
 >
-> [Quick Start](/quick-install) · [Manual Install](/manual-install) · [Claude Plugin](/claude) · [GitHub](https://github.com/finom/vovk)
+> [Quick Start](/quick-install) · [Manual Install](/manual-install) · [Agent Skills](/skills) · [GitHub](https://github.com/finom/vovk)
 
 ---
 
@@ -256,19 +256,17 @@ See [Packages](/packages).
 
 ---
 
-## Claude Plugin
+## Agent Skills
 
-The official **Claude Code plugin** has 15 topic skills that teach the coding agent Vovk.ts as you describe what to build. A skill loads only when needed: *"scaffold a tenant"* loads the multitenant skill, *"stream chat tokens"* the JSON Lines one.
+15 topic skills teach a coding agent Vovk.ts as you describe what to build: Claude Code, Cursor, Windsurf, GitHub Copilot, Cline and the other agents that read skills. A skill loads only when needed: *"scaffold a tenant"* loads the multitenant skill, *"stream chat tokens"* the JSON Lines one.
 
-Install it inside Claude Code:
+Install them in your project:
 
-```
-/plugin marketplace add finom/vovk
-/plugin install vovk@vovk
-/reload-plugins
+```bash
+npx skills add finom/vovk
 ```
 
-See [Claude Plugin](/claude) for the full skill list and how the framework's layout helps the agent.
+See [Agent Skills](/skills) for the Claude Code plugin, the full skill list and how the framework's layout helps the agent.
 
 ---
 

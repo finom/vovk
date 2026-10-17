@@ -17,14 +17,7 @@ const meta: MetaRecord = {
   index: 'About Vovk.ts',
   'quick-install': 'Quick Start',
   'manual-install': 'Manual Install',
-  claude: (
-    <span className="inline-flex items-center gap-1">
-      <span aria-hidden className="text-[#cc785c] text-2xl leading-none translate-y-[4px]">
-        *
-      </span>
-      Claude Plugin
-    </span>
-  ),
+  skills: 'Agent Skills',
   '#segment': separator('Segment'),
   segment: 'Segment Overview',
   'static-segment': 'Static Segment',
