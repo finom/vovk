@@ -7,6 +7,8 @@ import { after, test } from 'node:test';
 
 const cliPath = path.join(import.meta.dirname, '../../vovk-cli/dist/index.mjs');
 const hasPython = spawnSync('python3', ['--version']).status === 0;
+// the generated package imports them
+const hasClientDeps = hasPython && spawnSync('python3', ['-c', 'import requests, jsonschema']).status === 0;
 const projectDirs: string[] = [];
 
 after(() => {
@@ -205,4 +207,68 @@ test('the README starts with readme.banner', () => {
   const bannerAt = readme.indexOf('Banner line');
 
   assert.ok(bannerAt !== -1 && bannerAt < readme.indexOf('\n# '), readme);
+});
+
+// checks every sample of the README with test_py/readme_check.py; argv: test_py, the package's src, the README
+const checkReadme = `import sys
+sys.path[:0] = sys.argv[1:3]
+from readme_check import check_readme
+import app
+problems = check_readme(open(sys.argv[3], encoding='utf-8').read(), app)
+print('\\n'.join(problems))
+sys.exit(1 if problems else 0)`;
+
+test('every README sample calls its method with the arguments it takes', {
+  skip: !hasClientDeps && 'python3 with requests and jsonschema not found',
+}, () => {
+  const file = { type: 'string', format: 'binary' };
+  const multipart = (properties: Record<string, unknown>) => ({
+    type: 'object',
+    properties,
+    required: Object.keys(properties),
+    'x-contentType': ['multipart/form-data'],
+  });
+  const post = (body: unknown) => ({ httpMethod: 'POST', path: '', validation: { body } });
+  const generated = generate({
+    FileRPC: controller('File', {
+      // files alone: the method takes no body
+      upload: post(multipart({ file })),
+      uploadMany: post(multipart({ files: { type: 'array', items: file } })),
+      attach: post(multipart({ note: { type: 'string' }, file })),
+      raw: post({ ...file, 'x-contentType': ['application/octet-stream'] }),
+      untypedRaw: post({ 'x-contentType': ['image/png'] }),
+      note: post({ 'x-contentType': ['text/plain'] }),
+      fileOrData: post({
+        anyOf: [file, { type: 'object', properties: { hello: { type: 'string' } }, required: ['hello'] }],
+        'x-contentType': ['image/png', 'application/json'],
+      }),
+      // no params schema: the path's placeholders are the params
+      getItem: { httpMethod: 'GET', path: 'items/{id}', validation: {} },
+      pair: post({
+        type: 'object',
+        properties: { t: { type: 'array', prefixItems: [{ type: 'string' }, { type: 'number' }], items: false } },
+        required: ['t'],
+      }),
+      extended: post({
+        type: 'object',
+        properties: {
+          s: {
+            allOf: [
+              { $ref: '#/$defs/named' },
+              { type: 'object', properties: { extra: { type: 'number' } }, required: ['extra'] },
+            ],
+          },
+        },
+        required: ['s'],
+        $defs: { named: { type: 'object', properties: { name: { type: 'string' } }, required: ['name'] } },
+      }),
+    }),
+  });
+
+  const result = spawnSync(
+    'python3',
+    ['-c', checkReadme, path.join(import.meta.dirname, '../test_py'), generated('src'), generated('README.md')],
+    { encoding: 'utf-8' }
+  );
+  assert.equal(result.status, 0, result.stdout + result.stderr);
 });

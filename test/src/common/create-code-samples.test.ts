@@ -548,18 +548,17 @@ use serde_json::{
   from_value, 
   json 
 };
-use reqwest::multipart;
 #[tokio::main]
 async fn main() {
   let form = reqwest::multipart::Form::new()
     // User email
-    .part("email", "user@example.com");
+    .text("email", "user@example.com")
     // Resume file
-    .part("resume", reqwest::multipart::Part::bytes(binary_data).mime_str("image/png").unwrap());
+    .part("resume", reqwest::multipart::Part::bytes(binary_data).file_name("name.ext").mime_str("image/png").unwrap())
     // Portfolio samples
-    .part("portfolioSamples", reqwest::multipart::Part::bytes(binary_data));
+    .part("portfolioSamples", reqwest::multipart::Part::bytes(binary_data).file_name("name.ext"))
     // Portfolio samples
-    .part("portfolioSamples", reqwest::multipart::Part::bytes(binary_data));
+    .part("portfolioSamples", reqwest::multipart::Part::bytes(binary_data).file_name("name.ext"));
 
   let response = form_zod_rpc::submit_form(
     form, /* body */ 
@@ -834,6 +833,7 @@ response = ConfigRPC.send_data(
       });
 
       const expected = `use vovk_client::config_rpc;
+use std::collections::HashMap;
 use serde_json::{ 
   from_value, 
   json 
@@ -1227,6 +1227,184 @@ const response = await MixedFormRPC.uploadProfile({
       });
 
       assert.ok(result.ts.includes('NodeRPC.createNode'));
+    });
+  });
+
+  describe('Arguments as the Python and Rust clients take them', () => {
+    const controllerSchema: VovkControllerSchema = { rpcModuleName: 'FileRPC', prefix: 'files', handlers: {} };
+    const samplesOf = (validation: VovkHandlerSchema['validation'], path = 'upload', config = {}) =>
+      createCodeSamples({
+        handlerName: 'upload',
+        handlerSchema: { httpMethod: 'POST', path, validation },
+        controllerSchema,
+        package: { name: 'my-client' },
+        config,
+      });
+    const file = { type: 'string', format: 'binary' } as const;
+
+    test('a binary body is bytes', () => {
+      for (const body of [
+        { ...file, contentEncoding: 'binary', 'x-contentType': ['application/octet-stream'] },
+        { 'x-contentType': ['image/png'] },
+        { type: 'string', 'x-contentType': ['application/jsonl'] },
+      ] as VovkJSONSchemaBase[]) {
+        const { py, rs } = samplesOf({ body });
+
+        assert.ok(py.includes('    body=binary_data,\n'), py);
+        assert.ok(rs.includes('    binary_data.to_vec(), /* body */'), rs);
+      }
+    });
+
+    test('a text body is a string', () => {
+      const { py, rs } = samplesOf({ body: { 'x-contentType': ['text/plain'] } });
+
+      assert.ok(py.includes('    body="text_content",\n'), py);
+      assert.ok(rs.includes('    "text_content".to_string(), /* body */'), rs);
+    });
+
+    test('a JSON body that may be a file shows the JSON', () => {
+      const body = {
+        anyOf: [file, { type: 'object', properties: { hello: { type: 'string' } }, required: ['hello'] }],
+        'x-contentType': ['image/png', 'application/json'],
+      } as VovkJSONSchemaBase;
+      const { py, rs } = samplesOf({ body });
+
+      assert.ok(py.includes('    body={\n        "hello": "string"\n    },'), py);
+      assert.ok(rs.includes('    from_value(json!({\n        "hello": "string"\n    })).unwrap(), /* body */'), rs);
+    });
+
+    test('a form of files alone takes no body in Python, a single file goes in a dict', () => {
+      const { py } = samplesOf({
+        body: { type: 'object', properties: { file }, required: ['file'], 'x-contentType': ['multipart/form-data'] },
+      });
+
+      assert.ok(!py.includes('body='), py);
+      assert.ok(py.includes("    files={\n        'file': ('name.ext', BytesIO(binary_data))\n    },"), py);
+    });
+
+    test('a form with data keeps its body and a list of files in Python', () => {
+      const { py } = samplesOf({
+        body: {
+          type: 'object',
+          properties: { note: { type: 'string' }, files: { type: 'array', items: file } },
+          'x-contentType': ['multipart/form-data'],
+        },
+      });
+
+      assert.ok(py.includes('    body={\n        "note": "string"\n    },'), py);
+      assert.ok(py.includes("    files=[\n        ('files', ('name.ext', BytesIO(binary_data))),"), py);
+    });
+
+    test('a Rust form is one chain: text for data, a named part for a file', () => {
+      const { rs } = samplesOf({
+        body: {
+          type: 'object',
+          properties: { n: { type: 'integer' }, flag: { type: 'boolean' }, file },
+          'x-contentType': ['multipart/form-data'],
+        },
+      });
+
+      assert.ok(
+        rs.includes(
+          '  let form = reqwest::multipart::Form::new()\n    .text("n", "0")\n    .text("flag", "true")\n' +
+            '    .part("file", reqwest::multipart::Part::bytes(binary_data).file_name("name.ext"));\n'
+        ),
+        rs
+      );
+      assert.ok(!rs.includes('use reqwest::multipart;'), rs);
+    });
+
+    test('a Rust form without fields ends its statement', () => {
+      const { rs } = samplesOf({ body: { type: 'object', 'x-contentType': ['multipart/form-data'] } });
+
+      assert.ok(rs.includes('  let form = reqwest::multipart::Form::new();\n'), rs);
+    });
+
+    test('an urlencoded body, or a form or JSON one without files, is the generated struct in Rust', () => {
+      for (const contentTypes of [
+        ['application/x-www-form-urlencoded'],
+        ['multipart/form-data', 'application/json'],
+        ['application/x-www-form-urlencoded', 'application/json'],
+      ]) {
+        const { rs } = samplesOf({
+          body: { type: 'object', properties: { hello: { type: 'string' } }, 'x-contentType': contentTypes },
+        });
+
+        assert.ok(rs.includes('    from_value(json!({\n        "hello": "string"\n    })).unwrap(), /* body */'), rs);
+        assert.ok(!rs.includes('Form::new()'), rs);
+      }
+    });
+
+    test('a path with placeholders and no params schema takes params in Python and Rust', () => {
+      const { py, rs } = createCodeSamples({
+        handlerName: 'getPosts',
+        handlerSchema: { httpMethod: 'GET', path: 'users/{id}/posts', validation: {} },
+        controllerSchema: { ...controllerSchema, prefix: 'orgs/{org}' },
+        package: { name: 'my-client' },
+        config: {},
+      });
+
+      assert.ok(
+        py.includes('get_posts(\n    params={\n        "org": "string",\n        "id": "string"\n    },\n)'),
+        py
+      );
+      assert.ok(
+        rs.includes(
+          '    from_value(json!({\n        "org": "string",\n        "id": "string"\n    })).unwrap(), /* params */'
+        ),
+        rs
+      );
+      assert.ok(samplesOf({}, 'no-placeholders').py.includes('FileRPC.upload()'));
+    });
+
+    test('Rust imports HashMap only for the headers it passes', () => {
+      assert.ok(samplesOf({}, 'x', { headers: { a: 'b' } }).rs.includes('use std::collections::HashMap;\n'));
+      assert.ok(!samplesOf({}, 'x').rs.includes('HashMap;'));
+    });
+
+    test('an integer json! would read as i32 has its type in Rust', () => {
+      const { rs, py } = samplesOf({
+        body: {
+          type: 'object',
+          properties: { min: { type: 'integer', minimum: -9007199254740991 }, small: { type: 'integer', minimum: 5 } },
+        },
+      });
+
+      assert.ok(rs.includes('"min": -9007199254740991i64,'), rs);
+      assert.ok(rs.includes('"small": 5\n'), rs);
+      assert.ok(py.includes('"min": -9007199254740991,'), py);
+    });
+
+    test('a tuple has a sample of each item, a tuple literal in Python', () => {
+      const { py, rs, ts } = samplesOf({
+        body: {
+          type: 'object',
+          properties: { t: { type: 'array', prefixItems: [{ type: 'string' }, { type: 'number' }], items: false } },
+        },
+      });
+
+      assert.ok(py.includes('"t": (\n            "string",\n            0\n        )'), py);
+      assert.ok(rs.includes('"t": [\n            "string",\n            0\n        ]'), rs);
+      assert.ok(ts.includes('t: [\n            "string",\n            0\n        ]'), ts);
+    });
+
+    test('an allOf takes the fields of a branch by $ref too', () => {
+      const { py } = samplesOf({
+        body: {
+          type: 'object',
+          properties: {
+            s: {
+              allOf: [
+                { $ref: '#/$defs/named' },
+                { type: 'object', properties: { extra: { type: 'number' } }, required: ['extra'] },
+              ],
+            },
+          },
+          $defs: { named: { type: 'object', properties: { name: { type: 'string' } }, required: ['name'] } },
+        },
+      });
+
+      assert.ok(py.includes('"name": "string",\n            "extra": 0'), py);
     });
   });
 

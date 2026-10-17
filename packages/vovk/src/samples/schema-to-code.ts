@@ -9,6 +9,8 @@ interface SamplerOptions {
   ignoreBinary?: boolean;
   // Python spells true, false and null as True, False and None
   python?: boolean;
+  // Rust's json! types an integer literal as i32
+  rust?: boolean;
 }
 
 // a line comment in a TypeScript, Python or Rust sample ends at one of these
@@ -37,6 +39,13 @@ export function toPythonString(value: string, quote: '"' | "'" = '"'): string {
   return quote === '"' ? json : `'${json.slice(1, -1).replace(/\\"/g, '"').replace(/'/g, "\\'")}'`;
 }
 
+// json! takes an integer literal as an i32: a wider one gets the type that holds it
+function toRustNumber(value: number): string {
+  if (!Number.isInteger(value) || Math.abs(value) < 2 ** 31) return JSON.stringify(value);
+  if (Math.abs(value) < 2 ** 63) return `${BigInt(value)}i64`;
+  return value > 0 && value < 2 ** 64 ? `${BigInt(value)}u64` : `${value}f64`;
+}
+
 // a third-party OpenAPI document may hold a description that isn't a string, a sample leaves it out
 export const getDescription = (schema: VovkJSONSchemaBase | undefined): string | undefined =>
   typeof schema?.description === 'string' ? schema.description : undefined;
@@ -53,6 +62,7 @@ export function schemaToCode(
     nestingIndent = 4,
     ignoreBinary = false,
     python = false,
+    rust = false,
   } = options;
 
   if (!schema || typeof schema !== 'object') return python ? 'None' : 'null';
@@ -71,7 +81,8 @@ export function schemaToCode(
     nestingIndent,
     ignoreBinary,
     true, // isTopLevel
-    python
+    python,
+    rust
   );
 }
 
@@ -118,11 +129,20 @@ export function getSampleValue(
   }
 
   if (schema.allOf && schema.allOf.length > 0) {
-    const mergedSchema = schema.allOf.reduce(
-      (acc: VovkJSONSchemaBase, s: VovkJSONSchemaBase) => Object.assign(acc, s),
-      {}
-    );
-    return getSampleValue(mergedSchema, rootSchema, ignoreBinary, seen, budget);
+    // the fields of every branch together, a branch by $ref read where it points, a nested allOf taken apart
+    const refs = new Set(seen);
+    const branches = [...schema.allOf];
+    const merged: VovkJSONSchemaBase = {};
+    for (const branch of branches) {
+      if (branch.$ref && (refs.has(branch.$ref) || !spend(budget))) continue;
+      if (branch.$ref) refs.add(branch.$ref);
+      const { allOf, ...part } = branch.$ref ? resolveRef(branch.$ref, rootSchema) : branch;
+      if (allOf) branches.push(...allOf);
+      const properties = merged.properties && part.properties && { ...merged.properties, ...part.properties };
+      const required = merged.required && part.required && [...merged.required, ...part.required];
+      Object.assign(merged, part, properties && { properties }, required && { required });
+    }
+    return getSampleValue(merged, rootSchema, ignoreBinary, refs, budget);
   }
 
   if (schema.type) {
@@ -162,7 +182,8 @@ function formatWithDescriptions(
   nestingIndent: number,
   ignoreBinary: boolean,
   isTopLevel: boolean,
-  python: boolean
+  python: boolean,
+  rust: boolean
 ): string {
   const indentStr = ' '.repeat(indent);
   const nestIndentStr = ' '.repeat(nestingIndent);
@@ -182,15 +203,20 @@ function formatWithDescriptions(
 
   if (typeof value === 'string') return python ? toPythonString(value) : toCodeString(value);
 
+  if (rust && typeof value === 'number') return toRustNumber(value);
+
   if (typeof value !== 'object' || value instanceof Date) {
     return JSON.stringify(value);
   }
 
   if (Array.isArray(value)) {
-    if (value.length === 0) return '[]';
+    // a tuple without more items is a tuple in Python
+    const isTuple = !!schema.prefixItems?.length && typeof schema.items !== 'object';
+    if (value.length === 0) return python && isTuple ? '()' : '[]';
 
-    const items = value.map((item) => {
-      const itemSchema = schema.items && typeof schema.items === 'object' ? schema.items : ({} as VovkJSONSchemaBase);
+    const items = value.map((item, i) => {
+      const itemSchema =
+        schema.prefixItems?.[i] ?? (schema.items && typeof schema.items === 'object' ? schema.items : {});
       const formattedItem = formatWithDescriptions(
         item,
         itemSchema,
@@ -201,11 +227,13 @@ function formatWithDescriptions(
         nestingIndent,
         ignoreBinary,
         false,
-        python
+        python,
+        rust
       );
       return `${indentStr}${nestIndentStr}${formattedItem}`;
     });
 
+    if (python && isTuple) return `(\n${items.join(',\n')}${items.length === 1 ? ',' : ''}\n${indentStr})`;
     return `[\n${items.join(',\n')}\n${indentStr}]`;
   }
 
@@ -254,7 +282,8 @@ function formatWithDescriptions(
         nestingIndent,
         ignoreBinary,
         false,
-        python
+        python,
+        rust
       );
 
       formattedEntries.push(
@@ -268,7 +297,7 @@ function formatWithDescriptions(
   return JSON.stringify(value);
 }
 
-function resolveRef(ref: string, rootSchema: VovkJSONSchemaBase): VovkJSONSchemaBase {
+export function resolveRef(ref: string, rootSchema: VovkJSONSchemaBase): VovkJSONSchemaBase {
   const path = ref.split('/').slice(1) as (keyof VovkJSONSchemaBase)[];
   let current = rootSchema;
   for (const segment of path) {
@@ -396,6 +425,14 @@ function handleArray(
   seen: Set<string>,
   budget: SampleBudget
 ) {
+  // a tuple: a sample of each of its own items
+  if (schema.prefixItems?.length) {
+    return schema.prefixItems.map((item) => {
+      const value = spend(budget) ? getSampleValue(item, rootSchema, ignoreBinary, seen, budget) : null;
+      return value === undefined ? null : value;
+    });
+  }
+
   if (schema.items) {
     // true allows any item, false none
     if (typeof schema.items === 'boolean') {
