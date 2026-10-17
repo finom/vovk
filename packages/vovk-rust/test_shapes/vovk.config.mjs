@@ -55,6 +55,8 @@ const vovkConfig = {
           license: 'MIT',
           description: 'Vovk Rust Client for the schema shapes',
         },
+        // the README samples pass them, test_rust compiles the samples
+        samples: { apiRoot: 'http://localhost:1/api', headers: { Authorization: 'Bearer token' } },
       },
     },
     // generated with --from rsReadonly --include readonly
