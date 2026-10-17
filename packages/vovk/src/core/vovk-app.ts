@@ -230,6 +230,7 @@ class VovkApp {
 
   // set by initSegment: one controller may serve several segments, each with its own hooks
   #segments = new Map<string, SegmentHooks & { controllers: Set<VovkController> }>();
+  #isProductionBuild: boolean | undefined;
 
   setSegment = (segmentName: string, segment: SegmentHooks & { controllers: Set<VovkController> }) => {
     this.#segments.set(segmentName, segment);
@@ -479,8 +480,10 @@ class VovkApp {
     const path = getCatchAllPath(params);
     let headerList: typeof request.headers | null = null;
     // next build prerenders with no client, and reading the headers there makes the route dynamic: Cache Components
-    // and output: 'export' then refuse a static segment
-    if (process.env.NEXT_PHASE !== 'phase-production-build') {
+    // and output: 'export' then refuse a static segment. next build sets the phase before its first request, and
+    // process.env is slow to read, so it's read once
+    this.#isProductionBuild ??= process.env.NEXT_PHASE === 'phase-production-build';
+    if (!this.#isProductionBuild) {
       try {
         headerList = request.headers;
       } catch {

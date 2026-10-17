@@ -1,4 +1,5 @@
 import { deepStrictEqual, ok, rejects, strictEqual, throws } from 'node:assert';
+import { execFileSync } from 'node:child_process';
 import { describe, it } from 'node:test';
 import { setFlagsFromString } from 'node:v8';
 import { runInNewContext } from 'node:vm';
@@ -2045,37 +2046,81 @@ describe('Runtime sweep', () => {
       });
     });
 
-    it('Reads no request header while next build prerenders, so a static segment needs no dynamic export', async () => {
-      class GreetingController {
-        static greeting() {
-          return { greeting: 'Hello' };
-        }
-      }
-      get('greeting.json')(GreetingController, 'greeting');
-      const { GET } = initSegment({ segmentName: 'prerendered', controllers: { GreetingController } });
-      const read: PropertyKey[] = [];
-      // Next.js makes a route dynamic once its handler reads the headers, which Cache Components and output: 'export'
-      // refuse for a static segment
-      const req = new Proxy(new Request('http://localhost/api/prerendered/greeting.json'), {
-        get(target, prop) {
-          read.push(prop);
-          const value = Reflect.get(target, prop, target);
-          return typeof value === 'function' ? value.bind(target) : value;
-        },
+    // next build sets NEXT_PHASE before its workers load the routes, so these run in a process that starts with it
+    const runWithPhase = (phase: string | undefined, source: string) => {
+      const env = { ...process.env, NEXT_PHASE: phase };
+      if (phase === undefined) delete env.NEXT_PHASE;
+      const output = execFileSync(process.execPath, ['--input-type=module', '-e', source], {
+        cwd: import.meta.dirname,
+        env,
+        encoding: 'utf8',
       });
-      const env = process.env as Record<string, string | undefined>;
-      const phase = env.NEXT_PHASE;
-      env.NEXT_PHASE = 'phase-production-build';
+      return JSON.parse(output);
+    };
 
-      try {
+    it('Reads no request header while next build prerenders, so a static segment needs no dynamic export', () => {
+      const result = runWithPhase(
+        'phase-production-build',
+        `
+        import { get, initSegment } from 'vovk';
+        class GreetingController {
+          static greeting() {
+            return { greeting: 'Hello' };
+          }
+        }
+        get('greeting.json')(GreetingController, 'greeting');
+        const { GET } = initSegment({ segmentName: 'prerendered', controllers: { GreetingController } });
+        const read = [];
+        // Next.js makes a route dynamic once its handler reads the headers, which Cache Components and output: 'export'
+        // refuse for a static segment
+        const req = new Proxy(new Request('http://localhost/api/prerendered/greeting.json'), {
+          get(target, prop) {
+            read.push(String(prop));
+            const value = Reflect.get(target, prop, target);
+            return typeof value === 'function' ? value.bind(target) : value;
+          },
+        });
         const response = await GET(req, { params: Promise.resolve({ vovk: ['greeting.json'] }) });
+        console.log(JSON.stringify({ body: await response.json(), read }));
+        `
+      );
 
-        deepStrictEqual(await response.json(), { greeting: 'Hello' });
-        ok(!read.includes('headers'), `read: ${read.map(String).join(', ')}`);
-      } finally {
-        if (phase === undefined) delete env.NEXT_PHASE;
-        else env.NEXT_PHASE = phase;
-      }
+      deepStrictEqual(result.body, { greeting: 'Hello' });
+      ok(!result.read.includes('headers'), `read: ${result.read.join(', ')}`);
+    });
+
+    it('Reads NEXT_PHASE once per process, not on each request', () => {
+      const result = runWithPhase(
+        undefined,
+        `
+        import { get, initSegment } from 'vovk';
+        let reads = 0;
+        process.env = new Proxy(process.env, {
+          get(target, prop) {
+            if (prop === 'NEXT_PHASE') reads++;
+            return Reflect.get(target, prop);
+          },
+        });
+        class PingController {
+          static ping() {
+            return { ping: true };
+          }
+        }
+        get('ping')(PingController, 'ping');
+        const { GET } = initSegment({ segmentName: 'phase-reads', controllers: { PingController } });
+        const bodies = [];
+        for (let i = 0; i < 3; i++) {
+          const response = await GET(new Request('http://localhost/api/phase-reads/ping', { headers: { 'x-meta': '{}' } }), {
+            params: Promise.resolve({ vovk: ['ping'] }),
+          });
+          bodies.push(await response.json());
+        }
+        console.log(JSON.stringify({ bodies, reads }));
+        `
+      );
+
+      deepStrictEqual(result.bodies, [{ ping: true }, { ping: true }, { ping: true }]);
+      strictEqual(result.reads, 1);
     });
   });
 
