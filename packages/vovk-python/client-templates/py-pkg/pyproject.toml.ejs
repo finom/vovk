@@ -1,5 +1,43 @@
 <%- t.getFirstLineBanner('sh') %>
 <%
+// packaging's VERSION_PATTERN: the versions hatchling builds
+const PEP440_VERSION = /^\s*v?(?:(?:[0-9]+!)?[0-9]+(?:\.[0-9]+)*(?:[-_.]?(?:alpha|a|beta|b|preview|pre|c|rc)[-_.]?[0-9]*)?(?:-[0-9]+|[-_.]?(?:post|rev|r)[-_.]?[0-9]*)?(?:[-_.]?dev[-_.]?[0-9]*)?)(?:\+[a-z0-9]+(?:[-_.][a-z0-9]+)*)?\s*$/i;
+const PRE_RELEASES = new Map([['alpha', 'a'], ['a', 'a'], ['beta', 'b'], ['b', 'b'], ['rc', 'rc'], ['c', 'rc'], ['pre', 'rc'], ['preview', 'rc']]);
+// a semver prerelease PEP 440 refuses (next.3, canary.12) becomes a dev release; a version it takes is kept
+const toPep440Version = (version) => {
+  const match = typeof version === 'string' && !PEP440_VERSION.test(version) && /^v?(\d+\.\d+\.\d+)-([0-9A-Za-z.-]+?)(\+[0-9A-Za-z.-]+)?$/.exec(version);
+  if (!match) return version;
+  const [, release, prerelease, build = ''] = match;
+  const ids = prerelease.split(/[.-]/);
+  const label = ids.find((id) => !/^\d+$/.test(id))?.toLowerCase();
+  const number = ids.find((id) => /^\d+$/.test(id)) ?? '0';
+  return `${release}${PRE_RELEASES.get(label) ?? '.dev'}${number}${build}`;
+};
+
+const urlOf = (value) => (typeof value === 'string' ? value : value?.url);
+const SHORTHAND_HOSTS = new Map([['github', 'github.com'], ['gitlab', 'gitlab.com'], ['bitbucket', 'bitbucket.org']]);
+// npm's repository shorthands: user/repo, github:user/repo, gitlab:…, bitbucket:…, gist:id
+const expandRepositoryShorthand = (url) => {
+  if (typeof url !== 'string') return url;
+  const [, host = 'github', path] = /^(?:(github|gitlab|bitbucket):)?([\w.-]+\/[\w.-]+)$/.exec(url.trim()) ?? [];
+  if (path) return `https://${SHORTHAND_HOSTS.get(host)}/${path}`;
+  return url.trim().replace(/^gist:([\w-]+)$/, 'https://gist.github.com/$1');
+};
+// PyPI takes only http(s) project URLs; npm writes a repository as git+https://…, git@host:path or git+ssh://…
+const toHttpUrl = (value) => {
+  if (typeof value !== 'string') return undefined;
+  let url = value.trim().replace(/^git\+/, '').replace(/^[\w.-]+@([^:/]+):(?!\/)/, 'https://$1/');
+  if (/^(?:ssh|git):\/\//i.test(url)) {
+    try {
+      const { hostname, pathname } = new URL(url);
+      url = `https://${hostname}${pathname}`;
+    } catch {
+      return undefined;
+    }
+  }
+  return /^https?:\/\/[^/]/i.test(url) ? url : undefined;
+};
+
 const data = {
   "build-system": {
     requires: ["hatchling"],
@@ -7,12 +45,15 @@ const data = {
   },
   project: {
     name: t.underscoredPackageName,
-    version: t.package.version,
+    version: toPep440Version(t.package.version),
     description: t.package.description,
-    "requires-python": ">=3.9",
-    license: { text: t.package.license || 'UNLICENSED' }
+    "requires-python": ">=3.9"
   }
 };
+
+if (t.package.license) {
+  data.project.license = { text: t.package.license };
+}
 
 if (t.package.keywords && t.package.keywords.length) {
   data.project.keywords = t.package.keywords;
@@ -58,24 +99,14 @@ data.project["optional-dependencies"] = {
   ]
 };
 
-if (t.package.repository || t.package.homepage || t.package.bugs) {
-  data.project.urls = {};
-  
-  if (t.package.homepage) {
-    data.project.urls.Homepage = t.package.homepage;
-  }
-  
-  if (t.package.repository) {
-    data.project.urls.Source = typeof t.package.repository === 'string' 
-      ? t.package.repository 
-      : t.package.repository.url;
-  }
-  
-  if (t.package.bugs) {
-    data.project.urls.Issues = typeof t.package.bugs === 'string' 
-      ? t.package.bugs 
-      : t.package.bugs.url;
-  }
+const urls = Object.entries({
+  Homepage: toHttpUrl(urlOf(t.package.homepage)),
+  Source: toHttpUrl(expandRepositoryShorthand(urlOf(t.package.repository))),
+  Issues: toHttpUrl(urlOf(t.package.bugs)),
+}).filter(([, url]) => url);
+
+if (urls.length) {
+  data.project.urls = Object.fromEntries(urls);
 }
 %>
 <%- t.TOML.stringify(data) %>

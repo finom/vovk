@@ -13,7 +13,7 @@ imports: ['vovk-python']
 
 ```bash
 # Install the package
-<%= t.readme.installCommand ?? `pip install ${t.underscoredPackageName}` %>
+<%- t.readme.installCommand ?? `pip install ${t.underscoredPackageName}` %>
 ```
 
 <% Object.entries(t.schema.segments).forEach(([segmentName, segment]) => {
