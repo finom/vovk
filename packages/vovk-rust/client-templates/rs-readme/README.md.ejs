@@ -10,10 +10,35 @@ imports: ['vovk-rust']
 
 <%- t.package.license ? `License: **${t.package.license}**` : '' %>
 
+<%
+// the samples come first: the install block lists the crates they use
+const samples = new Map();
+Object.values(t.schema.segments).forEach((segment) => Object.values(segment.controllers).forEach((controllerSchema) => {
+    Object.entries(controllerSchema.handlers).forEach(([handlerName, handlerSchema]) => {
+        samples.set(handlerSchema, t.createCodeSamples({
+            handlerSchema,
+            handlerName,
+            controllerSchema,
+            package: t.package,
+            config: t.samples,
+        }).rs);
+    });
+}));
+const sampleCode = [...samples.values()].join('\n');
+const sampleCrates = [
+    ['tokio::', 'cargo add tokio --features macros,rt-multi-thread'],
+    ['serde_json::', 'cargo add serde_json'],
+    ['futures_util::', 'cargo add futures-util'],
+    // the reqwest version the crate uses: another version's Form is another type
+    ['reqwest::', 'cargo add reqwest@0.12 --features multipart'],
+].filter(([cratePath]) => sampleCode.includes(cratePath));
+-%>
 ```bash
 # Install the package
 <%= t.readme.installCommand ?? `cargo add ${t.underscoredPackageName}` %>
-```
+<% if (sampleCrates.length) { %># The samples below also use
+<%- sampleCrates.map(([, command]) => command).join('\n') %>
+<% } %>```
 
 <% Object.entries(t.schema.segments).forEach(([segmentName, segment]) => {
     const segmentMeta = t.segmentMeta?.[segmentName] ?? {};
@@ -34,13 +59,7 @@ imports: ['vovk-rust']
 `<%= handlerSchema.httpMethod %> <%= [t._.trimEnd(apiRoot, '/'), ...[segmentPath, controllerSchema.prefix ?? '', handlerSchema.path].map((part) => t._.trim(part, '/'))].filter(Boolean).join('/') %>`
 
 ```rust
-<%- t.createCodeSamples({
-    handlerSchema,
-    handlerName,
-    controllerSchema,
-    package: t.package,
-    config: t.samples,
-}).rs %>
+<%- samples.get(handlerSchema) %>
 ```
         <% }) %>
     <% }) %>
