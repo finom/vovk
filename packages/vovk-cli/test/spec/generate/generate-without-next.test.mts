@@ -892,6 +892,26 @@ imports:
     assert.doesNotMatch(readme, /^use acme-client/m);
   });
 
+  await it("Names a segment's Python package after its own py_name made valid", async () => {
+    await createProject(projectDir, {
+      'package.json': { name: 'app', version: '1.0.0', type: 'module' },
+      'vovk.config.mjs': configFile({
+        segmentedClient: { prettifyClient: false },
+        outputConfig: { segments: { '': { package: { py_name: 'acme-client' } } } },
+      }),
+      'src/app/api/[[...vovk]]/route.ts': '',
+      '.vovk-schema/root.json': userSegmentSchema,
+    });
+
+    await runCLI(['generate', '--segmented-only', '--segmented-from', 'py', '--segmented-out', 'seg_py'], {
+      cwd: projectDir,
+    });
+
+    assert.deepStrictEqual(await fs.readdir(path.join(projectDir, 'seg_py/root/src')), ['acme_client']);
+    assert.match(await read('seg_py/root/pyproject.toml'), /^name = "acme_client"$/m);
+    assert.match(await read('seg_py/root/README.md'), /^from acme_client import UserRPC$/m);
+  });
+
   await it('Imports a package with a scoped name by its Python and Rust name in the README samples', async () => {
     await createProject(projectDir, {
       'package.json': { name: '@acme/web-app', version: '1.0.0', type: 'module' },
