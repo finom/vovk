@@ -69,13 +69,13 @@
     "@typescript/typescript6": "^6.0.2",
     "@valibot/to-json-schema": "^1.8.0",
     "ajv": "^8.20.0",
-    "arktype": "^2.2.7",
+    "arktype": "^2.2.8",
     "fast-check": "^4.10.2",
-    "next": "^16.3.8",
+    "next": "^16.4.0",
     "openapi3-ts": "^4.6.1",
     "standard-tool": "^0.1.1",
     "type-fest": "^5.10.0",
     "valibot": "^1.5.0",
-    "zod": "^4.6.5"
+    "zod": "^4.6.7"
   }
 }

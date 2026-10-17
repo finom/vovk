@@ -27,12 +27,12 @@
     "ncu": "npm-check-updates -u"
   },
   "dependencies": {
-    "next": "^16.3.8",
-    "react": "19.3.0",
-    "react-dom": "19.3.0",
-    "tinybench": "^6.2.0",
+    "next": "^16.4.0",
+    "react": "19.3.1",
+    "react-dom": "19.3.1",
+    "tinybench": "^6.2.2",
     "vovk": "^4.1.0",
-    "zod": "^4.6.5"
+    "zod": "^4.6.7"
   },
   "devDependencies": {
     "@biomejs/biome": "^2.5.15",
