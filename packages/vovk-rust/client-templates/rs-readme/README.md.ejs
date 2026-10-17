@@ -11,6 +11,13 @@ imports: ['vovk-rust']
 <%- t.package.license ? `License: **${t.package.license}**` : '' %>
 
 <%
+// the module names the crate has: in schema order, a taken name gets the first free suffix, as in lib.rs
+const usedModuleNames = new Set(['http_request', 'read_full_schema']);
+const moduleNames = new Map(
+    Object.values(t.schema.segments)
+        .flatMap((segment) => Object.values(segment.controllers))
+        .map((controllerSchema) => [controllerSchema, t.imports['vovk-rust'].toRustIdent(t._.snakeCase(controllerSchema.rpcModuleName), usedModuleNames)])
+);
 // the samples come first: the install block lists the crates they use
 const samples = new Map();
 Object.values(t.schema.segments).forEach((segment) => Object.values(segment.controllers).forEach((controllerSchema) => {
@@ -21,6 +28,7 @@ Object.values(t.schema.segments).forEach((segment) => Object.values(segment.cont
             controllerSchema,
             package: t.package,
             config: t.samples,
+            rustModuleName: moduleNames.get(controllerSchema),
         }).rs);
     });
 }));
@@ -46,7 +54,7 @@ const sampleCrates = [
     const segmentPath = segment.forceApiRoot ? '' : typeof segmentMeta.segmentNameOverride === 'string' ? segmentMeta.segmentNameOverride : segmentName;
     Object.values(segment.controllers).forEach((controllerSchema) => {
     // the names the crate has
-    const moduleName = t.imports['vovk-rust'].toRustIdent(t._.snakeCase(controllerSchema.rpcModuleName));
+    const moduleName = moduleNames.get(controllerSchema);
     const functionNames = t.imports['vovk-rust'].getFunctionNames(Object.keys(controllerSchema.handlers), t._.snakeCase); %>
 
 ## mod <%= moduleName %>

@@ -141,6 +141,22 @@ const rustFunctionNames = new WeakMap<object, Map<string, string>>();
 
 export const getRustModuleName = (rpcModuleName: string) => toRustIdent(snakeCase(rpcModuleName));
 
+// the crate's own modules, which an RPC module can't be named after
+const RUST_CRATE_MODULES = ['http_request', 'read_full_schema'];
+
+// the module names a crate gives its RPC modules: in schema order, a taken name gets the first free suffix (user_rpc,
+// user_rpc_2), as vovk-rust's lib.rs template does
+export function getRustModuleNames(rpcModuleNames: string[]): string[] {
+  const used = new Set(RUST_CRATE_MODULES);
+  return rpcModuleNames.map((rpcModuleName) => {
+    const base = getRustModuleName(rpcModuleName);
+    let unique = base;
+    for (let i = 2; used.has(unique); i++) unique = `${base}_${i}`;
+    used.add(unique);
+    return unique;
+  });
+}
+
 export const getRustFunctionName = (handlerName: string, handlers: object) =>
   getModuleNames(handlers, rustFunctionNames, toRustName, RUST_IMPORTS).get(handlerName) ??
   getUniqueName(handlerName, Object.keys(handlers), toRustName, RUST_IMPORTS);

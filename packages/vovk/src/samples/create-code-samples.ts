@@ -494,12 +494,15 @@ export function createCodeSamples({
   controllerSchema,
   package: packageJson,
   config,
+  rustModuleName,
 }: {
   handlerName: string;
   handlerSchema: VovkHandlerSchema;
   controllerSchema: VovkControllerSchema;
   package?: CodeSamplePackageJson;
   config: VovkSamplesConfig;
+  // the module name the crate gives the controller when another module took its own (getRustModuleNames)
+  rustModuleName?: string;
 }) {
   const queryValidation = handlerSchema?.validation?.query as VovkJSONSchemaBase | undefined;
   const bodyValidation = handlerSchema?.validation?.body as VovkJSONSchemaBase | undefined;
@@ -545,7 +548,7 @@ export function createCodeSamples({
     ...commonParams,
     paramsValidation: pathParamsValidation,
     packageName: rsPackageName,
-    rpcName: getRustModuleName(rpcName),
+    rpcName: rustModuleName ?? getRustModuleName(rpcName),
     methodName: getRustFunctionName(handlerName, handlers),
   });
 
