@@ -1,4 +1,4 @@
-import { deepStrictEqual } from 'node:assert';
+import { deepStrictEqual, rejects } from 'node:assert';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { describe, it } from 'node:test';
@@ -542,7 +542,8 @@ await describe('CLI init', async () => {
     });
 
     await assertDeps({
-      dependencies: ['vovk-python'],
+      dependencies: ['vovk-python', 'vovk-rust'],
+      devDependencies: ['vovk-python'],
       opposite: true,
     });
 
@@ -572,15 +573,44 @@ await describe('CLI init', async () => {
 
     await assertDeps({
       dependencies: ['vovk'],
-      devDependencies: ['vovk-cli', 'vovk-rust'],
+      devDependencies: ['vovk-cli', 'vovk-python', 'vovk-rust'],
     });
 
     await assertDeps({
-      dependencies: ['vovk-python'],
+      dependencies: ['vovk-python', 'vovk-rust'],
       opposite: true,
     });
 
     await assertTsConfig();
+  });
+
+  await it('Works with --yes --lang', async () => {
+    await createNextApp();
+    // the values are read in any letter case
+    await vovkInit('--yes --skip-install --lang PY rs');
+    await assertConfig(
+      ['vovk.config.mjs'],
+      assertConfig.makeConfig('zod', { composedClient: { fromTemplates: ['ts', 'py', 'rs'] } })
+    );
+
+    const { config } = await assertConfig.getStrictConfig();
+    deepStrictEqual(config.composedClient.fromTemplates, ['ts', 'py', 'rs']);
+
+    await assertDeps({
+      dependencies: ['vovk'],
+      devDependencies: ['vovk-cli', 'vovk-python', 'vovk-rust'],
+    });
+
+    await assertDeps({
+      dependencies: ['vovk-python', 'vovk-rust'],
+      opposite: true,
+    });
+  });
+
+  await it('Refuses an unknown --lang value', async () => {
+    await createNextApp();
+    await rejects(vovkInit('--yes --skip-install --lang go'), /Unknown --lang value "go"\. Supported values: py, rs/);
+    await assertNotExists('vovk.config.mjs');
   });
 
   await it('Works with --yes --bundle', async () => {
