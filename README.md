@@ -113,27 +113,24 @@ From one function and its schema, Vovk.ts derives:
 - the **LLM tool** with `name`, `description`, `inputSchema` and `execute`, from `deriveTools`
 - a generated **`README.md`** that documents the client library
 
-## Claude Plugin
+## Agent Skills
 
-The official **Claude Code plugin** has [15 topic-based skills](./skills) that teach the coding agent how to use Vovk.ts. A skill loads only when it's relevant: *"scaffold a new tenant"* loads the multitenant skill, and *"stream chat tokens"* loads JSON Lines.
+[15 topic skills](./skills) teach a coding agent how to use Vovk.ts: Claude Code, Cursor, Windsurf, GitHub Copilot, Cline and the other agents that read skills. A skill loads only when it's relevant: *"scaffold a new tenant"* loads the multitenant skill, and *"stream chat tokens"* loads JSON Lines.
 
-Install (inside Claude Code):
+Install in your project:
+
+```sh
+npx skills add finom/vovk
+```
+
+In Claude Code, they also install as a plugin, with skill names that start with `vovk:`:
 
 ```
 /plugin marketplace add finom/vovk
 /plugin install vovk@vovk
-/reload-plugins
 ```
 
-Verify:
-
-```
-/plugin
-```
-
-The **Installed** tab lists `vovk`. The skills are namespaced: typing `/vovk:` (with the colon at the end) lists all 15.
-
-Plugin docs: <https://vovk.dev/claude>.
+See: https://vovk.dev/skills
 
 ## Repository
 
@@ -148,7 +145,7 @@ Plugin docs: <https://vovk.dev/claude>.
 - Docs: https://vovk.dev
 - Quick Start: https://vovk.dev/quick-install
 - Manual install: https://vovk.dev/manual-install
-- Claude Plugin: https://vovk.dev/claude
+- Agent Skills: https://vovk.dev/skills
 - OpenAPI Mixins: https://vovk.dev/mixins
 - Performance: https://vovk.dev/performance
 - “Hello World” example app: https://github.com/finom/vovk/tree/main/examples/hello-world
