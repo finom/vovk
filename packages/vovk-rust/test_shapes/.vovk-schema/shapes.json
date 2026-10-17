@@ -1807,6 +1807,33 @@
             }
           }
         },
+        "draft7Tuple": {
+          "path": "draft7-tuple",
+          "httpMethod": "POST",
+          "validation": {
+            "body": {
+              "$schema": "http://json-schema.org/draft-07/schema#",
+              "type": "object",
+              "properties": {
+                "t": {
+                  "type": "array",
+                  "items": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "number"
+                    }
+                  ],
+                  "additionalItems": false
+                }
+              },
+              "required": [
+                "t"
+              ]
+            }
+          }
+        },
         "declaredTextOnly": {
           "path": "declared-text-only",
           "httpMethod": "POST",

@@ -812,7 +812,10 @@ function emitConstCheck(schema: Schema, type: string, baseName: string, mod: Mod
 
   const name = allocateName(mod, `${baseName}_const`);
   const ind = (depth: number) => indent(mod.level + depth, ctx.pad);
-  const matches = optional ? `__value.as_ref().map_or(true, |__v| *__v == ${literal})` : `__value == ${literal}`;
+  // a bool is the condition itself, as clippy wants it
+  const equals = (value: string) =>
+    literal === 'true' ? value : literal === 'false' ? `!${value}` : `${value} == ${literal}`;
+  const matches = optional ? `__value.as_ref().is_none_or(|__v| ${equals('*__v')})` : equals('__value');
   const error = `serde::de::Error::custom(${toRustString(`expected ${JSON.stringify(target.const)}`)})`;
   mod.code += `${ind(0)}#[allow(non_snake_case)]\n`;
   mod.code += `${ind(0)}fn ${name}<'de, __D: serde::Deserializer<'de>>(__deserializer: __D) -> ${RESULT}<${type}, __D::Error> {\n`;

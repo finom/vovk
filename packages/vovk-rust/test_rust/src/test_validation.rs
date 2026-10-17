@@ -590,10 +590,7 @@ pub mod test_validation {
     async fn test_constraints() {
         // List of keys that are not supported
         let not_supported = vec![
-            // JSON validator doesn't support these keys
-            "num_multipleOf",
-
-            // TODO: WARNING: Not validated by an unknown reason 
+            // the typed body has no field for the unknown key, so it is never sent (test_type_constraints)
             "obj_strict",
 
             // unwrap errors, tested below
@@ -617,7 +614,7 @@ pub mod test_validation {
             None,
             false
         ).await;
-        assert!(result.is_ok(), "Valid object should pass validation");
+        assert!(result.is_ok(), "Valid object should pass validation: {:?}", result.err());
         
         // Convert struct to JSON to access its keys
         let no_constraints_json = serde_json::to_value(&no_constraints).unwrap();
@@ -705,6 +702,11 @@ pub mod test_validation {
         } else {
             panic!("Expected get_constraining_object to return a JSON object");
         }
+
+        // serde drops the key the struct has no field for, so a strict object can't be violated through the type
+        let strict: with_validation_rpc::handle_schema_constraints_::body =
+            serde_json::from_value(get_constraining_object(Some("obj_strict".to_string()))).unwrap();
+        assert_eq!(serde_json::to_value(&strict).unwrap()["obj_strict"], serde_json::json!({"knownField": "known value"}));
 
         let int32  = no_constraints_json.get("num_int32").unwrap();
         // check if the number is actually an int32

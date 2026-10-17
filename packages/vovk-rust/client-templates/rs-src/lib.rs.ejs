@@ -99,7 +99,7 @@ vars.convertJSONSchemasToRustTypes({
         { name: handlerName, body: bodyKind === 'form' ? 'reqwest::multipart::Form' : bodyKind !== 'none' ? `${handlerName}_::body` : '()', typedBody, requestBody },
         ...(jsonFunction ? [{ name: jsonFunction.name, body: `${jsonFunction.name}_::body`, typedBody: true, requestBody: 'RequestBody::Json(&body)' }] : []),
     ];
-%>
+-%>
 <% functions.forEach(({ name, body, typedBody, requestBody }, index) => { if (index > 0) { -%>
 
 <%- vars.convertJSONSchemasToRustTypes({ schemas: { body: jsonFunction.body }, rootName: name, pad: 4 }) %>
@@ -115,7 +115,7 @@ if (bodyKind === 'none') { %>    #[allow(unused_variables)]
         api_root: Option<&str>,
         disable_client_validation: bool,
     ) -> <%- validation?.output ? `Result<${handlerName}_::output, HttpException>` : validation?.iteration ? `Result<Pin<Box<dyn Stream<Item = Result<${handlerName}_::iteration, HttpException>> + Send>>, HttpException>` : 'Result<serde_json::Value, HttpException>' %>{
-        let result = <%= validation?.iteration ? 'http_request_stream' : 'http_request' %>::<
+        <%= validation?.iteration ? 'http_request_stream' : 'http_request' %>::<
 <%- [
                 validation?.output ? `${handlerName}_::output` : validation?.iteration ? `${handlerName}_::iteration` : 'serde_json::Value',
                 typedBody ? body : '()',
@@ -136,9 +136,7 @@ if (bodyKind === 'none') { %>    #[allow(unused_variables)]
             headers,
             api_root,
             disable_client_validation,
-        ).await;
-
-        result
+        ).await
     }
 <% }) -%>
         <% }) %>

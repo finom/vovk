@@ -7,9 +7,9 @@ use std::error::Error;
 use std::fmt;
 use std::pin::Pin;
 use std::sync::{Arc, Mutex};
+use std::task::{ready, Context, Poll};
 use jsonschema::{Draft, Validator};
 use serde_json::Value;
-use urlencoding;
 // relative paths, so the files also build as a module of another crate
 use super::read_full_schema;
 use once_cell::sync::Lazy;
@@ -138,7 +138,7 @@ fn compile_schema(schema: &Value) -> Result<Validator, String> {
     let is_draft7 = schema
         .get("$schema")
         .and_then(Value::as_str)
-        .map_or(false, |uri| uri.contains("://json-schema.org/draft-07/schema"));
+        .is_some_and(|uri| uri.contains("://json-schema.org/draft-07/schema"));
     jsonschema::options()
         .with_draft(if is_draft7 { Draft::Draft7 } else { Draft::Draft202012 })
         .should_validate_formats(true)
@@ -441,11 +441,11 @@ where
         _ => None,
     };
         
-    let query_value = query.map(|q| serde_json::to_value(q))
+    let query_value = query.map(serde_json::to_value)
         .transpose()
         .map_err(|e| format!("Failed to serialize query: {}", e))?;
         
-    let params_value = params.map(|p| serde_json::to_value(p))
+    let params_value = params.map(serde_json::to_value)
         .transpose()
         .map_err(|e| format!("Failed to serialize params: {}", e))?;
 
@@ -794,7 +794,7 @@ where
 
     let byte_stream = response
         .bytes_stream()
-        .map_err(|e| std::io::Error::new(std::io::ErrorKind::Other, e.without_url()));
+        .map_err(|e| std::io::Error::other(e.without_url()));
 
     let reader = StreamReader::new(byte_stream);
     let lines = FramedRead::new(reader, LinesCodec::new());
@@ -832,7 +832,30 @@ where
         })
     });
 
-    Ok(Box::pin(typed_stream))
+    Ok(Box::pin(UntilError { stream: Some(Box::pin(typed_stream)) }))
+}
+
+// the first error ends the stream, as in the TypeScript client: an error line, a line that isn't JSON or isn't the
+// item type, or a body that broke off
+struct UntilError<S> {
+    stream: Option<S>,
+}
+
+impl<S, T> Stream for UntilError<S>
+where
+    S: Stream<Item = Result<T, HttpException>> + Unpin,
+{
+    type Item = Result<T, HttpException>;
+
+    fn poll_next(mut self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Option<Self::Item>> {
+        let Some(stream) = self.stream.as_mut() else { return Poll::Ready(None) };
+        let item = ready!(stream.poll_next_unpin(cx));
+        if !matches!(item, Some(Ok(_))) {
+            // drops the response, which closes its connection
+            self.stream = None;
+        }
+        Poll::Ready(item)
+    }
 }
 
 // only the envelope a responder writes ends the stream, not a data item that happens to have these keys

@@ -145,8 +145,43 @@ jobs:
       - run: npm ci && npm --prefix test ci
       - run: npm run build
       - run: npm --prefix test run generate && npm --prefix test run build-other-compiled-sources
+      # test:rs also lints the generated crates with clippy
+      - run: rustup component add clippy
       - run: npm run test:rs
       - run: npm run test:py
+
+  rust-msrv:
+    # the generated crates on the oldest Rust their Cargo.toml declares, each with the dependency versions its own
+    # resolver 3 picks; test_rust can't show that: its resolver takes the newest versions, which need a newer Rust
+    needs: [gate]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: |
+            package-lock.json
+            test/package-lock.json
+      - run: npm ci && npm --prefix test ci
+      - run: npm run build
+      - run: npm --prefix packages/vovk-rust run generate
+        env:
+          PORT: 3210
+      - name: Build the generated crates on the Rust version they declare
+        working-directory: packages/vovk-rust
+        env:
+          RUSTFLAGS: -D warnings
+          CARGO_TARGET_DIR: ${{ runner.temp }}/msrv-target
+        run: |
+          msrv=$(sed -n 's/^rust-version = "\(.*\)"$/\1/p' generated_rust_client/Cargo.toml)
+          test -n "$msrv"
+          rustup toolchain install "$msrv" --profile minimal
+          for crate in generated_rust_client generated_shapes_client generated_readonly_client; do
+            cargo +"$msrv" build --all-targets --manifest-path "$crate/Cargo.toml"
+          done
 
   cli:
     needs: [matrix, gate]
