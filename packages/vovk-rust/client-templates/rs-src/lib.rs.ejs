@@ -13,21 +13,48 @@ imports: ['vovk-rust']
     toRustDocLines: t.imports['vovk-rust'].toRustDocLines,
     toRustCommentText: t.imports['vovk-rust'].toRustCommentText,
     toRustString: t.imports['vovk-rust'].toRustString,
-}; %>
+};
+// in schema order across the crate, a taken module name gets the first free suffix, as a function name does
+const usedModuleNames = new Set(['http_request', 'read_full_schema']);
+const moduleNames = new Map(
+    Object.values(t.schema.segments)
+        .flatMap((segment) => Object.values(segment.controllers))
+        .map((controllerSchema) => [controllerSchema, vars.toRustIdent(t._.snakeCase(controllerSchema.rpcModuleName), usedModuleNames)])
+);
+// a union body that takes JSON or a form, with a file in some branch, goes out as a form; its branches without a file
+// can go out as JSON, as the TypeScript client sends them: those branches as one body schema, else null
+const getJSONBranchesBody = (body) => {
+    const isJSON = (type) => type === 'application/json' || type.endsWith('+json');
+    if (!(body['x-contentType'] ?? []).some(isJSON)) return null;
+    const { anyOf, oneOf, 'x-contentType': _, ...rest } = body;
+    // getBodyKind reads a schema that takes JSON or a form as JSON when it holds no file; a $ref reads the body's $defs
+    const holdsNoFile = (schema) => vars.getBodyKind({ ...rest, ...schema, 'x-contentType': ['application/json', 'multipart/form-data'] }) === 'json';
+    // a mixin's branch declares its own content type: a branch for a form only stays a form
+    const branches = (anyOf ?? oneOf ?? []).filter((branch) => (branch['x-contentType'] ?? ['application/json']).some(isJSON) && holdsNoFile(branch));
+    if (!branches.length || !holdsNoFile(rest)) return null;
+    // one branch, with nothing else to check, is the body itself
+    const isBare = Object.keys(rest).every((key) => ['$schema', '$defs', 'definitions', 'components', 'title', 'description'].includes(key));
+    const json = branches.length === 1 && isBare ? { ...rest, ...branches[0] } : { ...rest, [anyOf ? 'anyOf' : 'oneOf']: branches };
+    return { ...json, 'x-contentType': ['application/json'] };
+};
+%>
 mod http_request;
 mod read_full_schema;
 
-pub use crate::http_request::{set_client_factory, HttpException};
-<% Object.entries(t.schema.segments).forEach(([segmentName, segment]) => {
+// relative paths, so the files also build as a module of another crate
+pub use self::http_request::{set_client_factory, HttpException};
+<% if (!usedModuleNames.has('reqwest')) { %>// the reqwest the functions take: an app builds a Client or a Form with it, whatever reqwest version the app has
+pub use reqwest;
+<% } %><% Object.entries(t.schema.segments).forEach(([segmentName, segment]) => {
     const segmentMeta = t.segmentMeta?.[segmentName] ?? {};
     // a configured origin or root entry gives the segment its own root, a mixin's root already includes its path
     const apiRoot = segmentMeta.forceApiRoot ?? t.apiRoot ?? '';
     const segmentPath = segment.forceApiRoot ? '' : typeof segmentMeta.segmentNameOverride === 'string' ? segmentMeta.segmentNameOverride : segmentName;
     Object.values(segment.controllers).forEach((controllerSchema) => {
     const functionNames = vars.getFunctionNames(Object.keys(controllerSchema.handlers), t._.snakeCase); %>
-pub mod <%= vars.toRustIdent(t._.snakeCase(controllerSchema.rpcModuleName)) %> {
+pub mod <%= moduleNames.get(controllerSchema) %> {
     #[allow(unused_imports)]
-    use crate::http_request::{Endpoint, HttpException, RequestBody, http_request, http_request_stream};
+    use super::http_request::{Endpoint, HttpException, RequestBody, http_request, http_request_stream};
     #[allow(unused_imports)]
     use futures_util::Stream;
     use std::collections::HashMap;
@@ -36,7 +63,8 @@ pub mod <%= vars.toRustIdent(t._.snakeCase(controllerSchema.rpcModuleName)) %> {
 <% Object.entries(controllerSchema.handlers).forEach(([handlerNameOriginal, handlerSchema]) => { 
     const { validation, operationObject, httpMethod } = handlerSchema;
     const handlerName = functionNames.get(handlerNameOriginal);
-    const url = [t._.trimEnd(apiRoot, '/'), ...[segmentPath, controllerSchema.prefix ?? '', handlerSchema.path].map((part) => t._.trim(part, '/'))].filter(Boolean).join('/');
+    // a mixin path keeps its trailing slash
+    const url = [t._.trimEnd(apiRoot, '/'), ...[segmentPath, controllerSchema.prefix ?? '', handlerSchema.path].map((part) => t._.trim(part, '/'))].filter(Boolean).join('/') + (handlerSchema.path.endsWith('/') ? '/' : '');
     // a path with {name} placeholders takes params, with or without a params schema
     const paramsType = validation?.params ? `${handlerName}_::params` : /\{[^{}]+\}/.test(`${controllerSchema.prefix ?? ''}/${handlerSchema.path}`) ? 'HashMap<String, String>' : '()';
     %>
@@ -75,13 +103,26 @@ vars.convertJSONSchemasToRustTypes({
         urlencoded: 'RequestBody::UrlEncoded(&body)',
         form: 'RequestBody::Multipart(body)',
         text: `RequestBody::Text(body, ${vars.toRustString(vars.getTextContentType(validation?.body))})`,
-        binary: `RequestBody::Binary(body, ${vars.toRustString(validation?.body?.['x-contentType']?.[0] || 'application/octet-stream')})`,
+        binary: `RequestBody::Binary(body, ${vars.toRustString(vars.getBinaryContentType(validation?.body))})`,
     }[bodyKind];
+    // the branches of a JSON-or-form body without a file also go out as JSON, by the function with _json, unless a
+    // handler has that name
+    const jsonName = `${handlerName}_json`;
+    const jsonBody = bodyKind === 'form' && ![...functionNames.values()].includes(jsonName) ? getJSONBranchesBody(validation.body) : null;
+    const functions = [
+        { name: handlerName, body: bodyKind === 'form' ? 'reqwest::multipart::Form' : bodyKind !== 'none' ? `${handlerName}_::body` : '()', typedBody, requestBody },
+        ...(jsonBody ? [{ name: jsonName, body: `${jsonName}_::body`, typedBody: true, requestBody: 'RequestBody::Json(&body)' }] : []),
+    ];
 %>
+<% functions.forEach(({ name, body, typedBody, requestBody }, index) => { if (index > 0) { -%>
+
+<%- vars.convertJSONSchemasToRustTypes({ schemas: { body: jsonBody }, rootName: name, pad: 4 }) %>
+    /// Sends the branches of the body without a file as JSON
+<% } -%>
 <% // without a body the function still takes body: (), every function takes the same arguments
 if (bodyKind === 'none') { %>    #[allow(unused_variables)]
-<% } %>    pub async fn <%= handlerName %>( 
-        body: <%- bodyKind === 'form' ? 'reqwest::multipart::Form' : bodyKind !== 'none' ? `${handlerName}_::body` : '()' %>,
+<% } %>    pub async fn <%= name %>(
+        body: <%- body %>,
         query: <%- validation?.query ? `${handlerName}_::query` : '()' %>,
         params: <%- paramsType %>,
         headers: Option<&HashMap<String, String>>,
@@ -91,7 +132,7 @@ if (bodyKind === 'none') { %>    #[allow(unused_variables)]
         let result = <%= validation?.iteration ? 'http_request_stream' : 'http_request' %>::<
 <%- [
                 validation?.output ? `${handlerName}_::output` : validation?.iteration ? `${handlerName}_::iteration` : 'serde_json::Value',
-                typedBody ? `${handlerName}_::body` : '()',
+                typedBody ? body : '()',
                 validation?.query ? `${handlerName}_::query` : '()',
                 paramsType
             ].filter(Boolean).map((s) => ' '.repeat(12) + s).join(',\n') %>
@@ -113,6 +154,7 @@ if (bodyKind === 'none') { %>    #[allow(unused_variables)]
 
         result
     }
+<% }) -%>
         <% }) %>
 }
     <% }) %>

@@ -91,6 +91,53 @@ const mixinSpec = {
         responses: { 200: { description: 'ok' } },
       },
     },
+    // JavaScript patterns: a [ inside a class, \< and \> as the characters, and [^], which Rust's regex can't read
+    '/patterned': {
+      post: {
+        operationId: 'postPatterned',
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  tag: { type: 'string', pattern: '^[\\w[\\]]+$' },
+                  note: { type: 'string', pattern: '^[^\\<\\>]*$' },
+                  angle: { type: 'string', pattern: '^\\<b\\>$' },
+                  counts: {
+                    type: 'object',
+                    patternProperties: { '^\\<[a-z]\\>$': { type: 'integer' } },
+                    additionalProperties: false,
+                  },
+                  // data, not a pattern
+                  rule: { const: { pattern: '\\<' } },
+                  // a property, not the keyword
+                  default: { type: 'string', pattern: '^\\<$' },
+                },
+                required: ['tag', 'note', 'angle'],
+              },
+            },
+          },
+        },
+        responses: { 200: { description: 'ok' } },
+      },
+      get: {
+        operationId: 'getPatterned',
+        parameters: [{ name: 'tag', in: 'query', required: true, schema: { type: 'string', pattern: '^[^]+$' } }],
+        responses: { 200: { description: 'ok' } },
+      },
+    },
+    // paths with a trailing slash, as FastAPI and Django declare them
+    '/': { get: { operationId: 'getRoot', responses: { 200: { description: 'ok' } } } },
+    '/slash/': { get: { operationId: 'getSlash', responses: { 200: { description: 'ok' } } } },
+    '/slash/{id}/': {
+      get: {
+        operationId: 'getSlashItem',
+        parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'integer' } }],
+        responses: { 200: { description: 'ok' } },
+      },
+    },
     '/with-zod/handle-query': {
       get: {
         operationId: 'handleQuery',

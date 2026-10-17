@@ -14,3 +14,10 @@ reqwest = { version = "0.12", features = [ "json", "multipart", "stream" ] }
 tokio = { version = "1", features = ["macros", "rt-multi-thread", "io-util", "net"] }
 futures-util = "0.3"
 
+# tests/embedded.rs compiles the client's source files into the test: it takes the client's dependencies
+[dev-dependencies]
+tokio-util = { version = "0.7", features = ["codec"] }
+jsonschema = { version = "0.57", default-features = false }
+urlencoding = "2.1"
+once_cell = "1.17"
+

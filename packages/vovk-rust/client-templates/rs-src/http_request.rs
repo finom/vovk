@@ -10,10 +10,11 @@ use std::sync::{Arc, Mutex};
 use jsonschema::{Draft, Validator};
 use serde_json::Value;
 use urlencoding;
-use crate::read_full_schema;
+// relative paths, so the files also build as a module of another crate
+use super::read_full_schema;
 use once_cell::sync::Lazy;
 use futures_util::{Stream, StreamExt, TryStreamExt};
-use tokio_util::codec::{FramedRead, LinesCodec};
+use tokio_util::codec::{FramedRead, LinesCodec, LinesCodecError};
 use tokio_util::io::StreamReader;
 
 #[derive(Debug, Serialize)]
@@ -99,8 +100,10 @@ static FULL_SCHEMA: Lazy<Result<Value, String>> = Lazy::new(|| {
 // segment, controller, handler and slot
 type ValidatorKey = (&'static str, &'static str, &'static str, &'static str);
 
-// each schema is compiled on its first use
-static VALIDATORS: Lazy<Mutex<HashMap<ValidatorKey, Arc<Validator>>>> = Lazy::new(|| Mutex::new(HashMap::new()));
+// each schema is compiled on its first use; None for one the jsonschema crate can't compile, which the server checks,
+// as vovk-ajv leaves a schema Ajv can't compile to the server
+static VALIDATORS: Lazy<Mutex<HashMap<ValidatorKey, Option<Arc<Validator>>>>> =
+    Lazy::new(|| Mutex::new(HashMap::new()));
 
 type ClientFactory = Arc<dyn Fn() -> Client + Send + Sync>;
 
@@ -108,6 +111,7 @@ static CLIENT_FACTORY: Lazy<Mutex<(u64, Option<ClientFactory>)>> = Lazy::new(|| 
 
 /// Sets how the calls build their `reqwest::Client`, for example with a timeout, a proxy or default headers:
 /// `set_client_factory(|| reqwest::Client::builder().timeout(Duration::from_secs(30)).build().unwrap())`.
+/// The client is the crate's reqwest, which it re-exports as `reqwest`.
 /// It is called again for each thread and tokio runtime the calls run on, and for the calls made after it is set.
 pub fn set_client_factory(factory: impl Fn() -> Client + Send + Sync + 'static) {
     let mut slot = CLIENT_FACTORY.lock().unwrap_or_else(|e| e.into_inner());
@@ -139,8 +143,67 @@ fn compile_schema(schema: &Value) -> Result<Validator, String> {
         .with_draft(if is_draft7 { Draft::Draft7 } else { Draft::Draft202012 })
         .should_validate_formats(true)
         .offline()
-        .build(schema)
+        .build(&with_rust_patterns(schema))
         .map_err(|e| e.to_string())
+}
+
+// a schema pattern is a JavaScript one: \< and \> are the characters, not word boundaries, and a [ inside a class is
+// the character, not a nested class
+fn to_rust_pattern(pattern: &str) -> String {
+    let mut rust = String::with_capacity(pattern.len());
+    let mut chars = pattern.chars();
+    let mut in_class = false;
+    while let Some(c) = chars.next() {
+        match c {
+            '\\' => match chars.next() {
+                Some(escaped @ ('<' | '>')) => rust.push(escaped),
+                Some(escaped) => {
+                    rust.push('\\');
+                    rust.push(escaped);
+                }
+                None => rust.push('\\'),
+            },
+            '[' if in_class => rust.push_str("\\["),
+            '[' => {
+                in_class = true;
+                rust.push(c);
+            }
+            ']' => {
+                in_class = false;
+                rust.push(c);
+            }
+            _ => rust.push(c),
+        }
+    }
+    rust
+}
+
+// the schema with its patterns in Rust's dialect; a const, an enum, a default or examples are data, left as they are
+fn with_rust_patterns(schema: &Value) -> Value {
+    // a map of names, or of patterns, each to a schema
+    let schemas = |map: &serde_json::Map<String, Value>, key: fn(&str) -> String| {
+        Value::Object(map.iter().map(|(name, schema)| (key(name), with_rust_patterns(schema))).collect())
+    };
+    match schema {
+        Value::Object(map) => Value::Object(
+            map.iter()
+                .map(|(key, value)| {
+                    let value = match (key.as_str(), value) {
+                        ("pattern", Value::String(pattern)) => Value::String(to_rust_pattern(pattern)),
+                        ("patternProperties", Value::Object(map)) => schemas(map, to_rust_pattern),
+                        ("properties" | "$defs" | "definitions" | "dependentSchemas", Value::Object(map)) => {
+                            schemas(map, str::to_string)
+                        }
+                        ("const" | "enum" | "default" | "examples", _) => value.clone(),
+                        _ => with_rust_patterns(value),
+                    };
+                    (key.clone(), value)
+                })
+                .collect(),
+        ),
+        Value::Array(items) => Value::Array(items.iter().map(with_rust_patterns).collect()),
+        _ => schema.clone(),
+    }
 }
 
 fn validate(endpoint: &Endpoint, label: &'static str, schema: &Value, value: &Value) -> Result<(), String> {
@@ -149,13 +212,13 @@ fn validate(endpoint: &Endpoint, label: &'static str, schema: &Value, value: &Va
     let validator = match cached {
         Some(validator) => validator,
         None => {
-            let validator = Arc::new(
-                compile_schema(schema).map_err(|e| format!("Invalid {} schema: {}", label.to_lowercase(), e))?,
-            );
+            // such as a pattern with a JavaScript construct Rust's regex can't read: [^], \k<name> or a{,3}
+            let validator = compile_schema(schema).ok().map(Arc::new);
             VALIDATORS.lock().unwrap_or_else(|e| e.into_inner()).insert(key, validator.clone());
             validator
         }
     };
+    let Some(validator) = validator else { return Ok(()) };
     let errors: Vec<String> = validator
         .iter_errors(value)
         .map(|err| format!("{}: {}", err.instance_path(), err))
@@ -365,6 +428,11 @@ where
         .join("/");
     let root = api_root.unwrap_or(endpoint.api_root).trim_end_matches('/');
     let mut url = if path.is_empty() { root.to_string() } else { format!("{}/{}", root, path) };
+    // a mixin path keeps the trailing slash its OpenAPI document declares, as the TypeScript client sends it: /items/
+    // and /items are different paths
+    if handler_path.ends_with('/') {
+        url.push('/');
+    }
 
     let body_value = match &body {
         RequestBody::Json(b) | RequestBody::UrlEncoded(b) => {
@@ -744,7 +812,12 @@ where
                     Err(e) => Some(Err(HttpException::new(e.to_string(), status_code, None))),
                 }
             }
-            // a stream cut or broken on the way
+            // a stream cut or broken on the way: reqwest's error, out of the io::Error the lines are read through, as
+            // for any other call
+            Err(LinesCodecError::Io(error)) => Some(Err(match error.downcast::<reqwest::Error>() {
+                Ok(error) => HttpException::from_reqwest(error, status_code),
+                Err(error) => HttpException::with_source(LinesCodecError::Io(error), status_code),
+            })),
             Err(e) => Some(Err(HttpException::with_source(e, status_code))),
         }
     });
