@@ -10,7 +10,7 @@ fn unreachable() -> reqwest::Client {
 fn test_readme_samples_compile_and_run_as_far_as_the_request() {
     generated_rust_client::set_client_factory(unreachable);
     generated_shapes_client::set_client_factory(unreachable);
-    generated_readonly_client::set_client_factory(unreachable);
+    GeneratedReadonlyClient::set_client_factory(unreachable);
     assert!(SAMPLES.len() > 200, "{} samples", SAMPLES.len());
 
     let panicked: Vec<&str> = SAMPLES
