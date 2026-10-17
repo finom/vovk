@@ -79,6 +79,8 @@ export default class ArticleController {
 
 URL = `/api/<segment>/<@prefix>/<path>`, empty parts dropped. `{name}` in a path is a param. `@put`, `@patch`, `@del`, `@head`, `@options` work the same.
 
+A path equal to a route with no params gets that route, whatever the order (`users/me` over `users/{id}`). If two routes with params match the same path, the request answers 500 `Conflicting routes found: …`.
+
 `output` is optional. It checks the returned value and becomes the response schema in the OpenAPI document. Without it the client takes the handler's return type, including the body type of `NextResponse.json(…)`.
 
 ## Requests
