@@ -92,6 +92,10 @@ const SLOT_NAMES = ['body', 'query', 'params', 'output', 'iteration'];
 
 const VALUE = 'serde_json::Value';
 
+// generated functions write these in full: a named schema may take the short name, such as a Result component
+const RESULT = '::std::result::Result';
+const OPTION = '::std::option::Option';
+
 // std implements Debug for tuples of up to 12 items
 const MAX_TUPLE_LENGTH = 12;
 
@@ -710,6 +714,78 @@ function fieldDocSchema(propSchema: Schema, ctx: Context): Schema {
   return (propSchema.$ref && resolvePointer(propSchema.$ref, ctx.root)) || propSchema;
 }
 
+// the schema a value is pinned to by a string, number or boolean const, through references and wrappers
+function constTarget(schema: Schema, ctx: Context): Schema | null {
+  const seen = new Set<string>();
+  let current: Schema | null | undefined = schema;
+  while (current && typeof current === 'object') {
+    if (current.$ref) {
+      if (seen.has(current.$ref)) return null;
+      seen.add(current.$ref);
+      const key = refKey(current.$ref);
+      current = (key !== null ? ctx.defSchemas.get(key) : undefined) ?? resolvePointer(current.$ref, ctx.root);
+      continue;
+    }
+    const nonNull = splitNullable(current);
+    if (nonNull !== undefined) {
+      current = nonNull;
+      continue;
+    }
+    const single: Schema[] | undefined = current.allOf ?? current.anyOf ?? current.oneOf;
+    if (single?.length !== 1 || hasProperties(current)) break;
+    current = single[0];
+  }
+  const isScalar = ['string', 'number', 'boolean'].includes(typeof current?.const);
+  return current && isScalar && current.enum === undefined ? current : null;
+}
+
+const INTEGER_RANGES: Record<string, [number, number]> = {
+  i8: [-128, 127],
+  i16: [-32768, 32767],
+  i32: [-2147483648, 2147483647],
+  i64: [Number.MIN_SAFE_INTEGER, Number.MAX_SAFE_INTEGER],
+  u8: [0, 255],
+  u16: [0, 65535],
+  u32: [0, 4294967295],
+  u64: [0, Number.MAX_SAFE_INTEGER],
+};
+
+// a JSON value as a Rust literal of the given type, null when the type can't hold it
+function toRustLiteral(value: unknown, type: string): string | null {
+  if (typeof value === 'string') return type === 'String' ? toRustString(value) : null;
+  if (typeof value === 'boolean') return type === 'bool' ? String(value) : null;
+  if (typeof value !== 'number' || !Number.isFinite(value)) return null;
+  if (type === 'f64') return /[.e]/.test(String(value)) ? String(value) : `${value}.0`;
+  const range = INTEGER_RANGES[type];
+  return range && Number.isSafeInteger(value) && value >= range[0] && value <= range[1] ? String(value) : null;
+}
+
+// a field or a variant of a const schema reads only that value, so an untagged enum moves on to the variant the value
+// belongs to; returns the function for deserialize_with, the type is left as it is
+function emitConstCheck(schema: Schema, type: string, baseName: string, mod: Module, ctx: Context): string | null {
+  const target = constTarget(schema, ctx);
+  if (!target) return null;
+  const optional = type.startsWith('Option<');
+  const inner = optional ? type.slice('Option<'.length, -1) : type;
+  const scope: Scope = { depth: 0, helpers: () => ({ mod: newModule(0, 0), path: '' }) };
+  const valueType = typeExpr(target, baseName, scope, ctx, false);
+  const literal = toRustLiteral(target.const, valueType);
+  // the field's type is the value's type, or the name of a named schema of it
+  if (!literal || (inner !== valueType && !/^(super::)*\w+$/.test(inner))) return null;
+
+  const name = allocateName(mod, `${baseName}_const`);
+  const ind = (depth: number) => indent(mod.level + depth, ctx.pad);
+  const matches = optional ? `__value.as_ref().map_or(true, |__v| *__v == ${literal})` : `__value == ${literal}`;
+  const error = `serde::de::Error::custom(${toRustString(`expected ${JSON.stringify(target.const)}`)})`;
+  mod.code += `${ind(0)}#[allow(non_snake_case)]\n`;
+  mod.code += `${ind(0)}fn ${name}<'de, __D: serde::Deserializer<'de>>(__deserializer: __D) -> ${RESULT}<${type}, __D::Error> {\n`;
+  mod.code += `${ind(1)}let __value = <${type} as serde::Deserialize>::deserialize(__deserializer)?;\n`;
+  mod.code += `${ind(1)}if ${matches} {\n${ind(2)}${RESULT}::Ok(__value)\n`;
+  mod.code += `${ind(1)}} else {\n${ind(2)}${RESULT}::Err(${error})\n${ind(1)}}\n`;
+  mod.code += `${ind(0)}}\n\n`;
+  return name;
+}
+
 function emitStruct(schema: Schema, name: string, mod: Module, ctx: Context): void {
   const level = mod.level;
   const { scope, getModule } = helperScope(name, mod);
@@ -723,6 +799,7 @@ function emitStruct(schema: Schema, name: string, mod: Module, ctx: Context): vo
     const isOptional = !required.has(propName);
     let type = typeExpr(propSchema, ident, scope, ctx, true);
     if (isOptional && !type.startsWith('Option<')) type = `Option<${type}>`;
+    const check = emitConstCheck(propSchema, type, `${name}_${ident}`, mod, ctx);
 
     const ind = indent(level + 1, ctx.pad);
     fields += generateDocComment(fieldDocSchema(propSchema, ctx), level + 1, ctx.pad);
@@ -730,6 +807,7 @@ function emitStruct(schema: Schema, name: string, mod: Module, ctx: Context): vo
     if (isOptional) fields += `${ind}#[serde(default, skip_serializing_if = "Option::is_none")]\n`;
     // r#self and r#crate are forbidden, so keywords go through toRustIdent too
     if (ident !== propName) fields += `${ind}#[serde(rename = ${toRustString(propName)})]\n`;
+    if (check) fields += `${ind}#[serde(deserialize_with = "${check}")]\n`;
     fields += `${ind}pub ${ident}: ${type},\n`;
   }
 
@@ -791,23 +869,164 @@ function emitMixedEnum(schema: Schema, name: string, mod: Module, ctx: Context):
   mod.code += `${indent(level, ctx.pad)}pub enum ${name} {\n${variants}${indent(level, ctx.pad)}}\n\n`;
 }
 
+// the values of an OpenAPI discriminator and the variants they name: the mapping, then the name of each referenced
+// schema; empty without a discriminator
+function getDiscriminatorTags(schema: Schema, branches: Schema[]): [string, number][] {
+  const { discriminator } = schema as { discriminator?: { propertyName?: unknown; mapping?: Record<string, unknown> } };
+  if (typeof discriminator?.propertyName !== 'string') return [];
+  const keys = branches.map((branch) => refKey(branch?.$ref));
+  const tags = new Map<string, number>();
+  for (const [tag, target] of Object.entries(discriminator.mapping ?? {})) {
+    // a mapping value is a reference or a schema name
+    const index = typeof target === 'string' ? keys.indexOf(refKey(target) ?? target) : -1;
+    if (index !== -1) tags.set(tag, index);
+  }
+  keys.forEach((key, index) => {
+    if (key !== null && !tags.has(key)) tags.set(key, index);
+  });
+  return [...tags];
+}
+
+// reads the variant the discriminator names first, then every variant in order as the untagged enum does
+function emitDiscriminatedDeserialize(
+  name: string,
+  property: string,
+  tags: [string, number][],
+  readers: (string | null)[],
+  mod: Module,
+  ctx: Context
+): void {
+  const ind = (depth: number) => indent(mod.level + depth, ctx.pad);
+  const tag = `__value.get(${toRustString(property)}).and_then(serde_json::Value::as_str).unwrap_or_default()`;
+  const error = toRustString(`data did not match any variant of untagged enum ${name}`);
+  let code = `${ind(0)}impl<'de> serde::Deserialize<'de> for ${name} {\n`;
+  code += `${ind(1)}fn deserialize<__D: serde::Deserializer<'de>>(__deserializer: __D) -> ${RESULT}<Self, __D::Error> {\n`;
+  code += `${ind(2)}let __value = <serde_json::Value as serde::Deserialize>::deserialize(__deserializer)?;\n`;
+  code += `${ind(2)}let __read = |__index: usize| match __index {\n`;
+  readers.forEach((reader, index) => {
+    const read = reader ? `${reader}(__value.clone())` : 'serde_json::from_value(__value.clone())';
+    code += `${ind(3)}${index} => ${read}.ok().map(Self::Variant${index}),\n`;
+  });
+  code += `${ind(3)}_ => ${OPTION}::None,\n${ind(2)}};\n`;
+  // past the last variant when the value has no tag the discriminator knows
+  code += `${ind(2)}let __tagged = match ${tag} {\n`;
+  for (const [value, index] of tags) code += `${ind(3)}${toRustString(value)} => ${index},\n`;
+  code += `${ind(3)}_ => ${readers.length},\n${ind(2)}};\n`;
+  code += `${ind(2)}__read(__tagged)\n`;
+  code += `${ind(3)}.or_else(|| (0..${readers.length}).find_map(__read))\n`;
+  code += `${ind(3)}.ok_or_else(|| serde::de::Error::custom(${error}))\n`;
+  code += `${ind(1)}}\n${ind(0)}}\n\n`;
+  mod.code += code;
+}
+
 // anyOf and oneOf become an untagged enum, serde takes the first variant that reads the value
 function emitUnion(schema: Schema, name: string, mod: Module, ctx: Context): void {
   const level = mod.level;
   const { scope, getModule } = helperScope(name, mod);
-  const variants = (schema.anyOf ?? schema.oneOf ?? [])
-    .map(
-      (variant, index) =>
-        `${indent(level + 1, ctx.pad)}Variant${index}(${typeExpr(variant, `Variant${index}`, scope, ctx, true)}),\n`
-    )
+  const branches = schema.anyOf ?? schema.oneOf ?? [];
+  const tags = getDiscriminatorTags(schema, branches);
+  const readers: (string | null)[] = [];
+  const variants = branches
+    .map((variant, index) => {
+      const type = typeExpr(variant, `Variant${index}`, scope, ctx, true);
+      const check = emitConstCheck(variant, type, `${name}_Variant${index}`, mod, ctx);
+      readers.push(check);
+      // with a discriminator the reader is written by hand and calls the check itself
+      const field = check && !tags.length ? `#[serde(deserialize_with = "${check}")] ${type}` : type;
+      return `${indent(level + 1, ctx.pad)}Variant${index}(${field}),\n`;
+    })
     .join('');
 
   mod.code += generateDocComment(schema, level, ctx.pad);
-  mod.code += `${indent(level, ctx.pad)}#[derive(Debug, Serialize, Deserialize, Clone)]\n`;
+  mod.code += `${indent(level, ctx.pad)}#[derive(Debug, Serialize, ${tags.length ? '' : 'Deserialize, '}Clone)]\n`;
   mod.code += `${indent(level, ctx.pad)}#[allow(non_camel_case_types)]\n`;
   mod.code += `${indent(level, ctx.pad)}#[serde(untagged)]\n`;
   mod.code += `${indent(level, ctx.pad)}pub enum ${name} {\n${variants}${indent(level, ctx.pad)}}\n\n`;
+  if (tags.length) {
+    const { propertyName } = (schema as { discriminator: { propertyName: string } }).discriminator;
+    emitDiscriminatedDeserialize(name, propertyName, tags, readers, mod, ctx);
+  }
   emitHelperModule(name, getModule(), mod, ctx);
+}
+
+// the named schemas that a type expression names, outside the structs and enums it defines; follows typeExpr
+function collectTypeRefs(schema: Schema | boolean | undefined, ctx: Context, keys: Set<string>, refs: string[]): void {
+  if (!schema || typeof schema !== 'object') return;
+  const visit = (sub: Schema | boolean | null | undefined) => collectTypeRefs(sub ?? undefined, ctx, keys, refs);
+  const nonNull = splitNullable(schema);
+  const branches = schema.anyOf ?? schema.oneOf ?? schema.allOf;
+  const items = schema.items as unknown;
+  const values = schema.additionalProperties;
+
+  if (nonNull !== undefined) {
+    visit(nonNull);
+  } else if (schema.$ref) {
+    const key = refKey(schema.$ref);
+    if (key !== null && ctx.defNames.has(key)) keys.add(key);
+    else if (!refs.includes(schema.$ref)) {
+      collectTypeRefs(resolvePointer(schema.$ref, ctx.root), ctx, keys, [...refs, schema.$ref]);
+    }
+  } else if (nominalKind(schema, ctx)) {
+    // a struct or an enum of its own
+  } else if (branches?.length === 1 && !hasProperties(schema)) {
+    visit(branches[0]);
+  } else if (schema.allOf?.length || Array.isArray(schema.enum) || (schema.const !== undefined && !schema.type)) {
+    // a primitive or any value
+  } else if (Array.isArray(schema.type)) {
+    if (schema.type.length === 1) visit({ ...schema, type: schema.type[0] });
+  } else if (schema.type === 'array' || (!schema.type && (items !== undefined || schema.prefixItems))) {
+    const prefix = schema.prefixItems ?? (Array.isArray(items) ? (items as Schema[]) : undefined);
+    // only a closed tuple names its items, as arrayType reads it
+    const rest = schema.prefixItems ? items : schema.additionalItems;
+    const isTuple = !!prefix?.length && rest === false && prefix.length <= MAX_TUPLE_LENGTH;
+    if (!prefix) visit(items as Schema);
+    else if (isTuple && (schema.minItems ?? 0) >= prefix.length) prefix.forEach(visit);
+  } else if (schema.type === 'object' || (!schema.type && values !== undefined)) {
+    if (values && typeof values === 'object' && !isAnything(values)) visit(values);
+  }
+}
+
+// the named schemas that become type aliases and name themselves through aliases alone: rustc refuses a recursive
+// alias, so these become newtypes; a struct or an enum between them already breaks the cycle
+const aliasCyclesCache = new WeakMap<Schema, Set<string>>();
+
+function getAliasCycles(ctx: Context): Set<string> {
+  const cached = aliasCyclesCache.get(ctx.root);
+  if (cached) return cached;
+
+  const named = getNamedSchemas(ctx.root);
+  const isAlias = (key: string) => {
+    const def = named[key];
+    if (!def || typeof def !== 'object') return false;
+    const target = effectiveSchema(def, ctx);
+    const nonNull = splitNullable(target);
+    return !nominalKind(target, ctx) && !(nonNull && nominalKind(effectiveSchema(nonNull, ctx), ctx));
+  };
+  const edges = new Map<string, string[]>();
+  for (const key of Object.keys(named).filter(isAlias)) {
+    const keys = new Set<string>();
+    collectTypeRefs(effectiveSchema(named[key], ctx), ctx, keys, []);
+    edges.set(key, [...keys].filter(isAlias));
+  }
+
+  const cycles = new Set<string>();
+  for (const key of edges.keys()) {
+    const stack = [...(edges.get(key) ?? [])];
+    const visited = new Set<string>();
+    while (stack.length) {
+      const current = stack.pop() as string;
+      if (current === key) {
+        cycles.add(key);
+        break;
+      }
+      if (visited.has(current)) continue;
+      visited.add(current);
+      stack.push(...(edges.get(current) ?? []));
+    }
+  }
+
+  aliasCyclesCache.set(ctx.root, cycles);
+  return cycles;
 }
 
 // a type of exactly this name: a struct or an enum, or an alias of any other type
@@ -823,17 +1042,27 @@ function emitNamed(schema: Schema, name: string, mod: Module, ctx: Context): voi
   const scope: Scope = { depth: mod.depth, helpers: () => ({ mod, path: '' }) };
   const nonNull = splitNullable(target);
   const innerKind = nonNull ? nominalKind(effectiveSchema(nonNull, ctx), ctx) : null;
+  const isNewtype = ctx.enclosing !== null && getAliasCycles(ctx).has(ctx.enclosing);
   let type: string;
   if (nonNull && innerKind) {
     const inner = allocateName(mod, `${name}Inner`);
     emitNominal(innerKind, effectiveSchema(nonNull, ctx), inner, mod, ctx);
     type = `Option<${inner}>`;
   } else {
-    type = typeExpr(target, name, scope, ctx, false);
+    // a newtype holds itself as a struct field does, boxed when nothing else is between
+    type = typeExpr(target, name, scope, ctx, isNewtype);
   }
 
+  const ind = indent(mod.level, ctx.pad);
   mod.code += generateDocComment(schema, mod.level, ctx.pad);
-  mod.code += `${indent(mod.level, ctx.pad)}pub type ${name} = ${type};\n\n`;
+  if (isNewtype) {
+    mod.code += `${ind}#[derive(Debug, Serialize, Deserialize, Clone)]\n`;
+    mod.code += `${ind}#[allow(non_camel_case_types)]\n`;
+    mod.code += `${ind}#[serde(transparent)]\n`;
+    mod.code += `${ind}pub struct ${name}(pub ${type});\n\n`;
+  } else {
+    mod.code += `${ind}pub type ${name} = ${type};\n\n`;
+  }
 }
 
 // a mixin body that takes JSON or a form with one schema is an anyOf of that schema once per content type: it is the
@@ -848,6 +1077,53 @@ function withoutContentTypeAlternatives(schema: VovkJSONSchemaBase): VovkJSONSch
   if (rest.some((shape) => shape !== first)) return schema;
   const { anyOf: _, ...body } = schema;
   return { ...body, ...JSON.parse(first) };
+}
+
+// a named schema's type, emitted by the slot that owns it
+type NamedDef = { key: string; name: string; schema: Schema; slot: number };
+
+// the JSON type a schema names, if any
+function jsonType(schema: Schema): string | undefined {
+  if (typeof schema.type === 'string') return schema.type;
+  if (hasProperties(schema)) return 'object';
+  if (schema.items !== undefined || schema.prefixItems) return 'array';
+  return undefined;
+}
+
+// the type of one schema reads the values of another: the fields it requires are there, and a field both have is of
+// one JSON type; the input and output forms of one schema read each other, two unrelated schemas usually don't
+function schemaReads(shared: Schema | boolean | undefined, own: Schema | boolean | undefined): boolean {
+  if (!shared || !own || typeof shared !== 'object' || typeof own !== 'object') return true;
+  if (shared.$ref && own.$ref) return (refKey(shared.$ref) ?? shared.$ref) === (refKey(own.$ref) ?? own.$ref);
+  if (shared.$ref || own.$ref || isAnything(shared) || isAnything(own)) return true;
+  const a = splitNullable(shared) || shared;
+  const b = splitNullable(own) || own;
+  const [typeA, typeB] = [jsonType(a), jsonType(b)];
+  // a number reads an integer
+  if (typeA && typeB && typeA !== typeB && !(typeA === 'number' && typeB === 'integer')) return false;
+  if (hasProperties(a) && typeB === 'object') {
+    const props = b.properties ?? {};
+    const has = (name: string) => Object.hasOwn(props, name);
+    return (
+      (a.required ?? []).every(has) &&
+      Object.entries(a.properties ?? {}).every(([name, prop]) => !has(name) || schemaReads(prop, props[name]))
+    );
+  }
+  const [itemsA, itemsB] = [a.items, b.items];
+  if (typeA === 'array' && !Array.isArray(itemsA) && !Array.isArray(itemsB)) return schemaReads(itemsA, itemsB);
+  return true;
+}
+
+const defReads = (shared: Schema, own: Schema) => shared === own || schemaReads(shared, own);
+
+// the named schemas a schema refers to, at any depth
+function namedRefs(value: unknown, keys = new Set<string>()): Set<string> {
+  if (!value || typeof value !== 'object') return keys;
+  const { $ref } = value as { $ref?: unknown };
+  const key = typeof $ref === 'string' ? refKey($ref) : null;
+  if (key !== null) keys.add(key);
+  for (const item of Object.values(value)) namedRefs(item, keys);
+  return keys;
 }
 
 export function convertJSONSchemasToRustTypes({
@@ -870,26 +1146,56 @@ export function convertJSONSchemasToRustTypes({
     handlerMod.names.add(`${name}_`);
   }
 
-  // named types are shared by every slot of the handler, so they are emitted once, named before any is emitted
-  const defNames = new Map<string, string>();
-  const defSchemas = new Map<string, Schema>();
-  for (const [, schema] of slots) {
-    for (const [key, defSchema] of Object.entries(getNamedSchemas(schema))) {
-      if (defNames.has(key) || !defSchema || typeof defSchema !== 'object') continue;
-      defNames.set(key, allocateName(handlerMod, key));
-      defSchemas.set(key, defSchema);
+  // the first slot to define a named schema owns its type, a later slot shares it while that type reads its schema;
+  // every type is named before any is emitted
+  const owned: NamedDef[] = [];
+  const slotDefs = slots.map(([, schema], slot) => {
+    const defs = new Map<string, { def: NamedDef; own: Schema }>();
+    for (const [key, own] of Object.entries(getNamedSchemas(schema))) {
+      if (!own || typeof own !== 'object') continue;
+      let def = owned.find((candidate) => candidate.key === key && defReads(candidate.schema, own));
+      if (!def) {
+        def = { key, name: allocateName(handlerMod, key), schema: own, slot };
+        owned.push(def);
+      }
+      defs.set(key, { def, own });
     }
+    return defs;
+  });
+  // a name the slot doesn't define is the first type of that name
+  const defOf = (slot: number, key: string) => slotDefs[slot].get(key)?.def ?? owned.find((def) => def.key === key);
+  // a shared type refers to the types of its owner's slot: a def whose references resolve elsewhere gets its own type
+  for (let changed = true; changed; ) {
+    changed = false;
+    slotDefs.forEach((defs, slot) => {
+      for (const [key, { def, own }] of defs) {
+        if (def.slot === slot || [...namedRefs(own)].every((ref) => defOf(slot, ref) === defOf(def.slot, ref)))
+          continue;
+        const split = { key, name: allocateName(handlerMod, key), schema: own, slot };
+        owned.push(split);
+        defs.set(key, { def: split, own });
+        changed = true;
+      }
+    });
   }
 
-  const emitted = new Set<string>();
-  for (const [slotName, schema] of slots) {
-    const ctx: Context = { root: schema, defNames, defSchemas, pad, enclosing: null, refs: [] };
+  const keys = [...new Set(owned.map((def) => def.key))];
+  const emitted = new Set<NamedDef>();
+  for (const [slot, [slotName, schema]] of slots.entries()) {
+    const defs = keys.map((key) => [key, defOf(slot, key) as NamedDef] as const);
+    const ctx: Context = {
+      root: schema,
+      defNames: new Map(defs.map(([key, def]) => [key, def.name])),
+      defSchemas: new Map(defs.map(([key, def]) => [key, def.schema])),
+      pad,
+      enclosing: null,
+      refs: [],
+    };
 
-    for (const [key, defSchema] of Object.entries(getNamedSchemas(schema))) {
-      const defName = defNames.get(key);
-      if (!defName || emitted.has(key) || defSchemas.get(key) !== defSchema) continue;
-      emitted.add(key);
-      emitNamed(defSchema, defName, handlerMod, { ...ctx, enclosing: key });
+    for (const [key, { def }] of slotDefs[slot]) {
+      if (def.slot !== slot || emitted.has(def)) continue;
+      emitted.add(def);
+      emitNamed(def.schema, def.name, handlerMod, { ...ctx, enclosing: key });
     }
 
     const bodyKind = slotName === 'body' ? getBodyKind(schema) : null;

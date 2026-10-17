@@ -2,6 +2,8 @@
 imports: ['vovk-rust']
 ---
 <%- t.getFirstLineBanner() %>
+// schema descriptions are text: rustdoc would compile their code blocks as doctests
+#![cfg(not(doctest))]
 <% const vars = {
     convertJSONSchemasToRustTypes: t.imports['vovk-rust'].convertJSONSchemasToRustTypes,
     getBodyKind: t.imports['vovk-rust'].getBodyKind,
