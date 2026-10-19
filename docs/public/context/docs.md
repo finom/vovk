@@ -4,15 +4,13 @@ description: "Full documentation for the Vovk.ts framework, excluding the Realti
 see_also:
   label: "Realtime Kanban Context"
   url: https://vovk.dev/context/realtime-ui.md
-chars: 407709
-est_tokens: 101928
+chars: 407580
+est_tokens: 101895
 ---
 
-Page: https://vovk.dev
+Page: https://vovk.dev/about
 
-Vovk.ts Back-end Framework for Next.js App Router
-
-Back-end Framework for Next.js App Router. One codebase → type-safe clients, OpenAPI, and AI tools.
+# About Vovk.ts
 
 Vovk.ts adds an API layer on top of Next.js App Router Route Handlers. Its unit is the **procedure**: a typed function with its schema. From one procedure, Vovk.ts derives the HTTP endpoint, the local `.fn()` call, the typed RPC client, the OpenAPI document and the AI tool with `execute`. You don't write a separate contract or glue code.
 

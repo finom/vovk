@@ -167,7 +167,7 @@ export function convertVideo(content: string): string {
 // --- Remove JSX components entirely (tags + content) ---
 
 const REMOVED_COMPONENTS =
-  'NoSSR|Asciinema|CodeOrbit|DocIndexCards|PollExample|ColdStartChart|JSONLinesExample|ProgressiveExample|AppAlike';
+  'NoSSR|Asciinema|CodeOrbit|Landing|DocIndexCards|PollExample|ColdStartChart|JSONLinesExample|ProgressiveExample|AppAlike';
 
 export function removeJsxComponents(content: string): string {
   // Self-closing: <Component ... />

@@ -10,10 +10,10 @@ const DynamicItem = ({ rootCommand, command, comment }: { rootCommand: string; c
     <pre className="x:group x:focus-visible:nextra-focus x:overflow-x-auto x:subpixel-antialiased x:text-[.9em] x:bg-white x:dark:bg-black x:py-4 x:ring-1 x:ring-inset x:ring-gray-300 x:dark:ring-neutral-700 x:contrast-more:ring-gray-900 x:contrast-more:dark:ring-gray-50 x:contrast-more:contrast-150 x:rounded-md not-prose ">
       <code className="nextra-code" dir="ltr">
         <span>
-          <span style={{ '--shiki-light': '#6F42C1', '--shiki-dark': '#B392F0' } as object}>{rootCommand}</span>
-          <span style={{ '--shiki-light': '#032F62', '--shiki-dark': '#9ECBFF' } as object}> {command}</span>
+          <span style={{ '--shiki-light': '#B62000', '--shiki-dark': '#E5795E' } as object}>{rootCommand}</span>
+          <span style={{ '--shiki-light': '#6E5310', '--shiki-dark': '#BFA26A' } as object}> {command}</span>
           {comment && (
-            <span style={{ '--shiki-light': '#6A737D', '--shiki-dark': '#6A737D' } as object}> # {comment}</span>
+            <span style={{ '--shiki-light': '#6F6A62', '--shiki-dark': '#8A857C' } as object}> # {comment}</span>
           )}
         </span>
       </code>
