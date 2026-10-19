@@ -136,8 +136,15 @@ jobs:
           python-version: ${{ matrix.python-version }}
           cache: pip
           cache-dependency-path: packages/vovk-python/requirements-ci.txt
-      # every package pinned by hash, for each Python from 3.9; the file's header has the command that regenerates it
-      - run: pip install --require-hashes -r ./packages/vovk-python/requirements-ci.txt
+      # every package pinned by hash; the file's header has the command that regenerates it
+      - if: matrix.python-version != '3.9'
+        run: pip install --require-hashes -r ./packages/vovk-python/requirements-ci.txt
+      # requests and urllib3 releases with security fixes need Python 3.10, so 3.9 gets its own lock at run time
+      - if: matrix.python-version == '3.9'
+        run: |
+          pip install --require-hashes -r ./packages/vovk-python/requirements-uv.txt
+          uv pip compile ./packages/vovk-python/requirements.txt --generate-hashes --python-version 3.9 -o "$RUNNER_TEMP/requirements-py39.txt"
+          pip install --require-hashes -r "$RUNNER_TEMP/requirements-py39.txt"
       - if: matrix.python-version != '3.9'
         uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2.9.2
         with:

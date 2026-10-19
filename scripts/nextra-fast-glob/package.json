@@ -1,0 +1,11 @@
+{
+  "name": "fast-glob",
+  "version": "3.3.3",
+  "private": true,
+  "description": "The two fast-glob calls nextra makes, on tinyglobby: fast-glob's braces dependency has an advisory with no fix",
+  "type": "module",
+  "exports": "./index.js",
+  "dependencies": {
+    "tinyglobby": "^0.2.17"
+  }
+}
