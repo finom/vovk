@@ -29,7 +29,7 @@
     "tailwindcss": "^4",
     "typescript": "^7",
     "vovk-cli": "^0.3.1",
-    "vovk-python": "^0.0.4",
+    "vovk-python": "^0.0.5",
     "vovk-rust": "^0.0.5"
   }
 }
