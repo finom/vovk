@@ -327,7 +327,7 @@ class _RawTargetHTTPSConnectionPool(HTTPSConnectionPool):
 class _ApiClientAdapter(HTTPAdapter):
     # requests' adapter, with pools that send a target the client gives as it is
     def init_poolmanager(self, *args: Any, **kwargs: Any) -> None:
-        super().init_poolmanager(*args, **kwargs)
+        super().init_poolmanager(*args, **kwargs)  # type: ignore[no-untyped-call, unused-ignore]
         self.poolmanager.pool_classes_by_scheme = {  # type: ignore[attr-defined, unused-ignore]
             'http': _RawTargetHTTPConnectionPool,
             'https': _RawTargetHTTPSConnectionPool,
