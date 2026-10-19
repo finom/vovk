@@ -2492,6 +2492,40 @@
               }
             }
           }
+        },
+        "formats": {
+          "path": "formats",
+          "httpMethod": "POST",
+          "validation": {
+            "body": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "object",
+              "properties": {
+                "duration": {
+                  "type": "string",
+                  "format": "duration",
+                  "pattern": "^P(?:(\\d+W)|(?!.*W)(?=\\d|T\\d)(\\d+Y)?(\\d+M)?(\\d+D)?(T(?=\\d)(\\d+H)?(\\d+M)?(\\d+([.,]\\d+)?S)?)?)$"
+                },
+                "hostname": {
+                  "type": "string",
+                  "format": "hostname",
+                  "pattern": "^(?=.{1,253}\\.?$)[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\\.[a-zA-Z0-9](?:[-0-9a-zA-Z]{0,61}[0-9a-zA-Z])?)*\\.?$"
+                },
+                "uri": {
+                  "type": "string",
+                  "format": "uri"
+                },
+                "bareDuration": {
+                  "type": "string",
+                  "format": "duration"
+                },
+                "bareHostname": {
+                  "type": "string",
+                  "format": "hostname"
+                }
+              }
+            }
+          }
         }
       }
     }

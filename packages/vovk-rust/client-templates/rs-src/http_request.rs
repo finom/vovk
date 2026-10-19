@@ -142,9 +142,72 @@ fn compile_schema(schema: &Value) -> Result<Validator, String> {
     jsonschema::options()
         .with_draft(if is_draft7 { Draft::Draft7 } else { Draft::Draft202012 })
         .should_validate_formats(true)
+        // as zod checks them, so the client takes what the server takes
+        .with_format("uri", is_url)
+        .with_format("duration", is_duration)
+        .with_format("hostname", is_hostname)
         .offline()
         .build(&with_rust_patterns(schema))
         .map_err(|e| e.to_string())
+}
+
+// what new URL() parses, as z.url() checks it
+fn is_url(value: &str) -> bool {
+    reqwest::Url::parse(value.trim()).is_ok()
+}
+
+// ISO 8601 as z.iso.duration() reads it: P, then weeks alone, or years, months, days and a time part of hours, minutes
+// and seconds, each in that order, with a fraction only on the seconds
+fn is_duration(value: &str) -> bool {
+    let Some(rest) = value.strip_prefix('P') else { return false };
+    if let Some(weeks) = rest.strip_suffix('W') {
+        return is_digits(weeks);
+    }
+    let (date, time) = match rest.split_once('T') {
+        Some((date, time)) => (date, Some(time)),
+        None => (rest, None),
+    };
+    let time_ok = time.is_none_or(|time| time.starts_with(|c: char| c.is_ascii_digit()) && has_units(time, "HMS"));
+    (!date.is_empty() || time.is_some()) && has_units(date, "YMD") && time_ok
+}
+
+fn is_digits(value: &str) -> bool {
+    !value.is_empty() && value.bytes().all(|b| b.is_ascii_digit())
+}
+
+// numbers each followed by one of the designators, in their order and at most once; a fraction only before S
+fn has_units(mut value: &str, designators: &str) -> bool {
+    let mut allowed = designators;
+    while !value.is_empty() {
+        let Some(end) = value.find(|c: char| !c.is_ascii_digit() && c != '.' && c != ',') else { return false };
+        let (number, rest) = value.split_at(end);
+        let Some(designator) = rest.chars().next() else { return false };
+        let Some(position) = allowed.find(designator) else { return false };
+        let fraction = number.split_once(['.', ',']);
+        let number_ok = match fraction {
+            Some((whole, part)) => designator == 'S' && is_digits(whole) && is_digits(part),
+            None => is_digits(number),
+        };
+        if !number_ok {
+            return false;
+        }
+        allowed = &allowed[position + 1..];
+        value = &rest[1..];
+    }
+    true
+}
+
+// as z.hostname() reads it: up to 253 characters and an optional trailing dot, labels of 1 to 63 letters, digits and
+// hyphens that neither start nor end with a hyphen
+fn is_hostname(value: &str) -> bool {
+    let name = value.strip_suffix('.').unwrap_or(value);
+    (1..=253).contains(&name.len())
+        && name.split('.').all(|label| {
+            (1..=63).contains(&label.len())
+                && label.bytes().all(|b| b.is_ascii_alphanumeric() || b == b'-')
+                && !label.starts_with('-')
+                && !label.ends_with('-')
+        })
 }
 
 // a schema pattern is a JavaScript one: \< and \> are the characters, not word boundaries, and a [ inside a class is

@@ -284,6 +284,38 @@ pub mod test_client_validation {
         let _ = shapes_rpc::object_as_json_or_text(body, (), (), None, None, false);
     }
 
+    // duration, hostname and uri are checked as zod checks them, with or without the pattern zod adds
+    #[tokio::test]
+    async fn test_formats_as_zod_reads_them() {
+        use shapes_rpc::formats_::body as Body;
+
+        let empty = || Body { duration: None, hostname: None, uri: None, bareDuration: None, bareHostname: None };
+        let durations = |value: &str| {
+            [Body { duration: Some(value.to_string()), ..empty() }, Body { bareDuration: Some(value.to_string()), ..empty() }]
+        };
+        let hostnames = |value: &str| {
+            [Body { hostname: Some(value.to_string()), ..empty() }, Body { bareHostname: Some(value.to_string()), ..empty() }]
+        };
+        let uri = |value: &str| [Body { uri: Some(value.to_string()), ..empty() }];
+        let taken = [
+            durations("PT0.5S"),
+            durations("PT1,5S"),
+            durations("P1W"),
+            durations("P1Y2M3DT4H5M6S"),
+            hostnames("example.com."),
+            hostnames("a"),
+            hostnames("xn--e1afmkfd.xn--p1ai"),
+        ];
+        for body in taken.into_iter().flatten().chain(uri("https://example.com/a b")) {
+            assert!(!is_refused(shapes_rpc::formats(body.clone(), (), (), None, None, false)).await, "{:?}", body);
+        }
+        let refused = [durations("P"), durations("PT"), durations("P1WT1H"), durations("P1YT"), durations("PT1S2M")];
+        let refused = refused.into_iter().chain([hostnames("-a.com"), hostnames("a..b"), hostnames(&"a".repeat(64))]);
+        for body in refused.flatten().chain(uri("not-a-url")) {
+            assert!(is_refused(shapes_rpc::formats(body.clone(), (), (), None, None, false)).await, "{:?}", body);
+        }
+    }
+
     #[tokio::test]
     async fn test_schemas_are_read_as_2020_12() {
         let tuple = shapes_rpc::tuple_::body { t: ("a".to_string(), 1.5) };
