@@ -94,6 +94,6 @@
     "typescript": "^7.0.2",
     "vovk-cli": "^0.3.1",
     "vovk-python": "^0.0.5",
-    "vovk-rust": "^0.0.5"
+    "vovk-rust": "^0.0.6"
   }
 }
