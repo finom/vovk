@@ -8880,7 +8880,7 @@ The package files listed below take their metadata (`repository`, `homepage`, `b
     "next": "^16.3.8",
     "react": "^19.3.0",
     "react-dom": "^19.3.0",
-    "vovk": "^4.0.0",
+    "vovk": "^4.1.0",
     "vovk-ajv": "^0.2.0",
     "zod": "^4.6.5"
   },
@@ -8896,7 +8896,7 @@ The package files listed below take their metadata (`repository`, `homepage`, `b
     "tsdown": "^0.23.0",
     "tsx": "^4.23.15",
     "typescript": "^7",
-    "vovk-cli": "^0.3.0",
+    "vovk-cli": "^0.3.1",
     "vovk-hello-world-published": "npm:vovk-hello-world@^0.0.88",
     "vovk-python": "^0.0.4",
     "vovk-rust": "^0.0.5"

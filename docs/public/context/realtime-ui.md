@@ -4,8 +4,8 @@ description: "Walkthrough of the Realtime Kanban example app — a live-updating
 see_also:
   label: "Vovk.ts Docs Context"
   url: https://vovk.dev/context/docs.md
-chars: 109154
-est_tokens: 27289
+chars: 109045
+est_tokens: 27262
 ---
 
 Page: https://vovk.dev/realtime-ui
@@ -1769,11 +1769,10 @@ The flow is a simpler version of the one in the official [Next.js authentication
 The DAL file exports `verifySession`. [page.tsx](https://github.com/finom/vovk/blob/main/examples/realtime-kanban/src/app/page.tsx) calls it, and it redirects the user to the login page when the session is invalid.
 
 ```ts showLineNumbers copy filename="src/lib/dal.ts" source="examples/realtime-kanban"
-import crypto from 'node:crypto';
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { cache } from 'react';
-import { decrypt } from './session';
+import { decrypt, SESSION_USER_ID } from './session';
 
 const getSession = async () => {
   const cookie = (await cookies()).get('session')?.value;
@@ -1785,11 +1784,7 @@ const getSession = async () => {
 export const isLoggedIn = async () => {
   if (!process.env.PASSWORD) return true;
   const session = await getSession();
-  const userId = crypto
-    .createHash('md5')
-    .update(process.env.PASSWORD)
-    .digest('hex');
-  return session?.userId === userId;
+  return session?.userId === SESSION_USER_ID;
 };
 
 export const verifySession = cache(async () => {
