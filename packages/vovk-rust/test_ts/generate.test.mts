@@ -216,6 +216,31 @@ describe('the generated crate', () => {
     assert.deepStrictEqual(keywords, ['api', 'client', 'rpc', 'openapi', 'types']);
   });
 
+  test("package.json's legacy object forms give a Cargo.toml that cargo reads", () => {
+    const read = generate(
+      listUsers,
+      {},
+      {
+        name: 'app',
+        version: '1.0.0',
+        // the legacy npm form of a license
+        license: { type: 'MIT', url: 'https://opensource.org/licenses/MIT' },
+        author: { email: 'ann@example.com' },
+        contributors: [{ email: 'bob@example.com' }, { name: 'Cat', email: 'cat@example.com' }, 'Dan'],
+        bugs: { email: 'bugs@example.com' },
+      }
+    );
+    const cargoToml = read('Cargo.toml');
+    const packageTable = cargoPackageTable(cargoToml);
+
+    // a [package.license] table fails cargo metadata
+    assert.match(packageTable, /^license = "MIT"$/m, cargoToml);
+    assert.doesNotMatch(cargoToml, /^\[package\.license\]/m, cargoToml);
+    assert.match(packageTable, /^authors = \[ "Cat <cat@example\.com>", "Dan" \]$/m, cargoToml);
+    assert.doesNotMatch(cargoToml, /undefined|metadata/, cargoToml);
+    assert.match(read('README.md'), /^License: \*\*MIT\*\*$/m);
+  });
+
   test("a repository in npm's other forms is an https URL in Cargo.toml, or is left out", () => {
     const repositories = {
       'github:acme/app': 'https://github.com/acme/app',

@@ -30,8 +30,10 @@ if (t.package.description) {
   data.package.description = t.package.description;
 }
 
-if (t.package.license) {
-  data.package.license = t.package.license;
+// npm's legacy form is an object: { type, url }
+const license = typeof t.package.license === 'string' ? t.package.license : t.package.license?.type;
+if (typeof license === 'string' && license) {
+  data.package.license = license;
 }
 
 // crates.io takes only an http(s) URL; npm writes git+https:// or git+ssh:// and allows shorthands such as github:owner/repo
@@ -53,28 +55,16 @@ if (/^https?:\/\//.test(t.package.homepage)) {
   data.package.homepage = t.package.homepage;
 }
 
-const authors = [];
-if (t.package.author) {
-  if (typeof t.package.author === 'string') {
-    authors.push(t.package.author);
-  } else {
-    let author = t.package.author.name;
-    if (t.package.author.email) author += ` <${t.package.author.email}>`;
-    authors.push(author);
-  }
-}
-
-if (t.package.contributors && t.package.contributors.length) {
-  t.package.contributors.forEach(contributor => {
-    if (typeof contributor === 'string') {
-      authors.push(contributor);
-    } else {
-      let contribStr = contributor.name;
-      if (contributor.email) contribStr += ` <${contributor.email}>`;
-      authors.push(contribStr);
-    }
-  });
-}
+// a person is "Name <email>" or { name, email }; one without a name is left out
+const toAuthor = (person) => {
+  if (typeof person === 'string') return person;
+  if (typeof person?.name !== 'string' || !person.name) return null;
+  return person.email ? `${person.name} <${person.email}>` : person.name;
+};
+const authors = [t.package.author, ...(Array.isArray(t.package.contributors) ? t.package.contributors : [])]
+  .filter(Boolean)
+  .map(toAuthor)
+  .filter(Boolean);
 
 if (authors.length) {
   data.package.authors = authors;
@@ -88,16 +78,9 @@ if (keywords.length) {
   data.package.keywords = keywords;
 }
 
-if (t.package.bugs) {
-  if (!data.package.metadata) {
-    data.package.metadata = {};
-  }
-  
-  data.package.metadata.package = {
-    bugs: typeof t.package.bugs === 'string' 
-      ? t.package.bugs 
-      : t.package.bugs.url
-  };
+const bugs = typeof t.package.bugs === 'string' ? t.package.bugs : t.package.bugs?.url;
+if (typeof bugs === 'string' && bugs) {
+  data.package.metadata = { package: { bugs } };
 }
 %>
 <%- t.TOML.stringify(data) %>
