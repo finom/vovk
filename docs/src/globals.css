@@ -120,110 +120,116 @@ html {
   --x-font-sans: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
   --x-font-mono: var(--font-mono), ui-monospace, SFMono-Regular, Menlo, Monaco, monospace;
 
-  /* White, ink and one vermilion. The logo's vermilion is for marks and large text; small text on white takes
-     the darker --primary, which keeps 4.5:1. */
-  --vovk-logo-accent: #dd4115;
+  /* Paper, ink and one vermilion. --vk-accent is for marks and large text; small text takes --vk-accent-text,
+     which keeps 4.5:1 on paper. */
+  --vk-bg: #f2f0eb;
+  --vk-ink: #111111;
+  --vk-muted: #5f5d58;
+  --vk-line: #d8d4cc;
+  --vk-panel: #faf9f6;
+  --vk-sunk: #e9e6df;
+  --vk-accent: oklch(0.6 0.2 35);
+  --vk-accent-text: oklch(0.5 0.19 35);
+  --vk-cmd-accent: oklch(0.7 0.18 35);
+  --vk-hl: oklch(0.6 0.2 35 / 0.1);
+  --vk-hl2: oklch(0.6 0.2 35 / 0.18);
+  --vk-glow: oklch(0.6 0.2 35 / 0.16);
+  /* The prism's edge and its beam: soft gray on paper, the ink color on near-black. */
+  --vk-prism-edge: #8a857c;
+  --vk-prism-glass: #ffffff;
+  --vk-prism-stroke: 2.5px;
+
+  --vovk-logo-accent: var(--vk-accent);
   /* A quiet tint behind the active sidebar item. */
-  --x-color-primary-100: #fcebe6;
+  --x-color-primary-100: #f4dfd6;
 
-  /* Nextra's gray scales, as neutral grays. */
-  --x-color-gray-50: #fafafa;
-  --x-color-gray-100: #f4f4f5;
-  --x-color-gray-200: #e4e4e7;
-  --x-color-gray-300: #d4d4d8;
-  --x-color-gray-400: #a1a1aa;
-  --x-color-gray-500: #71717a;
-  --x-color-gray-600: #5c5c60;
-  --x-color-gray-700: #3f3f46;
-  --x-color-gray-800: #27272a;
-  --x-color-gray-900: #18181b;
-  --x-color-neutral-50: #fafafa;
-  --x-color-neutral-100: #f4f4f5;
-  --x-color-neutral-200: #e4e4e7;
-  --x-color-neutral-300: #d4d4d8;
-  --x-color-neutral-400: #a1a1aa;
-  --x-color-neutral-500: #71717a;
-  --x-color-neutral-600: #5c5c60;
-  --x-color-neutral-700: #3f3f46;
-  --x-color-neutral-800: #27272a;
-  --x-color-neutral-900: #18181b;
-  --x-color-slate-50: #fafafa;
-  --x-color-slate-100: #f4f4f5;
-  --x-color-slate-200: #e4e4e7;
-  --x-color-slate-700: #3f3f46;
-  --x-color-slate-900: #18181b;
+  /* Nextra's gray scales, as the warm grays of the paper. */
+  --x-color-gray-50: #faf9f6;
+  --x-color-gray-100: #ebe8e1;
+  --x-color-gray-200: #d8d4cc;
+  --x-color-gray-300: #c4bfb5;
+  --x-color-gray-400: #a29d93;
+  --x-color-gray-500: #7a766e;
+  --x-color-gray-600: #5f5d58;
+  --x-color-gray-700: #45433f;
+  --x-color-gray-800: #2e2d2a;
+  --x-color-gray-900: #1b1b19;
+  --x-color-neutral-50: #faf9f6;
+  --x-color-neutral-100: #ebe8e1;
+  --x-color-neutral-200: #d8d4cc;
+  --x-color-neutral-300: #c4bfb5;
+  --x-color-neutral-400: #a29d93;
+  --x-color-neutral-500: #7a766e;
+  --x-color-neutral-600: #5f5d58;
+  --x-color-neutral-700: #45433f;
+  --x-color-neutral-800: #2e2d2a;
+  --x-color-neutral-900: #1b1b19;
+  --x-color-slate-50: #faf9f6;
+  --x-color-slate-100: #ebe8e1;
+  --x-color-slate-200: #d8d4cc;
+  --x-color-slate-700: #45433f;
+  --x-color-slate-900: #1b1b19;
 
-  --radius: 0.5rem;
-  --background: #ffffff;
-  --foreground: #111111;
-  --card: #fafafa;
-  --card-foreground: #111111;
-  --popover: #ffffff;
-  --popover-foreground: #111111;
-  --primary: #c2320a;
+  --radius: 0.375rem;
+  --background: var(--vk-bg);
+  --foreground: var(--vk-ink);
+  --card: var(--vk-panel);
+  --card-foreground: var(--vk-ink);
+  --popover: var(--vk-panel);
+  --popover-foreground: var(--vk-ink);
+  --primary: var(--vk-accent-text);
   --primary-foreground: #ffffff;
-  --secondary: #f4f4f5;
-  --secondary-foreground: #111111;
-  --muted: #f4f4f5;
-  --muted-foreground: #5c5c60;
-  --accent: #f4f4f5;
-  --accent-foreground: #111111;
+  --secondary: var(--vk-sunk);
+  --secondary-foreground: var(--vk-ink);
+  --muted: var(--vk-sunk);
+  --muted-foreground: var(--vk-muted);
+  --accent: var(--vk-sunk);
+  --accent-foreground: var(--vk-ink);
   --destructive: oklch(0.577 0.245 27.325);
-  --border: #e4e4e7;
-  --input: #e4e4e7;
-  --ring: #dd4115;
+  --border: var(--vk-line);
+  --input: var(--vk-line);
+  --ring: var(--vk-accent);
   --chart-1: oklch(0.646 0.222 41.116);
   --chart-2: oklch(0.6 0.118 184.704);
   --chart-3: oklch(0.398 0.07 227.392);
   --chart-4: oklch(0.828 0.189 84.429);
   --chart-5: oklch(0.769 0.188 70.08);
-  --sidebar: #ffffff;
-  --sidebar-foreground: #111111;
-  --sidebar-primary: #c2320a;
+  --sidebar: var(--vk-bg);
+  --sidebar-foreground: var(--vk-ink);
+  --sidebar-primary: var(--vk-accent-text);
   --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: #f4f4f5;
-  --sidebar-accent-foreground: #111111;
-  --sidebar-border: #e4e4e7;
-  --sidebar-ring: #dd4115;
+  --sidebar-accent: var(--vk-sunk);
+  --sidebar-accent-foreground: var(--vk-ink);
+  --sidebar-border: var(--vk-line);
+  --sidebar-ring: var(--vk-accent);
 }
 
-/*
-  ---break---
-*/
-
 .dark {
-  --vovk-logo-accent: #f6623d;
-  --background: #111111;
-  --foreground: #ffffff;
-  --card: #18181b;
-  --card-foreground: #ffffff;
-  --popover: #18181b;
-  --popover-foreground: #ffffff;
-  --primary: #f6623d;
+  --vk-bg: #141412;
+  --vk-ink: #f2f0eb;
+  --vk-muted: #a29d93;
+  --vk-line: #2e2d2a;
+  --vk-panel: #1b1b19;
+  --vk-sunk: #0e0e0d;
+  --vk-accent: oklch(0.68 0.19 35);
+  --vk-accent-text: oklch(0.74 0.16 35);
+  --vk-cmd-accent: oklch(0.55 0.2 35);
+  --vk-hl: oklch(0.68 0.19 35 / 0.12);
+  --vk-hl2: oklch(0.68 0.19 35 / 0.24);
+  --vk-glow: oklch(0.68 0.19 35 / 0.22);
+  --vk-prism-edge: #f2f0eb;
+  --vk-prism-glass: #1b1b19;
+  --vk-prism-stroke: 3.5px;
+  --x-color-primary-100: #3a201a;
+
   --primary-foreground: #111111;
-  --secondary: #1f1f22;
-  --secondary-foreground: #ffffff;
-  --muted: #1f1f22;
-  --muted-foreground: #8e8e95;
-  --accent: #27272a;
-  --accent-foreground: #ffffff;
   --destructive: oklch(0.704 0.191 22.216);
-  --border: #27272a;
-  --input: #3f3f46;
-  --ring: #f6623d;
   --chart-1: oklch(0.488 0.243 264.376);
   --chart-2: oklch(0.696 0.17 162.48);
   --chart-3: oklch(0.769 0.188 70.08);
   --chart-4: oklch(0.627 0.265 303.9);
   --chart-5: oklch(0.645 0.246 16.439);
-  --sidebar: #111111;
-  --sidebar-foreground: #ffffff;
-  --sidebar-primary: #f6623d;
   --sidebar-primary-foreground: #111111;
-  --sidebar-accent: #27272a;
-  --sidebar-accent-foreground: #ffffff;
-  --sidebar-border: #27272a;
-  --sidebar-ring: #f6623d;
 }
 
 /*
@@ -290,9 +296,32 @@ article h1 {
   letter-spacing: -0.03em;
 }
 
-/* Code blocks sit on the card color, not on white or black. */
+/* Code blocks sit on the panel color, with the paper's line around them. */
 .nextra-code pre {
-  background-color: var(--card);
+  background-color: var(--vk-panel);
+}
+
+/* The navbar and the search field, as on the home page. */
+.nextra-navbar-blur {
+  background-color: var(--vk-bg) !important;
+  backdrop-filter: none !important;
+  box-shadow: 0 1px 0 var(--vk-line) !important;
+}
+.nextra-search input {
+  height: 40px;
+  border: 1px solid var(--vk-line);
+  border-radius: 4px;
+  background-color: var(--vk-panel);
+  color: var(--vk-ink);
+}
+.nextra-search input::placeholder {
+  color: var(--vk-muted);
+}
+.nextra-search kbd {
+  border-color: var(--vk-line);
+  border-radius: 3px;
+  background-color: transparent;
+  color: var(--vk-muted);
 }
 
 /* Paragraphs in one quote read as lines of one note. Alerts ([!NOTE] and the rest) are not blockquotes. */
@@ -307,7 +336,45 @@ body {
   text-rendering: optimizeLegibility;
 }
 
-/* The footer text takes the muted token; links keep their own color. */
-footer {
-  color: var(--muted-foreground) !important;
+/* The footer sits on the paper, under one line: the wordmark and the license on the left, the links on the right. */
+div:has(> footer.vk-footer) {
+  background-color: var(--vk-bg);
+}
+div:has(> footer.vk-footer) > hr {
+  border-color: var(--vk-line);
+}
+footer.vk-footer {
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 32px;
+  padding-top: 20px;
+  padding-bottom: 28px;
+  color: var(--vk-muted);
+  font-size: 14px;
+}
+.vk-footer-brand {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 16px;
+  color: var(--vk-ink);
+}
+.vk-footer-brand > span {
+  color: var(--vk-muted);
+}
+.vk-footer-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 20px;
+}
+.vk-footer-nav a {
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  color: var(--vk-ink);
+  text-decoration: none;
+}
+.vk-footer-nav a:hover {
+  color: var(--vk-accent-text);
 }
