@@ -176,4 +176,61 @@ pub mod test_parity {
         // a module after them keeps its name
         let _ = petstore_api::list_pets;
     }
+
+    // fields go out in the order the type declares them, as the TypeScript client sends them
+    #[tokio::test]
+    async fn test_fields_keep_their_order_on_the_wire() {
+        use generated_rust_client::rust_sweep_rpc;
+        use rust_sweep_rpc::post_wire_::{body as Body, query as Query, query_::z as Z};
+
+        let body = Body { n: 1.5, flag: true, tags: vec!["a".to_string()] };
+        let query = Query { z: Z { f: "1".to_string(), d: "2".to_string() }, a: "3".to_string() };
+        let data = rust_sweep_rpc::post_wire(body, query, (), None, Some(&api_root()), false).await.unwrap();
+        assert_eq!(data["body"], r#"{"n":1.5,"flag":true,"tags":["a"]}"#);
+        assert_eq!(data["search"], "?z%5Bf%5D=1&z%5Bd%5D=2&a=3");
+        // a JSON response keeps its order too
+        assert_eq!(data.as_object().unwrap().keys().collect::<Vec<_>>(), ["search", "body"]);
+
+        let body = rust_sweep_rpc::post_wire_form_::body { z: "1".to_string(), a: "2".to_string() };
+        let data = rust_sweep_rpc::post_wire_form(body, (), (), None, Some(&api_root()), false).await.unwrap();
+        assert_eq!(data["body"], "z=1&a=2");
+    }
+
+    // a header value goes out as Latin-1 bytes, as fetch sends it; a character past U+00FF fails the call
+    #[tokio::test]
+    async fn test_header_values_are_latin1() {
+        let mut headers = std::collections::HashMap::new();
+        headers.insert("authorization".to_string(), "Bearer café".to_string());
+        let data = client_runtime_rpc::get_request_headers((), (), (), Some(&headers), Some(&api_root()), false)
+            .await
+            .unwrap();
+        assert_eq!(data["authorization"], "Bearer café");
+
+        headers.insert("authorization".to_string(), "Bearer 東京".to_string());
+        let error = client_runtime_rpc::get_request_headers((), (), (), Some(&headers), Some(&api_root()), false)
+            .await
+            .unwrap_err();
+        assert_eq!(error.status_code(), 0, "{}", error);
+        assert!(error.message().contains("authorization"), "{}", error);
+    }
+
+    // a param is encoded, so only "", "." and ".." as written could reach another route; "%2e" is a value like any other
+    #[tokio::test]
+    async fn test_param_that_looks_encoded() {
+        use client_sweep_rpc::get_echo_::{params as Params, query as Query};
+
+        for id in ["%2e", "%2E%2e", ".a"] {
+            let query = Query { q: "x".to_string(), page: None };
+            let params = Params { id: id.to_string() };
+            let data = client_sweep_rpc::get_echo((), query, params, None, Some(&api_root()), false).await.unwrap();
+            assert_eq!(data["id"], id);
+        }
+        for id in ["", ".", ".."] {
+            let query = Query { q: "x".to_string(), page: None };
+            let params = Params { id: id.to_string() };
+            let error =
+                client_sweep_rpc::get_echo((), query, params, None, Some(&api_root()), true).await.unwrap_err();
+            assert_eq!(error.status_code(), 0, "{}", error);
+        }
+    }
 }

@@ -468,6 +468,20 @@ pub mod test_validation {
         assert!(result.is_err());
         let err = result.err().unwrap().to_string();
         assert!(err.contains("<=5") || err.contains("Validation failed") || err.contains("Too big"));
+
+        // the client checks a text body as the string it is, before the request
+        let error = with_validation_rpc::handle_text_plain_data(
+            "toolong".to_string(),
+            with_validation_rpc::handle_text_plain_data_::query { search: "foo".to_string() },
+            (),
+            None,
+            None,
+            false,
+        )
+        .await
+        .unwrap_err();
+        assert_eq!(error.status_code(), 0, "{}", error);
+        assert!(error.message().starts_with("Body validation failed"), "{}", error);
     }
 
     // the file branch of a file-or-JSON body goes out as the binary type the procedure declares

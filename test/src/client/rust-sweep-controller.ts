@@ -45,6 +45,21 @@ export default class RustSweepController {
     query: z.object({ items: z.array(z.string().nullable()) }),
   }).handle((req) => req.vovk.query());
 
+  // the body and the query as they came over the wire
+  @post('wire')
+  static postWire = procedure({
+    body: z.object({ n: z.number(), flag: z.boolean(), tags: z.array(z.string()) }),
+    query: z.object({ z: z.object({ f: z.string(), d: z.string() }), a: z.string() }),
+    disableServerSideValidation: ['body', 'query'],
+  }).handle(async (req) => ({ search: req.nextUrl.search, body: await req.text() }));
+
+  @post('wire-form')
+  static postWireForm = procedure({
+    contentType: 'application/x-www-form-urlencoded',
+    body: z.object({ z: z.string(), a: z.string() }),
+    disableServerSideValidation: ['body'],
+  }).handle(async (req) => ({ body: await req.text() }));
+
   @get('numeric-query')
   static getNumericQuery = procedure({
     query: z.object({ limit: z.coerce.number() }),

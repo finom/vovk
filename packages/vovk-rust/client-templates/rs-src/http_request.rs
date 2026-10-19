@@ -240,17 +240,10 @@ fn number_to_string(number: &serde_json::Number) -> String {
     }
 }
 
-// "", "." and ".." (also percent-encoded) would drop or climb a path segment and so reach another route
+// "", "." and ".." would drop or climb a path segment and so reach another route; any other value is encoded, so "%2e"
+// goes out as "%252e"
 fn is_unsafe_segment(value: &str) -> bool {
-    let mut rest = value.to_ascii_lowercase();
-    for _ in 0..2 {
-        if let Some(stripped) = rest.strip_prefix('.') {
-            rest = stripped.to_string();
-        } else if let Some(stripped) = rest.strip_prefix("%2e") {
-            rest = stripped.to_string();
-        }
-    }
-    rest.is_empty()
+    matches!(value, "" | "." | "..")
 }
 
 // a form field is text: null is left out, an array repeats its key and an object is sent as JSON; a property with an
@@ -438,6 +431,8 @@ where
         RequestBody::Json(b) | RequestBody::UrlEncoded(b) => {
             Some(serde_json::to_value(b).map_err(|e| format!("Failed to serialize body: {}", e))?)
         }
+        // checked as the string it is, never sent as JSON
+        RequestBody::Text(text, _) if !disable_client_validation => Some(Value::String(text.clone())),
         _ => None,
     };
         
@@ -450,7 +445,7 @@ where
         .map_err(|e| format!("Failed to serialize params: {}", e))?;
 
     if !disable_client_validation {
-        // a multipart, text or binary body is left to the server
+        // a multipart or binary body is left to the server
         if let Some(body_schema) = validation.get("body") {
             if let Some(ref body_val) = body_value {
                 validate(endpoint, "Body", body_schema, body_val)?;
@@ -537,15 +532,21 @@ where
         headers_map.insert("Content-Type", value);
     }
 
-    // a value goes out without the spaces, tabs and line breaks around it, as fetch sends it; a name or value that is
-    // still invalid fails the call, which otherwise would go out without it (the value stays out of the message)
+    // a value goes out without the spaces, tabs and line breaks around it, and as Latin-1 bytes, as fetch sends it; a
+    // name or value that is still invalid, such as one with a character past U+00FF, fails the call, which otherwise
+    // would go out without it (the value stays out of the message)
     if let Some(provided_headers) = headers {
         for (key, value) in provided_headers {
             let header_name = reqwest::header::HeaderName::from_bytes(key.as_bytes())
                 .map_err(|_| format!("Invalid header name {:?}", key))?;
-            let header_value =
-                reqwest::header::HeaderValue::from_str(value.trim_matches(|c| matches!(c, ' ' | '\t' | '\r' | '\n')))
-                    .map_err(|_| format!("Invalid value of header {:?}", key))?;
+            let latin1: Option<Vec<u8>> = value
+                .trim_matches(|c| matches!(c, ' ' | '\t' | '\r' | '\n'))
+                .chars()
+                .map(|c| u8::try_from(c).ok())
+                .collect();
+            let header_value = latin1
+                .and_then(|bytes| reqwest::header::HeaderValue::from_bytes(&bytes).ok())
+                .ok_or_else(|| format!("Invalid value of header {:?}", key))?;
             headers_map.insert(header_name, header_value);
         }
     }
