@@ -152,7 +152,8 @@ async function main() {
 
   const pages = await processDirectory(APP_DIR, '', 'Docs');
   const inSeries = (page: Page) => page.url.startsWith(`${BASE_URL}/realtime-ui`);
-  const docsPages = pages.filter((page) => !inSeries(page));
+  // The home page is a landing with no text of its own, so the context files leave it out.
+  const docsPages = pages.filter((page) => !inSeries(page) && page.content.trim());
   const realtimeUiPages = pages.filter(inSeries);
   const posts = (await processDirectory(path.join(APP_DIR, 'blog'), '/blog', 'Blog')).filter(
     (page) => page.url !== `${BASE_URL}/blog`

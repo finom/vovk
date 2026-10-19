@@ -65,14 +65,28 @@ const navbar = (
     </a>
   </Navbar>
 );
+const FOOTER_LINKS = [
+  ['Docs', '/quick-install'],
+  ['Agent skills', '/skills'],
+  ['Technical overview', '/about'],
+  ['GitHub', 'https://github.com/finom/vovk'],
+] as const;
+
 const footer = (
-  <Footer>
-    <div>
-      MIT © 2023-{new Date().getFullYear()}{' '}
-      <Link href="https://github.com/finom" className="ml-1">
-        Andrey Gubanov
-      </Link>
+  <Footer className="vk-footer">
+    <div className="vk-footer-brand">
+      <VovkLogo width={104} />
+      <span>
+        MIT © 2023-{new Date().getFullYear()} <Link href="https://github.com/finom">Andrey Gubanov</Link>
+      </span>
     </div>
+    <nav aria-label="Footer" className="vk-footer-nav">
+      {FOOTER_LINKS.map(([label, href]) => (
+        <Link key={href} href={href}>
+          {label}
+        </Link>
+      ))}
+    </nav>
   </Footer>
 );
 
@@ -88,13 +102,13 @@ export default async function RootLayout({ children }: { children: React.ReactNo
       className={`${fontSans.variable} ${fontMono.variable} ${fontMarks.variable}`}
     >
       <Head
-        // Vermilion links on white and on #111111. The light one is darker than the logo's so that small text keeps 4.5:1.
+        // Vermilion links on paper and on near-black, as --vk-accent-text in globals.css.
         color={{
-          hue: { light: 13, dark: 12 },
-          saturation: { light: 90, dark: 91 },
-          lightness: { light: 40, dark: 60 },
+          hue: { light: 11, dark: 12 },
+          saturation: { light: 100, dark: 100 },
+          lightness: { light: 36, dark: 69 },
         }}
-        backgroundColor={{ light: '#FFFFFF', dark: '#111111' }}
+        backgroundColor={{ light: '#F2F0EB', dark: '#141412' }}
       />
       <body>
         <Layout

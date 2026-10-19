@@ -14,7 +14,20 @@ const meta: MetaRecord = {
     type: 'page',
   },
   '#introduction': separator('Getting Started'),
-  index: 'About Vovk.ts',
+  // The landing page: no sidebar, no table of contents, not listed in the sidebar.
+  index: {
+    display: 'hidden',
+    theme: {
+      layout: 'full',
+      sidebar: false,
+      toc: false,
+      breadcrumb: false,
+      pagination: false,
+      timestamp: false,
+      copyPage: false,
+    },
+  },
+  about: 'About Vovk.ts',
   'quick-install': 'Quick Start',
   'manual-install': 'Manual Install',
   skills: 'Agent Skills',
