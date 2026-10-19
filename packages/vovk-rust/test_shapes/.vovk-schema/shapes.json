@@ -2526,6 +2526,132 @@
               }
             }
           }
+        },
+        "unionClosedObjects": {
+          "path": "union-closed-objects",
+          "httpMethod": "GET",
+          "validation": {
+            "output": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "anyOf": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "id"
+                  ],
+                  "additionalProperties": false
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string"
+                    },
+                    "extra": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "extra"
+                  ],
+                  "additionalProperties": false
+                }
+              ]
+            }
+          }
+        },
+        "unionClosedOptional": {
+          "path": "union-closed-optional",
+          "httpMethod": "GET",
+          "validation": {
+            "output": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "anyOf": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "a": {
+                      "type": "string"
+                    }
+                  },
+                  "additionalProperties": false
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "b": {
+                      "type": "number"
+                    }
+                  },
+                  "additionalProperties": false
+                }
+              ]
+            }
+          }
+        },
+        "unionClosedRefs": {
+          "path": "union-closed-refs",
+          "httpMethod": "GET",
+          "validation": {
+            "output": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "object",
+              "properties": {
+                "item": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/$defs/Base"
+                    },
+                    {
+                      "$ref": "#/$defs/Extended"
+                    }
+                  ]
+                },
+                "base": {
+                  "$ref": "#/$defs/Base"
+                }
+              },
+              "required": [
+                "item"
+              ],
+              "$defs": {
+                "Base": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "id"
+                  ],
+                  "additionalProperties": false
+                },
+                "Extended": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string"
+                    },
+                    "extra": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "extra"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          }
         }
       }
     }

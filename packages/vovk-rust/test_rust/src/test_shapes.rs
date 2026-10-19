@@ -247,6 +247,35 @@ pub mod test_shapes {
         );
     }
 
+    // a closed object takes no other field: the value goes to the variant whose fields it has, and nothing is lost
+    #[test]
+    fn test_union_of_closed_objects() {
+        use shapes_rpc::{union_closed_objects_, union_closed_optional_, union_closed_refs_};
+
+        let value = json!({"id": "x", "extra": "e"});
+        let output: union_closed_objects_::output = round_trip_value(value.clone());
+        assert!(matches!(output, union_closed_objects_::output::Variant1(_)), "{:?}", output);
+        let output: union_closed_objects_::output = round_trip_value(json!({"id": "x"}));
+        assert!(matches!(output, union_closed_objects_::output::Variant0(_)), "{:?}", output);
+
+        let output: union_closed_optional_::output = round_trip_value(json!({"b": 1.5}));
+        assert!(matches!(output, union_closed_optional_::output::Variant1(_)), "{:?}", output);
+        let output: union_closed_optional_::output = round_trip_value(json!({}));
+        assert!(matches!(output, union_closed_optional_::output::Variant0(_)), "{:?}", output);
+
+        let output: union_closed_refs_::output = round_trip_value(json!({"item": value, "base": {"id": "y"}}));
+        assert!(matches!(output.item, union_closed_refs_::output_::item::Variant1(_)), "{:?}", output);
+        // a named type reads a field it doesn't know where no union decides by it, as a server adds one later
+        let output: union_closed_refs_::output =
+            serde_json::from_value(json!({"item": {"id": "x"}, "base": {"id": "y", "later": 1}})).unwrap();
+        assert_eq!(output.base.unwrap().id, "y");
+        // a value that no variant takes whole goes to the first that reads it, as before
+        let output: union_closed_objects_::output =
+            serde_json::from_value(json!({"id": "x", "extra": "e", "later": 1})).unwrap();
+        assert!(matches!(output, union_closed_objects_::output::Variant0(_)), "{:?}", output);
+        assert!(serde_json::from_value::<union_closed_objects_::output>(json!({"other": 1})).is_err());
+    }
+
     #[test]
     fn test_names_that_rust_reserves_or_that_collide() {
         assert_round_trip::<shapes_rpc::prop_and_underscore_prop_::body>(json!({"a": {"inner": {"z": "1"}}, "a_": {"y": "2"}}));
