@@ -6,7 +6,8 @@
     "packages/*",
     "docs",
     "examples/*",
-    "perf"
+    "perf",
+    "scripts/nextra-fast-glob"
   ],
   "type": "module",
   "packageManager": "npm@11.17.0",
