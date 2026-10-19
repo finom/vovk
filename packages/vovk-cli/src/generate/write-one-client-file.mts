@@ -27,6 +27,12 @@ import { GENERATED_BANNER_PREFIX, hasGeneratedBanner } from '../utils/generated-
 import { getJSONImportAttributes } from '../utils/get-ts-import-options.mjs';
 import type { Segment } from '../utils/locate-segments.mjs';
 import { prettify, warnIfPrettierMissing } from '../utils/prettify.mjs';
+import {
+  isPyprojectName,
+  PYTHON_STDLIB_MODULES,
+  toCargoPackageName,
+  toPythonPackageName,
+} from '../utils/python-package-name.mjs';
 import { toImportPath, toPosixPath } from '../utils/to-import-path.mjs';
 import type { ClientTemplateFile } from './get-client-template-files.mjs';
 import { getTemplateClientImports } from './get-template-client-imports.mjs';
@@ -60,9 +66,16 @@ export function getOutputConfigs(
 
 // a template is warned about once per process, as vovk dev generates again and again
 const templatesWithoutOrigin = new Set<string>();
+const stdlibPackageNames = new Set<string>();
+const nonPyprojectNames = new Set<string>();
 
-const getUnderscoredPackageName = (packageJson: VovkPackageJson, packageNameKey?: 'py_name' | 'rs_name') =>
-  (packageNameKey && packageJson[packageNameKey]) || toUnderscoredPackageName(packageJson.name);
+// Python imports the package by its folder name, so a py_name it can't import is made valid, and so is an rs_name
+// Cargo refuses
+const getUnderscoredPackageName = (packageJson: VovkPackageJson, packageNameKey?: 'py_name' | 'rs_name') => {
+  if (packageNameKey === 'py_name' && packageJson.py_name) return toPythonPackageName(packageJson.py_name);
+  if (packageNameKey === 'rs_name' && packageJson.rs_name) return toCargoPackageName(packageJson.rs_name);
+  return toUnderscoredPackageName(packageJson.name);
+};
 
 export function normalizeOutTemplatePath(
   out: string,
@@ -89,9 +102,30 @@ export function withSegmentPackageName<T extends VovkPackageJson>(
   return result;
 }
 
+const PLACEHOLDER_LINES = [
+  "This is a temporary placeholder to avoid compilation errors if client is imported before it's generated.",
+  'If you still see this text, the client is not generated yet because of an unknown problem.',
+  'Feel free to report an issue at https://github.com/finom/vovk/issues',
+];
+const HASH_COMMENT_EXTENSIONS = ['.py', '.pyi', '.toml', '.cfg', '.yaml', '.yml', '.sh'];
+// biome-ignore format: a word list
+const SLASH_COMMENT_EXTENSIONS = [
+  '.ts', '.mts', '.cts', '.tsx', '.js', '.mjs', '.cjs', '.jsx', '.rs', '.go', '.java', '.kt', '.swift', '.dart', '.cs',
+];
+
+// the placeholder is a comment in the file's own syntax; a file without one, such as JSON or py.typed, gets none
+function getPlaceholder(outPath: string) {
+  const ext = path.extname(outPath);
+  if (ext === '.md' || ext === '.html') return `<!--\n${PLACEHOLDER_LINES.join('\n')}\n-->`;
+  const prefix = HASH_COMMENT_EXTENSIONS.includes(ext) ? '#' : SLASH_COMMENT_EXTENSIONS.includes(ext) ? '//' : null;
+  return prefix ? PLACEHOLDER_LINES.map((line) => `${prefix} ${line}`).join('\n') : '';
+}
+
 export interface ClientFile {
   templateName: string;
   outPath: string;
+  // the output directory of the client the file belongs to
+  clientDir: string;
   content: string;
   // null when there is no file yet
   existingContent: string | null;
@@ -171,15 +205,11 @@ export async function renderOneClientFile({
     cwd,
     normalizeOutTemplatePath(path.join(outCwdRelativeDir, segmentDir, relativeDir), packageJson, packageNameKey)
   );
+  const clientDir = path.resolve(
+    cwd,
+    normalizeOutTemplatePath(path.join(outCwdRelativeDir, segmentDir), packageJson, packageNameKey)
+  );
   const outPath = path.join(outDir, path.basename(templateFilePath).replace('.ejs', ''));
-
-  let placeholder = templateFilePath.endsWith('.json.ejs')
-    ? ''
-    : `// This is a temporary placeholder to avoid compilation errors if client is imported before it's generated.
-// If you still see this text, the client is not generated yet because of an unknown problem.
-// Feel free to report an issue at https://github.com/finom/vovk/issues`;
-
-  placeholder = outPath.endsWith('.py') ? placeholder.replace(/\/\//g, '#') : placeholder;
 
   const getFirstLineBanner = (type: 'html' | 'sh' | 'c' = 'c') => {
     // no timestamp: regenerating unchanged sources must not change committed files
@@ -310,6 +340,30 @@ export async function renderOneClientFile({
     }
   }
 
+  // renaming the package would break the clients generated before, so the user picks another name
+  if (
+    packageNameKey === 'py_name' &&
+    PYTHON_STDLIB_MODULES.has(t.underscoredPackageName) &&
+    !stdlibPackageNames.has(t.underscoredPackageName)
+  ) {
+    stdlibPackageNames.add(t.underscoredPackageName);
+    log.warn(
+      `The Python package name "${t.underscoredPackageName}" is a module of the Python standard library, so "import ${t.underscoredPackageName}" loads that module, not the client. Set outputConfig.package.py_name to another name.`
+    );
+  }
+
+  // as above, the folder keeps its name and the user picks another
+  if (
+    path.basename(templateFilePath) === 'pyproject.toml.ejs' &&
+    !isPyprojectName(t.underscoredPackageName) &&
+    !nonPyprojectNames.has(t.underscoredPackageName)
+  ) {
+    nonPyprojectNames.add(t.underscoredPackageName);
+    log.warn(
+      `The Python package name "${t.underscoredPackageName}" can't be the name of a pyproject, which takes ASCII letters, digits and _ that start and end with a letter or a digit, so the package doesn't build. Set outputConfig.package.py_name to another name.`
+    );
+  }
+
   if (Array.isArray(data.imports)) {
     for (const imp of data.imports) {
       t.imports[imp] = await importTemplateModule(imp, cwd);
@@ -332,7 +386,8 @@ export async function renderOneClientFile({
     rendered = await prettify(rendered, outPath);
   }
 
-  if (isEnsuringClient) {
+  const placeholder = isEnsuringClient ? getPlaceholder(outPath) : '';
+  if (placeholder) {
     rendered = `${rendered}\n\n${placeholder}`;
   }
 
@@ -344,6 +399,7 @@ export async function renderOneClientFile({
   return {
     templateName: clientTemplateFile.templateName,
     outPath,
+    clientDir,
     content: rendered,
     existingContent,
     needsWriting,
@@ -351,22 +407,32 @@ export async function renderOneClientFile({
 }
 
 // the files that would replace one vovk-cli can't tell it generated: it stamps every file that can hold a comment,
-// and JSON counts as generated beside a file that carried the stamp before this run
+// and JSON counts as generated beside a file that carried the stamp before this run, or in a client that had one, so
+// a stamped file deleted by hand is written again
 export function findForeignClientFiles(clientFiles: ClientFile[]): string[] {
   const dirsWithStampedFiles = new Set<string>();
   const dirsStampedBefore = new Set<string>();
-  for (const { outPath, content, existingContent } of clientFiles) {
+  const clientsStampedBefore = new Set<string>();
+  for (const { outPath, clientDir, content, existingContent } of clientFiles) {
     if (hasGeneratedBanner(content)) dirsWithStampedFiles.add(path.dirname(outPath));
-    if (existingContent && hasGeneratedBanner(existingContent)) dirsStampedBefore.add(path.dirname(outPath));
+    if (existingContent && hasGeneratedBanner(existingContent)) {
+      dirsStampedBefore.add(path.dirname(outPath));
+      clientsStampedBefore.add(clientDir);
+    }
   }
 
   return clientFiles
-    .filter(({ outPath, content, existingContent, needsWriting }) => {
+    .filter(({ outPath, clientDir, content, existingContent, needsWriting }) => {
       if (!needsWriting || !existingContent?.trim() || hasGeneratedBanner(existingContent)) return false;
       if (hasGeneratedBanner(content)) return true;
       // a file copied as is, or from a custom template without the stamp, leaves nothing to check
       const dir = path.dirname(outPath);
-      return path.extname(outPath) === '.json' && dirsWithStampedFiles.has(dir) && !dirsStampedBefore.has(dir);
+      return (
+        path.extname(outPath) === '.json' &&
+        dirsWithStampedFiles.has(dir) &&
+        !dirsStampedBefore.has(dir) &&
+        !clientsStampedBefore.has(clientDir)
+      );
     })
     .map(({ outPath }) => outPath);
 }

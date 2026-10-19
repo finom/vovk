@@ -1,5 +1,6 @@
 import type { OpenAPIObject, OperationObject, PathsObject, SchemaObject } from 'openapi3-ts/oas31';
 import { resolveGeneratorConfigValues } from '../core/resolve-generator-config-values.js';
+import { getPythonClassNames, getRustModuleNames } from '../samples/client-names.js';
 import { createCodeSamples } from '../samples/create-code-samples.js';
 import { schemaToObject } from '../samples/schema-to-object.js';
 import type {
@@ -212,9 +213,14 @@ export function vovkSchemaToOpenAPI({
     ...openAPIObject?.components?.schemas,
   } as { [key: string]: VovkJSONSchemaBase };
   const components: { [key: string]: VovkJSONSchemaBase } = { ...declaredSchemas };
-  for (const [segmentName, segmentSchema] of givenSegmentName
+  const segmentEntries = givenSegmentName
     ? ([[givenSegmentName, fullSchema.segments[givenSegmentName]]] as const)
-    : Object.entries(fullSchema.segments ?? {})) {
+    : Object.entries(fullSchema.segments ?? {});
+  // the Python and Rust samples name each module as the package and the crate built from these segments do
+  const controllerSchemas = segmentEntries.flatMap(([, segmentSchema]) => Object.values(segmentSchema.controllers));
+  const rustModuleNames = getRustModuleNames(controllerSchemas.map(({ rpcModuleName }) => rpcModuleName));
+  const pythonClassNames = getPythonClassNames(controllerSchemas.map(({ rpcModuleName }) => rpcModuleName));
+  for (const [segmentName, segmentSchema] of segmentEntries) {
     // the generated client calls a segment under these names, see the multitenancy docs
     const segmentConfig = config?.outputConfig?.segments?.[segmentName];
     const segmentRootEntry = segmentConfig?.rootEntry ?? rootEntry;
@@ -236,6 +242,8 @@ export function vovkSchemaToOpenAPI({
             handlerSchema: h,
             controllerSchema: c,
             config: samplesConfig,
+            rustModuleName: rustModuleNames[controllerSchemas.indexOf(c)],
+            pythonClassName: pythonClassNames[controllerSchemas.indexOf(c)],
           });
           const queryObject = resolveComponentRef(queryValidation, components) as VovkJSONSchemaBase | undefined;
           const queryParameters = isJSONObject(queryObject?.properties)

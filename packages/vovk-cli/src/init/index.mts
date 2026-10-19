@@ -189,8 +189,9 @@ export class Init {
 
     try {
       if (!dryRun) {
-        const gitignoreEntry = await updateGitignore(root);
-        if (gitignoreEntry) log.info(`Added ${chalkHighlightThing(gitignoreEntry)} to .gitignore`);
+        for (const entry of await updateGitignore(root, lang)) {
+          log.info(`Added ${chalkHighlightThing(entry)} to .gitignore`);
+        }
       }
     } catch (error) {
       log.error(`Failed to update .gitignore: ${(error as Error).message}`);
@@ -395,7 +396,7 @@ export class Init {
         });
 
     lang ??= await checkbox({
-      message: 'Do you want to generate RPC client for other languages besides TypeScript (experimental)?',
+      message: 'Do you want to generate RPC client for other languages besides TypeScript?',
       choices: [
         { name: 'Python', value: 'py' },
         { name: 'Rust', value: 'rs' },

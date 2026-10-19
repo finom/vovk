@@ -24,8 +24,6 @@
 
 The templates that generate a typed [Rust client](https://vovk.dev/rust) from a Vovk.ts schema: a crate with a module per controller, an `async fn` per procedure, structs for every body, query, params and output, client-side validation and a README. The crate uses [reqwest](https://docs.rs/reqwest) and needs Rust 1.85+.
 
-> The Rust client is experimental.
-
 ## Install
 
 In the Vovk.ts app, next to [vovk-cli](https://www.npmjs.com/package/vovk-cli):
@@ -59,7 +57,7 @@ const config = {
 export default config;
 ```
 
-The crate name comes from `package.json` (`@acme/web-app` becomes `acme_web_app`); `outputConfig.package.rs_name` sets another one. The `rsSrc` template writes plain source files to add to another Rust project instead.
+The crate name comes from `package.json` (`@acme/web-app` becomes `acme_web_app`); `outputConfig.package.rs_name` sets another one. The `rsSrc` template writes plain source files to add to another Rust project instead: their root is `lib.rs`, so point a module at it (`#[path = "api/lib.rs"] mod api;`) and add the dependencies the [Rust client](https://vovk.dev/rust) page lists.
 
 ## Use
 
@@ -93,8 +91,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 ## Publish
 
 ```sh
-cargo publish --manifest-path rust_package/Cargo.toml
+cargo publish --manifest-path rust_package/Cargo.toml --allow-dirty
 ```
+
+`--allow-dirty` publishes files that git doesn't track. crates.io needs a `description` and a `license`, which the crate takes from `package.json` or `outputConfig.package`.
 
 ## Docs
 

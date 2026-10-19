@@ -6,11 +6,16 @@ edition = "2021"
 [dependencies]
 generated_rust_client = { path = "../generated_rust_client" }
 generated_shapes_client = { path = "../generated_shapes_client" }
-# procedures without a body: built, as every crate here, with warnings denied
-generated_readonly_client = { path = "../generated_readonly_client" }
+# procedures without a body and a crate name that isn't snake_case: built, as every crate here, with warnings denied
+GeneratedReadonlyClient = { path = "../generated_readonly_client" }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 reqwest = { version = "0.12", features = [ "json", "multipart", "stream" ] }
-tokio = { version = "1", features = ["macros", "rt-multi-thread", "io-util", "net"] }
+tokio = { version = "1", features = ["macros", "rt-multi-thread", "io-util", "net", "time", "sync"] }
 futures-util = "0.3"
+# the library and tests/embedded.rs compile the client's source files: they take the client's dependencies
+tokio-util = { version = "0.7", features = ["codec"] }
+jsonschema = { version = "0.57", default-features = false }
+urlencoding = "2.1"
+once_cell = "1.17"
 

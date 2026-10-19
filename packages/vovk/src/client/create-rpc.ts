@@ -18,8 +18,9 @@ export type { CombinedSpec, VovkHandlerSchema, VovkRequest, VovkRPCModule, VovkV
 
 const trimPath = (path: string) => path.trim().replace(/^\/|\/$/g, '');
 
-// "", "." and ".." (also percent-encoded) would drop or climb a path segment and so reach another route
-const isUnsafeSegment = (value: string) => /^(?:\.|%2e){0,2}$/i.test(value);
+// "", "." and ".." would drop or climb a path segment and so reach another route; the value is encoded, so a literal
+// "%2e" is sent as "%252e" and stays one segment
+const isUnsafeSegment = (value: string) => value === '' || value === '.' || value === '..';
 
 const getHandlerPath = <T extends ControllerStaticMethod>(endpoint: string, params?: VovkControllerParams<T>) => {
   let result = endpoint;

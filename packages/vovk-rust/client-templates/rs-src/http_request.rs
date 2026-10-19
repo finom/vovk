@@ -7,13 +7,14 @@ use std::error::Error;
 use std::fmt;
 use std::pin::Pin;
 use std::sync::{Arc, Mutex};
+use std::task::{ready, Context, Poll};
 use jsonschema::{Draft, Validator};
 use serde_json::Value;
-use urlencoding;
-use crate::read_full_schema;
+// relative paths, so the files also build as a module of another crate
+use super::read_full_schema;
 use once_cell::sync::Lazy;
 use futures_util::{Stream, StreamExt, TryStreamExt};
-use tokio_util::codec::{FramedRead, LinesCodec};
+use tokio_util::codec::{FramedRead, LinesCodec, LinesCodecError};
 use tokio_util::io::StreamReader;
 
 #[derive(Debug, Serialize)]
@@ -99,8 +100,10 @@ static FULL_SCHEMA: Lazy<Result<Value, String>> = Lazy::new(|| {
 // segment, controller, handler and slot
 type ValidatorKey = (&'static str, &'static str, &'static str, &'static str);
 
-// each schema is compiled on its first use
-static VALIDATORS: Lazy<Mutex<HashMap<ValidatorKey, Arc<Validator>>>> = Lazy::new(|| Mutex::new(HashMap::new()));
+// each schema is compiled on its first use; None for one the jsonschema crate can't compile, which the server checks,
+// as vovk-ajv leaves a schema Ajv can't compile to the server
+static VALIDATORS: Lazy<Mutex<HashMap<ValidatorKey, Option<Arc<Validator>>>>> =
+    Lazy::new(|| Mutex::new(HashMap::new()));
 
 type ClientFactory = Arc<dyn Fn() -> Client + Send + Sync>;
 
@@ -108,6 +111,7 @@ static CLIENT_FACTORY: Lazy<Mutex<(u64, Option<ClientFactory>)>> = Lazy::new(|| 
 
 /// Sets how the calls build their `reqwest::Client`, for example with a timeout, a proxy or default headers:
 /// `set_client_factory(|| reqwest::Client::builder().timeout(Duration::from_secs(30)).build().unwrap())`.
+/// The client is the crate's reqwest, which it re-exports as `reqwest`.
 /// It is called again for each thread and tokio runtime the calls run on, and for the calls made after it is set.
 pub fn set_client_factory(factory: impl Fn() -> Client + Send + Sync + 'static) {
     let mut slot = CLIENT_FACTORY.lock().unwrap_or_else(|e| e.into_inner());
@@ -134,13 +138,135 @@ fn compile_schema(schema: &Value) -> Result<Validator, String> {
     let is_draft7 = schema
         .get("$schema")
         .and_then(Value::as_str)
-        .map_or(false, |uri| uri.contains("://json-schema.org/draft-07/schema"));
+        .is_some_and(|uri| uri.contains("://json-schema.org/draft-07/schema"));
     jsonschema::options()
         .with_draft(if is_draft7 { Draft::Draft7 } else { Draft::Draft202012 })
         .should_validate_formats(true)
+        // as zod checks them, so the client takes what the server takes
+        .with_format("uri", is_url)
+        .with_format("duration", is_duration)
+        .with_format("hostname", is_hostname)
         .offline()
-        .build(schema)
+        .build(&with_rust_patterns(schema))
         .map_err(|e| e.to_string())
+}
+
+// what new URL() parses, as z.url() checks it
+fn is_url(value: &str) -> bool {
+    reqwest::Url::parse(value.trim()).is_ok()
+}
+
+// ISO 8601 as z.iso.duration() reads it: P, then weeks alone, or years, months, days and a time part of hours, minutes
+// and seconds, each in that order, with a fraction only on the seconds
+fn is_duration(value: &str) -> bool {
+    let Some(rest) = value.strip_prefix('P') else { return false };
+    if let Some(weeks) = rest.strip_suffix('W') {
+        return is_digits(weeks);
+    }
+    let (date, time) = match rest.split_once('T') {
+        Some((date, time)) => (date, Some(time)),
+        None => (rest, None),
+    };
+    let time_ok = time.is_none_or(|time| time.starts_with(|c: char| c.is_ascii_digit()) && has_units(time, "HMS"));
+    (!date.is_empty() || time.is_some()) && has_units(date, "YMD") && time_ok
+}
+
+fn is_digits(value: &str) -> bool {
+    !value.is_empty() && value.bytes().all(|b| b.is_ascii_digit())
+}
+
+// numbers each followed by one of the designators, in their order and at most once; a fraction only before S
+fn has_units(mut value: &str, designators: &str) -> bool {
+    let mut allowed = designators;
+    while !value.is_empty() {
+        let Some(end) = value.find(|c: char| !c.is_ascii_digit() && c != '.' && c != ',') else { return false };
+        let (number, rest) = value.split_at(end);
+        let Some(designator) = rest.chars().next() else { return false };
+        let Some(position) = allowed.find(designator) else { return false };
+        let fraction = number.split_once(['.', ',']);
+        let number_ok = match fraction {
+            Some((whole, part)) => designator == 'S' && is_digits(whole) && is_digits(part),
+            None => is_digits(number),
+        };
+        if !number_ok {
+            return false;
+        }
+        allowed = &allowed[position + 1..];
+        value = &rest[1..];
+    }
+    true
+}
+
+// as z.hostname() reads it: up to 253 characters and an optional trailing dot, labels of 1 to 63 letters, digits and
+// hyphens that neither start nor end with a hyphen
+fn is_hostname(value: &str) -> bool {
+    let name = value.strip_suffix('.').unwrap_or(value);
+    (1..=253).contains(&name.len())
+        && name.split('.').all(|label| {
+            (1..=63).contains(&label.len())
+                && label.bytes().all(|b| b.is_ascii_alphanumeric() || b == b'-')
+                && !label.starts_with('-')
+                && !label.ends_with('-')
+        })
+}
+
+// a schema pattern is a JavaScript one: \< and \> are the characters, not word boundaries, and a [ inside a class is
+// the character, not a nested class
+fn to_rust_pattern(pattern: &str) -> String {
+    let mut rust = String::with_capacity(pattern.len());
+    let mut chars = pattern.chars();
+    let mut in_class = false;
+    while let Some(c) = chars.next() {
+        match c {
+            '\\' => match chars.next() {
+                Some(escaped @ ('<' | '>')) => rust.push(escaped),
+                Some(escaped) => {
+                    rust.push('\\');
+                    rust.push(escaped);
+                }
+                None => rust.push('\\'),
+            },
+            '[' if in_class => rust.push_str("\\["),
+            '[' => {
+                in_class = true;
+                rust.push(c);
+            }
+            ']' => {
+                in_class = false;
+                rust.push(c);
+            }
+            _ => rust.push(c),
+        }
+    }
+    rust
+}
+
+// the schema with its patterns in Rust's dialect; a const, an enum, a default or examples are data, left as they are
+fn with_rust_patterns(schema: &Value) -> Value {
+    // a map of names, or of patterns, each to a schema
+    let schemas = |map: &serde_json::Map<String, Value>, key: fn(&str) -> String| {
+        Value::Object(map.iter().map(|(name, schema)| (key(name), with_rust_patterns(schema))).collect())
+    };
+    match schema {
+        Value::Object(map) => Value::Object(
+            map.iter()
+                .map(|(key, value)| {
+                    let value = match (key.as_str(), value) {
+                        ("pattern", Value::String(pattern)) => Value::String(to_rust_pattern(pattern)),
+                        ("patternProperties", Value::Object(map)) => schemas(map, to_rust_pattern),
+                        ("properties" | "$defs" | "definitions" | "dependentSchemas", Value::Object(map)) => {
+                            schemas(map, str::to_string)
+                        }
+                        ("const" | "enum" | "default" | "examples", _) => value.clone(),
+                        _ => with_rust_patterns(value),
+                    };
+                    (key.clone(), value)
+                })
+                .collect(),
+        ),
+        Value::Array(items) => Value::Array(items.iter().map(with_rust_patterns).collect()),
+        _ => schema.clone(),
+    }
 }
 
 fn validate(endpoint: &Endpoint, label: &'static str, schema: &Value, value: &Value) -> Result<(), String> {
@@ -149,13 +275,13 @@ fn validate(endpoint: &Endpoint, label: &'static str, schema: &Value, value: &Va
     let validator = match cached {
         Some(validator) => validator,
         None => {
-            let validator = Arc::new(
-                compile_schema(schema).map_err(|e| format!("Invalid {} schema: {}", label.to_lowercase(), e))?,
-            );
+            // such as a pattern with a JavaScript construct Rust's regex can't read: [^], \k<name> or a{,3}
+            let validator = compile_schema(schema).ok().map(Arc::new);
             VALIDATORS.lock().unwrap_or_else(|e| e.into_inner()).insert(key, validator.clone());
             validator
         }
     };
+    let Some(validator) = validator else { return Ok(()) };
     let errors: Vec<String> = validator
         .iter_errors(value)
         .map(|err| format!("{}: {}", err.instance_path(), err))
@@ -177,17 +303,10 @@ fn number_to_string(number: &serde_json::Number) -> String {
     }
 }
 
-// "", "." and ".." (also percent-encoded) would drop or climb a path segment and so reach another route
+// "", "." and ".." would drop or climb a path segment and so reach another route; any other value is encoded, so "%2e"
+// goes out as "%252e"
 fn is_unsafe_segment(value: &str) -> bool {
-    let mut rest = value.to_ascii_lowercase();
-    for _ in 0..2 {
-        if let Some(stripped) = rest.strip_prefix('.') {
-            rest = stripped.to_string();
-        } else if let Some(stripped) = rest.strip_prefix("%2e") {
-            rest = stripped.to_string();
-        }
-    }
-    rest.is_empty()
+    matches!(value, "" | "." | "..")
 }
 
 // a form field is text: null is left out, an array repeats its key and an object is sent as JSON; a property with an
@@ -365,24 +484,31 @@ where
         .join("/");
     let root = api_root.unwrap_or(endpoint.api_root).trim_end_matches('/');
     let mut url = if path.is_empty() { root.to_string() } else { format!("{}/{}", root, path) };
+    // a mixin path keeps the trailing slash its OpenAPI document declares, as the TypeScript client sends it: /items/
+    // and /items are different paths
+    if handler_path.ends_with('/') {
+        url.push('/');
+    }
 
     let body_value = match &body {
         RequestBody::Json(b) | RequestBody::UrlEncoded(b) => {
             Some(serde_json::to_value(b).map_err(|e| format!("Failed to serialize body: {}", e))?)
         }
+        // checked as the string it is, never sent as JSON
+        RequestBody::Text(text, _) if !disable_client_validation => Some(Value::String(text.clone())),
         _ => None,
     };
         
-    let query_value = query.map(|q| serde_json::to_value(q))
+    let query_value = query.map(serde_json::to_value)
         .transpose()
         .map_err(|e| format!("Failed to serialize query: {}", e))?;
         
-    let params_value = params.map(|p| serde_json::to_value(p))
+    let params_value = params.map(serde_json::to_value)
         .transpose()
         .map_err(|e| format!("Failed to serialize params: {}", e))?;
 
     if !disable_client_validation {
-        // a multipart, text or binary body is left to the server
+        // a multipart or binary body is left to the server
         if let Some(body_schema) = validation.get("body") {
             if let Some(ref body_val) = body_value {
                 validate(endpoint, "Body", body_schema, body_val)?;
@@ -469,15 +595,21 @@ where
         headers_map.insert("Content-Type", value);
     }
 
-    // a value goes out without the spaces, tabs and line breaks around it, as fetch sends it; a name or value that is
-    // still invalid fails the call, which otherwise would go out without it (the value stays out of the message)
+    // a value goes out without the spaces, tabs and line breaks around it, and as Latin-1 bytes, as fetch sends it; a
+    // name or value that is still invalid, such as one with a character past U+00FF, fails the call, which otherwise
+    // would go out without it (the value stays out of the message)
     if let Some(provided_headers) = headers {
         for (key, value) in provided_headers {
             let header_name = reqwest::header::HeaderName::from_bytes(key.as_bytes())
                 .map_err(|_| format!("Invalid header name {:?}", key))?;
-            let header_value =
-                reqwest::header::HeaderValue::from_str(value.trim_matches(|c| matches!(c, ' ' | '\t' | '\r' | '\n')))
-                    .map_err(|_| format!("Invalid value of header {:?}", key))?;
+            let latin1: Option<Vec<u8>> = value
+                .trim_matches(|c| matches!(c, ' ' | '\t' | '\r' | '\n'))
+                .chars()
+                .map(|c| u8::try_from(c).ok())
+                .collect();
+            let header_value = latin1
+                .and_then(|bytes| reqwest::header::HeaderValue::from_bytes(&bytes).ok())
+                .ok_or_else(|| format!("Invalid value of header {:?}", key))?;
             headers_map.insert(header_name, header_value);
         }
     }
@@ -605,9 +737,9 @@ fn base64(bytes: &[u8]) -> String {
     const ALPHABET: &[u8; 64] = b"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
     let mut out = String::with_capacity(bytes.len().div_ceil(3) * 4);
     for chunk in bytes.chunks(3) {
-        let n = (chunk[0] as u32) << 16 | (*chunk.get(1).unwrap_or(&0) as u32) << 8 | *chunk.get(2).unwrap_or(&0) as u32;
+        let n = ((chunk[0] as u32) << 16) | ((*chunk.get(1).unwrap_or(&0) as u32) << 8) | *chunk.get(2).unwrap_or(&0) as u32;
         for i in 0..4 {
-            out.push(if i <= chunk.len() { ALPHABET[(n >> (18 - 6 * i) & 63) as usize] as char } else { '=' });
+            out.push(if i <= chunk.len() { ALPHABET[((n >> (18 - 6 * i)) & 63) as usize] as char } else { '=' });
         }
     }
     out
@@ -726,7 +858,7 @@ where
 
     let byte_stream = response
         .bytes_stream()
-        .map_err(|e| std::io::Error::new(std::io::ErrorKind::Other, e.without_url()));
+        .map_err(|e| std::io::Error::other(e.without_url()));
 
     let reader = StreamReader::new(byte_stream);
     let lines = FramedRead::new(reader, LinesCodec::new());
@@ -744,7 +876,12 @@ where
                     Err(e) => Some(Err(HttpException::new(e.to_string(), status_code, None))),
                 }
             }
-            // a stream cut or broken on the way
+            // a stream cut or broken on the way: reqwest's error, out of the io::Error the lines are read through, as
+            // for any other call
+            Err(LinesCodecError::Io(error)) => Some(Err(match error.downcast::<reqwest::Error>() {
+                Ok(error) => HttpException::from_reqwest(error, status_code),
+                Err(error) => HttpException::with_source(LinesCodecError::Io(error), status_code),
+            })),
             Err(e) => Some(Err(HttpException::with_source(e, status_code))),
         }
     });
@@ -759,7 +896,30 @@ where
         })
     });
 
-    Ok(Box::pin(typed_stream))
+    Ok(Box::pin(UntilError { stream: Some(Box::pin(typed_stream)) }))
+}
+
+// the first error ends the stream, as in the TypeScript client: an error line, a line that isn't JSON or isn't the
+// item type, or a body that broke off
+struct UntilError<S> {
+    stream: Option<S>,
+}
+
+impl<S, T> Stream for UntilError<S>
+where
+    S: Stream<Item = Result<T, HttpException>> + Unpin,
+{
+    type Item = Result<T, HttpException>;
+
+    fn poll_next(mut self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Option<Self::Item>> {
+        let Some(stream) = self.stream.as_mut() else { return Poll::Ready(None) };
+        let item = ready!(stream.poll_next_unpin(cx));
+        if !matches!(item, Some(Ok(_))) {
+            // drops the response, which closes its connection
+            self.stream = None;
+        }
+        Poll::Ready(item)
+    }
 }
 
 // only the envelope a responder writes ends the stream, not a data item that happens to have these keys

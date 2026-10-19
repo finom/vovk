@@ -1,13 +1,11 @@
 ---
 name: rust
-description: The Vovk.ts Rust client — generating a typed Rust crate from a Vovk API with `vovk-rust`, the `rs` / `rsSrc` templates, the generated async call shape using `reqwest` + `serde`, JSON + JSON Lines (futures Stream) consumption, client-side validation, and crates.io publishing. Use whenever the user wants a typed Rust SDK, ongoing Rust integration, or crates.io publishing — phrasings like "generate a Rust crate / SDK", "ship a Rust SDK for my API", "use vovk-rust", "rsSrc template", "rust streaming with reqwest", "publish to crates.io". Experimental package — shape may shift. Does NOT cover controller / procedure authoring → hand off to `procedure` skill. Does NOT cover `vovk bundle` in general → hand off to `bundle` skill. Does NOT cover JSON Lines server-side → hand off to `jsonlines` skill. **Does NOT cover one-off HTTP calls** — Vovk endpoints are plain REST, so `reqwest` / `ureq` / `curl` against `/api/...` is the simpler answer for "I just want to hit my API from a Rust binary / CLI" use cases. Reach for this skill only when the user actually wants generated typed crate code.
+description: The Vovk.ts Rust client — generating a typed Rust crate from a Vovk API with `vovk-rust`, the `rs` / `rsSrc` templates, the generated async call shape using `reqwest` + `serde`, JSON + JSON Lines (futures Stream) consumption, client-side validation, and crates.io publishing. Use whenever the user wants a typed Rust SDK, ongoing Rust integration, or crates.io publishing — phrasings like "generate a Rust crate / SDK", "ship a Rust SDK for my API", "use vovk-rust", "rsSrc template", "rust streaming with reqwest", "publish to crates.io". Does NOT cover controller / procedure authoring → hand off to `procedure` skill. Does NOT cover `vovk bundle` in general → hand off to `bundle` skill. Does NOT cover JSON Lines server-side → hand off to `jsonlines` skill. **Does NOT cover one-off HTTP calls** — Vovk endpoints are plain REST, so `reqwest` / `ureq` / `curl` against `/api/...` is the simpler answer for "I just want to hit my API from a Rust binary / CLI" use cases. Reach for this skill only when the user actually wants generated typed crate code.
 ---
 
 # Vovk.ts Rust client
 
 `vovk-rust` generates typed Rust crate from same `.vovk-schema/` artifacts driving TS client. Async by default via `reqwest` + `tokio`; streaming via `futures`.
-
-**Experimental** — generated API may shift between Vovk versions. Pin crate version on consume.
 
 ## Install + generate
 
@@ -183,7 +181,6 @@ Generated `Cargo.toml` brings (per hello-world):
 
 ```toml
 [dependencies]
-serde_json    = "1.0.143"
 futures-util  = "0.3"
 urlencoding   = "2.1"
 once_cell     = "1.17"
@@ -191,6 +188,10 @@ once_cell     = "1.17"
 [dependencies.serde]
 version  = "1.0.164"
 features = ["derive"]
+
+[dependencies.serde_json]
+version  = "1.0.143"
+features = ["preserve_order"]
 
 [dependencies.jsonschema]
 version          = "0.57"
@@ -201,7 +202,7 @@ version  = "0.12"
 features = ["json", "multipart", "stream"]
 
 [dependencies.tokio]
-version  = "1"
+version  = "1.49"
 features = ["macros", "rt-multi-thread", "io-util"]
 
 [dependencies.tokio-util]
@@ -212,7 +213,7 @@ features = ["codec"]
 - **`reqwest 0.12`** — async HTTP, with `multipart` and `stream` features for file uploads + JSON Lines.
 - **`tokio 1`** — async runtime. Generated crate assumes multi-thread runtime available; consumers pull transitively but typically add directly with `#[tokio::main]` for binaries.
 - **`tokio-util` (`codec`)** — line-delimited framing for JSON Lines decoding.
-- **`serde` (`derive`) + `serde_json`** — (de)serialization.
+- **`serde` (`derive`) + `serde_json` (`preserve_order`)** — (de)serialization; object fields go out in the order the type declares them, as the TS client sends them.
 - **`futures-util`** — streaming combinators (`StreamExt::next` etc).
 - **`jsonschema 0.57`** — client-side validation against `schema.json`: JSON Schema 2020-12 (draft 7 when a schema declares it), formats checked. Crate needs Rust 1.85+ (`rust-version = "1.85"`, resolver 3); a consumer on edition 2021 without `resolver = "3"` gets newer deps that need Rust 1.88.
 - **`urlencoding`** + **`once_cell`** — internal utilities.
@@ -280,7 +281,8 @@ Crate name / version flow from root `package.json` (generator copies fields into
 
 1. `npx vovk generate --from rs --out ./rust_package`.
 2. Set `version` (and `name`) in the root `package.json` first; to override them for the crate only, use `clientTemplateDefs.rs.outputConfig.package`.
-3. `cargo publish --manifest-path rust_package/Cargo.toml`.
+3. `package.json` (or `outputConfig.package`) needs `description` and `license`: crates.io refuses a crate without them.
+4. `cargo publish --manifest-path rust_package/Cargo.toml --allow-dirty` (the generated crate isn't committed).
 
 ### "Consume a streaming endpoint from Rust"
 
@@ -297,17 +299,35 @@ while let Some(chunk) = stream.next().await {
 Use `rsSrc`:
 
 ```bash
-npx vovk generate --from rsSrc --out ./src/api
+npx vovk generate --from rsSrc --out ../my_app/src/api
 ```
 
-Add module to `src/lib.rs`: `pub mod api;`.
+The files' root is `lib.rs`, not `mod.rs`, so a plain `pub mod api;` fails (E0583). Point the module at it in `src/lib.rs` or `src/main.rs`:
+
+```rust
+#[path = "api/lib.rs"]
+pub mod api;
+```
+
+A private `mod api;` (in `main.rs`) also needs `#[allow(dead_code, unused_imports)]`: the procedures the app doesn't call are dead code.
+
+Then `api::user_rpc::update_user(...)`, `api::set_client_factory(...)`, `api::reqwest`. The host crate needs the dependencies the generated `Cargo.toml` lists (see "Dependencies pulled in"):
+
+```bash
+cargo add serde@1.0.164 --features derive
+cargo add serde_json@1.0.143 --features preserve_order
+cargo add reqwest@0.12 --features json,multipart,stream
+cargo add tokio@1.49 --features macros,rt-multi-thread,io-util
+cargo add tokio-util@0.7 --features codec
+cargo add jsonschema@0.57 --no-default-features
+cargo add futures-util@0.3 urlencoding@2.1 once_cell@1.17
+```
+
+Schema descriptions are doc comments whose code blocks are text, so the host crate's `cargo test` (doctests included) builds them.
 
 ## Gotchas
 
-- **Experimental.** Pin crate version; expect breaks on Vovk upgrades. Integration-test after each bump.
 - **Nested types deep.** `body_::profile_::address_::zip` patterns common. `use ... as Name;` import trick keeps call sites readable.
-- **OpenAPI mixins with circular `$refs` not fully supported yet** — if mixin has cycles, generator may fail. Roadmap.
-- **`text/plain` and `application/octet-stream` body params not fully supported** — JSON is solid path today.
 - **Named schemas in `components/schemas` don't yet produce importable shared types** — roadmap. Every call site gets own scoped types.
 - **Streaming needs `futures::StreamExt`** — forget import → `.next()` won't compile.
 - **Multipart file names** without `"`, `\`, or line breaks — reqwest escapes them with a backslash, server keeps it in the name; a `"` makes the form unreadable. Field names go out as written.

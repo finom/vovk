@@ -1,13 +1,14 @@
 import type { VovkSamplesConfig } from '../types/config.js';
 import type { VovkControllerSchema, VovkHandlerSchema } from '../types/core.js';
 import type { VovkJSONSchemaBase } from '../types/json-schema.js';
-import { toUnderscoredPackageName } from '../utils/to-underscored-package-name.js';
+import { toPythonPackageName, toUnderscoredPackageName } from '../utils/to-underscored-package-name.js';
 import { getPythonClassName, getPythonMethodName, getRustFunctionName, getRustModuleName } from './client-names.js';
 import { objectToCode } from './object-to-code.js';
 import {
   getDescription,
   getSampleValue,
   LINE_BREAK,
+  resolveRef,
   schemaToCode,
   toCodeString,
   toPythonString,
@@ -83,6 +84,104 @@ const isForm = (schema: VovkJSONSchemaBase): boolean => {
   const contentTypes = schema['x-contentType'] ?? [];
   return contentTypes.some((ct) => ct === 'multipart/form-data' || ct === 'application/x-www-form-urlencoded') ?? false;
 };
+
+// the Python and Rust samples pass a body as the generated method takes it: vovk can't import vovk-python or
+// vovk-rust, so the rules they type it by are copied here
+
+const MAX_FILE_SEARCH_DEPTH = 16;
+
+const isBinarySchema = (schema: VovkJSONSchemaBase) =>
+  schema.format === 'binary' || schema.contentEncoding === 'binary';
+
+// the file a field holds: itself, or one in a list, a tuple or a combination
+function findFile(
+  schema: VovkJSONSchemaBase | undefined,
+  root: VovkJSONSchemaBase,
+  depth = 0
+): VovkJSONSchemaBase | null {
+  if (!schema || typeof schema !== 'object' || depth > MAX_FILE_SEARCH_DEPTH) return null;
+  if (schema.$ref) return findFile(resolveRef(schema.$ref, root), root, depth + 1);
+  if (isBinarySchema(schema)) return schema;
+  const items = schema.items && typeof schema.items === 'object' ? [schema.items].flat() : [];
+  const parts = [...items, ...(schema.prefixItems ?? []), ...(schema.anyOf ?? []), ...(schema.oneOf ?? [])];
+  for (const part of [...parts, ...(schema.allOf ?? [])]) {
+    const file = findFile(part, root, depth + 1);
+    if (file) return file;
+  }
+  return null;
+}
+
+// the objects a body may be: itself and every branch of its unions and intersections
+function getBodyObjects(
+  schema: VovkJSONSchemaBase | undefined,
+  root: VovkJSONSchemaBase,
+  depth = 0
+): VovkJSONSchemaBase[] {
+  if (!schema || typeof schema !== 'object' || depth > MAX_FILE_SEARCH_DEPTH) return [];
+  if (schema.$ref) return getBodyObjects(resolveRef(schema.$ref, root), root, depth + 1);
+  const branches = [...(schema.allOf ?? []), ...(schema.anyOf ?? []), ...(schema.oneOf ?? [])];
+  return [schema, ...branches.flatMap((branch) => getBodyObjects(branch, root, depth + 1))];
+}
+
+// the fields of a body, or of a branch of it, that hold a file, each name once, with the file each holds
+function getFileFields(schema: VovkJSONSchemaBase) {
+  const fields = new Map<string, { prop: VovkJSONSchemaBase; file: VovkJSONSchemaBase }>();
+  for (const object of getBodyObjects(schema, schema)) {
+    for (const [key, prop] of Object.entries(object.properties ?? {})) {
+      const file = fields.has(key) ? null : findFile(prop, schema);
+      if (file) fields.set(key, { prop, file });
+    }
+  }
+  return [...fields];
+}
+
+type BodyKind = 'form' | 'urlencoded' | 'binary' | 'text' | 'json';
+
+// what the Python ('py') or Rust ('rs') client takes for a body
+function getBodyKind(schema: VovkJSONSchemaBase, language: 'py' | 'rs'): BodyKind {
+  const contentTypes = schema['x-contentType'] ?? [];
+  const declaresForm =
+    contentTypes.includes('multipart/form-data') || contentTypes.includes('application/x-www-form-urlencoded');
+  if (declaresForm && language === 'py') return 'form';
+  // the Rust client sends an object as a form only when JSON can't carry it: no JSON declared, or a file in it
+  const declaresJSON = contentTypes.some((ct) => ct === 'application/json' || ct.endsWith('+json'));
+  if (declaresForm && declaresJSON && !findFile(schema, schema) && !getFileFields(schema).length) return 'json';
+  if (contentTypes.includes('multipart/form-data')) return 'form';
+  if (contentTypes.includes('application/x-www-form-urlencoded')) return 'urlencoded';
+  if (isBinarySchema(schema)) return 'binary';
+  const isStructured = schema.type === 'object' || schema.type === 'array' || !!schema.properties;
+  if (!isStructured && contentTypes.some((ct) => ct.startsWith('text/'))) return 'text';
+  // a scalar body of a declared type that isn't JSON is raw bytes, e.g. application/octet-stream or image/png
+  const isJSONContentType = (ct: string) => ct === '*/*' || ct === 'application/json' || ct.endsWith('+json');
+  if (!isStructured && contentTypes.length && !contentTypes.some(isJSONContentType)) return 'binary';
+  return 'json';
+}
+
+// a JSON body that may also be a file is shown by its first branch that isn't one
+function withoutFileBranch(schema: VovkJSONSchemaBase): VovkJSONSchemaBase {
+  const branches = schema.anyOf ?? schema.oneOf;
+  const data = branches?.find((branch) => !findFile(branch, schema));
+  return data && branches?.some((branch) => findFile(branch, schema))
+    ? { $defs: schema.$defs, definitions: schema.definitions, ...data }
+    : schema;
+}
+
+const getTextSample = (schema: VovkJSONSchemaBase) => {
+  const value = getSampleValue(schema);
+  return typeof value === 'string' ? value : 'text_content';
+};
+
+// a path with {name} placeholders takes params in the Python and Rust clients, with or without a params schema
+function getPathParamsSchema(path: string): VovkJSONSchemaBase | undefined {
+  const names = [...path.matchAll(/\{([^{}]+)\}/g)].map(([, name]) => name);
+  return names.length
+    ? {
+        type: 'object',
+        properties: Object.fromEntries(names.map((name) => [name, { type: 'string' }])),
+        required: names,
+      }
+    : undefined;
+}
 
 function generateTypeScriptCode({
   handlerName,
@@ -185,7 +284,6 @@ function generatePythonCode({
   paramsValidation,
   outputValidation,
   iterationValidation,
-  hasArg,
   config,
 }: CodeGenerationParams): string {
   const getPySample = (schema: VovkJSONSchemaBase, indent?: number) =>
@@ -208,54 +306,53 @@ function generatePythonCode({
     const mediaType = getContentMediaType(schema);
     return `('name.ext', BytesIO(${isTextFormat(mediaType) ? '"text_content".encode("utf-8")' : 'binary_data'})${mediaType ? `, ${toPythonString(mediaType)}` : ''})`;
   };
-  const getPyFiles = (schema: VovkJSONSchemaBase) => {
-    return Object.entries(schema.properties ?? {}).reduce((acc, [key, prop]) => {
-      const target = prop.oneOf?.[0] || prop.anyOf?.[0] || prop.allOf?.[0] || prop;
-      const desc = getDescription(target) ?? getDescription(prop);
-
-      if (target.type === 'string' && target.format === 'binary') {
-        acc.push(
-          `${desc ? `${getIndentSpaces(8)}# ${commentText(desc, `${getIndentSpaces(8)}# `)}\n` : ''}${getIndentSpaces(8)}(${toPythonString(key, "'")}, ${getFileTouple(target)})`
-        );
-      } else if (
-        target.type === 'array' &&
-        target.items &&
-        typeof target.items !== 'boolean' &&
-        target.items.format === 'binary'
-      ) {
-        const val = `${desc ? `${getIndentSpaces(8)}# ${commentText(desc, `${getIndentSpaces(8)}# `)}\n` : ''}${getIndentSpaces(8)}(${toPythonString(key, "'")}, ${getFileTouple(target.items)})`;
-        acc.push(val, val);
-      }
-
-      return acc;
-    }, [] as string[]);
-  };
-
-  const pyFiles = bodyValidation ? getPyFiles(bodyValidation) : null;
-  const pyFilesArg = pyFiles?.length
-    ? `${getIndentSpaces(4)}files=[\n${pyFiles.join(',\n')}\n${getIndentSpaces(4)}],`
+  const fileFields = bodyValidation ? getFileFields(bodyValidation) : [];
+  // one file field that isn't a list is a TypedDict of it in the Python client, other files a list of (name, file)
+  const filesAsDict = fileFields.length === 1 && fileFields[0][1].prop.type !== 'array';
+  const pyFiles = fileFields.flatMap(([key, { prop, file }]) => {
+    const target = prop.oneOf?.[0] || prop.anyOf?.[0] || prop.allOf?.[0] || prop;
+    const desc = getDescription(target) ?? getDescription(prop);
+    const comment = desc ? `${getIndentSpaces(8)}# ${commentText(desc, `${getIndentSpaces(8)}# `)}\n` : '';
+    if (filesAsDict) return [`${comment}${getIndentSpaces(8)}${toPythonString(key, "'")}: ${getFileTouple(file)}`];
+    const pair = `${comment}${getIndentSpaces(8)}(${toPythonString(key, "'")}, ${getFileTouple(file)})`;
+    return target.type === 'array' ? [pair, pair] : [pair];
+  });
+  const pyFilesArg = pyFiles.length
+    ? `${getIndentSpaces(4)}files=${filesAsDict ? '{' : '['}\n${pyFiles.join(',\n')}\n${getIndentSpaces(4)}${filesAsDict ? '}' : ']'},`
     : null;
 
+  const getPyBody = (schema: VovkJSONSchemaBase) => {
+    const kind = getBodyKind(schema, 'py');
+    if (kind === 'binary') return 'binary_data';
+    if (kind === 'text') return toPythonString(getTextSample(schema));
+    // a form whose listed fields all hold files is sent as files alone, the method takes no body
+    const target = schema.$ref ? resolveRef(schema.$ref, schema) : schema;
+    if (
+      kind === 'form' &&
+      target.properties &&
+      Object.values(target.properties).every((prop) => findFile(prop, schema))
+    ) {
+      return null;
+    }
+    // a file ignored in the sample leaves nothing, bytes stand in for it
+    return getPySample(withoutFileBranch(schema)) || 'binary_data';
+  };
+  const pyBody = bodyValidation ? getPyBody(bodyValidation) : null;
+
+  const pyArgs = [
+    pyBody ? `    body=${pyBody},` : null,
+    pyFilesArg,
+    queryValidation ? `    query=${getPySample(queryValidation)},` : null,
+    paramsValidation ? `    params=${getPySample(paramsValidation)},` : null,
+    config?.apiRoot ? `    api_root=${toPythonString(config.apiRoot)},` : null,
+    config?.headers
+      ? `    headers=${objectToCode(config.headers, { stripQuotes: false, indent: 4, nestingIndent: 4 })},`
+      : null,
+  ].filter(Boolean);
+
   const PY_CODE = `from ${packageName} import ${rpcName}
-${bodyValidation && isForm(bodyValidation) ? 'from io import BytesIO\n' : ''}
-response = ${rpcName}.${methodName}(${
-    hasArg
-      ? '\n' +
-        [
-          bodyValidation ? `    body=${getPySample(bodyValidation)},` : null,
-          pyFilesArg,
-          queryValidation ? `    query=${getPySample(queryValidation)},` : null,
-          paramsValidation ? `    params=${getPySample(paramsValidation)},` : null,
-          config?.apiRoot ? `    api_root=${toPythonString(config.apiRoot)},` : null,
-          config?.headers
-            ? `    headers=${objectToCode(config.headers, { stripQuotes: false, indent: 4, nestingIndent: 4 })},`
-            : null,
-        ]
-          .filter(Boolean)
-          .join('\n') +
-        '\n'
-      : ''
-  })
+${pyFilesArg ? 'from io import BytesIO\n' : ''}
+response = ${rpcName}.${methodName}(${pyArgs.length ? `\n${pyArgs.join('\n')}\n` : ''})
 
 ${outputValidation ? `print(response)\n${commentOut(getPySample(outputValidation, 0))}` : ''}${
   iterationValidation
@@ -281,7 +378,7 @@ function generateRustCode({
   config,
 }: CodeGenerationParams): string {
   const getRsJSONSample = (schema: VovkJSONSchemaBase, indent?: number) =>
-    schemaToCode(schema, { stripQuotes: false, indent: indent ?? 4 });
+    schemaToCode(schema, { stripQuotes: false, indent: indent ?? 4, rust: true });
   const getRsOutputSample = (schema: VovkJSONSchemaBase, indent?: number) =>
     schemaToCode(schema, { stripQuotes: true, indent: indent ?? 4 });
 
@@ -297,29 +394,24 @@ function generateRustCode({
         formSample += getRsFormPart(target, key, desc);
       }
     }
-    return formSample;
+    return `${formSample};`;
   };
 
+  // a file is a Part with a file name, without one a server reads it as a text field; any other field is text
   const getRsFormPart = (schema: VovkJSONSchemaBase, key: string, description?: string) => {
-    let sampleValue: string;
+    let call: string;
     if (schema.type === 'string' && schema.format === 'binary') {
       const mediaType = getContentMediaType(schema);
-      sampleValue = isTextFormat(mediaType)
-        ? 'reqwest::multipart::Part::text("text_content")'
-        : 'reqwest::multipart::Part::bytes(binary_data)';
-
-      if (mediaType) {
-        sampleValue += `.mime_str(${toCodeString(mediaType)}).unwrap()`;
-      }
-    } else if (schema.type === 'object') {
-      sampleValue = '"object_unknown"';
+      call = `.part(${toCodeString(key)}, reqwest::multipart::Part::${
+        isTextFormat(mediaType) ? 'text("text_content")' : 'bytes(binary_data)'
+      }.file_name("name.ext")${mediaType ? `.mime_str(${toCodeString(mediaType)}).unwrap()` : ''})`;
     } else {
-      sampleValue = toCodeString(String(getSampleValue(schema)));
+      call = `.text(${toCodeString(key)}, ${schema.type === 'object' ? '"object_unknown"' : toCodeString(String(getSampleValue(schema)))})`;
     }
 
     const desc = getDescription(schema) ?? description;
 
-    return `\n${getIndentSpaces(4)}${desc ? `// ${commentText(desc, `${getIndentSpaces(4)}// `)}\n` : ''}${getIndentSpaces(4)}.part(${toCodeString(key)}, ${sampleValue});`;
+    return `\n${getIndentSpaces(4)}${desc ? `// ${commentText(desc, `${getIndentSpaces(4)}// `)}\n${getIndentSpaces(4)}` : ''}${call}`;
   };
 
   const getHashMapSample = (map: Record<string, unknown>, indent = 4) => {
@@ -331,22 +423,24 @@ function generateRustCode({
     return `Some(&HashMap::from([\n${entries}\n${getIndentSpaces(4)}]))`;
   };
 
-  const getBody = (schema: VovkJSONSchemaBase) => {
-    if (isForm(schema)) {
-      return 'form';
-    }
-    return serdeUnwrap(getRsJSONSample(schema));
-  };
-
   const serdeUnwrap = (fake: string) => `from_value(json!(${fake})).unwrap()`;
 
+  const bodyKind = bodyValidation && getBodyKind(bodyValidation, 'rs');
+  const getBody = (schema: VovkJSONSchemaBase) => {
+    if (bodyKind === 'form') return 'form';
+    if (bodyKind === 'binary') return 'binary_data.to_vec()';
+    if (bodyKind === 'text') return `${toCodeString(getTextSample(schema))}.to_string()`;
+    // an urlencoded body and a JSON one are the generated struct
+    return serdeUnwrap(getRsJSONSample(withoutFileBranch(schema)));
+  };
+
   const RS_CODE = `use ${packageName}::${rpcName};
-use serde_json::{ 
+${config?.headers ? 'use std::collections::HashMap;\n' : ''}use serde_json::{ 
   from_value, 
   json 
 };
-${iterationValidation ? 'use futures_util::StreamExt;\n' : ''}${bodyValidation && isForm(bodyValidation) ? `use reqwest::multipart;\n` : ''}#[tokio::main]
-async fn main() {${bodyValidation && isForm(bodyValidation) ? `\n  ${getRsFormSample(bodyValidation)}\n` : ''}
+${iterationValidation ? 'use futures_util::StreamExt;\n' : ''}#[tokio::main]
+async fn main() {${bodyValidation && bodyKind === 'form' ? `\n  ${getRsFormSample(bodyValidation)}\n` : ''}
   let response = ${rpcName}::${methodName}(
     ${bodyValidation ? getBody(bodyValidation) : '()'}, /* body */ 
     ${queryValidation ? serdeUnwrap(getRsJSONSample(queryValidation)) : '()'}, /* query */ 
@@ -400,12 +494,21 @@ export function createCodeSamples({
   controllerSchema,
   package: packageJson,
   config,
+  rustModuleName,
+  rustFunctionName,
+  pythonClassName,
 }: {
   handlerName: string;
   handlerSchema: VovkHandlerSchema;
   controllerSchema: VovkControllerSchema;
   package?: CodeSamplePackageJson;
   config: VovkSamplesConfig;
+  // the module name the crate gives the controller when another module took its own (getRustModuleNames)
+  rustModuleName?: string;
+  // the function to call when it isn't the handler's own, such as the one with _json for a JSON-or-file body
+  rustFunctionName?: string;
+  // the class name the package gives the controller when another class took its own (getPythonClassNames)
+  pythonClassName?: string;
 }) {
   const queryValidation = handlerSchema?.validation?.query as VovkJSONSchemaBase | undefined;
   const bodyValidation = handlerSchema?.validation?.body as VovkJSONSchemaBase | undefined;
@@ -414,11 +517,19 @@ export function createCodeSamples({
   const iterationValidation = handlerSchema?.validation?.iteration as VovkJSONSchemaBase | undefined;
 
   const hasArg = !!queryValidation || !!bodyValidation || !!paramsValidation || !!config?.apiRoot || !!config?.headers;
+  const pathParamsValidation =
+    paramsValidation ?? getPathParamsSchema(`${controllerSchema.prefix ?? ''}/${handlerSchema.path}`);
   const rpcName = controllerSchema.rpcModuleName;
   const packageName = packageJson?.name || '@/client';
-  // the names the generated Python and Rust packages go by
-  const pyPackageName = packageJson?.py_name ?? toUnderscoredPackageName(packageJson?.name);
-  const rsPackageName = packageJson?.rs_name ?? toUnderscoredPackageName(packageJson?.name);
+  // the names the generated Python and Rust packages are imported by; Rust imports a crate with '-' as '_'
+  const pyPackageName = packageJson?.py_name
+    ? toPythonPackageName(packageJson.py_name)
+    : toUnderscoredPackageName(packageJson?.name);
+  // an rs_name Cargo refuses (@, /, .) is named as an npm name would be, as vovk-cli names the crate
+  const rsName = packageJson?.rs_name;
+  const rsPackageName = (
+    rsName && /^[A-Za-z_][A-Za-z0-9_-]*$/.test(rsName) ? rsName : toUnderscoredPackageName(rsName || packageJson?.name)
+  ).replace(/-/g, '_');
   const handlers = controllerSchema.handlers ?? {};
 
   const commonParams: CodeGenerationParams = {
@@ -438,15 +549,17 @@ export function createCodeSamples({
   const ts = generateTypeScriptCode(commonParams);
   const py = generatePythonCode({
     ...commonParams,
+    paramsValidation: pathParamsValidation,
     packageName: pyPackageName,
-    rpcName: getPythonClassName(rpcName),
+    rpcName: pythonClassName ?? getPythonClassName(rpcName),
     methodName: getPythonMethodName(handlerName, handlers),
   });
   const rs = generateRustCode({
     ...commonParams,
+    paramsValidation: pathParamsValidation,
     packageName: rsPackageName,
-    rpcName: getRustModuleName(rpcName),
-    methodName: getRustFunctionName(handlerName, handlers),
+    rpcName: rustModuleName ?? getRustModuleName(rpcName),
+    methodName: rustFunctionName ?? getRustFunctionName(handlerName, handlers),
   });
 
   return { ts, py, rs };

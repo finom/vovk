@@ -3,7 +3,7 @@ import json
 from contextlib import contextmanager
 from email.parser import BytesParser
 from email.policy import HTTP
-from typing import Any, Callable, Dict, Iterator, List, Tuple, Union
+from typing import Any, Callable, Dict, Iterator, List, Tuple, Union, cast
 from unittest import mock
 from urllib.parse import parse_qsl
 
@@ -71,7 +71,7 @@ def form_fields(request: requests.PreparedRequest) -> List[Tuple[str, str]]:
     return [
         (
             str(part.get_param('name', header='content-disposition')),
-            f'file:{part.get_filename()}' if part.get_filename() else part.get_payload(decode=True).decode(),
+            f'file:{part.get_filename()}' if part.get_filename() else cast(bytes, part.get_payload(decode=True)).decode(),
         )
         for part in message.iter_parts()
     ]

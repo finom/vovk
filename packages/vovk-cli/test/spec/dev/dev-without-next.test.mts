@@ -6,6 +6,7 @@ import https from 'node:https';
 import type { AddressInfo } from 'node:net';
 import path from 'node:path';
 import { after, describe, it } from 'node:test';
+import TOML from '@iarna/toml';
 import {
   createProject,
   fakeNextPackage,
@@ -372,6 +373,42 @@ await describe('vovk dev in a project without Next.js', async () => {
       dev.getOutput()
     );
     assert.deepStrictEqual(JSON.parse(await fs.readFile(fallbackPath, 'utf-8')), vendorSpec('listPets'));
+  });
+
+  await it('Writes a placeholder that each file of the Python and Rust packages can hold', async () => {
+    await createProject(projectDir, {
+      'package.json': { name: 'app', version: '1.0.0', type: 'module' },
+      'vovk.config.mjs': configFile({
+        composedClient: { fromTemplates: ['py', 'rs'], prettifyClient: false },
+        outputConfig: { origin: 'https://api.example.com' },
+      }),
+      'src/app/api/[[...vovk]]/route.ts': '',
+    });
+
+    // nothing listens on the port, so the placeholder stays until the schema comes
+    const dev = startCLI(['dev'], { cwd: projectDir, env: { PORT: await getFreePort() } });
+    try {
+      await dev.waitForOutput(/Composed client placeholder is generated to .*dist_python/);
+      await dev.waitForOutput(/Composed client placeholder is generated to .*dist_rust/);
+    } finally {
+      await dev.stop();
+    }
+
+    const lastLine = 'Feel free to report an issue at https://github.com/finom/vovk/issues';
+    for (const file of ['dist_rust/Cargo.toml', 'dist_python/pyproject.toml']) {
+      const content = await readFile(file);
+      assert.doesNotThrow(() => TOML.parse(content), file);
+      assert.ok(content.includes(`# ${lastLine}`), content);
+    }
+    assert.ok((await readFile('dist_python/src/app/__init__.py')).endsWith(`# ${lastLine}`));
+    assert.ok((await readFile('dist_rust/src/lib.rs')).endsWith(`// ${lastLine}`));
+    assert.ok((await readFile('dist_python/README.md')).endsWith(`${lastLine}\n-->`));
+    for (const file of ['dist_python/setup.cfg', 'dist_python/README.md', 'dist_rust/README.md']) {
+      assert.doesNotMatch(await readFile(file), /^\/\//m, file);
+    }
+    // a marker file and JSON hold no comment
+    assert.ok(!(await readFile('dist_python/src/app/py.typed')).includes(lastLine));
+    JSON.parse(await readFile('dist_rust/src/schema.json'));
   });
 
   await it('Exits with code 1 when --exit gets no schema', async () => {

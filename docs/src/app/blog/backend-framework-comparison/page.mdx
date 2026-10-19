@@ -19,7 +19,7 @@ This is not an exhaustive feature list — it's a focused comparison of one spec
 
 - Four TypeScript frameworks deliver one declaration → REST + RPC client + LLM tool + validated local call: **Vovk.ts, Nestia, oRPC, Igniter.js**.
 - Of those four, three mount on Next.js App Router — **Vovk, oRPC, Igniter.js** — while Nestia is NestJS-only.
-- **Vovk.ts** is a thin layer over Next.js Route Handlers — it owns the procedure declaration and tooling, inheriting the Next.js ecosystem for auth, deployment, MCP transport (`mcp-handler`), and so on. Among the SSOT four, it has the deepest substrate integration (per-segment serverless functions with independent `maxDuration` / runtime, on-disk schema artifacts in `.vovk-schema/`) plus first-party Python and Rust client codegen (🧪 experimental).
+- **Vovk.ts** is a thin layer over Next.js Route Handlers — it owns the procedure declaration and tooling, inheriting the Next.js ecosystem for auth, deployment, MCP transport (`mcp-handler`), and so on. Among the SSOT four, it has the deepest substrate integration (per-segment serverless functions with independent `maxDuration` / runtime, on-disk schema artifacts in `.vovk-schema/`) plus first-party Python and Rust client codegen.
 - True validated local-call bypass — calling a procedure in-process *with* its validation — is ecosystem-rare. Most "test without HTTP" stories (Hono `app.request`, Fastify `inject`, Elysia `app.handle`) are HTTP simulation, not bypass.
 - MCP server transport: only **Igniter.js** bundles one (`@igniter-js/adapter-mcp-server`). Vovk and oRPC delegate to `mcp-handler` / `@modelcontextprotocol/sdk`.
 - **Standard Schema** (Zod / Valibot / ArkType) is the emerging consensus. class-validator / TypeBox / Effect Schema persist where the framework predates the spec.
@@ -94,7 +94,7 @@ Several secondary capabilities meaningfully differentiate the four frameworks th
 
 | Bonus axis | Vovk.ts | Nestia | oRPC | Igniter.js |
 |---|---|---|---|---|
-| Multi-language clients (Python, Rust) | ✅ first-party (🧪 experimental) | ❌ TS only | community via OpenAPI roundtrip | ❌ TS only |
+| Multi-language clients (Python, Rust) | ✅ first-party | ❌ TS only | community via OpenAPI roundtrip | ❌ TS only |
 | Schema artifacts persisted on disk | ✅ `.vovk-schema/*.json` (automatic) | ⚠️ `swagger.json` (opt-in `nestia swagger`) | ⚠️ OpenAPI export (opt-in) | ❌ pure inference |
 | Per-segment serverless function config | ✅ independent `maxDuration` / runtime | n/a (NestJS) | ❌ single handler | ❌ single handler |
 | Static segments (build-time JSON content) | ✅ | ❌ | ❌ | ❌ |
@@ -229,7 +229,7 @@ In a Next.js App Router app, validated bypass matters in three concrete places: 
 Beyond the six-axis rubric, Vovk ships a few capabilities that other Tier S frameworks don't match. All verifiable on [vovk.dev](https://vovk.dev):
 
 - **Per-segment serverless function config.** Each [segment](/segment) compiles to its own Next.js catch-all route, which becomes its own serverless function — with its own `maxDuration` and bundle. Most competitors mount as a single handler.
-- **Multi-language client codegen.** First-party [`vovk-python`](/python) and [`vovk-rust`](/rust) emit typed clients in Python and Rust from the same `.vovk-schema`. 🧪 experimental. ([Encore.ts](#encorets) also emits non-TS clients first-party — Go — via `encore gen client`; Vovk is the one on this list emitting Python and Rust.)
+- **Multi-language client codegen.** First-party [`vovk-python`](/python) and [`vovk-rust`](/rust) emit typed clients in Python and Rust from the same `.vovk-schema`. ([Encore.ts](#encorets) also emits non-TS clients first-party — Go — via `encore gen client`; Vovk is the one on this list emitting Python and Rust.)
 - **Schema artifacts on disk.** `.vovk-schema/*.json` is a build artifact, not just an inferred type. CI tools, codegen pipelines, and AI agents can read the API surface without running the dev server.
 - **[Static segments](/static-segment).** Compile-time-generated JSON for content that doesn't change at runtime (OpenAPI specs, historical data). Served as a static file.
 
@@ -246,7 +246,6 @@ Trade-offs that are *Vovk-specific* (you wouldn't hit these by writing raw Route
 - **Ecosystem size.** Smaller community than tRPC, NestJS, Hono. Fewer Stack Overflow answers, fewer third-party plugins, less battle-tested edge-case coverage. (Major-version numbers — Vovk 3.x vs tRPC 11.x — reflect different semver philosophies and aren't a meaningful comparison; weekly downloads and contributor counts are.)
 - **Decorator-based idiomatic API.** `@get('{id}')`-style decorators need `"experimentalDecorators": true` in `tsconfig.json` for a webpack build, the default of Next.js 15; Turbopack, the default of Next.js 16, compiles them either way.
 - **`deriveTools` tool-count ceiling.** Very large APIs hit per-conversation LLM tool-list limits. The roadmap includes a vector-search-gated `router` option to scale this; today you expose a subset of procedures or split agents per domain.
-- **Python/Rust clients are experimental** (🧪). Stable for typical CRUD; expect rough edges on advanced patterns until they leave 🧪.
 
 Constraints inherited from the Next.js Route Handler substrate — not Vovk choices, but worth knowing if you're picking the stack: no WebSockets / persistent connections (use `next-ws` or an external service), no first-party MCP server transport (use `mcp-handler` — the Next.js-canonical pattern; oRPC and Nestia delegate identically), shared cold start with page renders within a segment, no GraphQL on the same handler surface.
 
@@ -1466,7 +1465,7 @@ Vovk.ts, Nestia, oRPC, Igniter.js. Of these, **only Vovk, oRPC, and Igniter.js m
 
 Same SSOT thesis, comparable maturity (1.14.x). Concrete differences a buyer can audit:
 
-- **Multi-language client codegen.** Vovk emits Python and Rust clients first-party (🧪 experimental); oRPC is TS-only — non-TS clients require an OpenAPI roundtrip through a third-party generator.
+- **Multi-language client codegen.** Vovk emits Python and Rust clients first-party; oRPC is TS-only — non-TS clients require an OpenAPI roundtrip through a third-party generator.
 - **Schema artifacts on disk.** Vovk persists `.vovk-schema/*.json` build artifacts that CI tools and AI agents can consume offline; oRPC types live only in TypeScript inference.
 - **Per-segment serverless function config.** Each Vovk segment compiles to its own Next.js catch-all → its own Vercel function with independent `maxDuration` and `runtime`; oRPC mounts as a single handler regardless of how the router is structured.
 - **First-class MCP formatter in `deriveTools`.** Vovk's `ToModelOutput.MCP` shapes execute-output for MCP transports; oRPC's `@orpc/ai-sdk` produces ai-sdk tool definitions but routes MCP through `@modelcontextprotocol/sdk` directly — *[orpc.dev/docs/integrations/ai-sdk](https://orpc.dev/docs/integrations/ai-sdk)*.

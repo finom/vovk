@@ -4,8 +4,8 @@ description: "Full documentation for the Vovk.ts framework, excluding the Realti
 see_also:
   label: "Realtime Kanban Context"
   url: https://vovk.dev/context/realtime-ui.md
-chars: 406971
-est_tokens: 101743
+chars: 410037
+est_tokens: 102510
 ---
 
 Page: https://vovk.dev/about
@@ -218,8 +218,8 @@ See [Generate Command](https://vovk.dev/generate) · [Bundle Command](https://vo
 | **`vovk`** | Runtime: decorators, `procedure`, routing, `deriveTools` |  | production |
 | **`vovk-cli`** | CLI: codegen, mixins, docs, bundling |  | dev |
 | **`vovk-ajv`** | Client-side validation with AJV |  | production (optional) |
-| **`vovk-python`** | Python client generation (experimental) |  | dev (optional) |
-| **`vovk-rust`** | Rust client generation (experimental) |  | dev (optional) |
+| **`vovk-python`** | Python client generation |  | dev (optional) |
+| **`vovk-rust`** | Rust client generation |  | dev (optional) |
 
 See [Packages](https://vovk.dev/packages).
 
@@ -5250,7 +5250,7 @@ console.log(tools);
 // [{ execute: (llmInput) => {}, name: 'PetstoreAPI_updatePet', description: 'Update an existing pet by Id', inputSchema: { ... } }, ...]
 ```
 
-### Python and Rust Clients (Experimental)
+### Python and Rust Clients
 
 Vovk.ts templates can also generate Python and Rust clients, with client-side validation and the same options. See the [Python](https://vovk.dev/python) and [Rust](https://vovk.dev/rust) pages.
 
@@ -5585,10 +5585,6 @@ Page: https://vovk.dev/python
 
 # Python Client
 
-> [!WARNING]
->
-> The Python client is experimental and may have bugs. Use it with caution.
-
 `vovk generate` creates the Python client from the [py](https://vovk.dev/templates#py) or [pySrc](https://vovk.dev/templates#pysrc) template.
 
 Install the generator package:
@@ -5814,18 +5810,19 @@ export const { GET, POST, PATCH, PUT, HEAD, OPTIONS, DELETE } = initSegment({
 ```py filename="./dist_python/src/package_name/__init__.py"
 from __future__ import annotations
 import sys
-from typing import Any, Dict, List, Literal, Optional, Set, TypedDict, Union, Tuple, Generator, BinaryIO # type: ignore
-from .api_client import ApiClient, HttpException
+from typing import Any, Dict, List, Literal, Optional, Sequence, Set, Union, Tuple, Generator, BinaryIO # pyright: ignore[reportUnusedImport]
+# as HttpException: a name the package exports, also under mypy --strict
+from .api_client import ApiClient, HttpException as HttpException
 
-if sys.version_info >= (3, 11):
-    from typing import NotRequired, TypeAlias
+# pydantic reads a TypedDict only from typing_extensions before Python 3.12
+if sys.version_info >= (3, 12):
+    from typing import NotRequired, TypeAlias, TypedDict
 else:
-    from typing_extensions import NotRequired, TypeAlias
-
-HttpException = HttpException
+    from typing_extensions import NotRequired, TypeAlias, TypedDict
 
 client = ApiClient("https://hello-world.vovk.dev/api", {
     "": ("https://hello-world.vovk.dev/api", ""),
+    "static": ("https://hello-world.vovk.dev/api", "static"),
 })
 
 class UserRPC:
@@ -5875,7 +5872,7 @@ class UserRPC:
         Query: Query parameters
         Returns: Response object
         """
-        return client.request( # type: ignore
+        return client.request( # type: ignore[no-any-return, unused-ignore]
             segment_name="",
             rpc_name="UserRPC",
             handler_name="updateUser",
@@ -5888,7 +5885,7 @@ class UserRPC:
         )
 ```
 
-All RPC modules are in `__init__.py`, with the RPC functions and their types. Nested structures get `TypedDict` types. A key the schema doesn't require is `NotRequired`, imported from `typing_extensions` before Python 3.11. A type that isn't a `TypedDict`, such as a `str` output, is a `TypeAlias`, imported the same way.
+All RPC modules are in `__init__.py`, with the RPC functions and their types. Nested structures get `TypedDict` types. A key the schema doesn't require is `NotRequired`. A type that isn't a `TypedDict`, such as a `str` output, is a `TypeAlias`. Before Python 3.12, `NotRequired`, `TypeAlias` and `TypedDict` come from `typing_extensions`, where pydantic reads a `TypedDict` from.
 
 Types for `body`, `query` and `params` are named `[PascalCaseMethodName][InputType]`. For `updateUser`, they are `UpdateUserBody`, `UpdateUserQuery` and `UpdateUserParams`.
 
@@ -5921,7 +5918,7 @@ if __name__ == "__main__":
         print(f"Error: {e}")
 ```
 
-The client uses [requests](https://pypi.org/project/requests/) for HTTP, [jsonschema](https://pypi.org/project/jsonschema/) for client-side validation, and other common libraries. A `pattern` that Python's `re` can't compile, such as `\p{L}`, is left to the server.
+The client uses [requests](https://pypi.org/project/requests/) for HTTP, [jsonschema](https://pypi.org/project/jsonschema/) for client-side validation, and other common libraries. A `pattern` that Python's `re` can't compile, such as `\p{L}`, is left to the server. A form body is checked as the object it is made from, without its files, and a `uri` as the server's `z.url()` reads it.
 
 A call returns the parsed JSON, or `None` for an empty JSON body. A `text/*` response, or a response of any type with a charset, comes back as a `str`, decoded as UTF-8 unless the charset names another encoding. Any other response, such as a file, comes back as `bytes`.
 
@@ -6011,20 +6008,20 @@ class StreamRPC:
         message: str
     @staticmethod
     def stream_tokens(
-
         headers: Optional[Dict[str, str]] = None,
         api_root: Optional[str] = None,
-        disable_client_validation: bool = False
+        disable_client_validation: bool = False,
+        query: Optional[Dict[str, Any]] = None
     ) -> Generator[StreamTokensIteration, None, None]:
         """
         Stream tokens
         Description: Stream tokens to the client
         """
-        return client.request( # type: ignore
+        return client.request( # type: ignore[no-any-return, unused-ignore]
             segment_name="",
             rpc_name="StreamRPC",
             handler_name="streamTokens",
-
+            query=query,
             headers=headers,
             api_root=api_root,
             disable_client_validation=disable_client_validation
@@ -6072,10 +6069,6 @@ Page: https://vovk.dev/rust
 
 # Rust Client
 
-> [!WARNING]
->
-> The Rust client is experimental and may have bugs. Use it with caution.
-
 `vovk generate` creates the Rust client from the [rs](https://vovk.dev/templates#rs) or [rsSrc](https://vovk.dev/templates#rssrc) template.
 
 Install the generator package:
@@ -6106,8 +6099,10 @@ rust_package/
 Publish to [crates.io](https://crates.io/) with:
 
 ```sh
-cargo publish --manifest-path rust_package/Cargo.toml
+cargo publish --manifest-path rust_package/Cargo.toml --allow-dirty
 ```
+
+`--allow-dirty` lets Cargo publish files that git doesn't track yet. crates.io needs a `description` and a `license`: the crate takes them from `package.json` or from `outputConfig.package`.
 
 To generate source files for another Rust project instead, use the [rsSrc](https://vovk.dev/templates#rssrc) template:
 
@@ -6123,6 +6118,30 @@ rust_src/
   lib.rs
   read_full_schema.rs
   schema.json
+```
+
+`lib.rs` is the root of the module. Generate the files into the other project's `src`, for example with `--out ../my_app/src/api`, and point a module at it in `src/main.rs` or `src/lib.rs`:
+
+```rs
+// the items the app doesn't use would be dead code warnings
+#[allow(dead_code, unused_imports)]
+#[path = "api/lib.rs"]
+mod api;
+```
+
+The procedures are then `api::user_rpc::update_user` and so on. The project needs the crates the files use:
+
+```toml filename="Cargo.toml"
+[dependencies]
+serde = { version = "1.0.164", features = ["derive"] }
+serde_json = { version = "1.0.143", features = ["preserve_order"] }
+reqwest = { version = "0.12", features = ["json", "multipart", "stream"] }
+tokio = { version = "1.49", features = ["macros", "rt-multi-thread", "io-util"] }
+futures-util = "0.3"
+tokio-util = { version = "0.7", features = ["codec"] }
+jsonschema = { version = "0.57", default-features = false }
+urlencoding = "2.1"
+once_cell = "1.17"
 ```
 
 ## Configuring the Rust Client
@@ -6298,14 +6317,23 @@ export const { GET, POST, PATCH, PUT, HEAD, OPTIONS, DELETE } = initSegment({
 ...emits a [Vovk.ts schema](https://vovk.dev/schema). The Rust client is generated from it. It adds comments from the schema `description` and picks fitting types: `age` becomes a `u8` because of its `min` and `max`.
 
 ```rs filename="./dist_rust/src/lib.rs"
+// what a schema brings and the code can't choose: a large variant, a deep type, and text that clippy reads as a
+// misplaced list or footnote; an older clippy doesn't know some of these lints
+#![allow(unknown_lints)]
+#![allow(clippy::large_enum_variant, clippy::type_complexity)]
+#![allow(clippy::doc_lazy_continuation, clippy::doc_overindented_list_items, clippy::doc_suspicious_footnotes)]
+
 mod http_request;
 mod read_full_schema;
 
-pub use crate::http_request::HttpException;
+// relative paths, so the files also build as a module of another crate
+pub use self::http_request::{set_client_factory, HttpException};
+// the reqwest the functions take: an app builds a Client or a Form with it, whatever reqwest version the app has
+pub use reqwest;
 
 pub mod user_rpc {
     #[allow(unused_imports)]
-    use crate::http_request::{Endpoint, HttpException, RequestBody, http_request, http_request_stream};
+    use super::http_request::{Endpoint, HttpException, RequestBody, http_request, http_request_stream};
     #[allow(unused_imports)]
     use futures_util::Stream;
     use std::collections::HashMap;
@@ -6313,7 +6341,9 @@ pub mod user_rpc {
     use std::pin::Pin;
 
     // UserRPC.update_user POST `https://hello-world.vovk.dev/api/users/{id}`
+    #[allow(non_camel_case_types)]
     pub mod update_user_ {
+      #[allow(unused_imports)]
       use serde::{Serialize, Deserialize};
       /// User data object
       #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -6327,6 +6357,7 @@ pub mod user_rpc {
 
       #[allow(non_snake_case)]
       pub mod body_ {
+        #[allow(unused_imports)]
         use serde::{Serialize, Deserialize};
 
         /// User profile object
@@ -6350,6 +6381,7 @@ pub mod user_rpc {
 
       #[allow(non_snake_case)]
       pub mod query_ {
+        #[allow(unused_imports)]
         use serde::{Serialize, Deserialize};
 
         /// Notification type
@@ -6387,6 +6419,7 @@ pub mod user_rpc {
 
       #[allow(non_snake_case)]
       pub mod output_ {
+        #[allow(unused_imports)]
         use serde::{Serialize, Deserialize};
 
         /// Notification type
@@ -6404,11 +6437,13 @@ pub mod user_rpc {
       }
     }
 
+    /// Summary: Update user
+    /// Description: Update user by ID
     /// Params: Path parameters
     /// Body: User data object
     /// Query: Query parameters
     /// Returns: Response object
-    pub async fn update_user( 
+    pub async fn update_user(
         body: update_user_::body,
         query: update_user_::query,
         params: update_user_::params,
@@ -6416,7 +6451,7 @@ pub mod user_rpc {
         api_root: Option<&str>,
         disable_client_validation: bool,
     ) -> Result<update_user_::output, HttpException>{
-        let result = http_request::<
+        http_request::<
             update_user_::output,
             update_user_::body,
             update_user_::query,
@@ -6435,9 +6470,7 @@ pub mod user_rpc {
             headers,
             api_root,
             disable_client_validation,
-        ).await;
-
-        result
+        ).await
     }
 
 }
@@ -6488,7 +6521,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 }
 ```
 
-The client uses [reqwest](https://docs.rs/reqwest/latest/reqwest/) for HTTP, [jsonschema](https://docs.rs/jsonschema/latest/jsonschema/) for client-side validation, and other common crates. Client-side validation reads a schema as JSON Schema 2020-12, or as draft 7 when the schema declares it. It checks formats such as `email` and `uuid`.
+The client uses [reqwest](https://docs.rs/reqwest/latest/reqwest/) for HTTP, [jsonschema](https://docs.rs/jsonschema/latest/jsonschema/) for client-side validation, and other common crates. Client-side validation reads a schema as JSON Schema 2020-12, or as draft 7 when the schema declares it. It checks formats such as `email` and `uuid`. It checks `uri`, `duration` and `hostname` as zod does, so it takes what a zod server takes.
 
 The crate needs Rust 1.85 or later. Its `Cargo.toml` sets `rust-version = "1.85"` and resolver 3, so Cargo locks dependency versions that support Rust 1.85. A project that depends on the crate resolves dependencies with its own resolver. With edition 2024, or with `resolver = "3"` (Cargo 1.84+), it builds on Rust 1.85. An edition 2021 project without that resolver gets the newest versions, which need Rust 1.88.
 
@@ -6504,9 +6537,11 @@ The calls send their requests with a default `reqwest::Client`, which has no tim
 use std::time::Duration;
 
 vovk_hello_world::set_client_factory(|| {
-    reqwest::Client::builder().timeout(Duration::from_secs(30)).build().expect("a client")
+    vovk_hello_world::reqwest::Client::builder().timeout(Duration::from_secs(30)).build().expect("a client")
 });
 ```
+
+The client, and a `multipart::Form` for a procedure that takes one, come from the reqwest the crate re-exports as `vovk_hello_world::reqwest`. A `reqwest` the project adds itself is the same type only when it is the same version, 0.12.
 
 ### JSON Lines Endpoints
 
@@ -6589,7 +6624,7 @@ Compiles to:
 ```rs filename="./dist_rust/src/lib.rs"
 pub mod stream_rpc {
     #[allow(unused_imports)]
-    use crate::http_request::{Endpoint, HttpException, RequestBody, http_request, http_request_stream};
+    use super::http_request::{Endpoint, HttpException, RequestBody, http_request, http_request_stream};
     #[allow(unused_imports)]
     use futures_util::Stream;
     use std::collections::HashMap;
@@ -6597,7 +6632,9 @@ pub mod stream_rpc {
     use std::pin::Pin;
 
     // StreamRPC.stream_tokens GET `https://hello-world.vovk.dev/api/streams/tokens`
+    #[allow(non_camel_case_types)]
     pub mod stream_tokens_ {
+      #[allow(unused_imports)]
       use serde::{Serialize, Deserialize};
       /// Streamed token object
       #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -6609,7 +6646,10 @@ pub mod stream_rpc {
 
     }
 
-    pub async fn stream_tokens( 
+    /// Summary: Stream tokens
+    /// Description: Stream tokens to the client
+    #[allow(unused_variables)]
+    pub async fn stream_tokens(
         body: (),
         query: (),
         params: (),
@@ -6617,7 +6657,7 @@ pub mod stream_rpc {
         api_root: Option<&str>,
         disable_client_validation: bool,
     ) -> Result<Pin<Box<dyn Stream<Item = Result<stream_tokens_::iteration, HttpException>> + Send>>, HttpException>{
-        let result = http_request_stream::<
+        http_request_stream::<
             stream_tokens_::iteration,
             (),
             (),
@@ -6636,9 +6676,7 @@ pub mod stream_rpc {
             headers,
             api_root,
             disable_client_validation,
-        ).await;
-
-        result
+        ).await
     }
 
 }
@@ -7057,7 +7095,7 @@ The origin of the client URLs. Defaults to `''`, for relative URLs. For absolute
 
 The data of the generated `package.json` ([TypeScript client](https://vovk.dev/typescript)), `Cargo.toml` ([Rust client](https://vovk.dev/rust)) and `pyproject.toml` ([Python client](https://vovk.dev/python)). The generated `README.md` uses it too: for the name, version, description and so on, and for the package name in the code samples.
 
-By default, the Python and Rust package names come from `package.name`, as [`[package_name]`](/templates#py) does: `@acme/web-app` becomes `acme_web_app`. `py_name` and `rs_name` override them. They name the package, its folder and the imports in the README samples.
+By default, the Python and Rust package names come from `package.name`, as [`[package_name]`](/templates#py) does: `@acme/web-app` becomes `acme_web_app`. `py_name` and `rs_name` override them. They name the package, its folder and the imports in the README samples. A `py_name` Python can't import, or an `rs_name` Cargo refuses, is changed the same way. A `pyproject.toml` name takes only ASCII letters, digits and `_`, and starts and ends with a letter or a digit; `vovk generate` warns about a Python name that doesn't, because the package won't build.
 
 #### `readme: { banner?: string, installCommand?: string, description?: string }`
 
@@ -8276,7 +8314,7 @@ Then open [http://localhost:3000](http://localhost:3000).
 - [Type inference](https://vovk.dev/inference) between the service and the controller.
 - `useQuery` and `useMutation` with [`queryKey`](https://vovk.dev/typescript#react-query).
 - A TypeScript client [bundle](https://vovk.dev/bundle), published on [npm](https://npmjs.com/package/vovk-hello-world) (see [bundlephobia](https://bundlephobia.com/package/vovk-hello-world)).
-- Experimental [Rust](https://vovk.dev/rust) and [Python](https://vovk.dev/python) clients, published on [crates.io](https://crates.io/crates/vovk_hello_world) and [PyPI](https://pypi.org/project/vovk-hello-world/).
+- [Rust](https://vovk.dev/rust) and [Python](https://vovk.dev/python) clients, published on [crates.io](https://crates.io/crates/vovk_hello_world) and [PyPI](https://pypi.org/project/vovk-hello-world/).
 - An [OpenAPI spec](https://vovk.dev/openapi), served from a [static segment](https://vovk.dev/static-segment) and rendered with [Scalar](https://scalar.com/).
 
 ## Live Demo

@@ -15,7 +15,7 @@ const isHttpException = (statusCode: number, message: RegExp | string) => (error
 
 describe('Client sweep', () => {
   describe('path params', () => {
-    for (const id of ['..', '.', '', '%2e', '%2E%2E']) {
+    for (const id of ['..', '.', '']) {
       it(`Refuses ${JSON.stringify(id)} as a param value before sending the request`, async () => {
         await rejects(
           ClientSweepRPC.getUserPosts({ params: { id } }),
@@ -24,6 +24,11 @@ describe('Client sweep', () => {
         await rejects(async () => ClientSweepRPC.getUserPosts.getURL({ params: { id } }), HttpException);
       });
     }
+
+    it('Sends a literal %2e as itself', async () => {
+      deepStrictEqual(await ClientSweepRPC.getUserPosts({ params: { id: '%2e' } }), { id: '%2e' });
+      deepStrictEqual(await ClientSweepRPC.getUserPosts({ params: { id: '%2E%2e' } }), { id: '%2E%2e' });
+    });
 
     it('Keeps dots that are not a whole segment', async () => {
       deepStrictEqual(await ClientSweepRPC.getUserPosts({ params: { id: 'a..b' } }), { id: 'a..b' });

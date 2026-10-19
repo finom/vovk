@@ -5,6 +5,8 @@ imports: ['vovk-python']
 <% const vars = {
     convertJSONSchemaToPythonDataType: t.imports['vovk-python'].convertJSONSchemaToPythonDataType,
     convertJSONSchemaToPythonFilesType: t.imports['vovk-python'].convertJSONSchemaToPythonFilesType,
+    getPythonFilesParamType: t.imports['vovk-python'].getPythonFilesParamType,
+    takesTextBody: t.imports['vovk-python'].takesTextBody,
     hasFiles: t.imports['vovk-python'].hasFiles,
     areFilesOptional: t.imports['vovk-python'].areFilesOptional,
     hasNormalData: t.imports['vovk-python'].hasNormalData,
@@ -14,26 +16,45 @@ imports: ['vovk-python']
     toPythonIdentifier: t.imports['vovk-python'].toPythonIdentifier,
     getMethodNames: t.imports['vovk-python'].getMethodNames,
     toPythonDocstringLines: t.imports['vovk-python'].toPythonDocstringLines,
-    toPythonCommentText: t.imports['vovk-python'].toPythonCommentText
+    toPythonCommentText: t.imports['vovk-python'].toPythonCommentText,
+    getClassNames: t.imports['vovk-python'].getClassNames,
+    getTypeNamePrefixes: t.imports['vovk-python'].getTypeNamePrefixes,
+    takesFreeFormFiles: t.imports['vovk-python'].takesFreeFormFiles,
+    FREE_FORM_FILES_TYPE: t.imports['vovk-python'].FREE_FORM_FILES_TYPE
 };
+// the class of each RPC module, one name each across the package
+const controllerSchemas = Object.values(t.schema.segments).flatMap((segment) => Object.values(segment.controllers));
+const classNames = new Map(vars.getClassNames(controllerSchemas.map(({ rpcModuleName }) => rpcModuleName)).map((name, i) => [controllerSchemas[i], name]));
 // the root a segment's URLs start with and the segment's path after it; a mixin's root is its API's server
 const segmentBases = Object.fromEntries(Object.entries(t.schema.segments).map(([segmentName, segment]) => {
     const meta = t.segmentMeta[segment.segmentName] ?? {};
     const path = segment.forceApiRoot ? '' : typeof meta.segmentNameOverride === 'string' ? meta.segmentNameOverride : segmentName;
     return [segmentName, [meta.forceApiRoot ?? t.apiRoot ?? '', path]];
 }));
-const joinURL = (root, ...parts) => [t._.trimEnd(root, '/'), ...parts.map((part) => t._.trim(part ?? '', '/'))].filter(Boolean).join('/'); %>
+// as the client joins them: a mixin path keeps its trailing slash
+const joinURL = (root, ...parts) => [t._.trimEnd(root, '/'), ...parts.map((part) => t._.trim(part ?? '', '/'))].filter(Boolean).join('/') + (parts.at(-1)?.endsWith('/') ? '/' : '');
+// bytes go out as the TypeScript client sends untyped bytes: the first declared type that isn't JSON or a form, then a
+// wildcard other than */*, then application/octet-stream where it's taken, else the JSON or URL-encoded type declared
+const getBinaryContentType = (schema) => {
+    const declared = schema?.['x-contentType'] ?? [];
+    const isJSON = (type) => type === 'application/json' || type.endsWith('+json');
+    const isForm = (type) => type === 'multipart/form-data' || type === 'application/x-www-form-urlencoded';
+    const binaryType = declared.find((type) => !type.includes('*') && !isForm(type) && !isJSON(type)) ?? declared.find((type) => type !== '*/*' && type.endsWith('/*'));
+    if (binaryType) return binaryType;
+    if (!declared.length || declared.some((pattern) => ['*/*', 'application/*', 'application/octet-stream'].includes(pattern))) return 'application/octet-stream';
+    return declared.find((type) => isJSON(type) || type === 'application/x-www-form-urlencoded') ?? 'application/octet-stream';
+}; %>
 from __future__ import annotations
 import sys
-from typing import Any, Dict, List, Literal, Optional, Set, TypedDict, Union, Tuple, Generator, BinaryIO # type: ignore
-from .api_client import ApiClient, HttpException
+from typing import Any, Dict, List, Literal, Optional, Sequence, Set, Union, Tuple, Generator, BinaryIO # pyright: ignore[reportUnusedImport]
+# as HttpException: a name the package exports, also under mypy --strict
+from .api_client import ApiClient, HttpException as HttpException
 
-if sys.version_info >= (3, 11):
-    from typing import NotRequired, TypeAlias
+# pydantic reads a TypedDict only from typing_extensions before Python 3.12
+if sys.version_info >= (3, 12):
+    from typing import NotRequired, TypeAlias, TypedDict
 else:
-    from typing_extensions import NotRequired, TypeAlias
-
-HttpException = HttpException
+    from typing_extensions import NotRequired, TypeAlias, TypedDict
 
 client = ApiClient(<%- vars.toPythonString(t.apiRoot ?? '') %>, {
 <%- Object.entries(segmentBases).map(([segmentName, [root, path]]) => `    ${vars.toPythonString(segmentName)}: (${vars.toPythonString(root)}, ${vars.toPythonString(path)}),`).join('\n') %>
@@ -41,43 +62,52 @@ client = ApiClient(<%- vars.toPythonString(t.apiRoot ?? '') %>, {
 <% Object.entries(t.schema.segments).forEach(([segmentName, segment]) => {
     Object.values(segment.controllers).forEach((controllerSchema) => {
 const { rpcModuleName } = controllerSchema;
-const pyModuleName = vars.toPythonIdentifier(rpcModuleName);
-const methodNames = vars.getMethodNames(Object.keys(controllerSchema.handlers), t._.snakeCase); %>
-class <%- pyModuleName %>: <% if (!Object.keys(controllerSchema.handlers).length) { %>
+const pyModuleName = classNames.get(controllerSchema);
+const methodNames = vars.getMethodNames(Object.keys(controllerSchema.handlers), t._.snakeCase);
+const typeNamePrefixes = vars.getTypeNamePrefixes(Object.keys(controllerSchema.handlers)); %>
+class <%- pyModuleName %>:<% if (!Object.keys(controllerSchema.handlers).length) { %>
     pass<% } %><% Object.entries(controllerSchema.handlers).forEach(([handlerNameOriginal, handlerSchema]) => {
     const { validation, operationObject, httpMethod } = handlerSchema;
-    const handlerNameOriginalCapitalized = vars.toPythonIdentifier(handlerNameOriginal.charAt(0).toUpperCase() + handlerNameOriginal.slice(1));
+    const handlerNameOriginalCapitalized = typeNamePrefixes.get(handlerNameOriginal);
     const handlerName = methodNames.get(handlerNameOriginal);
     const bodyKind = vars.getBodyKind(validation?.body);
-    const bodyContentType = bodyKind === 'text' ? vars.getTextContentType(validation?.body) : validation?.body?.['x-contentType']?.[0] || 'application/octet-stream';
+    const bodyContentType = bodyKind === 'text' ? vars.getTextContentType(validation?.body) : getBinaryContentType(validation?.body);
     // a path with {name} placeholders takes params, with or without a params schema
     const paramsType = validation?.params ? `${handlerNameOriginalCapitalized}Params` : /\{[^{}]+\}/.test(`${controllerSchema.prefix ?? ''}/${handlerSchema.path}`) ? 'Dict[str, str]' : null;
     // files a call may leave out, as for a JSON-or-file union, come after the arguments every call takes
-    const files = validation?.body && vars.hasFiles(validation.body) ? (vars.areFilesOptional(validation.body) ? 'optional' : 'required') : null; %>
+    const files = validation?.body && vars.hasFiles(validation.body) ? (vars.areFilesOptional(validation.body) ? 'optional' : 'required') : null;
+    const filesType = files && vars.getPythonFilesParamType({ schema: validation.body, className: `${handlerNameOriginalCapitalized}Files` });
+    // a body or a query without a schema, as a procedure that skips its emission still reads them, and files for a
+    // multipart record; these come last, so a call that passes headers by position keeps them
+    const takesSchemalessBody = !validation?.body && ['POST', 'PUT', 'PATCH'].includes(httpMethod);
+    const takesFreeFormFiles = vars.takesFreeFormFiles(validation?.body); %>
     # <%- vars.toPythonCommentText(`${rpcModuleName}.${handlerName} ${httpMethod} \`${joinURL(...segmentBases[segmentName], controllerSchema.prefix, handlerSchema.path)}\``) %>
 <%- ([
         bodyKind === 'text' ? '' : bodyKind === 'binary' ? '' : vars.convertJSONSchemaToPythonDataType({ schema: validation?.body, namespace: pyModuleName, className: `${handlerNameOriginalCapitalized}Body`, pad: 4 }),
         vars.convertJSONSchemaToPythonFilesType({ schema: validation?.body, namespace: pyModuleName, className: `${handlerNameOriginalCapitalized}Files`, pad: 4 }),
         vars.convertJSONSchemaToPythonDataType({ schema: validation?.query, namespace: pyModuleName, className: `${handlerNameOriginalCapitalized}Query`, pad: 4 }),
         vars.convertJSONSchemaToPythonDataType({ schema: validation?.params, namespace: pyModuleName, className: `${handlerNameOriginalCapitalized}Params`, pad: 4 }),
-        vars.convertJSONSchemaToPythonDataType({ schema: t.reattachMixinDefs(validation?.output, segment), namespace: pyModuleName, className: `${handlerNameOriginalCapitalized}Output`, pad: 4 }),
-        vars.convertJSONSchemaToPythonDataType({ schema: t.reattachMixinDefs(validation?.iteration, segment), namespace: pyModuleName, className: `${handlerNameOriginalCapitalized}Iteration`, pad: 4 })
+        vars.convertJSONSchemaToPythonDataType({ schema: t.reattachMixinDefs(validation?.output, segment), namespace: pyModuleName, className: `${handlerNameOriginalCapitalized}Output`, pad: 4, direction: 'response' }),
+        vars.convertJSONSchemaToPythonDataType({ schema: t.reattachMixinDefs(validation?.iteration, segment), namespace: pyModuleName, className: `${handlerNameOriginalCapitalized}Iteration`, pad: 4, direction: 'response' })
     ]).filter(Boolean).join('\n') %>
     @staticmethod
     def <%= handlerName %>(
 <%= [
-            bodyKind === 'text' ? 'body: str,' : bodyKind === 'binary' ? 'body: bytes,' : '',
+            bodyKind === 'text' ? 'body: str,' : bodyKind === 'binary' ? (vars.takesTextBody(validation?.body) ? 'body: Union[str, bytes],' : 'body: bytes,') : '',
             bodyKind === 'json' || (bodyKind === 'form' && vars.hasNormalData(validation.body)) ? `body: ${handlerNameOriginalCapitalized}Body,` : '',
-            files === 'required' ? `files: ${handlerNameOriginalCapitalized}Files,` : '',
+            files === 'required' ? `files: ${filesType},` : '',
             validation?.query ? `query: ${handlerNameOriginalCapitalized}Query,` : '',
             paramsType ? `params: ${paramsType},` : '',
-            files === 'optional' ? `files: Optional[${handlerNameOriginalCapitalized}Files] = None,` : ''
-        ].filter(Boolean).map((s) => ' '.repeat(8) + s).join('\n') %>
-        headers: Optional[Dict[str, str]] = None,
+            files === 'optional' ? `files: Optional[${filesType}] = None,` : ''
+        ].filter(Boolean).map((s) => `${' '.repeat(8)}${s}\n`).join('') %>        headers: Optional[Dict[str, str]] = None,
         api_root: Optional[str] = None,
-        disable_client_validation: bool = False
+        disable_client_validation: bool = False<%= [
+            takesSchemalessBody ? 'body: Any = None' : '',
+            validation?.query ? '' : 'query: Optional[Dict[str, Any]] = None',
+            takesFreeFormFiles ? `files: Optional[${vars.FREE_FORM_FILES_TYPE}] = None` : ''
+        ].filter(Boolean).map((s) => `,\n${' '.repeat(8)}${s}`).join('') %>
     ) -> <%= validation?.output ? `${handlerNameOriginalCapitalized}Output` : validation?.iteration ? `Generator[${handlerNameOriginalCapitalized}Iteration, None, None]` : 'Any' %>:
-        """ 
+        """
 <%- ([
                 operationObject?.summary ?? 'No summary',
                 operationObject?.description ? `Description: ${operationObject.description}` : '',
@@ -86,7 +116,7 @@ class <%- pyModuleName %>: <% if (!Object.keys(controllerSchema.handlers).length
                 validation?.output?.description ? `Returns: ${validation?.output?.description}`: ''
             ]).filter(Boolean).flatMap((s) => vars.toPythonDocstringLines(s)).map((s) => ' '.repeat(8) + s).join('\n') %>
         """
-        return client.request( # type: ignore
+        return client.request(<%- validation?.output || validation?.iteration ? ' # type: ignore[no-any-return, unused-ignore]' : '' %>
             segment_name=<%- vars.toPythonString(segmentName) %>,
             rpc_name=<%- vars.toPythonString(rpcModuleName) %>,
             handler_name=<%- vars.toPythonString(handlerNameOriginal) %>,
@@ -95,8 +125,10 @@ class <%- pyModuleName %>: <% if (!Object.keys(controllerSchema.handlers).length
                 bodyKind === 'json' || (bodyKind === 'form' && vars.hasNormalData(validation.body)) ? 'body=body,' : '',
                 files ? 'files=files,' : '',
                 bodyKind === 'text' || bodyKind === 'binary' ? `body_content_type=${vars.toPythonString(bodyContentType)},` : '',
-                validation?.query ? 'query=query,' : '',
-                paramsType ? 'params=params,' : ''
+                'query=query,',
+                paramsType ? 'params=params,' : '',
+                takesSchemalessBody ? 'body=body,' : '',
+                takesFreeFormFiles ? 'files=files,' : ''
             ].filter(Boolean).map((s) => ' '.repeat(12) + s).join('\n') %>
             headers=headers,
             api_root=api_root,

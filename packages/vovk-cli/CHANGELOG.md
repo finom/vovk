@@ -4,11 +4,18 @@ All notable changes to `vovk-cli` are documented here. This file is the canonica
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## 0.3.2 - 2026-10-12
+## 0.3.2 - 2026-10-19
 
 ### Changed
 
 - The README shows setup, the commands and the config ([#70](https://github.com/finom/vovk/pull/70))
+- `vovk init` no longer calls the Python and Rust clients experimental ([#96](https://github.com/finom/vovk/pull/96))
+
+### Fixed
+
+- `vovk init --lang py rs` adds `/dist_python` and `/dist_rust` to `.gitignore` ([#96](https://github.com/finom/vovk/pull/96))
+- An `rs_name` Cargo refuses becomes a valid crate name; `py_name` and `rs_name` with a dash work; a Python package named after a stdlib module, or with a name `pyproject.toml` refuses, gets a warning ([#96](https://github.com/finom/vovk/pull/96))
+- Placeholder comments use each file's own syntax; a generated file deleted by hand is written again ([#96](https://github.com/finom/vovk/pull/96))
 
 ## 0.3.1 - 2026-10-12
 

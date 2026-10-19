@@ -1,9 +1,19 @@
+// the rsSrc files as a module of this library, as an app embeds them: cargo test builds them and runs the doctests of
+// the library, schema text included
+#[path = "../../generated_shapes_client/src/lib.rs"]
+pub mod embedded_shapes;
+pub use embedded_shapes::shapes_rpc as embedded_shapes_rpc;
+
 mod test_validation;
 mod test_common;
 mod test_segments;
 mod test_shapes;
 mod test_requests;
 mod test_runtime;
+mod test_parity;
+mod test_streams;
+mod test_errors;
+mod test_patterns;
 
 // Helper function to create objects with specific validation issues
 pub fn get_constraining_object(key: Option<String>) -> serde_json::Value {        
@@ -59,6 +69,7 @@ pub fn get_constraining_object(key: Option<String>) -> serde_json::Value {
         "num_maximum": 200,
         "num_exclusiveMinimum": 0,
         "num_exclusiveMaximum": 100,
+        "num_multipleOf": 12,
         "num_int": 42.5,
         "num_int32": 4294967296_i64,
         

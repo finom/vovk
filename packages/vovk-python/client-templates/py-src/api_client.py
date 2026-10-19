@@ -5,13 +5,19 @@ import json
 import codecs
 import datetime
 import functools
+import ipaddress
 import requests
+from contextvars import ContextVar
 from http.cookiejar import DefaultCookiePolicy
-from urllib.parse import quote
+from urllib.parse import quote, unquote
 from jsonschema import FormatChecker, validators
 from jsonschema.exceptions import ValidationError, best_match
+from requests.adapters import HTTPAdapter
 from requests.models import Response
+from requests.structures import CaseInsensitiveDict
+from urllib3.connectionpool import HTTPConnectionPool, HTTPSConnectionPool
 from urllib3.exceptions import DecodeError, ProtocolError, ReadTimeoutError, SSLError
+from urllib3.filepost import encode_multipart_formdata
 from typing import Dict, Optional, Any, Generator, Iterator, Literal, List, Tuple, TypedDict, Union
 
 class HttpExceptionResponseBody(TypedDict):
@@ -46,14 +52,61 @@ def _charset(content_type: str) -> Optional[str]:
             return value.strip().strip('"\'') or None
     return None
 
+def _decode_text(content: bytes, content_type: str) -> str:
+    # UTF-8 unless the charset says otherwise, not requests' Latin-1 for text/* or its guess for +json
+    try:
+        return content.decode(_charset(content_type) or 'utf-8', errors='replace')
+    except LookupError:
+        return content.decode('utf-8', errors='replace')
+
+def _matches_media_type(media_type: str, pattern: str) -> bool:
+    return pattern == '*/*' or (media_type.startswith(pattern[:-1]) if pattern.endswith('/*') else media_type == pattern)
+
+def _takes_media_type(declared: List[str], content_type: Any) -> bool:
+    # as the server matches a Content-Type: its media type, a family/* wildcard or */*; declaring none takes any
+    if not isinstance(content_type, str):
+        return False
+    media_type = content_type.split(';')[0].strip().lower()
+    return not declared or any(_matches_media_type(media_type, pattern.lower()) for pattern in declared)
+
 def _binary_content_type(declared: List[str]) -> str:
-    # bytes go out as the first type the procedure declares that isn't JSON or a form, such as image/png
+    # bytes go out as the first type the procedure declares that isn't JSON or a form, such as image/png, then a
+    # wildcard such as image/*, as the TypeScript client sends untyped bytes
     concrete = (t for t in declared if '*' not in t and t not in _FORM_MEDIA_TYPES and not _is_json_media_type(t))
     wildcard = (t for t in declared if t != '*/*' and t.endswith('/*'))
-    return next(concrete, None) or next(wildcard, None) or 'application/octet-stream'
+    binary_type = next(concrete, None) or next(wildcard, None)
+    if binary_type:
+        return binary_type
+    if _takes_media_type(declared, 'application/octet-stream'):
+        return 'application/octet-stream'
+    # a procedure that takes only JSON or a URL-encoded form parses the bytes as that
+    return next((t for t in declared if _is_json_media_type(t) or t == 'application/x-www-form-urlencoded'), 'application/octet-stream')
+
+def _accepts_null(schema: Any) -> bool:
+    # type null or a list of types with it, OpenAPI 3.0's nullable, or an anyOf or oneOf branch that accepts null
+    if not isinstance(schema, dict):
+        return False
+    schema_type = schema.get('type')
+    return (
+        schema_type == 'null'
+        or (isinstance(schema_type, list) and 'null' in schema_type)
+        or schema.get('nullable') is True
+        or any(isinstance(branches, list) and any(_accepts_null(b) for b in branches) for branches in (schema.get('anyOf'), schema.get('oneOf')))
+    )
+
+def _takes_null_body(schema: Any) -> bool:
+    # None goes out as the JSON body null only when the body schema accepts null and takes JSON, declared or by default,
+    # as the TypeScript client sends null
+    if not _accepts_null(schema):
+        return False
+    declared = schema.get('x-contentType')
+    return declared is None or any(_is_json_media_type(t.split(';')[0].strip().lower()) for t in declared)
 
 def _to_json_value(value: Any) -> Any:
-    # as JSON.stringify sends a value: a date or a time as ISO 8601 text, a tuple as a list
+    # as JSON.stringify sends a value: a date or a time as ISO 8601 text, a datetime with an offset in UTC with a Z, a
+    # tuple as a list
+    if isinstance(value, datetime.datetime) and value.utcoffset() is not None:
+        return value.astimezone(datetime.timezone.utc).isoformat()[:-6] + 'Z'
     if isinstance(value, (datetime.date, datetime.time)):
         return value.isoformat()
     if isinstance(value, dict):
@@ -141,11 +194,49 @@ def _pattern(validator: Any, pattern: str, instance: Any, schema: Dict[str, Any]
 
 @functools.lru_cache(maxsize=None)
 def _validator_class(base: Any) -> Any:
-    return validators.extend(base, {'pattern': _pattern})
+    return validators.extend(base, {'pattern': _pattern})  # type: ignore[no-untyped-call, unused-ignore]
+
+_SPECIAL_SCHEMES = ('http', 'https', 'ws', 'wss', 'ftp', 'file')
+
+def _is_url(value: Any) -> bool:
+    # as the server's z.url() reads a URL with the WHATWG parser: a scheme, and for http and the other special schemes
+    # a host, which may be any Unicode text; a path or a query may hold any text, a space or a | too
+    if not isinstance(value, str):
+        return True
+    text = re.sub(r'[\t\n\r]', '', value.strip(''.join(map(chr, range(0x21)))))
+    match = re.match(r'([A-Za-z][A-Za-z0-9+.-]*):(.*)', text, re.S)
+    if not match:
+        return False
+    scheme = match.group(1).lower()
+    if scheme not in _SPECIAL_SCHEMES:
+        return True
+    authority = re.split(r'[/\\?#]', match.group(2).lstrip('/\\'), maxsplit=1)[0]
+    host = authority.rpartition('@')[2]
+    if host.startswith('['):
+        address, bracket, port = host[1:].partition(']')
+        try:
+            ipaddress.IPv6Address(address)
+        except ValueError:
+            return False
+        if not bracket or (port and not port.startswith(':')):
+            return False
+        host, port = '[]', port[1:]
+    else:
+        host, _, port = host.partition(':')
+    if port and not (port.isascii() and port.isdigit() and int(port) <= 65535):
+        return False
+    if scheme == 'file' or host == '[]':
+        return True
+    host = unquote(host)
+    return bool(host) and not any(ord(c) < 0x21 or c in '#%/:<>?@[\\]^|\x7f' for c in host)
+
+# the formats the jsonschema extra checks, with uri as the server checks it
+_FORMAT_CHECKER = FormatChecker()
+_FORMAT_CHECKER.checks('uri')(_is_url)
 
 def _validate(instance: Any, schema: Dict[str, Any]) -> None:
     # unlike jsonschema.validate, the schema itself isn't checked: that check reads its patterns with Python's re
-    validator = _validator_class(validators.validator_for(schema))(schema, format_checker=FormatChecker())
+    validator = _validator_class(validators.validator_for(schema))(schema, format_checker=_FORMAT_CHECKER)
     try:
         error = best_match(validator.iter_errors(instance))
     except re.error:
@@ -153,6 +244,149 @@ def _validate(instance: Any, schema: Dict[str, Any]) -> None:
         return
     if error is not None:
         raise error
+
+_SCHEMA_TABLES = ('$schema', '$defs', 'definitions', 'components')
+
+def _named_schema(root: Dict[str, Any], ref: Any) -> Any:
+    # as the generated types read a $ref: by its last segment, in $defs, definitions or components/schemas
+    if not isinstance(ref, str) or not ref.startswith('#/'):
+        return None
+    name = ref.split('/')[-1]
+    for table in (root.get('$defs'), root.get('definitions'), (root.get('components') or {}).get('schemas')):
+        if isinstance(table, dict) and name in table:
+            return table[name]
+    return None
+
+def _declares_tuple(schema: Dict[str, Any]) -> bool:
+    # whether a schema, with the definitions it names, has a tuple anywhere
+    seen = set()
+    stack: List[Any] = [schema]
+    while stack:
+        node = stack.pop()
+        if isinstance(node, list):
+            stack.extend(node)
+        if not isinstance(node, dict) or id(node) in seen:
+            continue
+        seen.add(id(node))
+        items = node.get('items')
+        if node.get('prefixItems') or (isinstance(items, list) and items):
+            return True
+        # a definition counts where a $ref names it, not every definition the document has
+        stack.append(_named_schema(schema, node.get('$ref')))
+        stack.extend(value for key, value in node.items() if key not in (*_SCHEMA_TABLES, 'enum', 'const', 'default', 'examples'))
+    return False
+
+def _is_file_schema(schema: Any, root: Dict[str, Any], depth: int = 0) -> bool:
+    # a file, or a list, a tuple or a combination that may hold one, as the generated types leave it out of the body
+    if not isinstance(schema, dict) or depth > 16:
+        return False
+    if '$ref' in schema:
+        return _is_file_schema(_named_schema(root, schema['$ref']), root, depth + 1)
+    if schema.get('format') == 'binary' or schema.get('contentEncoding') == 'binary':
+        return True
+    items = schema.get('items')
+    branches = [*(items if isinstance(items, list) else [items])]
+    for key in ('prefixItems', 'anyOf', 'oneOf', 'allOf'):
+        branches.extend(schema.get(key) or [])
+    return any(_is_file_schema(branch, root, depth + 1) for branch in branches)
+
+def _without_file_fields(schema: Any, root: Dict[str, Any]) -> Any:
+    # the schema of a form's other fields: its files go in files, not in the body
+    if isinstance(schema, list):
+        return [_without_file_fields(item, root) for item in schema]
+    if not isinstance(schema, dict):
+        return schema
+    kept = {
+        key: value if key in ('enum', 'const', 'default', 'examples') else _without_file_fields(value, root)
+        for key, value in schema.items()
+    }
+    properties = schema.get('properties')
+    if isinstance(properties, dict):
+        files = [name for name, prop in properties.items() if _is_file_schema(prop, root)]
+        kept['properties'] = {name: value for name, value in kept['properties'].items() if name not in files}
+        if isinstance(schema.get('required'), list):
+            kept['required'] = [name for name in schema['required'] if name not in files]
+    return kept
+
+# the request target a call sends as it is: urllib3 percent-encodes the | that joins pipeDelimited parts again
+_raw_target: 'ContextVar[Optional[str]]' = ContextVar('vovk_raw_target', default=None)
+
+def _with_raw_target(url: str) -> str:
+    raw = _raw_target.get()
+    # the same target but for how a | is written, not a redirect or another call made meanwhile
+    return raw if raw is not None and url.replace('%7C', '|') == raw.replace('%7C', '|') else url
+
+class _RawTargetHTTPConnectionPool(HTTPConnectionPool):
+    def _make_request(self, conn: Any, method: str, url: str, *args: Any, **kwargs: Any) -> Any:  # type: ignore[override, unused-ignore]
+        return super()._make_request(conn, method, _with_raw_target(url), *args, **kwargs)
+
+class _RawTargetHTTPSConnectionPool(HTTPSConnectionPool):
+    def _make_request(self, conn: Any, method: str, url: str, *args: Any, **kwargs: Any) -> Any:  # type: ignore[override, unused-ignore]
+        return super()._make_request(conn, method, _with_raw_target(url), *args, **kwargs)
+
+class _ApiClientAdapter(HTTPAdapter):
+    # requests' adapter, with pools that send a target the client gives as it is
+    def init_poolmanager(self, *args: Any, **kwargs: Any) -> None:
+        super().init_poolmanager(*args, **kwargs)  # type: ignore[no-untyped-call, unused-ignore]
+        self.poolmanager.pool_classes_by_scheme = {  # type: ignore[attr-defined, unused-ignore]
+            'http': _RawTargetHTTPConnectionPool,
+            'https': _RawTargetHTTPSConnectionPool,
+        }
+
+def _is_valid(value: Any, schema: Dict[str, Any], root: Dict[str, Any]) -> bool:
+    scoped = {**schema, **{key: root[key] for key in _SCHEMA_TABLES if key in root}}
+    try:
+        return bool(_validator_class(validators.validator_for(scoped))(scoped).is_valid(_to_json_value(value)))
+    except Exception:
+        # a schema the client can't read, such as a pattern key or a $ref it can't resolve: the value stays as it came
+        return False
+
+def _as_declared(value: Any, schema: Any, root: Dict[str, Any], depth: int = 0) -> Any:
+    # JSON has no tuple: an array comes back as a tuple where the generated types declare a Tuple, by the rules they
+    # are generated by
+    if value is None or not isinstance(schema, dict) or depth > 64 or schema.get('enum'):
+        return value
+    if '$ref' in schema:
+        return _as_declared(value, _named_schema(root, schema['$ref']), root, depth + 1)
+    branches = schema.get('anyOf') or schema.get('oneOf') or []
+    if schema.get('allOf') or branches:
+        # the members, or the branch the value matches, and the schema's own properties
+        members = schema.get('allOf') or [next((b for b in branches if isinstance(b, dict) and _is_valid(value, b, root)), None)]
+        own = [{'type': 'object', 'properties': schema['properties']}] if 'properties' in schema else []
+        for member in [*members, *own]:
+            value = _as_declared(value, member, root, depth + 1)
+        return value
+    types = schema.get('type')
+    types = types if isinstance(types, list) else [types]
+    if isinstance(value, list) and 'array' in types:
+        items = schema.get('items')
+        prefix, rest = schema.get('prefixItems'), items
+        if prefix is None and isinstance(items, list):
+            # a draft 7 tuple
+            prefix, rest = items, schema.get('additionalItems')
+        if not prefix:
+            return [_as_declared(item, items, root, depth + 1) for item in value]
+        converted = [_as_declared(item, prefix[i] if i < len(prefix) else rest, root, depth + 1) for i, item in enumerate(value)]
+        # items after the tuple's own make it a list
+        return converted if isinstance(rest, (dict, list)) else tuple(converted)
+    if isinstance(value, dict) and 'object' in types:
+        properties = schema.get('properties') or {}
+        patterns = schema.get('patternProperties') or {}
+
+        def value_schema(key: str) -> Any:
+            if key in properties:
+                return properties[key]
+            for pattern, pattern_schema in patterns.items():
+                compiled = _compile_pattern(pattern)
+                if compiled is not None and compiled.search(key):
+                    return pattern_schema
+            return schema.get('additionalProperties')
+
+        return {key: _as_declared(item, value_schema(key), root, depth + 1) for key, item in value.items()}
+    return value
+
+def _with_tuples(value: Any, schema: Optional[Dict[str, Any]]) -> Any:
+    return _as_declared(value, schema, schema) if schema and _declares_tuple(schema) else value
 
 class ApiClient:
     @staticmethod
@@ -176,6 +410,9 @@ class ApiClient:
         self.full_schema: Dict[str, Any] = ApiClient._load_full_schema()
         # one session keeps connections open between calls; set headers, auth or adapters on it
         self.session = requests.Session()
+        # an adapter mounted in their place sends a pipeDelimited query with the | percent-encoded
+        self.session.mount('https://', _ApiClientAdapter())
+        self.session.mount('http://', _ApiClientAdapter())
         # every call and thread shares the session: a cookie a response sets isn't kept for later calls, one set by hand is
         self.session.cookies.set_policy(DefaultCookiePolicy(allowed_domains=[]))
         # seconds to connect and to wait for each read, as requests takes it; None waits forever
@@ -190,7 +427,10 @@ class ApiClient:
 
     @staticmethod
     def _join_url(root: str, *parts: str) -> str:
-        return '/'.join(part for part in [root.rstrip('/'), *(part.strip('/') for part in parts)] if part)
+        url = '/'.join(part for part in [root.rstrip('/'), *(part.strip('/') for part in parts)] if part)
+        # a mixin path keeps the trailing slash its OpenAPI document declares, as the TypeScript client sends it: /items/
+        # and /items are different paths
+        return url + '/' if parts and parts[-1].endswith('/') else url
 
     def request(
         self,
@@ -216,6 +456,12 @@ class ApiClient:
         handler = handlers[handler_name]
         http_method = handler['httpMethod']
         validation = handler.get('validation', {})
+
+        # the output of an OpenAPI mixin refers to the components of its document, which the segment keeps once
+        components = ((schema.get('meta') or {}).get('openAPIObject') or {}).get('components')
+        if schema.get('segmentType') == 'mixin' and components:
+            responses = {slot: {**validation[slot], 'components': components} for slot in ('output', 'iteration') if validation.get(slot)}
+            validation = {**validation, **responses}
 
         misc = handler.get('misc') or {}
         # an OpenAPI mixin sends its query and an urlencoded body in the styles its document declares
@@ -264,10 +510,12 @@ class ApiClient:
             body: The body. A JSON value goes out as JSON. A dict goes out as a form when the procedure takes a form,
                 unless it also takes JSON and no files come with it. A str with body_content_type goes out as that
                 text, and bytes go out as they are. In the body, the query and the params, a date, a time or a datetime goes
-                out as ISO 8601 text and a tuple as a list.
+                out as ISO 8601 text, a datetime with an offset in UTC with a Z, and a tuple as a list. None goes out as
+                the JSON body null when the body schema accepts null.
             query: Optional dictionary to convert to query parameters
             params: Optional dictionary to replace URL parameters
-            headers: Optional dictionary of custom headers
+            headers: Optional dictionary of custom headers. A value goes out without the spaces, tabs and line breaks
+                around it. A Content-Type the procedure takes replaces the declared one of a text or binary body.
             files: Files of a multipart body, as requests takes them: a dict of field name to file, or a list of
                 (field name, file) pairs
             validation: Optional dictionary with JSON schemas to validate body, query, and params
@@ -281,13 +529,15 @@ class ApiClient:
         Returns:
             If the response is JSON, returns the parsed JSON, or None for an empty body.
             If the response is JSONL, returns a generator yielding each parsed line.
+            In both, an array the generated types declare a Tuple comes back as a tuple.
             If the response is text/* or names a charset, returns the text as str, UTF-8 unless the charset says otherwise.
             Otherwise, as for a file, returns the bytes.
 
         Raises:
             jsonschema.exceptions.ValidationError: If client-side validation fails
-            ValueError: If the body, query or params the schema asks for is missing, or a path parameter is "", "."
-                or ".."
+            ValueError: If the body, query or params the schema asks for is missing, a path parameter is missing or
+                None, or a path parameter is "", "." or ".."
+            requests.exceptions.InvalidHeader: If a header name or value is invalid; the message leaves out the value
             HttpException: If the response status is 400 or higher
             requests.RequestException: If the request fails, as on a timeout or a refused connection
         """
@@ -309,10 +559,14 @@ class ApiClient:
         # an object goes out as a form only when JSON can't carry it: no JSON declared, or files to send
         TIsForm = any(t in _FORM_MEDIA_TYPES for t in body_ct) and bool(files or not any(_is_json_media_type(t) for t in body_ct))
         TIsMultipart = TIsForm and 'multipart/form-data' in body_ct
+        TIsNull = body is None and _takes_null_body((validation or {}).get('body'))
         if validation and not disable_client_validation:
-            # a form or binary body is left to the server
-            if validation.get('body') and not TIsForm and not TIsBinary:
-                if body is None:
+            # a form is checked as the object it is made from, without its files; a binary body is left to the server
+            if validation.get('body') and TIsForm:
+                if body is None or isinstance(body, dict):
+                    _validate({} if body is None else body, _without_file_fields(validation['body'], validation['body']))
+            elif validation.get('body') and not TIsBinary:
+                if body is None and not TIsNull:
                     raise ValueError("Body is required for validation but not provided")
                 _validate(body, validation['body'])
 
@@ -329,44 +583,73 @@ class ApiClient:
         processed_url = url
         if params:
             for key, value in params.items():
+                # a missing value keeps its placeholder, which is reported below
+                if value is None:
+                    continue
                 text = _to_text(value)
                 # "", "." and ".." would drop or climb a path segment and so reach another route
                 if text in ('', '.', '..'):
                     raise ValueError(f'Path parameter "{key}" cannot be empty, "." or "..", got "{text}"')
                 processed_url = processed_url.replace(f"{{{key}}}", quote(text, safe=''))
-        
+        # a given param replaces its placeholder with an encoded value, so a brace left in the path is a missing one
+        missing_params = re.findall(r'\{([^{}]+)\}', processed_url.split('?', 1)[0])
+        if missing_params:
+            raise ValueError(f"Missing params: {', '.join(missing_params)} in {processed_url}")
+
         if query:
             query_string = (
                 self._build_query_string(query) if query_styles is None else _styled_query_string(query, query_styles)
             )
-            if "?" in processed_url:
-                processed_url += "&" + query_string
-            else:
-                processed_url += "?" + query_string
-        
-        request_headers = {
-            'Accept': 'application/jsonl, application/json'
-        }
-        
-        if headers:
-            request_headers.update(headers)
-        
+            # a query of None values and empty lists adds no ?, as in the TypeScript client
+            if query_string:
+                processed_url += ("&" if "?" in processed_url else "?") + query_string
+
+        # case-insensitive, so a header given for the call replaces its default
+        request_headers: CaseInsensitiveDict[Any] = CaseInsensitiveDict({'Accept': 'application/jsonl, application/json'})
+        for name, value in (headers or {}).items():
+            # a value goes out without the spaces, tabs and line breaks around it, as fetch sends it
+            if isinstance(value, str):
+                value = value.strip(' \t\r\n')
+            if isinstance(value, (str, bytes)):
+                try:
+                    requests.utils.check_header_validity((name, value))
+                except requests.exceptions.InvalidHeader:
+                    # requests' message quotes the value, which may be a secret
+                    raise requests.exceptions.InvalidHeader(f'Invalid header "{name}"') from None
+            request_headers[name] = value
+
+        if (TIsText or TIsBinary) and not _takes_media_type(body_ct, request_headers.get('Content-Type')):
+            # a type the caller gives goes out when the procedure takes it, such as image/jpeg for image/*
+            request_headers['Content-Type'] = body_content_type
+
         # the body as requests takes it: data, files or json
         payload: Dict[str, Any]
-        if TIsText:
-            request_headers['Content-Type'] = body_content_type # type: ignore
+        if TIsNull:
+            # requests sends json=None as no body
+            request_headers.setdefault('Content-Type', 'application/json')
+            payload = {'data': b'null'}
+        elif TIsText:
             payload = {'data': body.encode('utf-8') if isinstance(body, str) else body}
         elif TIsBinary:
-            request_headers['Content-Type'] = body_content_type # type: ignore
             payload = {'data': body}
         elif TIsForm and isinstance(body, dict):
             fields = self._to_form_fields(body, None if TIsMultipart else form_styles)
             if TIsMultipart:
                 # a (None, text) part is a plain field, and makes requests send multipart even without a file
                 file_parts = list(files.items()) if isinstance(files, dict) else list(files or [])
-                payload = {'files': [(key, (None, text)) for key, text in fields] + file_parts}
-            else:
+                parts = [(key, (None, text)) for key, text in fields] + file_parts
+                if parts:
+                    payload = {'files': parts}
+                else:
+                    # requests sends no body for an empty form; the server then reads no form at all
+                    data, content_type = encode_multipart_formdata([])
+                    request_headers.setdefault('Content-Type', content_type)
+                    payload = {'data': data}
+            elif fields or files:
                 payload = {'files': files, 'data': fields}
+            else:
+                request_headers.setdefault('Content-Type', 'application/x-www-form-urlencoded')
+                payload = {'data': b''}
         elif TIsForm:
             payload = {'files': files, 'data': body}
         else:
@@ -375,16 +658,27 @@ class ApiClient:
         prepared = self.session.prepare_request(
             requests.Request(method=http_method.upper(), url=processed_url, headers=request_headers, **payload)
         )
+        raw_target: Optional[str] = None
         if query_styles is not None and '?' in processed_url:
-            # requests encodes the | that joins pipeDelimited parts; the TypeScript client sends it as is
-            prepared.url = f"{(prepared.url or '').split('?', 1)[0]}?{processed_url.split('?', 1)[1]}"
+            # requests encodes the | that joins pipeDelimited parts; the TypeScript client sends it as is. What requests
+            # adds after the query, such as the session's params, stays
+            base, _, sent_query = (prepared.url or '').partition('?')
+            query_string = processed_url.split('?', 1)[1]
+            encoded = requests.utils.requote_uri(query_string)
+            if sent_query.startswith(encoded):
+                prepared.url = f"{base}?{query_string}{sent_query[len(encoded):]}"
+                raw_target = prepared.path_url
         if isinstance(prepared.body, (bytes, bytearray)) and prepared.body:
             # sent in blocks, the connect timeout bounds each block and not the whole upload; as a stream the body
             # also goes out again from its start after a 307 or a 308
             prepared.prepare_body(io.BytesIO(prepared.body), None)
         # streamed, so a JSON Lines response is read as it comes
         settings = self.session.merge_environment_settings(prepared.url, {}, True, None, None)
-        response = self.session.send(prepared, timeout=self.timeout, allow_redirects=True, **settings)
+        token = _raw_target.set(raw_target)
+        try:
+            response = self.session.send(prepared, timeout=self.timeout, allow_redirects=True, **settings)
+        finally:
+            _raw_target.reset(token)
 
         content_type = response.headers.get('Content-Type', '')
 
@@ -393,27 +687,23 @@ class ApiClient:
 
         media_type = content_type.split(';')[0].strip().lower()
         if media_type in _JSON_LINES_MEDIA_TYPES:
-            return self._stream_jsonl(response)
+            return self._stream_jsonl(response, (validation or {}).get('iteration'))
 
         if _is_json_media_type(media_type):
             # an empty body, such as a 204 answer has, holds no value
-            return response.json() if response.content else None
+            return _with_tuples(response.json(), (validation or {}).get('output')) if response.content else None
 
         # a file comes back as its bytes; text as str, and without a charset text/* is UTF-8, not requests' Latin-1
-        charset = _charset(content_type)
-        if charset is None and not media_type.startswith('text/'):
+        if _charset(content_type) is None and not media_type.startswith('text/'):
             return response.content
-        try:
-            return response.content.decode(charset or 'utf-8', errors='replace')
-        except LookupError:
-            return response.content.decode('utf-8', errors='replace')
+        return _decode_text(response.content, content_type)
 
     @staticmethod
     def _to_http_exception(response: Response, content_type: str, error_message_key: Optional[str] = None) -> HttpException:
         # a proxy's error page or a plain text error has no JSON envelope, its text is the message
-        text = response.text
+        text = _decode_text(response.content, content_type)
         body: Any = None
-        if 'json' in content_type:
+        if 'json' in content_type.lower():
             try:
                 body = json.loads(text)
             except ValueError:
@@ -450,15 +740,15 @@ class ApiClient:
                 fields.append((key, text))
         return fields
 
-    def _build_query_string(self, data: dict[str, Any], prefix: str = '') -> str:
+    def _build_query_string(self, data: Any, prefix: str = '') -> str:
         parts: List[str] = []
         
-        if isinstance(data, dict): # type: ignore
+        if isinstance(data, dict):
             for key, value in data.items():
                 new_prefix = f"{prefix}[{key}]" if prefix else key
                 parts.append(self._build_query_string(value, new_prefix))
         
-        elif isinstance(data, list): # type: ignore
+        elif isinstance(data, list):
             # an item that sends nothing, such as None, gives its index to the next one:
             # the server reads indexes with a gap as an object
             for item in data:
@@ -509,7 +799,8 @@ class ApiClient:
         # the errors iter_content raises
         try:
             while True:
-                chunk = read1(65536)
+                # requests opens the response without decoding, and decodes only in iter_content
+                chunk = read1(65536, decode_content=True)
                 if not chunk:
                     return
                 yield chunk
@@ -530,8 +821,9 @@ class ApiClient:
         except json.JSONDecodeError as error:
             raise ValueError(f'Malformed JSON line in the stream: {line[:200]!r}') from error
             
-    def _stream_jsonl(self, response: requests.Response) -> Generator[Dict[str, Any], None, None]:
+    def _stream_jsonl(self, response: requests.Response, iteration: Optional[Dict[str, Any]] = None) -> Generator[Any, None, None]:
         # closing gives the connection back to the session, also when iteration stops early
+        has_tuples = iteration is not None and _declares_tuple(iteration)
         try:
             for item in self._stream_jsonl_items(response):
                 if self._is_error_line(item):
@@ -540,7 +832,7 @@ class ApiClient:
                     if isinstance(reason, str) and isinstance(status_code, int):
                         raise HttpException({'message': reason, 'statusCode': status_code, 'isError': True, 'cause': None})
                     raise Exception(reason if isinstance(reason, str) else json.dumps(reason))
-                yield item
+                yield _as_declared(item, iteration, iteration or {}) if has_tuples else item
         finally:
             response.close()
 

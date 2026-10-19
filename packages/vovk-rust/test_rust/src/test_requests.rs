@@ -14,7 +14,7 @@ pub mod test_requests {
     }
 
     // a server that reads each request in full, then answers it with this status, these headers and this body
-    async fn serve(status: &str, headers: &[(&str, &str)], body: &str) -> String {
+    pub(crate) async fn serve(status: &str, headers: &[(&str, &str)], body: &str) -> String {
         use tokio::io::{AsyncReadExt, AsyncWriteExt};
 
         let listener = tokio::net::TcpListener::bind("127.0.0.1:0").await.unwrap();
@@ -401,7 +401,7 @@ pub mod test_requests {
     }
 
     // a server that answers each request with its target and body, {"target": "/api/...?...", "body": "..."}
-    async fn echo() -> String {
+    pub(crate) async fn echo() -> String {
         use tokio::io::{AsyncReadExt, AsyncWriteExt};
 
         let listener = tokio::net::TcpListener::bind("127.0.0.1:0").await.unwrap();
@@ -457,10 +457,10 @@ pub mod test_requests {
             obj: Some(Obj { k: Some("v".to_string()) }),
         };
         let data = mixin_rpc::get_styled((), query, (), None, Some(&api_root), false).await.unwrap();
-        // serde_json keeps object keys sorted
+        // in the order the type declares the fields
         assert_eq!(
             data["target"],
-            "/api/styled?filter%5Bstatus%5D=sold&filter%5Btag%5D=x%2Cy&ids=1,2&k=v&pipe=a|b&space=a%20b&tags=a&tags=b%20c"
+            "/api/styled?tags=a&tags=b%20c&ids=1,2&filter%5Bstatus%5D=sold&filter%5Btag%5D=x%2Cy&pipe=a|b&space=a%20b&k=v"
         );
 
         let body = mixin_rpc::post_styled_::body {
@@ -469,7 +469,7 @@ pub mod test_requests {
             tags: strings(&["a", "b"]),
         };
         let data = mixin_rpc::post_styled(body, (), (), None, Some(&api_root), false).await.unwrap();
-        assert_eq!(data["body"], "metadata%5Bnested%5D%5Ba%5D=1&metadata%5Border_id%5D=6735&name=Rex&tags=a&tags=b");
+        assert_eq!(data["body"], "name=Rex&metadata%5Border_id%5D=6735&metadata%5Bnested%5D%5Ba%5D=1&tags=a&tags=b");
     }
 
     // the mixin's errorMessageKey is error.reason

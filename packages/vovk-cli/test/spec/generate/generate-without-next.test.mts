@@ -648,6 +648,68 @@ await describe('vovk generate in a project without Next.js', async () => {
     assert.notStrictEqual(await read('src/client/openapi.json'), userSpec);
   });
 
+  await it('Writes again a generated file deleted by hand, and still refuses a file of its own', async () => {
+    await createProject(projectDir, {
+      'package.json': { name: 'app', version: '1.0.0', type: 'module' },
+      'vovk.config.mjs': configFile({ composedClient: { prettifyClient: false } }),
+      '.vovk-schema/root.json': withHandlers(['getUser']),
+    });
+    const generatePythonAndRust = async () => {
+      await runCLI(['generate', '--from', 'py', '--out', 'dist_python'], { cwd: projectDir });
+      await runCLI(['generate', '--from', 'rs', '--out', 'dist_rust'], { cwd: projectDir });
+    };
+    await generatePythonAndRust();
+
+    // the one stamped file of each src folder; a changed schema rewrites the schema.json beside it
+    await fs.rm(path.join(projectDir, 'dist_python/src/app/__init__.py'));
+    await fs.rm(path.join(projectDir, 'dist_rust/src/lib.rs'));
+    await fs.writeFile(path.join(projectDir, '.vovk-schema/root.json'), JSON.stringify(withHandlers(['findUser'])));
+    await generatePythonAndRust();
+
+    for (const file of [
+      'dist_python/src/app/__init__.py',
+      'dist_python/src/app/schema.json',
+      'dist_rust/src/lib.rs',
+      'dist_rust/src/schema.json',
+    ]) {
+      assert.ok((await read(file)).includes('findUser'), file);
+    }
+
+    const userLib = 'pub fn mine() {}\n';
+    await fs.writeFile(path.join(projectDir, 'dist_rust/src/lib.rs'), userLib);
+    await assert.rejects(
+      runCLI(['generate', '--from', 'rs', '--out', 'dist_rust'], { cwd: projectDir }),
+      (error: Error) => error.message.includes(path.join('dist_rust', 'src', 'lib.rs'))
+    );
+    assert.strictEqual(await read('dist_rust/src/lib.rs'), userLib);
+
+    // in a folder it never generated into, a JSON file is the user's
+    const userSchema = '{ "mine": true }\n';
+    await fs.mkdir(path.join(projectDir, 'mine/src'), { recursive: true });
+    await fs.writeFile(path.join(projectDir, 'mine/src/schema.json'), userSchema);
+    await assert.rejects(runCLI(['generate', '--from', 'rs', '--out', 'mine'], { cwd: projectDir }), (error: Error) =>
+      error.message.includes(path.join('mine', 'src', 'schema.json'))
+    );
+    assert.strictEqual(await read('mine/src/schema.json'), userSchema);
+  });
+
+  await it('Writes readme.installCommand into the README as written', async () => {
+    const installCommand = `npm install "app@>=1 <2" --registry 'https://x.test/?a=1&b=2'`;
+    await createProject(projectDir, {
+      'package.json': { name: 'app', version: '1.0.0', type: 'module' },
+      'vovk.config.mjs': configFile({
+        composedClient: { prettifyClient: false },
+        outputConfig: { readme: { installCommand } },
+      }),
+      '.vovk-schema/root.json': userSegmentSchema,
+    });
+
+    await runCLI(['generate', '--from', 'readme', '--out', 'dist_readme'], { cwd: projectDir });
+    const readme = await read('dist_readme/README.md');
+
+    assert.ok(readme.includes(`\n# Install the package\n${installCommand}\n`), readme);
+  });
+
   await it('Replaces the files it generated before', async () => {
     const schemaWith = (handlerName: string) => ({
       ...userSegmentSchema,
@@ -859,6 +921,111 @@ imports:
     assert.match(await read('dist_rust/README.md'), /^use acme_rs::user_rpc;$/m);
   });
 
+  await it('Names the Python folder and the README imports after a py_name or rs_name that Python or Rust cannot import', async () => {
+    for (const [py_name, importName] of [
+      ['acme-client', 'acme_client'],
+      ['acme.client', 'acme_client'],
+      ['class', 'class_pkg'],
+      // a name Python can import stays as it is, a Rust keyword too
+      ['match', 'match'],
+    ]) {
+      await createProject(projectDir, {
+        'package.json': { name: 'acme-api', version: '1.0.0', type: 'module' },
+        'vovk.config.mjs': configFile({
+          composedClient: { prettifyClient: false },
+          outputConfig: { package: { py_name, rs_name: 'acme-client' } },
+        }),
+        '.vovk-schema/root.json': userSegmentSchema,
+      });
+
+      await runCLI(['generate', '--from', 'py', '--out', 'dist_python'], { cwd: projectDir });
+
+      assert.deepStrictEqual(await fs.readdir(path.join(projectDir, 'dist_python/src')), [importName]);
+      assert.match(await read('dist_python/pyproject.toml'), new RegExp(`^name = "${importName}"$`, 'm'));
+      assert.match(await read('dist_python/README.md'), new RegExp(`^from ${importName} import UserRPC$`, 'm'));
+    }
+
+    // Cargo takes the dash, and Rust code imports the crate with an underscore
+    await runCLI(['generate', '--from', 'rs', '--out', 'dist_rust'], { cwd: projectDir });
+    const readme = await read('dist_rust/README.md');
+    assert.match(await read('dist_rust/Cargo.toml'), /^name = "acme-client"$/m);
+    assert.match(readme, /^cargo add acme-client$/m);
+    assert.match(readme, /^use acme_client::user_rpc;$/m);
+    assert.doesNotMatch(readme, /^use acme-client/m);
+  });
+
+  await it('Names a Rust crate after an rs_name Cargo refuses, made valid', async () => {
+    await createProject(projectDir, {
+      'package.json': { name: 'acme-api', version: '1.0.0', type: 'module' },
+      'vovk.config.mjs': configFile({
+        composedClient: { prettifyClient: false },
+        outputConfig: { package: { rs_name: '@acme/x' } },
+      }),
+      '.vovk-schema/root.json': userSegmentSchema,
+    });
+
+    await runCLI(['generate', '--from', 'rs', '--out', 'dist_rust'], { cwd: projectDir });
+    const readme = await read('dist_rust/README.md');
+    assert.match(await read('dist_rust/Cargo.toml'), /^name = "acme_x"$/m);
+    assert.match(readme, /^cargo add acme_x$/m);
+    assert.match(readme, /^use acme_x::user_rpc;$/m);
+  });
+
+  await it('Warns once that a Python package name cannot be the name of a pyproject', async () => {
+    const warningsOf = async (packageJson: object, args: string[], pkg?: object) => {
+      await createProject(projectDir, {
+        'package.json': { version: '1.0.0', type: 'module', ...packageJson },
+        'vovk.config.mjs': configFile({
+          composedClient: { prettifyClient: false },
+          outputConfig: { origin: 'https://example.com', package: pkg },
+        }),
+        '.vovk-schema/root.json': userSegmentSchema,
+      });
+      const { stdout, stderr } = await runCLI(['generate', ...args], { cwd: projectDir });
+      return `${stdout}${stderr}`.split('\n').filter((line) => line.includes('pyproject'));
+    };
+
+    for (const [packageJson, pkg, name] of [
+      [{ name: 'api-client-' }, undefined, 'api_client_'],
+      [{ name: 'app' }, { py_name: 'über' }, 'über'],
+      [{ name: 'app' }, { py_name: '_private' }, '_private'],
+    ] as const) {
+      const warnings = await warningsOf(packageJson, ['--from', 'py', '--out', 'out'], pkg);
+      assert.strictEqual(warnings.length, 1, warnings.join('\n'));
+      assert.ok(warnings[0].includes(`"${name}"`), warnings[0]);
+      assert.ok(warnings[0].includes('outputConfig.package.py_name'), warnings[0]);
+    }
+    assert.deepStrictEqual(
+      await warningsOf({ name: 'app' }, ['--from', 'py', '--out', 'out'], { py_name: 'acme_py' }),
+      []
+    );
+    // the source alone has no pyproject
+    assert.deepStrictEqual(
+      await warningsOf({ name: 'app' }, ['--from', 'pySrc', '--out', 'out'], { py_name: '_private' }),
+      []
+    );
+  });
+
+  await it("Names a segment's Python package after its own py_name made valid", async () => {
+    await createProject(projectDir, {
+      'package.json': { name: 'app', version: '1.0.0', type: 'module' },
+      'vovk.config.mjs': configFile({
+        segmentedClient: { prettifyClient: false },
+        outputConfig: { segments: { '': { package: { py_name: 'acme-client' } } } },
+      }),
+      'src/app/api/[[...vovk]]/route.ts': '',
+      '.vovk-schema/root.json': userSegmentSchema,
+    });
+
+    await runCLI(['generate', '--segmented-only', '--segmented-from', 'py', '--segmented-out', 'seg_py'], {
+      cwd: projectDir,
+    });
+
+    assert.deepStrictEqual(await fs.readdir(path.join(projectDir, 'seg_py/root/src')), ['acme_client']);
+    assert.match(await read('seg_py/root/pyproject.toml'), /^name = "acme_client"$/m);
+    assert.match(await read('seg_py/root/README.md'), /^from acme_client import UserRPC$/m);
+  });
+
   await it('Imports a package with a scoped name by its Python and Rust name in the README samples', async () => {
     await createProject(projectDir, {
       'package.json': { name: '@acme/web-app', version: '1.0.0', type: 'module' },
@@ -1007,6 +1174,32 @@ imports:
       cwd: projectDir,
     });
     assert.doesNotMatch(withOrigin.stdout + withOrigin.stderr, /outputConfig\.origin/);
+  });
+
+  await it('Warns once that a Python package named after a standard library module cannot be imported', async () => {
+    const warningsOf = async (packageJson: object, args: string[], pkg?: object) => {
+      await createProject(projectDir, {
+        'package.json': { version: '1.0.0', type: 'module', ...packageJson },
+        'vovk.config.mjs': configFile({
+          composedClient: { prettifyClient: false },
+          outputConfig: { origin: 'https://example.com', package: pkg },
+        }),
+        '.vovk-schema/root.json': userSegmentSchema,
+      });
+      const { stdout, stderr } = await runCLI(['generate', ...args], { cwd: projectDir });
+      return `${stdout}${stderr}`.split('\n').filter((line) => line.includes('standard library'));
+    };
+
+    for (const name of ['site', 'test']) {
+      const warnings = await warningsOf({ name }, ['--from', 'py']);
+      assert.strictEqual(warnings.length, 1, warnings.join('\n'));
+      assert.ok(warnings[0].includes(`"${name}"`), warnings[0]);
+      assert.ok(warnings[0].includes('outputConfig.package.py_name'), warnings[0]);
+    }
+    assert.strictEqual((await warningsOf({ name: 'app' }, ['--from', 'py'], { py_name: 'email' })).length, 1);
+    assert.deepStrictEqual(await warningsOf({ name: 'site' }, ['--from', 'py'], { py_name: 'site_client' }), []);
+    // a Rust crate of that name works
+    assert.deepStrictEqual(await warningsOf({ name: 'site' }, ['--from', 'rs']), []);
   });
 
   await it('Gives the OpenAPI document and the Python package a version when package.json has none', async () => {

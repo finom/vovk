@@ -130,6 +130,28 @@ const pythonMethodNames = new WeakMap<object, Map<string, string>>();
 
 export const getPythonClassName = (rpcModuleName: string) => toPythonIdentifier(rpcModuleName);
 
+// the names a Python package's __init__.py imports or defines before its classes; "client" is the ApiClient
+// biome-ignore format: a word list
+const PYTHON_PACKAGE_NAMES = [
+  'client', 'sys', 'ApiClient', 'HttpException', 'Any', 'Dict', 'List', 'Literal', 'Optional', 'Sequence', 'Set',
+  'TypedDict', 'Union', 'Tuple', 'Generator', 'BinaryIO', 'NotRequired', 'TypeAlias',
+];
+
+// the class names a package gives its RPC modules, as vovk-python's getClassNames does: of the modules with one
+// identifier, the last keeps it and the others get the first free suffix in schema order; so does a name the package
+// already has
+export function getPythonClassNames(rpcModuleNames: string[]): string[] {
+  const identifiers = rpcModuleNames.map(getPythonClassName);
+  const used = new Set([...PYTHON_PACKAGE_NAMES, ...identifiers]);
+  return identifiers.map((identifier, i) => {
+    if (!PYTHON_PACKAGE_NAMES.includes(identifier) && identifiers.lastIndexOf(identifier) === i) return identifier;
+    let unique = identifier;
+    for (let n = 2; used.has(unique); n++) unique = `${identifier}_${n}`;
+    used.add(unique);
+    return unique;
+  });
+}
+
 export const getPythonMethodName = (handlerName: string, handlers: object) =>
   getModuleNames(handlers, pythonMethodNames, toPythonName).get(handlerName) ??
   getUniqueName(handlerName, Object.keys(handlers), toPythonName);
@@ -140,6 +162,22 @@ const toRustName = (name: string) => toRustIdent(snakeCase(name));
 const rustFunctionNames = new WeakMap<object, Map<string, string>>();
 
 export const getRustModuleName = (rpcModuleName: string) => toRustIdent(snakeCase(rpcModuleName));
+
+// the crate's own modules, which an RPC module can't be named after
+const RUST_CRATE_MODULES = ['http_request', 'read_full_schema'];
+
+// the module names a crate gives its RPC modules: in schema order, a taken name gets the first free suffix (user_rpc,
+// user_rpc_2), as vovk-rust's lib.rs template does
+export function getRustModuleNames(rpcModuleNames: string[]): string[] {
+  const used = new Set(RUST_CRATE_MODULES);
+  return rpcModuleNames.map((rpcModuleName) => {
+    const base = getRustModuleName(rpcModuleName);
+    let unique = base;
+    for (let i = 2; used.has(unique); i++) unique = `${base}_${i}`;
+    used.add(unique);
+    return unique;
+  });
+}
 
 export const getRustFunctionName = (handlerName: string, handlers: object) =>
   getModuleNames(handlers, rustFunctionNames, toRustName, RUST_IMPORTS).get(handlerName) ??

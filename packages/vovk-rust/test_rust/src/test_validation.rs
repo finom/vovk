@@ -5,7 +5,37 @@ pub mod test_validation {
     use reqwest::multipart;
     use futures_util::StreamExt;
 
-     
+    // a URL that zod's z.url() takes, as new URL() parses it, the client takes too
+    #[tokio::test]
+    async fn test_url_format_as_zod_reads_it() {
+        use with_validation_rpc::handle_schema_constraints_::body as Body;
+
+        let urls = [
+            "https://example.com/ä",
+            "https://例え.jp/",
+            "https://example.com/a b",
+            "https://example.com/?q=a|b",
+            "https://example.com/%zz",
+            " https://example.com ",
+            "mailto:a@example.com",
+        ];
+        for url in urls {
+            let mut value = get_constraining_object(None);
+            value["str_url"] = serde_json::json!(url);
+            let body: Body = serde_json::from_value(value).unwrap();
+            let result = with_validation_rpc::handle_schema_constraints(body, (), (), None, None, false).await;
+            assert!(result.is_ok(), "{}: {:?}", url, result.err());
+        }
+        for url in ["not-a-url", "http://", "//example.com"] {
+            let mut value = get_constraining_object(None);
+            value["str_url"] = serde_json::json!(url);
+            let body: Body = serde_json::from_value(value).unwrap();
+            let error =
+                with_validation_rpc::handle_schema_constraints(body, (), (), None, None, false).await.unwrap_err();
+            assert_eq!(error.status_code(), 0, "{}: {}", url, error);
+        }
+    }
+
     // #[ignore = "needs external database"] | #[should_panic(expected = "Invalid input")]
     #[tokio::test]
     async fn test_ok() {
@@ -468,6 +498,20 @@ pub mod test_validation {
         assert!(result.is_err());
         let err = result.err().unwrap().to_string();
         assert!(err.contains("<=5") || err.contains("Validation failed") || err.contains("Too big"));
+
+        // the client checks a text body as the string it is, before the request
+        let error = with_validation_rpc::handle_text_plain_data(
+            "toolong".to_string(),
+            with_validation_rpc::handle_text_plain_data_::query { search: "foo".to_string() },
+            (),
+            None,
+            None,
+            false,
+        )
+        .await
+        .unwrap_err();
+        assert_eq!(error.status_code(), 0, "{}", error);
+        assert!(error.message().starts_with("Body validation failed"), "{}", error);
     }
 
     // the file branch of a file-or-JSON body goes out as the binary type the procedure declares
@@ -590,10 +634,7 @@ pub mod test_validation {
     async fn test_constraints() {
         // List of keys that are not supported
         let not_supported = vec![
-            // JSON validator doesn't support these keys
-            "num_multipleOf",
-
-            // TODO: WARNING: Not validated by an unknown reason 
+            // the typed body has no field for the unknown key, so it is never sent (test_type_constraints)
             "obj_strict",
 
             // unwrap errors, tested below
@@ -617,7 +658,7 @@ pub mod test_validation {
             None,
             false
         ).await;
-        assert!(result.is_ok(), "Valid object should pass validation");
+        assert!(result.is_ok(), "Valid object should pass validation: {:?}", result.err());
         
         // Convert struct to JSON to access its keys
         let no_constraints_json = serde_json::to_value(&no_constraints).unwrap();
@@ -705,6 +746,11 @@ pub mod test_validation {
         } else {
             panic!("Expected get_constraining_object to return a JSON object");
         }
+
+        // serde drops the key the struct has no field for, so a strict object can't be violated through the type
+        let strict: with_validation_rpc::handle_schema_constraints_::body =
+            serde_json::from_value(get_constraining_object(Some("obj_strict".to_string()))).unwrap();
+        assert_eq!(serde_json::to_value(&strict).unwrap()["obj_strict"], serde_json::json!({"knownField": "known value"}));
 
         let int32  = no_constraints_json.get("num_int32").unwrap();
         // check if the number is actually an int32

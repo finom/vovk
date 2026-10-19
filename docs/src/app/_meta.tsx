@@ -64,8 +64,8 @@ const meta: MetaRecord = {
   '#advanced-codegen': separator('Codegen Extras'),
   schema: 'Schema',
   mixins: 'OpenAPI Mixins',
-  python: 'Python Client 🧪',
-  rust: 'Rust Client 🧪',
+  python: 'Python Client',
+  rust: 'Rust Client',
   templates: 'Codegen Templates Reference',
 
   '#cli': separator('CLI & Configuration'),

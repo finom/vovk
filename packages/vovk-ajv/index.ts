@@ -39,6 +39,32 @@ const regExp = Object.assign(
   { code: 'new RegExp' }
 );
 
+const testFormat = (format: unknown, value: string): boolean => {
+  if (typeof format === 'function') return !!format(value);
+  if (format instanceof RegExp) return format.test(value);
+  if (typeof format === 'object' && format !== null && 'validate' in format) return testFormat(format.validate, value);
+  return true;
+};
+
+const canParseURL = (value: string) => {
+  try {
+    return !!new URL(value.trim());
+  } catch {
+    return false;
+  }
+};
+
+// Zod's duration, which also takes a fraction of a second (PT0.5S)
+const ZOD_DURATION = /^P(?:(\d+W)|(?!.*W)(?=\d|T\d)(\d+Y)?(\d+M)?(\d+D)?(T(?=\d)(\d+H)?(\d+M)?(\d+([.,]\d+)?S)?)?)$/;
+
+// Zod's z.url() takes what the URL parser takes, such as an IRI host or a space in the path, and z.iso.duration() a
+// fraction of a second: a value that either ajv-formats or Zod takes passes
+const widenFormats = (ajv: Ajv) => {
+  const { uri, duration } = ajv.formats;
+  ajv.addFormat('uri', (value: string) => testFormat(uri, value) || canParseURL(value));
+  ajv.addFormat('duration', (value: string) => testFormat(duration, value) || ZOD_DURATION.test(value));
+};
+
 const createAjv = (options: Options, target: Target, coercesStrings: boolean) => {
   const AjvClass = target === 'draft-2020-12' ? Ajv2020 : Ajv;
   const ajv = new AjvClass({
@@ -53,6 +79,7 @@ const createAjv = (options: Options, target: Target, coercesStrings: boolean) =>
     code: { regExp, ...options.code },
   });
   ajvFormats(ajv);
+  widenFormats(ajv);
   ajvErrors(ajv);
   ajv.addKeyword('x-contentType');
   ajv.addKeyword('x-tsType');

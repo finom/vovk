@@ -4,6 +4,14 @@ All notable changes to `vovk` are documented here. This file is the canonical re
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 4.1.1 - 2026-10-19
+
+### Fixed
+
+- Python and Rust samples (README, OpenAPI `x-codeSamples`) take the arguments the clients take and name modules and classes as the generated packages do ([#96](https://github.com/finom/vovk/pull/96))
+- Samples for type lists, `allOf` with a `oneOf` member and circular schemas; strings fit their length, and a Rust sample skips an `example` that doesn't fit the field's type ([#96](https://github.com/finom/vovk/pull/96))
+- A path param that is literally `%2e` is sent encoded instead of refused; only `""`, `.` and `..` are refused ([#96](https://github.com/finom/vovk/pull/96))
+
 ## 4.1.0 - 2026-10-13
 
 ### Added
