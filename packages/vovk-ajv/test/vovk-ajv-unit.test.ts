@@ -261,4 +261,26 @@ describe('vovk-ajv', () => {
       /ajv-errors: Ajv option allErrors must be true/
     );
   });
+  it('Accepts the URLs and durations Zod accepts', async () => {
+    const schema = z.toJSONSchema(z.object({ url: z.url(), duration: z.iso.duration() }));
+    const urls = [
+      'https://example.com',
+      'https://example.com/ä',
+      'https://例え.jp/',
+      'https://example.com/a b',
+      'https://example.com/?q=a|b',
+      'https://example.com/%zz',
+      'mailto:user@example.com',
+    ];
+    for (const url of urls) {
+      strictEqual(z.url().safeParse(url).success, true, url);
+      await validateBody({ url, duration: 'PT0.5S' }, schema);
+    }
+    for (const url of ['example.com', '/path', 'https://exa mple.com', 'http://[::1']) {
+      strictEqual(z.url().safeParse(url).success, false, url);
+      await rejects(validateBody({ url, duration: 'PT1H' }, schema), /data\/url must match format "uri"/, url);
+    }
+    for (const duration of ['P1D', 'PT1,5S', 'P2W']) await validateBody({ url: 'https://a.b', duration }, schema);
+    await rejects(validateBody({ url: 'https://a.b', duration: 'P' }, schema), /must match format "duration"/);
+  });
 });

@@ -605,6 +605,14 @@ await describe('CLI init', async () => {
       dependencies: ['vovk-python', 'vovk-rust'],
       opposite: true,
     });
+
+    // the Python and Rust packages vovk generate writes are ignored, once
+    await assertFile('.gitignore', ['/src/client', '/dist_python', '/dist_rust']);
+    await vovkInit('--yes --skip-install --lang py rs');
+    const gitignore = await fs.readFile(path.join(cwd, dir, '.gitignore'), 'utf-8');
+    for (const entry of ['/src/client', '/dist_python', '/dist_rust']) {
+      deepStrictEqual(gitignore.split('\n').filter((line) => line.trim() === entry).length, 1, entry);
+    }
   });
 
   await it('Refuses an unknown --lang value', async () => {

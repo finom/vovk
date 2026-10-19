@@ -57,6 +57,11 @@ await describe('toUnderscoredPackageName', async () => {
       normalizeOutTemplatePath('dist_rust/[package_name]/', { name: 'app', rs_name: 'acme-client' }, 'rs_name'),
       'dist_rust/acme-client/'
     );
+    // Cargo refuses @ and /
+    assert.strictEqual(
+      normalizeOutTemplatePath('dist_rust/[package_name]/', { name: 'app', rs_name: '@acme/x' }, 'rs_name'),
+      'dist_rust/acme_x/'
+    );
   });
 
   await it('Names the Python package as the README samples of vovk import it', () => {

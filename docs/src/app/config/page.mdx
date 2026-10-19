@@ -167,7 +167,7 @@ The origin of the client URLs. Defaults to `''`, for relative URLs. For absolute
 
 The data of the generated `package.json` ([TypeScript client](/typescript)), `Cargo.toml` ([Rust client](/rust)) and `pyproject.toml` ([Python client](/python)). The generated `README.md` uses it too: for the name, version, description and so on, and for the package name in the code samples.
 
-By default, the Python and Rust package names come from `package.name`, as [`[package_name]`](/templates#py) does: `@acme/web-app` becomes `acme_web_app`. `py_name` and `rs_name` override them. They name the package, its folder and the imports in the README samples.
+By default, the Python and Rust package names come from `package.name`, as [`[package_name]`](/templates#py) does: `@acme/web-app` becomes `acme_web_app`. `py_name` and `rs_name` override them. They name the package, its folder and the imports in the README samples. A `py_name` Python can't import, or an `rs_name` Cargo refuses, is changed the same way. A `pyproject.toml` name takes only ASCII letters, digits and `_`, and starts and ends with a letter or a digit; `vovk generate` warns about a Python name that doesn't, because the package won't build.
 
 #### `readme: { banner?: string, installCommand?: string, description?: string }`
 

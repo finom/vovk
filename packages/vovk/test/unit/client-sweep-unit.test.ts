@@ -1,4 +1,4 @@
-import { deepStrictEqual, ok, rejects, strictEqual } from 'node:assert';
+import { deepStrictEqual, ok, rejects, strictEqual, throws } from 'node:assert';
 import { createRequire } from 'node:module';
 import { describe, it } from 'node:test';
 import { fileURLToPath } from 'node:url';
@@ -366,6 +366,23 @@ describe('Client sweep, pure functions', () => {
         return true;
       });
     });
+  });
+
+  describe('path params', () => {
+    const { get } = rpcOf({ get: { path: 'items/{id}', httpMethod: 'GET' } });
+
+    for (const id of ['', '.', '..']) {
+      it(`Refuses ${JSON.stringify(id)}`, () => {
+        throws(() => get.getURL({ params: { id } }), /Param "id" can't be empty, "\." or "\.\."/);
+      });
+    }
+
+    // the value is encoded, so a literal %2e arrives as itself and climbs no segment
+    for (const id of ['%2e', '%2E%2e']) {
+      it(`Sends ${JSON.stringify(id)} encoded`, () => {
+        strictEqual(get.getURL({ params: { id } }), `/api/test/items/${encodeURIComponent(id)}`);
+      });
+    }
   });
 
   describe('vovk-ajv', () => {

@@ -14,6 +14,13 @@ export function toPythonPackageName(name: string): string {
     : toUnderscoredPackageName(name);
 }
 
+// a pyproject name: ASCII letters, digits and _, starting and ending with a letter or a digit
+export const isPyprojectName = (name: string) => /^[A-Za-z0-9](?:[A-Za-z0-9_]*[A-Za-z0-9])?$/.test(name);
+
+// a Cargo package name, which Cargo refuses with @, / or . in it: "@acme/x" becomes "acme_x" as an npm name would
+export const toCargoPackageName = (name: string) =>
+  /^[A-Za-z_][A-Za-z0-9_-]*$/.test(name) ? name : toUnderscoredPackageName(name);
+
 // the public top-level modules of the Python 3.9 to 3.14 standard library as sys.stdlib_module_names lists them, and
 // test, which it leaves out; the standard library comes first on sys.path, so a package so named can't be imported
 export const PYTHON_STDLIB_MODULES = new Set(
