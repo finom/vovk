@@ -153,7 +153,11 @@ describe('the generated crate', () => {
       docLines.join('\n')
     );
     assert.ok(!docLines.some((line) => /^(?:[ ]*>)*[ ]{4}/.test(line)), docLines.join('\n'));
-    assert.strictEqual(openFences(read('README.md').split('\n'), () => {}), null, read('README.md'));
+    assert.strictEqual(
+      openFences(read('README.md').split('\n'), () => {}),
+      null,
+      read('README.md')
+    );
   });
 
   test('schema text of only spaces leaves no empty doc comment', () => {
