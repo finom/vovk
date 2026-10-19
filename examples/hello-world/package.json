@@ -49,7 +49,7 @@
     "react": "^19.3.0",
     "react-dom": "^19.3.0",
     "vovk": "^4.1.1",
-    "vovk-ajv": "^0.2.0",
+    "vovk-ajv": "^0.2.1",
     "zod": "^4.6.5"
   },
   "devDependencies": {

@@ -64,7 +64,7 @@
     "use-stick-to-bottom": "^1.1.6",
     "uuid": "^14.0.2",
     "vovk": "^4.1.1",
-    "vovk-ajv": "^0.2.0",
+    "vovk-ajv": "^0.2.1",
     "vovk-python": "^0.0.4",
     "vovk-rust": "^0.0.5",
     "yaml": "^2.9.1",
