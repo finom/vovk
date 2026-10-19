@@ -685,6 +685,13 @@ body:has(.vk-landing) {
   font-weight: 600;
   letter-spacing: 0.01em;
 }
+/* Beside the code, the registry badge goes under the name, whatever the name's length. */
+@container vk-stage (min-width: 640px) {
+  .vk-row-name {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
 
 .vk-landing .vk-reg {
   flex-shrink: 0;
