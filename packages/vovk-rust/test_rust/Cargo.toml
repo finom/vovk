@@ -13,9 +13,7 @@ serde_json = "1.0"
 reqwest = { version = "0.12", features = [ "json", "multipart", "stream" ] }
 tokio = { version = "1", features = ["macros", "rt-multi-thread", "io-util", "net", "time", "sync"] }
 futures-util = "0.3"
-
-# tests/embedded.rs compiles the client's source files into the test: it takes the client's dependencies
-[dev-dependencies]
+# the library and tests/embedded.rs compile the client's source files: they take the client's dependencies
 tokio-util = { version = "0.7", features = ["codec"] }
 jsonschema = { version = "0.57", default-features = false }
 urlencoding = "2.1"

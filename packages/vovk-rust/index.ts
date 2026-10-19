@@ -230,13 +230,18 @@ function indent(level: number, pad: number = 0): string {
   return ' '.repeat(pad + level * 2);
 }
 
+// a title or a description of only spaces would be an empty doc comment
+const hasText = (text: unknown) => text !== undefined && text !== null && String(text).trim() !== '';
+
 function generateDocComment(schema: VovkJSONSchemaBase, level: number, pad: number = 0): string {
-  if (!schema?.title && !schema?.description) return '';
+  const title = hasText(schema?.title) ? schema.title : undefined;
+  const description = hasText(schema?.description) ? schema.description : undefined;
+  if (title === undefined && description === undefined) return '';
 
   const lines = [
-    ...(schema.title ? toRustDocLines(schema.title) : []),
-    ...(schema.title && schema.description ? [''] : []),
-    ...(schema.description ? toRustDocLines(schema.description) : []),
+    ...(title !== undefined ? toRustDocLines(title) : []),
+    ...(title !== undefined && description !== undefined ? [''] : []),
+    ...(description !== undefined ? toRustDocLines(description) : []),
   ];
 
   return lines.map((line) => `${indent(level, pad)}///${line ? ` ${line}` : ''}\n`).join('');
@@ -245,12 +250,53 @@ function generateDocComment(schema: VovkJSONSchemaBase, level: number, pad: numb
 // rustc denies bidirectional control characters in comments and literals, they make code read differently
 const BIDI_CONTROLS = /[\u202A-\u202E\u2066-\u2069]/gu;
 
+// an opening or closing code fence, after the > of a quote and the indent of a list item
+const FENCE = /^((?:[ ]*>)*[ ]*)(`{3,}|~{3,})(.*)$/;
+
+// a line that opens a code fence; a backtick fence's info has no backtick, "```a```" is inline code
+function openingFence(line: string): { prefix: string; fence: string } | null {
+  const match = FENCE.exec(line);
+  return match && !(match[2][0] === '`' && match[3].includes('`')) ? { prefix: match[1], fence: match[2] } : null;
+}
+
+// Markdown lines, each line outside a code fence passed through outside(), and a fence left open closed, so it
+// doesn't take in the text after it
+function mapMarkdownLines(lines: string[], outside: (line: string) => string): string[] {
+  let open: { prefix: string; fence: string } | null = null;
+  const result = lines.map((line) => {
+    if (open) {
+      const match = FENCE.exec(line);
+      if (match && match[2][0] === open.fence[0] && match[2].length >= open.fence.length && !match[3].trim()) {
+        open = null;
+      }
+      return line;
+    }
+    const mapped = outside(line);
+    open = openingFence(mapped);
+    return mapped;
+  });
+  const left = open as { prefix: string; fence: string } | null;
+  return left ? [...result, `${left.prefix}${left.fence}`] : result;
+}
+
+// Markdown from a schema, with a fence it leaves open closed
+export function toMarkdownBlock(text: unknown): string {
+  return mapMarkdownLines(String(text).split(/\r\n|\r|\n/), (line) => line).join('\n');
+}
+
 // Schema text may come from a third-party OpenAPI document: a line break would end a comment and start code,
-// and rustc rejects a bare carriage return inside a doc comment; a number or any other JSON there is written as text
+// and rustc rejects a bare carriage return inside a doc comment; a number or any other JSON there is written as text.
+// rustdoc runs a code block as a doctest: a fence opens a text block, and four spaces, which would start an indented
+// code block (inside a quote too), become three
 export function toRustDocLines(text: unknown): string[] {
-  return String(text)
+  const lines = String(text)
     .split(/\r\n|\r|\n/)
     .map((line) => line.replace(/\p{Cc}/gu, ' ').replace(BIDI_CONTROLS, ' '));
+  return mapMarkdownLines(lines, (line) => {
+    const unindented = line.replace(/^((?:[ ]*>)*)( {4,})/, (_, quote: string) => `${quote}   `);
+    const fence = openingFence(unindented);
+    return fence ? `${fence.prefix}${fence.fence}text` : unindented;
+  });
 }
 
 export function toRustCommentText(text: string): string {

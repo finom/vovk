@@ -2652,6 +2652,207 @@
               }
             }
           }
+        },
+        "lintProneShapes": {
+          "path": "lint-prone-shapes",
+          "httpMethod": "POST",
+          "operationObject": {
+            "summary": " ",
+            "description": "Values:\n- one\nnot indented\n\nList:\n- one\n     two\n\nMust not match [^0-9] or see note[^1]"
+          },
+          "validation": {
+            "body": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "object",
+              "title": " ",
+              "description": "\t",
+              "properties": {
+                "lazy": {
+                  "type": "string",
+                  "description": "Values:\n- one\nnot indented"
+                },
+                "overindented": {
+                  "type": "string",
+                  "description": "List:\n- one\n     two"
+                },
+                "footnote": {
+                  "type": "string",
+                  "description": "Must not match [^0-9] or see note[^1]"
+                },
+                "blank": {
+                  "type": "string",
+                  "title": " ",
+                  "description": " "
+                },
+                "nested": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "additionalProperties": {
+                      "anyOf": [
+                        {
+                          "type": "array",
+                          "items": {
+                            "type": "array",
+                            "prefixItems": [
+                              {
+                                "type": "string"
+                              },
+                              {
+                                "type": [
+                                  "number",
+                                  "null"
+                                ]
+                              }
+                            ],
+                            "items": false,
+                            "minItems": 2
+                          }
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    }
+                  }
+                },
+                "big": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "f01": {
+                          "type": "string"
+                        },
+                        "f02": {
+                          "type": "string"
+                        },
+                        "f03": {
+                          "type": "string"
+                        },
+                        "f04": {
+                          "type": "string"
+                        },
+                        "f05": {
+                          "type": "string"
+                        },
+                        "f06": {
+                          "type": "string"
+                        },
+                        "f07": {
+                          "type": "string"
+                        },
+                        "f08": {
+                          "type": "string"
+                        },
+                        "f09": {
+                          "type": "string"
+                        },
+                        "f10": {
+                          "type": "string"
+                        },
+                        "f11": {
+                          "type": "string"
+                        },
+                        "f12": {
+                          "type": "string"
+                        },
+                        "f13": {
+                          "type": "string"
+                        },
+                        "f14": {
+                          "type": "string"
+                        },
+                        "f15": {
+                          "type": "string"
+                        },
+                        "f16": {
+                          "type": "string"
+                        },
+                        "f17": {
+                          "type": "string"
+                        },
+                        "f18": {
+                          "type": "string"
+                        },
+                        "f19": {
+                          "type": "string"
+                        },
+                        "f20": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "f01",
+                        "f02",
+                        "f03",
+                        "f04",
+                        "f05",
+                        "f06",
+                        "f07",
+                        "f08",
+                        "f09",
+                        "f10",
+                        "f11",
+                        "f12",
+                        "f13",
+                        "f14",
+                        "f15",
+                        "f16",
+                        "f17",
+                        "f18",
+                        "f19",
+                        "f20"
+                      ]
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "describedWithMoreCode": {
+          "path": "described-with-more-code",
+          "httpMethod": "POST",
+          "operationObject": {
+            "description": "Unclosed:\n\n```\nlet open = ;"
+          },
+          "validation": {
+            "body": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "object",
+              "description": "> Quoted:\n>\n>     let indented = ;",
+              "properties": {
+                "rust": {
+                  "type": "string",
+                  "description": "```rust\nlet tagged = ;\n```"
+                },
+                "attrs": {
+                  "type": "string",
+                  "description": "```should_panic,edition2021\nlet attrs = ;\n```"
+                },
+                "tabbed": {
+                  "type": "string",
+                  "description": "Tab:\n\n\tlet tabbed = ;"
+                },
+                "long": {
+                  "type": "string",
+                  "description": "````\n```\nlet inner = ;\n```\n````"
+                },
+                "deep": {
+                  "type": "string",
+                  "description": "- item\n\n      let in_list = ;"
+                },
+                "fenceInQuote": {
+                  "type": "string",
+                  "description": "> ```\n> let open_in_quote = ;"
+                }
+              }
+            }
+          }
         }
       }
     }

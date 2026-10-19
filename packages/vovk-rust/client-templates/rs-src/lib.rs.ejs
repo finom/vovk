@@ -3,8 +3,11 @@ imports: ['vovk-rust']
 ---
 <%- t.getFirstLineBanner() %>
 <%- /\p{Uppercase}|[^_]__+[^_]/u.test(t.underscoredPackageName.replaceAll('-', '_')) ? '#![allow(non_snake_case)] // rustc wants a snake_case crate name\n' : '' -%>
-// schema descriptions are text: rustdoc would compile their code blocks as doctests
-#![cfg(not(doctest))]
+// what a schema brings and the code can't choose: a large variant, a deep type, and text that clippy reads as a
+// misplaced list or footnote; an older clippy doesn't know some of these lints
+#![allow(unknown_lints)]
+#![allow(clippy::large_enum_variant, clippy::type_complexity)]
+#![allow(clippy::doc_lazy_continuation, clippy::doc_overindented_list_items, clippy::doc_suspicious_footnotes)]
 <% const vars = {
     convertJSONSchemasToRustTypes: t.imports['vovk-rust'].convertJSONSchemasToRustTypes,
     getBodyKind: t.imports['vovk-rust'].getBodyKind,
