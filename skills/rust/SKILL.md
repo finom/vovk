@@ -303,8 +303,6 @@ Add module to `src/lib.rs`: `pub mod api;`.
 ## Gotchas
 
 - **Nested types deep.** `body_::profile_::address_::zip` patterns common. `use ... as Name;` import trick keeps call sites readable.
-- **OpenAPI mixins with circular `$refs` not fully supported yet** — if mixin has cycles, generator may fail. Roadmap.
-- **`text/plain` and `application/octet-stream` body params not fully supported** — JSON is solid path today.
 - **Named schemas in `components/schemas` don't yet produce importable shared types** — roadmap. Every call site gets own scoped types.
 - **Streaming needs `futures::StreamExt`** — forget import → `.next()` won't compile.
 - **Multipart file names** without `"`, `\`, or line breaks — reqwest escapes them with a backslash, server keeps it in the name; a `"` makes the form unreadable. Field names go out as written.

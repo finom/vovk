@@ -228,7 +228,14 @@ Build backend **hatchling**, no runtime overhead past deps above.
 
 ## Auth + base URL
 
-Generated client targets URL baked at generate time. Override per call via `api_root` kwarg — fully replaces baked-in value for that call. No module-level setter exists; the `client = ApiClient(...)` inside generated `__init__.py` is frozen at generate time. For dynamic auth, pass `headers` per call.
+Generated client targets URL baked at generate time. Override per call via `api_root` kwarg — fully replaces baked-in value for that call. Auth: pass `headers` per call, or set them once on the module-level `client`, whose `session` every call shares:
+
+```py
+from my_api import client
+
+client.session.headers["Authorization"] = "Bearer ..."
+client.timeout = 30  # seconds, or a (connect, read) tuple; None waits forever
+```
 
 **Don't bake secrets into generated package.** Consumers supply API keys at runtime.
 
@@ -255,12 +262,7 @@ Wire into release flow alongside npm bundle + Rust crate (hello-world chains all
 
 Version / package name flow from root `package.json` (generator copies whitelisted fields — `name`, `version`, `description`, `license`, `author`, `contributors`, `repository`, `homepage`, `bugs`, `keywords` — into generated `pyproject.toml`). Set `version` in root `package.json`, `npm version patch` propagates to all three targets.
 
-**Name transform — pin before publishing.** Python package name = root `name` with hyphens → underscores (`my-api` → `my_api`). Same name used for filesystem path (`src/<name>/`), `pyproject.toml` `name`, `pip install` command in README. Two cases need explicit override:
-
-- **Scoped packages** (`@org/foo`) — `@` and `/` not transformed → default yields invalid Python name. Set override below.
-- **Different distribution name** than npm (e.g., npm `my-api`, PyPI `acme-client`).
-
-Override via `clientTemplateDefs.py.outputConfig.package.name` (same field shape bundle skill documents):
+**Name transform — pin before publishing.** Python package name = root `name` with the scope's `@` dropped and every other character Python can't import → underscore (`my-api` → `my_api`, `@acme/web-app` → `acme_web_app`). Same name used for filesystem path (`src/<name>/`), `pyproject.toml` `name`, `pip install` command in README. Set a different distribution name than npm (e.g., npm `my-api`, PyPI `acme_client`) with `outputConfig.package.py_name`:
 
 ```js
 // vovk.config.mjs
@@ -271,7 +273,7 @@ const config = {
       extends: 'py',
       outputConfig: {
         origin: 'https://api.example.com',
-        package: { name: 'acme_client' }, // PyPI name + filesystem path
+        package: { py_name: 'acme_client' }, // PyPI name + filesystem path
       },
     },
   },
@@ -318,9 +320,7 @@ Then import from `my_project.vovk_client...`.
 - **`TypedDict`, not classes.** Generated shapes dict-based for JSON interop; treat as plain dicts with type hints, not Pydantic models.
 - **Method names snake_case**, type names PascalCase. `updateUser` server → `update_user(...)` Python, `UpdateUserBody` etc.
 - **Client-side validation uses `jsonschema`** — small import + runtime cost. Disable per-call for speed or server-only enforcement.
-- **Base URL override is per-call only.** `api_root` kwarg overrides the URL baked at generate time. No module-level setter; the `ApiClient` instance is frozen.
+- **Base URL override is per-call.** `api_root` kwarg overrides the URL baked at generate time. Headers, timeout and cookies go on the module-level `client` (`client.session.headers`, `client.timeout`).
 - **Regen on schema changes.** Any procedure / schema change server-side needs `vovk generate` before Python client reflects. CI should regen as part of build.
 - **Don't hand-edit generated files.** Put shared Python utilities alongside, not inside, generated package.
-- **Body content types past JSON + multipart limited.** `text/plain` and `application/octet-stream` request bodies not fully supported yet (roadmap). For binary uploads, prefer multipart via `files` arg.
-- **Mixins with circular `$refs` may fail to generate** — Python generator can't yet resolve cycles in third-party OpenAPI specs. Roadmap item.
 - **Named schemas in `components/schemas` don't yet produce shared importable types.** Each call site gets own scoped `TypedDict` instead of single `UserSchema` reused across methods. Roadmap item — until fixed, expect duplicated type definitions.
