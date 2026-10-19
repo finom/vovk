@@ -230,13 +230,18 @@ function indent(level: number, pad: number = 0): string {
   return ' '.repeat(pad + level * 2);
 }
 
+// a title or a description of only spaces would be an empty doc comment
+const hasText = (text: unknown) => text !== undefined && text !== null && String(text).trim() !== '';
+
 function generateDocComment(schema: VovkJSONSchemaBase, level: number, pad: number = 0): string {
-  if (!schema?.title && !schema?.description) return '';
+  const title = hasText(schema?.title) ? schema.title : undefined;
+  const description = hasText(schema?.description) ? schema.description : undefined;
+  if (title === undefined && description === undefined) return '';
 
   const lines = [
-    ...(schema.title ? toRustDocLines(schema.title) : []),
-    ...(schema.title && schema.description ? [''] : []),
-    ...(schema.description ? toRustDocLines(schema.description) : []),
+    ...(title !== undefined ? toRustDocLines(title) : []),
+    ...(title !== undefined && description !== undefined ? [''] : []),
+    ...(description !== undefined ? toRustDocLines(description) : []),
   ];
 
   return lines.map((line) => `${indent(level, pad)}///${line ? ` ${line}` : ''}\n`).join('');
@@ -245,12 +250,53 @@ function generateDocComment(schema: VovkJSONSchemaBase, level: number, pad: numb
 // rustc denies bidirectional control characters in comments and literals, they make code read differently
 const BIDI_CONTROLS = /[\u202A-\u202E\u2066-\u2069]/gu;
 
+// an opening or closing code fence, after the > of a quote and the indent of a list item
+const FENCE = /^((?:[ ]*>)*[ ]*)(`{3,}|~{3,})(.*)$/;
+
+// a line that opens a code fence; a backtick fence's info has no backtick, "```a```" is inline code
+function openingFence(line: string): { prefix: string; fence: string } | null {
+  const match = FENCE.exec(line);
+  return match && !(match[2][0] === '`' && match[3].includes('`')) ? { prefix: match[1], fence: match[2] } : null;
+}
+
+// Markdown lines, each line outside a code fence passed through outside(), and a fence left open closed, so it
+// doesn't take in the text after it
+function mapMarkdownLines(lines: string[], outside: (line: string) => string): string[] {
+  let open: { prefix: string; fence: string } | null = null;
+  const result = lines.map((line) => {
+    if (open) {
+      const match = FENCE.exec(line);
+      if (match && match[2][0] === open.fence[0] && match[2].length >= open.fence.length && !match[3].trim()) {
+        open = null;
+      }
+      return line;
+    }
+    const mapped = outside(line);
+    open = openingFence(mapped);
+    return mapped;
+  });
+  const left = open as { prefix: string; fence: string } | null;
+  return left ? [...result, `${left.prefix}${left.fence}`] : result;
+}
+
+// Markdown from a schema, with a fence it leaves open closed
+export function toMarkdownBlock(text: unknown): string {
+  return mapMarkdownLines(String(text).split(/\r\n|\r|\n/), (line) => line).join('\n');
+}
+
 // Schema text may come from a third-party OpenAPI document: a line break would end a comment and start code,
-// and rustc rejects a bare carriage return inside a doc comment; a number or any other JSON there is written as text
+// and rustc rejects a bare carriage return inside a doc comment; a number or any other JSON there is written as text.
+// rustdoc runs a code block as a doctest: a fence opens a text block, and four spaces, which would start an indented
+// code block (inside a quote too), become three
 export function toRustDocLines(text: unknown): string[] {
-  return String(text)
+  const lines = String(text)
     .split(/\r\n|\r|\n/)
     .map((line) => line.replace(/\p{Cc}/gu, ' ').replace(BIDI_CONTROLS, ' '));
+  return mapMarkdownLines(lines, (line) => {
+    const unindented = line.replace(/^((?:[ ]*>)*)( {4,})/, (_, quote: string) => `${quote}   `);
+    const fence = openingFence(unindented);
+    return fence ? `${fence.prefix}${fence.fence}text` : unindented;
+  });
 }
 
 export function toRustCommentText(text: string): string {
@@ -737,6 +783,8 @@ function emitHelperModule(name: string, helperMod: Module | undefined, mod: Modu
   const ind = indent(mod.level, ctx.pad);
   mod.code += `${ind}#[allow(non_snake_case)]\n`;
   mod.code += `${ind}pub mod ${name}_ {\n`;
+  // a union whose reader is written by hand derives no Deserialize
+  mod.code += `${indent(mod.level + 1, ctx.pad)}#[allow(unused_imports)]\n`;
   mod.code += `${indent(mod.level + 1, ctx.pad)}use serde::{Serialize, Deserialize};\n\n`;
   mod.code += helperMod.code;
   mod.code += `${ind}}\n`;
@@ -927,17 +975,37 @@ function getDiscriminatorTags(schema: Schema, branches: Schema[]): [string, numb
   return [...tags];
 }
 
-// reads the variant the discriminator names first, then every variant in order as the untagged enum does
-function emitDiscriminatedDeserialize(
+// the fields of a variant that takes no other field, an object whose additionalProperties is false, through
+// references; null for any other variant
+function closedObjectKeys(schema: Schema, ctx: Context): string[] | null {
+  const seen = new Set<string>();
+  let target: Schema | undefined = effectiveSchema(schema, ctx);
+  while (target?.$ref && !seen.has(target.$ref)) {
+    seen.add(target.$ref);
+    const key = refKey(target.$ref);
+    target = (key !== null ? ctx.defSchemas.get(key) : undefined) ?? resolvePointer(target.$ref, ctx.root);
+    if (target) target = effectiveSchema(target, ctx);
+  }
+  if (!target || target.$ref) return null;
+  const isObject = nominalKind(target, ctx) === 'struct' || (target.type === 'object' && !hasProperties(target));
+  const { patternProperties } = target as { patternProperties?: unknown };
+  if (!isObject || target.additionalProperties !== false || patternProperties) return null;
+  return Object.keys(target.properties ?? {});
+}
+
+// a union's reader written by hand: the variant the discriminator names first, if there is one; then, in order, the
+// variants that have every field of the value, so a closed object doesn't read the value of a later variant and drop
+// its fields; then every variant in order, as the untagged enum does
+function emitUnionDeserialize(
   name: string,
-  property: string,
-  tags: [string, number][],
+  discriminator: { property: string; tags: [string, number][] } | null,
   readers: (string | null)[],
+  closedKeys: (string[] | null)[],
   mod: Module,
   ctx: Context
 ): void {
   const ind = (depth: number) => indent(mod.level + depth, ctx.pad);
-  const tag = `__value.get(${toRustString(property)}).and_then(serde_json::Value::as_str).unwrap_or_default()`;
+  const count = readers.length;
   const error = toRustString(`data did not match any variant of untagged enum ${name}`);
   let code = `${ind(0)}impl<'de> serde::Deserialize<'de> for ${name} {\n`;
   code += `${ind(1)}fn deserialize<__D: serde::Deserializer<'de>>(__deserializer: __D) -> ${RESULT}<Self, __D::Error> {\n`;
@@ -948,12 +1016,30 @@ function emitDiscriminatedDeserialize(
     code += `${ind(3)}${index} => ${read}.ok().map(Self::Variant${index}),\n`;
   });
   code += `${ind(3)}_ => ${OPTION}::None,\n${ind(2)}};\n`;
-  // past the last variant when the value has no tag the discriminator knows
-  code += `${ind(2)}let __tagged = match ${tag} {\n`;
-  for (const [value, index] of tags) code += `${ind(3)}${toRustString(value)} => ${index},\n`;
-  code += `${ind(3)}_ => ${readers.length},\n${ind(2)}};\n`;
-  code += `${ind(2)}__read(__tagged)\n`;
-  code += `${ind(3)}.or_else(|| (0..${readers.length}).find_map(__read))\n`;
+  const steps: string[] = [];
+  if (discriminator) {
+    const tag = `__value.get(${toRustString(discriminator.property)}).and_then(serde_json::Value::as_str).unwrap_or_default()`;
+    // past the last variant when the value has no tag the discriminator knows
+    code += `${ind(2)}let __tagged = match ${tag} {\n`;
+    for (const [value, index] of discriminator.tags) code += `${ind(3)}${toRustString(value)} => ${index},\n`;
+    code += `${ind(3)}_ => ${count},\n${ind(2)}};\n`;
+    steps.push('__read(__tagged)');
+  }
+  if (closedKeys.some(Boolean)) {
+    code += `${ind(2)}let __has_only = |__keys: &[&str]| {\n`;
+    code += `${ind(3)}__value.as_object().is_none_or(|__map| __map.keys().all(|__key| __keys.contains(&__key.as_str())))\n`;
+    code += `${ind(2)}};\n`;
+    code += `${ind(2)}let __fits = |__index: usize| match __index {\n`;
+    closedKeys.forEach((keys, index) => {
+      if (keys) code += `${ind(3)}${index} => __has_only(&[${keys.map(toRustString).join(', ')}]),\n`;
+    });
+    code += `${ind(3)}_ => true,\n${ind(2)}};\n`;
+    steps.push(`(0..${count}).filter(|&__index| __fits(__index)).find_map(__read)`);
+  }
+  steps.push(`(0..${count}).find_map(__read)`);
+  const [first, ...rest] = steps;
+  code += `${ind(2)}${first}\n`;
+  for (const step of rest) code += `${ind(3)}.or_else(|| ${step})\n`;
   code += `${ind(3)}.ok_or_else(|| serde::de::Error::custom(${error}))\n`;
   code += `${ind(1)}}\n${ind(0)}}\n\n`;
   mod.code += code;
@@ -965,26 +1051,29 @@ function emitUnion(schema: Schema, name: string, mod: Module, ctx: Context): voi
   const { scope, getModule } = helperScope(name, mod);
   const branches = schema.anyOf ?? schema.oneOf ?? [];
   const tags = getDiscriminatorTags(schema, branches);
+  const closedKeys = branches.map((variant) => closedObjectKeys(variant, ctx));
+  const isHandWritten = tags.length > 0 || closedKeys.some(Boolean);
   const readers: (string | null)[] = [];
   const variants = branches
     .map((variant, index) => {
       const type = typeExpr(variant, `Variant${index}`, scope, ctx, true);
       const check = emitConstCheck(variant, type, `${name}_Variant${index}`, mod, ctx);
       readers.push(check);
-      // with a discriminator the reader is written by hand and calls the check itself
-      const field = check && !tags.length ? `#[serde(deserialize_with = "${check}")] ${type}` : type;
+      // a reader written by hand calls the check itself
+      const field = check && !isHandWritten ? `#[serde(deserialize_with = "${check}")] ${type}` : type;
       return `${indent(level + 1, ctx.pad)}Variant${index}(${field}),\n`;
     })
     .join('');
 
   mod.code += generateDocComment(schema, level, ctx.pad);
-  mod.code += `${indent(level, ctx.pad)}#[derive(Debug, Serialize, ${tags.length ? '' : 'Deserialize, '}Clone)]\n`;
+  mod.code += `${indent(level, ctx.pad)}#[derive(Debug, Serialize, ${isHandWritten ? '' : 'Deserialize, '}Clone)]\n`;
   mod.code += `${indent(level, ctx.pad)}#[allow(non_camel_case_types)]\n`;
   mod.code += `${indent(level, ctx.pad)}#[serde(untagged)]\n`;
   mod.code += `${indent(level, ctx.pad)}pub enum ${name} {\n${variants}${indent(level, ctx.pad)}}\n\n`;
-  if (tags.length) {
-    const { propertyName } = (schema as { discriminator: { propertyName: string } }).discriminator;
-    emitDiscriminatedDeserialize(name, propertyName, tags, readers, mod, ctx);
+  if (isHandWritten) {
+    const property = (schema as { discriminator?: { propertyName?: string } }).discriminator?.propertyName;
+    const discriminator = tags.length && property !== undefined ? { property, tags } : null;
+    emitUnionDeserialize(name, discriminator, readers, closedKeys, mod, ctx);
   }
   emitHelperModule(name, getModule(), mod, ctx);
 }

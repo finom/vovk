@@ -8,7 +8,7 @@ imports: ['vovk-rust']
 
 <%- t.readme.description ?? (`${t.package.description ? `> ${t.package.description}` : ''}`) %>
 
-<%- t.package.license ? `License: **${t.package.license}**` : '' %>
+<% const license = typeof t.package.license === 'string' ? t.package.license : t.package.license?.type; %><%- typeof license === 'string' && license ? `License: **${license}**` : '' %>
 
 <%
 // the module names the crate has: in schema order, a taken name gets the first free suffix, as in lib.rs
@@ -77,7 +77,7 @@ const sampleCrates = [
 ### <%= moduleName %>::<%= name %>
 <%- summary ? `> ${summary}` : handlerSchema.operationObject?.summary ? `> ${handlerSchema.operationObject.summary}` : '' %>
 
-<%- !summary && handlerSchema.operationObject?.description ? `${handlerSchema.operationObject.description}` : '' %>
+<%- !summary && handlerSchema.operationObject?.description ? t.imports['vovk-rust'].toMarkdownBlock(handlerSchema.operationObject.description) : '' %>
 
 `<%= handlerSchema.httpMethod %> <%= url %>`
 

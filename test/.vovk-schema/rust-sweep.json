@@ -131,6 +131,88 @@
           "path": "query-array",
           "httpMethod": "GET"
         },
+        "postWire": {
+          "validation": {
+            "body": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "object",
+              "properties": {
+                "n": {
+                  "type": "number"
+                },
+                "flag": {
+                  "type": "boolean"
+                },
+                "tags": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              },
+              "required": [
+                "n",
+                "flag",
+                "tags"
+              ]
+            },
+            "query": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "object",
+              "properties": {
+                "z": {
+                  "type": "object",
+                  "properties": {
+                    "f": {
+                      "type": "string"
+                    },
+                    "d": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "f",
+                    "d"
+                  ]
+                },
+                "a": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "z",
+                "a"
+              ]
+            }
+          },
+          "path": "wire",
+          "httpMethod": "POST"
+        },
+        "postWireForm": {
+          "validation": {
+            "body": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "object",
+              "properties": {
+                "z": {
+                  "type": "string"
+                },
+                "a": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "z",
+                "a"
+              ],
+              "x-contentType": [
+                "application/x-www-form-urlencoded"
+              ]
+            }
+          },
+          "path": "wire-form",
+          "httpMethod": "POST"
+        },
         "getNumericQuery": {
           "validation": {
             "query": {

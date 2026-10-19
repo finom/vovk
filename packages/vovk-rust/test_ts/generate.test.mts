@@ -108,11 +108,72 @@ describe('the generated crate', () => {
     assert.match(source, /pub async fn get_thing\(/);
   });
 
-  test('schema text is never compiled as a doctest', () => {
-    const source = generate(listUsers)('src/lib.rs');
-    const attribute = source.indexOf('\n#![cfg(not(doctest))]\n');
+  test('schema text is never compiled as a doctest, and the files stay whole under rustdoc', () => {
+    const description = [
+      '```\nlet a = ;\n```',
+      '```rust\nlet b = ;\n```',
+      'Indented:\n\n    let c = ;',
+      '> Quoted:\n>\n>     let d = ;',
+      '- item\n\n      let e = ;',
+      '````\n```\nlet f = ;\n```\n````',
+      '```\nlet g = ;',
+    ].join('\n\n');
+    const read = generate(
+      userController({
+        create: {
+          httpMethod: 'POST',
+          path: '',
+          operationObject: { description },
+          validation: { body: { type: 'object', description, properties: { a: { type: 'string', description } } } },
+        },
+      })
+    );
+    const source = read('src/lib.rs');
+    const docLines = [...source.matchAll(/^ *\/\/\/ ?(.*)$/gm)].map(([, line]) => line);
 
-    assert.ok(attribute !== -1 && attribute < source.search(/^mod /m), source);
+    // rustdoc would drop the module from a host crate's doctest build, and the crate's code that names it with it
+    assert.ok(!source.includes('cfg(not(doctest))'), source);
+    // every fence opens a text block, and each text closes its fences: the fence of g doesn't run into the text after
+    // it; a fence with an info string inside a block is text of that block
+    const openFences = (lines: string[], onOpen: (line: string) => void) => {
+      let open: string | null = null;
+      for (const line of lines) {
+        const fence = /^[> ]*(`{3,}|~{3,})(.*)$/.exec(line);
+        if (!fence) continue;
+        if (!open) {
+          open = fence[1];
+          onOpen(line);
+        } else if (fence[1][0] === open[0] && fence[1].length >= open.length && !fence[2]) open = null;
+      }
+      return open;
+    };
+    assert.strictEqual(
+      openFences(docLines, (line) => assert.match(line, /^[> ]*(`{3,}|~{3,})text$/, line)),
+      null,
+      docLines.join('\n')
+    );
+    assert.ok(!docLines.some((line) => /^(?:[ ]*>)*[ ]{4}/.test(line)), docLines.join('\n'));
+    assert.strictEqual(
+      openFences(read('README.md').split('\n'), () => {}),
+      null,
+      read('README.md')
+    );
+  });
+
+  test('schema text of only spaces leaves no empty doc comment', () => {
+    const source = generate(
+      userController({
+        create: {
+          httpMethod: 'POST',
+          path: '',
+          validation: {
+            body: { type: 'object', title: ' ', description: '\t', properties: { a: { type: 'string', title: ' ' } } },
+          },
+        },
+      })
+    )('src/lib.rs');
+
+    assert.doesNotMatch(source, /^ *\/\/\/\s*$/m, source);
   });
 
   test('the README adds the crate as a dependency: it is a library', () => {
@@ -214,6 +275,31 @@ describe('the generated crate', () => {
     // and a keyword other than up to 20 letters, digits, _, - or + that starts with a letter or digit
     assert.match(packageTable, /^repository = "https:\/\/github\.com\/acme\/app\.git"$/m, cargoToml);
     assert.deepStrictEqual(keywords, ['api', 'client', 'rpc', 'openapi', 'types']);
+  });
+
+  test("package.json's legacy object forms give a Cargo.toml that cargo reads", () => {
+    const read = generate(
+      listUsers,
+      {},
+      {
+        name: 'app',
+        version: '1.0.0',
+        // the legacy npm form of a license
+        license: { type: 'MIT', url: 'https://opensource.org/licenses/MIT' },
+        author: { email: 'ann@example.com' },
+        contributors: [{ email: 'bob@example.com' }, { name: 'Cat', email: 'cat@example.com' }, 'Dan'],
+        bugs: { email: 'bugs@example.com' },
+      }
+    );
+    const cargoToml = read('Cargo.toml');
+    const packageTable = cargoPackageTable(cargoToml);
+
+    // a [package.license] table fails cargo metadata
+    assert.match(packageTable, /^license = "MIT"$/m, cargoToml);
+    assert.doesNotMatch(cargoToml, /^\[package\.license\]/m, cargoToml);
+    assert.match(packageTable, /^authors = \[ "Cat <cat@example\.com>", "Dan" \]$/m, cargoToml);
+    assert.doesNotMatch(cargoToml, /undefined|metadata/, cargoToml);
+    assert.match(read('README.md'), /^License: \*\*MIT\*\*$/m);
   });
 
   test("a repository in npm's other forms is an https URL in Cargo.toml, or is left out", () => {

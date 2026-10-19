@@ -1,3 +1,9 @@
+// the rsSrc files as a module of this library, as an app embeds them: cargo test builds them and runs the doctests of
+// the library, schema text included
+#[path = "../../generated_shapes_client/src/lib.rs"]
+pub mod embedded_shapes;
+pub use embedded_shapes::shapes_rpc as embedded_shapes_rpc;
+
 mod test_validation;
 mod test_common;
 mod test_segments;

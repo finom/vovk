@@ -142,9 +142,72 @@ fn compile_schema(schema: &Value) -> Result<Validator, String> {
     jsonschema::options()
         .with_draft(if is_draft7 { Draft::Draft7 } else { Draft::Draft202012 })
         .should_validate_formats(true)
+        // as zod checks them, so the client takes what the server takes
+        .with_format("uri", is_url)
+        .with_format("duration", is_duration)
+        .with_format("hostname", is_hostname)
         .offline()
         .build(&with_rust_patterns(schema))
         .map_err(|e| e.to_string())
+}
+
+// what new URL() parses, as z.url() checks it
+fn is_url(value: &str) -> bool {
+    reqwest::Url::parse(value.trim()).is_ok()
+}
+
+// ISO 8601 as z.iso.duration() reads it: P, then weeks alone, or years, months, days and a time part of hours, minutes
+// and seconds, each in that order, with a fraction only on the seconds
+fn is_duration(value: &str) -> bool {
+    let Some(rest) = value.strip_prefix('P') else { return false };
+    if let Some(weeks) = rest.strip_suffix('W') {
+        return is_digits(weeks);
+    }
+    let (date, time) = match rest.split_once('T') {
+        Some((date, time)) => (date, Some(time)),
+        None => (rest, None),
+    };
+    let time_ok = time.is_none_or(|time| time.starts_with(|c: char| c.is_ascii_digit()) && has_units(time, "HMS"));
+    (!date.is_empty() || time.is_some()) && has_units(date, "YMD") && time_ok
+}
+
+fn is_digits(value: &str) -> bool {
+    !value.is_empty() && value.bytes().all(|b| b.is_ascii_digit())
+}
+
+// numbers each followed by one of the designators, in their order and at most once; a fraction only before S
+fn has_units(mut value: &str, designators: &str) -> bool {
+    let mut allowed = designators;
+    while !value.is_empty() {
+        let Some(end) = value.find(|c: char| !c.is_ascii_digit() && c != '.' && c != ',') else { return false };
+        let (number, rest) = value.split_at(end);
+        let Some(designator) = rest.chars().next() else { return false };
+        let Some(position) = allowed.find(designator) else { return false };
+        let fraction = number.split_once(['.', ',']);
+        let number_ok = match fraction {
+            Some((whole, part)) => designator == 'S' && is_digits(whole) && is_digits(part),
+            None => is_digits(number),
+        };
+        if !number_ok {
+            return false;
+        }
+        allowed = &allowed[position + 1..];
+        value = &rest[1..];
+    }
+    true
+}
+
+// as z.hostname() reads it: up to 253 characters and an optional trailing dot, labels of 1 to 63 letters, digits and
+// hyphens that neither start nor end with a hyphen
+fn is_hostname(value: &str) -> bool {
+    let name = value.strip_suffix('.').unwrap_or(value);
+    (1..=253).contains(&name.len())
+        && name.split('.').all(|label| {
+            (1..=63).contains(&label.len())
+                && label.bytes().all(|b| b.is_ascii_alphanumeric() || b == b'-')
+                && !label.starts_with('-')
+                && !label.ends_with('-')
+        })
 }
 
 // a schema pattern is a JavaScript one: \< and \> are the characters, not word boundaries, and a [ inside a class is
@@ -240,17 +303,10 @@ fn number_to_string(number: &serde_json::Number) -> String {
     }
 }
 
-// "", "." and ".." (also percent-encoded) would drop or climb a path segment and so reach another route
+// "", "." and ".." would drop or climb a path segment and so reach another route; any other value is encoded, so "%2e"
+// goes out as "%252e"
 fn is_unsafe_segment(value: &str) -> bool {
-    let mut rest = value.to_ascii_lowercase();
-    for _ in 0..2 {
-        if let Some(stripped) = rest.strip_prefix('.') {
-            rest = stripped.to_string();
-        } else if let Some(stripped) = rest.strip_prefix("%2e") {
-            rest = stripped.to_string();
-        }
-    }
-    rest.is_empty()
+    matches!(value, "" | "." | "..")
 }
 
 // a form field is text: null is left out, an array repeats its key and an object is sent as JSON; a property with an
@@ -438,6 +494,8 @@ where
         RequestBody::Json(b) | RequestBody::UrlEncoded(b) => {
             Some(serde_json::to_value(b).map_err(|e| format!("Failed to serialize body: {}", e))?)
         }
+        // checked as the string it is, never sent as JSON
+        RequestBody::Text(text, _) if !disable_client_validation => Some(Value::String(text.clone())),
         _ => None,
     };
         
@@ -450,7 +508,7 @@ where
         .map_err(|e| format!("Failed to serialize params: {}", e))?;
 
     if !disable_client_validation {
-        // a multipart, text or binary body is left to the server
+        // a multipart or binary body is left to the server
         if let Some(body_schema) = validation.get("body") {
             if let Some(ref body_val) = body_value {
                 validate(endpoint, "Body", body_schema, body_val)?;
@@ -537,15 +595,21 @@ where
         headers_map.insert("Content-Type", value);
     }
 
-    // a value goes out without the spaces, tabs and line breaks around it, as fetch sends it; a name or value that is
-    // still invalid fails the call, which otherwise would go out without it (the value stays out of the message)
+    // a value goes out without the spaces, tabs and line breaks around it, and as Latin-1 bytes, as fetch sends it; a
+    // name or value that is still invalid, such as one with a character past U+00FF, fails the call, which otherwise
+    // would go out without it (the value stays out of the message)
     if let Some(provided_headers) = headers {
         for (key, value) in provided_headers {
             let header_name = reqwest::header::HeaderName::from_bytes(key.as_bytes())
                 .map_err(|_| format!("Invalid header name {:?}", key))?;
-            let header_value =
-                reqwest::header::HeaderValue::from_str(value.trim_matches(|c| matches!(c, ' ' | '\t' | '\r' | '\n')))
-                    .map_err(|_| format!("Invalid value of header {:?}", key))?;
+            let latin1: Option<Vec<u8>> = value
+                .trim_matches(|c| matches!(c, ' ' | '\t' | '\r' | '\n'))
+                .chars()
+                .map(|c| u8::try_from(c).ok())
+                .collect();
+            let header_value = latin1
+                .and_then(|bytes| reqwest::header::HeaderValue::from_bytes(&bytes).ok())
+                .ok_or_else(|| format!("Invalid value of header {:?}", key))?;
             headers_map.insert(header_name, header_value);
         }
     }
@@ -673,9 +737,9 @@ fn base64(bytes: &[u8]) -> String {
     const ALPHABET: &[u8; 64] = b"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
     let mut out = String::with_capacity(bytes.len().div_ceil(3) * 4);
     for chunk in bytes.chunks(3) {
-        let n = (chunk[0] as u32) << 16 | (*chunk.get(1).unwrap_or(&0) as u32) << 8 | *chunk.get(2).unwrap_or(&0) as u32;
+        let n = ((chunk[0] as u32) << 16) | ((*chunk.get(1).unwrap_or(&0) as u32) << 8) | *chunk.get(2).unwrap_or(&0) as u32;
         for i in 0..4 {
-            out.push(if i <= chunk.len() { ALPHABET[(n >> (18 - 6 * i) & 63) as usize] as char } else { '=' });
+            out.push(if i <= chunk.len() { ALPHABET[((n >> (18 - 6 * i)) & 63) as usize] as char } else { '=' });
         }
     }
     out
