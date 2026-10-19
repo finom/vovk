@@ -942,6 +942,40 @@ body:has(.vk-landing) {
   cursor: pointer;
 }
 
+/* On a phone each command box takes the whole row, and its text shrinks to fit: a monospace character is 0.6em
+   wide, so the divisor is the command's length in characters and the subtracted px are the padding, gap and button. */
+@media (max-width: 639px) {
+  .vk-landing .vk-cmd,
+  .vk-init > div {
+    flex: 1 1 100%;
+    width: 100%;
+    container-type: inline-size;
+  }
+
+  .vk-landing .vk-cmd code,
+  .vk-init code {
+    flex: 1 1 auto;
+  }
+
+  .vk-cmd code {
+    font-size: min(15px, calc((100cqi - 114px) / 15.6));
+  }
+
+  .vk-cmd-lg code {
+    font-size: min(17px, calc((100cqi - 150px) / 15.6));
+  }
+
+  @media (max-width: 479px) {
+    .vk-cmd-lg code {
+      font-size: min(17px, calc((100cqi - 116px) / 15.6));
+    }
+  }
+
+  .vk-init code {
+    font-size: min(13px, calc((100cqi - 110px) / 15));
+  }
+}
+
 /* Examples */
 
 .vk-examples > .vk-wrap {
