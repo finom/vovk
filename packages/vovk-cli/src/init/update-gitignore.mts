@@ -3,24 +3,27 @@ import path from 'node:path';
 import { getRelativeSrcRoot } from '../get-project-info/get-config/get-relative-src-root.mjs';
 import { toPosixPath } from '../utils/to-import-path.mjs';
 
-// adds the default composed client folder and returns the entry, or null when .gitignore has it
-export async function updateGitignore(root: string) {
+// the folders the py and rs templates write to by default
+const LANG_OUT_DIRS: Record<string, string> = { py: 'dist_python', rs: 'dist_rust' };
+
+// adds the default composed client folder, and the Python and Rust package folders for --lang, and returns the entries
+// .gitignore didn't have
+export async function updateGitignore(root: string, lang: string[] = []) {
   const srcRoot = await getRelativeSrcRoot({ cwd: root });
   // git reads "\" in .gitignore as an escape, so the entry keeps forward slashes on Windows
-  const outDir = toPosixPath(path.join(srcRoot ?? '.', 'client'));
-  const entry = `/${outDir}`;
+  const outDirs = [toPosixPath(path.join(srcRoot ?? '.', 'client')), ...lang.flatMap((l) => LANG_OUT_DIRS[l] ?? [])];
   const gitignorePath = path.join(root, '.gitignore');
   const content = await fs.readFile(gitignorePath, 'utf-8').catch(() => '');
+  const lines = content.split('\n').map((line) => line.trim().replace(/\/$/, ''));
 
-  const hasEntry = content.split('\n').some((line) => {
-    const trimmed = line.trim().replace(/\/$/, '');
-    return trimmed === entry || trimmed === outDir;
-  });
+  const entries = outDirs
+    .filter((outDir) => !lines.includes(`/${outDir}`) && !lines.includes(outDir))
+    .map((outDir) => `/${outDir}`);
 
-  if (hasEntry) return null;
+  if (!entries.length) return entries;
 
-  const updated = `${content.length && !content.endsWith('\n') ? `${content}\n` : content}\n# vovk generated client\n${entry}\n`;
+  const updated = `${content.length && !content.endsWith('\n') ? `${content}\n` : content}\n# vovk generated client\n${entries.join('\n')}\n`;
   await fs.writeFile(gitignorePath, updated, 'utf-8');
 
-  return entry;
+  return entries;
 }

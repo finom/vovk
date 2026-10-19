@@ -189,8 +189,9 @@ export class Init {
 
     try {
       if (!dryRun) {
-        const gitignoreEntry = await updateGitignore(root);
-        if (gitignoreEntry) log.info(`Added ${chalkHighlightThing(gitignoreEntry)} to .gitignore`);
+        for (const entry of await updateGitignore(root, lang)) {
+          log.info(`Added ${chalkHighlightThing(entry)} to .gitignore`);
+        }
       }
     } catch (error) {
       log.error(`Failed to update .gitignore: ${(error as Error).message}`);

@@ -20,15 +20,27 @@ await describe('updateGitignore', async () => {
       path.isAbsolute(segments[0]) ? posixJoin(...segments) : path.win32.join(...segments)
     );
 
-    let entry: string | null;
+    let entries: string[];
     try {
-      entry = await updateGitignore(projectDir);
+      entries = await updateGitignore(projectDir);
     } finally {
       join.mock.restore();
     }
 
     // git reads "\" in .gitignore as an escape, so "/src\client" would match nothing
-    assert.strictEqual(entry, '/src/client');
+    assert.deepStrictEqual(entries, ['/src/client']);
     assert.match(await fs.readFile(path.join(projectDir, '.gitignore'), 'utf-8'), /^\/src\/client$/m);
+  });
+
+  await it('Adds the Python and Rust packages for --lang, once', async () => {
+    await createProject(projectDir, { 'src/app/layout.tsx': '', '.gitignore': '/dist_rust/\n' });
+
+    assert.deepStrictEqual(await updateGitignore(projectDir, ['py', 'rs']), ['/src/client', '/dist_python']);
+    assert.deepStrictEqual(await updateGitignore(projectDir, ['py', 'rs']), []);
+    const lines = (await fs.readFile(path.join(projectDir, '.gitignore'), 'utf-8')).split('\n');
+    for (const entry of ['/src/client', '/dist_python']) {
+      assert.strictEqual(lines.filter((line) => line === entry).length, 1, entry);
+    }
+    assert.ok(!lines.includes('/dist_rust'));
   });
 });
