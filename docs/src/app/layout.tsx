@@ -6,8 +6,9 @@ import '@/globals.css';
 import VovkLogo, { VovkMark } from '@/components/vovk-logo';
 import { Geist, Geist_Mono, JetBrains_Mono } from 'next/font/google';
 import type { Metadata } from 'next';
+import { headColors } from '@/theme/head.mjs';
 
-// Geist for text, Geist Mono for code. globals.css hands them to Nextra. JetBrains Mono for the home page's code orbit.
+// Geist for text, Geist Mono for code. theme/theme.css hands them to Nextra. JetBrains Mono for the home page's code orbit.
 const fontSans = Geist({ subsets: ['latin'], variable: '--font-sans', display: 'swap' });
 const fontMono = Geist_Mono({ subsets: ['latin'], variable: '--font-mono', display: 'swap' });
 const fontMarks = JetBrains_Mono({ subsets: ['latin'], variable: '--font-marks', display: 'swap' });
@@ -66,9 +67,8 @@ const navbar = (
   </Navbar>
 );
 const FOOTER_LINKS = [
-  ['Docs', '/quick-install'],
-  ['Agent skills', '/skills'],
-  ['Technical overview', '/about'],
+  ['Get started', '/quick-install'],
+  ['About Vovk.ts', '/about'],
   ['GitHub', 'https://github.com/finom/vovk'],
 ] as const;
 
@@ -101,15 +101,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
       suppressHydrationWarning
       className={`${fontSans.variable} ${fontMono.variable} ${fontMarks.variable}`}
     >
-      <Head
-        // Vermilion links on paper and on near-black, as --vk-accent-text in globals.css.
-        color={{
-          hue: { light: 11, dark: 12 },
-          saturation: { light: 100, dark: 100 },
-          lightness: { light: 36, dark: 69 },
-        }}
-        backgroundColor={{ light: '#F2F0EB', dark: '#141412' }}
-      />
+      <Head {...headColors} />
       <body>
         <Layout
           /* banner={

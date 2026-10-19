@@ -38,7 +38,11 @@ const HUES = [22, 31, 39, 48, 56, 65, 73, 82];
 // The prism's triangle, (58,3) (113,98) (3,98) in its 116×100 box. The beam enters the left face at ENTRY, splits
 // inside, and each color leaves the right face at its own point, close together.
 const ENTRY = [25, 60] as const;
-const EXITS = [0.36, 0.41, 0.46, 0.51, 0.56, 0.61, 0.66, 0.71].map((t) => [58 + 55 * t, 3 + 95 * t] as const);
+// Points on the right face, from the apex (0) to the bottom corner (1), one per row. On a wide stage the rows below
+// the prism take the points near the corner: a ray steeper than the face would cross the glass again.
+const onRightFace = (ts: number[]) => ts.map((t) => [58 + 55 * t, 3 + 95 * t] as const);
+const EXITS_NARROW = onRightFace([0.36, 0.41, 0.46, 0.51, 0.56, 0.61, 0.66, 0.71]);
+const EXITS_WIDE = onRightFace([0.42, 0.5, 0.58, 0.66, 0.74, 0.82, 0.9, 0.98]);
 const PRISM_W = 116;
 const PRISM_H = 100;
 const REGISTRY: Record<string, string> = {
@@ -202,7 +206,7 @@ const Code = ({ lines }: { lines: Line[] }) =>
   ));
 
 type Phase = 'idle' | 'reset' | 'go';
-type Geometry = { rays: number[][]; beam: number[] } | null;
+type Geometry = { rays: number[][]; beam: number[]; narrow: boolean } | null;
 
 export function HeroDemo() {
   const [desc, setDesc] = useState(DEFAULT_DESC);
@@ -256,23 +260,26 @@ export function HeroDemo() {
     const narrow = S.width < 1160;
     const cx = P.left - S.left + P.width / 2;
     const cy = P.top - S.top + P.height / 2;
+    // A wide stage draws the prism smaller (a CSS scale).
+    const k = narrow ? 1 : P.width / PRISM_W;
+    const exits = narrow ? EXITS_NARROW : EXITS_WIDE;
     const at = (vx: number, vy: number) => {
-      const dx = vx - PRISM_W / 2;
-      const dy = vy - PRISM_H / 2;
+      const dx = (vx - PRISM_W / 2) * k;
+      const dy = (vy - PRISM_H / 2) * k;
       return narrow ? [cx + dy, cy + dx] : [cx + dx, cy + dy];
     };
     const first = rowRefs.current[0]?.getBoundingClientRect();
-    const rays = EXITS.flatMap(([ex, ey], i) => {
+    const rays = exits.flatMap(([ex, ey], i) => {
       const row = narrow ? first : rowRefs.current[i]?.getBoundingClientRect();
       if (!row) return [];
       const end = narrow
-        ? [row.left - S.left + ((i + 0.5) * row.width) / EXITS.length, row.top - S.top]
+        ? [row.left - S.left + ((i + 0.5) * row.width) / exits.length, row.top - S.top]
         : [row.left - S.left, row.top - S.top + row.height / 2];
       return [[...at(ex, ey), ...end]];
     });
     const [entryX, entryY] = at(ENTRY[0], ENTRY[1]);
     const beam = narrow ? [entryX, C.bottom - S.top, entryX, entryY] : [C.right - S.left, entryY, entryX, entryY];
-    const next = { rays, beam };
+    const next = { rays, beam, narrow };
     const round = (g: Geometry) => JSON.stringify(g, (_, v) => (typeof v === 'number' ? Math.round(v) : v));
     setGeo((g) => (round(g) === round(next) ? g : next));
   }, []);
@@ -491,7 +498,7 @@ export function HeroDemo() {
                     strokeLinejoin="miter"
                   />
                 </svg>
-                {EXITS.map(([ex, ey], i) => (
+                {(geo?.narrow === false ? EXITS_WIDE : EXITS_NARROW).map(([ex, ey], i) => (
                   <div
                     key={ex}
                     className="vk-line vk-fan"

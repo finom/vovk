@@ -1,5 +1,7 @@
-// The code theme of the site: paper and ink with vermilion keywords, warm tones for the rest. Shiki takes these as
-// TextMate themes; next.config.mjs hands them to Nextra. Every color keeps 4.5:1 on the code block's panel color.
+// The code themes of vovk.dev and examples.vovk.dev. Light: ink on paper with vermilion keywords, warm tones for the
+// rest, every color 4.5:1 on the code block's panel color. Dark: Shiki's gruvbox-dark-hard. Both are TextMate themes,
+// which Shiki (Nextra's code blocks) and bright (the examples' source views) take as they are.
+import gruvboxDarkHard from '@shikijs/themes/gruvbox-dark-hard';
 
 const theme = (name, type, c) => ({
   name,
@@ -80,13 +82,6 @@ export const vovkPaper = theme('vovk-paper', 'light', {
   comment: '#6F6A62',
 });
 
-export const vovkInk = theme('vovk-ink', 'dark', {
-  bg: '#1B1B19',
-  text: '#D6D2C9',
-  keyword: '#E5795E',
-  fn: '#D69A5E',
-  string: '#BFA26A',
-  number: '#CDAE7A',
-  type: '#C69AAE',
-  comment: '#8A857C',
-});
+export const vovkDark = gruvboxDarkHard;
+
+export const codeThemes = { light: vovkPaper, dark: vovkDark };

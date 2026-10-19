@@ -297,7 +297,7 @@ body:has(.vk-landing) {
 
 @container vk-stage (min-width: 1160px) {
   .vk-stage {
-    grid-template-columns: minmax(0, 370px) 150px minmax(0, 1fr);
+    grid-template-columns: minmax(0, 370px) 190px minmax(0, 1fr);
     gap: 0 16px;
   }
 }
@@ -532,7 +532,6 @@ body:has(.vk-landing) {
 @container vk-stage (min-width: 1160px) {
   .vk-prism-col {
     justify-content: flex-start;
-    padding-left: 20px;
   }
 }
 
@@ -552,7 +551,7 @@ body:has(.vk-landing) {
 
 @container vk-stage (min-width: 1160px) {
   .vk-prism-glow {
-    left: 78px;
+    left: 42px;
   }
 }
 
@@ -574,6 +573,15 @@ body:has(.vk-landing) {
 @container vk-stage (max-width: 1159px) {
   .vk-prism {
     transform: scaleX(-1) rotate(90deg);
+  }
+}
+
+/* Smaller on a wide stage, so the rays have room to leave the right face; the margins give back the space. */
+@container vk-stage (min-width: 1160px) {
+  .vk-prism {
+    transform: scale(0.72);
+    transform-origin: 0 0;
+    margin: 0 -32.5px -28px 0;
   }
 }
 
@@ -676,6 +684,13 @@ body:has(.vk-landing) {
   line-height: 17px;
   font-weight: 600;
   letter-spacing: 0.01em;
+}
+/* Beside the code, the registry badge goes under the name, whatever the name's length. */
+@container vk-stage (min-width: 640px) {
+  .vk-row-name {
+    flex-direction: column;
+    align-items: flex-start;
+  }
 }
 
 .vk-landing .vk-reg {

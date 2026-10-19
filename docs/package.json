@@ -58,6 +58,7 @@
   },
   "devDependencies": {
     "@biomejs/biome": "^2.5.15",
+    "@shikijs/themes": "^4.5.0",
     "@tailwindcss/postcss": "^4.3.3",
     "@types/lodash": "^4.17.25",
     "@types/node": "^26",

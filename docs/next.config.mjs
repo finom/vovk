@@ -1,12 +1,12 @@
 import Nextra from 'nextra';
-import { vovkInk, vovkPaper } from './src/code-theme.mjs';
+import { codeThemes } from './src/theme/code-theme.mjs';
 
 const withNextra = Nextra({
   search: {
     codeblocks: false,
   },
   mdxOptions: {
-    rehypePrettyCodeOptions: { theme: { light: vovkPaper, dark: vovkInk } },
+    rehypePrettyCodeOptions: { theme: codeThemes },
   },
 });
 
