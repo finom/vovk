@@ -4,14 +4,21 @@ All notable changes to `vovk-rust` are documented here. This file is the canonic
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## 0.0.6 - 2026-10-12
+## 0.0.6 - 2026-10-19
 
 ### Changed
 
+- No longer experimental ([#96](https://github.com/finom/vovk/pull/96))
 - The README shows how to generate, use and publish the client ([#70](https://github.com/finom/vovk/pull/70))
+- Object fields go out in declaration order (serde_json `preserve_order`) ([#96](https://github.com/finom/vovk/pull/96))
 
 ### Fixed
 
+- Generated crates pass `cargo clippy -D warnings` and build on Rust 1.85; the rsSrc files build under rustdoc inside a host crate ([#96](https://github.com/finom/vovk/pull/96))
+- Union variants, shared definition names and recursive aliases; a union of closed objects reads the variant that has the value's fields instead of the first that parses ([#96](https://github.com/finom/vovk/pull/96))
+- JavaScript regex patterns, and `uri`, `duration` and `hostname` checked as Zod checks them ([#96](https://github.com/finom/vovk/pull/96))
+- A stream ends at its first error line; text bodies are validated on the client; header values go out as Latin-1; a literal `%2e` param is sent encoded ([#96](https://github.com/finom/vovk/pull/96))
+- `Cargo.toml` gets crates.io metadata and reads npm's legacy `license` and `author` objects; README install lines and module names match the crate ([#96](https://github.com/finom/vovk/pull/96))
 - The templates trim slashes and find `{name}` placeholders in linear time ([#66](https://github.com/finom/vovk/pull/66))
 
 ## 0.0.5 - 2026-10-12

@@ -4,14 +4,26 @@ All notable changes to `vovk-python` are documented here. This file is the canon
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## 0.0.5 - 2026-10-12
+## 0.0.5 - 2026-10-19
 
 ### Changed
 
+- No longer experimental ([#96](https://github.com/finom/vovk/pull/96))
 - The README shows how to generate, use and publish the client ([#70](https://github.com/finom/vovk/pull/70))
+- Form bodies are validated on the client, as JSON bodies are: a bad field raises `ValidationError` instead of a server 400 ([#96](https://github.com/finom/vovk/pull/96))
+
+### Added
+
+- An optional `body` for POST, PUT and PATCH without a body schema, an optional `query` without a query schema, and `files` for a multipart body without fixed fields ([#96](https://github.com/finom/vovk/pull/96))
 
 ### Fixed
 
+- The generated package passes `mypy --strict`, also on Python 3.9; `HttpException` is re-exported ([#96](https://github.com/finom/vovk/pull/96))
+- Types: open objects, nullable objects, `allOf` (scalar checks, nullable and `$ref` members), properties next to `oneOf`/`anyOf`, enums and tuples; one type name per handler; no class over an imported name ([#96](https://github.com/finom/vovk/pull/96))
+- `TypedDict` comes from `typing_extensions` before Python 3.12, so pydantic reads the types ([#96](https://github.com/finom/vovk/pull/96))
+- Path params, headers, `null` and empty bodies, gzip streams and dates go out and come back as the TypeScript client sends and reads them; a `pipeDelimited` query keeps its `|` ([#96](https://github.com/finom/vovk/pull/96))
+- The `uri` format takes what Zod's `z.url()` takes ([#96](https://github.com/finom/vovk/pull/96))
+- `pyproject.toml` gets the project URLs, version and license; the README's install line is right ([#96](https://github.com/finom/vovk/pull/96))
 - The templates trim slashes and find `{name}` placeholders in linear time ([#66](https://github.com/finom/vovk/pull/66))
 
 ## 0.0.4 - 2026-10-12
