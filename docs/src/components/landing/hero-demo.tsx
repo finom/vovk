@@ -249,20 +249,30 @@ export function HeroDemo() {
     const card = cardRef.current;
     if (!stage || !prism || !card) return;
     const S = stage.getBoundingClientRect();
-    if (S.width < 1160) {
-      setGeo((g) => (g === null ? g : null));
-      return;
-    }
     const P = prism.getBoundingClientRect();
     const C = card.getBoundingClientRect();
-    const x = (v: number) => P.left - S.left + (v * P.width) / PRISM_W;
-    const y = (v: number) => P.top - S.top + (v * P.height) / PRISM_H;
+    // A narrow stage stacks the card, the prism and the rows, and turns the prism (a quarter turn, then a mirror), so the
+    // light comes down from the card and the colors leave left to right, in the order they land on the first row.
+    const narrow = S.width < 1160;
+    const cx = P.left - S.left + P.width / 2;
+    const cy = P.top - S.top + P.height / 2;
+    const at = (vx: number, vy: number) => {
+      const dx = vx - PRISM_W / 2;
+      const dy = vy - PRISM_H / 2;
+      return narrow ? [cx + dy, cy + dx] : [cx + dx, cy + dy];
+    };
+    const first = rowRefs.current[0]?.getBoundingClientRect();
     const rays = EXITS.flatMap(([ex, ey], i) => {
-      const row = rowRefs.current[i]?.getBoundingClientRect();
+      const row = narrow ? first : rowRefs.current[i]?.getBoundingClientRect();
       if (!row) return [];
-      return [[x(ex), y(ey), row.left - S.left, row.top - S.top + row.height / 2]];
+      const end = narrow
+        ? [row.left - S.left + ((i + 0.5) * row.width) / EXITS.length, row.top - S.top]
+        : [row.left - S.left, row.top - S.top + row.height / 2];
+      return [[...at(ex, ey), ...end]];
     });
-    const next = { rays, beam: [C.right - S.left, y(ENTRY[1]), x(ENTRY[0]), y(ENTRY[1])] };
+    const [entryX, entryY] = at(ENTRY[0], ENTRY[1]);
+    const beam = narrow ? [entryX, C.bottom - S.top, entryX, entryY] : [C.right - S.left, entryY, entryX, entryY];
+    const next = { rays, beam };
     const round = (g: Geometry) => JSON.stringify(g, (_, v) => (typeof v === 'number' ? Math.round(v) : v));
     setGeo((g) => (round(g) === round(next) ? g : next));
   }, []);
@@ -464,7 +474,6 @@ export function HeroDemo() {
           <div className="vk-prism-col">
             <div className="vk-prism-glow" aria-hidden="true" />
             <div className="vk-prism-stack">
-              <div className="vk-prism-bar vk-narrow-only" aria-hidden="true" />
               <div ref={prismRef} className="vk-prism" aria-hidden="true">
                 <svg viewBox="0 0 116 100" width={PRISM_W} height={PRISM_H}>
                   <title>Prism</title>
@@ -491,11 +500,6 @@ export function HeroDemo() {
                       backgroundColor: color(i),
                     }}
                   />
-                ))}
-              </div>
-              <div className="vk-spectrum vk-narrow-only" aria-hidden="true">
-                {HUES.map((h, i) => (
-                  <div key={h} style={{ backgroundColor: color(i), boxShadow: `0 0 10px ${color(i)}` }} />
                 ))}
               </div>
               <div className="vk-prism-label">
