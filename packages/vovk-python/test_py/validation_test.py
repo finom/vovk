@@ -184,10 +184,17 @@ class TestValidation(unittest.TestCase):
         )
         self.assertEqual(data, {'hello': 'world', 'search': 'value'})
 
+        # the client checks the form's fields before it sends them
+        with self.assertRaises(ValidationError):
+            WithValidationRPC.handle_multipart_data_only(
+                body={"hello": "wrong_length"},
+                query={"search": "value"},
+            )
         with self.assertRaises(HttpException) as context2:
             WithValidationRPC.handle_multipart_data_only(
                 body={"hello": "wrong_length"},
                 query={"search": "value"},
+                disable_client_validation=True
             )
         self.assertRegex(str(context2.exception), r"Validation failed\. Invalid body: .*hello.*")
 
@@ -202,11 +209,19 @@ class TestValidation(unittest.TestCase):
         )
         self.assertEqual(data, {'file': 'file_text_content', 'hello': 'world', 'search': 'value'})
 
-        with self.assertRaises(HttpException) as context2:
+        # the client checks the form's fields before it sends them
+        with self.assertRaises(ValidationError):
             WithValidationRPC.handle_multipart_data_with_file(
                 body={"hello": "wrong_length"},
                 query={"search": "value"},
                 files={"file": ('filename.txt', file_data, 'text/plain')}
+            )
+        with self.assertRaises(HttpException) as context2:
+            WithValidationRPC.handle_multipart_data_with_file(
+                body={"hello": "wrong_length"},
+                query={"search": "value"},
+                files={"file": ('filename.txt', file_data, 'text/plain')},
+                disable_client_validation=True
             )
         self.assertRegex(str(context2.exception), r"Validation failed\. Invalid body: .*hello.*")
 
@@ -235,7 +250,8 @@ class TestValidation(unittest.TestCase):
         )
         self.assertEqual(data['files'], ['one', 'two'])
 
-        with self.assertRaises(HttpException) as context2:
+        # the client checks the form's fields before it sends them
+        with self.assertRaises(ValidationError):
             WithValidationRPC.handle_multipart_data_with_multiple_files(
                 body={"hello": "wrong_length"},
                 query={"search": "value"},
@@ -243,6 +259,16 @@ class TestValidation(unittest.TestCase):
                     ('files', ('filename1.txt', file_data1, 'text/plain')),
                     ('files', ('filename2.txt', file_data2, 'text/plain'))
                 ]
+            )
+        with self.assertRaises(HttpException) as context2:
+            WithValidationRPC.handle_multipart_data_with_multiple_files(
+                body={"hello": "wrong_length"},
+                query={"search": "value"},
+                files=[
+                    ('files', ('filename1.txt', file_data1, 'text/plain')),
+                    ('files', ('filename2.txt', file_data2, 'text/plain'))
+                ],
+                disable_client_validation=True
             )
         self.assertRegex(str(context2.exception), r"Validation failed\. Invalid body: .*hello.*")
 

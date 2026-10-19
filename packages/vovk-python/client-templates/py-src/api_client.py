@@ -5,13 +5,17 @@ import json
 import codecs
 import datetime
 import functools
+import ipaddress
 import requests
+from contextvars import ContextVar
 from http.cookiejar import DefaultCookiePolicy
-from urllib.parse import quote
+from urllib.parse import quote, unquote
 from jsonschema import FormatChecker, validators
 from jsonschema.exceptions import ValidationError, best_match
+from requests.adapters import HTTPAdapter
 from requests.models import Response
 from requests.structures import CaseInsensitiveDict
+from urllib3.connectionpool import HTTPConnectionPool, HTTPSConnectionPool
 from urllib3.exceptions import DecodeError, ProtocolError, ReadTimeoutError, SSLError
 from urllib3.filepost import encode_multipart_formdata
 from typing import Dict, Optional, Any, Generator, Iterator, Literal, List, Tuple, TypedDict, Union
@@ -192,9 +196,47 @@ def _pattern(validator: Any, pattern: str, instance: Any, schema: Dict[str, Any]
 def _validator_class(base: Any) -> Any:
     return validators.extend(base, {'pattern': _pattern})  # type: ignore[no-untyped-call, unused-ignore]
 
+_SPECIAL_SCHEMES = ('http', 'https', 'ws', 'wss', 'ftp', 'file')
+
+def _is_url(value: Any) -> bool:
+    # as the server's z.url() reads a URL with the WHATWG parser: a scheme, and for http and the other special schemes
+    # a host, which may be any Unicode text; a path or a query may hold any text, a space or a | too
+    if not isinstance(value, str):
+        return True
+    text = re.sub(r'[\t\n\r]', '', value.strip(''.join(map(chr, range(0x21)))))
+    match = re.match(r'([A-Za-z][A-Za-z0-9+.-]*):(.*)', text, re.S)
+    if not match:
+        return False
+    scheme = match.group(1).lower()
+    if scheme not in _SPECIAL_SCHEMES:
+        return True
+    authority = re.split(r'[/\\?#]', match.group(2).lstrip('/\\'), maxsplit=1)[0]
+    host = authority.rpartition('@')[2]
+    if host.startswith('['):
+        address, bracket, port = host[1:].partition(']')
+        try:
+            ipaddress.IPv6Address(address)
+        except ValueError:
+            return False
+        if not bracket or (port and not port.startswith(':')):
+            return False
+        host, port = '[]', port[1:]
+    else:
+        host, _, port = host.partition(':')
+    if port and not (port.isascii() and port.isdigit() and int(port) <= 65535):
+        return False
+    if scheme == 'file' or host == '[]':
+        return True
+    host = unquote(host)
+    return bool(host) and not any(ord(c) < 0x21 or c in '#%/:<>?@[\\]^|\x7f' for c in host)
+
+# the formats the jsonschema extra checks, with uri as the server checks it
+_FORMAT_CHECKER = FormatChecker()
+_FORMAT_CHECKER.checks('uri')(_is_url)
+
 def _validate(instance: Any, schema: Dict[str, Any]) -> None:
     # unlike jsonschema.validate, the schema itself isn't checked: that check reads its patterns with Python's re
-    validator = _validator_class(validators.validator_for(schema))(schema, format_checker=FormatChecker())
+    validator = _validator_class(validators.validator_for(schema))(schema, format_checker=_FORMAT_CHECKER)
     try:
         error = best_match(validator.iter_errors(instance))
     except re.error:
@@ -233,6 +275,63 @@ def _declares_tuple(schema: Dict[str, Any]) -> bool:
         stack.append(_named_schema(schema, node.get('$ref')))
         stack.extend(value for key, value in node.items() if key not in (*_SCHEMA_TABLES, 'enum', 'const', 'default', 'examples'))
     return False
+
+def _is_file_schema(schema: Any, root: Dict[str, Any], depth: int = 0) -> bool:
+    # a file, or a list, a tuple or a combination that may hold one, as the generated types leave it out of the body
+    if not isinstance(schema, dict) or depth > 16:
+        return False
+    if '$ref' in schema:
+        return _is_file_schema(_named_schema(root, schema['$ref']), root, depth + 1)
+    if schema.get('format') == 'binary' or schema.get('contentEncoding') == 'binary':
+        return True
+    items = schema.get('items')
+    branches = [*(items if isinstance(items, list) else [items])]
+    for key in ('prefixItems', 'anyOf', 'oneOf', 'allOf'):
+        branches.extend(schema.get(key) or [])
+    return any(_is_file_schema(branch, root, depth + 1) for branch in branches)
+
+def _without_file_fields(schema: Any, root: Dict[str, Any]) -> Any:
+    # the schema of a form's other fields: its files go in files, not in the body
+    if isinstance(schema, list):
+        return [_without_file_fields(item, root) for item in schema]
+    if not isinstance(schema, dict):
+        return schema
+    kept = {
+        key: value if key in ('enum', 'const', 'default', 'examples') else _without_file_fields(value, root)
+        for key, value in schema.items()
+    }
+    properties = schema.get('properties')
+    if isinstance(properties, dict):
+        files = [name for name, prop in properties.items() if _is_file_schema(prop, root)]
+        kept['properties'] = {name: value for name, value in kept['properties'].items() if name not in files}
+        if isinstance(schema.get('required'), list):
+            kept['required'] = [name for name in schema['required'] if name not in files]
+    return kept
+
+# the request target a call sends as it is: urllib3 percent-encodes the | that joins pipeDelimited parts again
+_raw_target: 'ContextVar[Optional[str]]' = ContextVar('vovk_raw_target', default=None)
+
+def _with_raw_target(url: str) -> str:
+    raw = _raw_target.get()
+    # the same target but for how a | is written, not a redirect or another call made meanwhile
+    return raw if raw is not None and url.replace('%7C', '|') == raw.replace('%7C', '|') else url
+
+class _RawTargetHTTPConnectionPool(HTTPConnectionPool):
+    def _make_request(self, conn: Any, method: str, url: str, *args: Any, **kwargs: Any) -> Any:  # type: ignore[override, unused-ignore]
+        return super()._make_request(conn, method, _with_raw_target(url), *args, **kwargs)
+
+class _RawTargetHTTPSConnectionPool(HTTPSConnectionPool):
+    def _make_request(self, conn: Any, method: str, url: str, *args: Any, **kwargs: Any) -> Any:  # type: ignore[override, unused-ignore]
+        return super()._make_request(conn, method, _with_raw_target(url), *args, **kwargs)
+
+class _ApiClientAdapter(HTTPAdapter):
+    # requests' adapter, with pools that send a target the client gives as it is
+    def init_poolmanager(self, *args: Any, **kwargs: Any) -> None:
+        super().init_poolmanager(*args, **kwargs)
+        self.poolmanager.pool_classes_by_scheme = {  # type: ignore[attr-defined, unused-ignore]
+            'http': _RawTargetHTTPConnectionPool,
+            'https': _RawTargetHTTPSConnectionPool,
+        }
 
 def _is_valid(value: Any, schema: Dict[str, Any], root: Dict[str, Any]) -> bool:
     scoped = {**schema, **{key: root[key] for key in _SCHEMA_TABLES if key in root}}
@@ -311,6 +410,9 @@ class ApiClient:
         self.full_schema: Dict[str, Any] = ApiClient._load_full_schema()
         # one session keeps connections open between calls; set headers, auth or adapters on it
         self.session = requests.Session()
+        # an adapter mounted in their place sends a pipeDelimited query with the | percent-encoded
+        self.session.mount('https://', _ApiClientAdapter())
+        self.session.mount('http://', _ApiClientAdapter())
         # every call and thread shares the session: a cookie a response sets isn't kept for later calls, one set by hand is
         self.session.cookies.set_policy(DefaultCookiePolicy(allowed_domains=[]))
         # seconds to connect and to wait for each read, as requests takes it; None waits forever
@@ -459,8 +561,11 @@ class ApiClient:
         TIsMultipart = TIsForm and 'multipart/form-data' in body_ct
         TIsNull = body is None and _takes_null_body((validation or {}).get('body'))
         if validation and not disable_client_validation:
-            # a form or binary body is left to the server
-            if validation.get('body') and not TIsForm and not TIsBinary:
+            # a form is checked as the object it is made from, without its files; a binary body is left to the server
+            if validation.get('body') and TIsForm:
+                if body is None or isinstance(body, dict):
+                    _validate({} if body is None else body, _without_file_fields(validation['body'], validation['body']))
+            elif validation.get('body') and not TIsBinary:
                 if body is None and not TIsNull:
                     raise ValueError("Body is required for validation but not provided")
                 _validate(body, validation['body'])
@@ -553,6 +658,7 @@ class ApiClient:
         prepared = self.session.prepare_request(
             requests.Request(method=http_method.upper(), url=processed_url, headers=request_headers, **payload)
         )
+        raw_target: Optional[str] = None
         if query_styles is not None and '?' in processed_url:
             # requests encodes the | that joins pipeDelimited parts; the TypeScript client sends it as is. What requests
             # adds after the query, such as the session's params, stays
@@ -561,13 +667,18 @@ class ApiClient:
             encoded = requests.utils.requote_uri(query_string)
             if sent_query.startswith(encoded):
                 prepared.url = f"{base}?{query_string}{sent_query[len(encoded):]}"
+                raw_target = prepared.path_url
         if isinstance(prepared.body, (bytes, bytearray)) and prepared.body:
             # sent in blocks, the connect timeout bounds each block and not the whole upload; as a stream the body
             # also goes out again from its start after a 307 or a 308
             prepared.prepare_body(io.BytesIO(prepared.body), None)
         # streamed, so a JSON Lines response is read as it comes
         settings = self.session.merge_environment_settings(prepared.url, {}, True, None, None)
-        response = self.session.send(prepared, timeout=self.timeout, allow_redirects=True, **settings)
+        token = _raw_target.set(raw_target)
+        try:
+            response = self.session.send(prepared, timeout=self.timeout, allow_redirects=True, **settings)
+        finally:
+            _raw_target.reset(token)
 
         content_type = response.headers.get('Content-Type', '')
 
