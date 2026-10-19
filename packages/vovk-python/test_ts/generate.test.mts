@@ -807,3 +807,24 @@ except HttpException as error:
   });
   assert.equal(runtime.status, 0, runtime.stderr);
 });
+
+test('the code the Python page shows is what the hello-world schema compiles to', () => {
+  const out = fs.mkdtempSync(path.join(os.tmpdir(), 'vovk-python-docs-'));
+  projectDirs.push(out);
+  const helloWorld = path.join(import.meta.dirname, '../../../examples/hello-world');
+  execFileSync(
+    process.execPath,
+    [cliPath, 'generate', '--from', 'pySrc', '--out', out, '--origin', 'https://hello-world.vovk.dev'],
+    { cwd: helloWorld, stdio: 'pipe' }
+  );
+  const source = fs.readFileSync(path.join(out, '__init__.py'), 'utf-8');
+  const page = fs.readFileSync(path.join(import.meta.dirname, '../../../docs/src/app/python/page.mdx'), 'utf-8');
+  const blocks = [
+    ...page.matchAll(/```py filename="\.\/dist_python\/src\/package_name\/__init__\.py"\n([\s\S]*?)```/g),
+  ];
+
+  assert.equal(blocks.length, 2);
+  for (const [, block] of blocks) {
+    assert.ok(source.includes(block), `not in the generated __init__.py:\n${block}`);
+  }
+});

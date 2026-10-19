@@ -241,18 +241,19 @@ export const { GET, POST, PATCH, PUT, HEAD, OPTIONS, DELETE } = initSegment({
 ```py filename="./dist_python/src/package_name/__init__.py"
 from __future__ import annotations
 import sys
-from typing import Any, Dict, List, Literal, Optional, Set, TypedDict, Union, Tuple, Generator, BinaryIO # type: ignore
-from .api_client import ApiClient, HttpException
+from typing import Any, Dict, List, Literal, Optional, Sequence, Set, Union, Tuple, Generator, BinaryIO # pyright: ignore[reportUnusedImport]
+# as HttpException: a name the package exports, also under mypy --strict
+from .api_client import ApiClient, HttpException as HttpException
 
-if sys.version_info >= (3, 11):
-    from typing import NotRequired, TypeAlias
+# pydantic reads a TypedDict only from typing_extensions before Python 3.12
+if sys.version_info >= (3, 12):
+    from typing import NotRequired, TypeAlias, TypedDict
 else:
-    from typing_extensions import NotRequired, TypeAlias
-
-HttpException = HttpException
+    from typing_extensions import NotRequired, TypeAlias, TypedDict
 
 client = ApiClient("https://hello-world.vovk.dev/api", {
     "": ("https://hello-world.vovk.dev/api", ""),
+    "static": ("https://hello-world.vovk.dev/api", "static"),
 })
 
 class UserRPC:
@@ -302,7 +303,7 @@ class UserRPC:
         Query: Query parameters
         Returns: Response object
         """
-        return client.request( # type: ignore
+        return client.request( # type: ignore[no-any-return, unused-ignore]
             segment_name="",
             rpc_name="UserRPC",
             handler_name="updateUser",
@@ -315,7 +316,7 @@ class UserRPC:
         )
 ```
 
-All RPC modules are in `__init__.py`, with the RPC functions and their types. Nested structures get `TypedDict` types. A key the schema doesn't require is `NotRequired`, imported from `typing_extensions` before Python 3.11. A type that isn't a `TypedDict`, such as a `str` output, is a `TypeAlias`, imported the same way.
+All RPC modules are in `__init__.py`, with the RPC functions and their types. Nested structures get `TypedDict` types. A key the schema doesn't require is `NotRequired`. A type that isn't a `TypedDict`, such as a `str` output, is a `TypeAlias`. Before Python 3.12, `NotRequired`, `TypeAlias` and `TypedDict` come from `typing_extensions`, where pydantic reads a `TypedDict` from.
 
 Types for `body`, `query` and `params` are named `[PascalCaseMethodName][InputType]`. For `updateUser`, they are `UpdateUserBody`, `UpdateUserQuery` and `UpdateUserParams`.
 
@@ -348,7 +349,7 @@ if __name__ == "__main__":
         print(f"Error: {e}")
 ```
 
-The client uses [requests](https://pypi.org/project/requests/) for HTTP, [jsonschema](https://pypi.org/project/jsonschema/) for client-side validation, and other common libraries. A `pattern` that Python's `re` can't compile, such as `\p{L}`, is left to the server.
+The client uses [requests](https://pypi.org/project/requests/) for HTTP, [jsonschema](https://pypi.org/project/jsonschema/) for client-side validation, and other common libraries. A `pattern` that Python's `re` can't compile, such as `\p{L}`, is left to the server. A form body is checked as the object it is made from, without its files, and a `uri` as the server's `z.url()` reads it.
 
 A call returns the parsed JSON, or `None` for an empty JSON body. A `text/*` response, or a response of any type with a charset, comes back as a `str`, decoded as UTF-8 unless the charset names another encoding. Any other response, such as a file, comes back as `bytes`.
 
@@ -445,20 +446,20 @@ class StreamRPC:
         message: str
     @staticmethod
     def stream_tokens(
-
         headers: Optional[Dict[str, str]] = None,
         api_root: Optional[str] = None,
-        disable_client_validation: bool = False
+        disable_client_validation: bool = False,
+        query: Optional[Dict[str, Any]] = None
     ) -> Generator[StreamTokensIteration, None, None]:
         """
         Stream tokens
         Description: Stream tokens to the client
         """
-        return client.request( # type: ignore
+        return client.request( # type: ignore[no-any-return, unused-ignore]
             segment_name="",
             rpc_name="StreamRPC",
             handler_name="streamTokens",
-
+            query=query,
             headers=headers,
             api_root=api_root,
             disable_client_validation=disable_client_validation

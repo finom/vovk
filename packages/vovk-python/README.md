@@ -73,7 +73,7 @@ user = UserRPC.update_user(
 )
 ```
 
-Each RPC method takes `body`, `query` and `params` as the schema declares them, plus `headers`, `api_root` and `disable_client_validation`. A status of 400 or above raises `HttpException`; input that fails client-side validation raises jsonschema's `ValidationError` before the request.
+Each RPC method takes `body`, `query` and `params` as the schema declares them, plus `headers`, `api_root` and `disable_client_validation`. Without a body schema, a POST, PUT or PATCH method takes an optional `body`; without a query schema, a method takes an optional `query`. A status of 400 or above raises `HttpException`; input that fails client-side validation raises jsonschema's `ValidationError` before the request.
 
 ## Publish
 

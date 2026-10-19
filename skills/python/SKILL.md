@@ -78,7 +78,7 @@ After this, every `npx vovk generate` (+ every `vovk dev` regen) refreshes Pytho
 
 ## Generated call shape
 
-Types follow `[PascalCaseMethodName][Body|Query|Params|Output]` as `TypedDict`. Methods static, snake_case. Positional arg order: the generator only emits slots where validation declared, in this order: `body`, `files` (multipart only, sits between `body` and `query`), `query`, `params`, then always-present trailing kwargs `headers`, `api_root`, `disable_client_validation`.
+Types follow `[PascalCaseMethodName][Body|Query|Params|Output]` as `TypedDict`. Methods static, snake_case. Positional arg order: the generator only emits slots where validation declared, in this order: `body`, `files` (multipart only, sits between `body` and `query`), `query`, `params`, then always-present trailing kwargs `headers`, `api_root`, `disable_client_validation`. After them, optional: `body` for a POST, PUT or PATCH without a body schema, `query` without a query schema, and `files` for a multipart record body.
 
 ```python
 from my_api_client import UserRPC  # whatever package the generator wrote
@@ -217,7 +217,7 @@ build-backend = "hatchling.build"
 
 [project]
 requires-python = ">=3.9"
-dependencies = ["requests", "jsonschema[format-nongpl]", "typing_extensions>=4.0.0; python_version < '3.11'"]
+dependencies = ["requests", "jsonschema[format-nongpl]", "typing_extensions>=4.0.0; python_version < '3.12'"]
 ```
 
 - `requests` — HTTP client; picks its own `urllib3`.

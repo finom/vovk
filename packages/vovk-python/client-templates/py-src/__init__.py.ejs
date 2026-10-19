@@ -65,7 +65,7 @@ const { rpcModuleName } = controllerSchema;
 const pyModuleName = classNames.get(controllerSchema);
 const methodNames = vars.getMethodNames(Object.keys(controllerSchema.handlers), t._.snakeCase);
 const typeNamePrefixes = vars.getTypeNamePrefixes(Object.keys(controllerSchema.handlers)); %>
-class <%- pyModuleName %>: <% if (!Object.keys(controllerSchema.handlers).length) { %>
+class <%- pyModuleName %>:<% if (!Object.keys(controllerSchema.handlers).length) { %>
     pass<% } %><% Object.entries(controllerSchema.handlers).forEach(([handlerNameOriginal, handlerSchema]) => {
     const { validation, operationObject, httpMethod } = handlerSchema;
     const handlerNameOriginalCapitalized = typeNamePrefixes.get(handlerNameOriginal);
@@ -99,8 +99,7 @@ class <%- pyModuleName %>: <% if (!Object.keys(controllerSchema.handlers).length
             validation?.query ? `query: ${handlerNameOriginalCapitalized}Query,` : '',
             paramsType ? `params: ${paramsType},` : '',
             files === 'optional' ? `files: Optional[${filesType}] = None,` : ''
-        ].filter(Boolean).map((s) => ' '.repeat(8) + s).join('\n') %>
-        headers: Optional[Dict[str, str]] = None,
+        ].filter(Boolean).map((s) => `${' '.repeat(8)}${s}\n`).join('') %>        headers: Optional[Dict[str, str]] = None,
         api_root: Optional[str] = None,
         disable_client_validation: bool = False<%= [
             takesSchemalessBody ? 'body: Any = None' : '',
@@ -108,7 +107,7 @@ class <%- pyModuleName %>: <% if (!Object.keys(controllerSchema.handlers).length
             takesFreeFormFiles ? `files: Optional[${vars.FREE_FORM_FILES_TYPE}] = None` : ''
         ].filter(Boolean).map((s) => `,\n${' '.repeat(8)}${s}`).join('') %>
     ) -> <%= validation?.output ? `${handlerNameOriginalCapitalized}Output` : validation?.iteration ? `Generator[${handlerNameOriginalCapitalized}Iteration, None, None]` : 'Any' %>:
-        """ 
+        """
 <%- ([
                 operationObject?.summary ?? 'No summary',
                 operationObject?.description ? `Description: ${operationObject.description}` : '',
