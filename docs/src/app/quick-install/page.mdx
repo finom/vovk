@@ -1,10 +1,62 @@
 ---
-description: "Set up Vovk.ts in a Next.js app with vovk init, create a segment, a controller and a service, call the endpoint, show its data in React and deploy."
+description: "Start a Vovk.ts project with a coding agent and the Vovk.ts skills, or by hand: vovk init, a segment, a controller and a service, React and deploy."
 ---
 
 import { Steps } from 'nextra/components';
 
 # Quick Start
+
+## With an agent
+
+Add the Vovk.ts skills to your project, an empty folder or a Next.js app:
+
+```bash copy
+npx skills add finom/vovk
+```
+
+The [skills](https://www.npmjs.com/package/skills) CLI asks which skills to install (select all 15), finds the agents on your machine (Claude Code, Cursor, Windsurf, GitHub Copilot, Cline and others) and asks whether to install in the project or for your user (`-g`). `npx skills update` brings them up to date.
+
+Then ask your agent for what you need. The skills load on their own, so the prompt doesn't have to name Vovk.ts:
+
+- In an empty folder: *"I want a back-end for a task tracker."*
+- In a Next.js app: *"Add an API to this app for a todo list."* or *"This app needs a back-end for user comments."*
+- Streaming: *"Stream the OpenAI reply from an endpoint and show it on the page as it comes in."*
+
+The agent sets up Next.js and Vovk.ts with `vovk init`, writes a controller and a service in **src/modules/&lt;feature&gt;/**, generates the typed client and calls the endpoints to check them. In an empty folder it may ask first where to create the project. [About Vovk.ts](/about#agent-skills) lists the 15 skills.
+
+<details>
+<summary>Install for one agent, without the questions</summary>
+
+| Agent | Install |
+|-------|---------|
+| **Claude Code** | `npx skills add finom/vovk -a claude-code -s "*" -y` |
+| **Cursor** | `npx skills add finom/vovk -a cursor -s "*" -y` |
+| **Windsurf** | `npx skills add finom/vovk -a windsurf -s "*" -y` |
+| **GitHub Copilot** | `npx skills add finom/vovk -a github-copilot -s "*" -y` |
+| **Cline** | `npx skills add finom/vovk -a cline -s "*" -y` |
+
+The skill files land in `.claude/skills/` (Claude Code), `.windsurf/skills/` (Windsurf) or `.agents/skills/` (Cursor, Copilot, Cline). With `-g`, they go to your home folder instead.
+
+</details>
+
+### Claude Code plugin
+
+In Claude Code you can also install the skills as a plugin. Its skill names start with `vovk:`.
+
+| | Install |
+|-|---------|
+| **Terminal** | `claude plugin marketplace add finom/vovk && claude plugin install vovk@vovk` |
+| **In a session** | `/plugin marketplace add finom/vovk`, then `/plugin install vovk@vovk` |
+
+`finom/vovk` points to `.claude-plugin/marketplace.json` in the GitHub repo. The plugin and the marketplace are both named `vovk`: `vovk@vovk` is `<plugin-name>@<marketplace-name>`. For a local checkout (development), use its path: `claude plugin marketplace add /path/to/vovk` (the repo root).
+
+Run `/plugin` to check: the **Installed** tab lists `vovk`, and typing `/vovk:` (with the colon) lists all 15 skills.
+
+The plugin installs from the repo's `main` branch. It has its own version in `.claude-plugin/plugin.json`, separate from the npm packages. A new plugin version brings the skill updates: run `claude plugin update vovk@vovk`, or turn on auto-update for the `vovk` marketplace in `/plugin` → **Marketplaces** (it's off by default for third-party marketplaces). The new version loads in your next session, or after `/reload-plugins`.
+
+A skill that writes wrong code or contradicts itself is a bug. Open an issue at <a href="https://github.com/finom/vovk/issues">github.com/finom/vovk/issues</a> with your prompt and the skill that loaded.
+
+## Without an agent
 
 <Steps>
 ### Create a Next.js app (App Router + TypeScript)

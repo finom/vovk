@@ -16,7 +16,7 @@ npx vovk-cli@latest init
 
 > Requires Node.js 24.15+, Next.js 15+ and TypeScript 5.5+.
 >
-> [Quick Start](/quick-install) · [Manual Install](/manual-install) · [Agent Skills](/skills) · [GitHub](https://github.com/finom/vovk)
+> [Quick Start](/quick-install) · [Manual Install](/manual-install) · [Agent Skills](#agent-skills) · [GitHub](https://github.com/finom/vovk)
 
 ---
 
@@ -233,7 +233,50 @@ Install them in your project:
 npx skills add finom/vovk
 ```
 
-See [Agent Skills](/skills) for the Claude Code plugin, the full skill list and how the framework's layout helps the agent.
+[Quick Start](/quick-install#with-an-agent) has the prompts to try, the per-agent install commands and the Claude Code plugin.
+
+### The skills
+
+With `npx skills`, they carry the names below without the `vovk:` prefix.
+
+- **`vovk:init`** — set up Vovk.ts in a Next.js App Router project, or create a new Next.js app and run `vovk init` in it.
+- **`vovk:base`** — the essentials: what `vovk` exports, the project layout, a complete endpoint, how requests, validation and errors behave, status codes, a custom error format, CORS, and how to get the schema, the typed client and the OpenAPI document.
+- **`vovk:config`** — the `vovk.config.{mjs,cjs,js}` shape, every config key and default (`rootEntry`, `schemaOutDir`, `composedClient`, `segmentedClient`, `clientTemplateDefs`, `outputConfig`, `bundle`, …), and the `tsconfig.json` setup.
+- **`vovk:segment`** — segments (root, named, static), `initSegment`, segment priority, `generateStaticParams`.
+- **`vovk:multitenant`** — routing tenants by subdomain: the `multitenant()` proxy, the `overrides` shape, per-tenant segments and front-end pages, wildcard DNS.
+- **`vovk:procedure`** — procedures, validation (Zod / Valibot / ArkType), controllers, HTTP decorators, `req.vovk`, error handling, content types, `.fn()` for SSR / server components / server actions.
+- **`vovk:decorators`** — built-in and custom decorators (`createDecorator`), authorization patterns, `req.vovk.meta()`, stacking order.
+- **`vovk:rpc`** — the generated RPC client (`@/client`), composed vs segmented clients, call shape, `createFetcher`, error rethrow, type inference from client methods.
+- **`vovk:jsonlines`** — JSON Lines streaming: generator handlers, `JSONLinesResponder`, `progressive()`, client async iteration, `using`, `asPromise`, abort.
+- **`vovk:openapi`** — OpenAPI 3.x generation: `@operation` metadata, `outputConfig.openAPIObject`, per-segment overrides, serving the spec, Scalar docs.
+- **`vovk:mixins`** — import third-party OpenAPI 3.x schemas as typed client modules, called like your own RPC modules.
+- **`vovk:tools`** — procedures as LLM tools with `deriveTools()`, MCP-compatible output, `@operation`, controllers vs RPC modules, OpenAI / Anthropic / MCP wiring.
+- **`vovk:bundle`** — the `vovk bundle` command for publishable TypeScript SDKs.
+- **`vovk:python`** — generate a typed Python client (`vovk-python`), `py` / `pySrc` templates, `TypedDict` shapes, JSON Lines via Python generators, PyPI publishing.
+- **`vovk:rust`** — generate a typed Rust crate (`vovk-rust`), `rs` / `rsSrc` templates, async `reqwest` call shape, reading a `futures::Stream`, crates.io publishing.
+
+### What the agent gets from Vovk.ts
+
+Vovk.ts sets where code goes, so the agent can predict it:
+
+- **Code by feature in `src/modules/<name>/`**: a controller and a service per feature, not files spread across `lib/`.
+- **Controller and service apart**: controllers define the decorated procedures; services, plain classes, hold the business logic. *What the endpoint is* stays apart from *what it does*.
+- **Service methods, not loose helpers**: fewer files and a predictable layout.
+- **One source of truth**: the same `procedure().handle()` serves the HTTP endpoint, the [SSR call](/fn) (`.fn()`) and the [AI tool](/tools) (`deriveTools`). Nothing is duplicated, so the model has less to reconcile.
+- **Plain REST**: `curl` and `fetch` work. Types go end to end without a custom protocol.
+- **[Multitenancy](/multitenant)**: the `multitenant()` proxy and a segment per tenant host many tenants on subdomains in one Next.js app.
+- **[OpenAPI](/openapi) and AI tools**: the schema comes from the procedures, Scalar shows the generated code samples, and one line makes a procedure an LLM tool.
+
+### Why skills
+
+Without them, asking an agent to *"scaffold a Vovk procedure with Zod validation"* goes one of two ways. The model makes up an API from months-old training data, though the Vovk.ts API has changed. Or it fetches `vovk.dev` mid-task, which is slow, hits rate limits and often loads the wrong page first.
+
+With the skills, the agent loads the framework's patterns by topic:
+
+- **One topic at a time.** Only the needed skills load, so the agent doesn't read thousands of lines of docs for one question.
+- **Self-contained.** The base skill holds the facts a typical API build needs, checked against vovk 4's code. Its description asks the agent to load it first for any Vovk.ts task; the agent decides, and on a change to an existing project it may load another skill first. It tells the agent *not to fetch vovk.dev mid-task* and not to read vovk's source in `node_modules`: the skills are the source of truth. They work offline, with a predictable cost and no rate limits.
+- **Handoffs between skills.** A skill points to the one that owns a topic: mixins to tools for LLM tools, procedure to jsonlines for streaming. The agent loads the context it needs, not the context next to it.
+- **Compressed text.** The topic skills use terse "caveman" prose, with the same content: articles and filler dropped, code blocks unchanged.
 
 ---
 

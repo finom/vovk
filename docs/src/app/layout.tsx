@@ -66,9 +66,8 @@ const navbar = (
   </Navbar>
 );
 const FOOTER_LINKS = [
-  ['Docs', '/quick-install'],
-  ['Agent skills', '/skills'],
-  ['Technical overview', '/about'],
+  ['Get started', '/quick-install'],
+  ['About Vovk.ts', '/about'],
   ['GitHub', 'https://github.com/finom/vovk'],
 ] as const;
 
