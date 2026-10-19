@@ -35,14 +35,21 @@ export function toPythonIdentifier(name: string, used?: Set<string>): string {
   return candidate;
 }
 
+// the names __init__.py imports or defines before its classes: "client" is the ApiClient every method calls
+// biome-ignore format: a word list
+const PYTHON_PACKAGE_NAMES = [
+  'client', 'sys', 'ApiClient', 'HttpException', 'Any', 'Dict', 'List', 'Literal', 'Optional', 'Sequence', 'Set',
+  'TypedDict', 'Union', 'Tuple', 'Generator', 'BinaryIO', 'NotRequired', 'TypeAlias',
+];
+
 // the class of each RPC module of a package, in schema order: of the modules with one identifier (User$RPC and
 // User_RPC are User_RPC) the last keeps it, as a later class of a name replaced an earlier one, and the others get the
-// first free suffix; "client" is the ApiClient every method calls
+// first free suffix; a name the package already has gets one too
 export function getClassNames(rpcModuleNames: string[]): string[] {
   const identifiers = rpcModuleNames.map((name) => toPythonIdentifier(name));
-  const used = new Set(['client', ...identifiers]);
+  const used = new Set([...PYTHON_PACKAGE_NAMES, ...identifiers]);
   return identifiers.map((identifier, i) =>
-    identifier !== 'client' && identifiers.lastIndexOf(identifier) === i
+    !PYTHON_PACKAGE_NAMES.includes(identifier) && identifiers.lastIndexOf(identifier) === i
       ? identifier
       : toPythonIdentifier(identifier, used)
   );
@@ -53,6 +60,15 @@ export function getClassNames(rpcModuleNames: string[]): string[] {
 export function getMethodNames(handlerNames: string[], toSnakeCase: (name: string) => string): Map<string, string> {
   const used = new Set<string>();
   return new Map(handlerNames.map((name) => [name, toPythonIdentifier(toSnakeCase(name), used)]));
+}
+
+// the prefix of each handler's type names (GetUserBody, GetUserQuery), by handler name: in schema order, a prefix
+// already taken gets the first free suffix, so getUser and GetUser give GetUserBody and GetUser_2Body
+export function getTypeNamePrefixes(handlerNames: string[]): Map<string, string> {
+  const used = new Set<string>();
+  return new Map(
+    handlerNames.map((name) => [name, toPythonIdentifier(name.charAt(0).toUpperCase() + name.slice(1), used)])
+  );
 }
 
 // lines for a """ docstring: a quote or a backslash would end the string or start an escape; a third-party OpenAPI

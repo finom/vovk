@@ -17,7 +17,8 @@ imports: ['vovk-python']
     getMethodNames: t.imports['vovk-python'].getMethodNames,
     toPythonDocstringLines: t.imports['vovk-python'].toPythonDocstringLines,
     toPythonCommentText: t.imports['vovk-python'].toPythonCommentText,
-    getClassNames: t.imports['vovk-python'].getClassNames
+    getClassNames: t.imports['vovk-python'].getClassNames,
+    getTypeNamePrefixes: t.imports['vovk-python'].getTypeNamePrefixes
 };
 // the class of each RPC module, one name each across the package
 const controllerSchemas = Object.values(t.schema.segments).flatMap((segment) => Object.values(segment.controllers));
@@ -44,14 +45,13 @@ const getBinaryContentType = (schema) => {
 from __future__ import annotations
 import sys
 from typing import Any, Dict, List, Literal, Optional, Sequence, Set, TypedDict, Union, Tuple, Generator, BinaryIO # pyright: ignore[reportUnusedImport]
-from .api_client import ApiClient, HttpException
+# as HttpException: a name the package exports, also under mypy --strict
+from .api_client import ApiClient, HttpException as HttpException
 
 if sys.version_info >= (3, 11):
     from typing import NotRequired, TypeAlias
 else:
     from typing_extensions import NotRequired, TypeAlias
-
-HttpException = HttpException
 
 client = ApiClient(<%- vars.toPythonString(t.apiRoot ?? '') %>, {
 <%- Object.entries(segmentBases).map(([segmentName, [root, path]]) => `    ${vars.toPythonString(segmentName)}: (${vars.toPythonString(root)}, ${vars.toPythonString(path)}),`).join('\n') %>
@@ -60,11 +60,12 @@ client = ApiClient(<%- vars.toPythonString(t.apiRoot ?? '') %>, {
     Object.values(segment.controllers).forEach((controllerSchema) => {
 const { rpcModuleName } = controllerSchema;
 const pyModuleName = classNames.get(controllerSchema);
-const methodNames = vars.getMethodNames(Object.keys(controllerSchema.handlers), t._.snakeCase); %>
+const methodNames = vars.getMethodNames(Object.keys(controllerSchema.handlers), t._.snakeCase);
+const typeNamePrefixes = vars.getTypeNamePrefixes(Object.keys(controllerSchema.handlers)); %>
 class <%- pyModuleName %>: <% if (!Object.keys(controllerSchema.handlers).length) { %>
     pass<% } %><% Object.entries(controllerSchema.handlers).forEach(([handlerNameOriginal, handlerSchema]) => {
     const { validation, operationObject, httpMethod } = handlerSchema;
-    const handlerNameOriginalCapitalized = vars.toPythonIdentifier(handlerNameOriginal.charAt(0).toUpperCase() + handlerNameOriginal.slice(1));
+    const handlerNameOriginalCapitalized = typeNamePrefixes.get(handlerNameOriginal);
     const handlerName = methodNames.get(handlerNameOriginal);
     const bodyKind = vars.getBodyKind(validation?.body);
     const bodyContentType = bodyKind === 'text' ? vars.getTextContentType(validation?.body) : getBinaryContentType(validation?.body);

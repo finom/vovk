@@ -646,8 +646,27 @@ test('RPC modules alike as Python identifiers get a class each across segments',
   assert.equal(annotationProblems(file), '');
 });
 
-test('the OpenAPI samples name the classes the package has', () => {
-  const segments = alikeModules();
+// RPC modules named as names the package's __init__.py already has
+const importedNameModules = () => {
+  const list = { httpMethod: 'GET', path: '', validation: { query: idSchema }, operationObject: { summary: 'list' } };
+  const named = (rpcModuleName: string) => ({
+    [rpcModuleName]: { ...controller('Thing', { list }), rpcModuleName, prefix: rpcModuleName.toLowerCase() },
+  });
+  return {
+    '': { ...named('HttpException'), ...named('ApiClient'), ...named('List'), ...named('Optional'), ...named('sys') },
+  };
+};
+
+test('the OpenAPI samples name the classes the package has', async (t) => {
+  for (const [label, segments] of [
+    ['alike modules', alikeModules()],
+    ['modules named as imported names', importedNameModules()],
+  ] as const) {
+    await t.test(label, () => samplesNameTheClasses(segments));
+  }
+});
+
+function samplesNameTheClasses(segments: Record<string, Record<string, unknown>>) {
   const source = fs.readFileSync(generateSegments(segments)('src/app/__init__.py'), 'utf-8');
   const schema = {
     $schema: 'https://vovk.dev/api/schema/v3/schema.json',
@@ -675,7 +694,7 @@ test('the OpenAPI samples name the classes the package has', () => {
     sampleClasses,
     [...source.matchAll(/^class (\w+):/gm)].map(([, name]) => name)
   );
-});
+}
 
 const mypyStrict = (generated: (file: string) => string, usage: string) => {
   fs.writeFileSync(generated('src/usage.py'), usage);
@@ -732,4 +751,59 @@ FixRPC.post_shape(body={'id': 'b', 'side': 2.0})
 `
   );
   assert.equal(result.status, 0, result.stdout + result.stderr);
+});
+
+test('handler names alike as type names get a type each', { skip: !hasMypy && 'python3 with mypy not found' }, () => {
+  const numberSchema = { type: 'object', properties: { n: { type: 'number' } }, required: ['n'] };
+  const generated = generate({
+    UserRPC: controller('User', {
+      getUser: { httpMethod: 'POST', path: 'a', validation: { body: idSchema } },
+      GetUser: { httpMethod: 'POST', path: 'b', validation: { body: numberSchema } },
+      'get-user': { httpMethod: 'GET', path: 'c', validation: { query: idSchema } },
+      get_user: { httpMethod: 'GET', path: 'd', validation: { query: idSchema } },
+    }),
+  });
+  const source = fs.readFileSync(generated('src/app/__init__.py'), 'utf-8');
+  const classes = [...source.matchAll(/^ {4}class (\w+)\(/gm)].map(([, name]) => name);
+
+  assert.equal(classes.length, new Set(classes).size, `classes: ${classes.join(', ')}`);
+  // the first of the names keeps it, as a method name does
+  assert.match(source, /^ {4}class GetUserBody\(TypedDict\):\n {8}id: str$/m);
+  const result = mypyStrict(
+    generated,
+    `from app import UserRPC
+
+UserRPC.get_user(body={'id': 'a'})
+UserRPC.get_user_2(body={'n': 1})
+UserRPC.get_user_3(query={'id': 'c'})
+UserRPC.get_user_4(query={'id': 'd'})
+`
+  );
+  assert.equal(result.status, 0, result.stdout + result.stderr);
+});
+
+test('an RPC module named as a name the package imports gets a class of its own', {
+  skip: !hasMypy && 'python3 with mypy not found',
+}, () => {
+  const generated = generateSegments(importedNameModules());
+  const source = fs.readFileSync(generated('src/app/__init__.py'), 'utf-8');
+  const classes = [...source.matchAll(/^class (\w+):/gm)].map(([, name]) => name);
+
+  assert.deepEqual(classes, ['HttpException_2', 'ApiClient_2', 'List_2', 'Optional_2', 'sys_2']);
+  const result = mypyStrict(
+    generated,
+    `from app import HttpException, HttpException_2
+
+try:
+    HttpException_2.list(query={'id': 'a'})
+except HttpException as error:
+    print(error.status_code)
+`
+  );
+  assert.equal(result.status, 0, result.stdout + result.stderr);
+  const runtime = spawnSync('python3', ['-c', 'import app; assert issubclass(app.HttpException, Exception)'], {
+    cwd: generated('src'),
+    encoding: 'utf-8',
+  });
+  assert.equal(runtime.status, 0, runtime.stderr);
 });
