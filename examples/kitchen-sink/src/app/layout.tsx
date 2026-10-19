@@ -5,6 +5,7 @@ import { getPageMap } from 'nextra/page-map';
 import 'nextra-theme-docs/style.css';
 import './globals.css';
 import VovkLogo, { VovkMark } from '@/components/vovk-logo.tsx';
+import { headColors } from '../../../../docs/src/theme/head.mjs';
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://examples.vovk.dev'),
@@ -44,15 +45,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
       // Suggested by `next-themes` package https://github.com/pacocoursey/next-themes#with-app
       suppressHydrationWarning
     >
-      <Head
-        // Vermilion links on white and on #111111. The light one is darker than the logo's so that small text keeps 4.5:1.
-        color={{
-          hue: { light: 13, dark: 12 },
-          saturation: { light: 90, dark: 91 },
-          lightness: { light: 40, dark: 60 },
-        }}
-        backgroundColor={{ light: '#FFFFFF', dark: '#111111' }}
-      >
+      <Head {...headColors}>
         {/*
           Geist for text and Geist Mono for code, from Google Fonts: next/font/google's types
           don't resolve under this app's `moduleResolution: nodenext`. globals.css names the families.

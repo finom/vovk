@@ -1,8 +1,11 @@
 import nextra from 'nextra';
+import { codeThemes } from '../../docs/src/theme/code-theme.mjs';
 
-// Set up Nextra with its configuration
+// The code themes are vovk.dev's, from docs/src/theme.
 const withNextra = nextra({
-  // ... Add Nextra-specific options here
+  mdxOptions: {
+    rehypePrettyCodeOptions: { theme: codeThemes },
+  },
 });
 
 // Export the final Next.js config with Nextra included
