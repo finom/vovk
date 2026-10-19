@@ -1,5 +1,6 @@
 @import 'tailwindcss';
 @import 'tw-animate-css';
+@import '../../../../docs/src/theme/theme.css';
 
 @custom-variant dark (&:where(.dark, .dark *));
 
@@ -32,8 +33,8 @@
            focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2
            disabled:pointer-events-none disabled:opacity-50
            h-10 px-4 py-2
-           border border-neutral-300 bg-white text-neutral-900
-           placeholder:text-neutral-400 hover:border-neutral-400;
+           border border-input bg-card text-foreground
+           placeholder:text-muted-foreground hover:border-gray-400;
   }
 
   ul {
@@ -100,112 +101,9 @@
 }
 
 :root {
-  /* Geist and Geist Mono come from Google Fonts in layout.tsx. Nextra reads --x-font-*. */
+  /* Geist and Geist Mono come from Google Fonts in layout.tsx. The rest of the look is vovk.dev's theme.css. */
   --font-sans: 'Geist', ui-sans-serif, system-ui, sans-serif;
   --font-mono: 'Geist Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, monospace;
-  --x-font-sans: var(--font-sans);
-  --x-font-mono: var(--font-mono);
-
-  /* White, ink and one vermilion. The logo's vermilion is for marks and large text; small text on white takes
-     the darker --primary, which keeps 4.5:1. */
-  --vovk-logo-accent: #dd4115;
-  /* A quiet tint behind the active sidebar item. */
-  --x-color-primary-100: #fcebe6;
-
-  /* Nextra's gray scales, as neutral grays. */
-  --x-color-gray-50: #fafafa;
-  --x-color-gray-100: #f4f4f5;
-  --x-color-gray-200: #e4e4e7;
-  --x-color-gray-300: #d4d4d8;
-  --x-color-gray-400: #a1a1aa;
-  --x-color-gray-500: #71717a;
-  --x-color-gray-600: #5c5c60;
-  --x-color-gray-700: #3f3f46;
-  --x-color-gray-800: #27272a;
-  --x-color-gray-900: #18181b;
-  --x-color-neutral-50: #fafafa;
-  --x-color-neutral-100: #f4f4f5;
-  --x-color-neutral-200: #e4e4e7;
-  --x-color-neutral-300: #d4d4d8;
-  --x-color-neutral-400: #a1a1aa;
-  --x-color-neutral-500: #71717a;
-  --x-color-neutral-600: #5c5c60;
-  --x-color-neutral-700: #3f3f46;
-  --x-color-neutral-800: #27272a;
-  --x-color-neutral-900: #18181b;
-  --x-color-slate-50: #fafafa;
-  --x-color-slate-100: #f4f4f5;
-  --x-color-slate-200: #e4e4e7;
-  --x-color-slate-700: #3f3f46;
-  --x-color-slate-900: #18181b;
-
-  --radius: 0.5rem;
-  --background: #ffffff;
-  --foreground: #111111;
-  --card: #fafafa;
-  --card-foreground: #111111;
-  --popover: #ffffff;
-  --popover-foreground: #111111;
-  --primary: #c2320a;
-  --primary-foreground: #ffffff;
-  --secondary: #f4f4f5;
-  --secondary-foreground: #111111;
-  --muted: #f4f4f5;
-  --muted-foreground: #5c5c60;
-  --accent: #f4f4f5;
-  --accent-foreground: #111111;
-  --destructive: oklch(0.577 0.245 27.325);
-  --border: #e4e4e7;
-  --input: #e4e4e7;
-  --ring: #dd4115;
-  --chart-1: oklch(0.646 0.222 41.116);
-  --chart-2: oklch(0.6 0.118 184.704);
-  --chart-3: oklch(0.398 0.07 227.392);
-  --chart-4: oklch(0.828 0.189 84.429);
-  --chart-5: oklch(0.769 0.188 70.08);
-  --sidebar: #ffffff;
-  --sidebar-foreground: #111111;
-  --sidebar-primary: #c2320a;
-  --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: #f4f4f5;
-  --sidebar-accent-foreground: #111111;
-  --sidebar-border: #e4e4e7;
-  --sidebar-ring: #dd4115;
-}
-
-.dark {
-  --vovk-logo-accent: #f6623d;
-  --background: #111111;
-  --foreground: #ffffff;
-  --card: #18181b;
-  --card-foreground: #ffffff;
-  --popover: #18181b;
-  --popover-foreground: #ffffff;
-  --primary: #f6623d;
-  --primary-foreground: #111111;
-  --secondary: #1f1f22;
-  --secondary-foreground: #ffffff;
-  --muted: #1f1f22;
-  --muted-foreground: #8e8e95;
-  --accent: #27272a;
-  --accent-foreground: #ffffff;
-  --destructive: oklch(0.704 0.191 22.216);
-  --border: #27272a;
-  --input: #3f3f46;
-  --ring: #f6623d;
-  --chart-1: oklch(0.488 0.243 264.376);
-  --chart-2: oklch(0.696 0.17 162.48);
-  --chart-3: oklch(0.769 0.188 70.08);
-  --chart-4: oklch(0.627 0.265 303.9);
-  --chart-5: oklch(0.645 0.246 16.439);
-  --sidebar: #111111;
-  --sidebar-foreground: #ffffff;
-  --sidebar-primary: #f6623d;
-  --sidebar-primary-foreground: #111111;
-  --sidebar-accent: #27272a;
-  --sidebar-accent-foreground: #ffffff;
-  --sidebar-border: #27272a;
-  --sidebar-ring: #f6623d;
 }
 
 @layer base {
@@ -215,28 +113,4 @@
   body {
     @apply bg-background text-foreground;
   }
-}
-
-/* Headings in Geist 600 with tight tracking, as in the logo sheet. */
-article h1,
-article h2,
-article h3 {
-  font-weight: 600;
-  letter-spacing: -0.02em;
-}
-
-article h1 {
-  letter-spacing: -0.03em;
-}
-
-/* Code blocks sit on the card color, not on white or black. */
-.nextra-code pre {
-  background-color: var(--card);
-}
-
-/* Smoother text rendering across the document. */
-body {
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-rendering: optimizeLegibility;
 }

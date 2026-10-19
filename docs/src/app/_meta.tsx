@@ -47,7 +47,7 @@ const meta: MetaRecord = {
   inference: 'Type Inference',
   openapi: 'OpenAPI Specification',
 
-  '#tools': separator('🤖 AI Tools'),
+  '#tools': separator('AI Tools'),
   tools: 'Deriving AI Tools from Procedures',
   'tools-mcp': 'MCP Formatting',
   uicast: 'Using with uicast',
@@ -84,7 +84,7 @@ const meta: MetaRecord = {
   'hello-world': '"Hello World!"',
   multitenant: 'Multitenancy Tutorial',
   'realtime-ui': {
-    title: '🤖 Realtime Kanban',
+    title: 'Realtime Kanban',
     theme: {
       collapsed: true,
       copyPage: true,

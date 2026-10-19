@@ -30,7 +30,7 @@ export const icons: Omit<Record<keyof typeof meta, string>, `#${string}`> = {
   endpoints: '🔗',
   embeddings: '🧠',
   database: '🗃️',
-  'text-ai': '🤖',
+  'text-ai': '💬',
   'voice-ai': '🎙️',
   polling: '🔄',
   authentication: '🔐',

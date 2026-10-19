@@ -1,0 +1,165 @@
+/*
+  The look of vovk.dev and examples.vovk.dev: paper, ink and one vermilion, over Nextra and the shadcn tokens.
+  Each app imports it from its globals.css and sets --font-sans and --font-mono itself.
+*/
+
+:root {
+  /* Nextra reads --x-font-*. */
+  --x-font-sans: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
+  --x-font-mono: var(--font-mono), ui-monospace, SFMono-Regular, Menlo, Monaco, monospace;
+
+  /* --vk-accent is for marks and large text; small text takes --vk-accent-text, which keeps 4.5:1 on paper. */
+  --vk-bg: #f2f0eb;
+  --vk-ink: #111111;
+  --vk-muted: #5f5d58;
+  --vk-line: #d8d4cc;
+  --vk-panel: #faf9f6;
+  --vk-sunk: #e9e6df;
+  --vk-accent: oklch(0.6 0.2 35);
+  --vk-accent-text: oklch(0.5 0.19 35);
+  --vk-cmd-accent: oklch(0.7 0.18 35);
+  --vk-hl: oklch(0.6 0.2 35 / 0.1);
+  --vk-hl2: oklch(0.6 0.2 35 / 0.18);
+  --vk-glow: oklch(0.6 0.2 35 / 0.16);
+
+  --vovk-logo-accent: var(--vk-accent);
+  /* A quiet tint behind the active sidebar item. */
+  --x-color-primary-100: #f4dfd6;
+
+  /* Nextra's gray scales, as the warm grays of the paper. */
+  --x-color-gray-50: #faf9f6;
+  --x-color-gray-100: #ebe8e1;
+  --x-color-gray-200: #d8d4cc;
+  --x-color-gray-300: #c4bfb5;
+  --x-color-gray-400: #a29d93;
+  --x-color-gray-500: #7a766e;
+  --x-color-gray-600: #5f5d58;
+  --x-color-gray-700: #45433f;
+  --x-color-gray-800: #2e2d2a;
+  --x-color-gray-900: #1b1b19;
+  --x-color-neutral-50: #faf9f6;
+  --x-color-neutral-100: #ebe8e1;
+  --x-color-neutral-200: #d8d4cc;
+  --x-color-neutral-300: #c4bfb5;
+  --x-color-neutral-400: #a29d93;
+  --x-color-neutral-500: #7a766e;
+  --x-color-neutral-600: #5f5d58;
+  --x-color-neutral-700: #45433f;
+  --x-color-neutral-800: #2e2d2a;
+  --x-color-neutral-900: #1b1b19;
+  --x-color-slate-50: #faf9f6;
+  --x-color-slate-100: #ebe8e1;
+  --x-color-slate-200: #d8d4cc;
+  --x-color-slate-700: #45433f;
+  --x-color-slate-900: #1b1b19;
+
+  --radius: 0.375rem;
+  --background: var(--vk-bg);
+  --foreground: var(--vk-ink);
+  --card: var(--vk-panel);
+  --card-foreground: var(--vk-ink);
+  --popover: var(--vk-panel);
+  --popover-foreground: var(--vk-ink);
+  --primary: var(--vk-accent-text);
+  --primary-foreground: #ffffff;
+  --secondary: var(--vk-sunk);
+  --secondary-foreground: var(--vk-ink);
+  --muted: var(--vk-sunk);
+  --muted-foreground: var(--vk-muted);
+  --accent: var(--vk-sunk);
+  --accent-foreground: var(--vk-ink);
+  --destructive: oklch(0.577 0.245 27.325);
+  --border: var(--vk-line);
+  --input: var(--vk-line);
+  --ring: var(--vk-accent);
+  --chart-1: oklch(0.646 0.222 41.116);
+  --chart-2: oklch(0.6 0.118 184.704);
+  --chart-3: oklch(0.398 0.07 227.392);
+  --chart-4: oklch(0.828 0.189 84.429);
+  --chart-5: oklch(0.769 0.188 70.08);
+  --sidebar: var(--vk-bg);
+  --sidebar-foreground: var(--vk-ink);
+  --sidebar-primary: var(--vk-accent-text);
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: var(--vk-sunk);
+  --sidebar-accent-foreground: var(--vk-ink);
+  --sidebar-border: var(--vk-line);
+  --sidebar-ring: var(--vk-accent);
+}
+
+.dark {
+  --vk-bg: #141412;
+  --vk-ink: #f2f0eb;
+  --vk-muted: #a29d93;
+  --vk-line: #2e2d2a;
+  --vk-panel: #1b1b19;
+  --vk-sunk: #0e0e0d;
+  --vk-accent: oklch(0.68 0.19 35);
+  --vk-accent-text: oklch(0.74 0.16 35);
+  --vk-cmd-accent: oklch(0.55 0.2 35);
+  --vk-hl: oklch(0.68 0.19 35 / 0.12);
+  --vk-hl2: oklch(0.68 0.19 35 / 0.24);
+  --vk-glow: oklch(0.68 0.19 35 / 0.22);
+  --x-color-primary-100: #3a201a;
+
+  --primary-foreground: #111111;
+  --destructive: oklch(0.704 0.191 22.216);
+  --chart-1: oklch(0.488 0.243 264.376);
+  --chart-2: oklch(0.696 0.17 162.48);
+  --chart-3: oklch(0.769 0.188 70.08);
+  --chart-4: oklch(0.627 0.265 303.9);
+  --chart-5: oklch(0.645 0.246 16.439);
+  --sidebar-primary-foreground: #111111;
+}
+
+/* Headings in Geist 600 with tight tracking, as in the logo sheet. */
+article h1,
+article h2,
+article h3 {
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+article h1 {
+  letter-spacing: -0.03em;
+}
+
+/* Code blocks sit on the panel color, with the paper's line around them. */
+.nextra-code pre {
+  background-color: var(--vk-panel);
+}
+
+/* The navbar and the search field, as on the home page. */
+.nextra-navbar-blur {
+  background-color: var(--vk-bg) !important;
+  backdrop-filter: none !important;
+  box-shadow: 0 1px 0 var(--vk-line) !important;
+}
+.nextra-search input {
+  height: 40px;
+  border: 1px solid var(--vk-line);
+  border-radius: 4px;
+  background-color: var(--vk-panel);
+  color: var(--vk-ink);
+}
+.nextra-search input::placeholder {
+  color: var(--vk-muted);
+}
+.nextra-search kbd {
+  border-color: var(--vk-line);
+  border-radius: 3px;
+  background-color: transparent;
+  color: var(--vk-muted);
+}
+
+/* Paragraphs in one quote read as lines of one note. Alerts ([!NOTE] and the rest) are not blockquotes. */
+article blockquote > p + p {
+  margin-top: 0.25em;
+}
+
+/* Smoother text rendering across the document. */
+body {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
