@@ -37,6 +37,8 @@ describe('The package names the Python and Rust code samples import', () => {
     strictEqual(firstLine(rs), 'use acme_client::user_rpc;');
     ok(!rs.includes('acme-client'), rs);
     strictEqual(firstLine(samplesFor({ name: 'app', rs_name: 'acme_rs' }).rs), 'use acme_rs::user_rpc;');
+    // Cargo refuses @ and /, the crate is named as an npm name would be
+    strictEqual(firstLine(samplesFor({ name: 'app', rs_name: '@acme/x' }).rs), 'use acme_x::user_rpc;');
   });
 
   it('Falls back to the npm name made valid for both languages', () => {

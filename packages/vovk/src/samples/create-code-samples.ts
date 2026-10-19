@@ -525,7 +525,11 @@ export function createCodeSamples({
   const pyPackageName = packageJson?.py_name
     ? toPythonPackageName(packageJson.py_name)
     : toUnderscoredPackageName(packageJson?.name);
-  const rsPackageName = (packageJson?.rs_name || toUnderscoredPackageName(packageJson?.name)).replace(/-/g, '_');
+  // an rs_name Cargo refuses (@, /, .) is named as an npm name would be, as vovk-cli names the crate
+  const rsName = packageJson?.rs_name;
+  const rsPackageName = (
+    rsName && /^[A-Za-z_][A-Za-z0-9_-]*$/.test(rsName) ? rsName : toUnderscoredPackageName(rsName || packageJson?.name)
+  ).replace(/-/g, '_');
   const handlers = controllerSchema.handlers ?? {};
 
   const commonParams: CodeGenerationParams = {

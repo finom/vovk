@@ -27,7 +27,12 @@ import { GENERATED_BANNER_PREFIX, hasGeneratedBanner } from '../utils/generated-
 import { getJSONImportAttributes } from '../utils/get-ts-import-options.mjs';
 import type { Segment } from '../utils/locate-segments.mjs';
 import { prettify, warnIfPrettierMissing } from '../utils/prettify.mjs';
-import { PYTHON_STDLIB_MODULES, toPythonPackageName } from '../utils/python-package-name.mjs';
+import {
+  isPyprojectName,
+  PYTHON_STDLIB_MODULES,
+  toCargoPackageName,
+  toPythonPackageName,
+} from '../utils/python-package-name.mjs';
 import { toImportPath, toPosixPath } from '../utils/to-import-path.mjs';
 import type { ClientTemplateFile } from './get-client-template-files.mjs';
 import { getTemplateClientImports } from './get-template-client-imports.mjs';
@@ -62,12 +67,15 @@ export function getOutputConfigs(
 // a template is warned about once per process, as vovk dev generates again and again
 const templatesWithoutOrigin = new Set<string>();
 const stdlibPackageNames = new Set<string>();
+const nonPyprojectNames = new Set<string>();
 
-// Python imports the package by its folder name, so a py_name it can't import is made valid; Cargo takes any rs_name
-const getUnderscoredPackageName = (packageJson: VovkPackageJson, packageNameKey?: 'py_name' | 'rs_name') =>
-  packageNameKey === 'py_name' && packageJson.py_name
-    ? toPythonPackageName(packageJson.py_name)
-    : (packageNameKey && packageJson[packageNameKey]) || toUnderscoredPackageName(packageJson.name);
+// Python imports the package by its folder name, so a py_name it can't import is made valid, and so is an rs_name
+// Cargo refuses
+const getUnderscoredPackageName = (packageJson: VovkPackageJson, packageNameKey?: 'py_name' | 'rs_name') => {
+  if (packageNameKey === 'py_name' && packageJson.py_name) return toPythonPackageName(packageJson.py_name);
+  if (packageNameKey === 'rs_name' && packageJson.rs_name) return toCargoPackageName(packageJson.rs_name);
+  return toUnderscoredPackageName(packageJson.name);
+};
 
 export function normalizeOutTemplatePath(
   out: string,
@@ -341,6 +349,18 @@ export async function renderOneClientFile({
     stdlibPackageNames.add(t.underscoredPackageName);
     log.warn(
       `The Python package name "${t.underscoredPackageName}" is a module of the Python standard library, so "import ${t.underscoredPackageName}" loads that module, not the client. Set outputConfig.package.py_name to another name.`
+    );
+  }
+
+  // as above, the folder keeps its name and the user picks another
+  if (
+    path.basename(templateFilePath) === 'pyproject.toml.ejs' &&
+    !isPyprojectName(t.underscoredPackageName) &&
+    !nonPyprojectNames.has(t.underscoredPackageName)
+  ) {
+    nonPyprojectNames.add(t.underscoredPackageName);
+    log.warn(
+      `The Python package name "${t.underscoredPackageName}" can't be the name of a pyproject, which takes ASCII letters, digits and _ that start and end with a letter or a digit, so the package doesn't build. Set outputConfig.package.py_name to another name.`
     );
   }
 
