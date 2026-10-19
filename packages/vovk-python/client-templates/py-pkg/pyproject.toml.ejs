@@ -86,8 +86,8 @@ if (t.package.contributors && t.package.contributors.length) {
 data.project.dependencies = [
   "requests",
   "jsonschema[format-nongpl]",
-  // NotRequired is in typing from 3.11, TypeAlias from 3.10
-  "typing_extensions>=4.0.0; python_version < '3.11'"
+  // pydantic reads a TypedDict only from typing_extensions before 3.12; NotRequired is in typing from 3.11
+  "typing_extensions>=4.0.0; python_version < '3.12'"
 ];
 
 data.project.readme = "README.md";

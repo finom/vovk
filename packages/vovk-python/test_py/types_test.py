@@ -78,9 +78,9 @@ class TestTypes(unittest.TestCase):
         self.assertIs(hints['q'], str)
         self.assertIs(typing.get_origin(hints['page']), NotRequired)
 
-    # the package's dependencies take typing_extensions only before Python 3.11; mypy brings it in here
-    @unittest.skipIf(sys.version_info < (3, 11), 'the client imports typing_extensions before Python 3.11')
-    def test_no_typing_extensions_from_python_3_11(self) -> None:
+    # the package's dependencies take typing_extensions only before Python 3.12; mypy brings it in here
+    @unittest.skipIf(sys.version_info < (3, 12), 'the client imports typing_extensions before Python 3.12')
+    def test_no_typing_extensions_from_python_3_12(self) -> None:
         result = subprocess.run(
             [sys.executable, '-c', WITHOUT_TYPING_EXTENSIONS], cwd=os.path.dirname(__file__), capture_output=True, text=True
         )

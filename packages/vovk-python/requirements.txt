@@ -2,7 +2,7 @@ requests
 jsonschema[format-nongpl]
 types-requests
 types-jsonschema
-typing_extensions; python_version < '3.11'
+typing_extensions; python_version < '3.12'
 build
 hatchling
 packaging

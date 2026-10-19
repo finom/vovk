@@ -583,6 +583,18 @@ export function getPythonFilesParamType({ schema, className }: { schema: VovkJSO
   return `Union[${[className, ...dict, `Sequence[Tuple[str, ${FILE_VALUE}]]`].join(', ')}]`;
 }
 
+// a multipart body that lists no fields and takes others, as a record, takes files under any field name
+export function takesFreeFormFiles(schema: VovkJSONSchemaBase | undefined): boolean {
+  if (!schema || !(schema['x-contentType'] as string[] | undefined)?.includes('multipart/form-data')) return false;
+  const body = resolveTopLevelRef(schema);
+  const listsNoKeys = !body.properties || Object.keys(body.properties).length === 0;
+  const hasBranches = !!(body.anyOf?.length || body.oneOf?.length || body.allOf?.length);
+  return listsNoKeys && !hasBranches && body.additionalProperties !== false && !hasFiles(schema);
+}
+
+// the files argument of a body that takes files under any field name
+export const FREE_FORM_FILES_TYPE = `Union[Dict[str, ${FILE_VALUE}], Sequence[Tuple[str, ${FILE_VALUE}]]]`;
+
 export function convertJSONSchemaToPythonFilesType(options: ConvertOptions): string {
   const { className, pad } = options;
   if (!options.schema) return '';
