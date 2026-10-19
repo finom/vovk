@@ -322,7 +322,16 @@ export function convertJSONSchemaToPythonDataType(options: ConvertOptions): stri
       return parts.length > 1 ? `Union[${parts.join(', ')}]` : (parts[0] ?? 'Any');
     }
 
+    // an object, or an object that may be null, as OpenAPI 3.0's nullable becomes
+    const takesObject = (target: VovkJSONSchemaBase) => !target.type || [target.type].flat().includes('object');
+
     if (s.allOf && s.allOf.length > 0) {
+      // checks on a scalar, as zod writes startsWith().endsWith() or two regex(): the scalar, unless a member names
+      // its values
+      if (!takesObject(s) && !s.allOf.some((member) => resolve(member)?.enum)) {
+        const { allOf: _, ...own } = s;
+        return buildType(own, propNameForParent, forcedClassName);
+      }
       // a lone member that isn't an object with keys, as an enum OpenAPI 3.0 wraps to describe it, is that member
       const lone = s.allOf.length === 1 && !s.properties ? resolve(s.allOf[0]) : undefined;
       if (lone && !lone.properties && !lone.allOf) return buildType(s.allOf[0], propNameForParent);
@@ -358,7 +367,7 @@ export function convertJSONSchemaToPythonDataType(options: ConvertOptions): stri
         if (!resolved || seen.has(resolved)) return;
         seen.add(resolved);
         resolved.allOf?.forEach(mergeMember);
-        if (resolved.type && resolved.type !== 'object') return;
+        if (!takesObject(resolved)) return;
         merged.properties = { ...merged.properties, ...resolved.properties };
         merged.required = Array.from(new Set([...(merged.required ?? []), ...(resolved.required ?? [])]));
       };
@@ -367,12 +376,17 @@ export function convertJSONSchemaToPythonDataType(options: ConvertOptions): stri
       return buildType(merged, propNameForParent);
     }
 
-    if (s.anyOf && s.anyOf.length > 0) {
-      const subTypes = s.anyOf.map((sub, i) => buildType(sub, `${propNameForParent}_anyOf_${i}`));
-      return `Union[${subTypes.join(', ')}]`;
-    }
-    if (s.oneOf && s.oneOf.length > 0) {
-      const subTypes = s.oneOf.map((sub, i) => buildType(sub, `${propNameForParent}_oneOf_${i}`));
+    for (const keyword of ['anyOf', 'oneOf'] as const) {
+      const branches = s[keyword];
+      if (!branches?.length) continue;
+      // properties next to the branches go in each branch that is an object
+      const hasOwnProperties = !!s.properties && Object.keys(s.properties).length > 0;
+      const own: VovkJSONSchemaBase = { type: 'object', properties: s.properties, required: s.required };
+      const subTypes = branches.map((sub, i) => {
+        const resolved = resolve(sub);
+        const branch = hasOwnProperties && resolved && takesObject(resolved) ? { allOf: [own, sub] } : sub;
+        return buildType(branch, `${propNameForParent}_${keyword}_${i}`);
+      });
       return `Union[${subTypes.join(', ')}]`;
     }
 

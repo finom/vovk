@@ -676,3 +676,60 @@ test('the OpenAPI samples name the classes the package has', () => {
     [...source.matchAll(/^class (\w+):/gm)].map(([, name]) => name)
   );
 });
+
+const mypyStrict = (generated: (file: string) => string, usage: string) => {
+  fs.writeFileSync(generated('src/usage.py'), usage);
+  return spawnSync(
+    'python3',
+    ['-m', 'mypy', '--cache-dir', generated('.mypy_cache'), '--config-file', os.devNull, '--strict', 'src/usage.py'],
+    { cwd: generated(''), encoding: 'utf-8' }
+  );
+};
+
+test('combined schemas keep their own type and every member', {
+  skip: !hasMypy && 'python3 with mypy not found',
+}, () => {
+  const body = (schema: unknown) => ({ httpMethod: 'POST', path: '', validation: { body: schema } });
+  const generated = generate({
+    FixRPC: controller('Fix', {
+      // zod's startsWith('A').endsWith('Z') and two regex() checks
+      postCode: body({
+        type: 'object',
+        required: ['code', 'slug'],
+        properties: {
+          code: { type: 'string', allOf: [{ pattern: '^A.*' }, { pattern: '.*Z$' }] },
+          slug: { type: 'string', allOf: [{ pattern: '^[a-z]+$' }, { pattern: '^.{2,}$' }] },
+        },
+      }),
+      // an OpenAPI 3.1 member that may be null, as 3.0's nullable becomes
+      postDog: body({
+        allOf: [
+          { $ref: '#/$defs/Animal' },
+          { type: 'object', required: ['bark'], properties: { bark: { type: 'boolean' } } },
+        ],
+        $defs: { Animal: { type: ['object', 'null'], required: ['name'], properties: { name: { type: 'string' } } } },
+      }),
+      // properties every branch shares, next to the branches
+      postShape: body({
+        type: 'object',
+        required: ['id'],
+        properties: { id: { type: 'string' } },
+        oneOf: [
+          { type: 'object', required: ['radius'], properties: { radius: { type: 'number' } } },
+          { type: 'object', required: ['side'], properties: { side: { type: 'number' } } },
+        ],
+      }),
+    }),
+  });
+  const result = mypyStrict(
+    generated,
+    `from app import FixRPC
+
+FixRPC.post_code(body={'code': 'AxZ', 'slug': 'abc'})
+FixRPC.post_dog(body={'name': 'Rex', 'bark': True})
+FixRPC.post_shape(body={'id': 'a', 'radius': 1.0})
+FixRPC.post_shape(body={'id': 'b', 'side': 2.0})
+`
+  );
+  assert.equal(result.status, 0, result.stdout + result.stderr);
+});
