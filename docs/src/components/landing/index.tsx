@@ -79,7 +79,7 @@ const FEATURES: Feature[] = [
     code: (
       <>
         <div>
-          const {'{ tools }'} = <Kw>deriveTools</Kw>({'{'}
+          const tools = <Kw>deriveTools</Kw>({'{'}
         </div>
         <div>{'  modules: { TaskRPC },'}</div>
         <div>{'});'}</div>
