@@ -4,8 +4,8 @@ description: "Full documentation for the Vovk.ts framework, excluding the Realti
 see_also:
   label: "Realtime Kanban Context"
   url: https://vovk.dev/context/realtime-ui.md
-chars: 410052
-est_tokens: 102513
+chars: 409625
+est_tokens: 102407
 ---
 
 Page: https://vovk.dev/about
@@ -14,7 +14,13 @@ Page: https://vovk.dev/about
 
 Vovk.ts adds an API layer on top of Next.js App Router Route Handlers. Its unit is the **procedure**: a typed function with its schema. From one procedure, Vovk.ts derives the HTTP endpoint, the local `.fn()` call, the typed RPC client, the OpenAPI document and the AI tool with `execute`. You don't write a separate contract or glue code.
 
-To start, run the `init` command in an existing Next.js project.
+To start with a coding agent, add the [Vovk.ts skills](#agent-skills) and ask it for the API you need:
+
+```bash
+npx skills add finom/vovk
+```
+
+Or run the `init` command in an existing Next.js project:
 
 ```bash npm2yarn
 npx vovk-cli@latest init
@@ -229,13 +235,52 @@ See [Packages](https://vovk.dev/packages).
 
 15 topic skills teach a coding agent Vovk.ts as you describe what to build: Claude Code, Cursor, Windsurf, GitHub Copilot, Cline and the other agents that read skills. A skill loads only when needed: *"scaffold a tenant"* loads the multitenant skill, *"stream chat tokens"* the JSON Lines one.
 
-Install them in your project:
+Install them in your project, an empty folder or a Next.js app:
 
 ```bash
 npx skills add finom/vovk
 ```
 
-[Quick Start](https://vovk.dev/quick-install#with-an-agent) has the prompts to try, the per-agent install commands and the Claude Code plugin.
+The [skills](https://www.npmjs.com/package/skills) CLI asks which skills to install (select all 15), finds the agents on your machine and asks whether to install in the project or for your user (`-g`). `npx skills update` brings them up to date.
+
+Then ask your agent for what you need. The skills load on their own, so the prompt doesn't have to name Vovk.ts:
+
+- In an empty folder: *"I want a back-end for a task tracker."*
+- In a Next.js app: *"Add an API to this app for a todo list."* or *"This app needs a back-end for user comments."*
+- Streaming: *"Stream the OpenAI reply from an endpoint and show it on the page as it comes in."*
+
+The agent sets up Next.js and Vovk.ts with `vovk init`, writes a controller and a service in **src/modules/&lt;feature&gt;/**, generates the typed client and calls the endpoints to check them. In an empty folder it may ask first where to create the project.
+
+A skill that writes wrong code or contradicts itself is a bug. Open an issue at github.com/finom/vovk/issues with your prompt and the skill that loaded.
+
+### Install for one agent
+
+To skip the questions:
+
+| Agent | Install |
+|-------|---------|
+| **Claude Code** | `npx skills add finom/vovk -a claude-code -s "*" -y` |
+| **Cursor** | `npx skills add finom/vovk -a cursor -s "*" -y` |
+| **Windsurf** | `npx skills add finom/vovk -a windsurf -s "*" -y` |
+| **GitHub Copilot** | `npx skills add finom/vovk -a github-copilot -s "*" -y` |
+| **Cline** | `npx skills add finom/vovk -a cline -s "*" -y` |
+
+The skill files land in `.claude/skills/` (Claude Code), `.windsurf/skills/` (Windsurf) or `.agents/skills/` (Cursor, Copilot, Cline). With `-g`, they go to your home folder instead.
+
+### Claude Code plugin
+
+In Claude Code you can also install the skills as a plugin. Its skill names start with `vovk:`.
+
+| | Install |
+|-|---------|
+| **Terminal** | `claude plugin marketplace add finom/vovk && claude plugin install vovk@vovk` |
+| **In a session** | `/plugin marketplace add finom/vovk`, then `/plugin install vovk@vovk` |
+
+`finom/vovk` points to `.claude-plugin/marketplace.json` in the GitHub repo. The plugin and the marketplace are both named `vovk`: `vovk@vovk` is `<plugin-name>@<marketplace-name>`. For a local checkout (development), use its path: `claude plugin marketplace add /path/to/vovk` (the repo root).
+
+Run `/plugin` to check: the **Installed** tab lists `vovk`, and typing `/vovk:` (with the colon) lists all 15 skills.
+
+The plugin installs from the repo's `main` branch. It has its own version in `.claude-plugin/plugin.json`, separate from the npm packages. A new plugin version brings the skill updates: run `claude plugin update vovk@vovk`, or turn on auto-update for the `vovk` marketplace in `/plugin` → **Marketplaces** (it's off by default for third-party marketplaces). The new version loads in your next session, or after `/reload-plugins`.
 
 ### The skills
 
@@ -312,50 +357,11 @@ Page: https://vovk.dev/quick-install
 
 ## With an agent
 
-Add the Vovk.ts skills to your project, an empty folder or a Next.js app:
-
 ```bash copy
 npx skills add finom/vovk
 ```
 
-The [skills](https://www.npmjs.com/package/skills) CLI asks which skills to install (select all 15), finds the agents on your machine (Claude Code, Cursor, Windsurf, GitHub Copilot, Cline and others) and asks whether to install in the project or for your user (`-g`). `npx skills update` brings them up to date.
-
-Then ask your agent for what you need. The skills load on their own, so the prompt doesn't have to name Vovk.ts:
-
-- In an empty folder: *"I want a back-end for a task tracker."*
-- In a Next.js app: *"Add an API to this app for a todo list."* or *"This app needs a back-end for user comments."*
-- Streaming: *"Stream the OpenAI reply from an endpoint and show it on the page as it comes in."*
-
-The agent sets up Next.js and Vovk.ts with `vovk init`, writes a controller and a service in **src/modules/&lt;feature&gt;/**, generates the typed client and calls the endpoints to check them. In an empty folder it may ask first where to create the project. [About Vovk.ts](https://vovk.dev/about#agent-skills) lists the 15 skills.
-
-Install for one agent, without the questions
-
-| Agent | Install |
-|-------|---------|
-| **Claude Code** | `npx skills add finom/vovk -a claude-code -s "*" -y` |
-| **Cursor** | `npx skills add finom/vovk -a cursor -s "*" -y` |
-| **Windsurf** | `npx skills add finom/vovk -a windsurf -s "*" -y` |
-| **GitHub Copilot** | `npx skills add finom/vovk -a github-copilot -s "*" -y` |
-| **Cline** | `npx skills add finom/vovk -a cline -s "*" -y` |
-
-The skill files land in `.claude/skills/` (Claude Code), `.windsurf/skills/` (Windsurf) or `.agents/skills/` (Cursor, Copilot, Cline). With `-g`, they go to your home folder instead.
-
-### Claude Code plugin
-
-In Claude Code you can also install the skills as a plugin. Its skill names start with `vovk:`.
-
-| | Install |
-|-|---------|
-| **Terminal** | `claude plugin marketplace add finom/vovk && claude plugin install vovk@vovk` |
-| **In a session** | `/plugin marketplace add finom/vovk`, then `/plugin install vovk@vovk` |
-
-`finom/vovk` points to `.claude-plugin/marketplace.json` in the GitHub repo. The plugin and the marketplace are both named `vovk`: `vovk@vovk` is `<plugin-name>@<marketplace-name>`. For a local checkout (development), use its path: `claude plugin marketplace add /path/to/vovk` (the repo root).
-
-Run `/plugin` to check: the **Installed** tab lists `vovk`, and typing `/vovk:` (with the colon) lists all 15 skills.
-
-The plugin installs from the repo's `main` branch. It has its own version in `.claude-plugin/plugin.json`, separate from the npm packages. A new plugin version brings the skill updates: run `claude plugin update vovk@vovk`, or turn on auto-update for the `vovk` marketplace in `/plugin` → **Marketplaces** (it's off by default for third-party marketplaces). The new version loads in your next session, or after `/reload-plugins`.
-
-A skill that writes wrong code or contradicts itself is a bug. Open an issue at github.com/finom/vovk/issues with your prompt and the skill that loaded.
+Then ask your agent, for example: *"Add an API to this app for a todo list."* The prompt doesn't have to name Vovk.ts. [Agent Skills](https://vovk.dev/about#agent-skills) has more prompts, the per-agent install and the Claude Code plugin.
 
 ## Without an agent
 
@@ -384,8 +390,8 @@ npx vovk-cli@latest init
 
 Create the root segment at **./src/app/api/[[...vovk]]/route.ts**:
 
-```bash npm2yarn copy
-npm exec -- vovk new segment
+```bash copy
+npx vovk new segment
 ```
 
 **More info:**
@@ -396,8 +402,8 @@ npm exec -- vovk new segment
 
 This command writes **user-controller.ts** and **user-service.ts** to **./src/modules/user/** from built-in templates, which you can customize, and updates the segment’s **route.ts**:
 
-```bash npm2yarn copy
-npm exec -- vovk new controller service user
+```bash copy
+npx vovk new controller service user
 ```
 
 ```ts filename="src/modules/user/user-controller.ts"
@@ -487,8 +493,8 @@ const { data, error, isLoading } = useQuery({
 
 `vovk init` adds a `prebuild` script, so `vovk generate` runs before `next build`. Yarn 2+ doesn't run `pre` scripts, so there `vovk init` puts `vovk generate` at the start of `build`. If you change the scripts yourself, run it before the build:
 
-```bash npm2yarn copy
-npm exec -- vovk generate
+```bash copy
+npx vovk generate
 ```
 
 **More info:**
@@ -756,8 +762,8 @@ Call `initSegment` in **route.ts** and export the route handlers it returns: `GE
 
 ### The Root Segment
 
-```sh npm2yarn copy
-npm exec -- vovk new segment
+```sh copy
+npx vovk new segment
 ```
 
 See [`vovk new` documentation](https://vovk.dev/new).
@@ -851,8 +857,8 @@ Page: https://vovk.dev/static-segment
 
 # Static Segment
 
-```sh npm2yarn copy
-npm exec -- vovk new segment openapi --static # creates the static segment "openapi" at src/app/api/openapi/[[...vovk]]/route.ts
+```sh copy
+npx vovk new segment openapi --static # creates the static segment "openapi" at src/app/api/openapi/[[...vovk]]/route.ts
 ```
 
 Next.js can pre-render API endpoints at build time with [generateStaticParams](https://nextjs.org/docs/app/api-reference/functions/generate-static-params). The Vovk.ts `controllersToStaticParams` helper uses this to emit static API endpoints, for minimal latency. Use it for OpenAPI definitions, historical datasets (refreshed from time to time by CI/CD) or other data that rarely changes. It also works in [Static Export mode](https://nextjs.org/docs/pages/building-your-application/deploying/static-exports), with the `output: 'export'` Next.js option:
@@ -3054,8 +3060,8 @@ export const GET = () => Response.json(openapi);
 
 The [openapiJson](https://vovk.dev/templates#openapijson) template writes `openapi.json` as a file of its own, without a client. Use it to serve the spec as a static file or to pass it to another tool:
 
-```sh npm2yarn copy
-npm exec -- vovk generate --from openapiJson --out ./public
+```sh copy
+npx vovk generate --from openapiJson --out ./public
 ```
 
 On the client side, any OpenAPI documentation generator works. [Scalar](https://www.npmjs.com/package/@scalar/api-reference-react) is recommended, because Vovk.ts adds code samples for the generated RPC modules to the spec.
@@ -3299,8 +3305,8 @@ This example is a Vercel AI SDK chat that derives its tools from `UserController
 
 First, create an empty controller. The command also updates the root `route.ts` file.
 
-```sh npm2yarn copy
-npm exec -- vovk new controller aiSdk --empty
+```sh copy
+npx vovk new controller aiSdk --empty
 ```
 
 Paste this into the new `src/modules/ai-sdk/ai-sdk-controller.ts`, and fix the imports if needed:
@@ -4826,8 +4832,8 @@ The client comes from the committed [schema](https://vovk.dev/schema) and source
 
 This [CLI](https://vovk.dev/generate) command does the same as the default generation:
 
-```sh npm2yarn copy
-npm exec -- vovk generate --from ts --out src/client
+```sh copy
+npx vovk generate --from ts --out src/client
 ```
 
 The composed client exports each RPC module by its name, so two segments can't both have a `UserRPC`: generation fails with a message that names both segments. Rename the module in one segment's `controllers` object, or leave that segment out with [`excludeSegments`](#excludesegments) and import it from the [segmented client](https://vovk.dev/segmented).
@@ -5595,8 +5601,8 @@ npm install vovk-python --save-dev
 
 Create a Python package with the [CLI](https://vovk.dev/generate):
 
-```sh npm2yarn copy
-npm exec -- vovk generate --from py --out ./python_package
+```sh copy
+npx vovk generate --from py --out ./python_package
 ```
 
 This produces:
@@ -5621,8 +5627,8 @@ python3 -m build ./python_package --wheel --sdist && python3 -m twine upload ./p
 
 To generate source files for another Python project instead, use the `pySrc` template:
 
-```sh npm2yarn copy
-npm exec -- vovk generate --from pySrc --out ./python_src
+```sh copy
+npx vovk generate --from pySrc --out ./python_src
 ```
 
 This generates:
@@ -6079,8 +6085,8 @@ npm install vovk-rust --save-dev
 
 Generate a Rust package with the [CLI](https://vovk.dev/generate):
 
-```sh npm2yarn copy
-npm exec -- vovk generate --from rs --out ./rust_package
+```sh copy
+npx vovk generate --from rs --out ./rust_package
 ```
 
 This produces:
@@ -6106,8 +6112,8 @@ cargo publish --manifest-path rust_package/Cargo.toml --allow-dirty
 
 To generate source files for another Rust project instead, use the [rsSrc](https://vovk.dev/templates#rssrc) template:
 
-```sh npm2yarn copy
-npm exec -- vovk generate --from rsSrc --out ./rust_src
+```sh copy
+npx vovk generate --from rsSrc --out ./rust_src
 ```
 
 This generates:
@@ -6776,8 +6782,8 @@ export default config;
 
 With this setup, generate the full Cargo package:
 
-```sh npm2yarn copy
-npm exec -- vovk generate --from rs --out ./dist_rust
+```sh copy
+npx vovk generate --from rs --out ./dist_rust
 ```
 
 Or only the source code:
@@ -6788,8 +6794,8 @@ npx vovk generate --from rsSrc --out ./my_rust_project/src
 
 Or only the `README.md` file:
 
-```sh npm2yarn copy
-npm exec -- vovk generate --from rsReadme --out ./my_rust_project
+```sh copy
+npx vovk generate --from rsReadme --out ./my_rust_project
 ```
 
 ## Template Definitions
@@ -6862,8 +6868,8 @@ Renders `openapi.json`, the OpenAPI schema. Use it alone to add the OpenAPI sche
 
 To write only the `openapi.json` file, without a client:
 
-```sh npm2yarn copy
-npm exec -- vovk generate --from openapiJson --out ./public
+```sh copy
+npx vovk generate --from openapiJson --out ./public
 ```
 
 ### `readme`
@@ -7044,12 +7050,12 @@ const config = {
 
 Then create a module in [modulesDir](#modulesdir):
 
-```sh npm2yarn copy
-npm exec -- vovk new state thing # creates src/modules/thing/thing-state.ts
+```sh copy
+npx vovk new state thing # creates src/modules/thing/thing-state.ts
 ```
 
-```sh npm2yarn copy
-npm exec -- vovk new state segment/thing # creates src/modules/segment/thing/thing-state.ts
+```sh copy
+npx vovk new state segment/thing # creates src/modules/segment/thing/thing-state.ts
 ```
 
 ### `libs: object`
@@ -7308,8 +7314,8 @@ Bundling runs these steps:
 3. Generates `package.json` and `README.md` from the [packageJson](https://vovk.dev/templates#packagejson) and [readme](https://vovk.dev/templates#readme) templates, for the same segments and [OpenAPI mixins](https://vovk.dev/mixins) as the bundled code.
 4. Deletes the `tmp_prebundle` folder (`bundle.keepPrebundleDir: boolean{:ts}` keeps it).
 
-```sh npm2yarn copy
-npm exec -- vovk bundle
+```sh copy
+npx vovk bundle
 ```
 
 Then publish the package to NPM:
@@ -7852,8 +7858,8 @@ Options:
 
 ### Root Segment
 
-```sh npm2yarn copy
-npm exec -- vovk new segment
+```sh copy
+npx vovk new segment
 ```
 
 Without an argument, `vovk new segment` creates the root segment at **/src/app/api/[[...vovk]]/route.ts**. The `segmentName` option of `initSegment` is an empty string for the root segment, so the file leaves it out:
@@ -7879,8 +7885,8 @@ The root segment can sit next to nested segments of any depth.
 
 ### Nested Segment
 
-```sh npm2yarn copy
-npm exec -- vovk new segment foo
+```sh copy
+npx vovk new segment foo
 ```
 
 `vovk new segment foo` creates **/src/app/api/foo/[[...vovk]]/route.ts** with:
@@ -7906,8 +7912,8 @@ Its API is at **/api/foo/...**.
 
 ![vovk new module](newModuleSvg)
 
-```sh npm2yarn copy
-npm exec -- vovk new controller service foo/user
+```sh copy
+npx vovk new controller service foo/user
 ```
 
 `vovk new` with anything other than `segment` creates modules in **/src/modules**.
@@ -7918,8 +7924,8 @@ The parts of the command:
 - Components — the module types to create: `controller`, `service` or a custom module.
 - The module name, singular, with an optional segment prefix: `foo/user` creates a module in **/src/modules/foo/user/** and updates the `foo` segment. Without a segment, the module goes to the root segment:
 
-```sh npm2yarn copy
-npm exec -- vovk new controller service user
+```sh copy
+npx vovk new controller service user
 ```
 
 For a new controller, `vovk new` adds it to the `controllers` object in the `route.ts` of the segment, editing the file through its [AST](https://www.npmjs.com/package/ts-morph).
@@ -8150,8 +8156,8 @@ export default class <%= vars.ServiceName %> {
 
 When you run:
 
-```sh npm2yarn copy
-npm exec -- vovk new controller service userCart
+```sh copy
+npx vovk new controller service userCart
 ```
 
 It creates **user-cart-controller.ts** and **user-cart-service.ts** in **/src/modules/user-cart/** and adds the controller to the root segment.
@@ -9209,25 +9215,25 @@ After [setting up a Vovk.ts](https://vovk.dev/quick-install) app, create the seg
 
 First, create an API segment for each tenant. Each segment handles the requests to its API root.
 
-```sh npm2yarn copy
-npm exec -- vovk new segment # create the root segment at src/app/api/[[...vovk]]/route.ts
-npm exec -- vovk new segment admin # create "admin" segment at src/app/api/admin/[[...vovk]]/route.ts
-npm exec -- vovk new segment customer # create "customer" segment at src/app/api/customer/[[...vovk]]/route.ts
-npm exec -- vovk new segment customer/pro # create "customer/pro" segment at src/app/api/customer/pro/[[...vovk]]/route.ts
+```sh copy
+npx vovk new segment # create the root segment at src/app/api/[[...vovk]]/route.ts
+npx vovk new segment admin # create "admin" segment at src/app/api/admin/[[...vovk]]/route.ts
+npx vovk new segment customer # create "customer" segment at src/app/api/customer/[[...vovk]]/route.ts
+npx vovk new segment customer/pro # create "customer/pro" segment at src/app/api/customer/pro/[[...vovk]]/route.ts
 ```
 
 More about [segments](https://vovk.dev/segment).
 
 Next, create the controllers of each segment. For example, `ProductService` and `ProductController` for the root segment, in `src/modules/product/`:
 
-```sh npm2yarn copy
-npm exec -- vovk new controller service product
+```sh copy
+npx vovk new controller service product
 ```
 
 `UserService` and `UserController` for the admin segment, in `src/modules/admin/user/`:
 
-```sh npm2yarn copy
-npm exec -- vovk new controller service admin/user
+```sh copy
+npx vovk new controller service admin/user
 ```
 
 ## Enable Segmented Client
@@ -9788,8 +9794,8 @@ npx vovk-cli <command>
 
 Or: 
 
-```sh npm2yarn copy
-npm exec -- vovk <command>
+```sh copy
+npx vovk <command>
 ```
 
 ### [vovk-ajv](https://www.npmjs.com/package/vovk-ajv)

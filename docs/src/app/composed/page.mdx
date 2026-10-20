@@ -23,8 +23,8 @@ The client comes from the committed [schema](/schema) and source code, so you do
 
 This [CLI](/generate) command does the same as the default generation:
 
-```sh npm2yarn copy
-npm exec -- vovk generate --from ts --out src/client
+```sh copy
+npx vovk generate --from ts --out src/client
 ```
 
 The composed client exports each RPC module by its name, so two segments can't both have a `UserRPC`: generation fails with a message that names both segments. Rename the module in one segment's `controllers` object, or leave that segment out with [`excludeSegments`](#excludesegments) and import it from the [segmented client](/segmented).
