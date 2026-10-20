@@ -1026,3 +1026,71 @@ body:has(.vk-landing) {
   align-items: center;
   font-size: 14px;
 }
+
+/* Runtimes */
+
+.vk-runtimes {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px 28px;
+  margin-top: calc(-1 * clamp(8px, 1.5vw, 20px));
+}
+
+.vk-runtimes-group {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+  min-width: 0;
+}
+
+.vk-runtimes-label {
+  font-family: var(--vk-mono);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--vk-muted);
+}
+
+.vk-runtimes ul {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.vk-runtimes li {
+  --vk-brand: var(--vk-ink);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 34px;
+  padding: 0 12px 0 10px;
+  border: 1px solid var(--vk-line);
+  border-radius: 4px;
+  font-size: 14px;
+  font-weight: 500;
+  white-space: nowrap;
+  background: var(--vk-panel);
+  transition: border-color var(--vk-t) ease;
+}
+
+.vk-runtimes li:hover {
+  border-color: var(--vk-ink);
+}
+
+.vk-runtimes svg {
+  width: 17px;
+  height: 17px;
+  flex: none;
+  color: var(--vk-brand);
+}
+
+.vk-runtimes-note {
+  font-family: var(--vk-mono);
+  font-size: 12px;
+  color: var(--vk-muted);
+}

@@ -8,7 +8,7 @@ A procedure's [`.fn` method](/fn) calls the handler without the HTTP round trip.
 
 ## Setup
 
-Any test runner works: Vitest, Jest, the Node.js test runner and others. The examples use Vitest.
+Any test runner works: Vitest, Jest, the Node.js test runner, `bun test`, `deno test` and others. The examples use Vitest.
 
 The `vovk` package is ES modules only. Jest set up with `next/jest` can't load it as is, so add `transpilePackages: ['vovk']` to the Next.js config.
 

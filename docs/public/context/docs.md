@@ -4,8 +4,8 @@ description: "Full documentation for the Vovk.ts framework, excluding the Realti
 see_also:
   label: "Realtime Kanban Context"
   url: https://vovk.dev/context/realtime-ui.md
-chars: 409650
-est_tokens: 102413
+chars: 409789
+est_tokens: 102448
 ---
 
 Page: https://vovk.dev/about
@@ -4131,6 +4131,8 @@ Add the cron job to `vercel.json`. The `schedule` field uses standard cron synta
 Page: https://vovk.dev/typescript
 
 # TypeScript RPC Client
+
+The client uses only `fetch` and web streams, so it runs in Node.js, Bun, Deno, browsers and Cloudflare Workers.
 
 A controller, with its procedures as static methods, compiles to an RPC module. The module has the same structure, but its methods take different arguments. For example, take this controller:
 
@@ -8910,8 +8912,8 @@ The package files listed below take their metadata (`repository`, `homepage`, `b
     "next": "^16.3.8",
     "react": "^19.3.0",
     "react-dom": "^19.3.0",
-    "vovk": "^4.1.0",
-    "vovk-ajv": "^0.2.0",
+    "vovk": "^4.1.1",
+    "vovk-ajv": "^0.2.1",
     "zod": "^4.6.5"
   },
   "devDependencies": {
@@ -8926,10 +8928,10 @@ The package files listed below take their metadata (`repository`, `homepage`, `b
     "tsdown": "^0.23.0",
     "tsx": "^4.23.15",
     "typescript": "^7",
-    "vovk-cli": "^0.3.1",
+    "vovk-cli": "^0.3.3",
     "vovk-hello-world-published": "npm:vovk-hello-world@^0.0.88",
-    "vovk-python": "^0.0.4",
-    "vovk-rust": "^0.0.5"
+    "vovk-python": "^0.0.5",
+    "vovk-rust": "^0.0.6"
   }
 }
 ```
@@ -9424,7 +9426,7 @@ A procedure's [`.fn` method](https://vovk.dev/fn) calls the handler without the 
 
 ## Setup
 
-Any test runner works: Vitest, Jest, the Node.js test runner and others. The examples use Vitest.
+Any test runner works: Vitest, Jest, the Node.js test runner, `bun test`, `deno test` and others. The examples use Vitest.
 
 The `vovk` package is ES modules only. Jest set up with `next/jest` can't load it as is, so add `transpilePackages: ['vovk']` to the Next.js config.
 

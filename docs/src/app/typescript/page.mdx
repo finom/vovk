@@ -4,6 +4,8 @@ description: "The generated TypeScript RPC client: method options, withDefaults,
 
 # TypeScript RPC Client
 
+The client uses only `fetch` and web streams, so it runs in Node.js, Bun, Deno, browsers and Cloudflare Workers.
+
 A controller, with its procedures as static methods, compiles to an RPC module. The module has the same structure, but its methods take different arguments. For example, take this controller:
 
 ```ts showLineNumbers copy filename="src/modules/user/user-controller.ts"

@@ -2,6 +2,7 @@ import Link from 'next/link';
 import type { ReactNode } from 'react';
 import { Command } from './copy-button';
 import { HeroDemo } from './hero-demo';
+import { Runtimes } from './runtimes';
 import './landing.css';
 
 const SKILLS = 'npx skills add finom/vovk';
@@ -20,7 +21,7 @@ const FEATURES: Feature[] = [
       ['Python', '/python', 'Python client docs'],
       ['Rust', '/rust', 'Rust client docs'],
     ],
-    text: 'Generated from your procedures as TypeScript, Python and Rust packages, ready to publish. The TypeScript client also runs in browsers and Cloudflare Workers.',
+    text: 'Generated from your procedures as TypeScript, Python and Rust packages, ready to publish.',
     code: (
       <>
         <div className="vk-snippet-lang">
@@ -194,6 +195,7 @@ export function Landing() {
               </div>
             </div>
           </div>
+          <Runtimes />
           <HeroDemo />
         </div>
       </section>
