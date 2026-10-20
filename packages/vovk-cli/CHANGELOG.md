@@ -4,6 +4,12 @@ All notable changes to `vovk-cli` are documented here. This file is the canonica
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 0.3.5 - 2026-10-20
+
+### Fixed
+
+- `vovk new` writes formatted code in a project without Prettier: 2-space indentation, no blank lines left by the template conditions, one final newline, and 2-space entries with trailing commas in the segment's `controllers` ([#118](https://github.com/finom/vovk/pull/118))
+
 ## 0.3.4 - 2026-10-20
 
 ### Fixed
