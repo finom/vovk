@@ -1,4 +1,4 @@
-import { createMcpHandler } from 'mcp-handler';
+import { createMcpHandler, McpServer } from '@modelcontextprotocol/server';
 import { deriveTools, ToModelOutput } from 'vovk';
 import TaskController from '@/modules/task/task-controller';
 import UserController from '@/modules/user/user-controller';
@@ -13,10 +13,12 @@ const tools = deriveTools({
   onError: (e, { name }) => console.error(`Error in ${name}`, e),
 });
 
-const handler = createMcpHandler((server) => {
+const handler = createMcpHandler(() => {
+  const server = new McpServer({ name: 'realtime-kanban', version: '1.0.0' });
   tools.forEach(({ title, name, execute, description, inputSchema }) => {
     server.registerTool(name, { title, description, inputSchema }, execute);
   });
+  return server;
 });
 
 const authorizedHandler = (req: Request) => {
@@ -29,7 +31,7 @@ const authorizedHandler = (req: Request) => {
     );
   }
 
-  return handler(req);
+  return handler.fetch(req);
 };
 
 export { authorizedHandler as GET, authorizedHandler as POST };
