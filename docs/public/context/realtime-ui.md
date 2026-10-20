@@ -4,8 +4,8 @@ description: "Walkthrough of the Realtime Kanban example app — a live-updating
 see_also:
   label: "Vovk.ts Docs Context"
   url: https://vovk.dev/context/docs.md
-chars: 109045
-est_tokens: 27262
+chars: 109290
+est_tokens: 27323
 ---
 
 Page: https://vovk.dev/realtime-ui
@@ -2406,11 +2406,11 @@ The code of the `Floaty` component is [in the repository](https://github.com/fin
 
 Page: https://vovk.dev/realtime-ui/mcp
 
-# Setting up MCP server with `mcp-handler`
+# Setting up MCP server
 
 With [Database Polling](./polling) and [State Normalization](./state) set up, the app accepts changes from outside systems. This page adds an MCP server, so MCP clients can work with the app.
 
-The server uses the [`mcp-handler`](https://npmjs.com/package/mcp-handler) package, which creates an MCP server in a Next.js API route.
+The server uses `createMcpHandler` from the official MCP SDK, [`@modelcontextprotocol/server`](https://npmjs.com/package/@modelcontextprotocol/server), in a Next.js API route. Its `registerTool` takes a derived tool's `inputSchema` (a Standard Schema with JSON Schema) as is.
 
 ![MCP Polling Flow](https://vovk.dev/diagrams/mcp_polling_flow.svg)
 
@@ -2419,7 +2419,7 @@ Video: https://vovk.dev/video/kanban_mcp.mp4
 As on the other pages, the `deriveTools` function from the `vovk` package derives the server's tools from the controllers. See [Deriving AI Tools](https://vovk.dev/tools).
 
 ```ts filename="src/app/api/mcp/route.ts" source="examples/realtime-kanban"
-import { createMcpHandler } from 'mcp-handler';
+import { createMcpHandler, McpServer } from '@modelcontextprotocol/server';
 import { deriveTools, ToModelOutput } from 'vovk';
 import TaskController from '@/modules/task/task-controller';
 import UserController from '@/modules/user/user-controller';
@@ -2434,10 +2434,12 @@ const tools = deriveTools({
   onError: (e, { name }) => console.error(`Error in ${name}`, e),
 });
 
-const handler = createMcpHandler((server) => {
+const handler = createMcpHandler(() => {
+  const server = new McpServer({ name: 'realtime-kanban', version: '1.0.0' });
   tools.forEach(({ title, name, execute, description, inputSchema }) => {
     server.registerTool(name, { title, description, inputSchema }, execute);
   });
+  return server;
 });
 
 const authorizedHandler = (req: Request) => {
@@ -2450,7 +2452,7 @@ const authorizedHandler = (req: Request) => {
     );
   }
 
-  return handler(req);
+  return handler.fetch(req);
 };
 
 export { authorizedHandler as GET, authorizedHandler as POST };

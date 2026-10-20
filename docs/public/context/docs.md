@@ -4,8 +4,8 @@ description: "Full documentation for the Vovk.ts framework, excluding the Realti
 see_also:
   label: "Realtime Kanban Context"
   url: https://vovk.dev/context/realtime-ui.md
-chars: 409789
-est_tokens: 102448
+chars: 410090
+est_tokens: 102523
 ---
 
 Page: https://vovk.dev/about
@@ -3599,14 +3599,14 @@ With the `ToModelOutput.MCP` formatter, each content item gets the `annotations`
 
 The `mcpOutput` key can also override other MCP output properties, including `content` and `structuredContent`; its `annotations` go on each content item. This way you can change the MCP output without changing the procedure's response.
 
-## MCP Handler Example
+## MCP Server Example
 
-With the [mcp-handler](https://www.npmjs.com/package/mcp-handler) package, you can create an MCP API route that controls what your back end exposes to MCP clients.
+With `createMcpHandler` from the official MCP SDK, [`@modelcontextprotocol/server`](https://www.npmjs.com/package/@modelcontextprotocol/server), you can create an MCP API route that controls what your back end exposes to MCP clients.
 
-The tool's `inputSchema` is a Standard Schema with JSON Schema, which `registerTool` in **mcp-handler** 2 accepts as is.
+The tool's `inputSchema` is a Standard Schema with JSON Schema, which the SDK's `registerTool` accepts as is.
 
 ```ts showLineNumbers copy filename="src/app/api/mcp/route.ts"
-import { createMcpHandler } from "mcp-handler";
+import { createMcpHandler, McpServer } from "@modelcontextprotocol/server";
 import { deriveTools, ToModelOutput } from "vovk";
 import UserController from "@/modules/user/user-controller";
 
@@ -3615,13 +3615,16 @@ const tools = deriveTools({
   toModelOutput: ToModelOutput.MCP,
 });
 
-const handler = createMcpHandler(
-  (server) => {
-    tools.forEach(({ title, name, execute, description, inputSchema }) => {
-      server.registerTool(name, { title, description, inputSchema }, execute);
-    });
-  },
-);
+const mcp = createMcpHandler(() => {
+  const server = new McpServer({ name: "my-app", version: "1.0.0" });
+  tools.forEach(({ title, name, execute, description, inputSchema }) => {
+    server.registerTool(name, { title, description, inputSchema }, execute);
+  });
+  return server;
+});
+
+// Next.js passes the route context as a second argument, which mcp.fetch would read as its options
+const handler = (req: Request) => mcp.fetch(req);
 
 export { handler as GET, handler as POST };
 ```
@@ -8912,7 +8915,7 @@ The package files listed below take their metadata (`repository`, `homepage`, `b
     "next": "^16.3.8",
     "react": "^19.3.0",
     "react-dom": "^19.3.0",
-    "vovk": "^4.1.1",
+    "vovk": "^4.1.2",
     "vovk-ajv": "^0.2.1",
     "zod": "^4.6.5"
   },
@@ -8928,7 +8931,7 @@ The package files listed below take their metadata (`repository`, `homepage`, `b
     "tsdown": "^0.23.0",
     "tsx": "^4.23.15",
     "typescript": "^7",
-    "vovk-cli": "^0.3.3",
+    "vovk-cli": "^0.3.4",
     "vovk-hello-world-published": "npm:vovk-hello-world@^0.0.88",
     "vovk-python": "^0.0.5",
     "vovk-rust": "^0.0.6"
