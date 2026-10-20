@@ -217,6 +217,11 @@ export function HeroDemo() {
   const [live, setLive] = useState('');
   const [reduced, setReduced] = useState(false);
   const [geo, setGeo] = useState<Geometry>(null);
+  // the demo adds priority by itself, so both field sets count as untouched
+  const changed =
+    desc !== DEFAULT_DESC ||
+    KEYS.some((k) => names[k] !== DEFAULT_NAMES[k]) ||
+    (KEYS.some((k) => on[k] !== DEFAULT_ON[k]) && KEYS.some((k) => on[k] !== (DEFAULT_ON[k] || k === 'c')));
 
   const stageRef = useRef<HTMLDivElement>(null);
   const cardRef = useRef<HTMLDivElement>(null);
@@ -380,8 +385,10 @@ export function HeroDemo() {
           <div ref={cardRef} className="vk-card">
             <div className="vk-card-head">
               <span>src/modules/tasks/TaskController.ts</span>
+              {/* hidden, not removed, so the header keeps its height */}
               <button
                 type="button"
+                style={changed ? undefined : { visibility: 'hidden' }}
                 onClick={() => {
                   setDesc(DEFAULT_DESC);
                   setOn(DEFAULT_ON);
