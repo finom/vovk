@@ -9,6 +9,8 @@
   "scripts": {
     "ncu": "npm-check-updates -u -x tsdown --cooldown 7 && npx -y npm@10 install",
     "dev": "npm run generate-modules-from-templates && node ../packages/vovk-cli/dist/index.mjs dev --next-dev -- --webpack",
+    "dev:bun": "npm run generate-modules-from-templates && bun --bun ../packages/vovk-cli/dist/index.mjs dev --next-dev -- --webpack",
+    "dev:deno": "npm run generate-modules-from-templates && deno run -A ../packages/vovk-cli/dist/index.mjs dev --next-dev -- --webpack",
     "dev-exit": "npm run generate-modules-from-templates && node ../packages/vovk-cli/dist/index.mjs dev --next-dev --exit -- --webpack",
     "build": "NODE_ENV=test next build --webpack",
     "start": "NODE_ENV=test next start",

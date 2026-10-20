@@ -28,7 +28,7 @@ If `package.json` exists but no `next`, it's existing non-Next.js project. Ask w
 
 Check all three in parallel:
 
-- **Node version**: `node --version` — require ≥ 24.15.
+- **Node version**: `node --version` — require ≥ 24.15 (Bun 1.4+ and Deno 2.9+ also run `vovk-cli`).
 - **Next.js version**: `package.json` `next` must resolve to ≥ 15.0.0.
 - **App Router directory**: `src/app/` or `app/` must exist (even if empty) — Vovk mounts route handler there. If only `pages/` exists, trivial fix: create empty `app/` (or `src/app/`, matching project's convention) alongside. App Router and Pages Router coexist fine — no migration needed just to use Vovk.
 

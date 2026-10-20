@@ -1,4 +1,4 @@
-import { deepStrictEqual, strictEqual } from 'node:assert';
+import { deepStrictEqual, match, strictEqual } from 'node:assert';
 import { describe, it } from 'node:test';
 import type { VovkErrorResponse } from '../../../packages/vovk/dist/types/core.js';
 import { request } from '../lib.ts';
@@ -18,12 +18,12 @@ describe('Errors', () => {
   it('Handle code errors', async () => {
     const response = await request.get(`/error/code`);
 
+    // the message text is the engine's own (V8, JavaScriptCore)
+    const { message, ...rest } = response.body as VovkErrorResponse;
     strictEqual(response.status, 500);
-    deepStrictEqual(response.body, {
-      message: '{}.someMethod is not a function',
-      statusCode: 500,
-      isError: true,
-    } satisfies VovkErrorResponse);
+    match(message, /someMethod/);
+    match(message, /not a function/);
+    deepStrictEqual(rest, { statusCode: 500, isError: true });
   });
 
   it('Handle HttpException', async () => {

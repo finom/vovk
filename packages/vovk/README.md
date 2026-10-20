@@ -24,7 +24,7 @@
 
 The Vovk.ts runtime: `procedure`, the HTTP decorators, `initSegment`, `HttpException`, `deriveTools` and the types. It has [no dependencies](https://bundlephobia.com/result?p=vovk); `openapi3-ts` is a peer dependency for the OpenAPI types.
 
-It needs Next.js 15+ with the App Router and TypeScript 5.5+. The CLI, [vovk-cli](https://www.npmjs.com/package/vovk-cli), needs Node.js 24.15+.
+It needs Next.js 15+ with the App Router and TypeScript 5.5+. The CLI, [vovk-cli](https://www.npmjs.com/package/vovk-cli), needs Node.js 24.15+ (or Bun 1.4+, Deno 2.9+).
 
 ## Install
 

@@ -10,6 +10,7 @@ on:
       - 'packages/**'
       - 'package.json'
       - 'package-lock.json'
+      - 'scripts/web-clients/**'
       - '.github/workflows/examples.yml'
       - '!**/*.md'
   pull_request:
@@ -21,6 +22,7 @@ on:
       - 'packages/**'
       - 'package.json'
       - 'package-lock.json'
+      - 'scripts/web-clients/**'
       - '.github/workflows/examples.yml'
       - '!**/*.md'
   workflow_dispatch:
@@ -83,3 +85,68 @@ jobs:
       - run: npm exec -w vovk-hello-world -- vovk generate
       # TypeScript, Python and Rust clients against a local server, then the published clients
       - run: npm test -w vovk-hello-world
+
+  hello-world-runtimes:
+    # next build and next start under Bun and Deno, then the generated client's tests on the same runtime
+    strategy:
+      fail-fast: false
+      matrix:
+        runtime: [bun, deno]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    env:
+      PORT: 3000
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 24
+          cache: npm
+      - if: matrix.runtime == 'bun'
+        uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
+        with:
+          bun-version: 1.4.3
+      - if: matrix.runtime == 'deno'
+        uses: denoland/setup-deno@22d081ff2d3a40755e97629de92e3bcbfa7cf2ed # v2.0.5
+        with:
+          deno-version: 2.9.7
+      - run: npm ci
+      - run: npm run build
+      - run: npm exec -w vovk-hello-world -- vovk generate
+      - name: Build, start and test under ${{ matrix.runtime }}
+        working-directory: examples/hello-world
+        run: |
+          next=$(node -p "require.resolve('next/dist/bin/next')")
+          # the monorepo links vovk as local files, which Deno type-checks as .js; a package from npm checks clean
+          if [ "${{ matrix.runtime }}" = bun ]; then run="bun --bun"; test="bun test --timeout 60000"; else run="deno run -A"; test="deno test -A --no-check"; fi
+          $run "$next" build
+          $run "$next" start -p "$PORT" &
+          node ../../scripts/wait-for-url.mjs "http://localhost:$PORT/api/static/openapi.json"
+          $test test/node/local.test.mts
+
+  hello-world-web-clients:
+    # the bundled client inside Cloudflare's workerd (Miniflare) and in headless Chrome
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    env:
+      PORT: 3000
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npm run build
+      # miniflare brings its own workerd binary, so it stays out of the lockfile
+      - run: npm install --prefix "$RUNNER_TEMP/miniflare" --no-save --ignore-scripts=false miniflare@4.20260730.0
+      - name: Bundle, start and run the client in workerd and Chrome
+        working-directory: examples/hello-world
+        run: |
+          npx vovk generate
+          npx vovk bundle
+          npx next build
+          npx next start -p "$PORT" &
+          node ../../scripts/wait-for-url.mjs "http://localhost:$PORT/api/static/openapi.json"
+          (cd "$RUNNER_TEMP/miniflare" && node "$GITHUB_WORKSPACE/scripts/web-clients/worker.mjs" "http://localhost:$PORT/api" "$GITHUB_WORKSPACE/examples/hello-world/dist/index.js" .)
+          node ../../scripts/web-clients/browser.mjs "http://localhost:$PORT" dist/index.js "$(command -v google-chrome)"

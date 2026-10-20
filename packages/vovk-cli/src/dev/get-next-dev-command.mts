@@ -2,6 +2,7 @@ import { readFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import path from 'node:path';
 import { quoteShellArgument } from '../utils/quote-shell-argument.mjs';
+import { getRuntimeCommand } from './get-runtime-command.mjs';
 
 // the bin of the project's own next, which Node resolves under Yarn PnP too, where node_modules/.bin is missing
 function getNextBinPath(cwd: string) {
@@ -16,8 +17,8 @@ function getNextBinPath(cwd: string) {
 }
 
 // npx runs a node_modules/.bin/next, and without one it would install the latest next: --no makes it fail instead
-export function getNextDevCommand(nextArgs: string[], cwd = process.cwd()) {
+export function getNextDevCommand(nextArgs: string[], cwd = process.cwd(), runtime = getRuntimeCommand()) {
   const binPath = getNextBinPath(cwd);
-  const command = binPath ? ['node', binPath, 'dev', ...nextArgs] : ['npx', '--no', 'next', 'dev', ...nextArgs];
+  const command = binPath ? [...runtime, binPath, 'dev', ...nextArgs] : ['npx', '--no', 'next', 'dev', ...nextArgs];
   return command.map((arg) => quoteShellArgument(arg)).join(' ');
 }

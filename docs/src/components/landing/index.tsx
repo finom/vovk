@@ -2,6 +2,7 @@ import Link from 'next/link';
 import type { ReactNode } from 'react';
 import { Command } from './copy-button';
 import { HeroDemo } from './hero-demo';
+import { Runtimes } from './runtimes';
 import './landing.css';
 
 const SKILLS = 'npx skills add finom/vovk';
@@ -131,7 +132,7 @@ const FEATURES: Feature[] = [
     id: 'next',
     title: 'Plain Next.js',
     links: [['Docs', '/segment', 'Segment docs']],
-    text: 'It runs in route handlers, with no custom server, and deploys wherever Next.js does.',
+    text: 'It runs in route handlers on Node.js, Bun or Deno, with no custom server, and deploys wherever Next.js does.',
     code: (
       <>
         <div className="vk-dim">{'// app/api/[[...vovk]]/route.ts'}</div>
@@ -194,6 +195,7 @@ export function Landing() {
               </div>
             </div>
           </div>
+          <Runtimes />
           <HeroDemo />
         </div>
       </section>
