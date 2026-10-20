@@ -39,7 +39,7 @@ See: https://vovk.dev/quick-install
 ## Features
 
 - 🧩 **Plain Next.js**: its routing, streaming, proxy.js and auth patterns, and deployment targets work as usual
-- 🏗️ **Controller → Service → Repository** layers on top of Route Handlers
+- 🏗️ **NestJS-style Controller → Service → Repository** layers on top of Route Handlers, without the DI container or a custom server
 - 📝 **No separate contract**: the schema comes from your controller code, so you don't maintain it by hand
 - 🤖 **AI tools from your API**: controllers _and_ generated RPC modules can become [AI tools](https://vovk.dev/tools) with an input schema and `execute`
 - ⚡ **[Segments](https://vovk.dev/segment)**: split the API into parts, each with its own config and its own serverless function

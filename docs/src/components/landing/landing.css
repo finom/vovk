@@ -840,7 +840,12 @@ body:has(.vk-landing) {
 .vk-agent {
   margin-inline: calc(50% - 50vw);
   border-top: 1px solid var(--vk-line);
+  border-bottom: 1px solid var(--vk-line);
   background: var(--vk-sunk);
+}
+
+.vk-agent + .vk-section {
+  border-top: 0;
 }
 
 .vk-agent > .vk-wrap {
