@@ -4,6 +4,12 @@ All notable changes to `vovk-cli` are documented here. This file is the canonica
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 0.3.4 - 2026-10-20
+
+### Fixed
+
+- `vovk dev --next-dev` starts Next.js and the schema watcher with the runtime that runs the CLI, so Bun and Deno no longer fall back to Node.js; the Node.js version error names Bun or Deno ([#112](https://github.com/finom/vovk/pull/112))
+
 ## 0.3.3 - 2026-10-20
 
 ### Fixed
