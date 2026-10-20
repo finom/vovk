@@ -99,13 +99,19 @@ body:has(.vk-landing) {
 .vk-hero-top {
   display: flex;
   flex-wrap: wrap;
-  align-items: stretch;
+  align-items: center;
   gap: 24px 56px;
 }
 
-.vk-hero h1 {
+.vk-hero-left {
   flex: 1.4 1 520px;
   min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.vk-hero h1 {
   font-size: clamp(42px, 5vw, 70px);
   line-height: 0.98;
   letter-spacing: -0.045em;
@@ -122,8 +128,7 @@ body:has(.vk-landing) {
   min-width: 0;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
-  gap: 10px;
+  gap: 16px;
 }
 
 .vk-hero-right > p {
@@ -260,6 +265,17 @@ body:has(.vk-landing) {
   text-wrap: pretty;
 }
 
+@media (min-width: 1300px) {
+  .vk-hero-top {
+    column-gap: 40px;
+  }
+
+  .vk-hero .vk-demo-lead {
+    font-size: 15px;
+    white-space: nowrap;
+  }
+}
+
 .vk-demo-lead strong {
   font-weight: 600;
   color: var(--vk-ink);
@@ -270,6 +286,7 @@ body:has(.vk-landing) {
   align-items: center;
   gap: 10px;
   font-size: 15px;
+  white-space: nowrap;
   color: var(--vk-muted);
 }
 
@@ -337,6 +354,13 @@ body:has(.vk-landing) {
 }
 
 /* The code card */
+
+.vk-card-col {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+}
 
 .vk-card {
   position: relative;
@@ -1039,7 +1063,7 @@ body:has(.vk-landing) {
   flex-wrap: wrap;
   align-items: center;
   gap: 12px 28px;
-  margin-top: calc(-1 * clamp(8px, 1.5vw, 20px));
+  margin-top: 8px;
 }
 
 .vk-runtimes-group {
@@ -1048,14 +1072,6 @@ body:has(.vk-landing) {
   align-items: center;
   gap: 8px 12px;
   min-width: 0;
-}
-
-.vk-runtimes-label {
-  font-family: var(--vk-mono);
-  font-size: 11px;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--vk-muted);
 }
 
 .vk-runtimes ul {

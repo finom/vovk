@@ -176,9 +176,16 @@ export function Landing() {
       <section className="vk-hero" aria-labelledby="vk-h-hero">
         <div className="vk-wrap">
           <div className="vk-hero-top">
-            <h1 id="vk-h-hero">
-              Make your Next.js app <span>agent-ready.</span>
-            </h1>
+            <div className="vk-hero-left">
+              <h1 id="vk-h-hero">
+                Make your Next.js app <span>agent-ready.</span>
+              </h1>
+              <p className="vk-demo-lead">
+                <strong>Universal procedures:</strong> one definition is an endpoint, a server call, an MCP tool and a
+                typed client.
+              </p>
+              <Runtimes />
+            </div>
             <div className="vk-hero-right">
               <p>Each endpoint becomes an MCP tool for AI agents, and a typed, documented API for everyone else.</p>
               <div className="vk-cmd-row">
@@ -195,7 +202,6 @@ export function Landing() {
               </div>
             </div>
           </div>
-          <Runtimes />
           <HeroDemo />
         </div>
       </section>

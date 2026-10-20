@@ -339,11 +339,6 @@ export function HeroDemo() {
         endpoint, the agent's MCP tool call, the TypeScript RPC library and server actions, the Python and Rust types,
         the OpenAPI request body and the README.
       </p>
-      <p className="vk-demo-lead">
-        <strong>Universal procedures:</strong> one definition is an endpoint, a server call, an MCP tool and a typed
-        client.
-      </p>
-      <p className="vk-demo-try">Try it: rename a field, add one or edit the description. Everything else follows.</p>
 
       <div className="vk-stage-box">
         <div ref={stageRef} className="vk-stage">
@@ -379,104 +374,109 @@ export function HeroDemo() {
             </div>
           )}
 
-          <div ref={cardRef} className="vk-card">
-            <div className="vk-card-head">
-              <span>src/modules/tasks/TaskController.ts</span>
-              {/* hidden, not removed, so the header keeps its height */}
-              <button
-                type="button"
-                style={changed ? undefined : { visibility: 'hidden' }}
-                onClick={() => {
-                  setDesc(DEFAULT_DESC);
-                  setOn(DEFAULT_ON);
-                  setNames(DEFAULT_NAMES);
-                  fire(null, 'Reset to title and done.');
-                }}
-              >
-                Reset
-              </button>
-            </div>
-            <div className="vk-card-code">
-              <div>
-                <div className={lit === 'desc' ? 'vk-cl vk-cl-desc vk-lit' : 'vk-cl vk-cl-desc'}>
-                  <span className="vk-kw">@operation</span>
-                  <span>{"({ description: '"}</span>
-                  <input
-                    aria-label="Procedure description"
-                    value={desc}
-                    onChange={(e) => {
-                      setDesc(e.target.value.replace(/['"`\\]/g, '').slice(0, 24));
-                      fire('desc');
-                    }}
-                    spellCheck={false}
-                    autoComplete="off"
-                    maxLength={24}
-                    style={{ width: `${Math.max(4, desc.length)}ch` }}
-                  />
-                  <span>{"' })"}</span>
-                </div>
-                <div className="vk-cl">
-                  <span className="vk-kw">@post</span>()
-                </div>
-                <div className="vk-cl">
-                  <span className="vk-dim">static</span> createTask = procedure({'{'}
-                </div>
-                <div className="vk-cl">{'  body: z.object({'}</div>
-                {KEYS.map((k) => {
-                  const shown = on[k];
-                  const name = names[k];
-                  return (
-                    <div key={k} className={lit === k ? 'vk-cl vk-cl-field vk-lit' : 'vk-cl vk-cl-field'}>
-                      <div className={shown ? 'vk-slot-on' : 'vk-slot-on vk-slot-off'}>
-                        <input
-                          aria-label={`Field name, currently ${nameOf(k)}`}
-                          value={name}
-                          onChange={(e) => {
-                            setNames((prev) => ({ ...prev, [k]: e.target.value.replace(/\W/g, '').slice(0, 10) }));
-                            fire(k);
-                          }}
-                          spellCheck={false}
-                          autoComplete="off"
-                          maxLength={10}
-                          tabIndex={shown ? undefined : -1}
-                          style={{ width: `${Math.max(2, name.length)}ch` }}
-                        />
-                        <span>: {TYPES[k].zf},</span>
-                        {k > 'b' && (
-                          <button
-                            type="button"
-                            aria-label={`Remove field ${nameOf(k)}`}
+          <div className="vk-card-col">
+            <p className="vk-demo-try">
+              Try it: edit a field or the description.
+            </p>
+            <div ref={cardRef} className="vk-card">
+              <div className="vk-card-head">
+                <span>src/modules/tasks/TaskController.ts</span>
+                {/* hidden, not removed, so the header keeps its height */}
+                <button
+                  type="button"
+                  style={changed ? undefined : { visibility: 'hidden' }}
+                  onClick={() => {
+                    setDesc(DEFAULT_DESC);
+                    setOn(DEFAULT_ON);
+                    setNames(DEFAULT_NAMES);
+                    fire(null, 'Reset to title and done.');
+                  }}
+                >
+                  Reset
+                </button>
+              </div>
+              <div className="vk-card-code">
+                <div>
+                  <div className={lit === 'desc' ? 'vk-cl vk-cl-desc vk-lit' : 'vk-cl vk-cl-desc'}>
+                    <span className="vk-kw">@operation</span>
+                    <span>{"({ description: '"}</span>
+                    <input
+                      aria-label="Procedure description"
+                      value={desc}
+                      onChange={(e) => {
+                        setDesc(e.target.value.replace(/['"`\\]/g, '').slice(0, 24));
+                        fire('desc');
+                      }}
+                      spellCheck={false}
+                      autoComplete="off"
+                      maxLength={24}
+                      style={{ width: `${Math.max(4, desc.length)}ch` }}
+                    />
+                    <span>{"' })"}</span>
+                  </div>
+                  <div className="vk-cl">
+                    <span className="vk-kw">@post</span>()
+                  </div>
+                  <div className="vk-cl">
+                    <span className="vk-dim">static</span> createTask = procedure({'{'}
+                  </div>
+                  <div className="vk-cl">{'  body: z.object({'}</div>
+                  {KEYS.map((k) => {
+                    const shown = on[k];
+                    const name = names[k];
+                    return (
+                      <div key={k} className={lit === k ? 'vk-cl vk-cl-field vk-lit' : 'vk-cl vk-cl-field'}>
+                        <div className={shown ? 'vk-slot-on' : 'vk-slot-on vk-slot-off'}>
+                          <input
+                            aria-label={`Field name, currently ${nameOf(k)}`}
+                            value={name}
+                            onChange={(e) => {
+                              setNames((prev) => ({ ...prev, [k]: e.target.value.replace(/\W/g, '').slice(0, 10) }));
+                              fire(k);
+                            }}
+                            spellCheck={false}
+                            autoComplete="off"
+                            maxLength={10}
                             tabIndex={shown ? undefined : -1}
-                            onClick={() => setSlot(k, false, `Removed ${nameOf(k)}. All outputs updated.`)}
-                          >
-                            ×
-                          </button>
-                        )}
+                            style={{ width: `${Math.max(2, name.length)}ch` }}
+                          />
+                          <span>: {TYPES[k].zf},</span>
+                          {k > 'b' && (
+                            <button
+                              type="button"
+                              aria-label={`Remove field ${nameOf(k)}`}
+                              tabIndex={shown ? undefined : -1}
+                              onClick={() => setSlot(k, false, `Removed ${nameOf(k)}. All outputs updated.`)}
+                            >
+                              ×
+                            </button>
+                          )}
+                        </div>
+                        <button
+                          type="button"
+                          className={shown ? 'vk-slot-add vk-slot-off' : 'vk-slot-add'}
+                          aria-label={`Add field ${nameOf(k)}`}
+                          tabIndex={shown ? -1 : undefined}
+                          onClick={() => setSlot(k, true, `Added ${nameOf(k)}. All outputs updated.`)}
+                        >
+                          <span className="vk-kw">+ </span>
+                          {name}: {TYPES[k].zf}
+                        </button>
                       </div>
-                      <button
-                        type="button"
-                        className={shown ? 'vk-slot-add vk-slot-off' : 'vk-slot-add'}
-                        aria-label={`Add field ${nameOf(k)}`}
-                        tabIndex={shown ? -1 : undefined}
-                        onClick={() => setSlot(k, true, `Added ${nameOf(k)}. All outputs updated.`)}
-                      >
-                        <span className="vk-kw">+ </span>
-                        {name}: {TYPES[k].zf}
-                      </button>
-                    </div>
-                  );
-                })}
-                <div className="vk-cl">{'  }),'}</div>
-                <div className="vk-cl">
-                  {'}).handle('}
-                  <span className="vk-dim">async</span>
-                  {' (req) =>'}
-                </div>
-                <div className="vk-cl">{'  TaskService.createTask('}</div>
-                <div className="vk-cl">
-                  {'    '}
-                  <span className="vk-dim">await</span>
-                  {' req.vovk.body()));'}
+                    );
+                  })}
+                  <div className="vk-cl">{'  }),'}</div>
+                  <div className="vk-cl">
+                    {'}).handle('}
+                    <span className="vk-dim">async</span>
+                    {' (req) =>'}
+                  </div>
+                  <div className="vk-cl">{'  TaskService.createTask('}</div>
+                  <div className="vk-cl">
+                    {'    '}
+                    <span className="vk-dim">await</span>
+                    {' req.vovk.body()));'}
+                  </div>
                 </div>
               </div>
             </div>

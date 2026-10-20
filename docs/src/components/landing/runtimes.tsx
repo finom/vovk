@@ -27,8 +27,7 @@ function Icon({ icon }: { icon: Runtime['icon'] }) {
 function List({ label, items }: { label: string; items: Runtime[] }) {
   return (
     <div className="vk-runtimes-group">
-      <span className="vk-runtimes-label">{label}</span>
-      <ul>
+      <ul aria-label={label}>
         {items.map((r) => (
           <li key={r.name} style={r.color ? ({ '--vk-brand': r.color } as CSSProperties) : undefined}>
             <Icon icon={r.icon} />
