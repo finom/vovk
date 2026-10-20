@@ -375,9 +375,7 @@ export function HeroDemo() {
           )}
 
           <div className="vk-card-col">
-            <p className="vk-demo-try">
-              Try it: edit a field or the description.
-            </p>
+            <p className="vk-demo-try">Try it: edit a field or the description.</p>
             <div ref={cardRef} className="vk-card">
               <div className="vk-card-head">
                 <span>src/modules/tasks/TaskController.ts</span>
