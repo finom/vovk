@@ -1,10 +1,10 @@
 ---
-description: "Make a Next.js app agent-ready: Vovk.ts procedures become MCP tools that Claude and other agents call, with bearer-token auth and the caller's identity."
+description: "Vovk.ts procedures become MCP tools on the official MCP SDK, so Claude and other agents can call your app, with bearer-token auth and the caller's identity."
 ---
 
 import { Steps } from 'nextra/components';
 
-# Agent-Ready App: MCP Tools from Procedures
+# Make Your Next.js App Agent-Ready
 
 An MCP route next to your API lets AI agents, such as Claude Code, call the procedures your front-end calls, with the same validation. [deriveTools](/tools) turns the procedures into tools, and the official MCP SDK, [`@modelcontextprotocol/server`](https://www.npmjs.com/package/@modelcontextprotocol/server), serves them. The procedures stay plain endpoints, with their [typed client](/typescript) and [OpenAPI spec](/openapi).
 
