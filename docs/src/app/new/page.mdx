@@ -39,8 +39,8 @@ Options:
 
 ### Root Segment
 
-```sh npm2yarn copy
-npm exec -- vovk new segment
+```sh copy
+npx vovk new segment
 ```
 
 Without an argument, `vovk new segment` creates the root segment at **/src/app/api/[[...vovk]]/route.ts**. The `segmentName` option of `initSegment` is an empty string for the root segment, so the file leaves it out:
@@ -66,8 +66,8 @@ The root segment can sit next to nested segments of any depth.
 
 ### Nested Segment
 
-```sh npm2yarn copy
-npm exec -- vovk new segment foo
+```sh copy
+npx vovk new segment foo
 ```
 
 `vovk new segment foo` creates **/src/app/api/foo/[[...vovk]]/route.ts** with:
@@ -93,8 +93,8 @@ Its API is at **/api/foo/...**.
 
 <Image src={newModuleSvg} alt="vovk new module" className="dark:invert" />
 
-```sh npm2yarn copy
-npm exec -- vovk new controller service foo/user
+```sh copy
+npx vovk new controller service foo/user
 ```
 
 `vovk new` with anything other than `segment` creates modules in **/src/modules**.
@@ -105,8 +105,8 @@ The parts of the command:
 - Components — the module types to create: `controller`, `service` or a custom module.
 - The module name, singular, with an optional segment prefix: `foo/user` creates a module in **/src/modules/foo/user/** and updates the `foo` segment. Without a segment, the module goes to the root segment:
 
-```sh npm2yarn copy
-npm exec -- vovk new controller service user
+```sh copy
+npx vovk new controller service user
 ```
 
 For a new controller, `vovk new` adds it to the `controllers` object in the `route.ts` of the segment, editing the file through its [AST](https://www.npmjs.com/package/ts-morph).
@@ -347,8 +347,8 @@ export default class <%= vars.ServiceName %> {
 
 When you run:
 
-```sh npm2yarn copy
-npm exec -- vovk new controller service userCart
+```sh copy
+npx vovk new controller service userCart
 ```
 
 It creates **user-cart-controller.ts** and **user-cart-service.ts** in **/src/modules/user-cart/** and adds the controller to the root segment.

@@ -126,8 +126,8 @@ export const GET = () => Response.json(openapi);
 
 The [openapiJson](/templates#openapijson) template writes `openapi.json` as a file of its own, without a client. Use it to serve the spec as a static file or to pass it to another tool:
 
-```sh npm2yarn copy
-npm exec -- vovk generate --from openapiJson --out ./public
+```sh copy
+npx vovk generate --from openapiJson --out ./public
 ```
 
 On the client side, any OpenAPI documentation generator works. [Scalar](https://www.npmjs.com/package/@scalar/api-reference-react) is recommended, because Vovk.ts adds code samples for the generated RPC modules to the spec.

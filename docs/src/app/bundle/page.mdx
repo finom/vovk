@@ -47,8 +47,8 @@ Bundling runs these steps:
 3. Generates `package.json` and `README.md` from the [packageJson](/templates#packagejson) and [readme](/templates#readme) templates, for the same segments and [OpenAPI mixins](/mixins) as the bundled code.
 4. Deletes the `tmp_prebundle` folder (`bundle.keepPrebundleDir: boolean{:ts}` keeps it).
 
-```sh npm2yarn copy
-npm exec -- vovk bundle
+```sh copy
+npx vovk bundle
 ```
 
 Then publish the package to NPM:
