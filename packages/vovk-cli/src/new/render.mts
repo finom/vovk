@@ -90,7 +90,9 @@ export async function render(
     (await ejs.render(codeTemplate, { t }, { async: true, filename: templateFileName })).trim()
   );
   const { outDir, fileName, sourceName, compiledName } = parsed.data;
-  const code = empty ? (sourceName ? `export default class ${sourceName} {}` : '') : parsed.content;
+  const body = empty ? (sourceName ? `export default class ${sourceName} {}` : '') : parsed.content.trim();
+  // one final newline and no leading blank line, as prettier writes it
+  const code = body && `${body}\n`;
 
   return {
     outDir,

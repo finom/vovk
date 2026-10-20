@@ -16,28 +16,22 @@ export default class <%= vars.ServiceName %> {
     return { message: 'TODO: get <%= t.theThings %>' };
   };
 
-  static getSingle<%= t.TheThing %> = (
-    id: VovkParams<typeof <%= vars.ControllerName %>.getSingle<%= t.TheThing %>>['id']
-  ) => {
+  static getSingle<%= t.TheThing %> = (id: VovkParams<typeof <%= vars.ControllerName %>.getSingle<%= t.TheThing %>>['id']) => {
     return { message: 'TODO: get single <%= t.theThing %>', id };
-  }
+  };
 
   static update<%= t.TheThing %> = (
     id: VovkParams<typeof <%= vars.ControllerName %>.update<%= t.TheThing %>>['id'],
-    body: VovkBody<typeof <%= vars.ControllerName %>.update<%= t.TheThing %>>
+    body: VovkBody<typeof <%= vars.ControllerName %>.update<%= t.TheThing %>>,
   ) => {
     return { message: `TODO: update <%= t.theThing %>`, id, body };
   };
 
-  static create<%= t.TheThing %> = (
-    body: VovkBody<typeof <%= vars.ControllerName %>.create<%= t.TheThing %>>
-  ) => {
+  static create<%= t.TheThing %> = (body: VovkBody<typeof <%= vars.ControllerName %>.create<%= t.TheThing %>>) => {
     return { message: `TODO: create <%= t.theThing %>`, body };
   };
 
-  static delete<%= t.TheThing %> = (
-    id: VovkParams<typeof <%= vars.ControllerName %>.delete<%= t.TheThing %>>['id']
-  ) => {
+  static delete<%= t.TheThing %> = (id: VovkParams<typeof <%= vars.ControllerName %>.delete<%= t.TheThing %>>['id']) => {
     return { message: `TODO: delete <%= t.theThing %>`, id };
   };
 }

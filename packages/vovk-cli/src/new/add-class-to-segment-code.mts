@@ -1,4 +1,4 @@
-import { Project, QuoteKind, SyntaxKind } from 'ts-morph';
+import { IndentationText, Project, QuoteKind, SyntaxKind } from 'ts-morph';
 
 export function addClassToSegmentCode(
   segmentSourceCode: string,
@@ -13,8 +13,11 @@ export function addClassToSegmentCode(
   }
 ): string {
   const project = new Project({
+    // the same output prettier gives, for projects without it
     manipulationSettings: {
       quoteKind: QuoteKind.Single,
+      indentationText: IndentationText.TwoSpaces,
+      useTrailingCommas: true,
     },
   });
   const sourceFile = project.createSourceFile('route.ts', segmentSourceCode, { overwrite: true });
