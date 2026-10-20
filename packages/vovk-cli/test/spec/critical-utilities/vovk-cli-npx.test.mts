@@ -5,6 +5,7 @@ import os from 'node:os';
 import path from 'node:path';
 import { after, describe, it } from 'node:test';
 import { promisify } from 'node:util';
+import { getFallbackCommand } from '../../../../vovk/bin/fallback.mjs';
 import { createProject } from '../../lib/minimal-project.mts';
 
 // the bin of the vovk package, which pnpm dlx vovk and yarn dlx vovk run
@@ -43,5 +44,42 @@ await describe('vovk-cli-npx, the bin of the vovk package', { skip: process.plat
     await createProject(projectDir, { 'package.json': { name: 'app' } });
 
     assert.strictEqual(await runVovkBin(['generate', '--force']), 'npx vovk-cli@latest generate --force');
+  });
+
+  await it('Says what failed when npx is missing', async () => {
+    await createProject(projectDir, { 'package.json': { name: 'app' } });
+    const emptyDir = path.join(projectDir, 'empty');
+    await fs.mkdir(emptyDir, { recursive: true });
+
+    const error = await promisify(execFile)(process.execPath, [vovkBinPath, 'generate'], {
+      cwd: projectDir,
+      env: { ...process.env, NODE_PATH: '', PATH: emptyDir },
+    }).catch((e: { code: number; stderr: string }) => e);
+
+    assert.strictEqual((error as { code: number }).code, 1);
+    assert.match((error as { stderr: string }).stderr, /Could not run npx vovk-cli@latest generate: .*ENOENT/);
+  });
+});
+
+await describe('The fallback runner of the vovk bin', async () => {
+  await it('Uses npx on Node.js', () => {
+    assert.deepStrictEqual(getFallbackCommand(['dev'], { node: '24.15.0' }, '/usr/bin/node'), [
+      'npx',
+      ['vovk-cli@latest', 'dev'],
+    ]);
+  });
+
+  await it('Stays on Bun', () => {
+    assert.deepStrictEqual(getFallbackCommand(['dev'], { node: '24.3.0', bun: '1.4.3' }, '/opt/bun'), [
+      '/opt/bun',
+      ['x', 'vovk-cli@latest', 'dev'],
+    ]);
+  });
+
+  await it('Stays on Deno', () => {
+    assert.deepStrictEqual(getFallbackCommand(['dev'], { node: '24.3.0', deno: '2.9.7' }, '/opt/deno'), [
+      '/opt/deno',
+      ['run', '-A', 'npm:vovk-cli@latest', 'dev'],
+    ]);
   });
 });

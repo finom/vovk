@@ -4,6 +4,12 @@ All notable changes to `vovk` are documented here. This file is the canonical re
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 4.1.2 - 2026-10-20
+
+### Fixed
+
+- `npx vovk` without a project vovk-cli runs the latest one through the runtime's own runner (`bun x` on Bun, `deno run -A npm:` on Deno), and says what failed when the runner is missing instead of crashing ([#115](https://github.com/finom/vovk/pull/115))
+
 ## 4.1.1 - 2026-10-19
 
 ### Fixed
