@@ -43,6 +43,6 @@
     "tailwindcss": "^4",
     "tsx": "^4.23.15",
     "typescript": "^7.0.2",
-    "vovk-cli": "^0.3.4"
+    "vovk-cli": "^0.3.5"
   }
 }
