@@ -4,15 +4,15 @@ description: "Full documentation for the Vovk.ts framework, excluding the Realti
 see_also:
   label: "Realtime Kanban Context"
   url: https://vovk.dev/context/realtime-ui.md
-chars: 416888
-est_tokens: 104222
+chars: 417005
+est_tokens: 104252
 ---
 
 Page: https://vovk.dev/about
 
 # About Vovk.ts
 
-Vovk.ts adds an API layer on top of Next.js App Router Route Handlers. Its unit is the **procedure**: a typed function with its schema. From one procedure, Vovk.ts derives the HTTP endpoint, the local `.fn()` call, the typed RPC client, the OpenAPI document and the AI tool with `execute`. You don't write a separate contract or glue code.
+Vovk.ts adds an API layer on top of Next.js App Router Route Handlers. Its unit is the **procedure**: a typed function with its schema. From one procedure, Vovk.ts derives the HTTP endpoint, the local `.fn()` call, the typed RPC client, the OpenAPI document and the AI tool with `execute`. You don't write a separate contract or glue code. Controllers with decorators and a service layer follow NestJS, without the DI container, modules or a custom server.
 
 To start with a coding agent, add the [Vovk.ts skills](#agent-skills) and ask it for the API you need:
 
