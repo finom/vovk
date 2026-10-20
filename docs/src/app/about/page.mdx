@@ -8,7 +8,13 @@ import { FileTree } from 'nextra/components';
 
 Vovk.ts adds an API layer on top of Next.js App Router Route Handlers. Its unit is the **procedure**: a typed function with its schema. From one procedure, Vovk.ts derives the HTTP endpoint, the local `.fn()` call, the typed RPC client, the OpenAPI document and the AI tool with `execute`. You don't write a separate contract or glue code.
 
-To start, run the `init` command in an existing Next.js project.
+To start with a coding agent, add the [Vovk.ts skills](#agent-skills) and ask it for the API you need:
+
+```bash
+npx skills add finom/vovk
+```
+
+Or run the `init` command in an existing Next.js project:
 
 ```bash npm2yarn
 npx vovk-cli@latest init
@@ -227,13 +233,52 @@ See [Packages](/packages).
 
 15 topic skills teach a coding agent Vovk.ts as you describe what to build: Claude Code, Cursor, Windsurf, GitHub Copilot, Cline and the other agents that read skills. A skill loads only when needed: *"scaffold a tenant"* loads the multitenant skill, *"stream chat tokens"* the JSON Lines one.
 
-Install them in your project:
+Install them in your project, an empty folder or a Next.js app:
 
 ```bash
 npx skills add finom/vovk
 ```
 
-[Quick Start](/quick-install#with-an-agent) has the prompts to try, the per-agent install commands and the Claude Code plugin.
+The [skills](https://www.npmjs.com/package/skills) CLI asks which skills to install (select all 15), finds the agents on your machine and asks whether to install in the project or for your user (`-g`). `npx skills update` brings them up to date.
+
+Then ask your agent for what you need. The skills load on their own, so the prompt doesn't have to name Vovk.ts:
+
+- In an empty folder: *"I want a back-end for a task tracker."*
+- In a Next.js app: *"Add an API to this app for a todo list."* or *"This app needs a back-end for user comments."*
+- Streaming: *"Stream the OpenAI reply from an endpoint and show it on the page as it comes in."*
+
+The agent sets up Next.js and Vovk.ts with `vovk init`, writes a controller and a service in **src/modules/&lt;feature&gt;/**, generates the typed client and calls the endpoints to check them. In an empty folder it may ask first where to create the project.
+
+A skill that writes wrong code or contradicts itself is a bug. Open an issue at <a href="https://github.com/finom/vovk/issues">github.com/finom/vovk/issues</a> with your prompt and the skill that loaded.
+
+### Install for one agent
+
+To skip the questions:
+
+| Agent | Install |
+|-------|---------|
+| **Claude Code** | `npx skills add finom/vovk -a claude-code -s "*" -y` |
+| **Cursor** | `npx skills add finom/vovk -a cursor -s "*" -y` |
+| **Windsurf** | `npx skills add finom/vovk -a windsurf -s "*" -y` |
+| **GitHub Copilot** | `npx skills add finom/vovk -a github-copilot -s "*" -y` |
+| **Cline** | `npx skills add finom/vovk -a cline -s "*" -y` |
+
+The skill files land in `.claude/skills/` (Claude Code), `.windsurf/skills/` (Windsurf) or `.agents/skills/` (Cursor, Copilot, Cline). With `-g`, they go to your home folder instead.
+
+### Claude Code plugin
+
+In Claude Code you can also install the skills as a plugin. Its skill names start with `vovk:`.
+
+| | Install |
+|-|---------|
+| **Terminal** | `claude plugin marketplace add finom/vovk && claude plugin install vovk@vovk` |
+| **In a session** | `/plugin marketplace add finom/vovk`, then `/plugin install vovk@vovk` |
+
+`finom/vovk` points to `.claude-plugin/marketplace.json` in the GitHub repo. The plugin and the marketplace are both named `vovk`: `vovk@vovk` is `<plugin-name>@<marketplace-name>`. For a local checkout (development), use its path: `claude plugin marketplace add /path/to/vovk` (the repo root).
+
+Run `/plugin` to check: the **Installed** tab lists `vovk`, and typing `/vovk:` (with the colon) lists all 15 skills.
+
+The plugin installs from the repo's `main` branch. It has its own version in `.claude-plugin/plugin.json`, separate from the npm packages. A new plugin version brings the skill updates: run `claude plugin update vovk@vovk`, or turn on auto-update for the `vovk` marketplace in `/plugin` → **Marketplaces** (it's off by default for third-party marketplaces). The new version loads in your next session, or after `/reload-plugins`.
 
 ### The skills
 

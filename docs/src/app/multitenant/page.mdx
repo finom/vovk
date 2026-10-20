@@ -122,25 +122,25 @@ After [setting up a Vovk.ts](/quick-install) app, create the segments and contro
 
 First, create an API segment for each tenant. Each segment handles the requests to its API root.
 
-```sh npm2yarn copy
-npm exec -- vovk new segment # create the root segment at src/app/api/[[...vovk]]/route.ts
-npm exec -- vovk new segment admin # create "admin" segment at src/app/api/admin/[[...vovk]]/route.ts
-npm exec -- vovk new segment customer # create "customer" segment at src/app/api/customer/[[...vovk]]/route.ts
-npm exec -- vovk new segment customer/pro # create "customer/pro" segment at src/app/api/customer/pro/[[...vovk]]/route.ts
+```sh copy
+npx vovk new segment # create the root segment at src/app/api/[[...vovk]]/route.ts
+npx vovk new segment admin # create "admin" segment at src/app/api/admin/[[...vovk]]/route.ts
+npx vovk new segment customer # create "customer" segment at src/app/api/customer/[[...vovk]]/route.ts
+npx vovk new segment customer/pro # create "customer/pro" segment at src/app/api/customer/pro/[[...vovk]]/route.ts
 ```
 
 More about [segments](/segment).
 
 Next, create the controllers of each segment. For example, `ProductService` and `ProductController` for the root segment, in `src/modules/product/`:
 
-```sh npm2yarn copy
-npm exec -- vovk new controller service product
+```sh copy
+npx vovk new controller service product
 ```
 
 `UserService` and `UserController` for the admin segment, in `src/modules/admin/user/`:
 
-```sh npm2yarn copy
-npm exec -- vovk new controller service admin/user
+```sh copy
+npx vovk new controller service admin/user
 ```
 
 ## Enable Segmented Client

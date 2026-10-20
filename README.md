@@ -130,7 +130,7 @@ In Claude Code, they also install as a plugin, with skill names that start with 
 /plugin install vovk@vovk
 ```
 
-See: https://vovk.dev/quick-install#with-an-agent
+See: https://vovk.dev/about#agent-skills
 
 ## Repository
 
@@ -145,7 +145,7 @@ See: https://vovk.dev/quick-install#with-an-agent
 - Docs: https://vovk.dev
 - Quick Start: https://vovk.dev/quick-install
 - Manual install: https://vovk.dev/manual-install
-- Agent Skills: https://vovk.dev/quick-install#with-an-agent
+- Agent Skills: https://vovk.dev/about#agent-skills
 - OpenAPI Mixins: https://vovk.dev/mixins
 - Performance: https://vovk.dev/performance
 - “Hello World” example app: https://github.com/finom/vovk/tree/main/examples/hello-world

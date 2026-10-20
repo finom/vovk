@@ -2,19 +2,17 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <title>Quick Start | Vovk.ts</title>
+    <title>Agent Skills | Vovk.ts</title>
     <meta name="robots" content="noindex" />
-    <link rel="canonical" href="https://vovk.dev/quick-install#with-an-agent" />
-    <!-- The Agent Skills page moved to Quick Start and About; a static site can't answer 301, so the browser goes on -->
-    <meta http-equiv="refresh" content="0; url=/quick-install#with-an-agent" />
+    <link rel="canonical" href="https://vovk.dev/about#agent-skills" />
+    <!-- The Agent Skills page moved to About; a static site can't answer 301, so the browser goes on -->
+    <meta http-equiv="refresh" content="0; url=/about#agent-skills" />
     <script>
-      var about = { '#skills': '#the-skills', '#what-the-agent-gets-from-vovkts': '#what-the-agent-gets-from-vovkts', '#why-skills': '#why-skills' };
-      var start = { '#claude-code-plugin': '#claude-code-plugin' };
-      var hash = location.hash;
-      location.replace(about[hash] ? '/about' + about[hash] : '/quick-install' + (start[hash] || '#with-an-agent'));
+      var about = { '#skills': '#the-skills', '#what-the-agent-gets-from-vovkts': '#what-the-agent-gets-from-vovkts', '#why-skills': '#why-skills', '#claude-code-plugin': '#claude-code-plugin' };
+      location.replace('/about' + (about[location.hash] || '#agent-skills'));
     </script>
   </head>
   <body>
-    <p>This page moved to <a href="/quick-install#with-an-agent">Quick Start</a>.</p>
+    <p>This page moved to <a href="/about#agent-skills">About Vovk.ts</a>.</p>
   </body>
 </html>
