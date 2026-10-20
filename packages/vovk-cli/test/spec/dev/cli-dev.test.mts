@@ -17,6 +17,16 @@ await describe('CLI dev', async () => {
   const { runAtProjectDir, assertFile, createVovkApp } = getCLIAssertions({ cwd, dir });
   const getSchema = async () =>
     JSON.parse(await fs.readFile(path.join(cwd, dir, '.vovk-schema/root.json'), 'utf8')) as VovkSegmentSchema;
+  // the watcher writes the schema once Next.js has recompiled, which takes longer on a slow runner
+  const waitForSchema = async (check: (schema: VovkSegmentSchema) => unknown, timeout = 45_000) => {
+    const end = Date.now() + timeout;
+    let schema = await getSchema().catch(() => null);
+    while (!(schema && check(schema)) && Date.now() < end) {
+      await new Promise((resolve) => setTimeout(resolve, 500));
+      schema = await getSchema().catch(() => null);
+    }
+    return schema as VovkSegmentSchema;
+  };
 
   const agent = new Agent({
     connect: {
@@ -72,10 +82,9 @@ await describe('CLI dev', async () => {
         });`,
         ]);
 
-        await new Promise((resolve) => setTimeout(resolve, 10_000));
-
-        assert.strictEqual((await getSchema()).controllers.UserRPC.rpcModuleName, 'UserRPC');
-        assert.ok((await getSchema()).controllers.UserRPC.handlers.getUsers);
+        const first = await waitForSchema((schema) => schema.controllers.UserRPC?.handlers.getUsers);
+        assert.strictEqual(first.controllers.UserRPC.rpcModuleName, 'UserRPC');
+        assert.ok(first.controllers.UserRPC.handlers.getUsers);
 
         const segmentAbsolutePath = path.join(cwd, dir, 'src/app/api/[[...vovk]]/route.ts');
         const controllerAbsolutePath = path.join(cwd, dir, 'src/modules/user/user-controller.ts');
@@ -84,17 +93,15 @@ await describe('CLI dev', async () => {
 
         await fs.writeFile(segmentAbsolutePath, segmentCode.replace('UserRPC', 'CustomUserRPC'));
 
-        await new Promise((resolve) => setTimeout(resolve, 10_000));
-
-        assert.strictEqual((await getSchema()).controllers.CustomUserRPC.rpcModuleName, 'CustomUserRPC');
+        const renamed = await waitForSchema((schema) => schema.controllers.CustomUserRPC);
+        assert.strictEqual(renamed.controllers.CustomUserRPC.rpcModuleName, 'CustomUserRPC');
 
         const controllerCode = await fs.readFile(controllerAbsolutePath, 'utf8');
 
         await fs.writeFile(controllerAbsolutePath, controllerCode.replace('getUsers', 'getPeople'));
 
-        await new Promise((resolve) => setTimeout(resolve, 10_000));
-
-        assert.ok((await getSchema()).controllers.CustomUserRPC.handlers.getPeople);
+        const changed = await waitForSchema((schema) => schema.controllers.CustomUserRPC?.handlers.getPeople);
+        assert.ok(changed.controllers.CustomUserRPC.handlers.getPeople);
         const protocol = name.includes('--https') ? 'https' : 'http';
         const resp = await (await fetch(`${protocol}://localhost:${PORT}/api/users/123`)).json();
 
