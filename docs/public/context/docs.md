@@ -4,8 +4,8 @@ description: "Full documentation for the Vovk.ts framework, excluding the Realti
 see_also:
   label: "Realtime Kanban Context"
   url: https://vovk.dev/context/realtime-ui.md
-chars: 410037
-est_tokens: 102510
+chars: 410052
+est_tokens: 102513
 ---
 
 Page: https://vovk.dev/about
@@ -4871,7 +4871,7 @@ The segments the composed client leaves out. By default, none. You can't use it 
 
 ### `prettifyClient`
 
-Whether to format the generated code. Defaults to `true`. The CLI uses the [Prettier](https://prettier.io/) package of your project, with your Prettier config; the CLI doesn't install it. Without Prettier, the CLI prints a warning and writes unformatted code. To stop the warning, install Prettier or set `prettifyClient` to `false`.
+Whether to format the generated code. Defaults to `true`. The CLI uses the [Prettier](https://prettier.io/) package of your project, with your Prettier config; the CLI doesn't install it. Without Prettier, the CLI writes unformatted code; it warns about the missing Prettier only when you set `prettifyClient: true` (or pass `--prettify`) yourself.
 
 ### `outputConfig`
 

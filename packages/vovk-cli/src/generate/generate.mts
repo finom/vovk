@@ -322,6 +322,11 @@ export async function generate({
             cliGenerateOptions?.prettify ??
             templateDef.composedClient?.prettifyClient ??
             config.composedClient.prettifyClient,
+          // only a prettifyClient someone set warns that prettier is missing; the default formats when it can
+          warnIfNoPrettier:
+            (cliGenerateOptions?.prettify ??
+              templateDef.composedClient?.prettifyClient ??
+              projectInfo.userPrettifyClient.composedClient) === true,
           segmentName: null,
           templateContent,
           matterResult,
@@ -444,6 +449,11 @@ export async function generate({
                 cliGenerateOptions?.prettify ??
                 templateDef.segmentedClient?.prettifyClient ??
                 config.segmentedClient.prettifyClient,
+              // only a prettifyClient someone set warns that prettier is missing; the default formats when it can
+              warnIfNoPrettier:
+                (cliGenerateOptions?.prettify ??
+                  templateDef.segmentedClient?.prettifyClient ??
+                  projectInfo.userPrettifyClient.segmentedClient) === true,
               segmentName,
               templateContent,
               matterResult,

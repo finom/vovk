@@ -139,6 +139,7 @@ export async function renderOneClientFile({
   clientTemplateFile,
   fullSchema,
   prettifyClient,
+  warnIfNoPrettier,
   segmentName,
   templateContent,
   matterResult: { data, content },
@@ -167,6 +168,7 @@ export async function renderOneClientFile({
   clientTemplateFile: ClientTemplateFile;
   fullSchema: VovkSchema;
   prettifyClient: boolean;
+  warnIfNoPrettier: boolean;
   segmentName: string | null; // null for composed client
   templateContent: string;
   matterResult: {
@@ -382,7 +384,7 @@ export async function renderOneClientFile({
     : templateContent;
 
   if (prettifyClient) {
-    await warnIfPrettierMissing(log);
+    if (warnIfNoPrettier) await warnIfPrettierMissing(log);
     rendered = await prettify(rendered, outPath);
   }
 

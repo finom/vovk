@@ -51,7 +51,7 @@ composedClient: {
   enabled: true,
   outDir: 'src/client', // 'client' when the app isn't in src/app
   fromTemplates: ['ts'],
-  prettifyClient: true, // project prettier; warns and skips if not installed
+  prettifyClient: true, // project prettier; skipped if not installed (warns only when set explicitly)
 }
 
 segmentedClient: {
