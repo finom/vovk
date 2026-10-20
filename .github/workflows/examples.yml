@@ -10,6 +10,7 @@ on:
       - 'packages/**'
       - 'package.json'
       - 'package-lock.json'
+      - 'scripts/web-clients/**'
       - '.github/workflows/examples.yml'
       - '!**/*.md'
   pull_request:
@@ -21,6 +22,7 @@ on:
       - 'packages/**'
       - 'package.json'
       - 'package-lock.json'
+      - 'scripts/web-clients/**'
       - '.github/workflows/examples.yml'
       - '!**/*.md'
   workflow_dispatch:
@@ -146,5 +148,5 @@ jobs:
           npx next build
           npx next start -p "$PORT" &
           node ../../scripts/wait-for-url.mjs "http://localhost:$PORT/api/static/openapi.json"
-          (cd "$RUNNER_TEMP/miniflare" && node "$GITHUB_WORKSPACE/examples/hello-world/test/web/worker.mjs" "http://localhost:$PORT/api" "$GITHUB_WORKSPACE/examples/hello-world/dist/index.js" .)
-          node test/web/browser.mjs "http://localhost:$PORT" dist/index.js "$(command -v google-chrome)"
+          (cd "$RUNNER_TEMP/miniflare" && node "$GITHUB_WORKSPACE/scripts/web-clients/worker.mjs" "http://localhost:$PORT/api" "$GITHUB_WORKSPACE/examples/hello-world/dist/index.js" .)
+          node ../../scripts/web-clients/browser.mjs "http://localhost:$PORT" dist/index.js "$(command -v google-chrome)"

@@ -9,15 +9,10 @@ const [origin, bundle, chrome] = process.argv.slice(2);
 const profile = mkdtempSync(path.join(tmpdir(), 'vovk-chrome-'));
 const browser = spawn(
   chrome,
-  [
-    '--headless=new',
-    '--remote-debugging-port=0',
-    `--user-data-dir=${profile}`,
-    'about:blank',
-  ],
+  ['--headless=new', '--remote-debugging-port=0', `--user-data-dir=${profile}`, 'about:blank'],
   {
     stdio: ['ignore', 'ignore', 'pipe'],
-  },
+  }
 );
 
 try {
@@ -28,14 +23,10 @@ try {
       const match = log.match(/DevTools listening on ws:\/\/[^:]+:(\d+)\//);
       if (match) resolve(match[1]);
     });
-    browser.on('exit', (code) =>
-      reject(new Error(`Chrome exited with ${code}: ${log}`)),
-    );
+    browser.on('exit', (code) => reject(new Error(`Chrome exited with ${code}: ${log}`)));
   });
   const page = await waitFor(async () => {
-    const targets = await (
-      await fetch(`http://127.0.0.1:${port}/json/list`)
-    ).json();
+    const targets = await (await fetch(`http://127.0.0.1:${port}/json/list`)).json();
     return targets.find((target) => target.type === 'page');
   });
   const session = await connect(page.webSocketDebuggerUrl);
@@ -57,11 +48,8 @@ try {
   if (exceptionDetails) throw new Error(JSON.stringify(exceptionDetails));
   const results = result.value;
   for (const { name, ok, error } of results)
-    console.log(
-      `${ok ? 'ok' : 'FAIL'} chrome: ${name}${error ? ` (${error})` : ''}`,
-    );
-  if (results.length === 0 || results.some(({ ok }) => !ok))
-    process.exitCode = 1;
+    console.log(`${ok ? 'ok' : 'FAIL'} chrome: ${name}${error ? ` (${error})` : ''}`);
+  if (results.length === 0 || results.some(({ ok }) => !ok)) process.exitCode = 1;
 } finally {
   const exited = new Promise((resolve) => browser.once('exit', resolve));
   browser.kill();
@@ -86,7 +74,7 @@ async function connect(url) {
   });
   let nextId = 0;
   const pending = new Map();
-  const listeners = new Map();
+  let waiting = null;
   socket.onmessage = ({ data }) => {
     const message = JSON.parse(data);
     if (message.id !== undefined) {
@@ -94,9 +82,9 @@ async function connect(url) {
       pending.delete(message.id);
       if (message.error) reject(new Error(message.error.message));
       else resolve(message.result);
-    } else {
-      listeners.get(message.method)?.(message.params);
-      listeners.delete(message.method);
+    } else if (waiting && message.method === waiting.method) {
+      waiting.resolve(message.params);
+      waiting = null;
     }
   };
   return {
@@ -106,7 +94,10 @@ async function connect(url) {
         pending.set(id, { resolve, reject });
         socket.send(JSON.stringify({ id, method, params }));
       }),
-    once: (method) => new Promise((resolve) => listeners.set(method, resolve)),
+    once: (method) =>
+      new Promise((resolve) => {
+        waiting = { method, resolve };
+      }),
     close: () => socket.close(),
   };
 }

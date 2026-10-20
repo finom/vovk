@@ -1,4 +1,4 @@
-// The same calls as test/node/local.test.mts, written for runtimes without node:test (Workers, browsers)
+// hello-world's calls (its test/node/local.test.mts), for runtimes without node:test (Workers, browsers)
 export async function runChecks({ UserRPC, OpenApiRPC, StreamRPC }, apiRoot) {
   const results = [];
   const check = async (name, fn) => {
@@ -22,8 +22,7 @@ export async function runChecks({ UserRPC, OpenApiRPC, StreamRPC }, apiRoot) {
       body,
       query: { notify: 'email' },
     });
-    if (response.id !== id || response.notify !== 'email')
-      throw new Error(JSON.stringify(response));
+    if (response.id !== id || response.notify !== 'email') throw new Error(JSON.stringify(response));
   });
   await check('server validation answers 400', async () => {
     try {
@@ -41,15 +40,12 @@ export async function runChecks({ UserRPC, OpenApiRPC, StreamRPC }, apiRoot) {
   });
   await check('getSpec', async () => {
     const spec = await OpenApiRPC.getSpec({ apiRoot });
-    if (spec.info.title !== '"Hello World" app API')
-      throw new Error(spec.info.title);
+    if (spec.info.title !== '"Hello World" app API') throw new Error(spec.info.title);
   });
   await check('streamTokens', async () => {
     const messages = [];
-    for await (const item of await StreamRPC.streamTokens({ apiRoot }))
-      messages.push(item.message);
-    if (!messages.join('').startsWith('Vovk.ts is'))
-      throw new Error(messages.join(''));
+    for await (const item of await StreamRPC.streamTokens({ apiRoot })) messages.push(item.message);
+    if (!messages.join('').startsWith('Vovk.ts is')) throw new Error(messages.join(''));
   });
   return results;
 }

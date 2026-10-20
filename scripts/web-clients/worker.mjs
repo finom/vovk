@@ -1,4 +1,4 @@
-// Runs the bundled client inside workerd through Miniflare: node worker.mjs <apiRoot> <bundle> <miniflare dir>
+// Runs a bundled client inside workerd through Miniflare: node worker.mjs <apiRoot> <bundle> <miniflare dir>
 import { readFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import path from 'node:path';
@@ -7,9 +7,7 @@ import { pathToFileURL } from 'node:url';
 const [apiRoot, bundle, miniflareDir] = process.argv.slice(2);
 // miniflare is installed apart from the app: it brings its own workerd binary
 const { Miniflare } = await import(
-  pathToFileURL(
-    createRequire(path.join(miniflareDir, 'noop.js')).resolve('miniflare'),
-  ).href
+  pathToFileURL(createRequire(path.resolve(miniflareDir, 'noop.js')).resolve('miniflare')).href
 );
 
 const entry = `
@@ -42,9 +40,6 @@ try {
 
 function report(where, results) {
   for (const { name, ok, error } of results)
-    console.log(
-      `${ok ? 'ok' : 'FAIL'} ${where}: ${name}${error ? ` (${error})` : ''}`,
-    );
-  if (results.length === 0 || results.some(({ ok }) => !ok))
-    process.exitCode = 1;
+    console.log(`${ok ? 'ok' : 'FAIL'} ${where}: ${name}${error ? ` (${error})` : ''}`);
+  if (results.length === 0 || results.some(({ ok }) => !ok)) process.exitCode = 1;
 }
