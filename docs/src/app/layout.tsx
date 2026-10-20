@@ -21,7 +21,8 @@ export const metadata: Metadata = {
     template: '%s | Vovk.ts',
   },
   // Each page has its own description, which Open Graph and X take. og:url and og:type come from the MDX wrapper.
-  description: 'Make your Next.js app agent-ready: each procedure is an MCP tool, a typed client and an OpenAPI operation.',
+  description:
+    'Make your Next.js app agent-ready: each procedure is an MCP tool, a typed client and an OpenAPI operation.',
   openGraph: {
     siteName: 'Vovk.ts',
     locale: 'en_US',
