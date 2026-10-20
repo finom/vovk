@@ -29,7 +29,7 @@ export async function getProjectInfo(
   // the config file may read PORT
   process.env.PORT = port;
 
-  const { config, srcRoot, configAbsolutePaths, log, openAPIMixins } = await getConfig({
+  const { config, userConfig, srcRoot, configAbsolutePaths, log, openAPIMixins } = await getConfig({
     configPath,
     cwd,
     logLevel,
@@ -59,6 +59,11 @@ export async function getProjectInfo(
     srcRoot,
     vovkCliPackage,
     config,
+    // undefined unless the config file sets it
+    userPrettifyClient: {
+      composedClient: userConfig?.composedClient?.prettifyClient,
+      segmentedClient: userConfig?.segmentedClient?.prettifyClient,
+    },
     packageJson,
     isNextInstalled,
     log,

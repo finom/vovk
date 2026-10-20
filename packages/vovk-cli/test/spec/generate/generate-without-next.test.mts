@@ -100,7 +100,10 @@ await describe('vovk generate in a project without Next.js', async () => {
     try {
       await createProject(dir, {
         'package.json': { name: 'app', version: '1.0.0', type: 'module' },
-        'vovk.config.mjs': configFile({ composedClient: { enabled: false }, segmentedClient: { enabled: true } }),
+        'vovk.config.mjs': configFile({
+          composedClient: { enabled: false },
+          segmentedClient: { enabled: true, prettifyClient: true },
+        }),
         'src/app/api/a/[[...vovk]]/route.ts': '',
         'src/app/api/b/[[...vovk]]/route.ts': '',
         '.vovk-schema/a.json': segmentSchema('a', 'UserRPC'),
@@ -110,6 +113,25 @@ await describe('vovk generate in a project without Next.js', async () => {
       const { stdout, stderr } = await runCLI(['generate'], { cwd: dir });
 
       assert.strictEqual(`${stdout}${stderr}`.match(/prettier is not installed/g)?.length, 1, `${stdout}${stderr}`);
+    } finally {
+      await fs.rm(dir, { recursive: true, force: true });
+    }
+  });
+
+  await it("Doesn't warn about prettier when prettifyClient is the default, as after vovk init", async () => {
+    const dir = await fs.mkdtemp(path.join(os.tmpdir(), 'vovk-no-prettier-'));
+    try {
+      await createProject(dir, {
+        'package.json': { name: 'app', version: '1.0.0', type: 'module' },
+        'vovk.config.mjs': configFile({ segmentedClient: { enabled: true } }),
+        'src/app/api/a/[[...vovk]]/route.ts': '',
+        '.vovk-schema/a.json': segmentSchema('a', 'UserRPC'),
+      });
+
+      const { stdout, stderr } = await runCLI(['generate'], { cwd: dir });
+
+      assert.doesNotMatch(`${stdout}${stderr}`, /prettier is not installed/, `${stdout}${stderr}`);
+      assert.ok(await fs.stat(path.join(dir, 'src/client/index.ts')), 'the composed client is written');
     } finally {
       await fs.rm(dir, { recursive: true, force: true });
     }
