@@ -11,7 +11,7 @@
   ],
   "type": "module",
   "packageManager": "npm@11.17.0",
-  "description": "Back-end framework for Next.js App Router",
+  "description": "Make your Next.js app agent-ready: MCP tools, OpenAPI and typed TS/Python/Rust clients from route handlers",
   "scripts": {
     "ncu": "turbo run ncu --dangerously-disable-package-manager-check && npm run --prefix test ncu && npm-check-updates -u --cooldown 7 && npx -y npm@10 install",
     "test:main": "npm --prefix test run generate && npm --prefix test run build-other-compiled-sources && npm run lint && turbo run tsc --dangerously-disable-package-manager-check && tsc --project ./test && tsc --project ./test/tsconfig.non-strict.json && npm run test:packages && npm run unit",
