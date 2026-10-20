@@ -1,5 +1,5 @@
 ---
-description: "Format derived tool output for MCP with ToModelOutput.MCP: JSON, text, image and audio content, annotations, and an mcp-handler example."
+description: "Format derived tool output for MCP with ToModelOutput.MCP: JSON, text, image and audio content, annotations, and an MCP server example."
 ---
 
 # MCP (Model Context Protocol) Output Formatting
@@ -163,14 +163,14 @@ With the `ToModelOutput.MCP` formatter, each content item gets the `annotations`
 
 The `mcpOutput` key can also override other MCP output properties, including `content` and `structuredContent`; its `annotations` go on each content item. This way you can change the MCP output without changing the procedure's response.
 
-## MCP Handler Example
+## MCP Server Example
 
-With the [mcp-handler](https://www.npmjs.com/package/mcp-handler) package, you can create an MCP API route that controls what your back end exposes to MCP clients.
+With `createMcpHandler` from the official MCP SDK, [`@modelcontextprotocol/server`](https://www.npmjs.com/package/@modelcontextprotocol/server), you can create an MCP API route that controls what your back end exposes to MCP clients.
 
-The tool's `inputSchema` is a Standard Schema with JSON Schema, which `registerTool` in **mcp-handler** 2 accepts as is.
+The tool's `inputSchema` is a Standard Schema with JSON Schema, which the SDK's `registerTool` accepts as is.
 
 ```ts showLineNumbers copy filename="src/app/api/mcp/route.ts"
-import { createMcpHandler } from "mcp-handler";
+import { createMcpHandler, McpServer } from "@modelcontextprotocol/server";
 import { deriveTools, ToModelOutput } from "vovk";
 import UserController from "@/modules/user/user-controller";
 
@@ -179,13 +179,16 @@ const tools = deriveTools({
   toModelOutput: ToModelOutput.MCP,
 });
 
-const handler = createMcpHandler(
-  (server) => {
-    tools.forEach(({ title, name, execute, description, inputSchema }) => {
-      server.registerTool(name, { title, description, inputSchema }, execute);
-    });
-  },
-);
+const mcp = createMcpHandler(() => {
+  const server = new McpServer({ name: "my-app", version: "1.0.0" });
+  tools.forEach(({ title, name, execute, description, inputSchema }) => {
+    server.registerTool(name, { title, description, inputSchema }, execute);
+  });
+  return server;
+});
+
+// Next.js passes the route context as a second argument, which mcp.fetch would read as its options
+const handler = (req: Request) => mcp.fetch(req);
 
 export { handler as GET, handler as POST };
 ```

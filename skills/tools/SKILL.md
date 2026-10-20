@@ -11,7 +11,7 @@ Standalone tools (no procedure backing — SDK wrappers, calculators, file ops) 
 
 > **v4 removed `createTool`, `VovkTool`, `parameters`, `type` and `inputSchemas`.** Tools are the standard-tool shape now: one merged `inputSchema` instead of `parameters` + `inputSchemas`, and `deriveTools` returns the array directly instead of `{ tools, toolsByName }`.
 
-**Out of scope:** procedure authoring (**`procedure`**), `@operation` for OpenAPI docs (**`openapi`**), third-party OpenAPI mixin setup (**`mixins`**). MCP server transport / hosting outside Vovk; **for Next.js, recommended runtime is `mcp-handler` npm package** — example below.
+**Out of scope:** procedure authoring (**`procedure`**), `@operation` for OpenAPI docs (**`openapi`**), third-party OpenAPI mixin setup (**`mixins`**). MCP server transport / hosting outside Vovk; **for Next.js, use `createMcpHandler` from the official MCP SDK (`@modelcontextprotocol/server`)** — example below.
 
 > **Import path note.** Code samples import from `'@/client'`: the composed client generated into `src/client` (or `client/` when the app isn't in `src/app`). Custom `composedClient.outDir` changes the path. With segmented client, import from `@/client/<segment>`. Call shape identical. See **`rpc`** skill.
 
@@ -399,14 +399,14 @@ For Anthropic: `input_schema = asJSONSchema(t)`, otherwise identical.
 
 The emitted JSON Schema carries vovk's own `x-` annotations (`x-tsType`, `x-contentType`). Providers ignore unknown keywords, but OpenAI **strict** function calling rejects them — strip the `x-*` keys if you enable strict mode.
 
-### MCP servers via `mcp-handler` (recommended for Next.js)
+### MCP servers via the official MCP SDK (recommended for Next.js)
 
 Works for **every** module kind in v4 — controllers, RPC modules and OpenAPI mixins alike — because they all carry a merged `inputSchema`.
 
-`mcp-handler` 2.x `registerTool` accepts a Standard Schema with JSON Schema as `inputSchema`, which is what the tool carries, so pass it straight in:
+`@modelcontextprotocol/server` 2.x `registerTool` accepts a Standard Schema with JSON Schema as `inputSchema`, which is what the tool carries, so pass it straight in. No `mcp-handler` needed:
 
 ```ts filename="src/app/api/mcp/route.ts"
-import { createMcpHandler } from 'mcp-handler';
+import { createMcpHandler, McpServer } from '@modelcontextprotocol/server';
 import { deriveTools, ToModelOutput } from 'vovk';
 import TaskController from '@/modules/task/task-controller';
 import UserController from '@/modules/user/user-controller';
@@ -418,12 +418,17 @@ const tools = deriveTools({
   onError: (e, { name }) => console.error(`Error in ${name}`, e),
 });
 
-// mcp-handler 2.x answers at the route file's own path: /api/mcp here
-const handler = createMcpHandler((server) => {
+// a fresh server per request; the handler answers at the route file's path: /api/mcp here
+const mcp = createMcpHandler(() => {
+  const server = new McpServer({ name: 'my-app', version: '1.0.0' });
   tools.forEach(({ title, name, execute, description, inputSchema }) => {
     server.registerTool(name, { title, description, inputSchema }, execute);
   });
+  return server;
 });
+
+// Next.js passes the route context as a second argument, which mcp.fetch would read as its options
+const handler = (req: Request) => mcp.fetch(req);
 
 export { handler as GET, handler as POST };
 ```
@@ -444,7 +449,7 @@ export { authorizedHandler as GET, authorizedHandler as POST };
 
 > **Not production auth.** Query-string secret leaks into browser history, server logs, proxy logs, bookmarks; identical for every caller. For anything user-facing or multi-tenant, use real OAuth / session cookies / header-based middleware in front of MCP route. Pattern above exists because shortest path to "Claude can talk to my server right now."
 
-Test locally with official MCP Inspector: `npx @modelcontextprotocol/inspector`. To mix derived + standalone MCP tools, register them inside the same `createMcpHandler` callback. For non-Next.js MCP runtimes, the same array drops into any SDK that accepts `ListTools` / `CallTool` handlers.
+Test locally with official MCP Inspector: `npx @modelcontextprotocol/inspector`. To mix derived + standalone MCP tools, register them on the same server inside the `createMcpHandler` factory. For non-Next.js MCP runtimes, the same array drops into any SDK that accepts `ListTools` / `CallTool` handlers.
 
 ### Mixins and MCP
 

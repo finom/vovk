@@ -18,7 +18,7 @@ const meta = {
   '#ai': separator('AI Integration'),
   'text-ai': 'Text AI Chat Integration with AI SDK and AI Elements',
   'voice-ai': 'OpenAI Realtime API with WebRTC',
-  mcp: 'MCP Server with mcp-handler',
+  mcp: 'MCP Server',
   telegram: 'Telegram Bot with OpenAPI Mixins',
 } as const satisfies MetaRecord;
 
