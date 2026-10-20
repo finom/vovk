@@ -4,8 +4,8 @@ description: "Full documentation for the Vovk.ts framework, excluding the Realti
 see_also:
   label: "Realtime Kanban Context"
   url: https://vovk.dev/context/realtime-ui.md
-chars: 417005
-est_tokens: 104252
+chars: 417014
+est_tokens: 104254
 ---
 
 Page: https://vovk.dev/about
@@ -505,7 +505,7 @@ npx vovk generate
 
 Page: https://vovk.dev/agent-ready
 
-# Agent-Ready App: MCP Tools from Procedures
+# Make Your Next.js App Agent-Ready
 
 An MCP route next to your API lets AI agents, such as Claude Code, call the procedures your front-end calls, with the same validation. [deriveTools](https://vovk.dev/tools) turns the procedures into tools, and the official MCP SDK, [`@modelcontextprotocol/server`](https://www.npmjs.com/package/@modelcontextprotocol/server), serves them. The procedures stay plain endpoints, with their [typed client](https://vovk.dev/typescript) and [OpenAPI spec](https://vovk.dev/openapi).
 
@@ -3804,7 +3804,7 @@ The `mcpOutput` key can also override other MCP output properties, including `co
 
 ## Serving the Tools
 
-To serve the tools from an MCP route in Next.js, see [Agent-Ready App](https://vovk.dev/agent-ready#add-the-mcp-route).
+To serve the tools from an MCP route in Next.js, see [Make Your Next.js App Agent-Ready](https://vovk.dev/agent-ready#add-the-mcp-route).
 
 ## Standalone Tools with `withFormattedOutput`
 

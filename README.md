@@ -22,7 +22,7 @@
 
 ## Vovk.ts [![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/finom/vovk/badge)](https://scorecard.dev/viewer/?uri=github.com/finom/vovk) [![OpenSSF Best Practices](https://www.bestpractices.dev/projects/15414/badge)](https://www.bestpractices.dev/projects/15414) [![CI](https://github.com/finom/vovk/actions/workflows/main.yml/badge.svg)](https://github.com/finom/vovk/actions/workflows/main.yml) [![MIT License](https://img.shields.io/badge/license-MIT-0a0a0a.svg)](https://github.com/finom/vovk/blob/main/LICENSE) [![AI context: llms-full.txt](https://img.shields.io/badge/ai_context-llms--full.txt-white)](https://vovk.dev/llms-full.txt) [![Runtime NPM Version](https://img.shields.io/npm/v/vovk?label=vovk)](https://www.npmjs.com/package/vovk) [![CLI NPM Version](https://img.shields.io/npm/v/vovk-cli?label=vovk-cli&color=brightgreen)](https://www.npmjs.com/package/vovk-cli)
 
-Vovk.ts makes your Next.js app agent-ready: every procedure is also an **MCP tool**, a typed client method and an OpenAPI operation. See [Agent-Ready App](https://vovk.dev/agent-ready).
+Vovk.ts makes your Next.js app agent-ready: every procedure is also an **MCP tool**, a typed client method and an OpenAPI operation. See [the guide](https://vovk.dev/agent-ready).
 
 Vovk.ts adds an API layer on top of **Next.js App Router Route Handlers**. Its unit is the **procedure**: a typed function with its schema. From one procedure, Vovk.ts derives the **HTTP endpoint**, the local **`.fn()`** call, the **type-safe client**, the **OpenAPI** document and the **AI tool** with `execute`. You don't write a separate contract or glue code.
 
