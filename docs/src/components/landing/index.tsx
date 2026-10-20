@@ -20,7 +20,7 @@ const FEATURES: Feature[] = [
       ['Python', '/python', 'Python client docs'],
       ['Rust', '/rust', 'Rust client docs'],
     ],
-    text: 'Generated from your procedures as TypeScript, Python and Rust packages, ready to publish.',
+    text: 'Generated from your procedures as TypeScript, Python and Rust packages, ready to publish. The TypeScript client also runs in browsers and Cloudflare Workers.',
     code: (
       <>
         <div className="vk-snippet-lang">
@@ -131,7 +131,7 @@ const FEATURES: Feature[] = [
     id: 'next',
     title: 'Plain Next.js',
     links: [['Docs', '/segment', 'Segment docs']],
-    text: 'It runs in route handlers, with no custom server, and deploys wherever Next.js does.',
+    text: 'It runs in route handlers on Node.js, Bun or Deno, with no custom server, and deploys wherever Next.js does.',
     code: (
       <>
         <div className="vk-dim">{'// app/api/[[...vovk]]/route.ts'}</div>

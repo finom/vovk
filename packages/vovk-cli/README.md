@@ -22,7 +22,7 @@
 
 ## vovk-cli [![npm version](https://badge.fury.io/js/vovk-cli.svg)](https://www.npmjs.com/package/vovk-cli)
 
-The Vovk.ts command line. It sets up a project, watches the controllers, writes the schema and generates the TypeScript, Python and Rust clients and the OpenAPI document. It needs Node.js 24.15+ and goes in the dev dependencies, next to [vovk](https://www.npmjs.com/package/vovk).
+The Vovk.ts command line. It sets up a project, watches the controllers, writes the schema and generates the TypeScript, Python and Rust clients and the OpenAPI document. It needs Node.js 24.15+ (or Bun 1.4+, Deno 2.9+) and goes in the dev dependencies, next to [vovk](https://www.npmjs.com/package/vovk).
 
 ## Set up
 

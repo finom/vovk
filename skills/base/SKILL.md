@@ -17,7 +17,7 @@ Deeper topics, one skill each: `procedure` (`.fn()`, content types, uploads, dow
 
 ## Rules
 
-- Node.js 24.15+, Next.js 15+ App Router, TypeScript 5.5+.
+- Node.js 24.15+ (or Bun 1.4+, Deno 2.9+), Next.js 15+ App Router, TypeScript 5.5+.
 - Commit `.vovk-schema/`; the generated client dir (`src/client`) is gitignored and rebuilt by `prebuild`.
 
 ## Layout

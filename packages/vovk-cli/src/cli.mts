@@ -5,6 +5,7 @@ import { Command } from 'commander';
 import concurrently from 'concurrently';
 import { getNextDevCommand } from './dev/get-next-dev-command.mjs';
 import { getNextDevPort } from './dev/get-next-dev-port.mjs';
+import { getRuntimeCommand } from './dev/get-runtime-command.mjs';
 import { isOwnSchemaFolder } from './generate/is-own-schema-folder.mjs';
 import type { BundleOptions, DevOptions, GenerateOptions, InitOptions, NewOptions, VovkEnv } from './types.mjs';
 import { getAvailablePort } from './utils/get-available-port.mjs';
@@ -66,7 +67,9 @@ program
             env: { PORT } satisfies VovkEnv,
           },
           {
-            command: `node ${quoteShellArgument(path.join(import.meta.dirname, 'dev', 'index.mjs'))}`,
+            command: [...getRuntimeCommand(), path.join(import.meta.dirname, 'dev', 'index.mjs')]
+              .map((arg) => quoteShellArgument(arg))
+              .join(' '),
             name: 'Vovk Dev Watcher',
             env: {
               PORT,

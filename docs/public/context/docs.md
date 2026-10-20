@@ -4,8 +4,8 @@ description: "Full documentation for the Vovk.ts framework, excluding the Realti
 see_also:
   label: "Realtime Kanban Context"
   url: https://vovk.dev/context/realtime-ui.md
-chars: 409625
-est_tokens: 102407
+chars: 409650
+est_tokens: 102413
 ---
 
 Page: https://vovk.dev/about
@@ -26,7 +26,7 @@ Or run the `init` command in an existing Next.js project:
 npx vovk-cli@latest init
 ```
 
-> Requires Node.js 24.15+, Next.js 15+ and TypeScript 5.5+.
+> Requires Node.js 24.15+ (or Bun 1.4+, Deno 2.9+), Next.js 15+ and TypeScript 5.5+.
 >
 > [Quick Start](https://vovk.dev/quick-install) · [Manual Install](https://vovk.dev/manual-install) · [Agent Skills](#agent-skills) · [GitHub](https://github.com/finom/vovk)
 
