@@ -35,7 +35,7 @@
       "default": "./dist/validation/create-validate-on-client.js"
     }
   },
-  "description": "Back-end Framework for Next.js App Router",
+  "description": "Make your Next.js app agent-ready: MCP tools, OpenAPI and typed TS/Python/Rust clients from route handlers",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/finom/vovk.git",
@@ -54,7 +54,14 @@
   },
   "keywords": [
     "nextjs",
-    "router"
+    "router",
+    "mcp",
+    "ai-agents",
+    "ai-tools",
+    "openapi",
+    "typescript",
+    "rpc",
+    "api"
   ],
   "author": "Andrey Gubanov",
   "license": "MIT",

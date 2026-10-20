@@ -7,9 +7,9 @@
     </picture>
   </a>
   <br>
-  <strong>Back-end Framework for Next.js App Router</strong>
+  <strong>Make your Next.js app agent-ready</strong>
   <br />
-  <em>One codebase → type-safe clients, OpenAPI, and AI tools</em>
+  <em>Route handlers → MCP tools, typed clients and OpenAPI</em>
   <br />
   <a href="https://vovk.dev/">Documentation</a>
   &nbsp;&nbsp;

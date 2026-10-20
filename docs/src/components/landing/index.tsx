@@ -14,6 +14,24 @@ type Feature = { id: string; title: string; links: [string, string, string][]; t
 
 const FEATURES: Feature[] = [
   {
+    id: 'tools',
+    title: 'AI agents',
+    links: [
+      ['Guide', '/agent-ready', 'Agent-ready app guide'],
+      ['Tools', '/tools', 'AI tools docs'],
+    ],
+    text: 'Each procedure becomes an MCP tool or an AI SDK tool, validated like any request. You choose which ones agents see.',
+    code: (
+      <>
+        <div>
+          const tools = <Kw>deriveTools</Kw>({'{'}
+        </div>
+        <div>{'  modules: { TaskRPC },'}</div>
+        <div>{'});'}</div>
+      </>
+    ),
+  },
+  {
     id: 'clients',
     title: 'Typed clients',
     links: [
@@ -66,24 +84,6 @@ const FEATURES: Feature[] = [
         </div>
         <div>{'    description: Create a task'}</div>
         <div>{'    x-codeSamples: [ts, python, rust]'}</div>
-      </>
-    ),
-  },
-  {
-    id: 'tools',
-    title: 'AI tools and MCP',
-    links: [
-      ['Tools', '/tools', 'AI tools docs'],
-      ['MCP', '/tools-mcp', 'MCP docs'],
-    ],
-    text: 'deriveTools turns your procedures into tools for AI SDKs and MCP servers.',
-    code: (
-      <>
-        <div>
-          const tools = <Kw>deriveTools</Kw>({'{'}
-        </div>
-        <div>{'  modules: { TaskRPC },'}</div>
-        <div>{'});'}</div>
       </>
     ),
   },
@@ -177,16 +177,16 @@ export function Landing() {
         <div className="vk-wrap">
           <div className="vk-hero-top">
             <h1 id="vk-h-hero">
-              Write the procedure. <span>Get the whole API.</span>
+              Make your Next.js app <span>agent-ready.</span>
             </h1>
             <div className="vk-hero-right">
-              <p>Vovk.ts is your back-end architect: every endpoint designed, typed, documented and ready for AI.</p>
+              <p>Each endpoint becomes an MCP tool for AI agents, and a typed, documented API for everyone else.</p>
               <div className="vk-cmd-row">
                 <Command text={SKILLS} variant="hero" />
                 <div className="vk-cmd-hint">then ask your agent to build your API</div>
               </div>
               <div className="vk-buttons">
-                <Link href="/quick-install" className="vk-btn vk-btn-main">
+                <Link href="/agent-ready" className="vk-btn vk-btn-main">
                   Get started <span aria-hidden="true">→</span>
                 </Link>
                 <a href="https://github.com/finom/vovk" className="vk-btn">
@@ -203,7 +203,7 @@ export function Landing() {
       <section className="vk-section vk-features" aria-labelledby="vk-h-features">
         <div className="vk-wrap">
           <h2 id="vk-h-features" className="vk-h2">
-            What you get
+            One endpoint, every caller
           </h2>
           <div className="vk-cards">
             {FEATURES.map((f) => (

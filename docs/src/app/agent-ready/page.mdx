@@ -1,0 +1,206 @@
+---
+description: "Make a Next.js app agent-ready: Vovk.ts procedures become MCP tools that Claude and other agents call, with bearer-token auth and the caller's identity."
+---
+
+import { Steps } from 'nextra/components';
+
+# Agent-Ready App: MCP Tools from Procedures
+
+An MCP route next to your API lets AI agents, such as Claude Code, call the procedures your front-end calls, with the same validation. [deriveTools](/tools) turns the procedures into tools, and the official MCP SDK, [`@modelcontextprotocol/server`](https://www.npmjs.com/package/@modelcontextprotocol/server), serves them. The procedures stay plain endpoints, with their [typed client](/typescript) and [OpenAPI spec](/openapi).
+
+<Steps>
+### Create the app
+
+```bash copy
+npx create-next-app@latest my-app --ts --app --src-dir
+cd my-app
+npx vovk-cli@latest init
+npx vovk new segment
+npx vovk new controller task
+```
+
+See [Quick Start](/quick-install) for what each command does.
+
+### Write the procedures
+
+Replace the generated controller:
+
+```ts showLineNumbers copy filename="src/modules/task/task-controller.ts"
+import { get, operation, post, prefix, procedure } from 'vovk';
+import { z } from 'zod';
+
+const TaskSchema = z.object({ id: z.string(), title: z.string(), done: z.boolean() });
+const tasks: z.infer<typeof TaskSchema>[] = [];
+
+@prefix('tasks')
+export default class TaskController {
+  @operation({ summary: 'List tasks', description: 'Returns every task.' })
+  @get()
+  static listTasks = procedure({ output: TaskSchema.array() }).handle(() => tasks);
+
+  @operation({ summary: 'Create task', description: 'Creates a task with the given title.' })
+  @post()
+  static createTask = procedure({
+    body: z.object({ title: z.string().min(1).describe('What needs doing') }),
+    output: TaskSchema,
+  }).handle(async (req) => {
+    const task = { id: crypto.randomUUID(), title: (await req.vovk.body()).title, done: false };
+    tasks.push(task);
+    return task;
+  });
+}
+```
+
+The `summary` of `@operation` becomes the tool's title, and the summary with the `description` becomes its description: the agent reads them to choose a tool. The body schema becomes the tool's input schema, and the agent's input is validated against it.
+
+The tasks live in memory to keep the example short, so they're gone when the server restarts.
+
+### Add the MCP route
+
+```bash npm2yarn copy
+npm install @modelcontextprotocol/server
+```
+
+```ts showLineNumbers copy filename="src/app/api/mcp/route.ts"
+import { createMcpHandler, McpServer } from '@modelcontextprotocol/server';
+import { deriveTools, ToModelOutput } from 'vovk';
+import TaskController from '@/modules/task/task-controller';
+
+const tools = deriveTools({
+  modules: { TaskController },
+  toModelOutput: ToModelOutput.MCP,
+});
+
+const mcp = createMcpHandler(() => {
+  const server = new McpServer({ name: 'my-app', version: '1.0.0' });
+  tools.forEach(({ title, name, execute, description, inputSchema }) => {
+    server.registerTool(name, { title, description, inputSchema }, execute);
+  });
+  return server;
+});
+
+// Next.js passes the route context as a second argument, which mcp.fetch would read as its options
+const handler = (req: Request) => mcp.fetch(req);
+
+export { handler as GET, handler as POST };
+```
+
+`createMcpHandler` builds a server for each request, and `registerTool` takes each tool's `inputSchema` as it is. See [MCP Formatting](/tools-mcp) for the tool output.
+
+### Connect an agent
+
+Start the app with `npm run dev`, then add the server to Claude Code:
+
+```bash copy
+claude mcp add --transport http my-app http://localhost:3000/api/mcp
+```
+
+Ask Claude Code to *"create a task called Ship it, then list my tasks"*. It calls `TaskController_createTask` and `TaskController_listTasks`.
+
+Other MCP clients connect to the same URL. To try the tools by hand, run the MCP Inspector:
+
+```bash copy
+npx @modelcontextprotocol/inspector
+```
+</Steps>
+
+## Know Who Is Calling
+
+The route above answers anyone who can reach it. To serve each user their own data, check a bearer token with `requireBearerAuth` from the same SDK, and pass the user to the procedures with the `meta` option of `deriveTools`:
+
+```ts showLineNumbers copy filename="src/app/api/mcp/route.ts"
+import {
+  createMcpHandler,
+  McpServer,
+  OAuthError,
+  OAuthErrorCode,
+  requireBearerAuth,
+} from '@modelcontextprotocol/server';
+import { deriveTools, ToModelOutput } from 'vovk';
+import TaskController from '@/modules/task/task-controller';
+
+// stands in for your own lookup: an API key table, a session store or an OAuth introspection call
+const usersByToken: Record<string, string> = { 'token-alice': 'alice', 'token-bob': 'bob' };
+
+const auth = requireBearerAuth({
+  verifier: {
+    async verifyAccessToken(token) {
+      const userId = usersByToken[token];
+      if (!userId) throw new OAuthError(OAuthErrorCode.InvalidToken, 'Unknown token');
+      return { token, clientId: userId, scopes: [], expiresAt: Math.floor(Date.now() / 1000) + 3600 };
+    },
+  },
+});
+
+const mcp = createMcpHandler(({ authInfo }) => {
+  const tools = deriveTools({
+    modules: { TaskController },
+    toModelOutput: ToModelOutput.MCP,
+    meta: { userId: authInfo?.clientId }, // the procedures read it with req.vovk.meta()
+  });
+  const server = new McpServer({ name: 'my-app', version: '1.0.0' });
+  tools.forEach(({ title, name, execute, description, inputSchema }) => {
+    server.registerTool(name, { title, description, inputSchema }, execute);
+  });
+  return server;
+});
+
+const handler = async (req: Request) => {
+  const authInfo = await auth(req);
+  return authInfo instanceof Response ? authInfo : mcp.fetch(req, { authInfo });
+};
+
+export { handler as GET, handler as POST };
+```
+
+A request without a valid token gets `401` with a `WWW-Authenticate` header. The verifier must return `expiresAt`: the SDK refuses a token without one.
+
+The procedures read the user with [req.vovk.meta()](/req-vovk#reqvovkmeta):
+
+```ts showLineNumbers copy filename="src/modules/task/task-controller.ts"
+import { get, operation, post, prefix, procedure } from 'vovk';
+import { z } from 'zod';
+
+const TaskSchema = z.object({ id: z.string(), title: z.string(), done: z.boolean() });
+const tasks: (z.infer<typeof TaskSchema> & { owner: string })[] = [];
+const ownerOf = (meta: { userId?: string }) => meta.userId ?? 'anonymous';
+
+@prefix('tasks')
+export default class TaskController {
+  @operation({ summary: 'List tasks', description: "Returns the caller's tasks." })
+  @get()
+  static listTasks = procedure({ output: TaskSchema.array() }).handle((req) => {
+    const owner = ownerOf(req.vovk.meta());
+    return tasks.filter((task) => task.owner === owner).map(({ owner: _, ...task }) => task);
+  });
+
+  @operation({ summary: 'Create task', description: 'Creates a task with the given title.' })
+  @post()
+  static createTask = procedure({
+    body: z.object({ title: z.string().min(1).describe('What needs doing') }),
+    output: TaskSchema,
+  }).handle(async (req) => {
+    const task = { id: crypto.randomUUID(), title: (await req.vovk.body()).title, done: false };
+    tasks.push({ ...task, owner: ownerOf(req.vovk.meta()) });
+    return task;
+  });
+}
+```
+
+The agent sends the token in the `Authorization` header:
+
+```bash copy
+claude mcp add --transport http my-app http://localhost:3000/api/mcp --header "Authorization: Bearer token-alice"
+```
+
+With this route, Alice's agent lists only Alice's tasks, and Bob's agent only Bob's.
+
+## Choose What Agents Can Call
+
+Every procedure of the modules passed to `deriveTools` becomes a tool. To leave one out, mark it with [`@operation.tool({ hidden: true })`](/tools#custom-operation-attributes-with-x-tool-or-operationtool-decorator), or [pass only some procedures](/tools#selecting-specific-procedures).
+
+## See Also
+
+- [Deriving AI Tools](/tools)
+- [MCP Formatting](/tools-mcp)
+- [Realtime Kanban: MCP Server](/realtime-ui/mcp), a full app with an MCP server

@@ -29,6 +29,7 @@ const meta: MetaRecord = {
   },
   about: 'About Vovk.ts',
   'quick-install': 'Quick Start',
+  'agent-ready': 'Agent-Ready App',
   'manual-install': 'Manual Install',
   '#segment': separator('Segment'),
   segment: 'Segment Overview',

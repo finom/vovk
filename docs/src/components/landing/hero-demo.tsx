@@ -4,15 +4,15 @@ import { type CSSProperties, Fragment, useCallback, useEffect, useRef, useState 
 // The editable createTask procedure and what it becomes. Every row is derived from the fields on the left.
 
 type Key = 'a' | 'b' | 'c' | 'd' | 'e';
-type Shape = { zf: string; ts: string; py: string; rs: string; oa: string; tool: string; ex: string };
+type Shape = { zf: string; ts: string; py: string; rs: string; oa: string; ex: string };
 
 const KEYS: Key[] = ['a', 'b', 'c', 'd', 'e'];
 const DEFAULT_NAMES: Record<Key, string> = { a: 'title', b: 'done', c: 'priority', d: 'dueDate', e: 'estimate' };
 const DEFAULT_ON: Record<Key, boolean> = { a: true, b: true, c: false, d: false, e: false };
 const DEFAULT_DESC = 'Create a task';
 const TYPES: Record<Key, Shape> = {
-  a: { zf: 'z.string()', ts: 'string', py: 'str', rs: 'String', oa: 'string', tool: 'string', ex: '"Ship it"' },
-  b: { zf: 'z.boolean()', ts: 'boolean', py: 'bool', rs: 'bool', oa: 'boolean', tool: 'boolean', ex: 'false' },
+  a: { zf: 'z.string()', ts: 'string', py: 'str', rs: 'String', oa: 'string', ex: '"Ship it"' },
+  b: { zf: 'z.boolean()', ts: 'boolean', py: 'bool', rs: 'bool', oa: 'boolean', ex: 'false' },
   // The Rust enum takes the field's name, so its type is filled in per name.
   c: {
     zf: "z.enum(['low', 'high'])",
@@ -20,7 +20,6 @@ const TYPES: Record<Key, Shape> = {
     py: 'Literal["low", "high"]',
     rs: '',
     oa: 'enum [low, high]',
-    tool: 'low | high',
     ex: '"high"',
   },
   d: {
@@ -29,10 +28,9 @@ const TYPES: Record<Key, Shape> = {
     py: 'str',
     rs: 'String',
     oa: 'string (date)',
-    tool: 'string (date)',
     ex: '"2026-11-02"',
   },
-  e: { zf: 'z.int()', ts: 'number', py: 'int', rs: 'i64', oa: 'integer', tool: 'integer', ex: '3' },
+  e: { zf: 'z.int()', ts: 'number', py: 'int', rs: 'i64', oa: 'integer', ex: '3' },
 };
 const HUES = [22, 31, 39, 48, 56, 65, 73, 82];
 // The prism's triangle, (58,3) (113,98) (3,98) in its 116×100 box. The beam enters the left face at ENTRY, splits
@@ -95,15 +93,14 @@ function buildRows(keys: Key[], nameOf: (k: Key) => string, desc: string, isLit:
       ],
     },
     {
-      name: 'AI tool',
+      name: 'MCP tool',
       reg: '',
       lines: [
+        L([C([T('agent:', 'dim'), T(' "Create a task called Ship it"')])]),
         L([
-          C([T('{ name: '), T('"TaskRPC_createTask"', 'kw'), T(',')]),
-          C([T(`description: "${desc}",`)], ' ', d),
-          C([T('input: {')], ' '),
-          ...fields((k, s) => `${nameOf(k)}: ${s.tool}`, ',', NB),
-          C([T(`${NB}} }`)]),
+          C([T('→ '), T('TaskRPC_createTask', 'kw'), T('({ body: {')]),
+          ...fields((k, s) => `${nameOf(k)}: ${s.ex}`, ',', NB),
+          C([T(`${NB}} })`)]),
         ]),
       ],
     },
@@ -339,11 +336,11 @@ export function HeroDemo() {
       </span>
       <p className="vk-sr">
         Demo: the createTask procedure. Each field you add or rename, and the description, appears at once in the
-        endpoint, the AI tool's input, the TypeScript RPC library and server actions, the Python and Rust types, the
-        OpenAPI request body and the README.
+        endpoint, the agent's MCP tool call, the TypeScript RPC library and server actions, the Python and Rust types,
+        the OpenAPI request body and the README.
       </p>
       <p className="vk-demo-lead">
-        <strong>Universal procedures:</strong> one definition is an endpoint, a server call, an AI tool and a typed
+        <strong>Universal procedures:</strong> one definition is an endpoint, a server call, an MCP tool and a typed
         client.
       </p>
       <p className="vk-demo-try">Try it: rename a field, add one or edit the description. Everything else follows.</p>

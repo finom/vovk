@@ -98,11 +98,11 @@ const HomeCard = () => (
     <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 30 }}>
       <Wordmark size={150} style={{ marginLeft: -8, lineHeight: 0.95 }} />
       <div style={{ fontSize: 42, fontWeight: 500, letterSpacing: -1.05, lineHeight: 1.1 }}>
-        Back-end framework for Next.js App Router
+        Make your Next.js app agent-ready
       </div>
     </div>
     <div style={{ ...footer, justifyContent: 'flex-start', gap: 26 }}>
-      {['Route Handler', 'RPC client', '.fn()', 'OpenAPI', 'AI tools'].map((item) => (
+      {['Route Handler', 'RPC client', '.fn()', 'OpenAPI', 'MCP tools'].map((item) => (
         <div key={item} style={{ display: 'flex' }}>
           <Arrow />
           {item}
@@ -145,7 +145,7 @@ const PageCard = ({ route }: { route: string }) => {
 // For an opengraph-image.tsx: one image with the id `og.png`, so the static export writes a .png file that GitHub
 // Pages serves as image/png.
 export function ogImageMetadata(route: string) {
-  const title = route === '/' ? 'Back-end framework for Next.js App Router' : pageText(route).title;
+  const title = route === '/' ? 'Make your Next.js app agent-ready' : pageText(route).title;
   const alt = title.includes('Vovk.ts') ? title : `Vovk.ts: ${title}`;
   return [{ id: 'og.png', alt, size: SIZE, contentType: 'image/png' }];
 }
