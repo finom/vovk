@@ -20,7 +20,7 @@ const FEATURES: Feature[] = [
       ['Guide', '/agent-ready', 'Agent-ready app guide'],
       ['Tools', '/tools', 'AI tools docs'],
     ],
-    text: 'Each procedure becomes an MCP tool or an AI SDK tool, validated like any request. You choose which ones agents see.',
+    text: 'Each procedure is an AI tool with execute() and a JSON Schema input, for MCP, AI SDKs or your own agent loop.',
     code: (
       <>
         <div>
