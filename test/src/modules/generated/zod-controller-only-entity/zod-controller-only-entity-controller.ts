@@ -3,64 +3,44 @@ import { z } from 'zod';
 
 @prefix('zod-controller-only-entities')
 export default class ZodControllerOnlyEntityController {
-  @operation({
-    summary: 'Get zodControllerOnlyEntities',
-  })
+  @operation({ summary: 'Get zodControllerOnlyEntities' })
   @get()
   static getZodControllerOnlyEntities = procedure().handle(() => {
     return { message: 'TODO: get zodControllerOnlyEntities' };
   });
 
-  @operation({
-    summary: 'Get single zodControllerOnlyEntity',
-  })
+  @operation({ summary: 'Get single zodControllerOnlyEntity' })
   @get('{id}')
   static getSingleZodControllerOnlyEntity = procedure({
-    params: z.object({
-      id: z.string(),
-    }),
+    params: z.object({ id: z.string() }),
   }).handle((_req, { id }) => {
-    return { message: `TODO: get single zodControllerOnlyEntity`, id };
+    return { message: 'TODO: get single zodControllerOnlyEntity', id };
   });
 
-  @operation({
-    summary: 'Update zodControllerOnlyEntity',
-  })
+  @operation({ summary: 'Update zodControllerOnlyEntity' })
   @put('{id}')
   static updateZodControllerOnlyEntity = procedure({
-    body: z.object({
-      todo: z.literal(true),
-    }),
+    body: z.object({ todo: z.literal(true) }),
     params: z.object({ id: z.string() }),
   }).handle(async (req, { id }) => {
     const body = await req.vovk.body();
-
-    return { message: `TODO: update zodControllerOnlyEntity`, id, body };
+    return { message: 'TODO: update zodControllerOnlyEntity', id, body };
   });
 
-  @operation({
-    summary: 'Create zodControllerOnlyEntity',
-  })
+  @operation({ summary: 'Create zodControllerOnlyEntity' })
   @post()
   static createZodControllerOnlyEntity = procedure({
-    body: z.object({
-      todo: z.literal(true),
-    }),
+    body: z.object({ todo: z.literal(true) }),
   }).handle(async (req) => {
     const body = await req.vovk.body();
-
-    return { message: `TODO: create zodControllerOnlyEntity`, body };
+    return { message: 'TODO: create zodControllerOnlyEntity', body };
   });
 
-  @operation({
-    summary: 'Delete zodControllerOnlyEntity',
-  })
+  @operation({ summary: 'Delete zodControllerOnlyEntity' })
   @del('{id}')
   static deleteZodControllerOnlyEntity = procedure({
-    params: z.object({
-      id: z.string(),
-    }),
+    params: z.object({ id: z.string() }),
   }).handle((_req, { id }) => {
-    return { message: `TODO: delete zodControllerOnlyEntity`, id };
+    return { message: 'TODO: delete zodControllerOnlyEntity', id };
   });
 }

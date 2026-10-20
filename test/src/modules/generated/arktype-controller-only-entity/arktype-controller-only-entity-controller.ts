@@ -3,17 +3,13 @@ import { type } from 'arktype';
 
 @prefix('arktype-controller-only-entities')
 export default class ArktypeControllerOnlyEntityController {
-  @operation({
-    summary: 'Get arktypeControllerOnlyEntities',
-  })
+  @operation({ summary: 'Get arktypeControllerOnlyEntities' })
   @get()
   static getArktypeControllerOnlyEntities = procedure().handle(() => {
     return { message: 'TODO: get arktypeControllerOnlyEntities' };
   });
 
-  @operation({
-    summary: 'Get single arktypeControllerOnlyEntity',
-  })
+  @operation({ summary: 'Get single arktypeControllerOnlyEntity' })
   @get('{id}')
   static getSingleArktypeControllerOnlyEntity = procedure({
     params: type({ id: type('string') }),
@@ -21,38 +17,30 @@ export default class ArktypeControllerOnlyEntityController {
     return { message: 'TODO: get single arktypeControllerOnlyEntity', id };
   });
 
-  @operation({
-    summary: 'Update arktypeControllerOnlyEntity',
-  })
+  @operation({ summary: 'Update arktypeControllerOnlyEntity' })
   @put('{id}')
   static updateArktypeControllerOnlyEntity = procedure({
     body: type({ todo: type('true') }),
     params: type({ id: type('string') }),
   }).handle(async (req, { id }) => {
     const body = await req.vovk.body();
-
-    return { message: `TODO: update arktypeControllerOnlyEntity`, id, body };
+    return { message: 'TODO: update arktypeControllerOnlyEntity', id, body };
   });
 
-  @operation({
-    summary: 'Create arktypeControllerOnlyEntity',
-  })
+  @operation({ summary: 'Create arktypeControllerOnlyEntity' })
   @post()
   static createArktypeControllerOnlyEntity = procedure({
     body: type({ todo: type('true') }),
   }).handle(async (req) => {
     const body = await req.vovk.body();
-
-    return { message: `TODO: create arktypeControllerOnlyEntity`, body };
+    return { message: 'TODO: create arktypeControllerOnlyEntity', body };
   });
 
-  @operation({
-    summary: 'Delete arktypeControllerOnlyEntity',
-  })
+  @operation({ summary: 'Delete arktypeControllerOnlyEntity' })
   @del('{id}')
   static deleteArktypeControllerOnlyEntity = procedure({
     params: type({ id: type('string') }),
   }).handle((_req, { id }) => {
-    return { message: `TODO: delete arktypeControllerOnlyEntity`, id };
+    return { message: 'TODO: delete arktypeControllerOnlyEntity', id };
   });
 }

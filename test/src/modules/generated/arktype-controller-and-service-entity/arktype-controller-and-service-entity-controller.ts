@@ -1,21 +1,16 @@
 import { procedure, prefix, get, put, post, del, operation } from 'vovk';
 import { type } from 'arktype';
-
 import ArktypeControllerAndServiceEntityService from './arktype-controller-and-service-entity-service.ts';
 
 @prefix('arktype-controller-and-service-entities')
 export default class ArktypeControllerAndServiceEntityController {
-  @operation({
-    summary: 'Get arktypeControllerAndServiceEntities',
-  })
+  @operation({ summary: 'Get arktypeControllerAndServiceEntities' })
   @get()
   static getArktypeControllerAndServiceEntities = procedure().handle(() => {
     return ArktypeControllerAndServiceEntityService.getArktypeControllerAndServiceEntities();
   });
 
-  @operation({
-    summary: 'Get single arktypeControllerAndServiceEntity',
-  })
+  @operation({ summary: 'Get single arktypeControllerAndServiceEntity' })
   @get('{id}')
   static getSingleArktypeControllerAndServiceEntity = procedure({
     params: type({ id: type('string') }),
@@ -23,34 +18,26 @@ export default class ArktypeControllerAndServiceEntityController {
     return ArktypeControllerAndServiceEntityService.getSingleArktypeControllerAndServiceEntity(id);
   });
 
-  @operation({
-    summary: 'Update arktypeControllerAndServiceEntity',
-  })
+  @operation({ summary: 'Update arktypeControllerAndServiceEntity' })
   @put('{id}')
   static updateArktypeControllerAndServiceEntity = procedure({
     body: type({ todo: type('true') }),
     params: type({ id: type('string') }),
   }).handle(async (req, { id }) => {
     const body = await req.vovk.body();
-
     return ArktypeControllerAndServiceEntityService.updateArktypeControllerAndServiceEntity(id, body);
   });
 
-  @operation({
-    summary: 'Create arktypeControllerAndServiceEntity',
-  })
+  @operation({ summary: 'Create arktypeControllerAndServiceEntity' })
   @post()
   static createArktypeControllerAndServiceEntity = procedure({
     body: type({ todo: type('true') }),
   }).handle(async (req) => {
     const body = await req.vovk.body();
-
     return ArktypeControllerAndServiceEntityService.createArktypeControllerAndServiceEntity(body);
   });
 
-  @operation({
-    summary: 'Delete arktypeControllerAndServiceEntity',
-  })
+  @operation({ summary: 'Delete arktypeControllerAndServiceEntity' })
   @del('{id}')
   static deleteArktypeControllerAndServiceEntity = procedure({
     params: type({ id: type('string') }),
