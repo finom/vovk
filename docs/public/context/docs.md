@@ -4,8 +4,8 @@ description: "Full documentation for the Vovk.ts framework, excluding the Realti
 see_also:
   label: "Realtime Kanban Context"
   url: https://vovk.dev/context/realtime-ui.md
-chars: 417952
-est_tokens: 104488
+chars: 416888
+est_tokens: 104222
 ---
 
 Page: https://vovk.dev/about
@@ -3802,35 +3802,9 @@ With the `ToModelOutput.MCP` formatter, each content item gets the `annotations`
 
 The `mcpOutput` key can also override other MCP output properties, including `content` and `structuredContent`; its `annotations` go on each content item. This way you can change the MCP output without changing the procedure's response.
 
-## MCP Server Example
+## Serving the Tools
 
-With `createMcpHandler` from the official MCP SDK, [`@modelcontextprotocol/server`](https://www.npmjs.com/package/@modelcontextprotocol/server), you can create an MCP API route that controls what your back end exposes to MCP clients.
-
-The tool's `inputSchema` is a Standard Schema with JSON Schema, which the SDK's `registerTool` accepts as is.
-
-```ts showLineNumbers copy filename="src/app/api/mcp/route.ts"
-import { createMcpHandler, McpServer } from "@modelcontextprotocol/server";
-import { deriveTools, ToModelOutput } from "vovk";
-import UserController from "@/modules/user/user-controller";
-
-const tools = deriveTools({
-  modules: { UserController },
-  toModelOutput: ToModelOutput.MCP,
-});
-
-const mcp = createMcpHandler(() => {
-  const server = new McpServer({ name: "my-app", version: "1.0.0" });
-  tools.forEach(({ title, name, execute, description, inputSchema }) => {
-    server.registerTool(name, { title, description, inputSchema }, execute);
-  });
-  return server;
-});
-
-// Next.js passes the route context as a second argument, which mcp.fetch would read as its options
-const handler = (req: Request) => mcp.fetch(req);
-
-export { handler as GET, handler as POST };
-```
+To serve the tools from an MCP route in Next.js, see [Agent-Ready App](https://vovk.dev/agent-ready#add-the-mcp-route).
 
 ## Standalone Tools with `withFormattedOutput`
 
