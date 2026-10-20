@@ -1,0 +1,7 @@
+{
+  "$schema": "https://context7.com/schema/context7.json",
+  "projectTitle": "Vovk.ts",
+  "description": "Back-end framework for Next.js App Router route handlers: each procedure is also a typed TypeScript, Python or Rust client method, an OpenAPI operation and an AI or MCP tool.",
+  "folders": ["docs/src/app", "skills"],
+  "excludeFolders": ["docs/src/app/blog"]
+}
