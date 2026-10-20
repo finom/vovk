@@ -8,8 +8,16 @@ import BlogIndexArticle from '../../components/blog-index-article';
 import { metadata as comparisonMetadata } from './backend-framework-comparison/page.mdx';
 import { metadata as v3Metadata } from './announcement/page.mdx';
 import { metadata as v4Metadata } from './v4/page.mdx';
+import { metadata as agentReadyMetadata } from './agent-ready/page.mdx';
 
 # Blog
+
+<BlogIndexArticle
+  title={agentReadyMetadata.title}
+  description={agentReadyMetadata.description}
+  date={agentReadyMetadata.date}
+  href="/blog/agent-ready"
+/>
 
 <BlogIndexArticle
   title={v4Metadata.title}

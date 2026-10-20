@@ -1,0 +1,48 @@
+---
+title: "Make Your Next.js App Agent-Ready"
+description: "Vovk.ts procedures become MCP tools on the official MCP SDK, with bearer-token auth and the caller passed to each procedure. Also new: Bun and Deno."
+date: "October 21, 2026"
+---
+
+# Make Your Next.js App Agent-Ready
+
+A user asks Claude to create a task in your app, and Claude calls your API. For that, the app needs an MCP server. With Vovk.ts, it's one route file next to the API you already have: every procedure is also an MCP tool, with the same validation as its HTTP endpoint.
+
+The guide is on the new [Agent-Ready App](/agent-ready) page. Every code block on it ran in a fresh `create-next-app` project with Claude Code calling the tools.
+
+## The MCP route
+
+The route serves the tools with the official MCP SDK, [`@modelcontextprotocol/server`](https://www.npmjs.com/package/@modelcontextprotocol/server). Its `registerTool` takes a Standard Schema with JSON Schema, which is what each derived tool carries, so there's no adapter in between:
+
+```ts
+const tools = deriveTools({ modules: { TaskController }, toModelOutput: ToModelOutput.MCP });
+
+tools.forEach(({ title, name, execute, description, inputSchema }) => {
+  server.registerTool(name, { title, description, inputSchema }, execute);
+});
+```
+
+The full route, the Next.js wrapper it needs and the `claude mcp add` line are in [the guide](/agent-ready#add-the-mcp-route).
+
+## Who is calling
+
+An MCP server for real users needs to know who each call is from. The guide checks a bearer token with the SDK's `requireBearerAuth` and passes the user to the procedures through the `meta` option of `deriveTools`. A procedure reads it with `req.vovk.meta()`, the way it reads anything else about the request. In the test, two agents with two tokens each saw only their own tasks, and a call without a token got `401`.
+
+## The same procedure, every caller
+
+The procedure behind the MCP tool is still a plain endpoint. The front-end calls it through the typed client, the OpenAPI spec documents it, and the TypeScript, Python and Rust packages wrap it. The tool is a plain object with a name, a JSON Schema input and `execute()`, so it also works with AI SDKs and your own agent loop. See [Deriving AI Tools](/tools).
+
+## Also in this round
+
+- **Bun and Deno.** `vovk dev` runs Next.js on the runtime that runs the CLI, and CI runs the integration suite and the Hello World clients on Bun 1.4 and Deno 2.9 (vovk-cli 0.3.4).
+- **`npx vovk` on Bun and Deno** falls back to the runtime's own package runner (vovk 4.1.2).
+- **Clean code from `vovk new`** in a project without Prettier, which is every new `create-next-app` project (vovk-cli 0.3.5).
+- **The Realtime Kanban MCP server** moved from mcp-handler to the official SDK.
+
+## Try it
+
+```bash
+npx skills add finom/vovk
+```
+
+Then ask your agent to make your Next.js app agent-ready. Or follow the [guide](/agent-ready) by hand.

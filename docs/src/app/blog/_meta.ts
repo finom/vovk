@@ -5,6 +5,13 @@ const meta = {
       breadcrumb: false,
     },
   },
+  'agent-ready': {
+    title: 'Make Your Next.js App Agent-Ready',
+    theme: {
+      sidebar: false,
+      breadcrumb: true,
+    },
+  },
   v4: {
     title: 'Vovk.ts v4',
     theme: {
