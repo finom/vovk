@@ -1,0 +1,24 @@
+{
+  "$schema": "https://vovk.dev/api/schema/v3/segment.json",
+  "emitSchema": true,
+  "segmentName": "static",
+  "segmentType": "segment",
+  "controllers": {
+    "OpenApiRPC": {
+      "rpcModuleName": "OpenApiRPC",
+      "originalControllerName": "OpenApiController",
+      "prefix": "",
+      "handlers": {
+        "getSpec": {
+          "path": "openapi.json",
+          "httpMethod": "GET",
+          "operationObject": {
+            "summary": "OpenAPI spec",
+            "description": "The OpenAPI 3.1 spec of the task API.",
+            "security": []
+          }
+        }
+      }
+    }
+  }
+}

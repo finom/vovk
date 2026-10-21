@@ -47,5 +47,10 @@
         "noBannedTypes": "off"
       }
     }
+  },
+  "css": {
+    "parser": {
+      "tailwindDirectives": true
+    }
   }
 }
