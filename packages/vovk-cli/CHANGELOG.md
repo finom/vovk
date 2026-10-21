@@ -4,6 +4,14 @@ All notable changes to `vovk-cli` are documented here. This file is the canonica
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 0.3.6 - 2026-10-22
+
+### Fixed
+
+- `vovk dev` adds the RPC modules each segment's route file names to the client before its first schema request, so a page that imports a module with no schema yet no longer fails to compile and blocks `next dev` ([#134](https://github.com/finom/vovk/pull/134))
+- `vovk dev` requests the segment schemas one at a time on start, since two `next dev` compilations at once can answer 500 ([#129](https://github.com/finom/vovk/pull/129))
+- `vovk new` adds the controller to the object passed to `initSegment` under any variable name, not only `controllers` ([#134](https://github.com/finom/vovk/pull/134))
+
 ## 0.3.5 - 2026-10-20
 
 ### Fixed

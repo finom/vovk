@@ -1,4 +1,5 @@
-import { IndentationText, Project, QuoteKind, SyntaxKind } from 'ts-morph';
+import { IndentationText, Project, QuoteKind } from 'ts-morph';
+import { findControllersObject } from '../utils/get-segment-controllers.mjs';
 
 export function addClassToSegmentCode(
   segmentSourceCode: string,
@@ -33,21 +34,12 @@ export function addClassToSegmentCode(
     });
   }
 
-  const variableDeclaration = sourceFile.getVariableDeclaration('controllers');
-  if (variableDeclaration) {
-    const initializer = variableDeclaration.getInitializer();
-
-    if (initializer && initializer.getKind() === SyntaxKind.ObjectLiteralExpression) {
-      const objectLiteral = initializer.asKindOrThrow(SyntaxKind.ObjectLiteralExpression);
-
-      const existingProperty = objectLiteral.getProperty(compiledName);
-      if (!existingProperty) {
-        objectLiteral.addPropertyAssignment({
-          name: compiledName,
-          initializer: sourceName,
-        });
-      }
-    }
+  const controllers = findControllersObject(sourceFile);
+  if (controllers && !controllers.getProperty(compiledName)) {
+    controllers.addPropertyAssignment({
+      name: compiledName,
+      initializer: sourceName,
+    });
   }
 
   return sourceFile.getFullText();

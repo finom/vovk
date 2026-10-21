@@ -12,6 +12,7 @@ import type { VovkSchema } from 'vovk';
 import { VovkSchemaIdEnum, type VovkSegmentSchema } from 'vovk/internal';
 import { ensureClient } from '../generate/ensure-client.mjs';
 import { generate } from '../generate/generate.mjs';
+import { getProjectFullSchema } from '../generate/get-project-full-schema.mjs';
 import { CONFIG_FILE_PATHS } from '../get-project-info/get-config/get-config-absolute-paths.mjs';
 import { getMetaSchema } from '../get-project-info/get-meta-schema.mjs';
 import { getProjectInfo, loadOpenAPIMixins, type ProjectInfo } from '../get-project-info/index.mjs';
@@ -20,6 +21,7 @@ import { chalkHighlightThing } from '../utils/chalk-highlight-thing.mjs';
 import { debounceWithArgs } from '../utils/debounce-with-args.mjs';
 import { formatLoggedSegmentName } from '../utils/format-logged-segment-name.mjs';
 import { logPrefix } from '../utils/get-logger.mjs';
+import { getSegmentRpcModuleNames } from '../utils/get-segment-controllers.mjs';
 import { locateSegments, type Segment } from '../utils/locate-segments.mjs';
 import { oneAtATime } from '../utils/one-at-a-time.mjs';
 import { toPosixPath } from '../utils/to-import-path.mjs';
@@ -596,6 +598,49 @@ export class VovkDev {
     return true;
   }
 
+  // a page that imports an RPC module the client lacks fails to compile, and next dev then answers 500 to every
+  // route, the schema routes included; so before the first schema request the client gets every module the route
+  // files name, without methods until its schema comes in
+  async #addMissingRpcModules() {
+    const { log, config, isNextInstalled } = this.#projectInfo;
+    const fullSchema = await getProjectFullSchema({
+      schemaOutAbsolutePath: this.#getSchemaOutAbsolutePath(),
+      isOwnSchemaFolder: true,
+      isNextInstalled,
+      log,
+      config,
+    });
+    const addedNames: string[] = [];
+    for (const { segmentName, routeFilePath } of this.#segments) {
+      const routeCode = await fs.readFile(routeFilePath, 'utf-8').catch(() => '');
+      const segmentSchema = fullSchema.segments[segmentName] ?? getPlaceholderSchema(segmentName);
+      const missingNames = getSegmentRpcModuleNames(routeCode).filter(
+        (name) => !Object.hasOwn(segmentSchema.controllers, name)
+      );
+      if (!missingNames.length) continue;
+      fullSchema.segments[segmentName] = {
+        ...segmentSchema,
+        emitSchema: true,
+        controllers: {
+          ...segmentSchema.controllers,
+          ...Object.fromEntries(missingNames.map((rpcModuleName) => [rpcModuleName, { rpcModuleName, handlers: {} }])),
+        },
+      };
+      addedNames.push(...missingNames);
+    }
+    if (!addedNames.length) return;
+
+    log.info(
+      `${addedNames.map((name) => chalkHighlightThing(name)).join(', ')} added to the client until ${addedNames.length === 1 ? 'its schema comes' : 'their schemas come'} in`
+    );
+    await generate({
+      projectInfo: this.#projectInfo,
+      fullSchema,
+      locatedSegments: this.#segments,
+      cliGenerateOptions: { schemaPath: this.#getCliSchemaPath() },
+    });
+  }
+
   async start({ exit }: { exit: boolean }) {
     const now = Date.now();
     this.#projectInfo = await getProjectInfo({ logLevel: this.#logLevel });
@@ -627,6 +672,8 @@ export class VovkDev {
     await ensureSchemaFiles(this.#projectInfo, schemaOutAbsolutePath, segmentNames);
 
     await ensureClient(this.#projectInfo, this.#segments, this.#getCliSchemaPath());
+
+    await this.#addMissingRpcModules();
 
     // no segment schema to wait for, the client of the OpenAPI mixins is generated now
     if (!this.#segments.length && !isEmpty(this.#projectInfo.openAPIMixins)) this.#generate();
