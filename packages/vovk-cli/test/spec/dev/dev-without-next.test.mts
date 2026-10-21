@@ -105,6 +105,45 @@ await describe('vovk dev in a project without Next.js', async () => {
     }
   });
 
+  await it('Requests the schema of one segment at a time when it starts', async () => {
+    // next dev compiles a segment on its first request, and two compilations at once can answer 500
+    const requestedSegments: string[] = [];
+    let inFlight = 0;
+    let maxInFlight = 0;
+    const server = http.createServer((req, res) => {
+      const segmentName = (req.url ?? '').replace(/^\/api\/?/, '').replace(/\/?_schema_$/, '');
+      requestedSegments.push(segmentName);
+      maxInFlight = Math.max(maxInFlight, ++inFlight);
+      setTimeout(() => {
+        inFlight--;
+        res.setHeader('content-type', 'application/json');
+        res.end(JSON.stringify({ schema: makeSegmentSchema(segmentName, `${segmentName || 'root'}RPC`) }));
+      }, 300);
+    });
+    await new Promise<void>((resolve) => server.listen(0, resolve));
+
+    try {
+      await createProject(projectDir, {
+        'package.json': { name: 'app', version: '1.0.0', type: 'module' },
+        'vovk.config.mjs': configFile({ composedClient: { prettifyClient: false } }),
+        'src/app/api/[[...vovk]]/route.ts': '',
+        'src/app/api/first/[[...vovk]]/route.ts': '',
+        'src/app/api/second/[[...vovk]]/route.ts': '',
+      });
+
+      const dev = startCLI(['dev', '--exit'], {
+        cwd: projectDir,
+        env: { PORT: String((server.address() as AddressInfo).port) },
+      });
+
+      assert.strictEqual(await dev.exitCode, 0, dev.getOutput());
+      assert.deepStrictEqual(requestedSegments.toSorted(), ['', 'first', 'second'], dev.getOutput());
+      assert.strictEqual(maxInFlight, 1, dev.getOutput());
+    } finally {
+      server.close();
+    }
+  });
+
   await it('Names the schema URL and a Next.js basePath once when the schema request gets a 404', async () => {
     // what a Next.js app with a basePath answers at /api/_schema_
     const thirdRequest = Promise.withResolvers<void>();

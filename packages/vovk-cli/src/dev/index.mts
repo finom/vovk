@@ -388,7 +388,7 @@ export class VovkDev {
     return this.#selfSignedDispatcher;
   }
 
-  #requestSchema = debounceWithArgs(async (segmentName: string) => {
+  #requestSchemaNow = async (segmentName: string) => {
     const result = await this.#fetchSchema(segmentName);
     if (result.isError || result.isRefused) {
       this.#failedSegmentNames.add(segmentName);
@@ -397,7 +397,9 @@ export class VovkDev {
       this.#failedSegmentNames.delete(segmentName);
     }
     return result;
-  }, 500);
+  };
+
+  #requestSchema = debounceWithArgs(this.#requestSchemaNow, 500);
 
   // a segment without a schema would hold back the client of the others; --exit generates from fresh schemas only
   async #useLastKnownSchema(segmentName: string) {
@@ -632,32 +634,34 @@ export class VovkDev {
     const MAX_ATTEMPTS = 5;
     const DELAY = 5000;
 
-    setTimeout(() => {
+    setTimeout(async () => {
+      // one at a time: next dev compiles a segment on its first request, and two compilations at once can answer 500
+      const failedSegmentNames: string[] = [];
       for (const { segmentName } of this.#segments) {
+        const { isError } = await this.#requestSchemaNow(segmentName);
+        if (isError) failedSegmentNames.push(segmentName);
+      }
+      for (const segmentName of failedSegmentNames) {
         let attempts = 0;
-        void this.#requestSchema(segmentName).then(({ isError }) => {
-          if (isError) {
-            const interval = setInterval(() => {
-              attempts++;
-              if (attempts >= MAX_ATTEMPTS) {
-                clearInterval(interval);
-                log.error(
-                  `Failed to request schema for ${formatLoggedSegmentName(segmentName)} after ${MAX_ATTEMPTS} attempts`
-                );
-                this.#failExitRun();
-                return;
-              }
-              void this.#requestSchema(segmentName).then(({ isError: isError2 }) => {
-                if (!isError2) {
-                  clearInterval(interval);
-                  log.info(
-                    `Requested schema for ${formatLoggedSegmentName(segmentName)} after ${attempts} attempt${attempts === 1 ? '' : 's'}`
-                  );
-                }
-              });
-            }, DELAY);
+        const interval = setInterval(() => {
+          attempts++;
+          if (attempts >= MAX_ATTEMPTS) {
+            clearInterval(interval);
+            log.error(
+              `Failed to request schema for ${formatLoggedSegmentName(segmentName)} after ${MAX_ATTEMPTS} attempts`
+            );
+            this.#failExitRun();
+            return;
           }
-        });
+          void this.#requestSchema(segmentName).then(({ isError }) => {
+            if (!isError) {
+              clearInterval(interval);
+              log.info(
+                `Requested schema for ${formatLoggedSegmentName(segmentName)} after ${attempts} attempt${attempts === 1 ? '' : 's'}`
+              );
+            }
+          });
+        }, DELAY);
       }
     }, DELAY);
 
