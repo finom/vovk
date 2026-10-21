@@ -157,20 +157,19 @@ A request without a valid token gets `401` with a `WWW-Authenticate` header. The
 
 The procedures read the user with [req.vovk.meta()](/req-vovk#reqvovkmeta):
 
-```ts showLineNumbers copy filename="src/modules/task/task-controller.ts" {13,24}
+```ts showLineNumbers copy filename="src/modules/task/task-controller.ts" {12,23}
 import { get, operation, post, prefix, procedure } from 'vovk';
 import { z } from 'zod';
 
 const TaskSchema = z.object({ id: z.string(), title: z.string(), done: z.boolean() });
 const tasks: (z.infer<typeof TaskSchema> & { owner: string })[] = [];
-const ownerOf = (meta: { userId?: string }) => meta.userId ?? 'anonymous';
 
 @prefix('tasks')
 export default class TaskController {
   @operation({ summary: 'List tasks', description: "Returns the caller's tasks." })
   @get()
   static listTasks = procedure({ output: TaskSchema.array() }).handle((req) => {
-    const owner = ownerOf(req.vovk.meta());
+    const owner = req.vovk.meta().userId ?? 'anonymous';
     return tasks.filter((task) => task.owner === owner).map(({ owner: _, ...task }) => task);
   });
 
@@ -181,7 +180,7 @@ export default class TaskController {
     output: TaskSchema,
   }).handle(async (req) => {
     const task = { id: crypto.randomUUID(), title: (await req.vovk.body()).title, done: false };
-    tasks.push({ ...task, owner: ownerOf(req.vovk.meta()) });
+    tasks.push({ ...task, owner: req.vovk.meta().userId ?? 'anonymous' });
     return task;
   });
 }
