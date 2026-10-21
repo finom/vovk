@@ -144,6 +144,47 @@ await describe('vovk dev in a project without Next.js', async () => {
     }
   });
 
+  await it('Adds the RPC modules a route file names to the client before it requests the schema', async () => {
+    // a page that imports a module the client lacks fails to compile, and next dev then answers 500 to every route
+    let clientAtFirstRequest: string | null = null;
+    const server = http.createServer(async (_req, res) => {
+      clientAtFirstRequest ??= await readFile('src/client/index.ts');
+      res.setHeader('content-type', 'application/json');
+      res.end(
+        JSON.stringify({
+          schema: segmentWith('', { TaskRPC: { className: 'TaskController', handlers: ['getTasks'] } }),
+        })
+      );
+    });
+    await new Promise<void>((resolve) => server.listen(0, resolve));
+
+    try {
+      await createProject(projectDir, {
+        'package.json': { name: 'app', version: '1.0.0', type: 'module' },
+        'vovk.config.mjs': configFile({ composedClient: { prettifyClient: false } }),
+        'src/app/api/[[...vovk]]/route.ts': `import { initSegment } from 'vovk';
+import TaskController from '../../../modules/task/task-controller';
+
+const ctrlrs = { TaskRPC: TaskController };
+
+export const { GET } = initSegment({ controllers: ctrlrs });
+`,
+      });
+
+      const dev = startCLI(['dev', '--exit'], {
+        cwd: projectDir,
+        env: { PORT: String((server.address() as AddressInfo).port) },
+      });
+
+      assert.strictEqual(await dev.exitCode, 0, dev.getOutput());
+      assert.match(clientAtFirstRequest ?? '', /TaskRPC/, dev.getOutput());
+      assert.match(dev.getOutput(), /TaskRPC.* added to the client until its schema comes in/);
+      assert.match(await readFile('.vovk-schema/root.json'), /getTasks/);
+    } finally {
+      server.close();
+    }
+  });
+
   await it('Names the schema URL and a Next.js basePath once when the schema request gets a 404', async () => {
     // what a Next.js app with a basePath answers at /api/_schema_
     const thirdRequest = Promise.withResolvers<void>();
