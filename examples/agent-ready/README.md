@@ -2,6 +2,8 @@
 
 A Next.js task list whose API is also an MCP server, an OpenAPI spec and a typed client, with per-user bearer auth. Built with [Vovk.ts](https://vovk.dev).
 
+Demo: https://vovk-agent-ready.vercel.app (sign in with `dev-token-alice` or `dev-token-bob`; tasks are shared by everyone using the demo tokens and reset when the function restarts).
+
 [![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Ffinom%2Fvovk%2Ftree%2Fmain%2Fexamples%2Fagent-ready&project-name=agent-ready&repository-name=agent-ready&env=API_TOKENS&envDescription=Users%20and%20their%20tokens%2C%20as%20userId%3Atoken%20pairs%20separated%20by%20commas&envLink=https%3A%2F%2Fgithub.com%2Ffinom%2Fvovk%2Fblob%2Fmain%2Fexamples%2Fagent-ready%2F.env.example)
 
 The four procedures in [`TaskController`](src/modules/task/task-controller.ts) are written once and served as:
