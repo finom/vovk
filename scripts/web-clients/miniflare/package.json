@@ -1,0 +1,12 @@
+{
+  "name": "web-clients-miniflare",
+  "private": true,
+  "description": "miniflare for the workerd client check; kept apart from the root lockfile because it brings its own workerd binary",
+  "dependencies": {
+    "miniflare": "4.20260730.0"
+  },
+  "overrides": {
+    "sharp": "0.35.5",
+    "undici": "7.30.0"
+  }
+}
