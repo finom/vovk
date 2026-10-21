@@ -183,7 +183,7 @@ The [Rust](/rust) and [Python](/python) templates work with the segmented client
 
 To turn on the segmented client, set `segmentedClient.enabled` to `true` in `vovk.config.mjs`. To turn off the composed client, set `composedClient.enabled` to `false`.
 
-```ts showLineNumbers copy filename="vovk.config.mjs"
+```ts showLineNumbers copy filename="vovk.config.mjs" {4,7}
 /** @type {import('vovk').VovkConfig} */
 const config = {
   segmentedClient: {

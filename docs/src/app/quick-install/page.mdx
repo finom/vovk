@@ -109,7 +109,7 @@ The segment also serves its schema at [http://localhost:3000/api/\_schema\_](htt
 
 Import the generated client library and call the RPC method:
 
-```tsx showLineNumbers copy filename="src/app/page.tsx"
+```tsx showLineNumbers copy filename="src/app/page.tsx" {10}
 'use client';
 import { useEffect, useState } from 'react';
 import type { VovkReturnType } from 'vovk';
@@ -127,7 +127,7 @@ export default function Home() {
 
 Or manage the request state with [React Query](https://react-query.tanstack.com/):
 
-```ts showLineNumbers copy
+```ts showLineNumbers copy {5-6}
 import { useQuery } from '@tanstack/react-query';
 import { UserRPC } from '@/client';
 // ...

@@ -6,7 +6,7 @@ description: "Format derived tool output for MCP with ToModelOutput.MCP: JSON, t
 
 With the `ToModelOutput.MCP` formatter, [derived tools](/tools) work as MCP tools. It formats the tool output to the [MCP tool specification](https://modelcontextprotocol.io/specification/2025-11-25/server/tools), with `text`, `image` and `audio` output, and meta information in an `annotations` object.
 
-```ts
+```ts {3}
 const tools = deriveTools({
   modules: { UserController },
   toModelOutput: ToModelOutput.MCP,
@@ -45,7 +45,7 @@ With the `ToModelOutput.MCP` formatter, the tool's output is:
 
 When a procedure returns a `Response` with the `Content-Type` header set to `audio/*` or `image/*`, the output is audio or image content. Its `data` field holds the body in base64.
 
-```ts showLineNumbers copy
+```ts showLineNumbers copy {5-7}
 export default class MediaController {
   @operation({ summary: 'Get image' })
   @get('image')
@@ -73,7 +73,7 @@ With the `ToModelOutput.MCP` formatter, the tool's output is:
 
 You can create the response with the [`toDownloadResponse`](/response#downloads) utility, or get the media from another source with `fetch`.
 
-```ts showLineNumbers copy
+```ts showLineNumbers copy {7}
 import { get, operation, procedure, toDownloadResponse } from 'vovk';
 
 export default class MediaController {
@@ -85,7 +85,7 @@ export default class MediaController {
 }
 ```
 
-```ts showLineNumbers copy
+```ts showLineNumbers copy {5}
 export default class MediaController {
   @operation({ summary: 'Get audio from a URL' })
   @get('from-url')
@@ -99,7 +99,7 @@ export default class MediaController {
 
 When a procedure returns a `Response` with the `Content-Type` header set to `text/*` or another text type, such as XML, the output is text content.
 
-```ts showLineNumbers copy
+```ts showLineNumbers copy {5-7}
 export default class TextController {
   @operation({ summary: 'Get greeting' })
   @get('greeting')
@@ -130,7 +130,7 @@ A `Response` of any other content type, such as `application/pdf`, gives `isErro
 
 To add annotations to the output, set the `mcpOutput` metadata key with the [req.vovk.meta](/req-vovk#meta) function. When the procedure serves as an endpoint, its response stays the same. MCP takes a `priority` from 0 (least important) to 1 (most important).
 
-```ts showLineNumbers copy
+```ts showLineNumbers copy {5-7}
 export default class AnnotatedController {
   @operation({ summary: 'Get annotated image' })
   @get('annotated-image')
@@ -171,7 +171,7 @@ To serve the tools from an MCP route in Next.js, see [Make Your Next.js App Agen
 
 `ToModelOutput.MCP` works with the `withFormattedOutput` helper from the [standard-tool](https://www.npmjs.com/package/standard-tool) package: both take a result or an `Error`. Wrap a [standalone tool](/tools#standalone-tools) with it, and pass `null` as the request argument. Its `execute` then gives the same MCP output as derived tools, so you can register it on the same MCP server:
 
-```ts showLineNumbers copy
+```ts showLineNumbers copy {15-17}
 import { standardTool, withFormattedOutput } from 'standard-tool';
 import { ToModelOutput } from 'vovk';
 import { z } from 'zod';

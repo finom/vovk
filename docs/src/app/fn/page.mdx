@@ -32,7 +32,7 @@ export default class UserController {
 
 When the controller is in a [segment](/segment), the generated RPC client calls the same procedure over HTTP, with the same call shape:
 
-```ts showLineNumbers copy
+```ts showLineNumbers copy {3}
 import { UserRPC } from '@/client';
 
 const user = await UserRPC.getUser({
@@ -46,7 +46,7 @@ console.log('User:', user);
 
 `fn` runs the procedure in the current context, with full validation and no HTTP or network:
 
-```ts showLineNumbers copy
+```ts showLineNumbers copy {3}
 import UserController from '@/modules/user/user-controller';
 
 const user = await UserController.getUser.fn({
@@ -62,7 +62,7 @@ Local procedures have these main uses:
 
 **For SSR, SSG, PPR and server actions**: call the method in a server component:
 
-```tsx showLineNumbers copy filename="src/app/user/page.tsx"
+```tsx showLineNumbers copy filename="src/app/user/page.tsx" {4}
 import UserController from '@/modules/user/user-controller';
 
 export default async function UserPage() {
@@ -78,7 +78,7 @@ export default async function UserPage() {
 
 **For Next.js server actions**: call `fn` in a server action to run the procedure from a form. Set the procedure's `contentType` to `'multipart/form-data'` so it takes `FormData` as the body:
 
-```tsx showLineNumbers copy filename="src/app/user/create/page.tsx"
+```tsx showLineNumbers copy filename="src/app/user/create/page.tsx" {5-6}
 import UserController from '@/modules/user/user-controller';
 
 export default function CreateUserPage() {
@@ -98,7 +98,7 @@ export default function CreateUserPage() {
 
 **For [AI tool execution](/tools)**: pass a controller with `procedure()` procedures to `deriveTools` as a "module". Its tools call the procedures in the current context, without HTTP requests.
 
-```ts showLineNumbers copy
+```ts showLineNumbers copy {4}
 import { deriveTools } from 'vovk';
 
 const tools = deriveTools({
@@ -186,7 +186,7 @@ const myDecorator = createDecorator(async ({ vovk }, next) => {
 
 A local procedure needs no HTTP decorator such as `@get` or `@post`. It only needs to be made with the `procedure` function.
 
-```ts showLineNumbers copy filename="src/modules/user/user-procedures.ts"
+```ts showLineNumbers copy filename="src/modules/user/user-procedures.ts" {5}
 import { z } from 'zod';
 import { procedure } from 'vovk';
 

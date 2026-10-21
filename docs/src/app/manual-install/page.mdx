@@ -62,7 +62,7 @@ npm i zod vovk-ajv
 
 Set `validateOnClient` in the config file to turn on client-side validation:
 
-```ts showLineNumbers copy filename="vovk.config.mjs"
+```ts showLineNumbers copy filename="vovk.config.mjs" {6}
 // @ts-check
 /** @type {import('vovk').VovkConfig} */
 const vovkConfig = {
@@ -143,7 +143,7 @@ A webpack build needs the flag: without it, `next build --webpack` fails, and we
 
 Create **hello-controller.ts** in **/src/modules/hello/** with a `HelloController` class.
 
-```ts showLineNumbers copy filename="src/modules/hello/hello-controller.ts"
+```ts showLineNumbers copy filename="src/modules/hello/hello-controller.ts" {3,5}
 import { get, prefix } from 'vovk';
 
 @prefix('greetings') // prefix is optional
@@ -165,7 +165,7 @@ Create the root [segment](/segment) **/src/app/api/[[...vovk]]/route.ts**. **[[.
 
 In the code below, `HelloRPC` is the name of the generated RPC module, and `HelloController` is the controller from the previous step.
 
-```ts showLineNumbers copy filename="src/app/api/[[...vovk]]/route.ts"
+```ts showLineNumbers copy filename="src/app/api/[[...vovk]]/route.ts" {4,10}
 import { initSegment } from 'vovk';
 import HelloController from '../../../modules/hello/hello-controller';
 
@@ -196,7 +196,7 @@ Open [http://localhost:3000/api/greetings/greeting](http://localhost:3000/api/gr
 
 Once the client is generated to `src/client`, import it as **@/client**, or with a relative path if your project has no `@/*` alias.
 
-```tsx showLineNumbers copy filename="src/app/page.tsx"
+```tsx showLineNumbers copy filename="src/app/page.tsx" {3,13}
 'use client';
 import { useState } from 'react';
 import { HelloRPC } from '@/client';

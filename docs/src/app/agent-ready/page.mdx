@@ -61,7 +61,7 @@ The tasks live in memory to keep the example short, so they're gone when the ser
 npm install @modelcontextprotocol/server
 ```
 
-```ts showLineNumbers copy filename="src/app/api/mcp/route.ts"
+```ts showLineNumbers copy filename="src/app/api/mcp/route.ts" {5-8,13}
 import { createMcpHandler, McpServer } from '@modelcontextprotocol/server';
 import { deriveTools, ToModelOutput } from 'vovk';
 import TaskController from '@/modules/task/task-controller';
@@ -108,7 +108,7 @@ npx @modelcontextprotocol/inspector
 
 The route above answers anyone who can reach it. To serve each user their own data, check a bearer token with `requireBearerAuth` from the same SDK, and pass the user to the procedures with the `meta` option of `deriveTools`:
 
-```ts showLineNumbers copy filename="src/app/api/mcp/route.ts"
+```ts showLineNumbers copy filename="src/app/api/mcp/route.ts" {14,28,39}
 import {
   createMcpHandler,
   McpServer,
@@ -157,7 +157,7 @@ A request without a valid token gets `401` with a `WWW-Authenticate` header. The
 
 The procedures read the user with [req.vovk.meta()](/req-vovk#reqvovkmeta):
 
-```ts showLineNumbers copy filename="src/modules/task/task-controller.ts"
+```ts showLineNumbers copy filename="src/modules/task/task-controller.ts" {13,24}
 import { get, operation, post, prefix, procedure } from 'vovk';
 import { z } from 'zod';
 

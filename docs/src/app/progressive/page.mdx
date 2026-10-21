@@ -139,7 +139,7 @@ const { users: usersPromise, tasks: tasksPromise } = progressive(ProgressiveRPC.
 
 If the RPC method takes input parameters, pass them as the second argument:
 
-```ts showLineNumbers copy
+```ts showLineNumbers copy {2-3}
 const { users: usersPromise, tasks: tasksPromise } = progressive(ProgressiveRPC.streamProgressiveResponse, {
   params: { id: '123' },
   body: { hello: 'world' },

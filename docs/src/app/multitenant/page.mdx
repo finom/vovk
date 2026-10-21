@@ -161,7 +161,7 @@ A higher-level segment (such as “admin”) can also import a lower-level one (
 
 Turn off the composed client and turn on the segmented client in the [config file](/config):
 
-```ts showLineNumbers copy filename="vovk.config.mjs"
+```ts showLineNumbers copy filename="vovk.config.mjs" {5,8}
 // @ts-check
 /** @type {import('vovk').VovkConfig} */
 const config = {
@@ -232,7 +232,7 @@ The generated client's files, shortened (see [segmented client docs](/segmented)
 
 Set `segmentNameOverride` for every segment other than the root in the [config file](/config). It replaces the segment name in the URL path: for example, `"customer/pro"` becomes `""`.
 
-```ts showLineNumbers copy filename="vovk.config.mjs"
+```ts showLineNumbers copy filename="vovk.config.mjs" {13,16,19}
 // @ts-check
 /** @type {import('vovk').VovkConfig} */
 const config = {

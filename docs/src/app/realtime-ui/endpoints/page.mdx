@@ -27,7 +27,7 @@ export const BASE_KEYS = Object.keys(BASE_FIELDS) as (keyof BaseEntity)[];
 
 For example, `UpdateUserSchema` drops the base fields from the generated `UserSchema` and makes the rest optional, as the `updateUser` body below does:
 
-```ts showLineNumbers copy
+```ts showLineNumbers copy {4}
 import { UserSchema } from '@schemas/index';
 import { BASE_FIELDS } from '@/constants';
 

@@ -16,7 +16,7 @@ The server uses `createMcpHandler` from the official MCP SDK, [`@modelcontextpro
 
 As on the other pages, the `deriveTools` function from the `vovk` package derives the server's tools from the controllers. See [Deriving AI Tools](/tools).
 
-```ts filename="src/app/api/mcp/route.ts" source="examples/realtime-kanban"
+```ts filename="src/app/api/mcp/route.ts" source="examples/realtime-kanban" {6}
 import { createMcpHandler, McpServer } from '@modelcontextprotocol/server';
 import { deriveTools, ToModelOutput } from 'vovk';
 import TaskController from '@/modules/task/task-controller';

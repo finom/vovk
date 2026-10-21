@@ -22,7 +22,7 @@ An HTTP method decorator sets the HTTP method and path of a procedure. It is the
 
 Each takes an optional path and an optional options object:
 
-```ts showLineNumbers copy
+```ts showLineNumbers copy {5}
 import { get, prefix, type VovkRequest } from 'vovk';
 
 @prefix('users')
@@ -45,7 +45,7 @@ export default class UserController {
 
 Every HTTP decorator has an `.auto()` method that makes the path from the method name, in kebab-case:
 
-```ts showLineNumbers copy
+```ts showLineNumbers copy {3}
 export default class UserController {
   // creates GET /api/get-all-users
   @get.auto()
@@ -61,7 +61,7 @@ With a `params` schema, `.auto()` also adds each param to the path: `getUser` wi
 
 Adds [OpenAPI](/openapi) metadata to a procedure:
 
-```ts showLineNumbers copy
+```ts showLineNumbers copy {4}
 import { operation, get } from 'vovk';
 
 export default class UserController {
@@ -79,7 +79,7 @@ export default class UserController {
 
 Adds a path in front of every endpoint of a controller:
 
-```ts showLineNumbers copy
+```ts showLineNumbers copy {5}
 import { prefix, get } from 'vovk';
 
 @prefix('users')
@@ -93,7 +93,7 @@ export default class UserController {
 
 Copies all metadata from a parent controller to a child class. Use it to reuse a controller in several [segments](/segment):
 
-```ts showLineNumbers copy
+```ts showLineNumbers copy {4}
 import { prefix, cloneControllerMetadata } from 'vovk';
 import UserController from './user-controller';
 
@@ -106,7 +106,7 @@ export default class UserControllerV2 extends UserController {}
 
 `createDecorator` builds your own middleware-style decorators for concerns that many procedures share, such as authentication, logging or caching. See the [Custom Decorators](/decorator) page for the API and the [Decorator Examples](/decorator-examples) page for common patterns.
 
-```ts showLineNumbers copy
+```ts showLineNumbers copy {3,12}
 import { createDecorator, get, HttpException, HttpStatus, type VovkRequest } from 'vovk';
 
 const authGuard = createDecorator(async (req: VovkRequest, next) => {

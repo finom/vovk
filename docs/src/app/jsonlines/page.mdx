@@ -30,7 +30,7 @@ Use JSON Lines for:
 
 To stream JSON Lines, write the handler as a generator or an async generator. Each yielded value is serialized to JSON and sent as its own line, so the client gets each item after JSON: a `Date` arrives as a string. [`.fn()`](/fn) yields the values as they are.
 
-```ts showLineNumbers copy
+```ts showLineNumbers copy {12,23}
 import { z } from 'zod';
 import { procedure, prefix, post, type VovkIteration } from 'vovk';
 
@@ -61,7 +61,7 @@ export default class StreamController {
 
 To stream from a service, delegate to it with `yield*`:
 
-```ts showLineNumbers copy filename="src/modules/stream/stream-controller.ts"
+```ts showLineNumbers copy filename="src/modules/stream/stream-controller.ts" {14}
 import { z } from 'zod';
 import { procedure, prefix, post } from 'vovk';
 import StreamService from './stream-service';
@@ -104,7 +104,7 @@ export default class StreamService {
 
 On the client, read each line as it arrives with [disposable](https://github.com/tc39/proposal-explicit-resource-management) [async iterators](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/AsyncIterator):
 
-```ts showLineNumbers copy
+```ts showLineNumbers copy {3,5}
 import { StreamRPC } from '@/client';
 
 using stream = await StreamRPC.getJSONLines();
@@ -141,7 +141,7 @@ console.log('All messages:', await stream.asPromise());
 
 This procedure streams OpenAI's chat completions by delegating to them:
 
-```ts showLineNumbers copy filename="src/modules/llm/llm-controller.ts"
+```ts showLineNumbers copy filename="src/modules/llm/llm-controller.ts" {16}
 import { post, prefix, operation, type VovkRequest } from 'vovk';
 import OpenAI from 'openai';
 
@@ -168,7 +168,7 @@ export default class OpenAiController {
 
 On the client, read the streamed completion:
 
-```ts showLineNumbers copy
+```ts showLineNumbers copy {2,6}
 // ...
 using completion = await OpenAiRPC.createChatCompletion({
   body: { messages: [...messages, userMessage] },
@@ -211,7 +211,7 @@ The responder has these members:
 
 With `JSONLinesResponder`, the service method is a regular function, not a generator. It takes the responder and sends the lines through it.
 
-```ts showLineNumbers copy filename="src/modules/stream/stream-service.ts"
+```ts showLineNumbers copy filename="src/modules/stream/stream-service.ts" {7,12}
 import type { JSONLinesResponder, VovkIteration } from 'vovk';
 import type StreamController from './stream-controller';
 
@@ -233,7 +233,7 @@ export default class StreamService {
 
 The handler returns the responder. The streaming runs in a promise that starts before `return` and isn't awaited.
 
-```ts showLineNumbers copy
+```ts showLineNumbers copy {11,13,15}
 import { z } from 'zod';
 import { prefix, get, procedure, JSONLinesResponder } from 'vovk';
 import StreamService, { type Token } from './stream-service';

@@ -37,7 +37,7 @@ export const verifySession = cache(async () => {
 ```
 *[The code above is fetched from GitHub repository.](https://github.com/finom/vovk/blob/main/examples/realtime-kanban/src/lib/dal.ts)*
 
-```ts showLineNumbers copy filename="src/app/page.tsx"
+```ts showLineNumbers copy filename="src/app/page.tsx" {4}
 import { verifySession } from "@/lib/dal";
 
 export default async function Home() {
@@ -47,7 +47,7 @@ export default async function Home() {
 
 The DAL also exports `isLoggedIn`. The `sessionGuard` [decorator](/decorator) uses it to check that the user is logged in before a procedure runs.
 
-```ts showLineNumbers copy filename="src/decorators/session-guard.ts" source="examples/realtime-kanban"
+```ts showLineNumbers copy filename="src/decorators/session-guard.ts" source="examples/realtime-kanban" {5}
 import { createDecorator, HttpException, HttpStatus } from 'vovk';
 import { isLoggedIn } from '@/lib/dal';
 

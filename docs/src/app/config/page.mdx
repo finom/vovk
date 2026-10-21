@@ -78,7 +78,7 @@ The [log level](https://www.npmjs.com/package/loglevel) of the CLI: `"trace"`, `
 
 [Progressive Web Apps](https://developer.mozilla.org/en-US/docs/Web/Progressive_web_apps/Guides/What_is_a_progressive_web_app) need HTTPS in development and in production. For HTTPS in development, pass `--experimental-https` to `next dev`, and turn on the HTTPS mode of [vovk dev](/dev) with `devHttps: true` or the `--https` flag.
 
-```js filename="/vovk.config.mjs"
+```js filename="/vovk.config.mjs" {3}
 const config = {
   // ...
   devHttps: true,
@@ -101,7 +101,7 @@ To keep HTTPS off by default, add a separate NPM script with the flags:
 
 Module template names mapped to their paths. [vovk new](/new) uses them to create services, controllers and other module types.
 
-```js filename="/vovk.config.mjs"
+```js filename="/vovk.config.mjs" {5}
 /** @type {import('vovk').VovkConfig} */
 const config = {
   // ...
@@ -127,7 +127,7 @@ npx vovk new state segment/thing # creates src/modules/segment/thing/thing-state
 
 Config for the libraries the client uses, or any other config the client should see. For example, the options of **vovk-ajv**, the main client-side validation library, described on the [customization](/imports) page.
 
-```js filename="/vovk.config.mjs"
+```js filename="/vovk.config.mjs" {4}
 /** @type {import('vovk').VovkConfig} */
 const config = {
   // ...

@@ -6,7 +6,7 @@ description: "Generate an OpenAPI 3.1 specification from procedures: the @operat
 
 Vovk.ts generates an OpenAPI specification from the procedures that have an operation object. It fills `parameters`, `requestBody` and `responses` from the validation models. The `@operation` decorator gives a procedure its operation object, with metadata such as `summary`, `description` and `tags`. `@operation.tool` and `@operation.error` give it one too. A procedure without any of them is left out of the specification, and [deriveTools](/tools) makes no tool of it either. The decorator takes the `OperationObject` type from [openapi3-ts/oas31](https://www.npmjs.com/package/openapi3-ts), plus the Vovk.ts `x-tool` property for the [deriveTools](/tools) function.
 
-```ts showLineNumbers copy filename="src/modules/user/user-controller.ts"
+```ts showLineNumbers copy filename="src/modules/user/user-controller.ts" {6-9}
 import { procedure, put, prefix, operation } from 'vovk';
 import { z } from 'zod';
 
@@ -37,7 +37,7 @@ A schema with an id, such as a Zod schema with `.meta({ id })`, goes to `compone
 
 Configure the specification in the [vovk.config](/config) file, with the [`outputConfig.openAPIObject` option](/config#openapiobject). The object is merged into the generated specification, so you can set global properties such as `info` and `servers`.
 
-```ts showLineNumbers copy filename="vovk.config.js"
+```ts showLineNumbers copy filename="vovk.config.js" {6}
 // @ts-check
 
 /** @type {import('vovk').VovkConfig} */
@@ -72,7 +72,7 @@ module.exports = config;
 
 You can also set `openAPIObject` for each [segment](/segment), with `outputConfig.segments.[segmentName].openAPIObject`.
 
-```ts showLineNumbers copy filename="vovk.config.js"
+```ts showLineNumbers copy filename="vovk.config.js" {7}
 // @ts-check
 /** @type {import('vovk').VovkConfig} */
 const config = {
@@ -106,7 +106,7 @@ import { openapi } from '@/client/admin/openapi'; // segmented client
 
 Use the specification as a variable, or serve it as JSON from a controller in a static segment:
 
-```ts showLineNumbers copy filename="src/modules/static/openapi/openapi-controller.ts"
+```ts showLineNumbers copy filename="src/modules/static/openapi/openapi-controller.ts" {5-6}
 import { get } from 'vovk';
 import { openapi } from '@/client/openapi';
 
@@ -132,7 +132,7 @@ npx vovk generate --from openapiJson --out ./public
 
 On the client side, any OpenAPI documentation generator works. [Scalar](https://www.npmjs.com/package/@scalar/api-reference-react) is recommended, because Vovk.ts adds code samples for the generated RPC modules to the spec.
 
-```tsx showLineNumbers copy
+```tsx showLineNumbers copy {8}
 import { ApiReferenceReact } from "@scalar/api-reference-react";
 import "@scalar/api-reference-react/style.css";
 
@@ -158,7 +158,7 @@ For a live demo, see the ["Hello World" application spec](https://hello-world.vo
 
 `@operation.tool` sets attributes for the [deriveTools](/tools) function. They go under the `x-tool` key of the operation object.
 
-```ts showLineNumbers copy filename="src/modules/user/user-controller.ts"
+```ts showLineNumbers copy filename="src/modules/user/user-controller.ts" {4-7}
 import { procedure, put, operation } from 'vovk';
 
 export default class UserController {

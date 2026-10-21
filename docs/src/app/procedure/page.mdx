@@ -34,7 +34,7 @@ export default class UserController {
 
 To initialize the class, add it to the `controllers` object of `initSegment` in a [segment route](/segment):
 
-```ts showLineNumbers copy filename="src/app/api/[[...vovk]]/route.ts"
+```ts showLineNumbers copy filename="src/app/api/[[...vovk]]/route.ts" {5}
 import { initSegment } from 'vovk';
 import UserController from '../../../modules/user/user-controller';
 
@@ -49,7 +49,7 @@ export const { GET, POST, PATCH, PUT, HEAD, OPTIONS, DELETE } = initSegment({ co
 
 The object key is the name of the RPC module on the client:
 
-```ts showLineNumbers copy
+```ts showLineNumbers copy {4}
 import { UserRPC } from '@/client';
 
 // sends PUT /api/users/69?notify=push
@@ -83,7 +83,7 @@ See [TypeScript Client](/typescript).
 
 Every HTTP decorator has an `.auto` method that makes the endpoint path from the method name, so the handler reads more like RPC.
 
-```ts showLineNumbers copy filename="src/modules/user/user-controller.ts"
+```ts showLineNumbers copy filename="src/modules/user/user-controller.ts" {6}
 import { prefix, put } from 'vovk';
 
 @prefix('users')
@@ -102,7 +102,7 @@ With a `params` schema, `.auto()` also adds each param to the path: `getUser` wi
 
 A procedure can use any Next.js API, such as cookies and headers, from the `next` package. See the Next.js [documentation](https://nextjs.org/docs/app/api-reference/functions/headers).
 
-```ts showLineNumbers copy filename="src/modules/user/user-controller.ts"
+```ts showLineNumbers copy filename="src/modules/user/user-controller.ts" {9,11}
 import { put, prefix } from 'vovk';
 import type { NextRequest } from 'next/server';
 import { cookies, headers } from 'next/headers';
@@ -126,7 +126,7 @@ Or read `req.headers` from the [Web Request API](https://developer.mozilla.org/e
 
 `VovkRequest` mirrors the `NextRequest` type and adds type parameters for the request body (the `json` method) and the query (the `searchParams` property). With them, the procedure reads these parts of the request with types.
 
-```ts showLineNumbers copy filename="src/modules/user/user-controller.ts"
+```ts showLineNumbers copy filename="src/modules/user/user-controller.ts" {9}
 import { put, prefix, type VovkRequest } from 'vovk';
 import type { User } from '../../types';
 
@@ -159,7 +159,7 @@ With these three libraries, a type that JSON Schema can't describe, such as a `D
 
 `procedure()` returns an object with a `.handle()` method, which takes the handler. The handler gets the request typed as `VovkRequest<TBody, TQuery, TParams>{:ts}`, and the validated `params: TParams{:ts}` as its second argument. Without a `params` schema, the second argument and `req.vovk.params()` hold the route params as strings, typed `Record<string, string>{:ts}`.
 
-```ts showLineNumbers copy filename="src/modules/user/user-controller.ts"
+```ts showLineNumbers copy filename="src/modules/user/user-controller.ts" {7,12}
 import { procedure, prefix, put } from 'vovk';
 import { z } from 'zod';
 
