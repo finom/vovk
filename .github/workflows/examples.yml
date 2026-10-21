@@ -138,8 +138,8 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run build
-      # miniflare brings its own workerd binary, so it stays out of the lockfile
-      - run: npm install --prefix "$RUNNER_TEMP/miniflare" --no-save --ignore-scripts=false miniflare@4.20260730.0
+      # miniflare brings its own workerd binary, so it has its own lockfile
+      - run: npm ci --prefix scripts/web-clients/miniflare --ignore-scripts=false
       - name: Bundle, start and run the client in workerd and Chrome
         working-directory: examples/hello-world
         run: |
@@ -148,5 +148,5 @@ jobs:
           npx next build
           npx next start -p "$PORT" &
           node ../../scripts/wait-for-url.mjs "http://localhost:$PORT/api/static/openapi.json"
-          (cd "$RUNNER_TEMP/miniflare" && node "$GITHUB_WORKSPACE/scripts/web-clients/worker.mjs" "http://localhost:$PORT/api" "$GITHUB_WORKSPACE/examples/hello-world/dist/index.js" .)
+          node "$GITHUB_WORKSPACE/scripts/web-clients/worker.mjs" "http://localhost:$PORT/api" "$GITHUB_WORKSPACE/examples/hello-world/dist/index.js" "$GITHUB_WORKSPACE/scripts/web-clients/miniflare"
           node ../../scripts/web-clients/browser.mjs "http://localhost:$PORT" dist/index.js "$(command -v google-chrome)"
