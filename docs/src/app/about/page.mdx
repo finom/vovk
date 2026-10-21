@@ -30,7 +30,7 @@ npx vovk-cli@latest init
 
 A procedure is a typed, validated function. Define its params, query, body and output with [`procedure`](/procedure), and call it on the server in SSR, server components or server actions:
 
-```ts
+```ts {2}
 export default class UserController {
   static getUser = procedure({
     params: z.object({ id: z.string().uuid() }),
@@ -59,7 +59,7 @@ export default class UserService {
 
 Add an HTTP decorator, and the same procedure is also a Next.js Route Handler, with the same call shape:
 
-```ts
+```ts {2}
 export default class UserController {
   @get('{id}')
   static getUser = procedure({
@@ -81,7 +81,7 @@ const user = await UserRPC.getUser({ params: { id: '123e4567-e89b-12d3-a456-4266
 
 Procedures can yield JSON Lines for real-time streaming:
 
-```ts
+```ts {4-6}
 export default class StreamController {
   @post('completions')
   static streamTokens = procedure({
@@ -92,7 +92,7 @@ export default class StreamController {
 }
 ```
 
-```ts
+```ts {1-2}
 using stream = await StreamRPC.streamTokens();
 for await (const { message } of stream) {
   console.log(message);
@@ -176,7 +176,7 @@ See [OpenAPI Mixins](/mixins).
 
 Add `@operation` to methods, then derive tools for LLM function calling from controllers (in-process), RPC modules (over HTTP) or third-party APIs:
 
-```ts
+```ts {2}
 export default class TaskController {
   @operation({ summary: 'Create task', description: 'Creates a new task.' })
   @post()
@@ -189,7 +189,7 @@ export default class TaskController {
 }
 ```
 
-```ts
+```ts {4}
 import { deriveTools } from 'vovk';
 import { TaskRPC, PetstoreAPI } from '@/client';
 

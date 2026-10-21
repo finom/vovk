@@ -18,7 +18,7 @@ How it works: a `parse` method takes each raw API response, extracts the entitie
 
 Any component can read an item from the registry:
 
-```tsx showLineNumbers copy
+```tsx showLineNumbers copy {2}
 export const UserProfile = ({ userId }: { userId: User['id'] }) => {
     const userProfile = useRegistry(useShallow(state => state.user[userId]));
     return <div>{userProfile.fullName}</div>
@@ -27,7 +27,7 @@ export const UserProfile = ({ userId }: { userId: User['id'] }) => {
 
 To get an array of entities, map over the IDs:
 
-```tsx showLineNumbers copy
+```tsx showLineNumbers copy {3}
 export const UserList = ({ userIds }: { userIds: User['id'][] }) => {
     const users = useRegistry(
       useShallow((state) => userIds.map((id) => state.user[id])),
@@ -38,7 +38,7 @@ export const UserList = ({ userIds }: { userIds: User['id'][] }) => {
 
 The implementation below also handles soft deletions: a deleted entity is marked non-enumerable but stays in the state. This prevents errors in components that still reference it.
 
-```tsx showLineNumbers copy
+```tsx showLineNumbers copy {3}
 export const UserList = ({ userIds }: { userIds: User['id'][] }) => {
     const users = useRegistry(
       useShallow(({ user: { ...userReg } }) => userIds.filter((id) => id in userReg).map((id) => userReg[id]))
@@ -57,7 +57,7 @@ This article uses [Zustand](https://github.com/pmndrs/zustand), but the pattern 
 
 The pattern relies on one rule: every entity in your data has an `id` field and an `entityType` field that says what kind of entity it is. In a real project, `EntityType` can come from `@prisma/client`, be generated from your schema, or be imported from wherever your source of truth lives. This page writes it out by hand:
 
-```ts showLineNumbers copy filename="src/types.ts"
+```ts showLineNumbers copy filename="src/types.ts" {7-8}
 enum EntityType {
   user = 'user',
   task = 'task',
@@ -71,7 +71,7 @@ interface BaseEntity {
 
 Entity IDs should be **branded strings**, not plain `string` types. Then you can't pass a user ID where a task ID is expected, a common bug in apps with many entity types. With Zod, define a branded ID schema per entity:
 
-```ts showLineNumbers copy
+```ts showLineNumbers copy {3-4}
 import { z } from 'zod';
 
 const UserIdSchema = z.string().brand<'user'>();
@@ -83,7 +83,7 @@ type TaskId = z.infer<typeof TaskIdSchema>;   // string & { __brand: 'task' }
 
 Without Zod, a TypeScript utility type does the same:
 
-```ts showLineNumbers copy
+```ts showLineNumbers copy {1}
 type BrandedId<T extends string> = string & { readonly __brand: T };
 
 type UserId = BrandedId<'user'>;
@@ -118,7 +118,7 @@ In the browser, the `onError` handler sends the user to the login page when auth
 
 Set the fetcher in the [config](/config), so the generated [client](/typescript) imports it instead of the default one:
 
-```ts showLineNumbers copy filename="vovk.config.mjs"
+```ts showLineNumbers copy filename="vovk.config.mjs" {7}
 // @ts-check
 /** @type {import('vovk').VovkConfig} */
 const config = {
@@ -335,7 +335,7 @@ The function walks the whole structure and returns a normalized shape. It doesn'
 
 `createRegistryStore` takes the initial data (the arrays fetched during SSR) and returns a vanilla Zustand store that already holds it. It normalizes the arrays into entity maps with `getEntitiesFromData` and passes them as the store's initial state:
 
-```ts showLineNumbers copy
+```ts showLineNumbers copy {5}
 function createRegistryStore(initialData: {
   users?: UserType[];
   tasks?: TaskType[];
@@ -364,7 +364,7 @@ The `__isDeleted` property marks an entity as deleted. The entity stays in the s
 
 This works through JavaScript property descriptors. A property defined with `enumerable: false` is invisible to `Object.values`, `Object.keys`, and `{ ...spread }`, but you can still read it by key. Code that iterates over entities doesn't see deleted ones, and components that still hold the ID don't crash:
 
-```ts showLineNumbers copy
+```ts showLineNumbers copy {3,6-7}
 const obj = Object.defineProperties({}, {
   'task-1': { value: { id: 'task-1', title: 'Task 1' }, enumerable: true, configurable: true },
   'task-2': { value: { id: 'task-2', title: 'Task 2' }, enumerable: false, configurable: true },
@@ -390,7 +390,7 @@ When an entity arrives with `__isDeleted`, its property descriptor becomes non-e
 
 `RegistryProvider` connects the Zustand store, the fetcher, and the React component tree. It creates the store once (with `useRef`), filled with the data fetched on the server. It also subscribes to the fetcher's `onSuccess` event, so every later RPC response is parsed into the registry.
 
-```tsx showLineNumbers copy
+```tsx showLineNumbers copy {7}
 export function RegistryProvider({ initialData, children }) {
   const storeRef = useRef(null);
   if (!storeRef.current) {
@@ -443,7 +443,7 @@ store.getState().parse(data);
 
 The server component fetches the data with the controller's `.fn()` method, a direct server-side call without HTTP, and passes it to `RegistryProvider`. Child components select data from the store and need no `initialData` props:
 
-```tsx showLineNumbers copy filename="src/app/page.tsx"
+```tsx showLineNumbers copy filename="src/app/page.tsx" {3-4,8}
 export default async function Home() {
   const [users, tasks] = await Promise.all([
     UserController.getUsers.fn<UserType[]>(),
@@ -462,7 +462,7 @@ export default async function Home() {
 
 Each component selects from the registry and runs a `useQuery` to refresh the data on the client:
 
-```tsx showLineNumbers copy filename="src/components/user-list.tsx"
+```tsx showLineNumbers copy filename="src/components/user-list.tsx" {2,4}
 const UserList = () => {
   const users = useRegistry(useShallow((state) => Object.values(state.user)));
 

@@ -134,7 +134,7 @@ Takes the same options as the [outputConfig](/config#outputconfig) at the root o
 
 Set `origin`, and a `package` field whose entry points (`main`, `types` and `exports`) match the bundler output.
 
-```ts showLineNumbers copy filename="vovk.config.mjs"
+```ts showLineNumbers copy filename="vovk.config.mjs" {5-6}
 const config = {
   // ...
   bundle: {
@@ -157,7 +157,7 @@ const config = {
 
 To export more from the generated `index.ts`, use the `reExports` option:
 
-```ts showLineNumbers copy filename="vovk.config.mjs"
+```ts showLineNumbers copy filename="vovk.config.mjs" {5-7}
 const config = {
   // ...
   bundle: {
@@ -172,7 +172,7 @@ const config = {
 
 To keep the bundle small, turn off client-side validation: set `validateOnClient` to `null` in the `imports` option:
 
-```ts showLineNumbers copy filename="vovk.config.mjs"
+```ts showLineNumbers copy filename="vovk.config.mjs" {6}
 const config = {
   // ...
   bundle: {
@@ -314,7 +314,7 @@ npm install my-api-bundle
 
 Then import it in your TypeScript code:
 
-```ts showLineNumbers copy
+```ts showLineNumbers copy {3}
 import { UserRPC } from 'my-api-bundle';
 
 await UserRPC.getUser({
@@ -339,7 +339,7 @@ The bundle leaves out the `openapi` object of **@/client/openapi**, as it would 
 
 Pass the bundled RPC modules to `deriveTools` for [AI tools](/tools) that call the matching HTTP endpoints:
 
-```ts showLineNumbers copy
+```ts showLineNumbers copy {4-6}
 import { UserRPC } from 'my-api-bundle';
 import { deriveTools } from 'vovk';
 

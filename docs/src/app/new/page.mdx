@@ -72,7 +72,7 @@ npx vovk new segment foo
 
 `vovk new segment foo` creates **/src/app/api/foo/[[...vovk]]/route.ts** with:
 
-```ts showLineNumbers copy
+```ts showLineNumbers copy {3}
 // ...
 export const { GET, POST, PATCH, PUT, HEAD, OPTIONS, DELETE } = initSegment({
   segmentName: 'foo',
@@ -197,7 +197,7 @@ A module template for an ArkType controller and service. For readability, the te
 <Tabs items={['controller.ts.ejs', 'service.ts.ejs']}>
 <Tabs.Tab>
 ```ejs filename="packages/vovk-cli/module-templates/arktype/controller.ts.ejs" source="."
-<% const vars = { 
+<% const vars = {
   ModuleName: t.TheThing + 'Controller',
   ServiceName: t.TheThing + 'Service',
 }; %>
@@ -210,82 +210,72 @@ compiledName: <%= t.TheThing + 'RPC' %>
 
 import { procedure, prefix, get, put, post, del, operation } from 'vovk';
 import { type } from 'arktype';
-<% if(t.withService) { %>
+<%_ if (t.withService) { -%>
 import <%= vars.ServiceName %> from './<%= t['the-thing'] %>-service<%= t.nodeNextResolutionExt.ts %>';
-<% } %>
+<%_ } -%>
 
 @prefix('<%= t['the-things'] %>')
 export default class <%= vars.ModuleName %> {
-    @operation({
-      summary: 'Get <%= t.theThings %>',
-    })
-    @get()
-    static get<%= t.TheThings %> = procedure().handle(() => {
-        <% if(t.withService) { %>
-        return <%= vars.ServiceName %>.get<%= t.TheThings %>();
-        <% } else { %>
-        return { message: 'TODO: get <%= t.theThings %>' };
-        <% } %>
-    });
+  @operation({ summary: 'Get <%= t.theThings %>' })
+  @get()
+  static get<%= t.TheThings %> = procedure().handle(() => {
+    <%_ if (t.withService) { -%>
+    return <%= vars.ServiceName %>.get<%= t.TheThings %>();
+    <%_ } else { -%>
+    return { message: 'TODO: get <%= t.theThings %>' };
+    <%_ } -%>
+  });
 
-    @operation({
-      summary: 'Get single <%= t.theThing %>',
-    })
-    @get('{id}')
-    static getSingle<%= t.TheThing %> = procedure({
-        params: type({ id: type('string') }),
-    }).handle((_req, { id }) => {
-        <% if(t.withService) { %>
-        return <%= vars.ServiceName %>.getSingle<%= t.TheThing %>(id);
-        <% } else { %>
-        return { message: 'TODO: get single <%= t.theThing %>', id };
-        <% } %>
-    });
+  @operation({ summary: 'Get single <%= t.theThing %>' })
+  @get('{id}')
+  static getSingle<%= t.TheThing %> = procedure({
+    params: type({ id: type('string') }),
+  }).handle((_req, { id }) => {
+    <%_ if (t.withService) { -%>
+    return <%= vars.ServiceName %>.getSingle<%= t.TheThing %>(id);
+    <%_ } else { -%>
+    return { message: 'TODO: get single <%= t.theThing %>', id };
+    <%_ } -%>
+  });
 
-    @operation({
-        summary: 'Update <%= t.theThing %>',
-    })
-    @put('{id}')
-    static update<%= t.TheThing %> = procedure({
-        body: type({ todo: type('true') }),
-        params: type({ id: type('string') }),
-    }).handle(async (req, { id }) => {
-        const body = await req.vovk.body();
-        <% if(t.withService) { %>
-        return <%= vars.ServiceName %>.update<%= t.TheThing %>(id, body);
-        <% } else { %>
-        return { message: `TODO: update <%= t.theThing %>`, id, body };
-        <% } %>
-    });
+  @operation({ summary: 'Update <%= t.theThing %>' })
+  @put('{id}')
+  static update<%= t.TheThing %> = procedure({
+    body: type({ todo: type('true') }),
+    params: type({ id: type('string') }),
+  }).handle(async (req, { id }) => {
+    const body = await req.vovk.body();
+    <%_ if (t.withService) { -%>
+    return <%= vars.ServiceName %>.update<%= t.TheThing %>(id, body);
+    <%_ } else { -%>
+    return { message: 'TODO: update <%= t.theThing %>', id, body };
+    <%_ } -%>
+  });
 
-    @operation({
-      summary: 'Create <%= t.theThing %>',
-    })
-    @post()
-    static create<%= t.TheThing %> = procedure({
-        body: type({ todo: type('true') }),
-    }).handle(async (req) => {
-        const body = await req.vovk.body();
-        <% if(t.withService) { %>
-        return <%= vars.ServiceName %>.create<%= t.TheThing %>(body);
-        <% } else { %>
-        return { message: `TODO: create <%= t.theThing %>`, body };
-        <% } %>
-    });
+  @operation({ summary: 'Create <%= t.theThing %>' })
+  @post()
+  static create<%= t.TheThing %> = procedure({
+    body: type({ todo: type('true') }),
+  }).handle(async (req) => {
+    const body = await req.vovk.body();
+    <%_ if (t.withService) { -%>
+    return <%= vars.ServiceName %>.create<%= t.TheThing %>(body);
+    <%_ } else { -%>
+    return { message: 'TODO: create <%= t.theThing %>', body };
+    <%_ } -%>
+  });
 
-    @operation({
-      summary: 'Delete <%= t.theThing %>',
-    })
-    @del('{id}')
-    static delete<%= t.TheThing %> = procedure({
-        params: type({ id: type('string') }),
-    }).handle((_req, { id }) => {
-        <% if(t.withService) { %>
-        return <%= vars.ServiceName %>.delete<%= t.TheThing %>(id);
-        <% } else { %>
-        return { message: `TODO: delete <%= t.theThing %>`, id };
-        <% } %>
-    });
+  @operation({ summary: 'Delete <%= t.theThing %>' })
+  @del('{id}')
+  static delete<%= t.TheThing %> = procedure({
+    params: type({ id: type('string') }),
+  }).handle((_req, { id }) => {
+    <%_ if (t.withService) { -%>
+    return <%= vars.ServiceName %>.delete<%= t.TheThing %>(id);
+    <%_ } else { -%>
+    return { message: 'TODO: delete <%= t.theThing %>', id };
+    <%_ } -%>
+  });
 }
 ```
 *[The code above is fetched from GitHub repository.](https://github.com/finom/vovk/blob/main/packages/vovk-cli/module-templates/arktype/controller.ts.ejs)*
@@ -313,28 +303,22 @@ export default class <%= vars.ServiceName %> {
     return { message: 'TODO: get <%= t.theThings %>' };
   };
 
-  static getSingle<%= t.TheThing %> = (
-    id: VovkParams<typeof <%= vars.ControllerName %>.getSingle<%= t.TheThing %>>['id']
-  ) => {
+  static getSingle<%= t.TheThing %> = (id: VovkParams<typeof <%= vars.ControllerName %>.getSingle<%= t.TheThing %>>['id']) => {
     return { message: 'TODO: get single <%= t.theThing %>', id };
-  }
+  };
 
   static update<%= t.TheThing %> = (
     id: VovkParams<typeof <%= vars.ControllerName %>.update<%= t.TheThing %>>['id'],
-    body: VovkBody<typeof <%= vars.ControllerName %>.update<%= t.TheThing %>>
+    body: VovkBody<typeof <%= vars.ControllerName %>.update<%= t.TheThing %>>,
   ) => {
     return { message: `TODO: update <%= t.theThing %>`, id, body };
   };
 
-  static create<%= t.TheThing %> = (
-    body: VovkBody<typeof <%= vars.ControllerName %>.create<%= t.TheThing %>>
-  ) => {
+  static create<%= t.TheThing %> = (body: VovkBody<typeof <%= vars.ControllerName %>.create<%= t.TheThing %>>) => {
     return { message: `TODO: create <%= t.theThing %>`, body };
   };
 
-  static delete<%= t.TheThing %> = (
-    id: VovkParams<typeof <%= vars.ControllerName %>.delete<%= t.TheThing %>>['id']
-  ) => {
+  static delete<%= t.TheThing %> = (id: VovkParams<typeof <%= vars.ControllerName %>.delete<%= t.TheThing %>>['id']) => {
     return { message: `TODO: delete <%= t.theThing %>`, id };
   };
 }

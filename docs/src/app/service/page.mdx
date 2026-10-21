@@ -39,7 +39,7 @@ export default class UserController {
 
 The `handle` method returns the result of `UserService.updateUser`, and that method takes its types from the procedure. So the validation schemas (Zod here) are the single source of truth for the input and output types, and you define no separate types. Thanks to [Anders Hejlsberg](https://github.com/ahejlsberg) for the fix in [#58616](https://github.com/microsoft/TypeScript/issues/58616): without this TypeScript change, Vovk.ts would not be possible.
 
-```ts showLineNumbers copy filename="src/modules/user/user-service.ts"
+```ts showLineNumbers copy filename="src/modules/user/user-service.ts" {6-8,12}
 import type { VovkBody, VovkOutput, VovkParams, VovkQuery } from 'vovk';
 import type UserController from './user-controller';
 

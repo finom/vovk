@@ -15,7 +15,7 @@ As a proof of concept, this article describes the Telegram bot. Users send it te
 
 The Telegram API client is built with [OpenAPI mixins](/mixins). It is a module with the fixed name `TelegramAPI` in the `telegram` pseudo-segment.
 
-```ts showLineNumbers copy filename="vovk.config.mjs"
+```ts showLineNumbers copy filename="vovk.config.mjs" {14}
 // @ts-check
 /** @type {import('vovk').VovkConfig} */
 const config = {
@@ -57,7 +57,7 @@ await TelegramAPI.sendMessage({
 
 The Telegram Bot API takes the bot token in the URL, so recreate the module with the `withDefaults` method to set the `apiRoot` once.
 
-```ts
+```ts {3-4}
 import { TelegramAPI as TelegramRawAPI } from '@/client';
 
 const TelegramAPI = TelegramRawAPI.withDefaults({
@@ -69,7 +69,7 @@ const TelegramAPI = TelegramRawAPI.withDefaults({
 
 A new segment, `bots`, holds the `TelegramController` under the `TelegramBot` key. The client doesn't need its schema, so the segment emits none: `emitSchema: false` in the `initSegment` call. With no schema emitted, the controller key can be any string.
 
-```ts showLineNumbers copy filename="src/app/api/bots/[[...vovk]]/route.ts" source="examples/realtime-kanban"
+```ts showLineNumbers copy filename="src/app/api/bots/[[...vovk]]/route.ts" source="examples/realtime-kanban" {12}
 import { initSegment } from 'vovk';
 import TelegramController from '../../../../modules/telegram/telegram-controller';
 
@@ -89,7 +89,7 @@ export const { GET, POST, PATCH, PUT, HEAD, OPTIONS, DELETE } = initSegment({
 
 The `TelegramController` class has a single `handle` procedure. It serves the `/api/bots/telegram/bot` endpoint, which the Telegram webhook calls for each incoming message.
 
-```ts showLineNumbers copy filename="src/modules/telegram/telegram-controller.ts" source="examples/realtime-kanban"
+```ts showLineNumbers copy filename="src/modules/telegram/telegram-controller.ts" source="examples/realtime-kanban" {7-9}
 import { post, prefix } from 'vovk';
 import { telegramGuard } from '@/decorators/telegram-guard';
 import TelegramService from './telegram-service';
@@ -105,7 +105,7 @@ export default class TelegramController {
 
 The app's `PASSWORD` doesn't cover this endpoint, because Telegram sends no session cookie. The `telegramGuard` decorator checks the `X-Telegram-Bot-Api-Secret-Token` header instead. The endpoint answers `404` until both `TELEGRAM_BOT_TOKEN` and `TELEGRAM_WEBHOOK_SECRET` are set, and `401` to a request whose header doesn't hold the secret.
 
-```ts showLineNumbers copy filename="src/decorators/telegram-guard.ts" source="examples/realtime-kanban"
+```ts showLineNumbers copy filename="src/decorators/telegram-guard.ts" source="examples/realtime-kanban" {11,14}
 import { timingSafeEqual } from 'node:crypto';
 import { createDecorator, HttpException, HttpStatus } from 'vovk';
 
@@ -139,7 +139,7 @@ curl "https://api.telegram.org/bot$TELEGRAM_BOT_TOKEN/setWebhook" \
 
 The `TelegramService` class holds the main logic: it handles incoming messages, generates AI responses with the Vercel AI SDK, updates the database through derived tools, and sends text or voice messages back to the user.
 
-```ts showLineNumbers copy filename="src/modules/telegram/telegram-service.ts"
+```ts showLineNumbers copy filename="src/modules/telegram/telegram-service.ts" {12}
 // ...
 export default class TelegramService {
   // ...

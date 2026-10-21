@@ -63,7 +63,7 @@ This generates:
 
 You can [configure](/config) the default [generate](/generate) command (without flags) to create the client. [vovk dev](/dev) creates it too, and creates it again on every schema change. Add the `py` template to the [composed client](/composed) config:
 
-```ts showLineNumbers copy filename="vovk.config.mjs"
+```ts showLineNumbers copy filename="vovk.config.mjs" {4,10}
 /** @type {import('vovk').VovkConfig} */
 const config = {
   composedClient: {
@@ -85,7 +85,7 @@ The Python client calls an absolute URL, so it needs [`outputConfig.origin`](/co
 
 Like other templates, the [py](/templates#py) template has a default `outDir` for composed clients: `./dist_python`. Change it in the [template definitions](/templates#defs):
 
-```ts showLineNumbers copy filename="vovk.config.mjs"
+```ts showLineNumbers copy filename="vovk.config.mjs" {8}
 /** @type {import('vovk').VovkConfig} */
 const config = {
   // ...
@@ -322,7 +322,7 @@ Types for `body`, `query` and `params` are named `[PascalCaseMethodName][InputTy
 
 Method names are in snake_case: `UserRPC.updateUser` is `UserRPC.update_user`. Each RPC class names its methods in schema order. A name that is already taken gets the first free suffix, `_2`, `_3`, so `getUserByID` and `getUserById` give `get_user_by_id` and `get_user_by_id_2`.
 
-```py
+```py {13}
 from vovk_hello_world import UserRPC
 
 def main() -> None:
@@ -468,7 +468,7 @@ class StreamRPC:
 
 Usage:
 
-```py
+```py {4,6}
 from vovk_hello_world import StreamRPC
 
 def main() -> None:

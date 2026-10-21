@@ -8,7 +8,7 @@ description: "Return objects or Response instances from procedures, set response
 
 For type inference in the [TypeScript client](/typescript), these snippets are the same:
 
-```ts showLineNumbers copy
+```ts showLineNumbers copy {5}
 // ...
 export default class HelloController {
   @get()
@@ -18,7 +18,7 @@ export default class HelloController {
 }
 ```
 
-```ts showLineNumbers copy
+```ts showLineNumbers copy {6}
 import { NextResponse } from 'next/server';
 // ...
 export default class HelloController {
@@ -29,7 +29,7 @@ export default class HelloController {
 }
 ```
 
-```ts showLineNumbers copy
+```ts showLineNumbers copy {5-7}
 // ...
 export default class HelloController {
   @get()
@@ -48,7 +48,7 @@ export default class HelloController {
 
 Every HTTP decorator takes custom response headers in its second argument.
 
-```ts showLineNumbers copy
+```ts showLineNumbers copy {3}
 // ...
 export default class UserController {
   @put('do-something', { headers: { 'x-hello': 'world' } })
@@ -60,7 +60,7 @@ export default class UserController {
 
 Enable CORS headers with the `cors: true` option.
 
-```ts showLineNumbers copy
+```ts showLineNumbers copy {3}
 // ...
 export default class UserController {
   @put('do-something', { cors: true })
@@ -72,7 +72,7 @@ export default class UserController {
 
 For `.auto()` endpoints, pass `cors` and `headers` as the only argument.
 
-```ts showLineNumbers copy
+```ts showLineNumbers copy {3}
 // ...
 export default class UserController {
   @put.auto({ cors: true, headers: { 'x-hello': 'world' } })
@@ -86,7 +86,7 @@ export default class UserController {
 
 Set headers per response with a `NextResponse` or `Response` object.
 
-```ts showLineNumbers copy
+```ts showLineNumbers copy {7}
 import { NextResponse } from 'next/server';
 
 // ...
@@ -102,7 +102,7 @@ export default class UserController {
 
 To redirect, or to render the not-found page, use the Next.js functions from **next/navigation**.
 
-```ts showLineNumbers copy
+```ts showLineNumbers copy {8,14}
 import { get } from 'vovk';
 import { redirect, notFound } from 'next/navigation';
 
@@ -132,7 +132,7 @@ See the [Next.js documentation](https://nextjs.org/docs/app/building-your-applic
 
 For a file attachment, return a Web API `Response` with the right headers.
 
-```ts showLineNumbers copy
+```ts showLineNumbers copy {5-9}
 // ...
 export default class DownloadController {
   @get('csv-report')
@@ -149,7 +149,7 @@ export default class DownloadController {
 
 The `toDownloadResponse` helper builds this response for you. It takes the file content as a `Blob | File | ArrayBuffer | Uint8Array | ReadableStream<Uint8Array> | string{:ts}`, and an optional object with `filename`, `type` and `headers`.
 
-```ts showLineNumbers copy
+```ts showLineNumbers copy {7}
 
 import { toDownloadResponse } from 'vovk';
 // ...
@@ -169,7 +169,7 @@ export default class DownloadController {
 
 Throw HTTP errors with the `HttpException` class, in a syntax inspired by NestJS. It takes three arguments: an HTTP status from `HttpStatus`, a message and an optional `cause` object.
 
-```ts showLineNumbers copy
+```ts showLineNumbers copy {6}
 import { HttpException, HttpStatus } from 'vovk';
 
 // ...
@@ -181,7 +181,7 @@ static async updateUser(/* ... */) {
 
 The [TypeScript client](/typescript) rethrows them with the same interface.
 
-```ts showLineNumbers copy
+```ts showLineNumbers copy {8}
 import { UserRPC } from '@/client';
 import { HttpException } from 'vovk';
 
@@ -197,7 +197,7 @@ try {
 
 Other errors, such as `Error`, count as an `HttpException` with status `500`. In production, their message and cause stay on the server, and the client gets "Internal server error". The same goes for an `HttpException` with status `0`, which an RPC module throws when a call gets no response or fails client-side validation. To pass such a failure on, catch it and throw an `HttpException` with a status.
 
-```ts showLineNumbers copy
+```ts showLineNumbers copy {6}
 import { HttpException, HttpStatus } from 'vovk';
 
 // ...
@@ -279,7 +279,7 @@ export enum HttpStatus {
 
 A proxy endpoint gets data from another server with `fetch` and returns its `Response`, which Next.js sends as is. For the right type on the client, cast the return type:
 
-```ts showLineNumbers copy
+```ts showLineNumbers copy {6}
 import { get } from 'vovk';
 
 export default class ProxyController {
@@ -294,7 +294,7 @@ export default class ProxyController {
 
 The client then infers that type:
 
-```ts showLineNumbers copy
+```ts showLineNumbers copy {4}
 import { ProxyRPC } from '@/client';
 
 // ...
@@ -303,7 +303,7 @@ const { greeting } = await ProxyRPC.getHello();
 
 Or keep the server return type as `Response`, and set the type on the client method:
 
-```ts showLineNumbers copy
+```ts showLineNumbers copy {4}
 import { ProxyRPC } from '@/client';
 
 // ...
@@ -314,7 +314,7 @@ const { greeting } = await ProxyRPC.getHello<{ greeting: string }>();
 
 If you keep the `Response` type, the client resolves the call to a `Response` object. Use this for files or binary data.
 
-```ts showLineNumbers copy
+```ts showLineNumbers copy {6}
 import { get } from 'vovk';
 
 export default class ProxyController {
@@ -325,7 +325,7 @@ export default class ProxyController {
 }
 ```
 
-```ts showLineNumbers copy
+```ts showLineNumbers copy {4}
 import { ProxyRPC } from '@/client';
 
 // ...

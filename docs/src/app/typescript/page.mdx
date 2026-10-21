@@ -53,7 +53,7 @@ export default class UserController {
 
 It compiles to an RPC module with an `updateUser` method. The method takes `body`, `params` and `query` in one object:
 
-```ts showLineNumbers copy
+```ts showLineNumbers copy {3}
 import { UserRPC } from '@/client';
 
 const updatedUser = await UserRPC.updateUser({
@@ -110,7 +110,7 @@ Overrides the API root. The default is `/api`. You can also [configure](/config)
 
 Passes `RequestInit` options (the `fetch` options), such as `headers` and `credentials`, and [Next.js-specific options](https://nextjs.org/docs/app/api-reference/functions/fetch) such as `next: { revalidate: number }{:ts}`.
 
-```ts showLineNumbers copy
+```ts showLineNumbers copy {11-17}
 const user = await UserRPC.updateUser({
   body: {
     /* ... */
@@ -135,7 +135,7 @@ const user = await UserRPC.updateUser({
 
 Post-processes the result. The function receives the parsed response data and the original `Response`, and returns a new value.
 
-```ts showLineNumbers copy
+```ts showLineNumbers copy {11-14}
 const user = await UserRPC.updateUser({
   body: {
     /* ... */
@@ -155,7 +155,7 @@ const user = await UserRPC.updateUser({
 
 It can also return the `Response` together with the data:
 
-```ts showLineNumbers copy
+```ts showLineNumbers copy {11}
 const [user, response] = await UserRPC.updateUser({
   body: {
     /* ... */
@@ -176,7 +176,7 @@ response satisfies Response;
 
 Turns off client-side validation for this call. Use it when debugging, to see the server's validation errors instead.
 
-```ts showLineNumbers copy
+```ts showLineNumbers copy {3}
 await UserRPC.updateUser({
   // ...
   disableClientValidation: true,
@@ -187,7 +187,7 @@ await UserRPC.updateUser({
 
 Sets the content type that the client uses to read the response. For example, use it when the server returns JSON Lines without setting `content-type` to `application/jsonl`.
 
-```ts showLineNumbers copy
+```ts showLineNumbers copy {11}
 const user = await UserRPC.updateUser({
   body: {
     /* ... */
@@ -214,7 +214,7 @@ Overrides the [fetcher](/imports#fetcher) for this call, for example one made wi
 
 The `withDefaults` method returns a new RPC module with default options for every call. The defaults are deep-merged with each call's options. Headers merge by name, ignoring case, whether a layer gives them as an object, a `Headers{:ts}` instance or entries. A header given in the call replaces a default one.
 
-```ts showLineNumbers copy
+```ts showLineNumbers copy {3}
 import { UserRPC } from '@/client';
 
 const WithDefaultsUserRPC = UserRPC.withDefaults({
@@ -235,7 +235,7 @@ const user = await WithDefaultsUserRPC.updateUser({
 
 You can change the client's fetch function and its option types. See the [`fetcher` customization docs](/imports#fetcher).
 
-```ts showLineNumbers copy
+```ts showLineNumbers copy {3-4}
 await UserRPC.updateUser({
   // ...
   successMessage: 'Successfully updated the user',
@@ -247,7 +247,7 @@ await UserRPC.updateUser({
 
 If type inference can't find the return type, pass it as a type argument. You don't need to cast to `unknown` first.
 
-```ts showLineNumbers copy
+```ts showLineNumbers copy {7}
 import { UserRPC } from '@/client';
 import type { SomeType } from '../types';
 
@@ -271,7 +271,7 @@ export default class UserController {
 
 If the handler returns an async iterable, the RPC method resolves to a [disposable](https://github.com/tc39/proposal-explicit-resource-management) [async iterator](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/AsyncIterator) that reads the [JSON Lines](/jsonlines) stream.
 
-```ts showLineNumbers copy
+```ts showLineNumbers copy {3,5}
 import { StreamRPC } from '@/client';
 
 using stream = await StreamRPC.getJSONLines();
@@ -304,7 +304,7 @@ console.log(UserRPC.updateUser.fullSchema.meta?.config.libs?.ajv); // a config o
 
 Every RPC method has a type-safe `getURL` function. It returns the method's URL, with `params` and `query` in it.
 
-```ts showLineNumbers copy
+```ts showLineNumbers copy {3}
 import { UserRPC } from '@/client';
 
 const url = UserRPC.updateUser.getURL({
@@ -317,7 +317,7 @@ console.log(url); // "https://api.example.com/v1/users/69?notify=push"
 
 Use it to call `fetch` directly:
 
-```ts showLineNumbers copy
+```ts showLineNumbers copy {2}
 const response = await fetch(
   UserRPC.updateUser.getURL({
     /* ... */
@@ -334,7 +334,7 @@ const response = await fetch(
 
 Every RPC method has a `queryKey` function. It returns a globally unique key for [@tanstack/react-query](https://www.npmjs.com/package/@tanstack/react-query). The key is an array: `[segmentName, controllerPrefix, rpcModuleName, decoratorPath, httpMethod, ...key]{:ts}`. `...key` holds optional extra values that tell similar queries apart.
 
-```tsx showLineNumbers copy
+```tsx showLineNumbers copy {6}
 import { useQuery } from '@tanstack/react-query';
 import { UserRPC } from '@/client';
 
@@ -363,7 +363,7 @@ queryClient.invalidateQueries({
 
 For streamed responses, [`streamedQuery`](https://tanstack.com/query/latest/docs/reference/streamedQuery) reads [JSON Lines](/jsonlines) as an array.
 
-```tsx showLineNumbers copy
+```tsx showLineNumbers copy {7-9}
 import { useQuery, experimental_streamedQuery as streamedQuery } from '@tanstack/react-query';
 import { JSONLinesRPC } from '@/client';
 
@@ -385,7 +385,7 @@ const JSONLinesComponent = () => {
 
 RPC methods also work as mutation functions.
 
-```tsx showLineNumbers copy
+```tsx showLineNumbers copy {6}
 import { useMutation } from '@tanstack/react-query';
 import { UserRPC } from '@/client';
 

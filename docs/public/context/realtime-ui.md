@@ -4,8 +4,8 @@ description: "Walkthrough of the Realtime Kanban example app — a live-updating
 see_also:
   label: "Vovk.ts Docs Context"
   url: https://vovk.dev/context/docs.md
-chars: 109290
-est_tokens: 27323
+chars: 109407
+est_tokens: 27352
 ---
 
 Page: https://vovk.dev/realtime-ui
@@ -156,7 +156,7 @@ How it works: a `parse` method takes each raw API response, extracts the entitie
 
 Any component can read an item from the registry:
 
-```tsx showLineNumbers copy
+```tsx showLineNumbers copy {2}
 export const UserProfile = ({ userId }: { userId: User['id'] }) => {
     const userProfile = useRegistry(useShallow(state => state.user[userId]));
     return <div>{userProfile.fullName}</div>
@@ -165,7 +165,7 @@ export const UserProfile = ({ userId }: { userId: User['id'] }) => {
 
 To get an array of entities, map over the IDs:
 
-```tsx showLineNumbers copy
+```tsx showLineNumbers copy {3}
 export const UserList = ({ userIds }: { userIds: User['id'][] }) => {
     const users = useRegistry(
       useShallow((state) => userIds.map((id) => state.user[id])),
@@ -176,7 +176,7 @@ export const UserList = ({ userIds }: { userIds: User['id'][] }) => {
 
 The implementation below also handles soft deletions: a deleted entity is marked non-enumerable but stays in the state. This prevents errors in components that still reference it.
 
-```tsx showLineNumbers copy
+```tsx showLineNumbers copy {3}
 export const UserList = ({ userIds }: { userIds: User['id'][] }) => {
     const users = useRegistry(
       useShallow(({ user: { ...userReg } }) => userIds.filter((id) => id in userReg).map((id) => userReg[id]))
@@ -195,7 +195,7 @@ This article uses [Zustand](https://github.com/pmndrs/zustand), but the pattern 
 
 The pattern relies on one rule: every entity in your data has an `id` field and an `entityType` field that says what kind of entity it is. In a real project, `EntityType` can come from `@prisma/client`, be generated from your schema, or be imported from wherever your source of truth lives. This page writes it out by hand:
 
-```ts showLineNumbers copy filename="src/types.ts"
+```ts showLineNumbers copy filename="src/types.ts" {7-8}
 enum EntityType {
   user = 'user',
   task = 'task',
@@ -209,7 +209,7 @@ interface BaseEntity {
 
 Entity IDs should be **branded strings**, not plain `string` types. Then you can't pass a user ID where a task ID is expected, a common bug in apps with many entity types. With Zod, define a branded ID schema per entity:
 
-```ts showLineNumbers copy
+```ts showLineNumbers copy {3-4}
 import { z } from 'zod';
 
 const UserIdSchema = z.string().brand<'user'>();
@@ -221,7 +221,7 @@ type TaskId = z.infer<typeof TaskIdSchema>;   // string & { __brand: 'task' }
 
 Without Zod, a TypeScript utility type does the same:
 
-```ts showLineNumbers copy
+```ts showLineNumbers copy {1}
 type BrandedId<T extends string> = string & { readonly __brand: T };
 
 type UserId = BrandedId<'user'>;
@@ -256,7 +256,7 @@ In the browser, the `onError` handler sends the user to the login page when auth
 
 Set the fetcher in the [config](https://vovk.dev/config), so the generated [client](https://vovk.dev/typescript) imports it instead of the default one:
 
-```ts showLineNumbers copy filename="vovk.config.mjs"
+```ts showLineNumbers copy filename="vovk.config.mjs" {7}
 // @ts-check
 /** @type {import('vovk').VovkConfig} */
 const config = {
@@ -473,7 +473,7 @@ The function walks the whole structure and returns a normalized shape. It doesn'
 
 `createRegistryStore` takes the initial data (the arrays fetched during SSR) and returns a vanilla Zustand store that already holds it. It normalizes the arrays into entity maps with `getEntitiesFromData` and passes them as the store's initial state:
 
-```ts showLineNumbers copy
+```ts showLineNumbers copy {5}
 function createRegistryStore(initialData: {
   users?: UserType[];
   tasks?: TaskType[];
@@ -502,7 +502,7 @@ The `__isDeleted` property marks an entity as deleted. The entity stays in the s
 
 This works through JavaScript property descriptors. A property defined with `enumerable: false` is invisible to `Object.values`, `Object.keys`, and `{ ...spread }`, but you can still read it by key. Code that iterates over entities doesn't see deleted ones, and components that still hold the ID don't crash:
 
-```ts showLineNumbers copy
+```ts showLineNumbers copy {3,6-7}
 const obj = Object.defineProperties({}, {
   'task-1': { value: { id: 'task-1', title: 'Task 1' }, enumerable: true, configurable: true },
   'task-2': { value: { id: 'task-2', title: 'Task 2' }, enumerable: false, configurable: true },
@@ -528,7 +528,7 @@ When an entity arrives with `__isDeleted`, its property descriptor becomes non-e
 
 `RegistryProvider` connects the Zustand store, the fetcher, and the React component tree. It creates the store once (with `useRef`), filled with the data fetched on the server. It also subscribes to the fetcher's `onSuccess` event, so every later RPC response is parsed into the registry.
 
-```tsx showLineNumbers copy
+```tsx showLineNumbers copy {7}
 export function RegistryProvider({ initialData, children }) {
   const storeRef = useRef(null);
   if (!storeRef.current) {
@@ -581,7 +581,7 @@ store.getState().parse(data);
 
 The server component fetches the data with the controller's `.fn()` method, a direct server-side call without HTTP, and passes it to `RegistryProvider`. Child components select data from the store and need no `initialData` props:
 
-```tsx showLineNumbers copy filename="src/app/page.tsx"
+```tsx showLineNumbers copy filename="src/app/page.tsx" {3-4,8}
 export default async function Home() {
   const [users, tasks] = await Promise.all([
     UserController.getUsers.fn<UserType[]>(),
@@ -600,7 +600,7 @@ export default async function Home() {
 
 Each component selects from the registry and runs a `useQuery` to refresh the data on the client:
 
-```tsx showLineNumbers copy filename="src/components/user-list.tsx"
+```tsx showLineNumbers copy filename="src/components/user-list.tsx" {2,4}
 const UserList = () => {
   const users = useRegistry(useShallow((state) => Object.values(state.user)));
 
@@ -758,7 +758,7 @@ export const BASE_KEYS = Object.keys(BASE_FIELDS) as (keyof BaseEntity)[];
 
 For example, `UpdateUserSchema` drops the base fields from the generated `UserSchema` and makes the rest optional, as the `updateUser` body below does:
 
-```ts showLineNumbers copy
+```ts showLineNumbers copy {4}
 import { UserSchema } from '@schemas/index';
 import { BASE_FIELDS } from '@/constants';
 
@@ -1795,7 +1795,7 @@ export const verifySession = cache(async () => {
 ```
 *[The code above is fetched from GitHub repository.](https://github.com/finom/vovk/blob/main/examples/realtime-kanban/src/lib/dal.ts)*
 
-```ts showLineNumbers copy filename="src/app/page.tsx"
+```ts showLineNumbers copy filename="src/app/page.tsx" {4}
 import { verifySession } from "@/lib/dal";
 
 export default async function Home() {
@@ -1805,7 +1805,7 @@ export default async function Home() {
 
 The DAL also exports `isLoggedIn`. The `sessionGuard` [decorator](https://vovk.dev/decorator) uses it to check that the user is logged in before a procedure runs.
 
-```ts showLineNumbers copy filename="src/decorators/session-guard.ts" source="examples/realtime-kanban"
+```ts showLineNumbers copy filename="src/decorators/session-guard.ts" source="examples/realtime-kanban" {5}
 import { createDecorator, HttpException, HttpStatus } from 'vovk';
 import { isLoggedIn } from '@/lib/dal';
 
@@ -1996,7 +1996,7 @@ export default function useParseSDKToolCallOutputs(messages: UIMessage[]) {
 
 Without the optimizations, the hook comes down to this:
 
-```ts showLineNumbers copy
+```ts showLineNumbers copy {5}
 // ...
 const store = useRegistryStore();
 
@@ -2418,7 +2418,7 @@ Video: https://vovk.dev/video/kanban_mcp.mp4
 
 As on the other pages, the `deriveTools` function from the `vovk` package derives the server's tools from the controllers. See [Deriving AI Tools](https://vovk.dev/tools).
 
-```ts filename="src/app/api/mcp/route.ts" source="examples/realtime-kanban"
+```ts filename="src/app/api/mcp/route.ts" source="examples/realtime-kanban" {6}
 import { createMcpHandler, McpServer } from '@modelcontextprotocol/server';
 import { deriveTools, ToModelOutput } from 'vovk';
 import TaskController from '@/modules/task/task-controller';
@@ -2491,7 +2491,7 @@ As a proof of concept, this article describes the Telegram bot. Users send it te
 
 The Telegram API client is built with [OpenAPI mixins](https://vovk.dev/mixins). It is a module with the fixed name `TelegramAPI` in the `telegram` pseudo-segment.
 
-```ts showLineNumbers copy filename="vovk.config.mjs"
+```ts showLineNumbers copy filename="vovk.config.mjs" {14}
 // @ts-check
 /** @type {import('vovk').VovkConfig} */
 const config = {
@@ -2533,7 +2533,7 @@ await TelegramAPI.sendMessage({
 
 The Telegram Bot API takes the bot token in the URL, so recreate the module with the `withDefaults` method to set the `apiRoot` once.
 
-```ts
+```ts {3-4}
 import { TelegramAPI as TelegramRawAPI } from '@/client';
 
 const TelegramAPI = TelegramRawAPI.withDefaults({
@@ -2545,7 +2545,7 @@ const TelegramAPI = TelegramRawAPI.withDefaults({
 
 A new segment, `bots`, holds the `TelegramController` under the `TelegramBot` key. The client doesn't need its schema, so the segment emits none: `emitSchema: false` in the `initSegment` call. With no schema emitted, the controller key can be any string.
 
-```ts showLineNumbers copy filename="src/app/api/bots/[[...vovk]]/route.ts" source="examples/realtime-kanban"
+```ts showLineNumbers copy filename="src/app/api/bots/[[...vovk]]/route.ts" source="examples/realtime-kanban" {12}
 import { initSegment } from 'vovk';
 import TelegramController from '../../../../modules/telegram/telegram-controller';
 
@@ -2565,7 +2565,7 @@ export const { GET, POST, PATCH, PUT, HEAD, OPTIONS, DELETE } = initSegment({
 
 The `TelegramController` class has a single `handle` procedure. It serves the `/api/bots/telegram/bot` endpoint, which the Telegram webhook calls for each incoming message.
 
-```ts showLineNumbers copy filename="src/modules/telegram/telegram-controller.ts" source="examples/realtime-kanban"
+```ts showLineNumbers copy filename="src/modules/telegram/telegram-controller.ts" source="examples/realtime-kanban" {7-9}
 import { post, prefix } from 'vovk';
 import { telegramGuard } from '@/decorators/telegram-guard';
 import TelegramService from './telegram-service';
@@ -2581,7 +2581,7 @@ export default class TelegramController {
 
 The app's `PASSWORD` doesn't cover this endpoint, because Telegram sends no session cookie. The `telegramGuard` decorator checks the `X-Telegram-Bot-Api-Secret-Token` header instead. The endpoint answers `404` until both `TELEGRAM_BOT_TOKEN` and `TELEGRAM_WEBHOOK_SECRET` are set, and `401` to a request whose header doesn't hold the secret.
 
-```ts showLineNumbers copy filename="src/decorators/telegram-guard.ts" source="examples/realtime-kanban"
+```ts showLineNumbers copy filename="src/decorators/telegram-guard.ts" source="examples/realtime-kanban" {11,14}
 import { timingSafeEqual } from 'node:crypto';
 import { createDecorator, HttpException, HttpStatus } from 'vovk';
 
@@ -2615,7 +2615,7 @@ curl "https://api.telegram.org/bot$TELEGRAM_BOT_TOKEN/setWebhook" \
 
 The `TelegramService` class holds the main logic: it handles incoming messages, generates AI responses with the Vercel AI SDK, updates the database through derived tools, and sends text or voice messages back to the user.
 
-```ts showLineNumbers copy filename="src/modules/telegram/telegram-service.ts"
+```ts showLineNumbers copy filename="src/modules/telegram/telegram-service.ts" {12}
 // ...
 export default class TelegramService {
   // ...

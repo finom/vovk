@@ -17,7 +17,7 @@ The built-in `NextRequest` functions, such as `req.json()` and `req.nextUrl.sear
 
 `req.vovk.body()` returns the parsed request body. Mostly it works as `req.json()` does, but it also parses the non-JSON content types that `procedure` declares (see [Content Type](/content-type)).
 
-```ts showLineNumbers copy
+```ts showLineNumbers copy {5}
 import { post, type VovkRequest } from 'vovk';
 export default class UserController {
   @post()
@@ -35,7 +35,7 @@ Once a body schema or `req.vovk.body()` has read the body, the body methods of `
 
 `req.vovk.query()` returns the typed query parameters, nested data included.
 
-```ts showLineNumbers copy
+```ts showLineNumbers copy {5}
 import { get, type VovkRequest } from 'vovk';
 export default class UserController {
   @get()
@@ -97,7 +97,7 @@ is parsed as:
 
 `req.vovk.params()` returns the typed route parameters, as the handler's second argument does. To type it, use the third type argument of `VovkRequest`.
 
-```ts showLineNumbers copy
+```ts showLineNumbers copy {6}
 import { get, type VovkRequest } from 'vovk';
 
 export default class UserController {

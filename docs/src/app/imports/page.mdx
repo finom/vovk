@@ -20,7 +20,7 @@ export const UserRPC = createRPC(schema, '', 'UserRPC', import('vovk/fetcher'), 
 
 With custom `outputConfig.imports`:
 
-```ts showLineNumbers copy filename="vovk.config.mjs"
+```ts showLineNumbers copy filename="vovk.config.mjs" {5-6}
 /** @type {import('vovk').VovkConfig} */
 const config = {
   outputConfig: {
@@ -35,7 +35,7 @@ export default config;
 
 The generated `index.ts` imports them, with relative paths adjusted to its folder. A path to a `.ts` file is written the way `tsconfig.json` resolves it: without the extension under bundler resolution, by its `.js` name under `node16` or `nodenext`.
 
-```ts showLineNumbers copy filename="./src/client/index.ts"
+```ts showLineNumbers copy filename="./src/client/index.ts" {4-5}
 import { createRPC } from 'vovk/create-rpc';
 import { schema } from './schema';
 
@@ -47,7 +47,7 @@ export const UserRPC = createRPC(schema, '', 'UserRPC', import('../lib/fetcher')
 
 You can also set `fetcher` and `validateOnClient` per [segment](/segment), [OpenAPI mixins](/mixins) included. This way each segment can have its own options, auth and validation library.
 
-```ts showLineNumbers copy
+```ts showLineNumbers copy {13-14}
 /** @type {import('vovk').VovkConfig} */
 const config = {
   outputConfig: {
@@ -82,7 +82,7 @@ The comparison ignores the content type's parameters and letter case, so `Applic
 
 The fetcher can also take custom options, passed to an RPC method on each call.
 
-```ts showLineNumbers copy
+```ts showLineNumbers copy {5-6}
 import { UserRPC } from '@/client';
 
 const user = await UserRPC.updateUser({
@@ -96,7 +96,7 @@ const user = await UserRPC.updateUser({
 
 The module at `imports.fetcher` must export a `fetcher` variable. `createFetcher` from `vovk/fetcher` makes one.
 
-```ts showLineNumbers copy filename="./src/lib/fetcher.ts"
+```ts showLineNumbers copy filename="./src/lib/fetcher.ts" {3}
 import { createFetcher } from 'vovk/fetcher';
 
 export const fetcher = createFetcher<{
@@ -131,7 +131,7 @@ export const fetcher = createFetcher<{
 
 Every RPC method then accepts these options:
 
-```ts showLineNumbers copy
+```ts showLineNumbers copy {7-9}
 import { UserRPC } from '@/client';
 
 await UserRPC.updateUser({
@@ -166,7 +166,7 @@ Runs when a request succeeds. Use it for success messages, logging, or post-proc
 
 You can also add `onSuccess` and `onError` callbacks after you create the fetcher. Use this when a callback needs something that doesn't exist at creation time, such as a React context value or a Zustand store. Both methods return a function that removes the callback. Several callbacks run in the order you add them.
 
-```ts showLineNumbers copy
+```ts showLineNumbers copy {1,5}
 const unsubSuccess = fetcher.onSuccess((data, { successMessage }) => {
   console.log('Success:', successMessage);
 });
@@ -184,7 +184,7 @@ unsubError();
 
 `validateOnClient` validates the input of an RPC or API method (`params`, `query`, `body`) on the client. Create it with `createValidateOnClient` from `vovk/create-validate-on-client`. It takes a `validate` function, which receives the input data, its JSON schema and metadata, and returns the validated data or throws. Validation runs only when both the input and its schema exist.
 
-```ts showLineNumbers copy filename="./src/lib/validate-on-client.ts"
+```ts showLineNumbers copy filename="./src/lib/validate-on-client.ts" {4}
 import { validateData } from 'some-json-validation-library';
 import { createValidateOnClient, HttpException, HttpStatus } from 'vovk/create-validate-on-client';
 

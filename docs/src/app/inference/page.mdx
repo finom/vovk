@@ -55,7 +55,7 @@ The types of `body`, `query` and `params` come from `VovkRequest<TBody, TQuery, 
 
 A raw method with `params` as a type argument:
 
-```ts showLineNumbers copy
+```ts showLineNumbers copy {5}
 import { put, type VovkRequest } from 'vovk';
 
 export default class UserController {
@@ -68,7 +68,7 @@ export default class UserController {
 
 A raw method with `params` as a separate argument:
 
-```ts showLineNumbers copy
+```ts showLineNumbers copy {5}
 import { put, type VovkRequest } from 'vovk';
 
 export default class UserController {
@@ -81,7 +81,7 @@ export default class UserController {
 
 Validated [procedures](/procedure) infer the input types from their schemas:
 
-```ts showLineNumbers copy
+```ts showLineNumbers copy {7-9}
 import { procedure, put } from 'vovk';
 import { z } from 'zod';
 
@@ -159,7 +159,7 @@ Only the [procedure](/procedure) function sets output and iteration types.
 
 For output:
 
-```ts showLineNumbers copy
+```ts showLineNumbers copy {7}
 import { procedure, get } from 'vovk';
 import { z } from 'zod';
 
@@ -175,7 +175,7 @@ export default class UserController {
 
 For [JSON Lines](/jsonlines) responses:
 
-```ts showLineNumbers copy
+```ts showLineNumbers copy {7}
 import { procedure, get } from 'vovk';
 import { z } from 'zod';
 
@@ -211,7 +211,7 @@ type Iteration = VovkIteration<typeof StreamController.streamItems>; // { item: 
 
 `VovkReturnType<T>` and `VovkYieldType<T>` infer what a method actually returns or yields, for methods without validation. They can't be used for self-references in services: they cause “implicit any” TypeScript errors.
 
-```ts showLineNumbers copy
+```ts showLineNumbers copy {3}
 export default class UserController {
   @get()
   static updateUser = () => {
@@ -220,7 +220,7 @@ export default class UserController {
 }
 ```
 
-```ts showLineNumbers copy
+```ts showLineNumbers copy {3}
 export default class StreamController {
   @get()
   static async *streamItems() {

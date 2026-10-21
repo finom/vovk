@@ -34,7 +34,7 @@ The client doesn't type or send the header and cookie parameters of the OpenAPI 
 
 `withDefaults` creates a copy of an API module with default options:
 
-```ts showLineNumbers copy
+```ts showLineNumbers copy {3}
 import { PetstoreAPI } from '@/client';
 
 const PetstoreAPIWithAuth = PetstoreAPI.withDefaults({
@@ -92,7 +92,7 @@ UserAPI.updateUser.schema.validation?.body; // JSON Schema for request body
 
 Every generated API module can be turned into [AI tools](/tools) for function calling APIs.
 
-```ts showLineNumbers copy
+```ts showLineNumbers copy {6}
 import { deriveTools } from 'vovk';
 import { PetstoreAPI } from '@/client';
 
@@ -186,7 +186,7 @@ npx vovk-cli init
 
 A basic config file looks like this:
 
-```ts showLineNumbers copy filename="vovk.config.js"
+```ts showLineNumbers copy filename="vovk.config.js" {5}
 /** @type {import('vovk').VovkConfig} */
 const config = {
   outputConfig: {
@@ -211,7 +211,7 @@ A mixin is a pseudo-[segment](/segment) in `outputConfig.segments` with an `open
 
 Petstore example with a remote URL and a local fallback:
 
-```ts showLineNumbers copy filename="vovk.config.js"
+```ts showLineNumbers copy filename="vovk.config.js" {9}
 /** @type {import('vovk').VovkConfig} */
 const config = {
   outputConfig: {
@@ -255,7 +255,7 @@ A larger example is the [GitHub REST API](https://docs.github.com/en/rest). Each
 
 For example, `issues/list-for-org` becomes the `GithubIssuesAPI` module with a `listForOrg` method.
 
-```ts showLineNumbers copy filename="vovk.config.js"
+```ts showLineNumbers copy filename="vovk.config.js" {18,22}
 // @ts-check
 import camelCase from 'lodash/camelCase.js';
 import startCase from 'lodash/startCase.js';
@@ -321,7 +321,7 @@ A large spec makes a large client: every operation becomes a method, and the gen
 - `filterOperations`: only the operations the predicate returns `true` for are generated. It receives the same object as the naming functions (`operationObject`, `method`, `path`, `openAPIObject`) and runs before them, so a filtered-out operation produces no method, types or validation schemas. Omit it to keep all operations.
 - `pruneComponents` (default `false`): removes from the segment schema every component that the kept operations don't reference, directly or through other components. Don't turn it on if you import `Mixins.<Segment>.<Component>` types for components that no kept operation uses: they are removed with their schemas.
 
-```ts showLineNumbers copy filename="vovk.config.js"
+```ts showLineNumbers copy filename="vovk.config.js" {15,18}
 // @ts-check
 /** @type {import('vovk').VovkConfig} */
 const config = {
@@ -354,7 +354,7 @@ For this Stripe subset, the generated `mixins.json` drops from ~19 MB (559 opera
 
 Each mixin can have its own fetch function, or all mixins can share one. The [fetcher](/imports#fetcher) sets authorization headers, runs client-side validation, and sends and handles the HTTP requests.
 
-```ts showLineNumbers copy filename="vovk.config.js"
+```ts showLineNumbers copy filename="vovk.config.js" {10}
 /** @type {import('vovk').VovkConfig} */
 const config = {
   outputConfig: {
@@ -385,7 +385,7 @@ await GithubIssuesAPI.listForOrg({ params: { org: 'finom' } });
 
 The `Mixins` namespace holds the types generated from `components/schemas` of all mixed-in OpenAPI specifications, as an alternative to inference. Each mixin gets a namespace, and each component a type, both named in PascalCase: the `petstore` mixin's `Pet` component is `Mixins.Petstore.Pet`. Letters of any script are kept. A name that would start with a digit gets a leading underscore: `2FAConfig` becomes `_2FaConfig`. When two components get the same name, the later one in the document takes a number: `user-profile` and `UserProfile` become `UserProfile` and `UserProfile2`.
 
-```ts showLineNumbers copy
+```ts showLineNumbers copy {4}
 import type { VovkOutput } from 'vovk';
 import { PetstoreAPI, type Mixins } from '@/client';
 
@@ -396,7 +396,7 @@ const pet2: VovkOutput<typeof PetstoreAPI.getPetById> = { id: 1, name: 'Doggo', 
 
 `composedClient.outDir` changes the output folder:
 
-```ts showLineNumbers copy filename="vovk.config.js"
+```ts showLineNumbers copy filename="vovk.config.js" {4}
 /** @type {import('vovk').VovkConfig} */
 const config = {
   composedClient: {
@@ -417,7 +417,7 @@ The [segmented client](/segmented) splits the code into chunks. Each mixin goes 
 
 By default, the output goes to the composed client's folder: `src/client` with a `src/app` folder, `client/` otherwise. `segmentedClient.outDir` changes the folder.
 
-```ts showLineNumbers copy filename="vovk.config.js"
+```ts showLineNumbers copy filename="vovk.config.js" {5}
 /** @type {import('vovk').VovkConfig} */
 const config = {
   segmentedClient: {

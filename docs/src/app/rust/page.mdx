@@ -62,7 +62,7 @@ This generates:
 
 `lib.rs` is the root of the module. Generate the files into the other project's `src`, for example with `--out ../my_app/src/api`, and point a module at it in `src/main.rs` or `src/lib.rs`:
 
-```rs
+```rs {3}
 // the items the app doesn't use would be dead code warnings
 #[allow(dead_code, unused_imports)]
 #[path = "api/lib.rs"]
@@ -88,7 +88,7 @@ once_cell = "1.17"
 
 You can [configure](/config) the default [generate](/generate) command (without flags) to create the client. [vovk dev](/dev) creates it too, and creates it again on every schema change. Add the `rs` template to the [composed client](/composed) config:
 
-```ts showLineNumbers copy filename="vovk.config.mjs"
+```ts showLineNumbers copy filename="vovk.config.mjs" {4,10}
 /** @type {import('vovk').VovkConfig} */
 const config = {
   composedClient: {
@@ -110,7 +110,7 @@ The Rust client calls an absolute URL, so it needs [`outputConfig.origin`](/conf
 
 Like other templates, the [rs](/templates#rs) template has a default `outDir` for composed clients: `./dist_rust`. Change it in the [template definitions](/templates#defs):
 
-```ts showLineNumbers copy filename="vovk.config.mjs"
+```ts showLineNumbers copy filename="vovk.config.mjs" {8}
 /** @type {import('vovk').VovkConfig} */
 const config = {
   // ...
@@ -480,7 +480,7 @@ A failed call returns an `HttpException`. Its `status_code()` is the response st
 
 The calls send their requests with a default `reqwest::Client`, which has no timeout. To set a timeout, a proxy or default headers, give `set_client_factory` a function that builds the client. The crate calls it again for each thread and tokio runtime it sends calls from, since a pooled connection works only on the runtime that opened it.
 
-```rs
+```rs {3}
 use std::time::Duration;
 
 vovk_hello_world::set_client_factory(|| {
@@ -638,7 +638,7 @@ pub mod stream_rpc {
 
 Usage, with the futures crate (`cargo add futures`):
 
-```rs
+```rs {6-7}
 use futures::StreamExt;
 use std::io::{stdout, Write};
 use vovk_hello_world::stream_rpc;

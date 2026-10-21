@@ -10,7 +10,7 @@ description: "Derived tools as uicast host functions: deriveTools() from RPC mod
 
 Host functions run where **uicast** renders, in the browser. Derive them from the modules of the [TypeScript client](/typescript), which call the endpoints over HTTP. Deriving them from controllers would put server code in the browser bundle.
 
-```ts showLineNumbers copy filename="src/tools.ts"
+```ts showLineNumbers copy filename="src/tools.ts" {5-6}
 import { deriveTools, ToModelOutput } from 'vovk';
 import { OrderRPC } from '@/client';
 
@@ -22,14 +22,14 @@ export const tools = deriveTools({
 
 The same `tools` go to the evaluator in the browser and to the prompt on the server:
 
-```ts showLineNumbers copy
+```ts showLineNumbers copy {4}
 import { Evaluator } from '@uicast/expr';
 import { tools } from '@/tools';
 
 const evaluator = new Evaluator({ functions: tools });
 ```
 
-```ts showLineNumbers copy
+```ts showLineNumbers copy {4}
 import { getFunctionsPartialPrompt } from '@uicast/core/prompt';
 import { tools } from '@/tools';
 
@@ -56,7 +56,7 @@ What **uicast** gets when a call fails:
 
 A derived tool is named `<module>_<handler>`, such as `OrderRPC_list`. Set the name and the description the model reads with `@operation.tool`:
 
-```ts showLineNumbers copy
+```ts showLineNumbers copy {1}
 @operation.tool({ name: 'listOrders', description: 'Orders, newest first.' })
 @get()
 static list = procedure({

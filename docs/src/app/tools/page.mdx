@@ -59,7 +59,7 @@ The function returns an array of tools. Each tool satisfies the `StandardToolV0`
 
 To override the default tool name and description, or to add other tool attributes, use the custom `x-tool` attribute in the `@operation` decorator.
 
-```ts showLineNumbers copy filename="src/modules/user/user-controller.ts"
+```ts showLineNumbers copy filename="src/modules/user/user-controller.ts" {9-11}
 import { z } from 'zod';
 import { prefix, get, operation, procedure } from 'vovk';
 
@@ -83,7 +83,7 @@ export default class UserController {
 
 `@operation.tool` sets the same attributes with shorter syntax. They go under the `x-tool` key of the OpenAPI operation object.
 
-```ts showLineNumbers copy filename="src/modules/user/user-controller.ts"
+```ts showLineNumbers copy filename="src/modules/user/user-controller.ts" {6-10}
 import { z } from 'zod';
 import { prefix, get, operation, procedure } from 'vovk';
 
@@ -121,7 +121,7 @@ The attributes under `x-tool` are:
 
 To include only some procedures of a module, besides the `hidden` attribute, use `pick` or `omit` from `lodash` or a similar utility.
 
-```ts showLineNumbers copy
+```ts showLineNumbers copy {8-9}
 import { deriveTools } from 'vovk';
 import { PostRPC } from '@/client';
 import { pick, omit } from 'lodash';
@@ -141,7 +141,7 @@ The resulting `tools` include `createPost` and `getPost` from `PostRPC`, and all
 
 Third-party APIs may need authorization headers. Pass them with the `withDefaults` function, which all [generated RPC/API modules](/typescript) have. With the `GithubIssuesAPI` module from [OpenAPI mixins](/mixins), you can create authorized tools for the GitHub Issues API:
 
-```ts showLineNumbers copy
+```ts showLineNumbers copy {7}
 
 import { deriveTools } from 'vovk';
 import { GithubIssuesAPI } from '@/client';
@@ -165,7 +165,7 @@ const tools = deriveTools({
 
 The `createTool` utility was removed in v4. Derived tools follow the standard-tool convention. So you can create standalone tools, which don't map to your back end, with the [standard-tool](https://www.npmjs.com/package/standard-tool) package, or write them as plain objects of the same shape. Mix them with derived tools as you like:
 
-```ts showLineNumbers copy
+```ts showLineNumbers copy {6,17}
 import { deriveTools } from 'vovk';
 import { standardTool } from 'standard-tool';
 import { z } from 'zod';
@@ -254,7 +254,7 @@ The tool's `inputSchema` goes to the Vercel AI SDK as is. The SDK supports Stand
 
 On the client side, create a component with the [useChat](https://ai-sdk.dev/docs/reference/ai-sdk-ui/use-chat) hook:
 
-```tsx showLineNumbers copy filename="src/components/chat.tsx"
+```tsx showLineNumbers copy filename="src/components/chat.tsx" {9-13}
 'use client';
 import { useChat } from '@ai-sdk/react';
 import { DefaultChatTransport } from 'ai';
@@ -299,7 +299,7 @@ export default function Chat() {
 
 `useChat` reads a random value when it renders. With `cacheComponents` on, which `create-next-app` 16.4+ sets, `next build` refuses a random value outside `<Suspense>`, so render the component inside `<Suspense>` from a server page:
 
-```tsx showLineNumbers copy filename="src/app/page.tsx"
+```tsx showLineNumbers copy filename="src/app/page.tsx" {6-8}
 import { Suspense } from 'react';
 import Chat from '@/components/chat';
 

@@ -96,7 +96,7 @@ The folder of a segment sets both its API path and its name. For example, **/src
 
 For a segment other than the root, pass `segmentName` to `initSegment`:
 
-```ts showLineNumbers copy filename="src/app/api/foo/[[...vovk]]/route.ts"
+```ts showLineNumbers copy filename="src/app/api/foo/[[...vovk]]/route.ts" {4}
 // ...
 
 export const { GET, POST, PATCH, PUT, HEAD, OPTIONS, DELETE } = initSegment({

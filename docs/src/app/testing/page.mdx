@@ -14,7 +14,7 @@ The `vovk` package is ES modules only. Jest set up with `next/jest` can't load i
 
 Vitest doesn't read the `paths` of **tsconfig.json**, so it can't resolve `@/client` on its own. With Vite 8, which a new Vitest install uses, turn on `resolve.tsconfigPaths`. With an older Vite, use the `vite-tsconfig-paths` plugin or `resolve.alias`.
 
-```ts showLineNumbers copy filename="vitest.config.ts"
+```ts showLineNumbers copy filename="vitest.config.ts" {4}
 import { defineConfig } from 'vitest/config';
 
 export default defineConfig({
@@ -58,7 +58,7 @@ export default class UserController {
 
 Test it directly:
 
-```ts showLineNumbers copy filename="src/modules/user/user-controller.test.ts"
+```ts showLineNumbers copy filename="src/modules/user/user-controller.test.ts" {6,14}
 import { describe, it, expect } from 'vitest';
 import UserController from './user-controller';
 
@@ -89,7 +89,7 @@ The trade-off: `.fn()` skips `proxy.js` (`middleware.js` in earlier Next.js vers
 
 Procedures validate their input, so you can test that invalid data is rejected:
 
-```ts showLineNumbers copy filename="src/modules/user/user-controller.test.ts"
+```ts showLineNumbers copy filename="src/modules/user/user-controller.test.ts" {10,12}
 import { describe, it, expect } from 'vitest';
 import { HttpException } from 'vovk';
 import UserController from './user-controller';
@@ -110,7 +110,7 @@ describe('UserController validation', () => {
 
 For end-to-end tests through HTTP, call the generated [RPC modules](/typescript) against a running dev server. The client calls `/api` by default, and `fetch` in Node.js takes no relative URL, so give it the server's address with `apiRoot`, or set [`outputConfig.origin`](/config#outputconfig).
 
-```ts showLineNumbers copy filename="src/modules/user/user-controller.e2e.test.ts"
+```ts showLineNumbers copy filename="src/modules/user/user-controller.e2e.test.ts" {4}
 import { describe, it, expect } from 'vitest';
 import { UserRPC } from '@/client';
 

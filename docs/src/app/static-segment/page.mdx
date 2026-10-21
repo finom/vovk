@@ -10,7 +10,7 @@ npx vovk new segment openapi --static # creates the static segment "openapi" at 
 
 Next.js can pre-render API endpoints at build time with [generateStaticParams](https://nextjs.org/docs/app/api-reference/functions/generate-static-params). The Vovk.ts `controllersToStaticParams` helper uses this to emit static API endpoints, for minimal latency. Use it for OpenAPI definitions, historical datasets (refreshed from time to time by CI/CD) or other data that rarely changes. It also works in [Static Export mode](https://nextjs.org/docs/pages/building-your-application/deploying/static-exports), with the `output: 'export'` Next.js option:
 
-```ts showLineNumbers copy filename="next.config.js"
+```ts showLineNumbers copy filename="next.config.js" {3}
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   output: 'export',
@@ -23,7 +23,7 @@ Make `generateStaticParams` return `controllersToStaticParams` with your control
 
 Next.js also refuses `output: 'export'` when `cacheComponents` is on. For a static export, set `cacheComponents: false` in **next.config**.
 
-```ts showLineNumbers copy filename="src/app/api/[[...vovk]]/route.ts"
+```ts showLineNumbers copy filename="src/app/api/[[...vovk]]/route.ts" {4-6}
 // ...
 export type Controllers = typeof controllers;
 
@@ -36,7 +36,7 @@ export const { GET } = initSegment({ controllers });
 
 On static hosting, such as GitHub Pages, end the endpoint paths with `.json`, so the host sends the right HTTP headers.
 
-```ts showLineNumbers copy
+```ts showLineNumbers copy {5}
 import { get, prefix } from 'vovk';
 
 @prefix('hello')
@@ -62,7 +62,7 @@ export function generateStaticParams() {
 
 The `staticParams` option of `@get` lists the param combinations to render, so one handler serves several static paths. A param in the controller's prefix, such as `@prefix('users/{userId}')`, takes its value from the same objects. Below, one handler renders six variants of two params: section (`a | b`) and page (`1 | 2 | 3`).
 
-```ts showLineNumbers copy
+```ts showLineNumbers copy {10-11}
 import { z } from 'zod';
 import { procedure, prefix, get, operation } from 'vovk';
 

@@ -59,7 +59,7 @@ Creates a `Response` with file or binary content and the matching headers, such 
 
 Serving an audio file:
 
-```ts showLineNumbers copy
+```ts showLineNumbers copy {6}
 import { get, toDownloadResponse } from 'vovk';
 
 export default class MediaController {
@@ -87,7 +87,7 @@ These decorators set the HTTP method of a handler. A `HEAD` request to a path wi
   - `staticParams` (`@get` only) is an array of path parameter values, for example `[{ id: '123' }]`.
   - `before` runs on an HTTP request before the segment's `onBefore`, the custom decorators and the handler, with the controller as `this`. An error it throws becomes the response.
 
-```ts showLineNumbers copy
+```ts showLineNumbers copy {4}
 import { get, type VovkRequest } from 'vovk';
 
 export default class HelloController {
@@ -100,7 +100,7 @@ export default class HelloController {
 
 Each HTTP method decorator has an `.auto()` form. It builds the path from the method name in kebab case and adds a `{name}` segment for each property of the procedure's `params` schema, so `getHelloWorld` below is served at `get-hello-world/{id}`. It takes the same options as the decorator.
 
-```ts showLineNumbers copy
+```ts showLineNumbers copy {5}
 import { get, procedure } from 'vovk';
 import { z } from 'zod';
 
@@ -118,7 +118,7 @@ export default class HelloController {
 
 `@prefix(p: string)` adds a path in front of every endpoint of a controller. It's optional.
 
-```ts showLineNumbers copy
+```ts showLineNumbers copy {3}
 import { prefix, get } from 'vovk';
 
 @prefix('hello')
@@ -136,7 +136,7 @@ export default class HelloController {
 
 `@operation.tool()` adds AI tool data under the `x-tool` key of the operation object (see [Deriving AI Tools](/tools)), and `@operation.error(status, message)` documents an error response.
 
-```ts showLineNumbers copy
+```ts showLineNumbers copy {4-6}
 import { get, operation } from 'vovk';
 
 export default class HelloController {
@@ -158,7 +158,7 @@ export default class HelloController {
 
 A controller can be in several segments, and each segment runs its own hooks. If the [composed client](/composed) includes those segments, give the controller a different key in each: the client exports one module per name. To serve the same handlers under another prefix, or together with new handlers, extend the controller and apply `@cloneControllerMetadata` to the new class. It copies all metadata (routes, operations and so on) from the parent controller. The new class keeps the parent's prefix unless it sets its own, as `@prefix('v2')` does below.
 
-```ts showLineNumbers copy
+```ts showLineNumbers copy {4}
 import { prefix, cloneControllerMetadata } from 'vovk';
 import UserController from './user-controller';
 
@@ -179,7 +179,7 @@ export default class UserControllerV2 extends UserController {}
 
 The optional second argument changes the procedure schema based on the decorator arguments.
 
-```ts showLineNumbers copy
+```ts showLineNumbers copy {8-10}
 import { createDecorator, get } from 'vovk';
 
 const myDecorator = createDecorator(
@@ -211,7 +211,7 @@ The default fetcher: the function the RPC client sends its requests with, unless
 
 Creates a custom fetcher for the RPC client. Its type parameter defines extra options for the RPC methods. It returns the `fetcher` function that the client is built with.
 
-```ts showLineNumbers copy filename="./src/lib/fetcher.ts"
+```ts showLineNumbers copy filename="./src/lib/fetcher.ts" {3-7}
 import { createFetcher } from 'vovk/fetcher';
 
 export const fetcher = createFetcher<{
@@ -259,7 +259,7 @@ Lists the routes as static params, so the API is built at build time instead of 
 
 - `Array<Record<string, string[]>>{:ts}` — params objects for `generateStaticParams()`: one per path, such as `{ vovk: ['hello', 'greeting.json'] }`. The list starts with `{ vovk: ['_schema_'] }` for the schema endpoint when `NODE_ENV` is `development`, or when there is no other path, as `output: 'export'` needs one.
 
-```ts showLineNumbers copy filename="src/app/api/[[...vovk]]/route.ts"
+```ts showLineNumbers copy filename="src/app/api/[[...vovk]]/route.ts" {4-6}
 // ...
 export type Controllers = typeof controllers;
 
@@ -293,7 +293,7 @@ A [Next.js proxy](https://nextjs.org/docs/app/api-reference/file-conventions/pro
 - `message: string` — what it decided and why, for debugging.
 - `subdomains: Record<string, string> | null` — the wildcard subdomains from the request host.
 
-```ts showLineNumbers copy filename="src/proxy.ts"
+```ts showLineNumbers copy filename="src/proxy.ts" {2}
 // ... proxy ...
 const { action, destination, message, subdomains } = multitenant({
   requestUrl: request.url,
@@ -322,7 +322,7 @@ Options:
 - `toModelOutput` – formats the tool result for the model. A formatter that returns an `Error` for a failed call makes the tool throw it.
 - `meta?: Record<string, any>{:ts}` – data passed to each call of a controller handler or RPC method; see [`req.vovk.meta()`](/req-vovk#meta).
 
-```ts showLineNumbers copy
+```ts showLineNumbers copy {6}
 import { deriveTools } from 'vovk';
 import { UserRPC } from '@/client';
 import TaskController from '@/modules/task/task-controller';
@@ -353,7 +353,7 @@ Built-in `toModelOutput` formatters for `deriveTools`. They shape tool results f
 
 Creates the `validateOnClient` function, which runs client-side validation for RPC methods, for all segments or per segment. It takes a `validate` function, which gets the input data, the validation schema and more options. `validate` returns the validated data, or throws an error when validation fails.
 
-```ts showLineNumbers copy filename="./src/lib/validate-on-client.ts"
+```ts showLineNumbers copy filename="./src/lib/validate-on-client.ts" {4-5}
 import { validateData } from 'validation-library';
 import { createValidateOnClient, HttpException, HttpStatus } from 'vovk/create-validate-on-client';
 
@@ -375,7 +375,7 @@ For client-side validation, see the [customization](/imports) page.
 
 Defines a procedure: a controller handler with validation and schema emission. `procedure(options)` returns `.handle()`, which takes the handler, `(req, params) => …`.
 
-```ts showLineNumbers copy
+```ts showLineNumbers copy {5}
 import { z } from 'zod';
 import { procedure } from 'vovk';
 
@@ -464,7 +464,7 @@ See [inference](/inference).
 
 Infers the `params`, `query` and `body` of a procedure as one object. Use it to type the arguments of a Next.js server action.
 
-```ts showLineNumbers copy
+```ts showLineNumbers copy {4}
 import type { VovkInput } from 'vovk';
 import type UserController from './user-controller';
 
