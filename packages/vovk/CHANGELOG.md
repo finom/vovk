@@ -4,6 +4,12 @@ All notable changes to `vovk` are documented here. This file is the canonical re
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 4.1.4 - unreleased
+
+### Changed
+
+- Routes with params are matched through a tree, so a new path with a param or a path with no route takes about the same time at 10 or 100,000 endpoints (10.5 ms → 2.5 µs and 26 ms → 3.0 µs at 100,000); the per-path route cache is gone, so a repeated path with a param takes about 0.1 µs more ([#135](https://github.com/finom/vovk/pull/135))
+
 ## 4.1.3 - 2026-10-20
 
 ### Changed
