@@ -376,13 +376,13 @@ export class VovkDev {
         `A file with controller ${namesOfClasses.join(', ')} have been modified at path "${filePath}". Segment(s) affected: ${JSON.stringify(affectedSegments.map((s) => s.segmentName))}`
       );
 
-      await Promise.all(affectedSegments.map((segment) => this.#requestSchema(segment.segmentName)));
+      await Promise.all(affectedSegments.map((segment) => this.#requestSchemaAfterChange(segment.segmentName)));
       return;
     }
 
     // a renamed controller, a service or a validation module can change any schema
     log.debug(`The file ${filePath} holds no controller of a known segment, requesting every segment`);
-    await Promise.all(this.#segments.map((segment) => this.#requestSchema(segment.segmentName)));
+    await Promise.all(this.#segments.map((segment) => this.#requestSchemaAfterChange(segment.segmentName)));
   };
 
   #getSelfSignedDispatcher() {
@@ -402,6 +402,17 @@ export class VovkDev {
   };
 
   #requestSchema = debounceWithArgs(this.#requestSchemaNow, 500);
+
+  // next dev can answer before it compiles a change, so a schema that comes back unchanged is asked for again
+  #requestSchemaAfterChange = async (segmentName: string) => {
+    const before = JSON.stringify(this.#schemaSegments[segmentName] ?? null);
+    let result = await this.#requestSchema(segmentName);
+    for (const delay of [1000, 3000]) {
+      if (result.isError || JSON.stringify(this.#schemaSegments[segmentName] ?? null) !== before) return;
+      await new Promise((resolve) => setTimeout(resolve, delay));
+      result = await this.#requestSchemaNow(segmentName);
+    }
+  };
 
   // a segment without a schema would hold back the client of the others; --exit generates from fresh schemas only
   async #useLastKnownSchema(segmentName: string) {
