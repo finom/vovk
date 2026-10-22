@@ -44,7 +44,7 @@
     "react-transition-group": "^4.4.5",
     "recharts": "^3.10.1",
     "tailwind-merge": "^3.7.0",
-    "vovk": "^4.1.3",
+    "vovk": "^4.1.4",
     "vovk-ajv": "^0.2.1",
     "vovk-examples": "^3.0.22",
     "zod": "^4.6.5"
