@@ -712,6 +712,41 @@ export const { GET } = initSegment({ controllers: ctrlrs });
     }
   });
 
+  await it('Requests the schema again when the dev server answers a module change with the old schema', async () => {
+    const schemas: Record<string, object> = {
+      '': segmentWith('', { UserRPC: { className: 'UserController', handlers: ['getUser'] } }),
+    };
+    const server = await startSchemaServer(schemas);
+    const controllerFile = path.join(projectDir, 'src/modules/user/user-controller.ts');
+    const controller = (procedures: string) =>
+      `import { get, prefix } from 'vovk';\n\n@prefix('users')\nexport default class UserController {\n${procedures}}\n`;
+    await createProject(projectDir, {
+      'package.json': { name: 'app', version: '1.0.0', type: 'module' },
+      'vovk.config.mjs': configFile({ composedClient: { prettifyClient: false } }),
+      'src/app/api/[[...vovk]]/route.ts': "import UserController from '../../../modules/user/user-controller';\n",
+      'src/modules/user/user-controller.ts': controller('  @get() static getUser() {}\n'),
+    });
+    const dev = startCLI(['dev'], { cwd: projectDir, env: { PORT: server.port } });
+
+    try {
+      await dev.waitForOutput(/Composed client is generated/);
+      const requestCount = server.requests.length;
+      await fs.writeFile(
+        controllerFile,
+        controller("  @get() static getUser() {}\n  @get('all') static listUsers() {}\n")
+      );
+      // next dev hasn't compiled the change yet, so the first request after it gets the old schema
+      assert.ok(await waitUntil(async () => server.requests.length > requestCount), dev.getOutput());
+      schemas[''] = segmentWith('', { UserRPC: { className: 'UserController', handlers: ['getUser', 'listUsers'] } });
+
+      const isUpdated = await waitUntil(async () => (await readFile('.vovk-schema/root.json')).includes('listUsers'));
+      assert.ok(isUpdated, dev.getOutput());
+    } finally {
+      await dev.stop();
+      await server.close();
+    }
+  });
+
   await it('Requests the schema again once a module changes after a failed request', async () => {
     const schemas: Record<string, object> = {
       '': segmentWith('', { UserRPC: { className: 'UserController', handlers: ['getUser'] } }),
