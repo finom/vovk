@@ -20,10 +20,29 @@ type Route = { staticMethod: RouteHandler; controller: VovkController; conflicts
 // a route segment as the literals around its params: "{from}-{to}.json" is ['', '-', '.json'] around ['from', 'to']
 type ParamSegment = { literals: string[]; paramNames: string[] };
 
+// the routes with params of one method, by path segment: a lookup follows the path, whatever the number of routes
+type RouteTreeNode = {
+  literals: Map<string, RouteTreeNode>;
+  // one edge per distinct segment pattern, so users/{id} and users/{id}/posts share theirs
+  params: { pattern: string; paramSegment: ParamSegment; node: RouteTreeNode }[];
+  route?: string;
+};
+type RouteTree = {
+  root: RouteTreeNode;
+  // the routes in Object.keys order, so a conflict lists them as it always has
+  order: Map<string, number>;
+  // a route that repeats a param name answers 500 whenever its shape matches, so it's checked apart
+  withDuplicateParam: string[];
+};
+
+const createRouteTreeNode = (): RouteTreeNode => ({ literals: new Map(), params: [] });
+
 // param values in paramNames order, each as long as a greedy regex would take it; lastIndexOf finds the literals
 // from the right, so a long segment costs linear time where a regex could backtrack for seconds
 function matchParamSegment(pathSegment: string, { literals }: ParamSegment) {
   const prefix = literals[0];
+  // the whole segment is the value, as in {id}
+  if (literals.length === 2 && !prefix && !literals[1]) return pathSegment ? [pathSegment] : null;
   const suffix = literals[literals.length - 1];
   if (!pathSegment.startsWith(prefix) || !pathSegment.endsWith(suffix)) return null;
 
@@ -40,6 +59,36 @@ function matchParamSegment(pathSegment: string, { literals }: ParamSegment) {
   values[0] = pathSegment.slice(prefix.length, end);
 
   return values;
+}
+
+// every route with params that matches the path, each with its params; more than one is a conflict
+function matchRouteTree(
+  node: RouteTreeNode,
+  path: string[],
+  index: number,
+  // names and values in turn: name, value, name, value
+  values: string[],
+  matches: { route: string; params: Record<string, string> }[]
+) {
+  if (index === path.length) {
+    if (!node.route) return;
+    const params: Record<string, string> = {};
+    for (let i = 0; i < values.length; i += 2) params[values[i]] = values[i + 1];
+    matches.push({ route: node.route, params });
+    return;
+  }
+  const literal = node.literals.get(path[index]);
+  if (literal) matchRouteTree(literal, path, index + 1, values, matches);
+  for (let e = 0; e < node.params.length; e++) {
+    const { paramSegment, node: next } = node.params[e];
+    // matched per segment, so a decoded "/" from %2F belongs to the value
+    const segmentValues = matchParamSegment(path[index], paramSegment);
+    if (!segmentValues) continue;
+    const { paramNames } = paramSegment;
+    for (let i = 0; i < paramNames.length; i++) values.push(paramNames[i], segmentValues[i]);
+    matchRouteTree(next, path, index + 1, values, matches);
+    values.length -= paramNames.length * 2;
+  }
 }
 
 type SegmentHooks = {
@@ -250,12 +299,6 @@ class VovkApp {
     string,
     { segments: string[]; paramSegments: Map<number, ParamSegment>; duplicateParam: string | undefined }
   >();
-  // matches are only valid for the handlers map they were resolved against, so scope by its identity
-  #routeMatchCache = new WeakMap<object, Map<string, { route: string; params: Record<string, string> }>>();
-  // concrete paths come from the URL, cap the per handlers map cache so it can't grow forever
-  static #ROUTE_MATCH_CACHE_LIMIT = 1000;
-  // and in size: a longer path, as one with a long token in it, is matched each time
-  static #ROUTE_MATCH_CACHE_MAX_PATH_LENGTH = 256;
 
   #getRouteShape = (route: string) => {
     let shape = this.#routeShapeCache.get(route);
@@ -301,6 +344,46 @@ class VovkApp {
     return params;
   };
 
+  #routeTrees = new WeakMap<object, RouteTree>();
+
+  #getRouteTree = (handlers: Record<string, Route>) => {
+    let tree = this.#routeTrees.get(handlers);
+    if (tree) return tree;
+    tree = { root: createRouteTreeNode(), order: new Map(), withDuplicateParam: [] };
+    for (const route of Object.keys(handlers)) {
+      tree.order.set(route, tree.order.size);
+      const { segments, paramSegments, duplicateParam } = this.#getRouteShape(route);
+      // a route without params is found by its literal path
+      if (!paramSegments.size) continue;
+      if (duplicateParam) {
+        tree.withDuplicateParam.push(route);
+        continue;
+      }
+      let node = tree.root;
+      segments.forEach((segment, i) => {
+        const paramSegment = paramSegments.get(i);
+        if (!paramSegment) {
+          let next = node.literals.get(segment);
+          if (!next) {
+            next = createRouteTreeNode();
+            node.literals.set(segment, next);
+          }
+          node = next;
+          return;
+        }
+        let edge = node.params.find(({ pattern }) => pattern === segment);
+        if (!edge) {
+          edge = { pattern: segment, paramSegment, node: createRouteTreeNode() };
+          node.params.push(edge);
+        }
+        node = edge.node;
+      });
+      node.route = route;
+    }
+    this.#routeTrees.set(handlers, tree);
+    return tree;
+  };
+
   #getHandler = ({ handlers, path }: { handlers: Record<string, Route>; path: string[] }) => {
     if (path.length === 0) {
       return { handler: Object.hasOwn(handlers, '') ? handlers[''] : null, methodParams: {} };
@@ -309,14 +392,6 @@ class VovkApp {
     // a decoded "/" inside one segment makes the joined path ambiguous, /files/a%2Fb vs /files/a/b
     const hasEncodedSlash = path.some((segment) => segment.includes('/'));
     const pathStr = path.join('/');
-    const isCacheable = !hasEncodedSlash && pathStr.length <= VovkApp.#ROUTE_MATCH_CACHE_MAX_PATH_LENGTH;
-
-    let matchCache = isCacheable ? this.#routeMatchCache.get(handlers) : undefined;
-    const cachedMatch = matchCache?.get(pathStr);
-    if (cachedMatch) {
-      // a copy per request, a handler may change its params
-      return { handler: handlers[cachedMatch.route], methodParams: { ...cachedMatch.params } };
-    }
 
     // a static route by its literal path, hasOwn so /toString doesn't resolve a prototype member;
     // a template is matched below, so /users/%7Bid%7D gets users/{id} with id "{id}"
@@ -327,36 +402,22 @@ class VovkApp {
     let methodParams: Record<string, string> = {};
 
     if (!methodKey) {
-      const methodKeys: string[] = [];
+      const tree = this.#getRouteTree(handlers);
+      if (tree.withDuplicateParam.length) for (const route of tree.withDuplicateParam) this.#matchRoute(route, path);
 
-      for (const route of Object.keys(handlers)) {
-        const params = this.#matchRoute(route, path);
-        if (params) {
-          methodParams = params;
-          methodKeys.push(route);
-        }
-      }
-
-      if (methodKeys.length > 1) {
+      const matches: { route: string; params: Record<string, string> }[] = [];
+      matchRouteTree(tree.root, path, 0, [], matches);
+      if (matches.length > 1) {
+        const methodKeys = matches.map(({ route }) => route);
+        methodKeys.sort((a, b) => (tree.order.get(a) ?? 0) - (tree.order.get(b) ?? 0));
         throw new HttpException(HttpStatus.INTERNAL_SERVER_ERROR, `Conflicting routes found: ${methodKeys.join(', ')}`);
       }
 
-      [methodKey] = methodKeys;
-
-      if (methodKey && isCacheable) {
-        if (!matchCache) {
-          matchCache = new Map();
-          this.#routeMatchCache.set(handlers, matchCache);
-        }
-        if (matchCache.size >= VovkApp.#ROUTE_MATCH_CACHE_LIMIT) {
-          matchCache.delete(matchCache.keys().next().value as string);
-        }
-        matchCache.set(pathStr, { route: methodKey, params: methodParams });
-      }
+      if (matches.length) ({ route: methodKey, params: methodParams } = matches[0]);
     }
 
     if (methodKey) {
-      return { handler: handlers[methodKey], methodParams: { ...methodParams } };
+      return { handler: handlers[methodKey], methodParams };
     }
 
     return { handler: null, methodParams };

@@ -675,8 +675,8 @@ describe('Runtime sweep', () => {
       }
     });
 
-    it('Keeps long paths out of the route match cache', async () => {
-      // the gc() the test runner doesn't expose, to measure what the cache retains
+    it('Retains nothing for the long paths it has served', async () => {
+      // the gc() the test runner doesn't expose, to measure what the router retains
       setFlagsFromString('--expose-gc');
       const gc = runInNewContext('gc') as () => void;
       class LongIdController {

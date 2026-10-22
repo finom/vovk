@@ -20,7 +20,7 @@ I've been writing code for over 20 years, and clean, intuitive APIs still bring 
 - **Contract-less procedures** — [validation and type inference](/procedure) are defined in-place, right next to the handler. No separate contract files or DTO classes to keep in sync.
 - **RPC meets REST** — the ergonomics of an RPC call with proper RESTful semantics underneath, following the Controller–Service pattern with full in-service type inference.
 - **AI-native** — procedures are automatically [derivable as LLM tools](/tools), so your API is callable by agents and MCP servers out of the box.
-- **Proven performance** — about 2 µs of median routing overhead per request up to 1,000 controllers, on an Apple M4 Pro. A static path is found by its key, a path with a param seen before comes from the route cache, a new one checks the routes of its method, and a path that matches no route checks them all. See [performance](/performance).
+- **Proven performance** — about 2 µs of median routing overhead per request up to 1,000 controllers, on an Apple M4 Pro. A static path is found by its key, and a path with a param through a tree of path segments, so a new path, or one that matches no route, costs about the same at any number of routes. See [performance](/performance).
 
 ## Core features
 

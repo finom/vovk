@@ -4,8 +4,8 @@ description: "Full documentation for the Vovk.ts framework, excluding the Realti
 see_also:
   label: "Realtime Kanban Context"
   url: https://vovk.dev/context/realtime-ui.md
-chars: 417730
-est_tokens: 104433
+chars: 417749
+est_tokens: 104438
 ---
 
 Page: https://vovk.dev/about
@@ -9715,9 +9715,9 @@ Page: https://vovk.dev/performance
 ## Summary
 
 - Goal: measure Vovk.ts overhead over native Next.js route handlers (not the HTTP stack).
-- Routing: ~2.1 µs median per request from 1 to 1,000 controllers, 3.2 µs at 10,000 (20,000 endpoints) and 2.1 µs at 50,000 (100,000 endpoints). Throughput ~470k–490k ops/s per core up to 1,000 controllers. The GET path is a static route and the POST path one the route cache has seen; other paths are measured below the results.
-- Cold start: ~11 µs per controller (two endpoints each) up to 1,000 controllers, ~14 µs at 10,000 and 50,000. ~11 ms at 1,000 controllers, ~137 ms at 10,000, ~0.71 s at 50,000. About 11–16× the cost of no-op decorators. The first request of each method then builds that method's route table: ~0.11 s at 50,000 controllers.
-- Notes: Tinybench on Node.js 24.21 and an Apple M4 Pro, measured on 2026-10-17. Each figure is the lowest median of five runs, since other work on the machine only adds time; the first-request table shows the median of the five runs. On Node.js 24.1 the same code routes a request in 1.58 µs; Node.js 24.21 adds about 0.5 µs. Next.js runtime cost is not measured. Written from real benchmark output with AI help and small edits. The scripts are in the [`perf`](https://github.com/finom/vovk/tree/main/perf) folder of the Vovk.ts repository.
+- Routing: ~2.1–2.3 µs median per request from 1 to 1,000 controllers, 3.2–3.7 µs at 10,000 (20,000 endpoints) and 2.2–2.3 µs at 50,000 (100,000 endpoints). Throughput ~440k–480k ops/s per core up to 1,000 controllers. A new path with a param or a path with no route takes 2.3–4.0 µs at every size.
+- Cold start: ~11–12 µs per controller (two endpoints each) up to 1,000 controllers, ~14–16 µs at 10,000 and 50,000. ~12 ms at 1,000 controllers, ~143 ms at 10,000, ~0.78 s at 50,000. About 11–16× the cost of no-op decorators. The first request that needs a method's route tree then builds it: ~0.14–0.15 s at 50,000 controllers.
+- Notes: Tinybench on Node.js 24.21 and an Apple M4 Pro, measured on 2026-10-22. Each figure is the lowest median of five runs, since other work on the machine only adds time; the first-request table shows the median of the five runs. On 2026-10-17, the router took 1.58 µs per request on Node.js 24.1 and about 0.5 µs more on Node.js 24.21. Next.js runtime cost is not measured. Written from real benchmark output with AI help and small edits. The scripts are in the [`perf`](https://github.com/finom/vovk/tree/main/perf) folder of the Vovk.ts repository.
 
 ## Reproducing the Tests
 
@@ -9798,44 +9798,44 @@ export default class AController {
 
 | Controllers | Endpoints | GET Latency (med) | POST Latency (med) | GET Throughput (med ops/s) | POST Throughput (med ops/s) |
 | ----------- | --------- | ----------------- | ------------------ | -------------------------- | --------------------------- |
-| 1           | 2         | 2,083 ns          | 2,084 ns           | 480,077                    | 479,846                     |
-| 10          | 20        | 2,041 ns          | 2,084 ns           | 489,956                    | 479,846                     |
-| 100         | 200       | 2,083 ns          | 2,125 ns           | 480,077                    | 470,588                     |
-| 1,000       | 2,000     | 2,083 ns          | 2,125 ns           | 480,077                    | 470,588                     |
-| 10,000      | 20,000    | 3,250 ns          | 3,209 ns           | 307,692                    | 311,624                     |
-| 50,000      | 100,000   | 2,125 ns          | 2,167 ns           | 470,588                    | 461,467                     |
+| 1           | 2         | 2,083 ns          | 2,209 ns           | 480,077                    | 452,694                     |
+| 10          | 20        | 2,083 ns          | 2,250 ns           | 480,077                    | 444,444                     |
+| 100         | 200       | 2,083 ns          | 2,250 ns           | 480,077                    | 444,444                     |
+| 1,000       | 2,000     | 2,083 ns          | 2,250 ns           | 480,077                    | 444,444                     |
+| 10,000      | 20,000    | 3,209 ns          | 3,708 ns           | 311,624                    | 269,687                     |
+| 50,000      | 100,000   | 2,166 ns          | 2,333 ns           | 461,681                    | 428,633                     |
 
 Key takeaways:
 
-- Flat latency, ≈2.1 µs, up to 1,000 controllers; GET ≈ POST, so reading the path param costs little.
-- At 10,000 controllers every run is slower, 3.2–3.75 µs; at 50,000 a request takes 2.1–2.3 µs, as at 1,000. A CPU profile puts the extra time at 10,000 in Node.js's `Request`/`Response` code; the Vovk.ts code takes about the same time at every size, about 16% more at 50,000 controllers than at 1,000.
-- The GET path is a static route, found by its literal key. The POST repeats one path with a param, which the route cache serves. Other paths are measured below.
+- Flat latency, ≈2.1 µs for GET and ≈2.3 µs for POST, up to 1,000 controllers.
+- At 10,000 controllers every run is slower, 3.2–3.8 µs; at 50,000 a request takes 2.2–2.4 µs, about as at 1,000. A CPU profile puts the extra time at 10,000 in Node.js's `Request`/`Response` code, not in the router.
+- The GET path is a static route, found by its literal key. The POST path has a param: it is matched through a tree of path segments, so the number of routes doesn't change its cost. It takes about 0.1 µs more than in 4.1.3, which served a repeated path from a cache. Other paths are measured below.
 
-### Paths the route cache can't serve
+### New paths and paths with no route
 
-The route cache keeps up to 1,000 paths per segment and method. The first request to a new path with a param checks every route of its method. A path that matches no route is never cached: it checks the routes of every method, to answer 405 with an `Allow` header or 404. The test sends a new param value on each POST, and a GET to a path with no route ([`routeScan.ts`](https://github.com/finom/vovk/blob/main/perf/bench/routeScanPerfTests/routeScan.ts)).
+Routes with params are matched one segment at a time, in a tree built per segment and method, so a new param value costs the same as a repeated one. A path that matches no route walks the trees of every method, to answer 405 with an `Allow` header or 404. The test sends a new param value on each POST, and a GET to a path with no route ([`routeScan.ts`](https://github.com/finom/vovk/blob/main/perf/bench/routeScanPerfTests/routeScan.ts)).
 
 | Controllers | Endpoints | New path with a param (med) | Path with no route (med) |
 | ----------- | --------- | --------------------------- | ------------------------ |
-| 10          | 20        | 3.1 µs                      | 3.7 µs                   |
-| 1,000       | 2,000     | 31.1 µs                     | 94.6 µs                  |
-| 10,000      | 20,000    | 558 µs                      | 2.1 ms                   |
-| 50,000      | 100,000   | 10.5 ms                     | 26.3 ms                  |
+| 10          | 20        | 2.3 µs                      | 2.8 µs                   |
+| 1,000       | 2,000     | 2.5 µs                      | 3.0 µs                   |
+| 10,000      | 20,000    | 3.9 µs                      | 4.0 µs                   |
+| 50,000      | 100,000   | 2.5 µs                      | 3.0 µs                   |
 
-The cost depends on the routes in one segment, so [segments](https://vovk.dev/segment) keep it small.
+Before 4.1.4, the router checked every route of the method for such a path, and kept up to 1,000 matched paths in a cache: 10.5 ms for a new path with a param and 26 ms for a path with no route at 50,000 controllers.
 
 ### First request
 
-A method's route table is built on its first request, and each route is parsed the first time a path is checked against it: a static path checks only its own route, while a new path with a param, or a path with no route, checks every route of the methods it scans. The test starts a fresh process three times per size and times the first GET (a static path), the first POST (a path with a param), and then the first path with no route, which builds the tables of the other methods ([`firstRequest.ts`](https://github.com/finom/vovk/blob/main/perf/bench/firstRequestPerfTests/firstRequest.ts)). A first request is one sample, and a garbage collection pause during it is part of its cost, so the table shows the median of the five runs, each the median of three processes.
+A static path is found by its literal key. A path with a param, or a path with no route, needs the route tree of each method it walks, and a method's tree is built on the first request that needs it. The test starts a fresh process three times per size and times the first GET (a static path), the first POST (a path with a param), and then the first path with no route, which builds the trees of the other methods ([`firstRequest.ts`](https://github.com/finom/vovk/blob/main/perf/bench/firstRequestPerfTests/firstRequest.ts)). A first request is one sample, and a garbage collection pause during it is part of its cost, so the table shows the median of the five runs, each the median of three processes.
 
 | Controllers | Endpoints | First GET (med) | First POST (med) | First path with no route (med) |
 | ----------- | --------- | --------------- | ---------------- | ------------------------------ |
-| 1           | 2         | 7.9 ms          | 0.24 ms          | 0.13 ms                        |
-| 1,000       | 2,000     | 8.8 ms          | 1.85 ms          | 1.5 ms                         |
-| 10,000      | 20,000    | 22.2 ms         | 22.5 ms          | 21.2 ms                        |
-| 50,000      | 100,000   | 111 ms          | 115 ms           | 152 ms                         |
+| 1           | 2         | 8.8 ms          | 0.29 ms          | 0.15 ms                        |
+| 1,000       | 2,000     | 9.2 ms          | 2.1 ms           | 1.3 ms                         |
+| 10,000      | 20,000    | 24.1 ms         | 27.1 ms          | 20.3 ms                        |
+| 50,000      | 100,000   | 126 ms          | 152 ms           | 143 ms                         |
 
-At 1 controller the first GET takes 7.9 ms and the first POST 0.24 ms: about 8 ms of the first GET is a fresh process's first request, at any size, not the route table.
+At 1 controller the first GET takes 8.8 ms and the first POST 0.29 ms: about 8 ms of the first GET is a fresh process's first request, at any size, not the route tree.
 
 ## Cold Start Overhead
 
@@ -9886,7 +9886,7 @@ function createNoopClasses(count: number) {
 
 For N ∈ \{1, 10, 100, 1,000, 10,000, 50,000\} measure:
 
-- Decorator processing, metadata build and `initSegment()`. The route tables are built later, on each method's [first request](#first-request).
+- Decorator processing, metadata build and `initSegment()`. The route trees are built later, on the [first request](#first-request) that needs each.
 - Compare with equivalent classes using no-op decorators, to isolate the framework's work.
 - The classes are defined in a loop: at 50,000 classes, one function with every class written out makes V8 spend most of the run compiling that function.
 
@@ -9905,27 +9905,27 @@ function noopClassDecorator(_message?: string) {
 
 | Controllers | Vovk.ts Init Time (med) | No-op Time (med) | Overhead Ratio | Throughput (ops/s) |
 | ----------- | ----------------------- | ---------------- | -------------- | ------------------ |
-| 1           | 11.833 μs               | 0.750 μs         | 15.8x          | 84,509             |
-| 10          | 106.542 μs              | 7.167 μs         | 14.9x          | 9,386              |
-| 100         | 1,037.666 μs            | 76.417 μs        | 13.6x          | 964                |
-| 1,000       | 10,995.937 μs           | 779.917 μs       | 14.1x          | 91                 |
-| 10,000      | 137,407.458 μs          | 10,123.854 μs    | 13.6x          | 7                  |
-| 50,000      | 710,273.646 μs          | 66,843.376 μs    | 10.6x          | 1                  |
+| 1           | 12.084 μs               | 0.750 μs         | 16.1x          | 82,754             |
+| 10          | 103.625 μs              | 7.291 μs         | 14.2x          | 9,650              |
+| 100         | 1,062.167 μs            | 77.250 μs        | 13.7x          | 941                |
+| 1,000       | 11,534.959 μs           | 816.875 μs       | 14.1x          | 87                 |
+| 10,000      | 142,731.500 μs          | 11,989.208 μs    | 11.9x          | 7                  |
+| 50,000      | 779,390.895 μs          | 68,822.479 μs    | 11.3x          | 1                  |
 
 Key takeaways:
 
-- About 11 µs per controller (two endpoints each) up to 1,000 controllers, about 14 µs per controller at 10,000 and 50,000.
-- 50,000 controllers (100,000 endpoints) take about 0.71 s, plus about 0.11 s for each method's first request.
+- About 11–12 µs per controller (two endpoints each) up to 1,000 controllers, about 14–16 µs per controller at 10,000 and 50,000.
+- 50,000 controllers (100,000 endpoints) take about 0.78 s, plus 0.14–0.15 s for the first request that builds a method's route tree.
 - Absolute times are small for long-running services, and acceptable for serverless at typical sizes.
 
 ## Practical guidance
 
 - For high-performance workloads, split the app into several [segments](https://vovk.dev/segment) (serverless functions built from Next.js route.ts files), each with up to 1,000 procedures.
-- One segment with 100,000 endpoints (50,000 controllers) is measured above: ~2.1–2.3 µs per request to a static or cached path, ~0.71 s of cold start, ~0.11 s for each method's first request, and then ~10.5 ms for a new path with a param and ~26 ms for a path with no route. Test your own app: the real limits are memory, bundle size, cold start budgets and platform quotas.
+- One segment with 100,000 endpoints (50,000 controllers) is measured above: ~2.2–2.3 µs per request, 2.5–3 µs for a new path with a param or a path with no route, ~0.78 s of cold start and 0.14–0.15 s for the first request that builds a method's route tree. Test your own app: the real limits are memory, bundle size, cold start budgets and platform quotas.
 
 ---
 
-Benchmarks: Tinybench on Node.js 24.21, on an Apple M4 Pro, 2026-10-17; each figure is the lowest median of five runs. Numbers can vary with the runtime, hardware and build settings. Scripts: https://github.com/finom/vovk/tree/main/perf
+Benchmarks: Tinybench on Node.js 24.21, on an Apple M4 Pro, 2026-10-22; each figure is the lowest median of five runs. Numbers can vary with the runtime, hardware and build settings. Scripts: https://github.com/finom/vovk/tree/main/perf
 
 ---
 
